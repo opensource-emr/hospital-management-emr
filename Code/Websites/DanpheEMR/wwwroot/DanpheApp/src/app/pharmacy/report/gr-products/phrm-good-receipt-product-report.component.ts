@@ -28,7 +28,9 @@ export class PHRMGoodsReceiptProductReportComponent {
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     dlService: DLService = null;
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+    public dateRange:string="";		
+    public pharmacy:string = "pharmacy";
+    
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public msgBoxServ: MessageboxService,
@@ -141,5 +143,6 @@ export class PHRMGoodsReceiptProductReportComponent {
     OnFromToDateChange($event) {
         this.phrmReports.FromDate = $event ? $event.fromDate : this.phrmReports.FromDate;
         this.phrmReports.ToDate = $event ? $event.toDate : this.phrmReports.ToDate;
+        this.dateRange="<b>Date:</b>&nbsp;"+this.phrmReports.FromDate+"&nbsp;<b>To</b>&nbsp;"+this.phrmReports.ToDate;
     }
 }

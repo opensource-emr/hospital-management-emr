@@ -13,10 +13,10 @@ namespace DanpheEMR.ServerModel
     }
     public class RequisitionsStockVM
     {
-        public List<StockModel> stocks = new List<StockModel>();
+        //public List<StoreStockModel> stocks = new List<StoreStockModel>();
         public List<RequisitionModel> requisitions = new List<RequisitionModel>();
         public List<DispatchItemsModel> dispatchItems = new List<DispatchItemsModel>();
-        public List<StockTransactionModel> stockTransactions = new List<StockTransactionModel>();
+        //public List<StockTransactionModel> stockTransactions = new List<StockTransactionModel>();
 
         //for view
         public List<RequisiteDeptpair> reqDeptList = new List<RequisiteDeptpair>();

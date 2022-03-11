@@ -51,20 +51,50 @@
     display: none !important;
     visibility: hidden !important;
   }
+
+  .btn:last-child {
+    margin-right: 8px;
+  }
+
+  .logo {
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .img-responsive {
+    position: static;
+    width: 100%;
+  }
+
+  /* .requested-remarks {
+    position: relative;
+    padding-left: 16%;
+  }
+  .requested-remarks .label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #000;
+    font-weight: bold;
+  } */
 </style>
 <div class="wrapper">
   <div class="col-md-12">
-    <div class="caption">
-      <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <div class="caption custom-caption">
+      <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
       <span class="caption-subject font-red-sunglo bold uppercase">Check&nbsp; and&nbsp;Verify &nbsp;
         Purchase Order</span>
     </div>
   </div>
   <div class="col-md-12">
     <div class="left">
-      <button class="btn btn-primary btn-sm" (click)="RouteBack()"><i class="fa fa-backward"></i>&nbsp;Back to Requisition
+      <button class="btn btn-primary btn-sm" (click)="RouteBack()"><i class="fa fa-backward"></i>&nbsp;Back to
+        Requisition
         List</button>
     </div>
+
     <div class="right">
       <button class="btn btn-primary btn-sm" (click)="Print()"><i class="fa fa-print"></i>&nbsp;Print</button>
     </div>
@@ -74,26 +104,34 @@
     <div id="printpage" class="row printStyle print-border">
       <div style="text-align:center;">
         <div class="col-md-12">
-          <div class="row" style="margin-bottom: 10px;">
-            <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
-              <img class="img-responsive" style="max-height:70px;"
-                src="../../../themes/theme-default/images/hams-logo.PNG" />
-            </div>
-            <div style="width: 64%;float: left;padding-bottom:  0px;">
-              <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
-                <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-                <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
-                <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
+          <div class="print-header">
+            <div class="row" style="margin-bottom: 10px;">
+              <div class="col-md-3" style="padding: 0 0 0 10px !important;">
+                <div class="logo">
+                  <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                </div>
               </div>
-            </div>
-            <div style="float: left;">
-              <div class="qr-code" style="position: absolute; right: 12px; top: 9px;">
-                <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+              <div class="col-md-6">
+                <div style="padding-bottom:  0px;">
+                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                    <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                    <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                      headerDetail.tel}}</span><br />
+                    <span style="font-size:15px;"><strong> Procurement Unit </strong></span><br />
+                  </div>
+                </div>
               </div>
+              <div class="col-md-3">
+                <div style="text-align: right;">
+                  <div class="qr-code" style="width: 100%;position: static;height: 90px;justify-content: center;flex-direction: column;display: flex">
+                    <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                  </div>
+                </div>
+              </div>
+              <!-- Inventory Header  -->
+              <div style="clear:left"></div>
             </div>
-            <!-- Inventory Header  -->
-            <div style="clear:left"></div>
           </div>
           <div class="clear"></div>
           <div class="left" style="text-align:left;">
@@ -105,10 +143,13 @@
               Ordered Date:<b> {{PurchaseOrder.PoDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
               <i *ngIf="PurchaseOrder.PoDate">({{PurchaseOrder.PoDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
             </div>
+            <div>
+              Ordered From:<b> {{PurchaseOrder.OrderFromStoreName}}</b>
+            </div>
           </div>
 
           <div class="clear"></div>
-          <p class="text-center btm-pad border-up-down"><b>&nbsp;PURCHASE&nbsp;Order&nbsp;DETAILS&nbsp;PRINT</b></p>
+          <p class="text-center btm-pad border-up-down"><b>&nbsp;PURCHASE&nbsp;ORDER&nbsp;DETAILS</b></p>
           <div class="clear"></div>
           <div class="clear footer"></div>
           <div *ngIf="PurchaseOrderVM != null">
@@ -117,43 +158,46 @@
                 <tr style="font-weight: bold;text-align:center">
                   <td></td>
                   <td></td>
-                  <td>Item Name</td>
                   <td>Item Code</td>
-                  <td>Unit</td>
+                  <td>Item Name</td>
                   <td>Ordered Quantity</td>
+                  <td>Unit</td>
+                  <td>StandardRate</td>
+                  <td>Vat %</td>
+                  <td>Total</td>
                   <td>Status</td>
                 </tr>
               </thead>
               <tbody *ngFor="let orderedItem of PurchaseOrderVM.OrderedItemList;let i = index">
                 <tr id="itemRow" style="text-align:center" [ngClass]="{'rq-row-background-red': !orderedItem.IsActive}">
-                  <td><i *ngIf="orderedItem.IsActive == true" 
-                      [ngClass]="{ 'fa':true,'fa-pencil': !orderedItem.IsEdited , 'fa-undo': orderedItem.IsEdited}"
-                      title="{{ orderedItem.IsEdited ? 'Undo Edit' : 'Edit Item'}}" (click)="EditItem(i)"></i>
+                  <td><i *ngIf="orderedItem.IsActive == true" [ngClass]="{ 'fa':true,'fa-pencil': !orderedItem.IsEdited , 'fa-undo': orderedItem.IsEdited}" title="{{ orderedItem.IsEdited ? 'Undo Edit' : 'Edit Item'}}" (click)="EditItem(i)"></i>
                   </td>
-                  <td><i *ngIf="orderedItem.IsEdited == false" 
-                      [ngClass]="{ 'fa':true,'fa-times': orderedItem.IsActive , 'fa-undo': !orderedItem.IsActive}"
-                      title="{{ orderedItem.IsActive ? 'Cancel Item' : 'Undo Cancel'}}" (click)="CancelItem(i)"></i>
+                  <td><i *ngIf="orderedItem.IsEdited == false" [ngClass]="{ 'fa':true,'fa-times': orderedItem.IsActive , 'fa-undo': !orderedItem.IsActive}" title="{{ orderedItem.IsActive ? 'Cancel Item' : 'Undo Cancel'}}" (click)="CancelItem(i)"></i>
                   </td>
-                  <td>{{orderedItem.ItemName}}</td>
                   <td>{{orderedItem.Code}}</td>
-                  <td>{{orderedItem.UOMName}}</td>
+                  <td>{{orderedItem.ItemName}}</td>
                   <td>
                     <span [hidden]="orderedItem.IsEdited">{{orderedItem.Quantity}}</span>
-                    <input type="number" class="rqRowEditQty" id="rqRowEditQty{{i}}" [hidden]="!orderedItem.IsEdited"
-                      [(ngModel)]="orderedItem.Quantity" onClick="this.select();" min="1"
-                      (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
-                    <div class="error-message" *ngIf="orderedItem.Quantity < 1" [hidden]="orderedItem.Quantity >= 1"> Use&nbsp;<i
-                        class="fa fa-times"></i>&nbsp;instead.
+                    <input type="number" class="rqRowEditQty" id="rqRowEditQty{{i}}" [hidden]="!orderedItem.IsEdited" [(ngModel)]="orderedItem.Quantity" (ngModelChange)="CalculationForPO()" onClick="this.select();" min="1" (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                    <div class="error-message" *ngIf="orderedItem.Quantity < 1" [hidden]="orderedItem.Quantity >= 1">
+                      Use&nbsp;<i class="fa fa-times"></i>&nbsp;instead.
                     </div>
                   </td>
+                  <td>{{orderedItem.UOMName}}</td>
+                  <td>
+                    <span [hidden]="orderedItem.IsEdited">{{orderedItem.StandardRate}}</span>
+                    <input type="number" class="rqRowEditQty" (ngModelChange)="CalculationForPO()" onClick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)" [hidden]="!orderedItem.IsEdited" [(ngModel)]="orderedItem.StandardRate" />
+                  </td>
+                  <td>{{orderedItem.VatPercentage | number : '1.0-2'}}</td>
+                  <td>{{orderedItem.TotalAmount | number : '1.0-2'}}</td>
                   <td>
                     <b>{{orderedItem.POItemStatus}}</b>
                     <span *ngIf="orderedItem.IsActive == false && orderedItem.CancelledBy != null" id="CancellationToolTip" class="tooltip">
                       <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
                       </span>
                       <p class="tooltiptext ttptextdown no-print">
-                        Cancelled&nbsp;By:&nbsp;{{orderedItem.CancelledBy}}<br/>
-                        Cancelled&nbsp;On:&nbsp;{{orderedItem.CancelledOn | date : 'medium'}}<br/>
+                        Cancelled&nbsp;By:&nbsp;{{orderedItem.CancelledBy}}<br />
+                        Cancelled&nbsp;On:&nbsp;{{orderedItem.CancelledOn | date : 'medium'}}<br />
                         <em *ngIf="!!orderedItem.CancelRemarks">Remarks:&nbsp;{{orderedItem.CancelRemarks}}</em>
                       </p>
                     </span>
@@ -161,46 +205,66 @@
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div class="col-md-12 hidden-in-print" style="margin:10px 0" [hidden]="isVerificationAllowed==false">
-            <label for="VerificationRemarks" class="col-md-2">Remarks <span class="right">:</span></label>
-            <textarea class="col-md-10" [(ngModel)]="VerificationRemarks" name="VerificationRemarks"
-              rows="3"></textarea>
-          </div>
-          <hr />
-          <div class="col-md-12" *ngIf="PurchaseOrderVM != null" style="font-size: 12px;">
-            <div class="col-md-2" style="text-align: left;padding:0px;">
-              <div><u>Ordered By</u>:</div>
-              <div>{{PurchaseOrderVM.OrderingUser.Name}}</div>
-              <div>{{PurchaseOrderVM.OrderingUser.Date | date : 'medium'}}</div>
+            <div class="clearfix">
+              <table style="float: left; width: 30%;">
+              </table>
+              <table style="float: right; width: 30%;">
+                <tr>
+                  <th>SubTotal :</th>
+                  <td>{{PurchaseOrder.SubTotal | number : '1.0-2'}}</td>
+                </tr>
+                <tr>
+                  <th>Vat :</th>
+                  <td>{{PurchaseOrder.VAT | number : '1.0-2'}}</td>
+                </tr>
+                <tr>
+                  <th>Total Amount :</th>
+                  <td>{{PurchaseOrder.TotalAmount | number : '1.0-2'}}</td>
+                </tr>
+
+              </table>
             </div>
-            <div class="col-md-5" style="text-align: left;padding:0px;" *ngIf="PurchaseOrderVM.Verifiers != null">
-              <u>Verified By</u>:
-              <div *ngFor="let verifier of PurchaseOrderVM.Verifiers;let i = index;">
-                {{i+1}}&nbsp;{{verifier.Name}}&nbsp;({{verifier.Date | date : 'medium'}})&nbsp;
-                  <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span
-                      [title]="verifier.Remarks">{{verifier.Remarks | slice:0:10 }}..</span></span>
+          </div>
+          <div class="col-md-12" style="margin:10px 0" style="font-size:12px">
+            <div class="row text-left requested-remarks">
+              <label class="col-md-2">PORemark <span class="right">:</span></label>
+              <span class="col-md-10">{{PurchaseOrder.PORemark}}</span>
+            </div>
+            <div class="row hidden-in-print" style="margin:10px -15px" [hidden]="isVerificationAllowed==false">
+              <label for="VerificationRemarks" class="col-md-2 text-left">Remarks <span class="right">:</span></label>
+              <textarea class="col-md-10" [(ngModel)]="VerificationRemarks" name="VerificationRemarks" rows="3"></textarea>
+            </div>
+            <hr />
+            <div class="row" *ngIf="PurchaseOrderVM != null" style="font-size: 12px; padding: 10px 0;">
+              <div class="col-md-2" style="text-align: left;padding:0px;">
+                <div><u>Ordered By</u>:</div>
+                <div>{{PurchaseOrderVM.OrderingUser.Name}}</div>
+                <div>{{PurchaseOrderVM.OrderingUser.Date | date : 'medium'}}</div>
+              </div>
+              <div class="col-md-5" style="text-align: left;padding:0px;" *ngIf="PurchaseOrderVM.Verifiers != null">
+                <u>Verified By</u>:
+                <div *ngFor="let verifier of PurchaseOrderVM.Verifiers;let i = index;">
+                  {{i+1}}&nbsp;{{verifier.Name}}&nbsp;({{verifier.Date | date : 'medium'}})&nbsp;
+                  <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span [title]="verifier.Remarks">{{verifier.Remarks |
+                      slice:0:10 }}..</span></span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <!-- <div class="col-md-12 hidden-in-print">
+          <!-- <div class="col-md-12 hidden-in-print">
           <app-track-requisition [RequisitionId]="Requisition.RequisitionId"></app-track-requisition>
         </div> -->
+        </div>
+      </div>
+    </div>
+    <div class="row center-style">
+      <div class="col-md-12 col-xs-12 ">
+        <button [disabled]="isVerificationAllowed == false || loading == true" (click)="ApprovePurchaseOrder()" class="btn btn-primary">
+          <i class="fa fa-check"></i>Approve
+        </button>
+        <button [disabled]="isVerificationAllowed == false || loading == true" (click)="RejectPurchaseOrder()" class="btn btn-danger">
+          <i class="fa fa-times"></i>Reject All
+        </button>
       </div>
     </div>
   </div>
-  <div class="row center-style">
-    <div class="col-md-12 col-xs-12 ">
-      <button [disabled]="isVerificationAllowed == false || loading == true" (click)="ApprovePurchaseOrder()"
-        class="btn btn-primary">
-        <i class="fa fa-check"></i>Approve
-      </button>
-      <button [disabled]="isVerificationAllowed == false || loading == true" (click)="RejectPurchaseOrder()"
-        class="btn btn-danger">
-        <i class="fa fa-times"></i>Reject All
-      </button>
-    </div>
-  </div>
-
-</div>

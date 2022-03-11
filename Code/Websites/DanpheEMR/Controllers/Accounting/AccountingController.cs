@@ -25,6 +25,7 @@ using DanpheEMR.Core.Caching;
 using DanpheEMR.ServerModel.IncentiveModels;
 using DanpheEMR.Core;
 using DanpheEMR.ServerModel.AccountingModels;
+using Newtonsoft.Json.Converters;
 //using System.Collections;
 
 namespace DanpheEMR.Controllers
@@ -76,10 +77,11 @@ namespace DanpheEMR.Controllers
                                            Description = voc.Description,
                                            CreatedOn = voc.CreatedOn,
                                            CreatedBy = voc.CreatedBy,
-                                           ISCopyDescription = voc.ISCopyDescription
-                                       }).ToList();
-                    responseData.Status = "OK";
-                    responseData.Results = voucherList;
+                                           ISCopyDescription = voc.ISCopyDescription,
+                                           ShowPayeeName = voc.ShowPayeeName,
+                                           ShowChequeNumber = voc.ShowChequeNumber
+                                       }).ToList<object>();
+                    responseData = AccountingBL.CheckResponseObject(voucherList,"Voucher");
                 }
                 else if (reqType == "get-voucher-head")
                 {
@@ -95,9 +97,8 @@ namespace DanpheEMR.Controllers
                                                voucherHead.CreatedBy,
                                                voucherHead.IsActive,
                                                voucherHead.IsDefault
-                                           }).ToList();
-                    responseData.Status = "OK";
-                    responseData.Results = voucherHeadList;
+                                           }).ToList<object>();
+                    responseData = AccountingBL.CheckResponseObject(voucherHeadList,"VoucherHead");
                 }
                 #endregion
                 #region Ledger List
@@ -110,41 +111,18 @@ namespace DanpheEMR.Controllers
                     //so, this will help us to make software as multi tenant. if user have 2 or more hospital permission then this popup will come.
                     //if user have only one hsopital permission then automatically activate this hospital
                     var HospId = (currentHospitalId > 0) ? currentHospitalId : AccountingTransferData.GetAccPrimaryHospitalId(accountingDBContext);
-                    var TransactionWithItems = (from ti in accountingDBContext.TransactionItems
-                                                join t in accountingDBContext.Transactions on ti.TransactionId equals t.TransactionId
-                                                where t.HospitalId == HospId
-                                                group new { ti } by new { ti.LedgerId } into x
-                                                select new
-                                                {
-                                                    LedgerId = x.Key.LedgerId,
-                                                    Amount = x.Where(a => a.ti.DrCr == true).Select(a => a.ti.Amount).DefaultIfEmpty(0).Sum() - x.Where(a => a.ti.DrCr != true).Select(a => a.ti.Amount).DefaultIfEmpty(0).Sum()
-                                                }).ToList().AsEnumerable();
-                    var ledgerList = (from led in accountingDBContext.Ledgers.AsEnumerable()
-                                      join ledgrp in accountingDBContext.LedgerGroups.AsEnumerable()
-                                         on led.LedgerGroupId equals ledgrp.LedgerGroupId
-                                      where
-                                      ledgrp.HospitalId == HospId &&
-                                      led.IsActive == true
-                                      && led.HospitalId == HospId
-                                      select new
-                                      {
-                                          LedgerId = led.LedgerId,
-                                          HospitalId = led.HospitalId,
-                                          LedgerName = led.LedgerName,
-                                          LedgerGroupId = led.LedgerGroupId,
-                                          LedgerGroupName = ledgrp.LedgerGroupName,
-                                          PrimaryGroup = ledgrp.PrimaryGroup,
-                                          COA = ledgrp.COA,
-                                          LedgerReferenceId = led.LedgerReferenceId,
-                                          SectionId = led.SectionId,
-                                          Name = led.Name,
-                                          LedgerType = led.LedgerType,
-                                          Code = led.Code,
-                                          ClosingBalance = TransactionWithItems.Any(a => a.LedgerId == led.LedgerId) ? (from ti in TransactionWithItems where ti.LedgerId == led.LedgerId select ti.Amount).FirstOrDefault() : 0
-
-                                      }).ToList();
-                    responseData.Status = "OK";
-                    responseData.Results = ledgerList;
+                    var dToday = DateTime.Now.Date;
+                    var CurrentFYId = AccountingTransferData.GetFiscalYearIdByDate(accountingDBContext, dToday, HospId);
+                    List<SqlParameter> paramList = new List<SqlParameter>()
+                                {
+                                        new SqlParameter("@HospitalId", HospId),
+                                        new SqlParameter("@FiscalYearIdForOpeningBal",AccountingTransferData.GetFiscalYearIdForOpeningBalance(accountingDBContext, CurrentFYId, HospId)),
+                                        new SqlParameter("@GetClosingBal", true)
+                                };
+                    var spDataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_GetLedgerList", paramList, accountingDBContext);
+                    var resultStr = JsonConvert.SerializeObject(spDataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
+                    var ledgerList = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);
+                    responseData= AccountingBL.CheckResponseObject(ledgerList,"Ledger");
                 }
                 #endregion
                 // VIKAS : 13 Apr 2020: 
@@ -236,72 +214,6 @@ namespace DanpheEMR.Controllers
 
                     responseData.Status = "OK";
                     responseData.Results = res;
-                }
-                #endregion
-                #region Ledgers from Voucher Id
-                else if (reqType == "ledgersFrmVoucherId")
-                {
-                    //var ledgerList = (from voucherLedgerGroupMap in accountingDBContext.VoucherLedgerGroupMaps
-                    //                  join ledgerGroup in accountingDBContext.LedgerGroups on voucherLedgerGroupMap.LedgerGroupId equals ledgerGroup.LedgerGroupId
-                    //                  join ledger in accountingDBContext.Ledgers on ledgerGroup.LedgerGroupId equals ledger.LedgerGroupId
-                    //                  where (voucherLedgerGroupMap.VoucherId == voucherId && ledger.IsActive == true && voucherLedgerGroupMap.IsActive == true && ledgerGroup.IsActive == true)
-                    //                  select new
-                    //                  {
-                    //                      ledger.LedgerId,
-                    //                      ledger.LedgerName,
-                    //                      ledger.IsInventoryAffected,
-                    //                      ledger.CurrentBalance,
-                    //                      voucherLedgerGroupMap.IsDebit,
-                    //                      ledger.IsCostCenterApplicable,
-                    //                      ledger.IsActive
-                    //                  }).ToList();
-                    //responseData.Status = "OK";
-                    //responseData.Results = ledgerList;
-                }
-                #endregion
-                #region Ledger Transaction List
-                else if (reqType == "ledger-txn-list")
-                {
-                    //var txnIdList = (from txnItm in accountingDBContext.TransactionItems
-                    //                 where txnItm.LedgerId == ledgerId && txnItm.IsActive == true
-                    //                 select txnItm.TransactionId).ToList();
-
-                    //var ledger = (from txnItm in accountingDBContext.TransactionItems
-                    //              join led in accountingDBContext.Ledgers on txnItm.LedgerId equals led.LedgerId
-                    //              where txnItm.LedgerId == ledgerId && txnItm.IsActive == true
-                    //              select new
-                    //              {
-                    //                  LedgerName = led.LedgerName,
-                    //                  OpeningBalance = led.OpeningBalance,
-                    //                  CurrentBalance = led.CurrentBalance,
-                    //                  DrTotalAmount = 0,
-                    //                  CrTotalAmount = 0,
-                    //                  LedgerTransactionItems = (from nesTxnItm in accountingDBContext.TransactionItems
-                    //                                            join txn in accountingDBContext.Transactions on nesTxnItm.TransactionId equals txn.TransactionId
-                    //                                            join refTxn in accountingDBContext.Transactions on txn.ReferenceTransactionId equals refTxn.TransactionId into refTxnTemp
-                    //                                            from referenceTxn in refTxnTemp.DefaultIfEmpty()
-                    //                                            join fiscal in accountingDBContext.FiscalYears on txn.FiscalyearId equals fiscal.FiscalYearId
-                    //                                            join voucher in accountingDBContext.Vouchers on txn.VoucherId equals voucher.VoucherId
-                    //                                            join nesLedger in accountingDBContext.Ledgers on nesTxnItm.LedgerId equals nesLedger.LedgerId
-                    //                                            where nesTxnItm != null && txnIdList.Contains(nesTxnItm.TransactionId) && nesTxnItm.LedgerId != ledgerId
-                    //                                            select new
-                    //                                            {
-                    //                                                TransactionId = txn.TransactionId,
-                    //                                                FiscalYear = fiscal.FiscalYearName,
-                    //                                                VoucherNumber = txn.VoucherNumber,
-                    //                                                ReferenceVoucherNumber = (int?)referenceTxn.VoucherNumber ?? 0,
-                    //                                                VoucherType = voucher.VoucherName,
-                    //                                                TransactionDate = txn.TransactionDate,
-                    //                                                LedgerName = nesLedger.LedgerName,
-                    //                                                IsDebit = nesTxnItm.IsDebit,
-                    //                                                Amount = nesTxnItm.Amount
-                    //                                            }).OrderBy(a => a.TransactionId).ThenByDescending(a => a.IsDebit).ToList()
-
-                    //              }).FirstOrDefault();
-                    //var result = ledger;
-
-                    //responseData.Status = "OK";
-                    //responseData.Results = ledger;
                 }
                 #endregion
                 #region Transaction List
@@ -468,6 +380,7 @@ namespace DanpheEMR.Controllers
                                             join voucher in vouchers on txn.VoucherId equals voucher.VoucherId
                                             join head in voucherheads on txn.VoucherHeadId equals head.VoucherHeadId
                                             join fiscal in fiscalYear on txn.FiscalyearId equals fiscal.FiscalYearId
+                                            join emp in accountingDBContext.Emmployees on txn.CreatedBy equals emp.EmployeeId
                                             select new
                                             {
                                                 txn.VoucherNumber,
@@ -478,7 +391,8 @@ namespace DanpheEMR.Controllers
                                                 txn.Remarks,
                                                 txn.SectionId,
                                                 txn.IsEditable,
-                                                txn.IsGroupTxn
+                                                txn.IsGroupTxn,
+                                                Preparedby = emp.FullName,
                                             }).ToList();
                                 //formatting data for sales voucher
                                 var txnList = (from temptxn in temp
@@ -493,6 +407,7 @@ namespace DanpheEMR.Controllers
                                                    SectionId = temptxn.SectionId,
                                                    IsGroupTxn = temptxn.IsGroupTxn,
                                                    IsEditable = temptxn.IsEditable,
+                                                   Preparedby = temptxn.Preparedby,
                                                    TransactionItems = (from txnItm in alltransactionitems
                                                                        join ledger in ledgers on txnItm.LedgerId equals ledger.LedgerId
                                                                        join txn in alltransactions on txnItm.TransactionId equals txn.TransactionId
@@ -635,6 +550,7 @@ namespace DanpheEMR.Controllers
                                                join voucher in accountingDBContext.Vouchers on txn.VoucherId equals voucher.VoucherId
                                                join head in accountingDBContext.VoucherHeads on txn.VoucherHeadId equals head.VoucherHeadId
                                                join fiscal in accountingDBContext.FiscalYears on txn.FiscalyearId equals fiscal.FiscalYearId
+                                               join emp in accountingDBContext.Emmployees on txn.CreatedBy equals emp.EmployeeId
                                                where
                                                head.HospitalId == currentHospitalId &&
                                                txn.VoucherNumber == voucherNumber && txn.IsActive == true && txn.FiscalyearId == FiscalYearId
@@ -650,6 +566,7 @@ namespace DanpheEMR.Controllers
                                                    SectionId = txn.SectionId,
                                                    IsGroupTxn = txn.IsGroupTxn,
                                                    IsEditable = txn.IsEditable,
+                                                   Preparedby = emp.FullName,
                                                    TransactionItems = (from itms in txnlists
                                                                        group new { itms } by new
                                                                        {
@@ -761,6 +678,7 @@ namespace DanpheEMR.Controllers
                                                join voucher in accountingDBContext.Vouchers.AsEnumerable() on txn.VoucherId equals voucher.VoucherId
                                                join head in accountingDBContext.VoucherHeads.AsEnumerable() on txn.VoucherHeadId equals head.VoucherHeadId
                                                join fiscal in accountingDBContext.FiscalYears.AsEnumerable() on txn.FiscalyearId equals fiscal.FiscalYearId
+                                               join emp in accountingDBContext.Emmployees on txn.CreatedBy equals emp.EmployeeId
                                                where head.HospitalId == currentHospitalId
                                                && fiscal.HospitalId == currentHospitalId
                                                && txn.VoucherNumber == voucherNumber && txn.IsActive == true && txn.FiscalyearId == FiscalYearId
@@ -779,7 +697,10 @@ namespace DanpheEMR.Controllers
                                                    VoucherHeadId = head.VoucherHeadId,
                                                    IsAllowReverseVoucher = txn.IsAllowReverseVoucher,
                                                    TransactionId = txn.TransactionId,
+                                                   PayeeName = txn.PayeeName,
+                                                   ChequeNumber = txn.ChequeNumber,
                                                    HospitalId = txn.HospitalId,
+                                                   Preparedby = emp.FullName,
                                                    TransactionItems = (from txnItm in accountingDBContext.TransactionItems.AsEnumerable()
                                                                        where txnItm.HospitalId == currentHospitalId
                                                                        join ledger in accountingDBContext.Ledgers.AsEnumerable() on txnItm.LedgerId equals ledger.LedgerId
@@ -832,6 +753,7 @@ namespace DanpheEMR.Controllers
                                                join voucher in accountingDBContext.Vouchers on txn.VoucherId equals voucher.VoucherId
                                                join head in accountingDBContext.VoucherHeads on txn.VoucherHeadId equals head.VoucherHeadId
                                                join fiscal in accountingDBContext.FiscalYears on txn.FiscalyearId equals fiscal.FiscalYearId
+                                               join emp in accountingDBContext.Emmployees on txn.CreatedBy equals emp.EmployeeId
                                                where
                                                head.HospitalId == HospId && fiscal.HospitalId == HospId &&
                                                txn.VoucherNumber == voucherNumber && txn.IsActive == true && txn.FiscalyearId == FiscalYearId
@@ -852,6 +774,9 @@ namespace DanpheEMR.Controllers
                                                    IsAllowReverseVoucher = txn.IsAllowReverseVoucher,
                                                    TransactionId = txn.TransactionId,
                                                    HospitalId = txn.HospitalId,
+                                                   Preparedby = emp.FullName,
+                                                   PayeeName = txn.PayeeName,
+                                                   ChequeNumber = txn.ChequeNumber,
                                                    TransactionItems = (from txnItm in accountingDBContext.TransactionItems
                                                                        where txnItm.HospitalId == HospId
                                                                        join ledger in accountingDBContext.Ledgers on txnItm.LedgerId equals ledger.LedgerId
@@ -998,74 +923,6 @@ namespace DanpheEMR.Controllers
                     AccountingTransferData obj = new AccountingTransferData(connString, currentUser.EmployeeId, currentHospitalId);
                     List<TransactionModel> result = DanpheEMR.AccTransfer.AccountingTransferData.GetMapAndTransferDataSectionWise(1, SelectedDate, FiscalYearId, currentHospitalId);
                     var unavailableLedger = DanpheEMR.AccTransfer.AccountingTransferData.GetUnavailableLedgerList();
-                    //var result = new
-                    //{
-                    //    goodsReceiptItems = (from gr in inventoryDbContext.GoodsReceipts
-                    //                         join vendor in inventoryDbContext.Vendors on gr.VendorId equals vendor.VendorId
-                    //                         where gr.IsTransferredToACC != true && (DbFunctions.TruncateTime(gr.CreatedOn) >= FromDate && DbFunctions.TruncateTime(gr.CreatedOn) <= ToDate)
-                    //                         group new { gr, vendor } by new
-                    //                         {
-                    //                             CreatedOn = DbFunctions.TruncateTime(gr.CreatedOn),
-                    //                             PaymentMode = gr.PaymentMode,
-                    //                             VendorId = vendor.VendorId,
-                    //                         } into x
-                    //                         select new
-                    //                         {
-                    //                             x.Key.CreatedOn,
-                    //                             x.Key.VendorId,
-                    //                             VendorName = x.Select(a => a.vendor.VendorName).FirstOrDefault(),
-                    //                             Type = x.Key.PaymentMode == "Cash" ? "Goods Receipt Cash" : "Credit Goods Receipt",
-                    //                             TransactionType = x.Key.PaymentMode == "Cash" ? "INVCashGoodReceipt1" : "INVCreditGoodReceipt",
-                    //                             SalesAmount = x.Select(a => a.gr.SubTotal).Sum(),
-                    //                             TotalAmount = x.Select(a => a.gr.TotalAmount).Sum(),
-                    //                             VATAmount = x.Select(b => b.gr.VATTotal).Sum(),
-                    //                             DiscountAmount = x.Select(c => c.gr.DiscountAmount).Sum(),
-                    //                             Remarks = "Inventory Transaction entries to Accounting for" + (x.Key.PaymentMode == "Cash" ? "INVCashGoodReceipt1" : "INVCreditGoodReceipt ") + "on date: ", // + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                             ReferenceIds = x.Select(a => a.gr.GoodsReceiptID).Distinct().ToList(),
-                    //                         }).ToList(),
-                    //    writeOffItems = (from wf in inventoryDbContext.WriteOffItems
-                    //                     where wf.IsTransferredToACC != true && (DbFunctions.TruncateTime(wf.CreatedOn) >= FromDate && DbFunctions.TruncateTime(wf.CreatedOn) <= ToDate)
-                    //                     group new { wf } by new
-                    //                     {
-                    //                         CreatedOn = DbFunctions.TruncateTime(wf.CreatedOn),
-
-                    //                     } into x
-                    //                     select new
-                    //                     {
-                    //                         x.Key.CreatedOn,
-                    //                         Type = "WriteOff",
-                    //                         TransactionType = "INVWriteOff",
-                    //                         TotalAmount = x.Select(a => a.wf.TotalAmount).Sum(),
-                    //                         VATAmount = 0, //x.Select(b => b.gr.VATAmount).Sum(),
-                    //                         Remarks = "Inventory Transaction entries to Accounting for write Off Items on date: ",// + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                         ReferenceIds = x.Select(a => a.wf.WriteOffId).Distinct().ToList(),
-                    //                     }).ToList(),
-                    //    returnToVender = (from ret in inventoryDbContext.ReturnToVendorItems
-                    //                      join vendor in inventoryDbContext.Vendors
-                    //                      on ret.VendorId equals vendor.VendorId
-                    //                      join goodreceipt in inventoryDbContext.GoodsReceipts on ret.GoodsReceiptId equals goodreceipt.GoodsReceiptID
-                    //                      where ret.IsTransferredToACC != true && (DbFunctions.TruncateTime(ret.CreatedOn) >= FromDate && DbFunctions.TruncateTime(ret.CreatedOn) <= ToDate)
-                    //                      group new { ret, vendor, goodreceipt } by new
-                    //                      {
-                    //                          CreatedOn = DbFunctions.TruncateTime(ret.CreatedOn),
-                    //                          VendorId = ret.VendorId,
-                    //                          goodreceipt.PaymentMode
-                    //                      } into x
-                    //                      select new
-                    //                      {
-                    //                          x.Key.CreatedOn,
-                    //                          x.Key.VendorId,
-                    //                          VendorName = x.Select(a => a.vendor.VendorName).FirstOrDefault(),
-                    //                          Type = x.Key.PaymentMode == "Cash" ? "Return To Vender Cash" : "Return To Vender Credit",
-                    //                          //  Type = "Return To Vender",
-                    //                          TransactionType = x.Key.PaymentMode == "Cash" ? "INVReturnToVendorCashGR" : "INVReturnToVendorCreditGR",
-                    //                          TotalAmount = x.Select(a => a.ret.TotalAmount).Sum(),
-                    //                          VATAmount = x.Select(b => b.ret.VAT).Sum(),
-                    //                          Remarks = "Inventory Transaction entries to Accounting for Return to vendor Items on date: ",// + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                          ReferenceIds = x.Select(a => a.ret.ReturnToVendorItemId).Distinct().ToList(),
-                    //                      }).ToList(),
-                    //};
-
                     if (unavailableLedger.Count > 0)
                     {
                         responseData.Status = "Failed";
@@ -1173,8 +1030,6 @@ namespace DanpheEMR.Controllers
                                             from ledM in lm.DefaultIfEmpty()
                                             join ledger in accountingDBContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                             from led in ld.DefaultIfEmpty()
-                                                //join department in accountingDBContext.Departments on phrmsup.DepartmentId equals department.DepartmentId into dept
-                                                //from dep in dept.DefaultIfEmpty()
                                             select new
                                             {
                                                 LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
@@ -1197,9 +1052,9 @@ namespace DanpheEMR.Controllers
                                                 LandlineNo = led.LandlineNo,
                                                 SupplierName = phrmsup.SupplierName,
                                                 SupplierId = phrmsup.SupplierId,
-                                                //DepartmentName = dep.DepartmentName,
                                                 IsSelected = false,
-                                                IsMapped = (led.LedgerId > 0) ? true : false
+                                                IsMapped = (led.LedgerId > 0) ? true : false,
+                                                SectionId = led.SectionId
                                             }).OrderByDescending(l => l.LedgerId).ToList();
                     responseData.Results = NewEmpledgerList;
                     responseData.Status = "OK";
@@ -1224,8 +1079,6 @@ namespace DanpheEMR.Controllers
                                             from ledM in lm.DefaultIfEmpty()
                                             join ledger in accountingDBContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                             from led in ld.DefaultIfEmpty()
-                                                //join department in accountingDBContext.Departments on phrmsup.DepartmentId equals department.DepartmentId into dept
-                                                //from dep in dept.DefaultIfEmpty()
                                             select new
                                             {
                                                 LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
@@ -1248,9 +1101,9 @@ namespace DanpheEMR.Controllers
                                                 LandlineNo = led.LandlineNo,
                                                 VendorName = invVendor.VendorName,
                                                 VendorId = invVendor.VendorId,
-                                                //DepartmentName = dep.DepartmentName,
                                                 IsSelected = false,
-                                                IsMapped = (led.LedgerId > 0) ? true : false
+                                                IsMapped = (led.LedgerId > 0) ? true : false,
+                                                SectionId=led.SectionId
                                             }).OrderByDescending(l => l.LedgerId).ToList();
                     responseData.Results = NewEmpledgerList;
                     responseData.Status = "OK";
@@ -1275,8 +1128,6 @@ namespace DanpheEMR.Controllers
                                             from ledM in lm.DefaultIfEmpty()
                                             join ledger in accountingDBContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                             from led in ld.DefaultIfEmpty()
-                                                //join department in accountingDBContext.Departments on phrmsup.DepartmentId equals department.DepartmentId into dept
-                                                //from dep in dept.DefaultIfEmpty()
                                             select new
                                             {
                                                 LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
@@ -1299,7 +1150,6 @@ namespace DanpheEMR.Controllers
                                                 LandlineNo = led.LandlineNo,
                                                 SubCategoryName = invSubcategory.SubCategoryName,
                                                 SubCategoryId = invSubcategory.SubCategoryId,
-                                                //DepartmentName = dep.DepartmentName,
                                                 IsSelected = false,
                                                 IsMapped = (led.LedgerId > 0) ? true : false
                                             }).OrderByDescending(l => l.LedgerId).ToList();
@@ -1325,8 +1175,6 @@ namespace DanpheEMR.Controllers
                                             from ledM in lm.DefaultIfEmpty()
                                             join ledger in accountingDBContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                             from led in ld.DefaultIfEmpty()
-                                                //join department in accountingDBContext.Departments on phrmsup.DepartmentId equals department.DepartmentId into dept
-                                                //from dep in dept.DefaultIfEmpty()
                                             select new
                                             {
                                                 LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
@@ -1349,7 +1197,6 @@ namespace DanpheEMR.Controllers
                                                 LandlineNo = led.LandlineNo,
                                                 OrganizationName = crOrg.OrganizationName,
                                                 OrganizationId = crOrg.OrganizationId,
-                                                //DepartmentName = dep.DepartmentName,
                                                 IsSelected = false,
                                                 IsMapped = (led.LedgerId > 0) ? true : false
                                             }).OrderByDescending(l => l.LedgerId).ToList();
@@ -1357,7 +1204,52 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                 }
                 #endregion
+                #region billing items ledger
+                else if (reqType == "get-billings-ledgers")
+                {
+                    var ServiceDepartment = accountingDBContext.ServiceDepartment.AsQueryable();
+                    var BillItemPrice = accountingDBContext.BillItemPrice.AsQueryable();
+                    var AccountBillLedgerMapping = accountingDBContext.AccountBillLedgerMapping.AsQueryable();
+                    var Ledgers = accountingDBContext.Ledgers.AsQueryable();
 
+                    var billingItemsList = (from sv in ServiceDepartment
+                                            join item in BillItemPrice on sv.ServiceDepartmentId equals item.ServiceDepartmentId into items  from itm in items.DefaultIfEmpty()
+                                            join ledMp in AccountBillLedgerMapping on new { p1 = sv.ServiceDepartmentId, p2 = (int?)itm.ItemId } equals new { p1 = ledMp.ServiceDepartmentId, p2 = (int?)ledMp.ItemId }
+                                             into lm  from ledM in lm.DefaultIfEmpty()
+                                            join ledger in Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
+                                            from led in ld.DefaultIfEmpty()
+                                            where itm.ItemId>0
+                                            select new
+                                            {
+                                                LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
+                                                LedgerGroupId = (int?)led.LedgerGroupId,
+                                                LedgerName = led.LedgerName,
+                                                LedgerReferenceId = led.LedgerReferenceId,
+                                                Description = led.Description,
+                                                IsActive = (bool?)led.IsActive,
+                                                IsCostCenterApplicable = led.IsCostCenterApplicable,
+                                                OpeningBalance = led.OpeningBalance,
+                                                DrCr = led.DrCr,
+                                                Name = led.Name,
+                                                LedgerType = "billingincomeledger",
+                                                Code = led.Code,
+                                                PANNo = led.PANNo,
+                                                Address = led.Address,
+                                                MobileNo = led.MobileNo,
+                                                CreditPeriod = led.CreditPeriod,
+                                                TDSPercent = led.TDSPercent,
+                                                LandlineNo = led.LandlineNo,
+                                                ServiceDepartmentId = sv.ServiceDepartmentId,
+                                                ServiceDepartmentName = sv.ServiceDepartmentName,
+                                                IsSelected = false,
+                                                IsMapped = (led.LedgerId > 0) ? true : false,
+                                                ItemId = (itm.ItemId > 0) ? (int?)itm.ItemId : 0,
+                                                itm.ItemName
+                                            }).OrderByDescending(l=> l.LedgerId).AsQueryable();
+                    responseData.Results = billingItemsList;
+                    responseData.Status = "OK";
+                }
+                #endregion
                 #region Fiscal Year List
                 else if (reqType == "fiscalYearList")
                 {
@@ -1366,44 +1258,7 @@ namespace DanpheEMR.Controllers
                     responseData.Results = fiscalYears;
                 }
                 #endregion
-                #region Accounting Transfer Rules
-                //else if (reqType == "accTransferRule")
-                //{
-                //    var result = (from grp in accountingDBContext.GroupMapping
-
-                //                  select new
-                //                  {
-                //                      grp.GroupMappingId,
-                //                      grp.Section,
-                //                      grp.Description,
-                //                      grp.VoucherId,
-                //                      MappingDetail = (from mapDetail in accountingDBContext.MappingDetail
-                //                                       join ledgrp in accountingDBContext.LedgerGroups
-                //                                       on mapDetail.LedgerGroupId equals ledgrp.LedgerGroupId
-                //                                       where grp.GroupMappingId == mapDetail.GroupMappingId
-                //                                       select new
-                //                                       {
-                //                                           mapDetail.AccountingMappingDetailId,
-                //                                           mapDetail.LedgerGroupId,
-                //                                           ledgrp.LedgerGroupName,
-                //                                           ledgrp.Name,
-                //                                           mapDetail.DrCr,
-                //                                           mapDetail.Description
-                //                                       }).ToList()
-                //                  }
-                //                  ).ToList();
-                //    if (result.Count > 0 && result != null)
-                //    {
-                //        responseData.Status = "OK";
-                //        responseData.Results = result;
-                //    }
-                //    else
-                //    {
-                //        responseData.Status = "Failed";
-                //        responseData.Results = "record not found";
-                //    }
-                //}
-                #endregion
+              
                 #region Billing data for Accounting
                 else if (reqType == "billing-to-accounting")
                 {
@@ -1411,32 +1266,6 @@ namespace DanpheEMR.Controllers
                     AccountingTransferData obj = new AccountingTransferData(connString, currentUser.EmployeeId, currentHospitalId);
                    List<TransactionModel> res = DanpheEMR.AccTransfer.AccountingTransferData.GetMapAndTransferDataSectionWise(2, SelectedDate, FiscalYearId, currentHospitalId);
 
-                    //var res = (from syncItm in billingDbContext.SyncBillingAccounting
-                    //           where syncItm.IsTransferedToAcc != true && (DbFunctions.TruncateTime(syncItm.TransactionDate) >= FromDate && DbFunctions.TruncateTime(syncItm.TransactionDate) <= ToDate)
-                    //           group new { syncItm } by new
-                    //           {
-                    //               syncItm.TransactionType,
-                    //               TransactionDate = DbFunctions.TruncateTime(syncItm.TransactionDate),
-                    //               syncItm.IncomeLedgerName,
-                    //               PaymentMode = (syncItm.PaymentMode == "card" || syncItm.PaymentMode == "cheque") ? "bank" : syncItm.PaymentMode
-                    //           } into x
-                    //           select new
-                    //           {
-                    //               x.Key.TransactionDate,
-                    //               x.Key.IncomeLedgerName,
-                    //               x.Key.TransactionType,
-                    //               x.Key.PaymentMode,
-                    //               SalesAmount = x.Sum(a => a.syncItm.SubTotal),
-                    //               TaxAmount = x.Sum(a => a.syncItm.TaxAmount),
-                    //               DiscountAmount = x.Sum(a => a.syncItm.DiscountAmount),
-                    //               SettlementDiscountAmount = x.Sum(a => a.syncItm.SettlementDiscountAmount),
-                    //               TotalAmount = x.Key.TransactionType == "CreditBillPaid" ? x.Sum(a => a.syncItm.TotalAmount) - x.Sum(a => a.syncItm.SettlementDiscountAmount) : x.Sum(a => a.syncItm.TotalAmount), //in case of deposit add/deduct
-                    //               BillTxnItemIds = x.Select(a => a.syncItm.ReferenceId).ToList(),
-                    //               BillSyncs = x.Select(a => new { a.syncItm.BillingAccountingSyncId, a.syncItm.PatientId, a.syncItm.TotalAmount, a.syncItm.CreatedBy, a.syncItm.ReferenceModelName }).ToList(),
-                    //               //     Remarks ="Transaction for" + x.Key.IncomeLedgerName + " income ledger" + x.Key.TransactionType,
-                    //               Remarks = "Transaction for " + x.Key.IncomeLedgerName + " income ledger : " + x.Key.TransactionType,
-                    //           }
-                    //           ).OrderBy(s => s.TransactionDate).ThenBy(s => s.IncomeLedgerName).ToList();
                     var unavailableLedger = DanpheEMR.AccTransfer.AccountingTransferData.GetUnavailableLedgerList();
                     if (unavailableLedger.Count > 0)
                     {
@@ -1457,74 +1286,6 @@ namespace DanpheEMR.Controllers
                     RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                     AccountingTransferData obj = new AccountingTransferData(connString, currentUser.EmployeeId, currentHospitalId);
                     List<TransactionModel> result = DanpheEMR.AccTransfer.AccountingTransferData.GetMapAndTransferDataSectionWise(3, SelectedDate, FiscalYearId, currentHospitalId);
-
-                    //    writeoff = (from wrOf in pharmacyDbContext.PHRMWriteOff
-                    //                where wrOf.IsTransferredToACC != true && (DbFunctions.TruncateTime(wrOf.CreatedOn) >= FromDate && DbFunctions.TruncateTime(wrOf.CreatedOn) <= ToDate)
-                    //                group new { wrOf } by new
-                    //                {
-                    //                    CreatedOn = DbFunctions.TruncateTime(wrOf.CreatedOn)
-
-                    //                } into x
-                    //                select new
-                    //                {
-                    //                    x.Key.CreatedOn,
-                    //                    TransactionType = "PHRMWriteOff",
-                    //                    Type = "Breakage",
-                    //                    TotalAmount = x.Select(a => a.wrOf.TotalAmount).Sum(),
-                    //                    SalesAmount = x.Select(a => a.wrOf.SubTotal).Sum(),
-                    //                    VATAmount = x.Select(b => b.wrOf.VATAmount).Sum(),
-                    //                    DiscountAmount = x.Select(b => b.wrOf.DiscountAmount).Sum(),
-                    //                    Remarks = "Transaction of WriteOff Items on date: ",// + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                    ReferenceIds = x.Select(a => a.wrOf.WriteOffId).Distinct().ToList(),
-                    //                }).ToList(),
-
-                    //    returnToSupplier = (from ret in pharmacyDbContext.PHRMReturnToSupplier
-                    //                        join supplier in pharmacyDbContext.PHRMSupplier
-                    //                        on ret.SupplierId equals supplier.SupplierId
-                    //                        where ret.IsTransferredToACC != true && (DbFunctions.TruncateTime(ret.CreatedOn) >= FromDate && DbFunctions.TruncateTime(ret.CreatedOn) <= ToDate)
-                    //                        group new { ret } by new
-                    //                        {
-                    //                            CreatedOn = DbFunctions.TruncateTime(ret.CreatedOn),
-                    //                            supplier.SupplierId,
-                    //                            supplier.SupplierName
-
-                    //                        } into x
-                    //                        select new
-                    //                        {
-                    //                            x.Key.CreatedOn,
-                    //                            TransactionType = "PHRMCashReturnToSupplier",
-                    //                            Type = "Return to Supplier",
-                    //                            x.Key.SupplierId,
-                    //                            x.Key.SupplierName,
-                    //                            SalesAmount = x.Select(a => a.ret.SubTotal).Sum(),
-                    //                            TotalAmount = x.Select(a => a.ret.TotalAmount).Sum(),
-                    //                            VATAmount = x.Select(b => b.ret.VATAmount).Sum(),
-                    //                            DiscountAmount = x.Select(b => b.ret.DiscountAmount).Sum(),
-                    //                            Remarks = "Transaction of Return To Supplier Items on date: ",// + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                            ReferenceIds = x.Select(a => a.ret.ReturnToSupplierId).ToList(),
-                    //                        }).ToList(),
-                    //    goodsReceiptItems = (from gr in pharmacyDbContext.PHRMGoodsReceipt
-                    //                         where gr.IsTransferredToACC != true && (DbFunctions.TruncateTime(gr.CreatedOn) >= FromDate && DbFunctions.TruncateTime(gr.CreatedOn) <= ToDate)
-                    //                         group new { gr } by new
-                    //                         {
-                    //                             CreatedOn = DbFunctions.TruncateTime(gr.CreatedOn),
-                    //                             gr.SupplierId,
-                    //                         } into x
-                    //                         select new
-                    //                         {
-                    //                             x.Key.CreatedOn,
-                    //                             TransactionType = "PHRMCashGoodReceipt1",
-                    //                             Type = "Cash Good Receipt",
-                    //                             TotalAmount = x.Select(a => a.gr.TotalAmount).Sum(),
-                    //                             SalesAmount = x.Select(a => a.gr.SubTotal).Sum(),
-                    //                             VATAmount = x.Select(b => b.gr.VATAmount).Sum(),
-                    //                             DiscountAmount = x.Select(b => b.gr.DiscountAmount).Sum(),
-                    //                             Remarks = "Transaction of Goods Receipt Items on date: ", //+ DbFunctions.TruncateTime(x.Key.CreatedOn),
-                    //                             ReferenceIds = x.Select(a => a.gr.GoodReceiptId).Distinct().ToList(),
-                    //                             x.Key.SupplierId,
-                    //                             SupplierName = (from s in pharmacyDbContext.PHRMSupplier where s.SupplierId == x.Key.SupplierId select s.SupplierName).FirstOrDefault()
-                    //                         }).ToList(),
-                    //};
 
                     var unavailableLedger = DanpheEMR.AccTransfer.AccountingTransferData.GetUnavailableLedgerList();
                     if (unavailableLedger.Count > 0)
@@ -1626,7 +1387,6 @@ namespace DanpheEMR.Controllers
                 #endregion
                 #region Get provisional  Voucher Number for creating new manual voucher 
                 else if (reqType == "gettempVoucherNumber")
-                //public string GetTempVoucherNumber(AccountingDbContext accountingDBContext, int voucherId)
                 {
                     if (voucherId != null && sectionId != null && transactiondate != null)
                     {
@@ -1648,10 +1408,8 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "code-details")
                 {
                     var result = ((List<AccountingCodeDetailsModel>)DanpheCache.GetMasterData(MasterDataEnum.AccountingCodes))
-                                  .Where(c => c.HospitalId == currentHospitalId).ToList();
-
-                    responseData.Status = "OK";
-                    responseData.Results = result;
+                                  .Where(c => c.HospitalId == currentHospitalId).ToList<object>();
+                    responseData = AccountingBL.CheckResponseObject(result,"Code-Details");
                 }
                 #region Get Provisional Ledger Code
                 else if (reqType == "provisional-ledger-code")
@@ -1730,7 +1488,8 @@ namespace DanpheEMR.Controllers
                         else if (ledgerType == "inventoryvendor")
                         {
                             var paramData = json.Find(p => p.LedgerType == "inventoryvendor");
-                            COA = (paramData != null) ? paramData.COA : "";
+                            //COA = (paramData != null) ? paramData.COA : "";
+                            ledgerGroupUniqueName = (paramData != null) ? paramData.LedgergroupUniqueName : "";
                             var checkExistingLedger = (from ledMap in accountingDBContext.LedgerMappings
                                                        where
                                                        ledMap.HospitalId == HospId && ledMap.ReferenceId == referenceId
@@ -1754,7 +1513,8 @@ namespace DanpheEMR.Controllers
                         else if (ledgerType == "pharmacysupplier")
                         {
                             var paramData = json.Find(p => p.LedgerType == "pharmacysupplier");
-                            COA = (paramData != null) ? paramData.COA : "";
+                           // COA = (paramData != null) ? paramData.COA : "";
+                            ledgerGroupUniqueName = (paramData != null) ? paramData.LedgergroupUniqueName : "";
                             var checkExistingLedger = (from ledMap in accountingDBContext.LedgerMappings
                                                        where
                                                        ledMap.HospitalId == HospId && ledMap.ReferenceId == referenceId
@@ -1773,9 +1533,9 @@ namespace DanpheEMR.Controllers
                     {
                         var ledCode = AccountingTransferData.GetProvisionalLedgerCode(accountingDBContext, HospId);
 
-                        var result = (from led in accountingDBContext.Ledgers
-                                      where led.HospitalId == HospId
-                                      join ledGrp in accountingDBContext.LedgerGroups on led.LedgerGroupId equals ledGrp.LedgerGroupId
+                        var result = (from ledGrp in accountingDBContext.LedgerGroups
+                                      join led in accountingDBContext.Ledgers on ledGrp.LedgerGroupId equals led.LedgerGroupId into ledger
+                                      from LedgerModel in ledger.DefaultIfEmpty()
                                       where ledGrp.HospitalId == HospId &&
                                       ((ledgerGroupUniqueName != "") ? (ledGrp.Name == ledgerGroupUniqueName) : (ledGrp.COA.ToLower() == COA.ToLower())) //ledGrp.Name.Contains(ledgerGroupUniqueName) || ledGrp.COA.ToLower().Contains(COA.ToLower())
                                       select new
@@ -1854,6 +1614,84 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
 
                 }
+                #region bank-reconciliation-category
+                if (reqType == "get-bank-reconciliation-category")
+                {
+                    var BankReconciliationCategory = accountingDBContext.BankReconciliationCategory.Where(c => c.IsActive == true).ToList();
+
+                    responseData.Status = "OK";
+                    responseData.Results = BankReconciliationCategory;
+                }
+                #endregion
+                #region good receipt list
+                if (reqType == "get-grlist")
+                {
+                    if (sectionId == 1)
+                    {
+                        var grInvList = (from gr in accountingDBContext.GoodsReceiptModels
+                                         join v in accountingDBContext.InvVendors on gr.VendorId equals v.VendorId
+                                         join pm in accountingDBContext.AccountingPaymentModels on gr.GoodsReceiptID equals pm.GoodReceiptID into p
+                                         from pay in p.DefaultIfEmpty().OrderByDescending(a => a.PaymentId).Take(1)
+                                         where gr.VendorId == voucherId && gr.PaymentMode.ToLower().ToString() == "credit" && gr.IsCancel == false && gr.IsPaymentDoneFromAcc == false
+                                         select new
+                                         {
+                                             GRId = gr.GoodsReceiptID,
+                                             GRDate = gr.GoodsReceiptDate,
+                                             GRNo = gr.GoodsReceiptNo,
+                                             TotalAmount = gr.TotalAmount,
+                                             VendorId = gr.VendorId,
+                                             VendorName=v.VendorName,
+                                             PaidAmount = pay == null ? 0 : pay.PaidAmount,
+                                             RemainingAmount = pay == null ? gr.TotalAmount : pay.RemainingAmount,
+                                             DueAmount = pay == null ? gr.TotalAmount : gr.TotalAmount - pay.PaidAmount
+                                         }).ToList();
+                        if (transactiondate!=DateTime.MinValue)
+                        {
+                            grInvList = grInvList.Where(a => a.GRDate.Value.Date==transactiondate.Date).ToList();
+                                
+                         }
+                        if(!string.IsNullOrEmpty(voucherNumber))
+                        {
+                            grInvList = grInvList.Where(a =>a.GRNo == short.Parse(voucherNumber)).ToList();
+                        }
+
+                        responseData.Status = "OK";
+                        responseData.Results = grInvList;
+                    }
+                    else
+                    {
+                        var grPhrmList = (from gr in accountingDBContext.PHRMGoodsReceipt
+                                      join s in accountingDBContext.PHRMSupplier on gr.SupplierId equals s.SupplierId
+                                      join pm in accountingDBContext.AccountingPaymentModels on gr.GoodReceiptId equals pm.GoodReceiptID into p
+                                      from pay in p.DefaultIfEmpty().OrderByDescending(a => a.PaymentId).Take(1)
+                                      where gr.SupplierId == voucherId && gr.TransactionType.ToLower().ToString() == "credit" && gr.IsCancel == false && gr.IsPaymentDoneFromAcc == false
+                                      select new
+                                      {
+                                          GRId = gr.GoodReceiptId,
+                                          GRDate = gr.GoodReceiptDate,
+                                          InvoiceNo = gr.InvoiceNo,
+                                          TotalAmount = gr.TotalAmount,
+                                          SupplierId = gr.SupplierId,
+                                          SupplierName = s.SupplierName,
+                                          VatAmount = gr.VATAmount,
+                                          PaidAmount = pay == null ? 0 : pay.PaidAmount,
+                                          RemainingAmount = pay == null ? gr.TotalAmount: pay.RemainingAmount,
+                                          DueAmount = pay == null ? gr.TotalAmount : gr.TotalAmount - pay.PaidAmount
+                                      }).ToList();
+                        if (transactiondate != DateTime.MinValue)
+                        {
+                            grPhrmList = grPhrmList.Where(a => a.GRDate.Value.Date == transactiondate.Date).ToList();
+
+                        }
+                        if (!string.IsNullOrEmpty(voucherNumber))
+                        {
+                            grPhrmList = grPhrmList.Where(a => a.InvoiceNo.Trim().ToLower() == voucherNumber.Trim().ToLower()).ToList();
+                        }
+                        responseData.Status = "OK";
+                        responseData.Results = grPhrmList;
+                    }
+                }
+                #endregion
             }
 
             catch (Exception ex)
@@ -1963,8 +1801,6 @@ namespace DanpheEMR.Controllers
 
                     List<TransactionModel> txnListClient = DanpheJSONConvert.
                         DeserializeObject<List<TransactionModel>>(str);
-
-                    //RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");//getting current user
                     AccountingTransferData accountingTransferData = new AccountingTransferData(connString, currentUser.EmployeeId, currentHospitalId);
                     var check = AccountingTransferData.PostTxnData(txnListClient, currentHospitalId);
 
@@ -1988,7 +1824,7 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "post-account-closure")
                 {
                     ////account closure transaction 
-                    //RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");//getting current user
+                  
                     FiscalYearModel fiscalYear = DanpheJSONConvert.DeserializeObject<FiscalYearModel>(str);
                     var CurrentDate = DateTime.Now.Date;
                     var CurrentfiscalYear = accountingDBContext.FiscalYears.Where(f => f.HospitalId == currentHospitalId && f.FiscalYearId == fiscalYear.FiscalYearId).FirstOrDefault();
@@ -2006,6 +1842,16 @@ namespace DanpheEMR.Controllers
                                  new SqlParameter("@HospitalId", currentHospitalId)
                         };
                         int ret = DALFunctions.ExecuteStoredProcedure("SP_ACC_AccountClosure", paramList, accountingDBContext);
+                        var tempModel = new FiscalYearLogModel();
+                        tempModel.FiscalYearId = fiscalYear.FiscalYearId;
+                        tempModel.HospitalId = currentHospitalId;
+                        tempModel.LogType = "closed";
+                        tempModel.LogDetails = "closed for testing purpose";
+                        tempModel.CreatedOn = CurrentDate;
+                        tempModel.CreatedBy = currentUser.EmployeeId;
+                        accountingDBContext.FiscalYearLog.Add(tempModel);
+                        accountingDBContext.SaveChanges();
+
                         responseData.Results = (from fy in accountingDBContext.FiscalYears
                                                 where fy.IsActive == true
                                                 select fy).ToList();
@@ -2033,8 +1879,10 @@ namespace DanpheEMR.Controllers
                                     led.CreatedOn = System.DateTime.Now;
                                     led.Code = AccountingTransferData.GetProvisionalLedgerCode(accountingDBContext, currentHospitalId);
                                     led.HospitalId = currentHospitalId;
+                                    led.LedgerName = led.LedgerName.Trim();
                                     accountingDBContext.Ledgers.Add(led);
                                     accountingDBContext.SaveChanges();
+                                    AccountingTransferData.AddLedgerForClosedFiscalYears(accountingDBContext, led);
                                     if (led.LedgerType != "" && led.LedgerType.Length > 0)
                                     {
                                         LedgerMappingModel ledgerMapping = new LedgerMappingModel();
@@ -2093,10 +1941,14 @@ namespace DanpheEMR.Controllers
                             else
                             {
                                 ledger.CreatedOn = System.DateTime.Now;
+                                ledger.IsActive = true;
+                                ledger.CreatedBy = currentUser.EmployeeId;
                                 ledger.Code = AccountingTransferData.GetProvisionalLedgerCode(accountingDBContext, HospId);
                                 ledger.HospitalId = HospId;
+                                ledger.LedgerName = ledger.LedgerName.Trim();
                                 accountingDBContext.Ledgers.Add(ledger);
                                 accountingDBContext.SaveChanges();
+                                AccountingTransferData.AddLedgerForClosedFiscalYears(accountingDBContext, ledger);
                                 if (ledger.LedgerType != "inventorysubcategory" && ledger.LedgerType.Length > 0)
                                 {
                                     ledgerMapping.LedgerId = ledger.LedgerId;
@@ -2140,14 +1992,7 @@ namespace DanpheEMR.Controllers
 
                 }
                 #endregion
-                #region Post Sync Accounting
-                else if (reqType == "post-sync-accounting")
-                {
-                    AccountingTxnSyncVM txnSyncVM = DanpheJSONConvert.DeserializeObject<AccountingTxnSyncVM>(str);
-
-                    Boolean Flag = AccountingBL.AccountingTxnSync(txnSyncVM, accountingDBContext, currentHospitalId);
-                }
-                #endregion
+               
 
                 #region post undo transaction
                 else if (reqType == "post-reverse-transaction")
@@ -2421,6 +2266,88 @@ namespace DanpheEMR.Controllers
                     responseData.Results = resFinal;
                     responseData.Status = "OK";
 
+                }
+                #endregion
+
+                #region post accounting payment 
+                else if (reqType == "post-payment")
+                {
+                   
+                    AccountingPaymentModel payment = DanpheJSONConvert.DeserializeObject<AccountingPaymentModel>(str);
+                    string transactionObject = this.ReadQueryStringData("transactionObj");
+                    TransactionModel txnClient = DanpheJSONConvert.DeserializeObject<TransactionModel>(transactionObject);
+                    int payInfoId = 0;
+                    using (var dbTransact = accountingDBContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            if (txnClient != null)
+                            {
+                                var isGroupbyData = accountingDBContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "IsAllowGroupby").FirstOrDefault().ParameterValue;
+                                var IdGroupBy = (isGroupbyData != "") ? Convert.ToBoolean(isGroupbyData) : true;
+                                txnClient.IsGroupTxn = (IdGroupBy) ? IdGroupBy : false;
+
+                                var HospitalId = AccountingTransferData.GetAccPrimaryHospitalId(accountingDBContext);
+                                txnClient.HospitalId = HospitalId;
+                                txnClient.TransactionDate = System.DateTime.Now.Date;
+                                txnClient.FiscalyearId = AccountingTransferData.GetFiscalYearIdByDate(accountingDBContext, txnClient.TransactionDate.Value, HospitalId);
+                                VoucherHeadModel currVHead = accountingDBContext.VoucherHeads.Where(vHead => vHead.VoucherHeadName == "Hospital").FirstOrDefault();
+                                txnClient.VoucherHeadId = currVHead != null ? currVHead.VoucherHeadId : 1;//There will be at-least one voucher head. -- remove this hardcode and take from parameter
+                                txnClient.TransactionType = payment.SectionId==1? "InventoryPayment": "PharmacyPayment";
+                                txnClient.IsCustomVoucher = false;
+                                txnClient.VoucherId = accountingDBContext.Vouchers.Where(v => v.VoucherCode.ToLower() == "pmtv").FirstOrDefault().VoucherId;
+                                txnClient.VoucherNumber = GetVoucherNumber(accountingDBContext, txnClient.VoucherId,payment.SectionId, HospitalId, txnClient.FiscalyearId);
+                                txnClient.TUId = GetTUID(accountingDBContext, HospitalId);
+                                txnClient.SectionId = payment.SectionId;
+                                txnClient.IsReverseTxnAllow = false;
+                                accountingDBContext.Transactions.Add(ProcessTransactions(txnClient, txnClient.HospitalId.Value));
+                                accountingDBContext.SaveChanges();
+
+                                var referenceIds = txnClient.TransactionLinks.Select(s => s.ReferenceId).ToArray();
+                                payment.CreatedOn = System.DateTime.Now;
+                                payment.CreatedBy = txnClient.CreatedBy;
+                                payment.PaidAmount = payment.VoucherAmount + payment.PaidAmount;
+                                payment.IsPaymentDone = (payment.PaidAmount == payment.TotalAmount) ? true : false;
+                                payment.VoucherNumber = txnClient.VoucherNumber;
+                                payment.TransactionId = txnClient.TransactionId;
+                                payment.PaymentDate= System.DateTime.Now;
+                                accountingDBContext.AccountingPaymentModels.Add(payment);
+                                accountingDBContext.SaveChanges();
+
+                                payInfoId = payment.PaymentId;
+                                if (payment.IsPaymentDone == true)
+                                {
+                                    if (payment.SectionId == 1)
+                                    {
+                                        var grInv = accountingDBContext.GoodsReceiptModels.Where(a => a.GoodsReceiptID == payment.GoodReceiptID).FirstOrDefault();
+                                        grInv.IsPaymentDoneFromAcc = true;
+                                        accountingDBContext.GoodsReceiptModels.Attach(grInv);
+                                        accountingDBContext.Entry(grInv).State = EntityState.Modified;
+                                        accountingDBContext.Entry(grInv).Property(x => x.IsPaymentDoneFromAcc).IsModified = true;
+                                    }
+                                    else
+                                    {
+                                        var grPhm = accountingDBContext.PHRMGoodsReceipt.Where(a => a.GoodReceiptId == payment.GoodReceiptID).FirstOrDefault();
+                                        grPhm.IsPaymentDoneFromAcc = true;
+                                        accountingDBContext.PHRMGoodsReceipt.Attach(grPhm);
+                                        accountingDBContext.Entry(grPhm).State = EntityState.Modified;
+                                        accountingDBContext.Entry(grPhm).Property(x => x.IsPaymentDoneFromAcc).IsModified = true;
+                                    }
+                                    accountingDBContext.SaveChanges();
+                                }
+                                dbTransact.Commit();
+                            }
+                            var res = new { VoucherNumber = txnClient.VoucherNumber, FiscalYearId = txnClient.FiscalyearId };
+                            responseData.Results = res;
+                            responseData.Status = "OK";
+                        }
+                        catch (Exception ex)
+                        {
+                            responseData.Status = "Failed";
+                            dbTransact.Rollback();
+                            throw ex;
+                        }
+                    }
                 }
                 #endregion
                 if (responseData.Status == null || responseData.Status == "")

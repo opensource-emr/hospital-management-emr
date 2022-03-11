@@ -1,0 +1,57 @@
+<div class="col-md-12">
+  <div class="col-md-6">
+    <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+
+    </from-to-date-select>
+  </div>
+  <div class="col-md-3 col-xs-12">
+    <div class="form-group">
+      <button class="btn green btn-success" type="button" (click)="GetInvoiceListForDuplicatebill();this.loading=true;"
+        [disabled]="loading">
+        <i class="fa fa-refresh"></i>
+        Load Invoices
+      </button>
+      <span *ngIf="loading">Loading... Please wait.</span>
+    </div>
+
+  </div>
+  <div class="col-md-3">
+    <div style="float:right">
+      <label style="vertical-align: text-bottom;cursor: pointer;font-weight: bold;" for="isINSInvoice">Insurance
+        Invoices Only<b>:</b> </label>
+      <input id="isINSInvoice" name="isINSInvoice" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+        (change)="FilterGridData()" [(ngModel)]="showInsuranceInvoice" [ngModelOptions]="{standalone: true}" />
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="duplicateBillPrintGridColumns" [grid-data]="filteredTransactionList"
+        (grid-actions)="DuplicateBillPrintGridActions($event)" [show-print-button]="false"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPrintPopup">
+  <div class="portlet-body form">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div">
+        <div class="modelbox-body" style="display: flex;justify-content: center;">
+          <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId"
+            [bil-txn-id]="bil_BilTxnId" (print-emitter)="AfterPrintCallBack($event)"
+            [duplicate-print]="isFromDuplicatePrints">
+          </bil-print-invoice-main>
+
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseInvoicePrintPopup()">X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

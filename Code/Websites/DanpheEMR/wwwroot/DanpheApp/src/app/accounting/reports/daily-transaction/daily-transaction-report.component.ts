@@ -7,6 +7,7 @@ import { CommonFunctions } from '../../../shared/common.functions';
 import * as moment from 'moment/moment';
 import { DLService } from "../../../shared/dl.service";
 import { CoreService } from '../../../core/shared/core.service';
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
   selector: 'my-app',
@@ -25,6 +26,7 @@ export class DailyTransactionReportComponent {
   dlService: DLService = null;
   public isDeposit: boolean = false;
   public isBilling: boolean = false;
+  public isReturnBilling: boolean = false;
   public showExportbtn : boolean=false;
   public fiscalyearList: any;
   public calType: string = "";   
@@ -32,11 +34,14 @@ export class DailyTransactionReportComponent {
   public printDetaiils: any;
   public selectedDate: string = "";
   public fiscalYearId:number=null; 
+  btndisabled = false;
+  public dateRange: string = "";
   constructor(
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
     public accReportBLService: AccountingReportsBLService,
     public coreservice : CoreService,
+    public accountingService: AccountingService,
     public changeDetector: ChangeDetectorRef) {
     this.dailyTxnGridColumns = GridColumnSettings.AccDailyTxnReport;
     this.GetFiscalYearList();
@@ -59,18 +64,11 @@ export class DailyTransactionReportComponent {
   };
 
   public GetFiscalYearList() {
-    this.accReportBLService.GetFiscalYearsList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.fiscalyearList = res.Results;
-          //this.currentFiscalYear = this.fiscalyearList.find(x => x.IsActive == true);
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-
-      });
-  } 
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.accountingService.accCacheData.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.fiscalyearList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
+    }
+  }
   public validDate:boolean=true;
   selectDate(event){
     if (event) {
@@ -78,25 +76,32 @@ export class DailyTransactionReportComponent {
       this.toDate = event.toDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate = true;
+      this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
     } 
     else {
       this.validDate =false;
     } 
   }
   loadData() {
+    this.btndisabled=true;
     if (this.checkDateValidation()) {        
       this.accReportBLService.GetDailyTxnReport(this.fromDate, this.toDate,this.fiscalYearId)
         .subscribe(res => {
           if (res.Status == 'OK' && res.Results.length) {
+            this.btndisabled=false;
             this.formattingData(res.Results);
             //this.dailyTxnList = res.Results;
             this.showReportData = true;
           }
           else {
+            this.btndisabled=false;
             this.msgBoxServ.showMessage("notice", ["no record found."]);
           }
         });
       
+    }
+    else{
+      this.btndisabled=false;
     }
   }
 
@@ -197,7 +202,11 @@ export class DailyTransactionReportComponent {
         let amountTotal = 0;
         let subTotal = 0;
         let depositTotal = 0;
-
+        this.isDeposit = false;
+        this.isBilling = false;
+        this.isReturnBilling = false;
+        this.txnOriginData = null;
+        this.txnDepositData = null;
         if (this.selectedTxn.SectionId == 1) {
           this.txnOriginData = data;
           this.txnOriginData.forEach(a => {
@@ -233,7 +242,18 @@ export class DailyTransactionReportComponent {
           });
         }
         else if (this.selectedTxn.SectionId == 2) {
+          if(data.DepositData.length>0){
+            this.isDeposit = true;
+            this.txnDepositData = data.DepositData;
+          }
+          else if(data.BillData.length>0){
+            this.isBilling = true;
             this.txnOriginData = data.BillData;
+          }
+          else if(data.ReturnBillData.length>0){
+            this.isReturnBilling = true;
+            this.txnOriginData = data.ReturnBillData;
+          }
             //this.txnOriginData.forEach(a => {
             //    if (a.TransactionType == "DepositAdd" || a.TransactionType == "DepositReturn") {
             //        //    subTotal += a.itm.SubTotal;
@@ -247,28 +267,42 @@ export class DailyTransactionReportComponent {
             //        amountTotal += a.itm.TotalAmount;
             //    }
             //});
-            if (this.txnOriginData.length) {
-              this.isBilling = true;
-              this.txnOriginData.forEach(a => {
-                taxTotal += a.itm.Tax;
-                discountAmount += a.itm.DiscountAmount;
-                salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
-                amountTotal += a.itm.TotalAmount;
-              });
+            if (this.isDeposit){
+              if (this.txnDepositData.length) {
+                this.txnDepositData.forEach(a => {
+                  depositTotal += a.TotalAmount;
+                });
+              }
+              else {
+                this.isDeposit = false;
+              }
             }
-            else {
-              this.isBilling = false;
+            if (this.isBilling){
+              if (this.txnOriginData.length) {
+                this.txnOriginData.forEach(a => {
+                  taxTotal += a.itm.Tax;
+                  discountAmount += a.itm.DiscountAmount;
+                  salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
+                  amountTotal += a.itm.TotalAmount;
+                });
+              }
+              else {
+                this.isBilling = false;
+              }
             }
-            this.txnDepositData = data.DepositData;
-            if (this.txnDepositData.length) {
-              this.isDeposit = true;
-              this.txnDepositData.forEach(a => {
-                depositTotal += a.TotalAmount;
-              });
-            }
-            else {
-              this.isDeposit = false;
-            }
+            if (this.isReturnBilling){
+              if (this.txnOriginData.length) {
+                this.txnOriginData.forEach(a => {
+                  taxTotal += a.itm.RetTaxAmount;
+                  discountAmount += a.itm.RetDiscountAmount;
+                  salesTotal = salesTotal + (a.itm.RetTotalAmount - a.itm.RetTaxAmount);
+                  amountTotal += a.itm.RetTotalAmount;
+                });
+              }
+              else {
+                this.isReturnBilling = false;
+              }
+            }  
         }
         else if (this.selectedTxn.SectionId == 5){
           this.txnOriginData = data;       
@@ -295,15 +329,6 @@ export class DailyTransactionReportComponent {
         this.msgBoxServ.showMessage("notice", ["no record found."]);
       }
     });
-  }
-
-  //on click grid export button we are catching in component an event.. 
-  //and in that event we are calling the excel export....
-  OnGridExport($event: GridEmitModel) {
-    let workSheetName = 'Daily Transaction Report';
-    let Heading = 'Daily Transaction Report';
-    let filename = 'Daily Transaction Report';
-    CommonFunctions.ConvertHTMLTableToExcel('gridExportToExcel', this.fromDate, this.toDate, workSheetName, Heading, filename);
   }
   // Export to excel transaction details
   ExportToExcel(tableId) {

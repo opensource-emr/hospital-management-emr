@@ -115,11 +115,12 @@
     <button class="btn btn-primary btn-sm" (click)="HideDischargeSummary()"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back </button>
     <discharge-summary-add [selectedDischarge]="selectedDischarge"
                            [fromClinical]="false"
-                           [showDischargeSummary]="showDischargeSummaryAdd"></discharge-summary-add>
+                           [showDischargeSummary]="showDischargeSummaryAdd" 
+                           (CallBackFromAdd)='CallBackFromAddEdit($event)'></discharge-summary-add>
   </div>
   <div *ngIf="showSummaryView">
     <button class="btn btn-primary btn-sm" (click)="HideDischargeSummary()"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back </button>
-    <discharge-summary-view [selectedADT]="selectedDischarge"
+    <discharge-summary-view (EditRecordEvent)='CallbackFromViewPage($event)' [selectedADT]="selectedDischarge"
                             [showSummaryView]="showSummaryView"></discharge-summary-view>
   </div>
   <!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="IsCancelDischargePage">

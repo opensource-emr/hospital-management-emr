@@ -211,16 +211,12 @@ namespace DanpheEMR.Controllers
                         int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                         var today = DateTime.Today;
                         //show only today's visits for the provider.. and if the visittype is inpatient then  the addmission status shouled be admitted ..Dharam 9th Sept 2017..
-                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
+                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
                                          where visit.VisitStatus == status
                                          && (DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(today) || visit.Admission.AdmissionStatus == "admitted")
                                          && visit.ProviderId == providerId && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
-                                         select visit)
-                                         .ToList()
-                                         .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime)
-                                         .ToList();
-
-                                                
+                                         select visit).ToList()
+                                       .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime).ToList();
                         responseData.Results = visitList;
                     }
                     else // visit records according to selected Date
@@ -229,13 +225,11 @@ namespace DanpheEMR.Controllers
                         int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                         var departmentId = dbContext.Employees.Where(a => a.EmployeeId == providerId).Select(a => a).FirstOrDefault();
                         //show only today's visits for the provider.. and if the visittype is inpatient then  the addmission status shouled be admitted ..Dharam 9th Sept 2017..
-                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
-                                             //join depart in dbContext.Departments on visit.DepartmentId equals depart.DepartmentId
+                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
                                          where DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(toDate) && // visit.VisitStatus == status &&
                                        (DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(toDate) || visit.Admission.AdmissionStatus == "admitted")
                                          && visit.DepartmentId == departmentId.DepartmentId && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
-                                         select visit)
-                                         .ToList()
+                                         select visit).ToList()
                                         .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime).ToList().GroupBy(a => a.ProviderName)
                                         .Select(v => new { ProviderName = v.Select(p => p.ProviderName).FirstOrDefault(), visit = v }).ToList();
 
@@ -249,7 +243,7 @@ namespace DanpheEMR.Controllers
                     int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                     var departmentId = dbContext.Employees.Where(a => a.EmployeeId == providerId).Select(a => a).FirstOrDefault();
                     //gets all visits earlier than today for this provider.. and if the visittype is inpatient then  the addmission status shouled be discharged ..Dharam 9th Sept 2017..
-                    var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
+                    var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
                                      where visit.DepartmentId == departmentId.DepartmentId
                                      //&& (visit.Admission == null || visit.Admission.AdmissionStatus == "discharged")
                                      select visit).ToList()

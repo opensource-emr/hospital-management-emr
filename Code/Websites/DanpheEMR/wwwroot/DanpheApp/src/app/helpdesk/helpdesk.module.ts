@@ -15,6 +15,7 @@ import { HlpDskBedInfoComponent } from "./bedinfo/bed-info.component";
 //import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete/danphe-auto-complete.module';
 import { SharedModule } from "../shared/shared.module";
+import { HlpDskQueueInfoComponent } from './queueinformation/queue-info.componet';
 @NgModule({
   providers: [
     HelpDeskBLService,
@@ -35,7 +36,8 @@ import { SharedModule } from "../shared/shared.module";
     HelpdeskMainComponent,
     HlpDskBedInfoComponent,
     HlpDskEmployeeInfoComponent,
-    HlpDskWardInfoComponent
+    HlpDskWardInfoComponent,
+    HlpDskQueueInfoComponent
   ],
   bootstrap: []
 })

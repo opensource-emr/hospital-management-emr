@@ -5,6 +5,7 @@ import { TaxManageComponent } from "./tax/tax-manage.component";
 import { DynamicTemplateEditComponent } from '../core/dyn-templates/settings/dyn-template-edit.component';
 import { AuthGuardService } from '../security/shared/auth-guard.service';
 import { PageNotFound } from '../404-error/404-not-found.component';
+import { ListPrinterSettingsComponent } from './printers/list/list-printer-settings.component';
 
 
 @NgModule({
@@ -28,6 +29,9 @@ import { PageNotFound } from '../404-error/404-not-found.component';
           { path: 'DynamicTemplates', component: DynamicTemplateEditComponent },
           { path: 'EditCoreCFG', loadChildren: "./core/core-settings.module#CoreSettingsModule" },
           { path: 'ExtReferral', loadChildren: "./ext-referral/external-referral.module#ExternalReferralModule", canActivate: [AuthGuardService] },
+          { path: 'Banks', loadChildren: "./banks/banks.module#BanksModule", canActivate: [AuthGuardService] },
+          { path: 'Printers', loadChildren: "./printers/printer-settings.module#PrinterSettingModule", canActivate: [AuthGuardService] },
+          { path: 'PrintExportConfiguration', loadChildren: "./print-export-configuration/print-export-configuration.module#PrintExportConfigurationModule", canActivate: [AuthGuardService] }
 
         ]
       },

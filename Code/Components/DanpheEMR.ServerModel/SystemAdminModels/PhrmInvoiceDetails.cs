@@ -19,15 +19,18 @@ namespace DanpheEMR.ServerModel.SystemAdminModels
         public decimal Taxable_Amount { get; set; }
         public decimal Tax_Amount { get; set; }
         public decimal Total_Amount { get; set; }
+        public decimal VAT_Refund_Amount { get; set; }
         public string SyncedWithIRD { get; set; }
         public string Is_Printed { get; set; }
         public string Printed_Time { get; set; }
         public string Entered_by { get; set; }
         public string Printed_by { get; set; }
-        public int? Print_Count { get; set; }
+       // public int? Print_Count { get; set; }
         public string Is_Bill_Active { get; set; }
         public string Is_Realtime { get; set; }
-        public decimal NonTaxable_Amount { get; set; }        
-      
+        public decimal NonTaxable_Amount { get; set; }
+        public string Payment_Method { get; set; } //added: shankar-20sept'21
+        public string TransactionId { get; set; } //added: shankar-20sept'21
+
     }
 }

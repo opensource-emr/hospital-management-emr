@@ -69,7 +69,7 @@
                         <input danphe-auto-complete class="form-control cstm-form-control" formControlName="ProviderId"
                           [(ngModel)]="itm.DocObj" [list-formatter]="ProviderListFormatter" [source]="providerList"
                           placeholder="Search Doctor Name" display-property-name="FullName" value-property-name=null
-                          onclick="this.select()" (focusout)="DoctorChange(itm)" max-num-list="10" />
+                          onClick="this.select()" (focusout)="DoctorChange(itm)" max-num-list="10" />
                         <div class="color-red font-sm" *ngIf="itm.IsDirty('ProviderId')"
                           [hidden]="itm.IsValidCheck('ProviderId','required')">Assigned Doctor is mandatory</div>
                       </form>
@@ -90,7 +90,7 @@
                     <td>
                       <form [formGroup]="itm.BillingTransactionItemValidator">
                         <input type="number" style="width:100px;float:left;" [(ngModel)]="itm.Price"
-                          (ngModelChange)="CalculateTotal(i)" formControlName="Price"
+                          (ngModelChange)="CalculateTotal(i)" formControlName="Price" onClick="this.select();"
                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" class="form-control" />
                         <div class="color-red font-sm" *ngIf="itm.IsDirty('Price')"
                           [hidden]="itm.IsValidCheck('Price','invalidNumber')">Invalid number.</div>
@@ -101,7 +101,7 @@
                       <form [formGroup]="itm.BillingTransactionItemValidator">
                         <input [attr.disabled]="true" type="number" class="form-control" style="width:75px;float:left;"
                           [(ngModel)]="itm.DiscountPercent" (ngModelChange)="CalculateTotal(i)"
-                          formControlName="DiscountPercent" />
+                          formControlName="DiscountPercent" onClick="this.select();"/>
                         <div class="color-red font-sm" *ngIf="itm.IsDirty('DiscountPercent')"
                           [hidden]="itm.IsValidCheck('DiscountPercent','invalidPercent')">Invalid Percent</div>
                       </form>

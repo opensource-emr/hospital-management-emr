@@ -260,12 +260,6 @@ namespace DanpheEMR.Controllers
                         preferenceName = "Patientpreferences";
                         preferenceIdType = "PatientId";
                     }
-                    else if (preferenceType.ToLower() == "followup")
-                    {
-                        preferenceName = "Followuppreferences";
-                        preferenceIdType = "PatientId";
-                    }
-
 
                     string ItemId = this.ReadQueryStringData("itemId");
                     //string clientValue = this.ReadPostData();
@@ -376,11 +370,6 @@ namespace DanpheEMR.Controllers
                     else if (preferenceType.ToLower() == "patient")
                     {
                         preferenceName = "Patientpreferences";
-                        preferenceIdType = "//PatientId";
-                    }
-                    else if (preferenceType.ToLower() == "followup")
-                    {
-                        preferenceName = "Followuppreferences";
                         preferenceIdType = "//PatientId";
                     }
 

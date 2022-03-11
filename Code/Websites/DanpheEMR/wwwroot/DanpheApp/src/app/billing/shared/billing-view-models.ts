@@ -1,5 +1,4 @@
-export class BillItemPriceVM
-{
+export class BillItemPriceVM {
   public ProcedureCode: string = null;
   public ItemName: string = null;
   public Price: number = 0;
@@ -17,4 +16,7 @@ export class BillItemPriceVM
 
   public AllowMultipleQty: boolean = true;//pratik:18oct2019
   public IsDoctorMandatory: boolean = false;//pratik:15May2020
+  public IsZeroPriceAllowed: boolean = false;//pratik:28Jan'21
+  public IsErLabApplicable: boolean = false;//pratik:10Feb'21
+  public IsAutoAdded: boolean = false; //anish: 16 May 2021
 }

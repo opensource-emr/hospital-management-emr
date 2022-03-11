@@ -17,8 +17,10 @@ namespace DanpheEMR.ServerModel
         public string InvoiceNo { get; set; }
         public int? SupplierId { get; set; }
         public DateTime? GoodReceiptDate { get; set; }
+        public DateTime? SupplierBillDate { get; set; }
         public decimal? SubTotal { get; set; }
         public decimal? DiscountAmount { get; set; }
+        public double? DiscountPercentage { get; set; }
         public decimal? TotalAmount { get; set; }
         public string Remarks { get; set; }
         public decimal? Adjustment { get; set; }
@@ -29,15 +31,16 @@ namespace DanpheEMR.ServerModel
         public virtual List<PHRMGoodsReceiptItemsModel> GoodReceiptItem { get; set; }
         public decimal? VATAmount { get; set; }
         public bool? IsCancel { get; set; }
+        public string CancelRemarks { get; set; }
+        public int? CancelBy { get; set; }
+        public DateTime? CancelOn { get; set; }
         public bool? IsTransferredToACC { get; set; }
         public int StoreId { get; set; }
         public string TransactionType { get; set; }
-        public string CancelRemarks { get; set; }
-        public int? CancelledBy { get; set; }
-        public DateTime? CancelledOn { get; set; }
-        public bool? IsPacking { get; set; }
-        public bool? IsItemDiscountApplicable { get; set; }
         public int FiscalYearId { get; set; }
+        public bool? IsPacking { get; set; }
+        public string PaymentStatus { get; set; }
+        public bool? IsItemDiscountApplicable { get; set; }
         [NotMapped]
         public string FiscalYear { get; set; }
         public int? CreditPeriod { get; set; }
@@ -80,5 +83,6 @@ namespace DanpheEMR.ServerModel
         public bool SendDirectToDispensary { get; set; }
         [NotMapped]
         public int SelectedDispensaryId { get; set; }
+        public bool IsPaymentDoneFromAcc { get; set; }
     }
 }

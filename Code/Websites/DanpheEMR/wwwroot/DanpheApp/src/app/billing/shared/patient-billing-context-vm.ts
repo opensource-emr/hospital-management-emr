@@ -19,6 +19,8 @@ export class InsuranceVM {
     public InsuranceProviderName: string = null;
     public IMISCode: string= null;
     public PatientInsurancePkgTxn: PatientInsurancePkgTxnVM = null;
+    public Ins_InsuranceBalance:number=0;
+    public Remark:string=null;
 }
 export class PatientInsurancePkgTxnVM {
     public PatientInsurancePackageId: number = null;

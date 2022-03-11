@@ -48,31 +48,32 @@ export class PHRMReturnInvoiceDuplicatePrintComponent{
        this.toDate = moment().format('YYYY-MM-DD');
        this.saleGridColumns = PHRMGridColumns.PHRMSaleList;
        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreateOn', false));
-       this.LoadSaleInvoiceList();
+       //duplicate-prints might be needed later and must be implemented in dispensary
+       //this.LoadSaleInvoiceList();
     }
     //Load sale invoice list
-    LoadSaleInvoiceList( ): void {
-      try {
-        this.pharmacyBLService.GetSaleReturnList(this.fromDate,this.toDate)
-          .subscribe(res => {
-            if (res.Status == 'OK') {
-              this.saleListData = res.Results;
-              this.pharmListfiltered = this.saleListData;
+    // LoadSaleInvoiceList( ): void {
+    //   try {
+    //     this.pharmacyBLService.GetSaleReturnList(this.fromDate,this.toDate,)
+    //       .subscribe(res => {
+    //         if (res.Status == 'OK') {
+    //           this.saleListData = res.Results;
+    //           this.pharmListfiltered = this.saleListData;
                 
              
-            }
-            else {
-              this.logError(res.ErrorMessage);
-            }
-          },
-            err => {
-              this.logError("failed to get patients")
-            });
-      }
-      catch (exception) {
-        this.ShowCatchErrMessage(exception);
-      }
-    }
+    //         }
+    //         else {
+    //           this.logError(res.ErrorMessage);
+    //         }
+    //       },
+    //         err => {
+    //           this.logError("failed to get patients")
+    //         });
+    //   }
+    //   catch (exception) {
+    //     this.ShowCatchErrMessage(exception);
+    //   }
+    // }
     logError(err: any) {
       this.msgBoxServ.showMessage("error", [err]);
       console.log(err);
@@ -85,7 +86,7 @@ export class PHRMReturnInvoiceDuplicatePrintComponent{
       this.toDate = $event.toDate;
       if (this.fromDate != null && this.toDate != null) {
         if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-          this.LoadSaleInvoiceList();
+          //this.LoadSaleInvoiceList();
         } else {
           this.msgBoxServ.showMessage('failed', ['Please enter valid From date and To date']);
         }

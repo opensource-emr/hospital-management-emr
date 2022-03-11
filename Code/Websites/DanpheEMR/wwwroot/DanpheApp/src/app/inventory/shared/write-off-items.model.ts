@@ -18,7 +18,7 @@ export class WriteOffItems {
     public  ItemRate:number = 0;
     public WriteOffQuantity: number = 0;
     public TotalAmount: number = 0;
-    public  WriteOffDate:string = null;
+    public  WriteOffDate : string = moment().format("YYYY-MM-DD");
     public  Remark:string = null;
     public  CreatedBy:number = 0;
     public CreatedOn: string = "";
@@ -36,6 +36,7 @@ export class WriteOffItems {
     public BatchNoList: Array<{ BatchNo: string, AvailableQuantity: number }> = new Array<{ BatchNo: string, AvailableQuantity: number }>();
     public WriteOffItemValidator: FormGroup = null;
     public Code:string=null;
+    public StoreId: number;
 
     constructor() {
 

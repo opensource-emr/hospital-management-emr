@@ -17,6 +17,7 @@ import { CurrentVisitContextVM } from "../../appointments/shared/current-visit-c
 import { ADT_BLService } from "../../adt/shared/adt.bl.service";
 import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { ENUM_BillingStatus, ENUM_VisitType, ENUM_BillingType } from "../../shared/shared-enums";
+import { CoreService } from "../../core/shared/core.service";
 @Component({
   selector: 'lab-requests',
   templateUrl: './lab-requests.html'
@@ -59,7 +60,7 @@ export class LabRequestsComponent implements OnInit {
     public securityService: SecurityService,
     public changeDetectorRef: ChangeDetectorRef,
     public billingBLService: BillingBLService,
-    public billingService: BillingService, public admissionBLService: ADT_BLService) {
+    public billingService: BillingService, public admissionBLService: ADT_BLService, public coreService: CoreService) {
     this.GetInpatientlist();
     this.GetLabItems();
     this.GetBillingCounterForLab();//sud: 13Sept'18
@@ -365,7 +366,7 @@ export class LabRequestsComponent implements OnInit {
 
   ItemsListFormatter(data: any): string {
     let html: string = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + data["Price"];
     return html;
   }
   CloseLabRequestsPage() {

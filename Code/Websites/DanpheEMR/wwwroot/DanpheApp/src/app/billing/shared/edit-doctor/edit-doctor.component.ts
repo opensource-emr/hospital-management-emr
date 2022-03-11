@@ -10,7 +10,8 @@ import { BillingBLService } from '../billing.bl.service';
 
 @Component({
   selector: "danphe-edit-doctor",
-  templateUrl: "./edit-doctor-popup.html"
+  templateUrl: "./edit-doctor-popup.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class EditDoctorComponent {
@@ -170,5 +171,9 @@ export class EditDoctorComponent {
     let html = data["EmployeeName"];
     return html;
   }
-
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.Close();
+    }
+  }
 }

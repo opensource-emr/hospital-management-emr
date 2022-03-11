@@ -13,12 +13,16 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../s
 })
 export class RPT_BIL_PatientCreditSummaryComponent {
   public TodayDate: string = null;
+  public dateRange: string = "";
   public patientName: string = "";
+  public billing: string = "billing";
   public patientCreditSummary: RPT_BIL_PatientCreditSummaryModel = new RPT_BIL_PatientCreditSummaryModel();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   patientCreditSummaryColumns: Array<any> = null;
   patientCreditSummaryData: Array<any> = new Array<any>();
   dlService: DLService = null;
+
+  public loading: boolean = false;
 
   constructor(
     _dlService: DLService,
@@ -48,6 +52,7 @@ export class RPT_BIL_PatientCreditSummaryComponent {
       this.dlService.Read("/BillingReports/PatientCreditBillSummary?FromDate="
         + this.patientCreditSummary.fromDate + "&ToDate=" + this.patientCreditSummary.toDate)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => this.Success(res),
           res => this.Error(res));
     } else {
@@ -90,6 +95,6 @@ export class RPT_BIL_PatientCreditSummaryComponent {
   OnFromToDateChange($event) {
     this.patientCreditSummary.fromDate = $event.fromDate;
     this.patientCreditSummary.toDate = $event.toDate;
-
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.patientCreditSummary.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.patientCreditSummary.toDate;
   }
 }

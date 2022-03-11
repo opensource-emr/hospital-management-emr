@@ -18,6 +18,7 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../s
   templateUrl: "./discharged-patient.html",
 })
 export class RPT_ADT_DischargedPatientComponent {
+  public dateRange : string = '';
   public fromDate: string = null;
   public toDate: string = null;
   DischargedPatientColumns: Array<any> = null;
@@ -107,5 +108,7 @@ export class RPT_ADT_DischargedPatientComponent {
 
     this.currentdischargepatient.fromDate = this.fromDate;
     this.currentdischargepatient.toDate = this.toDate;
+    
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 }

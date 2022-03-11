@@ -26,7 +26,7 @@
             <label class="control-label col-md-4">Chief Complaint<b>:</b></label>
 
             <div class="col-md-8">
-              <textarea [(ngModel)]="subjectiveNote.ChiefComplaint" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <textarea [(ngModel)]="subjectiveNote.ChiefComplaint" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2"  cols="50"></textarea>
               <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('ChiefComplaint')" [hidden]="subjectiveNote.IsValidCheck('ChiefComplaint','maxLength')">Invalid length</span>-->
             </div>
           </div>
@@ -34,14 +34,14 @@
             <label class="control-label col-md-4">History Of Presenting Illness<b>:</b></label>
 
             <div class="col-md-8">
-              <textarea [(ngModel)]="subjectiveNote.HistoryOfPresentingIllness" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <textarea [(ngModel)]="subjectiveNote.HistoryOfPresentingIllness" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2"  cols="50"></textarea>
               <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('HistoryOfPresentingIllness')" [hidden]="subjectiveNote.IsValidCheck('HistoryOfPresentingIllness','maxLength')">Invalid length</span>-->
             </div>
           </div>
           <div class="form-group">
             <label class="control-label col-md-4">Review Of Systems<b>:</b></label>
             <div class="col-md-8">
-              <textarea [(ngModel)]="subjectiveNote.ReviewOfSystems" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <textarea [(ngModel)]="subjectiveNote.ReviewOfSystems" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2" cols="50"></textarea>
               <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('ReviewOfSystems')" [hidden]="subjectiveNote.IsValidCheck('ReviewOfSystems','maxLength')">Invalid length</span>-->
             </div>
           </div>
@@ -274,72 +274,73 @@
             </table>
           </div>
         </div>
+ </div> -->
+<!-- <div class="each-card">
+  <h4 class="clp clp-hd" data-toggle="collapse" data-target="#homeMedication" aria-expanded="true">
+    Home Medication
+    <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+    <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+      <i class="fa fa-plus"></i>
+      Add
+    </button>
+  </h4>
 
-        <div class="each-card">
-          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#homeMedication" aria-expanded="true">
-            Home Medication
-            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
-            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
-              <i class="fa fa-plus"></i>
-              Add
-            </button>
-          </h4>
+  <div id="homeMedication" class="collapse clp-cntnt"
+       [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+    <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+    <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+      <thead>
+        <tr>
+          <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+          <th sortable-header col="itemnames"><b>On Set Date</b></th>
+          <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+          <th sortable-header col="itemnames"><b>Notes</b></th>
+        </tr>
+      </thead>
+      <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+        <td>{{pastMedical.ICD10Description}}</td>
+        <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+        <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+        <td>{{pastMedical.Note}}</td>
+      </tr>
+    </table>
+  </div>
+</div> -->
+<!-- <div class="each-card">
+  <h4 class="clp clp-hd" data-toggle="collapse" data-target="#OBorCYNhistory" aria-expanded="true">
+    OB/ CYN History (only for female)
+    <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+    <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+      <i class="fa fa-plus"></i>
+      Add
+    </button>
+  </h4>
 
-          <div id="homeMedication" class="collapse clp-cntnt"
-               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
-            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
-            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
-              <thead>
-                <tr>
-                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
-                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
-                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
-                  <th sortable-header col="itemnames"><b>Notes</b></th>
-                </tr>
-              </thead>
-              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
-                <td>{{pastMedical.ICD10Description}}</td>
-                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                <td>{{pastMedical.Note}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-        <div class="each-card">
-          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#OBorCYNhistory" aria-expanded="true">
-            OB/ CYN History (only for female)
-            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
-            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
-              <i class="fa fa-plus"></i>
-              Add
-            </button>
-          </h4>
-
-          <div id="OBorCYNhistory" class="collapse clp-cntnt"
-               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
-            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
-            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
-              <thead>
-                <tr>
-                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
-                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
-                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
-                  <th sortable-header col="itemnames"><b>Notes</b></th>
-                </tr>
-              </thead>
-              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
-                <td>{{pastMedical.ICD10Description}}</td>
-                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                <td>{{pastMedical.Note}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>-->
+  <div id="OBorCYNhistory" class="collapse clp-cntnt"
+       [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+    <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+    <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+      <thead>
+        <tr>
+          <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+          <th sortable-header col="itemnames"><b>On Set Date</b></th>
+          <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+          <th sortable-header col="itemnames"><b>Notes</b></th>
+        </tr>
+      </thead>
+      <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+        <td>{{pastMedical.ICD10Description}}</td>
+        <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+        <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+        <td>{{pastMedical.Note}}</td>
+      </tr>
+    </table>
+  </div>
+</div> -->
+</div>       
       </div>       
-    </div>
-</div>
+</div>       
+     
 
 <div class="popup-static portlet box portlet-fullscreen" *ngIf="showAllergyAddBox">
     <div class="portlet-body form hm-portlet-body">

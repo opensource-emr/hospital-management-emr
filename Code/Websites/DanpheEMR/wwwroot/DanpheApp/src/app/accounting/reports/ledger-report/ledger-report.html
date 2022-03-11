@@ -13,8 +13,9 @@
 </style>
 <div>
   <div class="caption custom-caption top-report-section">
-    <h3><i class="fa fa-bbok"></i>
-      <span class="caption-subject">Ledger Details</span></h3>
+    <h3><i class="fa fa-book"></i>
+      <span class="caption-subject">Ledger Report</span>
+    </h3>
     <!-- <label *ngIf="showTxnItemLevel!='true'" class="mt-checkbox mt-checkbox-outline"
       style="font-weight:bold;color:green;margin: 5px;">
       <input name="showParticular" type="checkbox" value="Detail View" [(ngModel)]="IsDetailsView"
@@ -33,30 +34,36 @@
   </div>
   <div class="col-md-12 col-xs-12 col-sm-12">
 
-    <div class="row">
-      <div class="col-md-4 col-xs-12 noPadding">
+    <div class="row"style="background: #bcbcbc; padding-top: 0px;">
+      <div class="col-md-7 col-xs-12" style="margin-right: -45px;">
         <div class="form-group">
+          
+              <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
+                style="float:right;">:</b></label>
+              <div>
+                <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" 
+                (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                <!-- <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+                </danphe-date-picker> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-xs-12" style="margin-right: -15px; padding: 5px 5px !important;">
           <label class="control-label"> <b>Select Ledger</b> <b class="color-red"> *</b></label>
-          <div style="margin-top: 5px;"> <span *ngIf="selLedger" style="float: left !important; margin-top: 5px;
-          margin-right: 5px;">{{selLedger.Code}}</span>
-            <input danphe-auto-complete [(ngModel)]="selLedger" [source]="ledgerList" placeholder="Ledger Name"
-              display-property-name="LedgerName" value-property-name="LedgerName" [list-formatter]="LedgerListFormatter"
+          <div style="margin-top: 5px;">
+            <span *ngIf="selLedger" style="float: left !important; margin-top: 5px;
+              margin-right: 5px;">{{selLedger.Code}}</span>
+         <div class="div-relative">
+            <input danphe-auto-complete [(ngModel)]="selLedger" 
+              [source]="ledgerList" placeholder="Ledger Name"
+              display-property-name="LedgerName" value-property-name="LedgerName" 
+              [list-formatter]="LedgerListFormatter"
               max-num-list="15" [grid-sort]="'LedgerName'" onClick="this.select();"
               style="background-color: azure; height: 30px; width: 90% !important;" />
           </div>
         </div>
       </div>
-      <div class="col-md-6 col-xs-12 noPadding">
-        <div class="form-group">
-          <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
-            style="float:right;">:</b></label>
-          <div>
-            <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
-            <!-- <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
-            </danphe-date-picker> -->
-          </div>
-        </div>
-      </div>
+      
       <!-- <div class="col-md-3 col-xs-12 noPadding">
         <div class="form-group">
           <label class="control-label" style="margin-left: 5px;">To Date<b class="color-red"> *</b><b
@@ -67,12 +74,12 @@
           </div>
         </div>
       </div> -->
-      <div class="col-md-2 col-xs-12 noPadding">
+      <div class="col-md-1 col-xs-12"  style=" margin-top: 5px;">
         <div class="form-group mt10">
           <br>
-          <button class="btn blue" type="button" (click)="GetTxnList()">
-            <i class="fa fa-search"></i>
-            Show Details
+          <button class="btn blue" type="button" (click)="GetTxnList()"[disabled]="clicked">
+            <i class="fa fa-refresh"></i>
+           Load
           </button>
         </div>
       </div>
@@ -80,7 +87,7 @@
 
     <div class="row" *ngIf="ledgerResult" id="printpage" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
       <div style="width: 50%; margin: auto;">
-        <customer-header [header-title]="selLedgerName + ' Ledger'+ '(' + selLedger.Code +')'"></customer-header>
+        <customer-header id="headerForPrint" [header-title]="selLedgerName + ' Ledger'+ '(' + selLedger.Code +')'"></customer-header>
       </div>
       <div class="col-md-12 col-xs-12">
         <table style="width:100% !important;">
@@ -107,12 +114,12 @@
           </tr>
         </table>
         <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" class="hidden-print" />
-        <div class="col-md-12" style="overflow-y:auto;padding:0px;">
+        <div class="col-md-12" style="overflow-y:auto;padding:0px;" id="print_ledger">
           <table class="table_data" style="width:100%;" border="1" id="exportTable">
             <tr style="background-color: #599be0; color:white;">
               <th>
                 Date
-                <danphe-date-change [dataArr]="ledgerResult" [datecolumn]="'TransactionDate'"> </danphe-date-change>
+                <danphe-date-change class="ADBS_btn" [dataArr]="ledgerResult" [datecolumn]="'TransactionDate'"> </danphe-date-change>
               </th>
               <th>Voucher No.</th>
               <th>Voucher Type</th>
@@ -145,16 +152,16 @@
                 <th style="display:block; border-bottom: none;"></th>
               </span>
               <th>Opening Balance</th>
-              <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency}}</b></td>
-              <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency}}</b></td>
+              <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+              <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
 
               <td>
                 <b *ngIf="ledgerResult.OpeningBalanceDrAmount > 0">
-                  {{ledgerResult.OpeningBalanceDrAmount | Currency}}
+                  {{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}
                   &nbsp; <span> Dr</span>
                 </b>
                 <b *ngIf="ledgerResult.OpeningBalanceCrAmount > 0">
-                  {{ledgerResult.OpeningBalanceCrAmount | Currency}}
+                  {{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}
                   &nbsp;<span> Cr</span>
                 </b>
               </td>
@@ -163,7 +170,7 @@
             </tr>
             <!--<tr *ngFor="let txnItm of ledgerResult" (click)="ViewTransactionDetails(txnItm.TransactionId)">-->
             <ng-container *ngIf="ledgerResult.length >0">
-              <tr *ngFor="let txnItm of ledgerResult;let i = index" [ngClass]="{'tr-highlight': txnItm.IsHighlighted}"
+              <tr class="tr" *ngFor="let txnItm of ledgerResult;let i = index" [ngClass]="{'tr-highlight': txnItm.IsHighlighted}"
                 (click)="HotKeysOnOff(txnItm)">
                 <td>
                   <!-- <span *ngIf="!isDateFormatBS">{{txnItm.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
@@ -186,10 +193,10 @@
                             <span>{{det.Name}}</span>
                             <span>
                               <span *ngIf="det.DrCr">
-                                Dr: {{det.Amount  | Currency}}
+                                Dr: {{det.Amount  | Currency:'4'}}
                               </span>
                               <span *ngIf="!det.DrCr">
-                                Cr: {{det.Amount | Currency}}
+                                Cr: {{det.Amount | Currency:'4'}}
                               </span>
                             </span>
                           </span>
@@ -197,10 +204,10 @@
                         <td style="width:60%; border:none;">
                           <div *ngIf="txn.Details?.length == 0">
                             <div *ngIf="txn.DrCr">
-                              Dr: {{txn.LedAmount | Currency}}
+                              Dr: {{txn.LedAmount | Currency:'4'}}
                             </div>
                             <div *ngIf="!txn.DrCr">
-                              Cr: {{txn.LedAmount | Currency}}
+                              Cr: {{txn.LedAmount | Currency:'4'}}
                             </div>
                           </div>
                         </td>
@@ -213,29 +220,29 @@
                 <!-- <td><span *ngIf="txnItm.TransactionItems && txnItm.TransactionItems.length >0">
                     {{txnItm.TransactionItems[0].Description}}</span></td>
                 <td> -->
-                <td>
+                <td class="tr">
                   {{txnItm.Description}}</td>
                 <td>
-                  <p *ngIf="txnItm.LedgerDr > 0">{{txnItm.LedgerDr | Currency}}</p>
+                  <p *ngIf="txnItm.LedgerDr > 0">{{txnItm.LedgerDr | Currency:'4'}}</p>
                 </td>
                 <td>
-                  <p *ngIf="txnItm.LedgerCr > 0">{{txnItm.LedgerCr | Currency}}</p>
+                  <p *ngIf="txnItm.LedgerCr > 0">{{txnItm.LedgerCr | Currency:'4'}}</p>
                 </td>
 
                 <td>
                   <p *ngIf="txnItm.Balance > 0">
-                    {{txnItm.Balance | Currency}}
+                    {{txnItm.Balance | Currency:'4'}}
                     <span *ngIf="txnItm.BalanceType==true" style="font-weight: bold;">Dr</span>
                     <span *ngIf="txnItm.BalanceType==false" style="font-weight: bold;">Cr</span>
                   </p>
                   <p *ngIf="txnItm.Balance == 0">
-                    {{txnItm.Balance | Currency}}
+                    {{txnItm.Balance | Currency:'4'}}
                   </p>
                 </td>
 
 
 
-                <td class="hidden-print">
+                <td class="hidden-print ADBS_btn">
                   <div *ngIf="actionView && IsOpeningBalance!=true"
                     (click)="ViewTransactionDetails(txnItm.VoucherNumber)">
                     <a class="hidden-print">View Detail</a>
@@ -250,8 +257,8 @@
                       <th></th>
                       <th></th>
                       <th>Opening Balance</th>
-                      <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency}}</b></td>
-                      <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency}}</b></td>
+                      <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+                      <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
                     <td class="hidden-print"  *ngIf="actionView"></td>
                   </tr> -->
             <tr>
@@ -264,8 +271,8 @@
               <th>
                 Current Total
               </th>
-              <td><b>{{ledgerResult.DrTotalAmount | Currency}} &nbsp; Dr</b></td>
-              <td><b>{{ledgerResult.CrTotalAmount | Currency }} &nbsp; Cr</b></td>
+              <td><b>{{ledgerResult.DrTotalAmount | Currency:'4'}} &nbsp; Dr</b></td>
+              <td><b>{{ledgerResult.CrTotalAmount | Currency:'4' }} &nbsp; Cr</b></td>
               <td></td>
 
               <td class="hidden-print" *ngIf="actionView"></td>
@@ -278,8 +285,8 @@
                 <th style="display: block; border-bottom: none;"></th>
               </span>
               <th>Closing Balance</th>
-              <td><b>{{ledgerResult.DrNetAmount | Currency }} &nbsp; Dr</b></td>
-              <td><b>{{ledgerResult.CrNetAmount | Currency }}&nbsp; Cr</b></td>
+              <td><b>{{ledgerResult.DrNetAmount | Currency:'4' }} &nbsp; Dr</b></td>
+              <td><b>{{ledgerResult.CrNetAmount | Currency:'4' }}&nbsp; Cr</b></td>
               <td></td>
 
               <td class="hidden-print" *ngIf="actionView"></td>
@@ -288,8 +295,8 @@
         </div>
         <div style="text-align:right;display:inline-block;margin-top: 8px;">
 
-          <b>In Words :</b> {{ledgerResult.DrNetAmount | Currency | NumberInWords | CapitalFirstLetter}}
-          {{ledgerResult.CrNetAmount | Currency | NumberInWords | CapitalFirstLetter}}<span
+          <b>In Words :</b> {{ledgerResult.DrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}
+          {{ledgerResult.CrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}<span
             *ngIf="ledgerResult.DrNetAmount !=0 || ledgerResult.CrNetAmount !=0">Only</span>
         </div><br />
 
@@ -316,10 +323,10 @@
         </div>
         <div class="col-md-12" style="padding: 18px;">
           <div class="form-actions">
-            <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">
+            <button class="btn btn-primary hidden-print" (click)="Print('print_ledger')" value="Print" title="print page">
               Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
             </button>
-            <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('exportTable')"
+            <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('print_ledger')"
               value="" title="export to excel">
               Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
             </button>

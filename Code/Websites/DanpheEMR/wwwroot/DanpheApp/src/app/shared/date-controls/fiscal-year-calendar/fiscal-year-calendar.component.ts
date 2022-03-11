@@ -79,6 +79,7 @@ export class FiscalYearCalendarComponent implements OnInit {
     }
   }
   // END:Vikas: 06th Aug 20: Added for month calendar chnages. 
+  public showAdBsButton:boolean =true;
 
   constructor(private securityService: SecurityService, private changeDetector: ChangeDetectorRef,
     private coreService: CoreService,private nepaliCalendarService:NepaliCalendarService) {    
@@ -105,6 +106,7 @@ export class FiscalYearCalendarComponent implements OnInit {
       this.currentNPMonth=currFYear.NepaliMonthList.find(m=>m.MonthNumber==todaysDateNepali.Month).MonthName;        
 
     }
+    this.showAdBsButton=this.coreService.showCalendarADBSButton;
   }
  
   ngOnInit() {  

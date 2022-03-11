@@ -27,10 +27,17 @@ namespace DanpheEMR.DalLayer
         public DbSet<MedicalRecordModel> MedicalRecords { get; set; }
         public DbSet<DeathDetailsModel> DeathDetails { get; set; }
         public DbSet<PatientModel> Patient { get; set; }
+        public DbSet<VisitModel> PatientVisits { get; set; }
         public DbSet<PatientCertificateModel> PatientCertificate { get; set; }
         public DbSet<BillingFiscalYear> BillingFiscalYears { get; set; }
         public DbSet<CountryModel> Countries { get; set; }
         public DbSet<CountrySubDivisionModel> CountrySubdivisions { get; set; }
+        public DbSet<ICD10ReportingGroupModel> ICDReportingGroups { get; set; }
+        public DbSet<ICD10DiseaseGroupModel> ICDDiseaseGroups { get; set; }
+        public DbSet<FinalDiagnosisModel> FinalDiagnosis { get; set; }
+        public DbSet<DepartmentModel> Department { get; set; }
+        public DbSet<InpatientDiagnosisModel> InpatientDiagnosis { get; set; }
+
 
         public MedicalRecordsDbContext(string conn) : base(conn)
         {
@@ -58,10 +65,17 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<MedicalRecordModel>().ToTable("MR_RecordSummary");
             modelBuilder.Entity<DeathDetailsModel>().ToTable("ADT_DeathDeatils");
             modelBuilder.Entity<PatientModel>().ToTable("PAT_Patient");
+            modelBuilder.Entity<VisitModel>().ToTable("PAT_PatientVisits");
             modelBuilder.Entity<PatientCertificateModel>().ToTable("ADT_PatientCertificate");
             modelBuilder.Entity<BillingFiscalYear>().ToTable("BIL_CFG_FiscalYears");
             modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
             modelBuilder.Entity<CountryModel>().ToTable("MST_Country");
+            modelBuilder.Entity<ICD10ReportingGroupModel>().ToTable("ICD_ReportingGroup");
+            modelBuilder.Entity<ICD10DiseaseGroupModel>().ToTable("ICD_DiseaseGroup");
+            modelBuilder.Entity<FinalDiagnosisModel>().ToTable("MR_TXN_Outpatient_FinalDiagnosis");
+            modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
+            modelBuilder.Entity<InpatientDiagnosisModel>().ToTable("MR_TXN_Inpatient_Diagnosis");
+
         }
     }
 }

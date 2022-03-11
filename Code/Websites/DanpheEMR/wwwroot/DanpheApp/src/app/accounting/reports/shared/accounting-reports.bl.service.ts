@@ -1,4 +1,4 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { AccountingReportsDLService } from './accounting-reports.dl.service';
 import * as _ from 'lodash';
 
@@ -29,6 +29,12 @@ export class AccountingReportsBLService {
         });
     }
 
+    public GetGroupStatementReport(fromDate: string, toDate: string,fiscalYearId: number, ledgerGroupId:number) {
+        return this.accountReportDlService.GetGroupStatementReport(fromDate, toDate,fiscalYearId,ledgerGroupId).map(res => {
+            return res;
+        });
+    }
+   
     public GetProfitLossReport(fromDt, toDt,fiscalYearId) {
         return this.accountReportDlService.GetProfitLossReport(fromDt, toDt,fiscalYearId).map(res => {
             return res;
@@ -114,7 +120,39 @@ export class AccountingReportsBLService {
         }
     }
 
+    //Get LedgerGroup data list
+    public GetLedgerGroup() {
+        return this.accountReportDlService.GetLedgerGroup()
+            .map((responseData) => {
+                return responseData;
+            });
+    }
+
     //END: GET Report Data
+    public GetBankReconcillationReport(ledgerId: number, fromDate: string, toDate: string,fiscalYearId) {
+        return this.accountReportDlService.GetBankReconcillationReport(ledgerId, fromDate, toDate,fiscalYearId)
+            .map((responseData) => {
+                return responseData;
+            });
+    }
+    
+    public GetReconciliationCategory() {
+        return this.accountReportDlService.GetReconciliationCategory()
+            .map((responseData) => {
+                return responseData;
+            });
+    }
+    public GetReconciliationHistory(VoucherNumber: String, secId, fsYearId) {
 
-
+        return this.accountReportDlService.GetReconciliationHistory(VoucherNumber, secId, fsYearId).map((res) => res);
+      }
+	
+    public PostReconciliation(bankrecobj) {
+        var data = JSON.stringify(bankrecobj);
+        return this.accountReportDlService.PostReconciliation(data)
+            .map((responseData) => {
+                return responseData;
+            });
+    }
+    
 }

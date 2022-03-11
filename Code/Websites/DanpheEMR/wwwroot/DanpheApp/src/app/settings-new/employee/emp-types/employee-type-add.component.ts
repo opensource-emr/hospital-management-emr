@@ -8,7 +8,8 @@ import * as moment from 'moment/moment';
 
 @Component({
   selector: "employee-type-add",
-  templateUrl: "./employee-type-add.html"
+  templateUrl: "./employee-type-add.html",
+  host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class EmployeeTypeAddComponent {
@@ -44,6 +45,7 @@ export class EmployeeTypeAddComponent {
       this.CurrentEmployeeType.CreatedOn = moment().format('YYYY-MM-DD HH:mm');
       this.update = false;
     }
+    this.FocusElementById('Type');
   }
 
   Add() {
@@ -105,5 +107,19 @@ export class EmployeeTypeAddComponent {
   showMessageBox(status: string, message: string) {
     this.msgBoxServ.showMessage(status, [message]);
   }
+  
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  hotkeys(event){
+    if(event.keyCode==27){
+        this.Close()
+    }
+}
 
 }

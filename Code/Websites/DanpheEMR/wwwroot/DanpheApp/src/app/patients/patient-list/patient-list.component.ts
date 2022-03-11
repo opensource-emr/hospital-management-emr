@@ -15,6 +15,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { PatientFilesModel } from '../shared/patient-files.model';
 import { APIsByType } from '../../shared/search.service';
 import { CoreService } from '../../core/shared/core.service';
+import { SecurityService } from '../../../app/security/shared/security.service';
 @Component({
   templateUrl: "./patient-list.html"
 })
@@ -38,25 +39,27 @@ export class PatientListComponent {
   public uploadFilesShow: boolean = false;
   public hospitalHealthCard: string = "default";
   public selectedReport: PatientFilesModel = new PatientFilesModel();
-
   public showNeighbourCard: boolean = false;
   public patGirdDataApi: string = "";
-  searchText:string='';
-  public enableServerSideSearch:boolean=false;
+  searchText: string = '';
+  public enableServerSideSearch: boolean = false;
+  public showPatientSticker: boolean;
   constructor(
     public _patientservice: PatientService,
     public appointmentService: AppointmentService,
     public router: Router, public patientBLService: PatientsBLService,
     public coreService: CoreService,
     public msgBoxServ: MessageboxService,
-    public changeDetector: ChangeDetectorRef
+    public changeDetector: ChangeDetectorRef,
+    public securityService: SecurityService
   ) {
     this.hospitalHealthCard = this.coreService.GetHospitalNameForeHealthCard();
     this.getParamter();
     this.Load("");
     this._patientservice.CreateNewGlobal();
     this.appointmentService.CreateNewGlobal();
-    this.patientGridColumns = GridColumnSettings.PatientSearch;
+    var colSettings = new GridColumnSettings(this.securityService);
+    this.patientGridColumns = colSettings.PatientSearch;
     this.patGirdDataApi = APIsByType.PatByName;
     //this.TestCode();
   }
@@ -73,14 +76,14 @@ export class PatientListComponent {
   serverSearchTxt(searchTxt) {
     this.searchText = searchTxt;
     this.Load(this.searchText);
-}
-getParamter(){
-  let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
-  var data= JSON.parse(parameterData);
-  this.enableServerSideSearch = data["PatientSearchPatient"];
-}
+  }
+  getParamter() {
+    let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+    var data = JSON.parse(parameterData);
+    this.enableServerSideSearch = data["PatientSearchPatient"];
+  }
   Load(searchTxt): void {
-    this.patientBLService.GetPatients(searchTxt)
+    this.patientBLService.GetPatientsList(searchTxt)
       .subscribe(res => {
         if (res.Status == 'OK') {
           this.patients = res.Results;
@@ -126,6 +129,15 @@ getParamter(){
   }
 
   PatientGridActions($event: GridEmitModel) {
+    if (document.getElementById("patientListGridHolder") && document.getElementById("patientListGridHolder").getElementsByClassName('ag-center-cols-container')) {
+      let htNeeded = document.getElementById("patientListGridHolder").getElementsByClassName('ag-center-cols-container')[0].getElementsByClassName("ag-row").length * 35;
+      let htmlClassArr = Array.from(document.getElementById("patientListGridHolder").getElementsByClassName('ag-center-cols-container') as HTMLCollectionOf<HTMLElement>);
+      if (document.getElementById("patientListGridHolder").getElementsByClassName("open dropdown") && document.getElementById("patientListGridHolder").getElementsByClassName("open dropdown").length) {
+        htmlClassArr[0].style.height = (htNeeded + 160 + 'px');
+      } else {
+        htmlClassArr[0].style.height = (htNeeded + 'px');
+      }
+    }
 
     switch ($event.Action) {
       case "appoint":
@@ -143,8 +155,27 @@ getParamter(){
         break;
       case "edit":
         {
-          this.SelectPatient(null, $event.Data)
-          //this.router.navigate(['/Patient/RegisterPatient/BasicInfo']);
+
+          let param = this.coreService.Parameters.find(a => a.ParameterGroupName == "Patient" && a.ParameterName == "PatientEditRestrictAfterHrs");
+          //above gives us number of hours after which patient edit is not allowed.
+          //if Zero or null then allow to edit.
+          //else if Patient created within given hours then allow to edit.
+          //else Don't Allow to EDIT.
+          if (param && param.ParameterValue && parseInt(param.ParameterValue)) {
+            let restrictionAfterHours = parseInt(param.ParameterValue);
+            let currDate = moment();
+            //we compare patient's createdon datetime with current datetime.
+            let hoursPassedAfterPatCreation = moment(currDate).diff(moment($event.Data.CreatedOn), 'hours');
+            if (hoursPassedAfterPatCreation <= restrictionAfterHours) {
+              this.SelectPatient(null, $event.Data);
+            }
+            else {
+              this.msgBoxServ.showMessage("warning", ["Patient edit is not allowed after " + restrictionAfterHours + "Hours of registration"]);
+            }
+          } else {
+            this.SelectPatient(null, $event.Data);
+          }
+
         }
         break;
       case "showHistory":
@@ -191,6 +222,16 @@ getParamter(){
           this.displayHealthcard = false;
           this.showNeighbourCard = true;
         }
+        break;
+      case "showPatientSticker":
+        {
+          this.showPatientSticker = false;
+          this.changeDetector.detectChanges();
+          this.selectedPatient = $event.Data.PatientId;
+          this.displayHealthcard = false;
+          this.showNeighbourCard = false;
+          this.showPatientSticker = true;
+        }  
 
       default:
         break;
@@ -212,5 +253,13 @@ getParamter(){
   }
   closeUploadFiles() {
     this.uploadFilesShow = false;
+  }
+  ClosePrintStickerPopup(){
+    this.showPatientSticker = false;
+  }
+  AfterStickerPrint(event){
+    if(event.showOpdSticker){
+      this.showPatientSticker = false;
+    }
   }
 }

@@ -138,4 +138,25 @@ export class LabSettingsDLService {
     return this.http.put<any>("/api/LabSetting?reqType=edit-mapped-component", data, this.options);
   }
   //end: Anjana: 8/31/2020 : getting all gov specified lab components
+
+  //activate deactivate lab test
+  public PutLabTestIsActive(test){
+    let data = JSON.stringify(test);
+    return this.http.put<any>("/api/LabSetting?reqType=put-labtest-isactive",data, this.options);
+  }
+
+  public PutLabCategoryIsActive(cat){
+    let data = JSON.stringify(cat);
+    return this.http.put<any>("/api/LabSetting?reqType=put-labcategory-isactive", data, this.options);
+  }
+
+  public PutLabReportTemplateIsActive(rep){
+    let data = JSON.stringify(rep);
+    return this.http.put<any>("/api/LabSetting?reqType=put-lab-report-template-isactive", data, this.options);
+  }
+
+  public PutLabVendorIsActive(vendor){
+    let data = JSON.stringify(vendor);
+    return this.http.put<any>("/api/LabSetting?reqType=put-lab-vendor-isactive", data, this.options);
+  } 
 }

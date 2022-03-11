@@ -51,7 +51,6 @@ import { NoteTemplateBLService } from "../clinical-notes/shared/note-template.bl
 import { TransferredPatientPendingComponent } from "./department/transferred-patient-pending.component";
 import { DischargeSummaryListComponent } from "./nursing-discharge-summary/discharge-summary-list.component";
 import { OPDTriageComponent } from "./opd-triage/opd-triage.component";
-import { HistoryBLService } from "../clinical/shared/history.bl.service";
 
 @NgModule({
   providers: [
@@ -72,9 +71,8 @@ import { HistoryBLService } from "../clinical/shared/history.bl.service";
     PharmacyDLService,
     IOAllergyVitalsBLService,
     OrderService,
-    VisitBLService,
-    NoteTemplateBLService,
-    HistoryBLService,
+        VisitBLService,
+        NoteTemplateBLService,
   ],
   imports: [
     ReactiveFormsModule,
@@ -111,4 +109,4 @@ import { HistoryBLService } from "../clinical/shared/history.bl.service";
   ],
   bootstrap: [NursingMainComponent],
 })
-export class NursingModule { }
+export class NursingModule {}

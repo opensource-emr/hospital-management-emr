@@ -12,7 +12,8 @@ import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { CommonFunctions } from "../../../shared/common.functions";
 @Component({
   selector: "role-add",
-  templateUrl: "./role-add.html"
+  templateUrl: "./role-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 
 })
 export class RoleAddComponent {
@@ -30,7 +31,7 @@ export class RoleAddComponent {
 
   public update: boolean = false;
   public showAddPage: boolean = false;
- //public appList: Array<Application> = new Array<Application>();
+  //public appList: Array<Application> = new Array<Application>();
   public routeList: Array<Route> = new Array<Route>();
   @Input("roleList")
   public roleList: Array<Role> = new Array<Role>();
@@ -40,8 +41,9 @@ export class RoleAddComponent {
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
-   // this.GetAppList();
+    // this.GetAppList();
     this.GetRouteList();
+    this.GoToNextInput("RoleNameid");
   }
 
   //@Input("showAddPage")
@@ -77,6 +79,14 @@ export class RoleAddComponent {
       this.update = false;
     }
 
+  }
+  setautofocus() {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById("RoleName");
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 900);
   }
 
   //public GetAppList() {
@@ -140,7 +150,7 @@ export class RoleAddComponent {
             if (res.Status == "OK") {
               this.msgBoxServ.showMessage("success", ['Role Added.']);
               this.CallBackAddUpdate(res);
-              
+
 
             }
             else {
@@ -201,6 +211,14 @@ export class RoleAddComponent {
         }
       };
 
+      if (this.update) {
+        this.callbackAdd.emit({ action: "update",  role: role });
+      }
+      else {//this is when new department is added.
+        this.roleList.push(res.Results);
+        this.callbackAdd.emit({ action: "add",  role: role });
+      }
+
       this.callbackAdd.emit({ role: role });
     }
     else {
@@ -223,6 +241,19 @@ export class RoleAddComponent {
           return false;
       this.msgBoxServ.showMessage("failed", ['RoleName already exists']);
       return true;
+    }
+  }
+  GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event) {
+    if (event.keyCode == 27) { // For ESCAPE_KEY =>close pop up
+      this.Close();
     }
   }
 }

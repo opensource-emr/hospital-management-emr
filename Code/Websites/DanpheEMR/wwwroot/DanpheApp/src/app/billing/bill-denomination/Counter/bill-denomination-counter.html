@@ -1,0 +1,235 @@
+<div class="portlet-body form">
+  <div class="form-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="page-bar" style="padding: 25px;">
+          <div>
+            <div class="row">
+              <!-- <div>
+                <h3 class="header-sm inner-header-sm" style="margin-bottom: 20px;">User Collection on ({{CurrentDate | nepaliDate:'format':'YYYY-MM-DD'}})</h3>
+              </div>
+              <div class="col-md-12" >
+                <div class="col-md-2 date_label" style="padding: 0;"> <b>Select Date</b>
+                </div>
+                <div class="col-md-6">
+                  <danphe-date-picker [(ngModel)]="CurrentDate" (ngModelChange)="CurrentDateChange()"
+                    [ngModelOptions]="{standalone: true}" [showTime]="false" [CalendarTypes]="'en,np'">
+                  </danphe-date-picker>
+                </div>
+                <div class="col-md-4" style="float: right;">
+                  <button class="btn blue" type="button" (click)="LoadCounterDayCollection()">
+                    <i class="fa fa-search"></i> Check Cash Collection
+                  </button>
+                </div>
+                <hr />                
+              </div>
+              <div class="col-md-12">
+                <h5 style="text-align: left;color: rgb(241, 69, 69);" class="header-sm inner-header-sm">Cash Collection:
+                  {{showColInPag}}</h5>
+              </div>-->
+            </div>
+            <div class="col-md-12">
+              <div class="col-md-6">
+              <h5 style="text-align: left;color: rgb(241, 69, 69);" class="header-sm inner-header-sm">
+                Due Amount: {{LatestDueAmount | number : "1.2-2"}}</h5>
+
+              <span style="text-align: left;color: rgb(69, 146, 241);">
+                ( In Words : <b>
+                  {{LatestDueAmount| number : "1.2-2" | NumberInWords}}
+                </b>Only.</span> )
+              <hr />
+              </div>
+              <div class="col-md-6" *ngIf = "BankHandoverSettings.ShowReceivePending && PendingReceiveAmount">
+                <h5 style="text-align: left;color: rgb(241, 69, 69);" class="header-sm inner-header-sm">
+                  {{ BankHandoverSettings.ReceivePendingLabel }}: {{ PendingReceiveAmount | number : "1.2-2" }}
+                </h5>
+                <span style="text-align: left;color: rgb(69, 146, 241);">
+                  ( In Words : )<b>{{ PendingReceiveAmount | number : "1.2-2" | NumberInWords }}</b> Only.
+                </span>
+              </div>
+
+            </div>
+          </div>
+          <form [formGroup]="HandoverTransaction.HandoverTransactionValidator">
+            <div>
+              <h3 class="header-sm inner-header-sm" style="margin-bottom: 15px;">Handover Summary</h3>
+            </div>
+            <div class="form-group">
+              <table border="0" align="left" class="table doc-tbl">
+                <tr>
+                  <td style="width: 150px;">Bank Name <b class="color-red"> *</b><b style="float:right;">
+                      &nbsp;:&nbsp;
+                    </b></td>
+                  <td style="padding-top:10px;">
+                    <input class="form-control" danphe-auto-complete title="{{HandoverTransaction.BankName}}"
+                      autocomplete="off" formControlName="BankName" [(ngModel)]="BankName"
+                      [list-formatter]="BankListFormatter" [source]="Banklist" placeholder="Enter Bank Name"
+                      [min-chars]="1" display-property-name="BankName" value-property-name=null match-formatted="true"
+                      (change)="AssignSelectedBank()" max-num-list="30" onClick="this.select();"
+                      (keyup.enter)="FocuseOnVoucherNo()" [grid-sort]="'BankName'" id="srchbxBankName" />
+                    <!-- <input class="form-control" type="text" maxlength="150" [(ngModel)]="HandoverTransaction.BankName"
+                      formControlName="BankName" (keyup.enter)="SetFocusOnButton('VoucherNumber')" /> -->
+                    <span class="error-msg" *ngIf="HandoverTransaction.IsDirty('BankName')"
+                      style='font-size: 10px !important;'
+                      [hidden]="HandoverTransaction.IsValidCheck('BankName','required')"> Enter Bank Name. </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 150px;"> Voucher Date <b class="color-red"> *</b><b style="float:right;">
+                      &nbsp;:&nbsp; </b></td>
+                  <td style="padding-top:10px;">
+                    <danphe-date-picker [(ngModel)]="HandoverTransaction.VoucherDate"
+                      [ngModelOptions]="{standalone: true}" [showTime]="false" [CalendarTypes]="'en,np'">
+                    </danphe-date-picker>
+                  </td>
+                </tr>
+                <tr *ngIf="BankHandoverSettings.ShowVoucherNumber">
+                  <td style="width: 150px;"> Voucher Number <b class="color-red"
+                      *ngIf="BankHandoverSettings.IsVoucherNoMandatory"> *</b><b style="float:right;">
+                      &nbsp;:&nbsp; </b></td>
+                  <td style="padding-top:10px;">
+                    <input class="form-control" type="text" maxlength="150" onClick="this.select();" id="VoucherNumber"
+                      placeholder='Enter Voucher Number' [(ngModel)]="HandoverTransaction.VoucherNumber"
+                      [ngModelOptions]="{standalone: true}"
+                      (keyup.enter)="coreService.FocusInputById('HandoverAmount')" />
+                    <!-- <span class="error-msg" *ngIf="HandoverTransaction.IsDirty('VoucherNumber')"
+                      style='font-size: 10px !important;'
+                      [hidden]="HandoverTransaction.IsValidCheck('VoucherNumber','required')"> Enter Handover
+                      Voucher Number. </span> -->
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 150px;">Amount <b class="color-red"> *</b><b style="float:right;">
+                      &nbsp;:&nbsp; </b></td>
+                  <td style="padding-top:10px;">
+                    <input class="form-control" type="number" formControlName="HandoverAmount"
+                      [(ngModel)]="HandoverTransaction.HandoverAmount" onClick="this.select();"
+                      (keyup.enter)="coreService.FocusInputById('HandoverRemarks')" id="HandoverAmount"
+                      (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      (ngModelChange)="HandoverAmountChange()" />
+                    <span class="error-msg" *ngIf="HandoverTransaction.IsDirty('HandoverAmount')"
+                      style='font-size: 10px !important;'
+                      [hidden]="HandoverTransaction.IsValidCheck('HandoverAmount','invalidNumber')"> Enter Valid
+                      Number.</span>
+                    <span class="error-msg" *ngIf="HandoverTransaction.IsDirty('HandoverAmount')"
+                      style='font-size: 10px !important;'
+                      [hidden]="HandoverTransaction.IsValidCheck('HandoverAmount','required')">Handover Amount is
+                      Required.</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 150px;"> Remaining (Due)<b style="float:right;"> &nbsp;:&nbsp;</b> </td>
+                  <td style="padding-top:10px;">
+                    <label class="form-control" disabled>
+                      {{HandoverTransaction.DueAmount | number : "1.2-2"}}
+                    </label>
+                    <!-- <input class="form-control" type="number" [(ngModel)]="HandoverTransaction.DueAmount"
+                      [ngModelOptions]="{standalone: true}" disabled id="DueAmount" /> -->
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 150px;"> Remarks<b style="float:right;"> &nbsp;:&nbsp;</b> </td>
+                  <td style="padding-top:10px;">
+                    <input class="form-control" type="text" [(ngModel)]="HandoverTransaction.HandoverRemarks"
+                      id="HandoverRemarks" [ngModelOptions]="{standalone: true}"
+                      (keyup.enter)="coreService.FocusInputById('btn_submit')" />
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </form>
+          <input style="width: 200px;" type="button" class="btn green btn-success" name="name" value="Submit"
+            [disabled]="loading" (click)="Submit()" id="btn_submit" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div id="denomPrint" class="page-bar">
+          <form>
+            <div>
+              <h3 class="header-sm inner-header-sm" style="margin-bottom: 15px;"> Denomination </h3>
+            </div>
+            <table border="0" align="left" class="doc-tbl" style="width: 100%;">
+              <thead>
+                <tr>
+                  <td align="left" width="150"><b>Currency Type</b></td>
+                  <td align="left" width="160"><b>Counts</b></td>
+                  <td align="left" width="180"><b>Amount</b></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let deno of Denomination; let i=index">
+                  <td align="left">{{deno.CurrencyType}}</td>
+                  <td align="left"><input class="no-print" [(ngModel)]="deno.Quantity" placeholder="Quantity"
+                      [ngModelOptions]="{standalone: true}" (ngModelChange)="AmountChange()" name="Quantity" min="0"
+                      type="number" value="0" (keyup.enter)="setFocusOnDenominationCount(i)" id="{{ 'quantity_'+i }}"
+                      (wheel)="coreService.PreventNumberChangeOnScroll($event)" onClick="this.select();">
+                    <br />
+                    <span class="print-only">{{deno.Quantity}}</span>
+                  </td>
+                  <td align="left"> {{deno.Quantity * deno.CurrencyType}}
+                  </td>
+                </tr>
+                <tr [ngClass]="{'no-print': OtherAmount < 1}">
+                  <td align="left">
+                    <h1 class="header-sm inner-header-sm" style="display: flex;">Others: &nbsp;<br />
+                      <span class="print-only">{{OtherAmount}}</span>
+                    </h1>
+                  </td>
+                  <td align="left"></td>
+                  <td align="left">
+                    <input class="no-print" [(ngModel)]="OtherAmount" placeholder="OtherAmount" min="0"
+                      (ngModelChange)="OtherAmountChange()" [ngModelOptions]="{standalone: true}" name="OtherAmount"
+                      min="0" onClick="this.select();" type="number" value="0" id="otherAmount"
+                      (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      (keyup.enter)="SetFocusOnButton('btn_print')">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" align="left">
+                    <h1 class="header-sm inner-header-sm">Total: &nbsp; <b>{{total}}</b></h1>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="margin-15-bt no-print text-right padding-15-hr">
+              <a id="btn_print" (click)="print()" class="btn green btn-success">Print</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="ShowAlert">
+  <div class="portlet-body form">
+    <div class="modelbox-div">
+      <div>
+        <div>
+          <div class="col-md-12"> <a class="btn btn-danger" (click)="ShowAlert=false" title="Cancel">X</a> </div>
+          <div class="text-left">
+            <h1>Warning !!!</h1>
+          </div>
+          <hr />
+        </div>
+        <div class="text-left">
+          <div class="alert alert-danger" role="alert">
+            <h4 style="color:red;font-style:normal;"> (Your <b>Handover Amount</b> didn't match with the <b>User
+                Collection Amount</b>.) </h4>
+          </div>
+          <div class="alert alert-info" role="alert">
+            <h4> User collection amount by <b>{{userName}} </b> is <b>{{coreService.currencyUnit}} {{showColInPag}}</b><br />
+              Whereas Handover amount is <b>{{coreService.currencyUnit}} {{total}}</b> </h4>
+          </div>
+        </div>
+        <hr />
+        <div class="text-left">
+          <button type="button" class="btn btn-danger" [disabled]="loading" (click)="ShowAlert=false;"> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page> -->
+<!-- (print-sucess)="callBackBillPrint($event)" -->

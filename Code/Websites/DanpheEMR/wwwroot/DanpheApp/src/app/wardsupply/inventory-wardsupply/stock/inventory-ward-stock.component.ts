@@ -1,26 +1,30 @@
 import { Component, ChangeDetectorRef } from '@angular/core'
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { WardSupplyBLService } from '../../shared/wardsupply.bl.service';
-import { WardStockModel } from '../../shared/ward-stock.model'
+import { WARDInventoryStockModel } from '../../shared/ward-inventory-stock.model';
 import WARDGridColumns from '../../shared/ward-grid-cloumns';
 import { Router } from '@angular/router';
 import * as moment from 'moment/moment'
 import { GridEmitModel } from '../../../shared/danphe-grid/grid-emit.model';
 import { SecurityService } from '../../../security/shared/security.service';
+import { PHRMStoreModel } from '../../../pharmacy/shared/phrm-store.model';
 @Component({
   templateUrl: "./inventory-ward-stock.html" // "/WardSupplyView/Stock"
 })
 export class WardInventoryStockComponent {
   public inventoryStockGridColumns: Array<WARDGridColumns> = []
-  public inventoryStockDetailsList: Array<WardStockModel> = []
+  public inventoryStockDetailsList: Array<WARDInventoryStockModel> = []
   public DepartmentId: number = 0;
   public CurrentStoreId: number = 0;
   public rowIndex: number = null;
-  public selectedStock: WardStockModel = new WardStockModel();
+  public selectedStock: WARDInventoryStockModel = new WARDInventoryStockModel();
   public showStockTransfer: boolean = false;
   public departmentList: Array<any> = new Array<any>();
   public availableDepartmentList: Array<any> = new Array<any>();
   public transferBackToInventory: boolean = false;
+  public inventoryList: PHRMStoreModel[] = [];
+  public selectedInventoryId: number = null;
+  filterSubstoreStockList: WARDInventoryStockModel[] = [];
 
   constructor(public securityService: SecurityService,
     public wardSupplyBLService: WardSupplyBLService,
@@ -40,6 +44,7 @@ export class WardInventoryStockComponent {
       else {
         //write whatever is need to be initialise in constructor here.
         this.inventoryStockGridColumns = WARDGridColumns.WARDInventoryStockDetailsList;
+        this.GetAllInventory();
         this.GetInventoryStockDetailsList();
       }
     } catch (exception) {
@@ -50,6 +55,21 @@ export class WardInventoryStockComponent {
   gridExportOptions = {
     fileName: 'StockDetailsList_' + moment().format('YYYY-MM-DD') + '.xls',
   };
+
+  private GetAllInventory() {
+    this.wardSupplyBLService.GetInventoryList().subscribe(res => {
+      if (res.Status == "OK") {
+        this.inventoryList = res.Results;
+      }
+      else {
+        console.log(res);
+        this.msgBoxServ.showMessage("Failed", ["Failed to load inventory list"]);
+      }
+    }, err => {
+      console.log(err);
+      this.msgBoxServ.showMessage("Failed", ["Failed to load inventory list"]);
+    });
+  }
 
   ////Grid Action Method
   StockDetailsGridAction($event: GridEmitModel) {
@@ -73,7 +93,8 @@ export class WardInventoryStockComponent {
             if (res.Results.length) {
               this.inventoryStockDetailsList = [];
               this.inventoryStockDetailsList = res.Results;
-              this.inventoryStockDetailsList = this.inventoryStockDetailsList.filter(a => a.Quantity > 0);
+              this.inventoryStockDetailsList = this.inventoryStockDetailsList.filter(a => a.AvailableQuantity > 0);
+              this.filterStockByInventory();
             }
             else {
               this.msgBoxServ.showMessage("Empty", ["No stock Available."]);
@@ -86,12 +107,16 @@ export class WardInventoryStockComponent {
       this.ShowCatchErrMessage(exception);
     }
   }
+  filterStockByInventory() {
+    if (this.selectedInventoryId == null)
+      this.filterSubstoreStockList = this.inventoryStockDetailsList;
+    else
+      this.filterSubstoreStockList = this.inventoryStockDetailsList.filter(a => a.StoreId == this.selectedInventoryId);
+  }
   transferStock(StockData) {
     this.selectedStock.DepartmentId = StockData.DepartmentId;
-    this.selectedStock.DepartmentName = StockData.DepartmentName;
     this.selectedStock.ItemId = StockData.ItemId;
     this.selectedStock.ItemName = StockData.ItemName;
-    this.selectedStock.Quantity = StockData.Quantity;
     this.selectedStock.AvailableQuantity = StockData.Quantity;
     this.selectedStock.StockId = StockData.StockId;
     this.selectedStock.ExpiryDate = StockData.ExpiryDate;
@@ -102,7 +127,7 @@ export class WardInventoryStockComponent {
   }
   //cancelbutton
   Close(): void {
-    this.selectedStock = new WardStockModel();
+    this.selectedStock = new WARDInventoryStockModel();
     this.showStockTransfer = false;
     this.transferBackToInventory = false;
   }
@@ -110,11 +135,7 @@ export class WardInventoryStockComponent {
     switch (this.transferBackToInventory) {
       case false: {
         try {
-          if (this.selectedStock && (this.selectedStock.DispachedQuantity <= this.selectedStock.Quantity) && (this.selectedStock.DispachedQuantity != 0) && (this.selectedStock.newWardId)) {
-            //for (var b in this.selectedItem.StockManageValidator.controls) {
-            //    this.selectedItem.StockManageValidator.controls[b].markAsDirty();
-            //    this.selectedItem.StockManageValidator.controls[b].updateValueAndValidity();
-            //}if ((this.selectedItem.IsValid(undefined, undefined) == true)) {
+          if (this.selectedStock && (this.selectedStock.DispachedQuantity <= this.selectedStock.AvailableQuantity) && (this.selectedStock.DispachedQuantity != 0)) {
             this.wardSupplyBLService.PostInventoryStockTransfer(this.selectedStock).
               subscribe(res => {
                 if (res.Status == 'OK') {
@@ -144,11 +165,7 @@ export class WardInventoryStockComponent {
       }
       case true: {
         try {
-          if (this.selectedStock && (this.selectedStock.DispachedQuantity <= this.selectedStock.Quantity) && (this.selectedStock.DispachedQuantity != 0)) {
-            //for (var b in this.selectedItem.StockManageValidator.controls) {
-            //    this.selectedItem.StockManageValidator.controls[b].markAsDirty();
-            //    this.selectedItem.StockManageValidator.controls[b].updateValueAndValidity();
-            //}if ((this.selectedItem.IsValid(undefined, undefined) == true)) {
+          if (this.selectedStock && (this.selectedStock.DispachedQuantity <= this.selectedStock.AvailableQuantity) && (this.selectedStock.DispachedQuantity != 0)) {
             this.wardSupplyBLService.PostBackToInventory(this.selectedStock).
               subscribe(res => {
                 if (res.Status == 'OK') {
@@ -182,7 +199,7 @@ export class WardInventoryStockComponent {
 
   Cancel() {
     try {
-      this.selectedStock = new WardStockModel();
+      this.selectedStock = new WARDInventoryStockModel();
       this.transferBackToInventory = false;
       this.rowIndex = null;
     }

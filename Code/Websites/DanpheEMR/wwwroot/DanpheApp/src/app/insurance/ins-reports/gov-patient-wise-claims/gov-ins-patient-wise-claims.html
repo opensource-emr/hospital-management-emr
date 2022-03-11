@@ -1,0 +1,203 @@
+<style>
+  .btn.green i {
+    color: #ffffff;
+  }
+
+  .main-info {
+    margin-top: 31px;
+  }
+
+  .receipt-watermark:after {
+    font-size: 800% !important;
+    z-index: 0 !important;
+    margin-left: -340px !important;
+  }
+
+  .showPrintDate {
+    display: none;
+  }
+
+  body {
+    font-size: 11px;
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  .col-left,
+  .col-right {
+    display: flex;
+    padding: 2px 10px;
+  }
+
+  .scroll {
+    overflow-y: scroll;
+    height: 500px;
+    display: block;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="">
+    <div class="row">
+      <div class="col-md-4">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Patient wise claims report</span>
+      </div>
+      <div class="col-md-1">
+      </div>
+      <div class="col-md-3">
+        <div class="row">
+          <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;; margin: 5px;">
+            <input name="isSearchByClaimCode" type="radio" (click)="searchByCheck('patient')" checked>
+            <span></span>Search by Patient
+          </label>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="row">
+          <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;; margin: 5px;">
+            <input name="isSearchByClaimCode" type="radio" (click)="searchByCheck('claimcode')">
+            <span></span>Search by Claim Code
+          </label>
+        </div>
+      </div>
+      <div class="col-md-1">
+      </div>
+    </div>
+  </div>
+  <div *ngIf="isSearchByPatient">
+    <div class="row" style="margin-top: 20px;">
+      <div class="col-md-7">
+        <div class="row">
+          <div class="col-md-3" style="text-align: right;">
+            Search Patients :
+          </div>
+          <div class="col-md-9">
+            <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="PatientObj"
+              [list-formatter]="patientListFormatter" [source]="patientSearchAsync.bind(this)"
+              [path-to-data]="'Results'" placeholder="Search by Patient No, NSHI No, Patient Name"
+              display-property-name="ShortName" value-property-name=null (ngModelChange)="patientInfoChanged()"
+              onClick="this.select();" max-num-list="500" (keyup.enter)="setFocusOnButton('btn_showClaims')"
+              [min-chars]="5" match-formatted="true" [no-match-found-text]="'Patient Not found'"
+              style="width: 100% !important;" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12" *ngIf="showPatientPanel">
+        <div class="col-md-12">
+          <div class="page-bar bill-p-info mt10">
+            <div>
+              <span *ngIf="selPatient.ShortName">
+                <i class="fa fa-user"></i>&nbsp;Name : <b>{{selPatient.ShortName}}</b>
+              </span>
+              <span *ngIf="selPatient.ShortName">
+                <i class="fa fa-h-sign"></i>&nbsp;Hospital No : <b> {{selPatient.PatientCode}}</b>
+              </span>
+              <span *ngIf="selPatient.Age">
+                <i class="fa fa-male"></i>&nbsp;Age/Sex : {{selPatient.Age}}/ {{selPatient.Gender}}
+              </span>
+              <span *ngIf="selPatient.Ins_NshiNumber">
+                NSHI No &nbsp;:&nbsp;{{selPatient.Ins_NshiNumber}}
+              </span>
+              <span *ngIf="selPatient.Address">
+                <i class="fa fa-user"></i>&nbsp;Address&nbsp; : &nbsp;<b>{{selPatient.Address}}</b>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="page-bar-secondary">
+            <button id="btn_showClaims" class="btn green btn-success" (click)="loadClaimsList()"
+              [disabled]="loading">Show
+              Claims</button>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="page-bar" *ngIf="showClaimPanel">
+                <table class="table">
+                  <thead>
+                    <tr style="background-color:whitesmoke">
+                      <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                        Claim Code</th>
+                      <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                        Claim code generated on</th>
+                      <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      </th>
+                    </tr>
+                  </thead>
+                  <tr *ngFor="let claim of claimsList">
+                    <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{claim.ClaimCode}}
+                    </td>
+                    <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{claim.ClaimCodeFirstGeneratedOn| DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;
+                      ({{claim.ClaimCodeFirstGeneratedOn| nepaliDate:'format':'YYYY-MM-DD'}} BS)</td>
+                    <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      <button class="btn green btn-success" (click)="loadSingleClaimDetails(claim)"
+                        [disabled]="loading">View Details</button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isSearchByClaimCode">
+    <div class="row" style="margin-top: 20px;">
+      <div class="col-md-2" style="text-align: right;">
+        Claim Code:
+      </div>
+      <div class="col-md-3">
+        <input type="number"  [(ngModel)]="selClaimCode" id="txtClaimcode" onClick="this.select();" placeholder="Enter claim code" style="width:100%;"
+          maxlength="15" (wheel)="coreService.PreventNumberChangeOnScroll($event)" (keyup.enter)="setFocusOnButton('btn_showClaims')" />
+      </div>
+      <div class="col-md-2">
+        <button id="btn_showClaims" class="btn green btn-success" (click)="loadClaimsListbyClaimCode()"
+          [disabled]="loading">Load</button>
+      </div>
+      <div class="col-md-5"></div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-bar" *ngIf="showClaimPanel">
+          <table class="table">
+            <thead>
+              <tr style="background-color:whitesmoke">
+                <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                  Claim Code</th>
+                <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                  Patient Information</th>
+                <th style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                </th>
+              </tr>
+            </thead>
+            <tr *ngFor="let claim of claimsList">
+              <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                {{claim.ClaimCode}}
+              </td>
+              <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                Hosp. No: {{claim.PatientCode}}&nbsp;&nbsp; <b
+                  style="font-size: 15px;color: green;text-transform: uppercase;">{{claim.ShortName}}</b>
+                &nbsp;({{claim.Age}}|{{claim.Gender}})&nbsp;&nbsp;NSHI: {{claim.NSHI}}
+              </td>
+              <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                <button class="btn green btn-success" (click)="AssignPatientInfo(claim);loadSingleClaimDetails(claim)" [disabled]="loading">
+                  View Details</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<ins-pat-claim-details-view *ngIf="showPrintPopup" [claim-detail]="claimDetail" [selected-patient]="selPatient"
+  (popup-close-action)="closeClaimPopup($event)"></ins-pat-claim-details-view>

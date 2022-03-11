@@ -10,6 +10,8 @@ import { CommonFunctions } from '../../../shared/common.functions';
 import { CoreService } from "../../../core/shared/core.service";
 import { SecurityService } from '../../../security/shared/security.service';
 import * as moment from 'moment/moment';
+import { LabService } from '../../shared/lab.service';
+import { Route, Router } from '@angular/router';
 
 @Component({
   selector: 'lab-pending-reports',
@@ -32,42 +34,59 @@ export class LabTestsPendingReports {
   public pendingReportGridCol: LabPendingReportColumnSettings = null;
   //@ViewChild('searchBox') someInput: ElementRef;
 
+  public timeId: any = null;
+  public catIdList: Array<number> = [];
+  public isInitialLoad: boolean = true;
+  public routeAfterVerification: string;
+
+  public loading: boolean = false;
+
   constructor(public labBLService: LabsBLService, public coreService: CoreService,
-    public changeDetector: ChangeDetectorRef,
-    public msgBoxService: MessageboxService,
+    public changeDetector: ChangeDetectorRef, public labService: LabService,
+    public msgBoxService: MessageboxService, public router: Router,
     public patientService: PatientService, public securityService: SecurityService) {
     this.pendingReportGridCol = new LabPendingReportColumnSettings(this.securityService, this.coreService);
     this.gridColumns = this.pendingReportGridCol.PendingReportListColumnFilter(this.coreService.GetPendingReportListColumnArray());
+
+    if (this.labService.routeNameAfterverification) {
+      if (this.labService.routeNameAfterverification.toLowerCase() == 'addresult') {
+        this.routeAfterVerification = 'PendingLabResults';
+      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'finalreports') {
+        this.routeAfterVerification = 'FinalReports';
+      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'pendingreports') {
+        this.routeAfterVerification = 'PendingReports';
+      }
+
+    }
     //this.GetPendingReportList();
+  }
+
+  ngOnInit() {
+    //this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
   }
 
   ngAfterViewInit() {
     document.getElementById('quickFilterInput').focus()
   }
 
-  onDateChange($event) {
-    this.fromDate = $event.fromDate;
-    this.toDate = $event.toDate;
-    if (this.fromDate != null && this.toDate != null) {
-      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-        this.GetPendingReportList(this.fromDate, this.toDate)
-      } else {
-        this.msgBoxService.showMessage("failed", ['Please enter valid From date and To date']);
-      }
-
+  OnDateRangeChange($event) {
+    if ($event) {
+      this.fromDate = $event.fromDate;
+      this.toDate = $event.toDate;
     }
   }
-
 
   BackToGrid() {
     this.showGrid = true;
     //reset patient on header;
     this.requisitionIdList = [];
     this.patientService.CreateNewGlobal();
-    this.GetPendingReportList(this.fromDate, this.toDate);
+    this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
   }
-  GetPendingReportList(frmdate, todate) {
-    this.labBLService.GetLabTestPendingReports(frmdate, todate)
+  GetPendingReportList(frmdate, todate, categoryList) {
+    this.reportList = [];
+    this.labBLService.GetLabTestPendingReports(frmdate, todate, categoryList)
+      .finally(() => { this.loading = false })//re-enable button after response comes back.
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
           this.reportList = res.Results;
@@ -78,7 +97,7 @@ export class LabTestsPendingReports {
             result["verificationEnabled"] = IsVerificationEnabled;
             result["signatureUpdated"] = true;
             result.Tests.forEach(test => {
-              if (!test.LabReportId) { result["signatureUpdated"] = false;}
+              if (!test.LabReportId) { result["signatureUpdated"] = false; }
               if (!testNameCSV)
                 testNameCSV = test.TestName;
               else
@@ -127,7 +146,7 @@ export class LabTestsPendingReports {
               }
             });
 
-            var finalConfirmation = window.confirm("Are You sure you want to verify these tests, withour viewing its result ?");
+            var finalConfirmation = window.confirm("Are You sure you want to verify these tests, without viewing its result ?");
 
             if (finalConfirmation) {
               this.VerifyTestsDirectlyFromList();
@@ -136,7 +155,7 @@ export class LabTestsPendingReports {
           else {
             this.ViewDetail($event);
           }
-          
+
         }
         break;
 
@@ -195,6 +214,7 @@ export class LabTestsPendingReports {
     this.patientService.getGlobal().PatientCode = $event.Data.PatientCode;
     this.patientService.getGlobal().DateOfBirth = $event.Data.DateOfBirth;
     this.patientService.getGlobal().Gender = $event.Data.Gender;
+    this.patientService.getGlobal().Ins_HasInsurance = $event.Data.HasInsurance;
 
 
     //this is removed because it didnt show the two diff. RequisitionID of same TestName of single patient Twice
@@ -214,6 +234,9 @@ export class LabTestsPendingReports {
     this.showAddEditResult = false;
     this.showReport = true;
     this.verificationRequired = this.coreService.EnableVerificationStep();
+    if (this.verificationRequired) {
+      this.coreService.FocusInputById('btnVerify')
+    }
   }
 
 
@@ -222,9 +245,13 @@ export class LabTestsPendingReports {
     this.labBLService.VerifyAllLabTestsDirectly(this.requisitionIdList)
       .subscribe(res => {
         if (res.Status == "OK") {
-          this.GetPendingReportList(this.fromDate, this.toDate);
+          this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
+          if (this.routeAfterVerification && this.routeAfterVerification.trim() && this.routeAfterVerification.trim().length > 0) {
+            let route = '/Lab/' + this.routeAfterVerification;
+            this.router.navigate([route]);
+          }
         }
-    });
+      });
   }
 
   ExitOutCall($event) {
@@ -246,16 +273,48 @@ export class LabTestsPendingReports {
       this.BackToGrid();
     }
   }
+
+
+  public GetTestListFilterByCategories() {
+    if ((this.fromDate != null) && (this.toDate != null) && (this.catIdList.length > 0)) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
+      } else {
+        this.msgBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+      }
+    }
+  }
+
+  public LabCategoryOnChange($event) {
+    this.isInitialLoad = false;
+    this.catIdList = [];
+    // this.reportList = [];
+    if ($event && $event.length) {
+      $event.forEach(v => {
+        this.catIdList.push(v.TestCategoryId);
+      })
+    }
+    if (this.timeId) {
+      window.clearTimeout(this.timeId);
+      this.timeId = null;
+    }
+    this.timeId = window.setTimeout(() => {
+      this.GetTestListFilterByCategories();
+    }, 500);
+  }
+
 }
 
 
 export class LabPendingReportColumnSettings {
   public IsVerificatioStepEnabled: boolean = true;
   public HasVerificationStepEnabled: boolean = false;
+  static securityServ: any;
 
   constructor(public securityService: SecurityService, public coreService: CoreService) {
     this.IsVerificatioStepEnabled = this.coreService.EnableVerificationStep();
     this.HasVerificationStepEnabled = this.securityService.HasPermission('lab-verifier');
+    LabPendingReportColumnSettings.securityServ = this.securityService;
   }
 
 
@@ -286,7 +345,7 @@ export class LabPendingReportColumnSettings {
           if (ind) {
             filteredColumns.push(ind);
           }
-        }        
+        }
       }
       if (filteredColumns.length) {
         return filteredColumns;
@@ -301,11 +360,17 @@ export class LabPendingReportColumnSettings {
   }
 
   public VerifyRenderer() {
-    let template = `<a danphe-grid-action="ViewDetails" class="grid-action">
+    let template = "";
+    if (LabPendingReportColumnSettings.securityServ.HasPermission("btn-pending-reports-view")) {
+      template += `<a danphe-grid-action="ViewDetails" class="grid-action">
                  View Details
-            </a>
-                <a danphe-grid-action="labsticker" class="grid-action"><i class="glyphicon glyphicon-print"></i> Sticker</a>
-                `;
+            </a>`
+    }
+
+    if (LabPendingReportColumnSettings.securityServ.HasPermission("btn-pending-reports-sticker")) {
+      template += `<a danphe-grid-action="labsticker" class="grid-action"><i class="glyphicon glyphicon-print"></i> Sticker</a>
+        `
+    }
 
     if (this.IsVerificatioStepEnabled && this.HasVerificationStepEnabled) {
       template = template + `<a danphe-grid-action="verify" class="grid-action">Verify</a>`;

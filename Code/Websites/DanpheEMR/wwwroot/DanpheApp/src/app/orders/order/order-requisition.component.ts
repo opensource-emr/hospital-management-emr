@@ -475,6 +475,7 @@ export class OrderRequisitionsComponent {
         currReq.DiagnosisId = null;
         currReq.VisitType = this.currPatVisitContext.VisitType;
         currReq.WardName = this.currPatVisitContext.Current_WardBed;
+        currReq.OrderDateTime = this.currTime
         retLabReqList.push(currReq);
       });
     }

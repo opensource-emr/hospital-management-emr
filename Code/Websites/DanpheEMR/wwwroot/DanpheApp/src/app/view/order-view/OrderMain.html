@@ -72,7 +72,7 @@
     width: 100%;
     border: 1px solid #f3f3f3;
     margin-bottom: 15px; 
-    border-radius: 5px !important;"
+    border-radius: 5px !important;
   }
   .cstm-pt-title {
     background: transparent;
@@ -121,7 +121,7 @@
             </div>
           </div>
 
-          <div class="order-item-list">
+          <!-- <div class="order-item-list">
             <div class="ord-new-items">
               <div class="item-type-head">
                 Medication
@@ -139,7 +139,7 @@
                 </span>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="order-item-list">
             <div class="ord-new-items">
@@ -216,7 +216,7 @@
                     <span *ngIf="res.OrderStatus!='final'">{{res.OrderStatus}}</span>
                   </td>
                 </tr>
-                <tr *ngFor="let med of currPat.MedicationPrescriptions">
+                <!-- <tr *ngFor="let med of currPat.MedicationPrescriptions">
                   <td>Medication</td>
                   <td>
                     <b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day
@@ -226,7 +226,7 @@
                     active
                   </td>
 
-                </tr>
+                </tr> -->
                 <tr *ngFor="let req of currPat.ImagingItemRequisitions">
                   <td>{{req.ImagingTypeName}}</td>
                   <td>{{req.ImagingItemName}} &nbsp;&nbsp;{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
@@ -262,7 +262,7 @@
                 <option value="All">----------</option>
                 <option value="Lab">Labs</option>
                 <option value="Imaging">Imaging</option>
-                <option value="Medication">Medication</option>
+                <!-- <option value="Medication">Medication</option> -->
                 <option value="Others">Others</option>
               </select>
 
@@ -332,11 +332,11 @@
         </div>
       </div>
 
-      <div class="row" style="margin-top: 25px;">
+      <!-- <div class="row" style="margin-top: 25px;">
         <div class="col-md-12">
           <a class="btn btn-primary" (click)="printMedications()">Print Medication</a>
         </div>
-      </div>
+      </div> -->
     </div>
 
 <div class="popup-static portlet box portlet-fullscreen" *ngIf="showLabReport">

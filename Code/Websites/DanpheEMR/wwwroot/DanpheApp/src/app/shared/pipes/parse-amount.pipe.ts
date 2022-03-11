@@ -7,7 +7,9 @@ import { CommonFunctions } from '../common.functions';
 })
 export class ParseAmount {
     //actionname like: format or diff (for date difference with today)
-    transform(inputVal): any {
-        return CommonFunctions.parseAmount(inputVal);
+    transform(inputVal, decimalUpto): any {
+        decimalUpto = +decimalUpto;
+        if (isNaN(+decimalUpto) || ((decimalUpto % 1) != 0) || (decimalUpto <= 0)) { decimalUpto = 2; }
+        return CommonFunctions.parseAmount(inputVal, decimalUpto);
     }
-} 
+}

@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable()
 export class WardSupplyDLService {
-
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
@@ -23,7 +22,9 @@ export class WardSupplyDLService {
   public GetAvailableWardItemsStockDetailsList(storeId: number) {
     return this.http.get<any>("/api/WardSupply?reqType=get-available-Ward-Items-StockDetails&StoreId=" + storeId, this.options);
   }
-
+  public GetSubstoreRequistionList(fromDate: string, toDate: string, storeId: number) {
+    return this.http.get<any>('/api/WardSupply/GetSubstoreRequistionList/' + fromDate + '/' + toDate + '/' + storeId, this.optionsJson);
+  }
   public GetDepartments() {
     return this.http.get<any>('/api/wardsupply?reqType=get-departments', this.options);
   }
@@ -33,6 +34,17 @@ export class WardSupplyDLService {
   public GetInventoryStockByStoreId(StoreId) {
     return this.http.get<any>("/api/WardSupply/GetInventoryItemsByStoreId/" + StoreId, this.options);
   }
+  public GetFixedAssetStockBySubStoreId(subStoreId: number) {
+    return this.http.get<any>("/api/WardSupplyAssets/GetFixedAssetStockBySubStoreId/" + subStoreId, this.options);
+  }
+
+  public GetSubstoreAssetRequistionItemsById(reqId: number) {
+    return this.http.get<any>("/api/WardSupplyAssets/GetSubstoreAssetRequistionItemsById/" + reqId, this.options);
+  }
+    //swapnil-2-april-2021
+  public GetSubstoreAssetReturnItemsById(returnId:number) {
+    return this.http.get<any>("/api/WardSupplyAssets/GetSubstoreAssetReturnById/"+returnId, this.options);
+  }
   //GET: get ward list.
   public GetActiveSubStoreList() {
     return this.http.get<any>("/api/WardSupply?reqType=active-substore-list", this.options);
@@ -41,7 +53,9 @@ export class WardSupplyDLService {
   public WardList(StoreId) {
     return this.http.get<any>("/api/WardSupply?reqType=ward-list&StoreId=" + StoreId, this.options);
   }
-
+  public GetInventoryList() {
+    return this.http.get<any>("/api/ActivateInventory/", this.options);
+  }
   // GET: Consumption Details 
   public GetAllComsumptionListDetails(wardId, storeId) {
     return this.http.get<any>("/api/WardSupply?reqType=get-All-Comsumption-List-Details&wardId=" + wardId + "&StoreId=" + storeId, this.options);
@@ -155,7 +169,9 @@ export class WardSupplyDLService {
       + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
-
+  public GetDispatchDetails(RequisitionId: number) {
+    return this.http.get<any>('/api/WardSupplyAssets/dispatchview/' + RequisitionId,this.options);
+  }
   //POST
   //post consumption data
   PostConsumptionData(consumptiondata) {
@@ -215,6 +231,33 @@ export class WardSupplyDLService {
     return this.http.post<any>("/api/WardSupply?reqType=ward-requistion", data, this.options);
 
   }
+
+  //GET: Get CapitalGoodsItemList
+  public GetCapitalGoodsItemList() {
+    return this.http.get<any>('/api/WardSupplyAssets/GetCapitalGoodsItemList/', this.options);
+  }
+
+  //Posting the  Requisiton and requisitionItems table FixedAssetRequisition/FixedAssetRequisitionItems
+  public PostToAssetRequisition(RequisitionObjString: string) {
+    let data = RequisitionObjString;
+    return this.http.post<any>("/api/WardSupplyAssets?reqType=AssetRequisition", data, this.options);
+  }
+    //swapnil-2-april-2021
+  //Posting the  Return and returnItems table FixedAssetReturn/FixedAssetReturnItems
+  public PostToAssetReturn(ReturnObjString: string) {
+  let data = ReturnObjString;
+  return this.http.post<any>("/api/WardSupplyAssets?reqType=AssetReturn", data, this.options);
+  }
+
+    
+  //GET: Requisition List
+  public GetSubstoreAssetRequistionList(fromDate: string, toDate: string, subStoreId: number) {
+    return this.http.get<any>('/api/WardSupplyAssets/GetSubstoreAssetRequistionList/' + fromDate + '/' + toDate + '/' + subStoreId, this.optionsJson);
+  }
+  public GetSubstoreAssetReturnList(fromDate: string, toDate: string, subStoreId: number) {
+    return this.http.get<any>('/api/WardSupplyAssets/GetSubstoreAssetReturnList/' + fromDate + '/' + toDate + '/' + subStoreId, this.optionsJson);
+  }
+
   //post ward stock to Pharmacy
   public PostReturnStock(data, ReceivedBy) {
     return this.http.post<any>("/api/RetrunStockToPharmacy/" + ReceivedBy, data, this.optionsJson);
@@ -231,12 +274,48 @@ export class WardSupplyDLService {
   }
 
   //PUT UpdateDispatchReceiveStatus
-  PutUpdateDispatchedItemsReceiveStatus(dispatchId,receivedRemarks){
-    return this.http.put<any>("/api/WardSupply/UpdateDispatchedItemsReceiveStatus/" + dispatchId,receivedRemarks,this.optionsJson);
+  PutUpdateDispatchedItemsReceiveStatus(dispatchId, receivedRemarks) {
+    return this.http.put<any>("/api/WardSupply/UpdateDispatchedItemsReceiveStatus/" + dispatchId, receivedRemarks, this.optionsJson);
   }
   //PUT UpdateRequisition
   PutUpdateRequisition(requisition: string) {
     let data = requisition;
     return this.http.put<any>("/api/WardSupply/UpdateRequisition", data, this.options);
+  }
+  //post Return data
+  PostReturnData(returnData) {
+    let data = JSON.stringify(returnData);
+    return this.http.put<any>("/api/WardSupplyAssets/ReturnData", data, this.options);
+  }
+
+  PutSendStockToCssd(FixedAssetStockId: number) {
+    return this.http.put<any>(`/api/WardSupplyAssets/SendStockToCssd?FixedAssetStockId=${FixedAssetStockId}`, this.options);
+  }
+
+  //GET: Get AllPatients
+  public GetAllPatients(searchTxt) {
+    return this.http.get<any>("/api/Patient?reqType=patientsWithVisitsInfo&search=" + searchTxt, this.options);
+  }
+
+  PostInventoryPatConsumptionData(consumptiondata) {
+    let data = JSON.stringify(consumptiondata);
+    return this.http.post<any>("/api/WardSupply/PostInvPatientConsumption", data);
+  }
+
+  public GetInventoryItemsForPatConsumptionByStoreId(StoreId) {
+    return this.http.get<any>("/api/WardSupply/GetInventoryItemsForPatConsumptionByStoreId/" + StoreId, this.options);
+  }
+
+
+  public GetInventoryPatientComsumptionReceiptList(storeId, fromDate, toDate) {
+    return this.http.get<any>("/api/WardSupply/GetInventoryPatientConsumptionReceiptList/" + storeId + "/" + fromDate + "/" + toDate, this.options);
+  }
+
+  public GetInventoryPatConsumptionItemListById(receiptId) {
+    return this.http.get<any>("/api/WardSupply/GetInventoryPatConsumptionItemlistById/" + receiptId)
+  }
+   //GET:patient List from Patient controller
+   public GetFixedAssetDispatchListForItemReceive(RequisitionId) {
+    return this.http.get<any>("/api/WardSupply/GetFixedAssetDispatchListForItemReceive/" + RequisitionId, this.options);
   }
 }

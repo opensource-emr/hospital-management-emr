@@ -19,7 +19,8 @@
                          (focusout)="CreateSubCategoryCode()"
                          formControlName="SubCategoryName"
                          id="ItemSubCategoryName"
-                         placeholder="ItemSubCategory Name" />
+                         placeholder="ItemSubCategory Name" 
+                         (keyup.enter)="FocusElementById('Category')" />
                   <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('SubCategoryName','required') || !(currentItemSubCategory.IsDirty('SubCategoryName'))">Name is required</span> <span class="color-red font-sm" *ngIf="currentItemSubCategory.IsDirty('SubCategoryName')" [hidden]="currentItemSubCategory.IsValidCheck('SubCategoryName','maxlength')"> Length is not proper</span> </div>
               </div>
               <div class="form-group">
@@ -77,16 +78,21 @@
                 <div class="col-md-7">
                   <div class="input-group">
                     <div class="icheck-inline">
-                      <label class="radio-inline mt-radio">
-                        <input formControlName="IsConsumable" name="IsConsumable" type="radio"
-                               [(ngModel)]="currentItemSubCategory.IsConsumable"
-                               [value]="true">
-                        <span></span> Consumable </label>
-                      <label class="radio-inline mt-radio">
-                        <input formControlName="IsConsumable" name="IsConsumable" type="radio"
-                               [(ngModel)]="currentItemSubCategory.IsConsumable" [value]="false"
-                               >
-                        <span></span> Capital </label>
+                      <select id="Category" class="form-control" [(ngModel)]="currentItemSubCategory.IsConsumable"
+                      formControlName="IsConsumable" (change)="FocusElementById('AddItemSubCategory')"
+                      *ngIf="!update">
+                      <option [ngValue]="null">--select--</option>
+                      <option value="true">Consumable</option>
+                      <option value="false">Capital</option>
+                    </select>
+                    <select id="Category" class="form-control" [(ngModel)]="currentItemSubCategory.IsConsumable"
+                      formControlName="IsConsumable" (click)="FocusElementById('AddItemSubCategory')"
+                      *ngIf="update">
+                      <option [ngValue]="null">--select--</option>
+                      <option value="true">Consumable</option>
+                      <option value="false">Capital</option>
+                    </select>
+          
                       <span></span> </div>
                     <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('IsConsumable','required') || !(currentItemSubCategory.IsDirty('IsConsumable'))">Category is required</span> </div>
                 </div>
@@ -107,8 +113,8 @@
                 </div>
               </div>
               <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddItemSubCategory()" value="Add ItemSubCategory" [disabled]="loading" />
-                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddItemSubCategory()" value="Add ItemSubCategory" [disabled]="loading" id="AddItemSubCategory" />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" id="AddItemSubCategory"/>
               </div>
             </div>
           </form>

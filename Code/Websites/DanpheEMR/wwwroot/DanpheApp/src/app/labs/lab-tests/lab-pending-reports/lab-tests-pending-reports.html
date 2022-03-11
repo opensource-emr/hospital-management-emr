@@ -1,23 +1,49 @@
 <div class="wrapper">
+
+  <div class="row" *ngIf="showGrid">
+    <div class="col-lg-8 col-sm-8">
+      <div class="caption lb-caption">
+        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+        <span class="caption-subject">Pending Reports</span>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-4">
+      <lab-category-select (selected-category-list)="LabCategoryOnChange($event)"></lab-category-select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row  col-md-12" *ngIf="showGrid">
+      <div class="col-md-6">
+        <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+
+        </from-to-date-select>
+      </div>
+      <div class="col-md-3 col-xs-12">
+        <div class="form-group">
+          <button class="btn green btn-success" type="button"
+            (click)="GetPendingReportList(this.fromDate, this.toDate, this.catIdList);this.loading=true;"
+            [disabled]="loading">
+            <i class="fa fa-check-square-o"></i>
+            Ok
+          </button>
+          <span *ngIf="loading">Loading... Please wait.</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
   <div class="row" *ngIf="showGrid">
     <div class="col-lg-12 col-sm-12">
-      <div class="caption lb-caption"> 
-        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>  --> 
-        <span class="caption-subject">Pending Reports</span> </div>
-    </div>
-    <div class="col-lg-12 col-sm-12">
-      <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="reportList" (grid-actions)="GridActions($event)" [rangeType]="dateRange"
-                 (onDateChange)="onDateChange($event)"
-                 [show-CustomDate]="true"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="reportList" (grid-actions)="GridActions($event)"
+        [rangeType]="dateRange"> </danphe-grid>
     </div>
   </div>
   <div style="margin-top: 5px;" *ngIf="!showGrid">
-    <button class="btn primary-btn pull-left margin-7-rt" (click)="BackToGrid();"> <i class="fa fa-arrow-left"></i> Back To Grid </button>
-    <danphe-lab-results [showReport]="showReport"
-                      [showAddEditResult]="showAddEditResult"
-                      [requisitionIdList]="requisitionIdList"
-                      [verificationRequired]="verificationRequired"
-                      (callbackAddUpdate)="CallBackBackToGrid($event)"></danphe-lab-results>
+    <button class="btn primary-btn pull-left margin-7-rt" (click)="BackToGrid();"> <i class="fa fa-arrow-left"></i> Back
+      To Grid </button>
+    <danphe-lab-results [showReport]="showReport" [showAddEditResult]="showAddEditResult"
+      [requisitionIdList]="requisitionIdList" [verificationRequired]="verificationRequired"
+      (callbackAddUpdate)="CallBackBackToGrid($event)"></danphe-lab-results>
   </div>
   <div *ngIf="showlabsticker" class="popup-static portlet box portlet-fullscreen">
     <div class="portlet-body form">
@@ -28,11 +54,12 @@
           </div>
           <div class="modelbox-body">
             <lab-sticker (callback-Add)="ExitOutCall($event)" [showlabsticker]="showlabsticker"
-                         [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </lab-sticker>
+              [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </lab-sticker>
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="CloseSticker()"> Close </button>
+              <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="CloseSticker()"> Close
+              </button>
             </div>
           </div>
           <div class="close-modelbox">

@@ -1,0 +1,278 @@
+<style>
+    .main-info {
+        margin-top: 31px;
+    }
+
+    .receipt-watermark:after {
+        font-size: 800% !important;
+        z-index: 0 !important;
+        margin-left: -340px !important;
+    }
+
+    .showPrintDate {
+        display: none;
+    }
+
+    body {
+        font-size: 11px;
+        font-family: 'Poppins', sans-serif !important;
+    }
+
+    .col-left,
+    .col-right {
+        display: flex;
+        padding: 2px 10px;
+    }
+</style>
+
+<div class="wrapper">
+    <div id="divEstimationBillPrintPage">
+        <div class="bill-receipt-printpage">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <td>
+                            <div class="flx" [ngClass]="'ipd-invoice-header-gap-' + hospitalCode"></div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="discharge-bill-sm-holder">
+                                <div class="discharge-bill-sm-header flx justify-center text-uppercase">
+                                    <b>Estimation | Provisional Bill </b>
+                                </div>
+                                <div class="flx flex-col discharge-bill-description-header"
+                                    style="margin-bottom: 10px; border-bottom: 1px solid;">
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Hospital
+                                                No.&nbsp;:&nbsp;</span><span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.PatientDetail.HospitalNo}}</span>
+                                        </div>
+                                        <div class="col-right"><span class="text-uppercase text-bold txt-label">IP
+                                                No.&nbsp;:&nbsp;</span><span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.PatientDetail.InpatientNo}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Patient's
+                                                Name&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.PatientDetail.PatientName}}</span>
+                                        </div>
+
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Age/Sex&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.PatientDetail.DateOfBirth
+                                                |
+                                                DanpheDateTime:'age' }}/{{dischargeBill.PatientDetail.Gender}}</span>
+                                        </div>
+
+
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-label">Print Date
+                                                &nbsp;:&nbsp;</span>
+                                            <span class="text-uppercase text-bold txt-label">
+                                                {{printDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+
+                                        <div class="col-left flex-2">
+                                            <span class="text-uppercase text-bold txt-label">DOA&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.AdmissionDetail.AdmissionDate
+                                                | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">DOD&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{dischargeBill.AdmissionDetail.DischargeDate
+                                                |
+                                                DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                                        </div>
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-val">
+                                                ({{printDate| nepaliDate}})
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2">
+                                            <span class="text-uppercase text-bold txt-label">
+                                                Room Category&nbsp;:&nbsp;
+                                            </span>
+                                            <span class="text-uppercase text-bold txt-val">
+                                                {{dischargeBill.AdmissionDetail.RoomType}}
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="wrapper">
+                                    <table class="table table-striped table-hover"
+                                        style="width: 100%;border-bottom: 1px solid;" *ngIf="billItems != null">
+                                        <thead>
+                                            <tr>
+                                                <th border="1" align="left" style="font-size:12px; width:10%;">
+                                                    <strong>S.N.</strong></th>
+                                                <th border="1" align="left" style="font-size:12px; width:50%">
+                                                    <strong>Service Particular(s)</strong></th>
+                                                <th border="1" align="left" style="font-size:12px; width:20%">
+                                                    <strong>Quantity</strong></th>
+                                                <th border="1" style="text-align: right; font-size:12px; width:20%;">
+                                                    <strong>Amount</strong></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let row of billItems; let i=index;">
+                                                <td style="text-align:left; font-size:11px; width:10%">{{i+1}}</td>
+                                                <td style="text-align:left; font-size:11px; width:50%">{{row.ItemName}}
+                                                </td>
+                                                <td style="text-align:left; font-size:11px; width:20%">{{row.Quantity}}
+                                                </td>
+                                                <td style="text-align: right; font-size:11px; width:20%;">{{row.SubTotal
+                                                    | number : "1.2-2"}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- <discharge-bill-summary [discharge-bill]="dischargeBill" [billType]="billType">
+                                </discharge-bill-summary> -->
+
+                                <div class="flex-container discharge-bill-amount-summary"
+                                    style="padding-bottom: 10px;border-bottom: 1px solid;">
+                                    <div class="flex-2"><span>In Words: </span> <span>{{dischargeBill.TotalAmount |
+                                            NumberInWords |
+                                            uppercase }} <span *ngIf="dischargeBill.TotalAmount !=0">ONLY</span></span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flx flex-col">
+                                            <div style="padding-bottom: 8px;"><span
+                                                    class="text-uppercase">Amount:</span>
+                                                {{dischargeBill.SubTotal | number: "1.2-2"}}</div>
+                                            <div style="padding-bottom: 8px;"><span
+                                                    class="text-uppercase">Discount:</span>
+                                                {{dischargeBill.DiscountAmount | number: "1.2-2"}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex-container user-summary" style="padding-top: 5px;">
+                                    <div class="flex-2">
+                                        <div class="flx flex-col">
+                                            <div style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">User:
+                                                </span>
+                                                <span>{{currentUserName}}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-uppercase">Time: </span><span>{{currTime}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flx flex-col"
+                                            *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.Remarks">
+                                            <div style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">Remarks: </span>
+                                                <span>{{dischargeBill.BillingTransactionDetail.Remarks}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flx flex-col">
+                                            <div style="padding-bottom: 8px;"><span class="text-uppercase">Grand
+                                                    Total:</span>
+                                                {{dischargeBill.TotalAmount | number: "1.2-2"}}</div>
+
+                                            <div *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.DepositAvailable"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">Deposit:</span>
+                                                <span>
+                                                    {{dischargeBill.BillingTransactionDetail.DepositAvailable | number:
+                                                    "1.2-2"}}</span>
+                                                <!--incase of estimation bill-->
+                                                <!-- <span *ngIf="!dischargeBill.BillingTransactionDetail">
+                                                    {{dischargeBill.DepositBalance | number: "1.2-2"}}
+                                                </span> -->
+                                            </div>
+                                            <div *ngIf="dischargeBill.BillingTransactionDetail && (dischargeBill.BillingTransactionDetail.TotalAmount > dischargeBill.BillingTransactionDetail.DepositAvailable)"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">To Be Paid:</span>
+                                                {{dischargeBill.BillingTransactionDetail.TotalAmount -
+                                                dischargeBill.BillingTransactionDetail.DepositAvailable | number:
+                                                "1.2-2"}}
+                                            </div>
+
+                                            <div *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.DepositReturnAmount"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">To be Returned:</span>
+                                                {{dischargeBill.BillingTransactionDetail.DepositReturnAmount | number:
+                                                "1.2-2"}}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <div class="flex-container" style="justify-content: space-between;border-top: 1px solid #e1e3e9;
+    padding-top: 10px;margin-bottom: 25px">
+        <!-- <div class="flex-container">
+            <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px;"
+                *ngIf="Enable_Dotmatrix_Printer">
+                <div class="padding-15-bt"
+                    *ngIf="showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+                    <label style="display: block; padding-left: 7px;"><b>Select Bill Printer</b></label>
+                    <select class="margin-7-hr" [(ngModel)]="printerNameSelected" id="printerStkr">
+                        <option *ngFor="let location of billingDotMatrixPrinters" [value]="location.DisplayName">
+                            {{location.DisplayName}}</option>
+                    </select>
+                    <div class="padding-15-tp margin-7-hr">
+                        <button class="btn btn-small btn-cancel" (click)="ChangePrinterLocationName()">Select</button>
+                    </div>
+                </div>
+                <div class="padding-15-bt padding-7-hr"
+                    *ngIf="!showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+                    <div><label>Selected Printer: <b>{{printerName}}</b></label></div>
+                    <div><a (click)="ShowPrinterLocationChange()">Change Printer</a></div>
+                </div>
+            </div>
+        </div> -->
+        <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="print()"> Print </button>
+        </div>
+
+        <select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-estimation'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+    </div>
+
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

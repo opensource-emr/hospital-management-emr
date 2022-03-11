@@ -24,7 +24,8 @@ export class INSTotalItemsBillComponent {
   public billstatus: string = "";
   public servicedepartment: any = "";
   public itemname: string = "";
-
+  public dateRange:string="";	
+  public footerContent:string ='';
   public TotalItemsBillReportColumns: Array<any> = null;
   public TotalItemsBillReporttData: Array<any> = new Array<RPT_BIL_TotalItemsBillModel>();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
@@ -46,7 +47,7 @@ export class INSTotalItemsBillComponent {
     public coreService: CoreService,
     public reportServ: ReportingService) {
     this.dlService = _dlService;
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("BillingDate", false));
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("TransactionDate", false));
     this.loadDepartments();
   }
 
@@ -59,6 +60,10 @@ export class INSTotalItemsBillComponent {
         }
       });
   }
+
+  ngAfterViewChecked() {
+    this.footerContent = document.getElementById("summaryFooter").innerHTML;
+}
 
   Load() {
 
@@ -139,35 +144,36 @@ export class INSTotalItemsBillComponent {
     fileName: 'TotalItemBillList_' + moment().format('YYYY-MM-DD') + '.xls',
   };
 
-  OnGridExport($event: GridEmitModel) {
-    //IsInsurance is true for Ins-Reports.
-    let jsonStrSummary = JSON.stringify(this.summary);
-    let summaryHeader = "Total Items Bill Report Summary";
-    this.dlService.ReadExcel("/ReportingNew/ExportToExcelTotalItemsBill?FromDate="
-      + this.fromDate + "&ToDate=" + this.toDate
-      + "&BillStatus=" + this.CurrentTotalItem.billstatus + "&ServiceDepartmentName=" + this.CurrentTotalItem.servicedepartment +
-      "&ItemName=" + this.CurrentTotalItem.itemname + "&SummaryData=" + jsonStrSummary + "&SummaryHeader=" + summaryHeader + "&IsInsurance=true")
-      .map(res => res)
-      .subscribe(data => {
-        let blob = data;
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "TotalItemsBill_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
-        document.body.appendChild(a);
-        a.click();
-      },
-        res => this.ErrorMsg(res));
-  }
+  // OnGridExport($event: GridEmitModel) {
+  //   //IsInsurance is true for Ins-Reports.
+  //   let jsonStrSummary = JSON.stringify(this.summary);
+  //   let summaryHeader = "Total Items Bill Report Summary";
+  //   this.dlService.ReadExcel("/ReportingNew/ExportToExcelTotalItemsBill?FromDate="
+  //     + this.fromDate + "&ToDate=" + this.toDate
+  //     + "&BillStatus=" + this.CurrentTotalItem.billstatus + "&ServiceDepartmentName=" + this.CurrentTotalItem.servicedepartment +
+  //     "&ItemName=" + this.CurrentTotalItem.itemname + "&SummaryData=" + jsonStrSummary + "&SummaryHeader=" + summaryHeader + "&IsInsurance=true")
+  //     .map(res => res)
+  //     .subscribe(data => {
+  //       let blob = data;
+  //       let a = document.createElement("a");
+  //       a.href = URL.createObjectURL(blob);
+  //       a.download = "TotalItemsBill_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+  //       document.body.appendChild(a);
+  //       a.click();
+  //     },
+  //       res => this.ErrorMsg(res));
+  // }
 
-  ErrorMsg(err) {
-    this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
-    console.log(err.ErrorMessage);
-  }
+  // ErrorMsg(err) {
+  //   this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
+  //   console.log(err.ErrorMessage);
+  // }
 
   //sud:6June'20--reusable From-ToDate
   OnFromToDateChange($event) {
     this.fromDate = $event ? $event.fromDate : this.fromDate;
     this.toDate = $event ? $event.toDate : this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 
 }

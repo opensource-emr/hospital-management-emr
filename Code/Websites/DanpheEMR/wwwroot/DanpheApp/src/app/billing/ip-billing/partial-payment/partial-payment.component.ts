@@ -14,7 +14,8 @@ import { PatientService } from '../../../patients/shared/patient.service';
 
 @Component({
   selector: 'partial-payment',
-  templateUrl: "./partial-payment.html"
+  templateUrl: "./partial-payment.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PartialPaymentComponent {
 
@@ -97,9 +98,16 @@ export class PartialPaymentComponent {
     billingTransaction.PatientVisitId = this.patientDetails.VisitId;
     //billingTransaction.Patient = Object.create(this.patientService.globalPatient);
     billingTransaction.BillingTransactionItems = this.filteredItems;
-    billingTransaction.DepositAmount = this.patientDetails.DepositAdded;
-    billingTransaction.DepositReturnAmount = this.patientDetails.DepositReturned ? this.patientDetails.DepositReturned : 0;
+    billingTransaction.DepositAvailable = this.patientDetails.DepositAdded - this.patientDetails.DepositReturned;
+    //billingTransaction.DepositAmount = this.patientDetails.DepositAdded;
+    //billingTransaction.DepositReturnAmount = this.patientDetails.DepositReturned ? this.patientDetails.DepositReturned : 0;
     billingTransaction.TransactionType = ENUM_BillingType.inpatient;
     billingTransaction.InvoiceType = ENUM_InvoiceType.inpatientPartial;
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.ClosePartialPaymentPopUp(null);
+    }
   }
 }

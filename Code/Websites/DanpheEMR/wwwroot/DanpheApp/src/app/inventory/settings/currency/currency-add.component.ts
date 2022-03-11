@@ -11,7 +11,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: 'currency-add',
-    templateUrl: './currency-add.html'
+    templateUrl: './currency-add.html',
+    host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class CurrencyAddComponent {
@@ -36,7 +37,7 @@ export class CurrencyAddComponent {
     constructor(public invSettingBL: InventorySettingBLService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
-        
+            
     }
     @Input("showAddPage")
     public set value(val: boolean) {
@@ -79,8 +80,10 @@ export class CurrencyAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('CurrencyCode');
                 });
         }
+        this.FocusElementById('CurrencyCode');
     }
     //adding new department
     Update() {
@@ -104,8 +107,10 @@ export class CurrencyAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('CurrencyCode');
                 });
         }
+        this.FocusElementById('CurrencyCode');
     }
 
     Close() {
@@ -135,7 +140,17 @@ export class CurrencyAddComponent {
     logError(err: any) {
         console.log(err);
     }
-
-
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
+    }
 }

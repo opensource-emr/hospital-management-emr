@@ -1,5 +1,7 @@
 import { LabTestComponent } from "./lab-component.model";
 import { LabVendorsModel } from "../external-labs/vendors-settings/lab-vendors.model";
+import { LabTestRequisition } from "./lab-requisition.model";
+import { LabTest } from "./lab-test.model";
 
 //pair of testname and requisitionid.
 //needed since we can have multiple tests per sample-code.
@@ -36,6 +38,8 @@ export class PatientLabSample {
   public SpecimenList: Array<Object> = null;
   public BarCodeNumber: number = null;
   public HasInsurance: boolean = false;
+  public VisitType: string;
+  public PatientId: number;
   // public Tests: Array<TestReqIdPair> = null;
   //below is only for client side..
   //public TestCSV: string = null;
@@ -125,7 +129,7 @@ export class LabResult_TestVM {
   //public PrintId: number = null;
   public LabReportId: number = null;
   public Components: Array<LabTestComponent> = new Array<LabTestComponent>();
-  public SelectAll: boolean = true;
+  public SelectAll: boolean = false;
   //two properties, one to display the checkbox and second to bind with the checkbox.
   public ShowNegativeCheckbox: boolean = false;
   public IsNegativeResult: boolean = false;
@@ -164,4 +168,29 @@ export class LabTestSpecimenModel {
   public Specimen: string = "";
 }
 
-export class LabGroupResultModel {}
+
+export class LabGroupResultModel { }
+
+
+export class LabSendSmsModel {
+  public BillingStatus: string = null;
+  public CreatedBy: number = 0;
+  public CreatedOn: string = null;
+  public HasInsurance: boolean = false;
+  public IsActive: boolean = true;
+  public IsVerified: boolean = false;
+  public LOINC: string = null;
+  public LabReportId: number = 0;
+  public LabTestId: number = 0;
+  public LabTestName: string = null;
+  public LabTest: Array<LabTest> = [];
+  public LabTypeName: string = null;
+  public PatientId: number = 0;
+  public PatientName: string = null;
+  public RequisitionId: number = 0;
+  public RunNumberType: string = null;
+  public SampleCollectedOnDateTime: string = null;
+  public VisitType: string = null;
+  public WardName: string = null;
+  public SelectAll: boolean = false;
+}

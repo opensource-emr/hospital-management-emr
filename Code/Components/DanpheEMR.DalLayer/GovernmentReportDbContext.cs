@@ -41,7 +41,17 @@ namespace DanpheEMR.DalLayer
                 DynamicReport dReport = new DynamicReport();
 
                 //return an anonymous type with counter and user collection..
-                var reports = new { OutNEmergServices = dsCtrUsrs.Tables[0], DiagnosticService = dsCtrUsrs.Tables[1] };
+                var reports = new
+                {
+                    OutNEmergServices = dsCtrUsrs.Tables[0],
+                    DiagnosticService = dsCtrUsrs.Tables[1],
+                    FreeServices = dsCtrUsrs.Tables[2],
+                    ImmunizationServices = dsCtrUsrs.Tables[3],
+                    InpatientReferredOut = dsCtrUsrs.Tables[4],
+                    TotalPatientAdmitted = dsCtrUsrs.Tables[5],
+                    TotalInpatientDays = dsCtrUsrs.Tables[6],
+                    TotlLabServiceProvidedPersonCount = dsCtrUsrs.Tables[7]
+                };
                 dReport.JsonData = JsonConvert.SerializeObject(reports,
                                                  new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
                 return dReport;
@@ -237,19 +247,38 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region Inpatient Outcome
-        public InpatientOutcome GetInpatientOutcome(DateTime FromDate, DateTime ToDate)
+        public InpatientServiceReportModel GetInpatientOutcome(DateTime FromDate, DateTime ToDate)
         {
             List<SqlParameter> paramsList = new List<SqlParameter>();
             paramsList.Add(new SqlParameter("@FromDate", FromDate));
             paramsList.Add(new SqlParameter("@ToDate", ToDate));
             DataSet dsInpatientOutcome = GetDatasetFromStoredProc("SP_Report_Gov_InpatientOutcome", paramsList, this.connStr);
-            InpatientOutcome obj = new InpatientOutcome();
-            obj.InpatientoutcomeModel = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[0]);
+            InpatientServiceReportModel obj = new InpatientServiceReportModel();
+            obj.InpatientOutcome = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[0]);
+            obj.GestationalWeek_Gravda = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[1]);
+            obj.GestationalWeek_MaternalAge = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[2]);
+            obj.SurgerySummary = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[3]);
+            obj.DeathSummary = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[4]);
+            obj.FreeHealthServiceSummary = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[5]);
+            obj.FreeHealthServiceSummary_SSP = JsonConvert.SerializeObject(dsInpatientOutcome.Tables[6]);
+           
             return obj;
         }
         #endregion
 
+        #region Inpatient Morbidity
+        public InpatientMorbidityReportModel GetInpatientMorbidity(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramsList = new List<SqlParameter>();
+            paramsList.Add(new SqlParameter("@FromDate", FromDate));
+            paramsList.Add(new SqlParameter("@ToDate", ToDate));
+            DataSet dsInpatientMorbi = GetDatasetFromStoredProc("SP_Report_Gov_InpatientMorbidity", paramsList, this.connStr);
+            InpatientMorbidityReportModel obj = new InpatientMorbidityReportModel();
+            obj.InpatientMorbidity = JsonConvert.SerializeObject(dsInpatientMorbi.Tables[0]);
 
+            return obj;
+        }
+        #endregion
 
 
 

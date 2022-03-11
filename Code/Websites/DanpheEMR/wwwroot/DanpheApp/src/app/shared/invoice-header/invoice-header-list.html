@@ -2,7 +2,7 @@
 <div>
   <input type="button" class="btn primary-btn m1" (click)="showAddInvoiceHeader()" value="Add New Invoice Header" />
 
-  <add-invoice-header [showAddPage]="showAddPage"
+  <add-invoice-header [showAddPage]="showAddPage" *ngIf="showAddPage"
                       [Module]="module"
                       [selectedInvoiceHeader]="selectedInvoiceHeader"
                       (call-back)="CallBackAdd($event)">

@@ -73,7 +73,10 @@
       <danphe-grid [grid-colDefaults]="PhoneBookAppointmentReportColumns"
                    [grid-data]="PhoneBookAppointmentReportData"
                    [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"
-                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings" 
+                   [report-for]="'appointment'"  [grid-date-range]="dateRange"
+                   > </danphe-grid>
+                
     </div>
   </div>
 </div>

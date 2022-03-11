@@ -9,7 +9,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CallbackService } from '../../shared/callback.service';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 @Component({
-   templateUrl: "./counter-activate.html" // "/BillingView/CounterActivate"  //controller in BillingViewController
+   templateUrl: "./billing-counter-activate.html" // "/BillingView/CounterActivate"  //controller in BillingViewController
 })
 
 

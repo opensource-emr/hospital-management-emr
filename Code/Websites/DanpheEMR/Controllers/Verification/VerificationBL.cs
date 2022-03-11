@@ -1,10 +1,12 @@
 ﻿using DanpheEMR.DalLayer;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.InventoryReportModel;
 using DanpheEMR.Utilities;
 using DanpheEMR.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace DanpheEMR.Controllers
@@ -53,7 +55,7 @@ namespace DanpheEMR.Controllers
                         if (RBAC.UserHasPermissionId(user.UserId, req.PermissionIdList[i]) == true)
                         {
                             var authorizedPermissionId = req.PermissionIdList[i];
-                            req.CurrentVerificationLevel = rbacDb.StoreVerificationMapModel.Where(svm => svm.StoreId == req.StoreId && svm.PermissionId == authorizedPermissionId)
+                            req.CurrentVerificationLevel = rbacDb.StoreVerificationMapModel.Where(svm => svm.StoreId == req.RequestFromStoreId && svm.PermissionId == authorizedPermissionId)
                                                                                         .Select(svm => svm.VerificationLevel).FirstOrDefault();
                             req.isVerificationAllowed = !CheckForVerificationExistAtThisLevel(inventoryDb, req.CurrentVerificationLevel, req.VerificationId);
                             if (req.isVerificationAllowed == true)
@@ -174,14 +176,14 @@ namespace DanpheEMR.Controllers
                 req.CurrentVerificationLevelCount = GetNumberOfVerificationDone(inventoryDb, req.VerificationId ?? 0);
             }
             //set store Name and Max Verification Level for displaying purpose
-            var storeDetails = inventoryDb.StoreMasterModel
-                                .Where(store => store.StoreId == req.StoreId)
+            var storeDetails = inventoryDb.StoreMasters
+                                .Where(store => store.StoreId == req.RequestFromStoreId)
                                 .Select(store => new { store.Name, store.MaxVerificationLevel }).FirstOrDefault();
             req.StoreName = storeDetails.Name;
             req.MaxVerificationLevel = storeDetails.MaxVerificationLevel;
 
             //Step 2: set permission id so that we can filter which requisition to show.
-            req.PermissionIdList = SubstoreBL.GetStoreVerifiersPermissionList(req.StoreId, rbacDb).ToList();
+            req.PermissionIdList = SubstoreBL.GetStoreVerifiersPermissionList(req.RequestFromStoreId, rbacDb).ToList();
             //req.NextVerifiersPermissionName = SubstoreBL.GetCurrentVerifiersPermissionName(req.StoreId, req.CurrentVerificationLevel + 1, rbacDb);
         }
         public static InventoryRequisitionViewModel GetInventoryRequisitionDetails(int RequisitionId, InventoryDbContext inventoryDb)
@@ -269,6 +271,7 @@ namespace DanpheEMR.Controllers
                             purchaseReq.MaxVerificationLevel = PRVerificationSettingsParsed.VerificationLevel;
                             purchaseReq.PermissionIdList = PRVerificationSettingsParsed.PermissionIds;
                             purchaseReq.RequestedByName = VerificationBL.GetNameByEmployeeId(purchaseReq.CreatedBy, inventoryDb);
+                            purchaseReq.RequestFromStoreName = inventoryDb.StoreMasters.Find(purchaseReq.StoreId).Name;
                             purchaseReq.VendorName = GetInventoryVendorNameById(inventoryDb, purchaseReq.VendorId ?? 0);
                             if (purchaseReq.VerificationId != null)
                             {
@@ -347,13 +350,18 @@ namespace DanpheEMR.Controllers
                 foreach (var item in requisitionVM.RequestedItemList)
                 {
                     var itemDetails = inventoryDb.Items.Where(itm => itm.ItemId == item.ItemId)
-                                                        .Select(itm => new { itm.ItemName, itm.Code, itm.UnitOfMeasurementId }).FirstOrDefault();
+                                                        .Select(itm => new { itm.ItemName, itm.Code, itm.UnitOfMeasurementId, itm.MSSNO }).FirstOrDefault();
                     var itemUOMName = inventoryDb.UnitOfMeasurementMaster.Where(uom => uom.UOMId == itemDetails.UnitOfMeasurementId)
                                                                             .Select(uom => uom.UOMName).FirstOrDefault();
                     item.ItemName = itemDetails.ItemName;
                     item.Code = itemDetails.Code;
                     item.UOMName = itemUOMName;
+                    item.MSSNO = itemDetails.MSSNO;
                     item.IsEdited = false;
+                    item.AvailableQuantity = inventoryDb.StoreStocks.Where(stk => stk.ItemId == item.ItemId).Sum(stk => (double?)stk.AvailableQuantity);
+                    item.POQuantity = inventoryDb.PurchaseOrders.Where(a => a.RequisitionId == item.PurchaseRequestId)
+                                                            .Join(inventoryDb.PurchaseOrderItems, po => new { item.ItemId, po.PurchaseOrderId }, poI => new { poI.ItemId, poI.PurchaseOrderId }, (po, poI) => poI.Quantity)
+                                                            .FirstOrDefault();
                 }
 
 
@@ -375,6 +383,16 @@ namespace DanpheEMR.Controllers
                 throw ex;
             }
         }
+        public static int? GetIMIRNo(InventoryDbContext inventoryDbContext, DateTime? DecidingDate = null)
+        {
+            DecidingDate = (DecidingDate == null) ? DateTime.Now.Date : DecidingDate;
+            var selectedFiscalYear = inventoryDbContext.InventoryFiscalYears.Where(fsc => fsc.StartDate <= DecidingDate && fsc.EndDate >= DecidingDate).FirstOrDefault();
+
+            int imirNo = (from invtxn in inventoryDbContext.GoodsReceipts
+                          where selectedFiscalYear.StartDate <= invtxn.IMIRDate && selectedFiscalYear.EndDate >= invtxn.IMIRDate
+                          select invtxn.IMIRNo ?? 0).DefaultIfEmpty(0).Max();
+            return imirNo + 1;
+        }
         public static string GetInventoryVendorNameById(InventoryDbContext inventoryDb, int VendorId)
         {
             return inventoryDb.Vendors.Where(V => V.VendorId == VendorId).Select(V => V.VendorName).FirstOrDefault();
@@ -383,8 +401,9 @@ namespace DanpheEMR.Controllers
         {
             try
             {
-                return db.Employees.Where(emp => emp.EmployeeId == EmployeeId)
+                var empId = db.Employees.Where(emp => emp.EmployeeId == EmployeeId)
                                            .Select(emp => emp.FullName).FirstOrDefault();
+                return empId;
             }
             catch (Exception ex)
             {
@@ -447,6 +466,7 @@ namespace DanpheEMR.Controllers
                 purchaseOrder.VerificationStatus = "pending";
                 purchaseOrder.CurrentVerificationLevel = 0;
                 purchaseOrder.CurrentVerificationLevelCount = (purchaseOrder.VerificationId == null) ? 0 : GetNumberOfVerificationDone(db, purchaseOrder.VerificationId ?? 0);
+                purchaseOrder.OrderFromStoreName = db.StoreMasters.Find(purchaseOrder.StoreId).Name;
 
                 var VerifierIdsParsed = DanpheJSONConvert.DeserializeObject<List<dynamic>>(purchaseOrder.VerifierIds);
 
@@ -517,6 +537,44 @@ namespace DanpheEMR.Controllers
                 throw ex;
             }
         }
+
+        public static QuotationRatesVm GetQuotationRatesDetails(int PurchaseOrderId, InventoryDbContext db)
+        {
+            var quotationsAgainstPO = (from POI in db.PurchaseOrderItems
+                                       from QCI in db.QuotationItems.Where(qi => qi.ItemId == POI.ItemId).DefaultIfEmpty()
+                                       from QC in db.Quotations.Where(q => q.QuotationId == QCI.QuotationId).DefaultIfEmpty()
+                                       where POI.PurchaseOrderId == PurchaseOrderId
+                                       select new
+                                       {
+                                           ItemId = POI.ItemId,
+                                           ItemName = (QCI != null) ? QCI.ItemName : "",
+                                           VendorId = (QC != null) ? QC.VendorId : default(int?),
+                                           VendorName = (QC != null) ? QC.VendorName : "",
+                                           Price = (QCI != null) ? QCI.Price : default(int?),
+                                           Status = (QC != null) ? QC.Status : ""
+                                       }).ToList();
+            var itemNameList = quotationsAgainstPO.Select(a => a.ItemName).Distinct().ToList();
+            var quotationRates = quotationsAgainstPO.Where(q => q.VendorId != null).GroupBy(q => q.VendorId)
+                                        .Select(q => new QuotationRatesDto()
+                                        {
+                                            VendorId = q.Key,
+                                            VendorName = q.FirstOrDefault().VendorName,
+                                            ItemDetails = q.Select(i => new QuotationRatesComparisionDTO()
+                                            {
+                                                ItemId = i.ItemId,
+                                                ItemName = i.ItemName,
+                                                Price = i.Price,
+                                                Status = i.Status
+                                            }).ToList()
+                                        }).ToList();
+            return new QuotationRatesVm()
+            {
+                ItemNameList = itemNameList,
+                QuotationRates = quotationRates
+            };
+        }
+
+
         #region Inventory Goods Receipt Verification Methods
 
         public static List<GoodsReceiptModel> GetInventoryGRBasedOnUser(DateTime FromDate, DateTime ToDate, InventoryDbContext db, RbacDbContext rbac, RbacUser user)
@@ -527,6 +585,10 @@ namespace DanpheEMR.Controllers
             //puchase order ko veriferIds field cha, role and userId check, cha bhane, show purchase order
             foreach (var gR in GoodsReceiptList)
             {
+                var FiscalYear = db.InventoryFiscalYears.FirstOrDefault(a => a.FiscalYearId == gR.FiscalYearId);
+                gR.FiscalYear = (FiscalYear != null) ? FiscalYear.FiscalYearName : "";
+                gR.GoodsReceiptDate = gR.GoodsReceiptDate != null ? gR.GoodsReceiptDate : null;
+                gR.GoodsArrivalFiscalYearFormatted = db.InventoryFiscalYears.Where(f => f.StartDate <= gR.GoodsArrivalDate && f.EndDate >= gR.GoodsArrivalDate).Select(f => f.FiscalYearName).FirstOrDefault();
                 gR.IsVerificationAllowed = false;
                 gR.VerificationStatus = "pending";
                 gR.CurrentVerificationLevel = 0;
@@ -573,11 +635,12 @@ namespace DanpheEMR.Controllers
                 foreach (var item in GoodsReceiptVM.ReceivedItemList)
                 {
                     var itemDetails = db.Items.Where(itm => itm.ItemId == item.ItemId)
-                                                        .Select(itm => new { itm.ItemName, itm.Code, itm.UnitOfMeasurementId }).FirstOrDefault();
+                                                        .Select(itm => new { itm.ItemName, itm.MSSNO, itm.Code, itm.UnitOfMeasurementId }).FirstOrDefault();
                     var itemUOMName = db.UnitOfMeasurementMaster.Where(uom => uom.UOMId == itemDetails.UnitOfMeasurementId)
                                                                             .Select(uom => uom.UOMName).FirstOrDefault();
                     item.ItemName = itemDetails.ItemName;
                     item.Code = itemDetails.Code;
+                    item.MSSNO = itemDetails.MSSNO;
                     item.UOMName = itemUOMName;
                     item.IsEdited = false;
                 }
@@ -592,6 +655,8 @@ namespace DanpheEMR.Controllers
                                         a.gr.CreatedBy,
                                         a.gr.CreatedOn,
                                         a.gr.VerificationId,
+                                        a.gr.MaterialCoaDate,
+                                        a.gr.MaterialCoaNo,
                                         a.vendor.VendorName,
                                         a.vendor.ContactAddress,
                                         a.vendor.ContactNo,

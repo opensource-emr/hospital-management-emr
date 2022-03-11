@@ -8,6 +8,7 @@ import { PhrmRackService } from '../../shared/rack/phrm-rack.service';
 import { GridEmitModel } from '../../../shared/danphe-grid/grid-emit.model';
 import * as moment from 'moment';
 import PHRMReportsGridColumns from '../../shared/phrm-reports-grid-columns';
+import { CoreService } from "../../../core/shared/core.service";
 @Component({
     selector: 'phrm-rack-report1',
     templateUrl: './phrm-rack-stock-distribution-report.html'
@@ -34,7 +35,8 @@ export class PHRMRackStockDistributionReportComponent implements OnInit {
     constructor(private _pharmacyBLService: PharmacyBLService,
         private _rackService: PhrmRackService,
         private _dlService: DLService,
-        private _messageBoxService: MessageboxService) {
+        private _messageBoxService: MessageboxService,
+        public coreService: CoreService) {
         this.GetLocationList();
         this.GetRack();
     }

@@ -18,6 +18,7 @@ export class KinEmergencyContactComponent implements IRouteGuard {
 
     constructor(_serv: PatientService, public msgBoxServ: MessageboxService) {
         this.currentPatient = _serv.getGlobal();
+        this.GoToNextInput("InputId");
         this.kinEmergencyContacts = this.currentPatient.KinEmergencyContacts;
     }
 
@@ -26,6 +27,17 @@ export class KinEmergencyContactComponent implements IRouteGuard {
         this.currentKinEmergencyContact = Object.assign(this.currentKinEmergencyContact, selectedKinEmergencyContact);
 
     }
+
+
+    GoToNextInput(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+
     public UpdateKin() {
         for (var i in this.currentKinEmergencyContact.KinValidator.controls) {
             this.currentKinEmergencyContact.KinValidator.controls[i].markAsDirty();

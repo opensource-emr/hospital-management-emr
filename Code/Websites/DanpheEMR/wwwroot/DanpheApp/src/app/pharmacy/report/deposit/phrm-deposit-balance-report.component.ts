@@ -16,6 +16,7 @@ export class PHRMDepositBalanceReport {                                        /
   PHRMDepositBalanceReportData: Array<any> = new Array<PHRMReportsModel>();
   public phrmReports: PHRMReportsModel = new PHRMReportsModel();
   dlService: DLService = null;
+  public pharmacy:string = "pharmacy";
 
   constructor(
     public pharmacyBLService: PharmacyBLService,

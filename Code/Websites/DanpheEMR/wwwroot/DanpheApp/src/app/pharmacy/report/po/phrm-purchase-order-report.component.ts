@@ -26,6 +26,9 @@ export class PHRMPurchaseOrderReportComponent {
     PHRMPurchaseOrderReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+    public dateRange: string = "";
+    public pharmacy: string = "pharmacy";
+    public loading: boolean = false;
 
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
         this.PHRMPurchaseOrderReportColumns = PHRMReportsGridColumns.PHRMPurchaseOrderReport;
@@ -44,6 +47,7 @@ export class PHRMPurchaseOrderReportComponent {
     };
 
     Load() {
+        this.loading = true;
         this.pharmacyBLService.GetPHRMPurchaseOrderReport(this.phrmReports)
             .subscribe(res => {
                 if (res.Status == 'OK') {
@@ -56,6 +60,7 @@ export class PHRMPurchaseOrderReportComponent {
 
                     this.msgBoxServ.showMessage("failed", [res.ErrorMessage])
                 }
+                this.loading = false;
             });
 
     }
@@ -64,6 +69,7 @@ export class PHRMPurchaseOrderReportComponent {
     OnFromToDateChange($event) {
         this.phrmReports.FromDate = $event ? $event.fromDate : this.phrmReports.FromDate;
         this.phrmReports.ToDate = $event ? $event.toDate : this.phrmReports.ToDate;
+        this.dateRange = "<b>Date:</b>&nbsp;" + this.phrmReports.FromDate + "&nbsp;<b>To</b>&nbsp;" + this.phrmReports.ToDate;
     }
 
 

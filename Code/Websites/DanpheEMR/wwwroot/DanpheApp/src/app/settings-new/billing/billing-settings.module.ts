@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from "@angular/common";
-import { AgGridModule } from 'ag-grid-angular/main';
 import { BillingSettingsMainComponent } from './billing-settings-main.component';
 import { SharedModule } from '../../shared/shared.module';
 import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete';
@@ -19,6 +18,9 @@ import { BillingPackageListComponent } from './packages/billing-package-list.com
 import { ServiceDepartmentAddComponent } from '../departments/service-dept/service-department-add.component';
 import { ServiceDepartmentListComponent } from '../departments/service-dept/service-department-list';
 import { AuthGuardService } from '../../security/shared/auth-guard.service';
+import { ReportingItemsListComponent } from './reporting-items-mapping/reporting-items-list.component';
+import { ReportingItemAndBillItemMapComponent } from './reporting-items-mapping/manage-reporting-items/manage-reporting-items.component';
+import { ReportingItemsAddComponent } from './reporting-items-mapping/reporting-items-add.component';
 
 export const billSettingsRoutes =
   [
@@ -31,6 +33,7 @@ export const billSettingsRoutes =
         { path: 'ManageBillingPackages', component: BillingPackageListComponent, canActivate: [AuthGuardService] },
         { path: 'ManageCreditOrganizations', component: CreditOrganizationListComponent, canActivate: [AuthGuardService] },
         { path: 'ManageMemberships', component: MembershipListComponent, canActivate: [AuthGuardService] },
+        { path: 'ManageReportingItemsMapping', component: ReportingItemsListComponent, canActivate: [AuthGuardService] },
       ]
     }
   ]
@@ -60,7 +63,10 @@ export const billSettingsRoutes =
     BillingPackageAddComponent,
     BillingPackageListComponent,
     ServiceDepartmentAddComponent,
-    ServiceDepartmentListComponent
+    ServiceDepartmentListComponent,
+    ReportingItemsListComponent,
+    ReportingItemAndBillItemMapComponent,
+    ReportingItemsAddComponent 
   ],
   bootstrap: []
 })

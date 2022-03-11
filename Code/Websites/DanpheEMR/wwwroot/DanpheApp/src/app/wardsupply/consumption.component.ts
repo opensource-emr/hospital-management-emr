@@ -10,7 +10,7 @@ import { SecurityService } from '../security/shared/security.service';
 import { CallbackService } from '../shared/callback.service';
 import * as moment from 'moment/moment';
 import { CommonFunctions } from '../shared/common.functions';
-
+import { CoreService } from "../core/shared/core.service";
 
 @Component({
     templateUrl: "../../app/view/ward-supply-view/Consumption.html" // "/WardSupplyView/Consumption"
@@ -40,7 +40,8 @@ export class ConsumptionComponent {
         public messageboxService: MessageboxService,
         public securityService: SecurityService,
         public router: Router,
-        public callBackService: CallbackService
+        public callBackService: CallbackService,
+        public coreService: CoreService
     ) {
         //this.GetWardList();
         //this.GetPatientList();
@@ -198,7 +199,7 @@ export class ConsumptionComponent {
     }
     //used to format display of item in ng-autocomplete
     ItemListFormatter(data: any): string {
-        let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>(" + data["GenericName"] + ") B-<b>" + data["BatchNo"] + "</b> RS.<b>" + data["MRP"] + "</b> <font color='red'>Qty " + data["AvailableQuantity"] + "</font>";
+        let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>(" + data["GenericName"] + ") B-<b>" + data["BatchNo"] + "</b>"+this.coreService.currencyUnit+"<b>" + data["MRP"] + "</b> <font color='red'>Qty " + data["AvailableQuantity"] + "</font>";
         return html;
     }
     onChangeItem($event, index) {

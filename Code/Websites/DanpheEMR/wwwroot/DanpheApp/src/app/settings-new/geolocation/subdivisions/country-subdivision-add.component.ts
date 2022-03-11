@@ -7,7 +7,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 @Component({
   selector: "subdivision-add",
-  templateUrl: "./country-subdivision-add.html"
+  templateUrl: "./country-subdivision-add.html",
+  host: { '(window:keyup)': 'hotkeys($event)' }
 })
 
 export class CountrySubdivisionAddComponent {
@@ -76,6 +77,7 @@ export class CountrySubdivisionAddComponent {
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showAddPage = val;
+    this.FocusElementById("ddlCountry");
     if (this.selectedSubdivision) {
       this.update = true;
       this.currentSubDivision = Object.assign(this.currentSubDivision, this.selectedSubdivision);
@@ -93,6 +95,7 @@ export class CountrySubdivisionAddComponent {
     for (var i in this.currentSubDivision.SubdivisionValidator.controls) {
       this.currentSubDivision.SubdivisionValidator.controls[i].markAsDirty();
       this.currentSubDivision.SubdivisionValidator.controls[i].updateValueAndValidity();
+      this.FocusElementById("ddlCountry");
     }
 
     if (this.currentSubDivision.IsValidCheck(undefined, undefined)) {
@@ -105,6 +108,7 @@ export class CountrySubdivisionAddComponent {
           },
           err => {
             this.logError(err);
+            this.FocusElementById("ddlCountry");
           });
     }
   }
@@ -125,6 +129,7 @@ export class CountrySubdivisionAddComponent {
     for (var i in this.currentSubDivision.SubdivisionValidator.controls) {
       this.currentSubDivision.SubdivisionValidator.controls[i].markAsDirty();
       this.currentSubDivision.SubdivisionValidator.controls[i].updateValueAndValidity();
+      this.FocusElementById("ddlCountry");
     }
 
     if (this.currentSubDivision.IsValidCheck(undefined, undefined)) {
@@ -138,6 +143,7 @@ export class CountrySubdivisionAddComponent {
           },
           err => {
             this.logError(err);
+            this.FocusElementById("ddlCountry");
           });
     }
   }
@@ -159,8 +165,18 @@ export class CountrySubdivisionAddComponent {
   logError(err: any) {
     console.log(err);
   }
-
-
-
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  hotkeys(event){
+    if(event.keyCode==27){
+        this.Close()
+    }
+}
 
 }

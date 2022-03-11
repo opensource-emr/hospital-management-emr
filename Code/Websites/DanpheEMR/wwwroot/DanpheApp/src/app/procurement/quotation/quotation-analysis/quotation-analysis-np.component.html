@@ -1,0 +1,78 @@
+<div class="wrapper" id="print-page" style="margin: 1rem;border: 1px dotted black;">
+    <div class="" style="margin-bottom: 10px; display: flex; align-items: center;">
+        <div style="width: 20%;">
+            <div style="text-align: left;margin: 1rem;">
+                <img class="img-responsive" style="max-height:10rem;" src="../../../themes/theme-default/images/hospital-logo.png" />
+            </div>
+        </div>
+        <div style="width: 50%;float: left;padding-bottom:  0px;">
+            <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                
+                <div style="font-weight: 700;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                <div style="font-weight: 700;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                <div style="font-weight: 700;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                <div style="font-weight: 700;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                <div style="font-weight: 700;">{{headerDetail.hospitalName}}</div>
+                <div style="font-weight: 700;">{{headerDetail.address}}</div>
+            </div>
+        </div>
+        <div class="noPrint" style="width: 30%; float: left;">
+            <div class="form-group row clearfix ">
+                <label class="control-label col-md-4">Issue Date<sup class="color-red"> *</sup><b>:</b></label>
+                <div class="col-md-8">
+                    <danphe-date-picker [(ngModel)]="issuedDate" [ngModelOptions]="{standalone: true}" [CalendarTypes]="'en,np'" [allow-future-date]="true" ngDefaultControl (ngModelChange)="ToogleDateSelection()">
+                    </danphe-date-picker>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="width: 50% ; text-align: left;">प.स:{{activeFiscalYear}}</div>
+    <hr />
+    <div style="text-align: center;">
+        सम्बन्धित सामाग्रीहरुको आ.व. {{activeFiscalYear}} तुलनात्मक तालिका
+    </div>
+    <div class="table-responsive">
+        <table border="2" rules="all" class="table table-striped table-hover" style="background-color:initial;margin-top:10px;text-align:center;">
+            <tr>
+                <th rowspan="2" style="align-content:center;font-size:16px;padding-top:30px;">क्र.स. </th>
+                <th rowspan="2" style="align-content:center;font-size:16px;padding-top:30px;">सामानहरुको नाम</th>
+                <th rowspan="2" style="align-content:center;font-size:16px;padding-top:30px;">परिमाण</th>
+                <th rowspan="2" style="align-content:center;font-size:16px;padding-top:30px;">ईकाइ </th>
+                <!--setting dynamic vendor numbers-->
+                <th colspan="2" *ngFor="let vendor of VendorList, let i= index" style="font-size:15px;">
+                    <input id="selectedVendor{{i}}" class="zoomcheckbox noPrint" [(ngModel)]="vendor.IsSelected" name="IsSelected" width="100" type="checkbox" ng-checked="vendor.IsSelected=true" (change)="ToggleItemSelection(i)">
+                    <label style="font-size: 15px; font-weight: 700;" for="selectedVendor{{i}}">{{vendor.VendorName}} ({{vendor.Currency}})</label>
+                </th>
+                <!-- <th [attr.colspan]="noOfVendors" style="align-content:center;font-size:16px;">Vendors (Price per unit)</th> -->
+            </tr>
+            <tr>
+                <ng-container *ngFor="let vendor of VendorList">
+                    <th> Rate </th>
+                    <th> Total </th>
+                </ng-container>
+            </tr>
+            <tbody>
+                <tr *ngFor="let quoItem of QuotItemList; let i= index">
+                    <td>{{i+1}}</td>
+                    <td>{{quoItem.ItemName}}</td>
+                    <td>{{quoItem.RequestedQuantity}}</td>
+                    <td>{{quoItem.UOMName}}</td>
+                    <ng-container *ngFor="let itm of quoItem.Vendordetails">
+                        <td>{{itm.Price}}</td>
+                        <td>{{quoItem.RequestedQuantity * itm.Price}}</td>
+                    </ng-container>
+                </tr>
+                <tr>
+                    <th colspan=4 style="align-content:center;font-size:16px;"><b>Total</b></th>
+                    <td colspan="2" *ngFor="let amt of TotalAmountList" style="align-content:center;font-size:16px;"><b>{{amt.Totalamount}}</b></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="text-align: left;"> Excluding VAT 13%</div>
+    <br><br>
+    <div style="display: flex; justify-content: space-evenly;">
+        <div style="margin-top: 2rem;text-decoration: dotted overline;">स्टोर प्रमुख</div>
+        <div style="margin-top: 2rem;text-decoration: dotted overline;">प्र.मे.सु. </div>
+    </div>
+</div>

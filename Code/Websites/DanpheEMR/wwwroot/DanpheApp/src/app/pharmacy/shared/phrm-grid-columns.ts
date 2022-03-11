@@ -30,7 +30,7 @@ export default class PHRMGridColumns {
         { headerName: "ContactNo", field: "ContactNo", width: 100 },
         { headerName: "Description", field: "Description", width: 100 },
         { headerName: "City", field: "City", width: 100 },
-        { headerName: "Pan No.", field: "Pin", width: 100 },
+        { headerName: "Pan No.", field: "PANNumber", width: 100 },
         { headerName: "ContactAddress", field: "ContactAddress", width: 100 },
         { headerName: "Email", field: "Email", width: 100, cellStyle: PHRMGridColumns.UserGridCellStyle },
         { headerName: "CreditPeriod", field: "CreditPeriod", width: 100 },
@@ -70,7 +70,7 @@ export default class PHRMGridColumns {
         { headerName: "Action", field: "", width: 150, cellRenderer: PHRMGridColumns.ShowActionforPHRMSetting },
     ]
     static PHRMItemList = [
-        { headerName: "Item Name", field: "ItemName", width: 200 },
+        { headerName: "Medicine Name", field: "ItemName", width: 200 },
         { headerName: "Company Name", field: "CompanyName", width: 150 },
         //{ headerName: "Supplier Name", field: "SupplierName", width: 200 },
         //{ headerName: "Item Code", field: "ItemCode", width: 150 },
@@ -81,18 +81,21 @@ export default class PHRMGridColumns {
         { headerName: "ReOrder Quantity", field: "ReOrderQuantity", width: 110 },
         { headerName: "MinStock Quantity", field: "MinStockQuantity", width: 120 },
         { headerName: "Rack", field: "RackName", width: 100 },
-        //{ headerName: "VAT Percentage", field: "VATPercentage", width: 150 },
+        { headerName: "IsActive", field: "IsActive", width: 100 },
         { headerName: "Action", field: "", resizable: true, cellRenderer: PHRMGridColumns.ShowActionforPHRMSettingItemManage },
     ]
 
     static PHRMDispensaryList = [
-        { headerName: "Name", field: "Name", width: 200 },
+        { headerName: "Name", field: "Name", width: 160 },
+        { headerName: "Type", field: "SubCategory", width: 80 },
         { headerName: "ContactNo", field: "ContactNo", width: 100 },
-        { headerName: "Description", field: "DispensaryDescription", width: 100 },
-        { headerName: "Label", field: "DispensaryLabel", width: 100 },
-        { headerName: "Contact Address", field: "Address", width: 100 },
-        { headerName: "Email", field: "Email", width: 150, cellStyle: PHRMGridColumns.UserGridCellStyle },
-        { headerName: "Action", field: "", width: 150, cellRenderer: PHRMGridColumns.ShowActionforPHRMSetting },
+        { headerName: "Description", field: "StoreDescription", width: 80 },
+        { headerName: "Label", field: "StoreLabel", width: 100 },
+        { headerName: "PAN", field: "PanNo", width: 100 },
+        { headerName: "Address", field: "Address", width: 100 },
+        { headerName: "Email", field: "Email", width: 100, cellStyle: PHRMGridColumns.UserGridCellStyle },
+        { headerName: "Default Payment Mode", field: "DefaultPaymentMode", width: 100 },
+        { headerName: "Action", field: "", width: 200, cellRenderer: PHRMGridColumns.ShowActionforPHRMDispensarySetting },
     ]
 
     static PHRMTAXList = [
@@ -103,13 +106,14 @@ export default class PHRMGridColumns {
     ]
     static PHRMGoodsReceiptList = [
         { headerName: "G.R. No.", field: "GoodReceiptPrintId", width: 80 },//using GoodReceiptPrintId instead of GrID
-        { headerName: "Supplier Name", field: "SupplierName", width: 150 },
         { headerName: "GR Date", field: "GoodReceiptDate", width: 100, cellRenderer: PHRMGridColumns.PHRMGRDateOnlyRenderer },
+        { headerName: "SupplierBillDate", field: "SupplierBillDate", width: 100, cellRenderer: PHRMGridColumns.PHRMSBDateOnlyRenderer },
+        { headerName: "Bill No", field: "InvoiceNo", width: 100 },
+        { headerName: "Supplier Name", field: "SupplierName", width: 150 },
         { headerName: "Sub Total", field: "SubTotal", width: 100 },
         { headerName: "Discount Amount", field: "DiscountAmount", width: 100 },
         { headerName: "VAT Amount", field: "VATAmount", width: 100 },
         { headerName: "Total Amount", field: "TotalAmount", width: 100 },
-        { headerName: "Invoice No", field: "InvoiceNo", width: 100 },
         { headerName: "Remarks", field: "Remarks", width: 100 },
         { headerName: "Aging Days", field: "AgingDays", width: 100 },
         { headerName: "Action", field: "", width: 100, template: '<a danphe-grid-action="view" class="grid-action">View</a>' },
@@ -192,20 +196,113 @@ export default class PHRMGridColumns {
     ]
 
     static PHRMSalesitemList = [
-        { headerName: "InvoiceId", field: "InvoicePrintId", width: 150 },
+        { headerName: "Bill No", field: "InvoicePrintId", width: 150 },
         { headerName: "Date", field: "CreatedOn", width: 150, cellRenderer: PHRMGridColumns.PHRMGRSalesIremCreated },
-        // { headerName: "InvoiceId", field: "InvoiceId", width: 150 },
-        { headerName: "ItemName", field: "ItemName", width: 150 },
+        { headerName: "Generic Name", field: "GenericName", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
         { headerName: "Patient", field: "PatientName", width: 150 },
         { headerName: "BatchNo", field: "BatchNo", width: 150 },
+        { headerName: "Expiry", field: "ExpiryDate", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
         { headerName: "Quantity", field: "Quantity", width: 150 },
-        { headerName: "Price", field: "Price", width: 150 },
+        { headerName: "Sales Rate", field: "MRP", width: 150 },
+        { headerName: "Sale Value", field: "TotalAmount", width: 150 },
+        { headerName: "Stock Value", field: "StockValue", width: 150 },
+        { headerName: "Store", field: "StoreName", width: 150 },
+        { headerName: "Counter", field: "CounterName", width: 150 },
+        { headerName: "User", field: "CreatedByName", width: 150 },
+
+    ]
+
+    //sud:6Sept'21--We need to hide CostPrice columns from Dispensary.. so created column setting similar to pharmacy report except cost price columns
+    static Dispensary_PHRMSalesitemList = [
+        { headerName: "Bill No", field: "InvoicePrintId", width: 150 },
+        { headerName: "Date", field: "CreatedOn", width: 150, cellRenderer: PHRMGridColumns.PHRMGRSalesIremCreated },
+        { headerName: "Generic Name", field: "GenericName", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
+        { headerName: "Patient", field: "PatientName", width: 150 },
+        { headerName: "BatchNo", field: "BatchNo", width: 150 },
+        { headerName: "Expiry", field: "ExpiryDate", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
+        { headerName: "Quantity", field: "Quantity", width: 150 },
+        { headerName: "SP", field: "MRP", width: 150 },
+        { headerName: "Sale Value", field: "TotalAmount", width: 150 },
+        { headerName: "Store", field: "StoreName", width: 150 },
+        { headerName: "Counter", field: "CounterName", width: 150 },
+        { headerName: "User", field: "CreatedByName", width: 150 },
+
+    ]
+
+
+    static ItemWisePurchaseList = [
+        { headerName: "GR Date", field: "GoodReceiptDate", width: 150, cellRenderer: PHRMGridColumns.PHRMGRSalesIremCreated },
+        { headerName: "GR NO.", field: "GoodsReceiptNo", width: 100 },
+        { headerName: "Supplier", field: "SupplierName", width: 150 },
+        { headerName: "Bill No.", field: "InvoiceNo", width: 80 },
+        { headerName: "Generic Name", field: "GenericName", width: 150 },
+        { headerName: "Item", field: "ItemName", width: 150 },
+        { headerName: "Batch", field: "BatchNo", width: 80 },
+        { headerName: "Expiry", field: "ExpiryDate", width: 100, cellRenderer: PHRMGridColumns.PHRMExpiryDateRenderer_PurItmRpt },
+        { headerName: "Quantity", field: "ReceivedQuantity", width: 80 },
+        { headerName: "Purchase Rate", field: "PurchaseRate", width: 150 },
+        { headerName: "SubTotal", field: "SubTotal", width: 150 },
+        { headerName: "VAT Amt.", field: "VATAmount", width: 150 },
+        { headerName: "TotalAmount", field: "TotalAmount", width: 150 }
+    ]
+
+    //PHRM: showing Expiry date in YYYY-MM-DD
+    static PHRMExpiryDateRenderer_PurItmRpt(params) {
+        let date: string = params.data.ExpiryDate;
+        return moment(date).format('YYYY-MM-DD');
+    }
+
+    static PHRMNarcoticsSalesitemList = [
+        { headerName: "InvoiceNo", field: "InvoicePrintId", width: 150 },
+        { headerName: "Date", field: "CreatedOn", width: 150, cellRenderer: PHRMGridColumns.PHRMGRSalesIremCreated },
+        // { headerName: "InvoiceId", field: "InvoiceId", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
+        { headerName: "Patient", field: "PatientName", width: 150 },
+        { headerName: "Doctor", field: "DoctorName", width: 150 },
+        { headerName: "NMC No.", field: "NMCNumber", width: 150 },
+        { headerName: "BatchNo", field: "BatchNo", width: 150 },
+        { headerName: "Quantity", field: "Quantity", width: 150 },
+        { headerName: "S.Price", field: "MRP", width: 150 },
         { headerName: "TotalAmount", field: "TotalAmount", width: 150 }
 
     ]
+
+    static PHRMSettlementHeaderList = [
+        { headerName: "Hospital No.", field: "PatientCode", width: 120 },
+        { headerName: "Patient Name", field: "PatientName", width: 150 },
+        {
+            headerName: "Age/Sex",
+            field: "Gender",
+            width: 110,
+            cellRenderer: PHRMGridColumns.AgeSexRendererPatient,
+        },
+        { headerName: "Contact", field: "ContactNo", width: 150 },
+        { headerName: "Receivable Amount", field: "CollnFromReceivable", width: 150 },
+        { headerName: "Cash Discount", field: "CashDiscountGiven", width: 150 },
+        { headerName: "Discount Return", field: "CashDiscReturn", width: 150 },
+        { headerName: "Settlement Date", field: "SettlementDate", width: 150, cellRenderer: PHRMGridColumns.SettlementCreated },
+        {
+            headerName: "Actions",
+            field: "",
+            width: 200,
+            ///this is used to action according to status
+            cellRenderer: PHRMGridColumns.ShowActionForSettlementList
+        }
+    ];
+    static ShowActionForSettlementList() {
+
+        let template =
+            `<a danphe-grid-action="view" class="grid-action">
+                View Details
+            </a>`
+
+        return template
+    }
     static PHRMABCVEDList = [
         { headerName: "InvoiceId", field: "InvoiceId", width: 150 },
-        { headerName: "ItemName", field: "ItemName", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
         { headerName: "BatchNo", field: "BatchNo", width: 150 },
         { headerName: "Quantity", field: "Quantity", width: 150 },
         { headerName: "Price", field: "Price", width: 150 },
@@ -215,7 +312,7 @@ export default class PHRMGridColumns {
     PHRMStockDetailsList = [
 
         //{ headerName: "Item Type", field: "CategoryName", width: 100},
-        { headerName: "Item Name", field: "ItemName", width: 200 },
+        { headerName: "Medicine Name", field: "ItemName", width: 200 },
         { headerName: "Batch No", field: "BatchNo", width: 90 },
         { headerName: "Expiry Date", field: "ExpiryDate", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
         { headerName: "Cost Price", field: "Price", width: 90 },
@@ -233,13 +330,13 @@ export default class PHRMGridColumns {
     static PHRMNArcoticsStockDetailsList = [
 
         //{ headerName: "Item Type", field: "CategoryName", width: 100},
-        { headerName: "Item Name", field: "ItemName", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
         { headerName: "Batch No", field: "BatchNo", width: 80 },
         { headerName: "Expiry Date", field: "ExpiryDate", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
         // { headerName: "Cost Price", field: "Price", width: 80  },
         { headerName: "Stock Qty", field: "StockQty", width: 100 },
         //{ headerName: "Price", field: "Price", width: 100 },
-        { headerName: "MRP", field: "MRP", width: 80 },
+        { headerName: "S.Price", field: "MRP", width: 80 },
         { headerName: "Dispensary/Store Name", field: "Name", width: 100 },
         // {
         //   headerName: "Action",
@@ -256,21 +353,29 @@ export default class PHRMGridColumns {
         //< /a>
     ]
     static PHRMStockList = [
-
-        //{ headerName: "Item Type", field: "CategoryName", width: 100},
-        { headerName: "Item Name", field: "ItemName", width: 150 },
-        //{ headerName: "Batch No", field: "BatchNo", width: 150 },
-        //{ headerName: "Expiry Date", field: "ExpiryDate", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
+        { headerName: "Medicine Name", field: "ItemName", width: 200 },
+        { headerName: "Generic Name", field: "GenericName", width: 200 },
+        { headerName: "Batch No", field: "BatchNo", width: 100 },
+        { headerName: "Expiry Date", width: 150, field: "ExpiryDate", cellRenderer: PHRMGridColumns.DateOfExpiry },
         { headerName: "Available Quantity", field: "AvailableQuantity", width: 100 },
-        //{ headerName: "Price", field: "Price", width: 100 },
-        { headerName: "MRP", field: "MRP", width: 100 },
+        { headerName: "S.Price", field: "MRP", width: 100 },
+    ]
+    static PHRMInsuranceStockList = [
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
+        { headerName: "Generic Name", field: "GenericName", width: 150 },
+        { headerName: "Batch No", field: "BatchNo", width: 100 },
+        { headerName: "Expiry Date", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
+        { headerName: "Available Quantity", field: "AvailableQuantity", width: 100 },
+        { headerName: "Govt-Insurance Price", field: "GovtInsurancePrice", width: 100 },
+        { headerName: "S.Price", field: "MRP", width: 100 },
     ]
 
 
     static PHRMPOList = [
+        { headerName: "PO No", field: "PurchaseOrderNo", width: 80 },
+        { headerName: "PO Date", field: "PODate", width: 100, cellRenderer: PHRMGridColumns.PHRMPurchaseOrderDateOnlyRenderer },
         { headerName: "Supplier Name", field: "SupplierName", width: 110 },
         { headerName: "ContactNo", field: "ContactNo", width: 110 },
-        { headerName: "PO Date", field: "PODate", width: 100, cellRenderer: PHRMGridColumns.PHRMPurchaseOrderDateOnlyRenderer },
         { headerName: "Total Amount", field: "TotalAmount", width: 80 },
         { headerName: "PO Status", field: "POStatus", width: 110 },
 
@@ -340,20 +445,20 @@ export default class PHRMGridColumns {
 
     ]
 
-    StoreRequestItemsList = [
-        { headerName: "Date", field: "Date", width: 100, cellRenderer: PHRMGridColumns.PHRMStoreDate },
-        { headerName: "GR No.", field: "GoodReceiptPrintId", width: 100 },
-        { headerName: "Item Name", field: "ItemName", width: 200 },
+    StoreStockDetailList = [
+        { headerName: "Generic Name", field: "GenericName", width: 300 },
+        { headerName: "Medicine Name", field: "ItemName", width: 300 },
         { headerName: "Batch No", field: "BatchNo", width: 100 },
-        { headerName: "Expiry Date", field: "ExpiryDate", width: 120, cellRenderer: PHRMGridColumns.DateOfExpiry },
-        { headerName: "Available Qty", field: "AvailableQty", width: 90, sort: "desc" },
-        { headerName: "MRP", field: "MRP", width: 70 },
-        { headerName: "Store Name", field: "StoreName", width: 100 },
+        { headerName: "Expiry Date", width: 150, cellRenderer: PHRMGridColumns.DateOfExpiry },
+        { headerName: "Available Qty", field: "AvailableQuantity", width: 180, sort: "desc" },
+        { headerName: "Sales Rate", field: "MRP", width: 100 },
+        { headerName: "Purchase Rate", field: "CostPrice", width: 100 },
+        { headerName: "Store", field: "StoreName", width: 300 },
         {
             headerName: "Actions",
             field: "",
-            width: 400,
-            cellRenderer: this.GetStoreStockActions
+            width: 300,
+            cellRenderer: PHRMGridColumns.GetStoreStockActions
         }
     ]
 
@@ -386,7 +491,7 @@ export default class PHRMGridColumns {
 
     static StockTxnItems = [
         //StockTxnItemId,ItemId,ItemName,BatchNo,,Quantity,Price,MRP,SubTotal,TotalAmount,InOut ,CreatedOn,ExpiryDate        
-        { headerName: "Item Name", field: "ItemName", width: 150 },
+        { headerName: "Medicine Name", field: "ItemName", width: 150 },
         { headerName: "Batch", field: "BatchNo", width: 100 },
         { headerName: "Qty", field: "Quantity", width: 100 },
         { headerName: "Price", field: "Price", width: 80 },
@@ -434,7 +539,26 @@ export default class PHRMGridColumns {
             let template =
                 `
                     <a danphe-grid-action="edit" class="grid-action">Edit</a>                    
+                    <a danphe-grid-action="activateDeactivateIsActive" class="grid-action">Deactivate</a>            
+                `
+            return template
+        }
+        else {
+            let template =
+                `
+                    <a danphe-grid-action="activateDeactivateIsActive" class="grid-action">Activate</a>
+                `
+            return template;
+        }
+    }
+    //this is the cell renderer function for Settings-Dispensary Manage
+    static ShowActionforPHRMDispensarySetting(params) {
+        if (params.data.IsActive == true) {
+            let template =
+                `
+                    <a danphe-grid-action="edit" class="grid-action">Edit</a>                    
                     <a danphe-grid-action="activateDeactivateIsActive" class="grid-action">Deactivate</a>             
+                    <a danphe-grid-action="showPaymentModes" class="grid-action">Payment Modes</a>             
                 `
             return template
         }
@@ -472,8 +596,18 @@ export default class PHRMGridColumns {
         let date: string = params.data.GoodReceiptDate;
         return moment(date).format('YYYY-MM-DD');
     }
+
+    //PHRM: getting date for goodsreceipt grid
+    static PHRMSBDateOnlyRenderer(params) {
+        let date: string = params.data.SupplierBillDate;
+        return moment(date).format('YYYY-MM-DD');
+    }
     //PHRM: getting date for Sales Item grid
     static PHRMGRSalesIremCreated(params) {
+        let date: string = params.data.CreatedOn;
+        return moment(date).format('YYYY-MM-DD');
+    }
+    static SettlementCreated(params) {
         let date: string = params.data.CreatedOn;
         return moment(date).format('YYYY-MM-DD');
     }
@@ -491,11 +625,6 @@ export default class PHRMGridColumns {
         return moment(date).format('YYYY-MM-DD');
 
     }
-    static PHRMStoreDate(params) {
-        let date: string = params.data.Date;
-        return moment(date).format('YYYY-MM-DD');
-    }
-
     static PHRMWriteOffDateOnlyRenderer(params) {
         let date: string = params.data.WriteOffDate;
         return moment(date).format('YYYY-MM');
@@ -607,28 +736,42 @@ export default class PHRMGridColumns {
     //pharmacy - sale  invoice  return list details grid column setting
     static PHRMSaleReturnList = [
         { headerName: "Hospital Number", field: "PatientCode", width: 100 },
-        //real invoice number for taxation
-        { headerName: "Invoice No", field: "InvoicePrintId", width: 100, cellRenderer: PHRMGridColumns.InvoicePrintIdRenderer },
+        { headerName: "Ref. Invoice No", field: "InvoicePrintId", width: 100, cellRenderer: PHRMGridColumns.InvoicePrintIdRenderer },
         { headerName: "Patient Name", field: "PatientName", width: 200 },
         { headerName: "Sub Total", field: "SubTotal", width: 100 },
         { headerName: "Dis Amt", field: "DiscountAmount", width: 100 },
-        //{ headerName: "VAT Amt", field: "VATAmount", width: 100 },
         { headerName: "Total Amt", field: "PaidAmount", width: 100 },
-        // { headerName: "Credit", field: "TotalAmount", width: 100 },
-        { headerName: "Date", field: "CreateOn", width: 110, cellRenderer: PHRMGridColumns.SaleListDateRender },
+        { headerName: "Return Date", field: "CreateOn", width: 110, cellRenderer: PHRMGridColumns.SaleReturnListDateRender },
+        { headerName: "Credit Note No.", field: "CreditNoteID", width: 110 },
         { headerName: "Patient Type", field: "PatientType", width: 120 },
-        // { headerName: "Status", field: "BilStatus", width: 110 },
-        // {
-        //     headerName: "Actions",
-        //     field: "",
-        //     width: 200,
-        //     ///this is used to action according to status
-        //     cellRenderer: PHRMGridColumns.ShowActionForPHRMReturnSaleList
-        // }
+
         , {
             headerName: "Actions",
             field: "",
-            width: 200,
+            width: 100,
+            template:
+                `<a danphe-grid-action="view" class="grid-action">
+           Print
+        </a>
+       `
+        }
+    ]
+    static PHRMInsuranceSaleReturnList = [
+        { headerName: "Hospital Number", field: "PatientCode", width: 100 },
+        { headerName: "Ref. Invoice No.", field: "InvoicePrintId", width: 130, cellRenderer: PHRMGridColumns.InvoicePrintIdRenderer },
+        { headerName: "Claim Code", field: "ClaimCode", width: 120 },
+        { headerName: "Patient Name", field: "PatientName", width: 200 },
+        { headerName: "NSHI No.", field: "NSHINumber", width: 120 },
+        { headerName: "Sub Total", field: "SubTotal", width: 100 },
+        { headerName: "Dis Amt", field: "DiscountAmount", width: 90 },
+        { headerName: "Total Amt", field: "PaidAmount", width: 100 },
+        { headerName: "Return Date", field: "CreateOn", width: 110, cellRenderer: PHRMGridColumns.SaleReturnListDateRender },
+        { headerName: "Credit Note No.", field: "CreditNoteID", width: 120 },
+        { headerName: "Patient Type", field: "PatientType", width: 120 },
+        , {
+            headerName: "Actions",
+            field: "",
+            width: 100,
             template:
                 `<a danphe-grid-action="view" class="grid-action">
            Print
@@ -700,10 +843,18 @@ export default class PHRMGridColumns {
         else
             return null;
     }
+    //This for sale return List createdOn date format rendering
+    static SaleReturnListDateRender(params) {
+        let CreateOn: string = params.data.CreateOn;
+        if (CreateOn)
+            return moment(CreateOn).format('DD-MMM-YYYY hh:mm A');
+        else
+            return null;
+    }
 
 
     static ShowActionForPHRMPOList(params) {
-        if ((params.data.POStatus == "active") || (params.data.POStatus == "pending")) {
+        if (["pending", "active", "partial"].includes(params.data.POStatus)) {
             let template =
                 `</a>
                         <a danphe-grid-action="view" class="grid-action">
@@ -798,11 +949,11 @@ export default class PHRMGridColumns {
 
 
     }
-    GetStoreStockActions() {
-        let template = `<a danphe-grid-action="manage-store" class="grid-action">Manage Item</a>
-        <a danphe-grid-action="transfer" class="grid-action">Transfer Item</a>`;
+    static GetStoreStockActions(params) {
+        let template = ``;
+        template += '<a danphe-grid-action="print-barcode" class="grid-action phrm-stock-action fa fa-barcode" title = "Print Barcode" > </a>'
         if (PHRMGridColumns.securityService.HasPermission('store-update-mrp-button'))
-            template += `<a danphe-grid-action="update-mrp" class="grid-action">Update MRP</a>`
+            template += `<a danphe-grid-action="update-mrp" class="grid-action">Update S.Price</a>`
         if (PHRMGridColumns.securityService.HasPermission('store-update-expirydate-batchno-button'))
             template += `<a danphe-grid-action="update-expirydate-batchno" class="grid-action">Update Exp&Batch</a>`
         return template;
@@ -814,4 +965,38 @@ export default class PHRMGridColumns {
             template += `<a danphe-grid-action="update-mrp" class="grid-action">Update MRP</a>`
         return template;
     }
+
+    //for Supplier Ledger : HardCoded ones
+    static SupplierLedgerList = [
+        { headerName: "Supplier Name", field: "SupplierName", width: 100 },
+        { headerName: "Total Amt", field: "TotalAmount", width: 100 },
+        { headerName: "Paid Amount", field: "PaidAmount", width: 100 },
+        { headerName: "Due Amount", field: "DueAmount", width: 100 },
+        // { headerName: "Invoice No", field: "InvoicePrintId", width: 100, cellRenderer: PHRMGridColumns.InvoicePrintIdRenderer },
+        , {
+            headerName: "Actions",
+            field: "",
+            width: 200,
+            template:
+                `<a danphe-grid-action="view" class="grid-action">
+           View Details
+        </a>
+       `
+        }
+    ]
+    static SupplierLedgerViewList = [
+        { headerName: "GRNo", field: "GRNo", width: 100 }, ,
+        { headerName: "Vendor Bill No", field: "BillNo", width: 100 },
+        { headerName: "Total Amount", field: "TotalAmount", width: 100 },
+        {
+            headerName: "Actions",
+            field: "",
+            width: 200,
+            template:
+                `<a danphe-grid-action="pay" class="grid-action">
+           Payment
+        </a>
+       `
+        }
+    ]
 }

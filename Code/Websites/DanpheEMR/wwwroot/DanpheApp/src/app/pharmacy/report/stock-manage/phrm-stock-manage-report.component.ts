@@ -17,7 +17,8 @@ export class PHRMStockManageReportComponent {
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     dlService: DLService = null;
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+    public pharmacy:string = "pharmacy";
+    
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public msgBoxServ: MessageboxService,

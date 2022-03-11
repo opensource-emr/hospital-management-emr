@@ -39,6 +39,7 @@ import { FreeReferalVisitComponent } from './referral/free-referral-visit.compon
 import { PatientSharedModule } from '../patients/patient-shared.module';
 import { SettingsSharedModule } from '../settings-new/settings-shared.module';
 import { BillingSharedModule } from '../billing/billing-shared.module';
+import { BillingPrintSharedModule } from '../billing/print-pages/billing-print-shared.module';
 
 @NgModule({
   providers: [AppointmentDLService,
@@ -59,7 +60,8 @@ import { BillingSharedModule } from '../billing/billing-shared.module';
     SharedModule,
     PatientSharedModule,
     SettingsSharedModule,
-    BillingSharedModule
+    BillingSharedModule,
+    BillingPrintSharedModule
   ],
   declarations: [
     AppointmentsMainComponent,
@@ -73,7 +75,7 @@ import { BillingSharedModule } from '../billing/billing-shared.module';
     VisitPatientInfoComponent,
     VisitInfoComponent,
     VisitBillingInfoComponent,
-    FreeReferalVisitComponent //sud:3Jun'19--Needed for Free referel, paid referal is handled by normal flow.
+    FreeReferalVisitComponent, //sud:3Jun'19--Needed for Free referel, paid referal is handled by normal flow.
 
   ],
   bootstrap: []//do we need anything here ? <sudarshan:2jan2017>

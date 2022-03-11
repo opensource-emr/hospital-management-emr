@@ -16,6 +16,7 @@
   table.billing-table tr td {
     padding: 8px 4px;
   }
+
   .duplication-item {
     background-color: yellow !important;
   }
@@ -34,34 +35,44 @@
             </div>
             <div class="model-inner-content">
               <div class="row">
-
-                <div class="col-md-6 m1">
+                <div class="col-md-6 m1" *ngIf="BillingRequestDisplaySettings.PriceCategory">
                   <price-category-select (on-category-change)="OnPriceCategoryChange($event)"></price-category-select>
                 </div>
-
-
+                <div class="col-md-3" *ngIf="BillingRequestDisplaySettings.LabType && hasMultipleLabType">
+                  Lab Type:
+                  <select [(ngModel)]="LabTypeName" name="lab_type" id="lab_type" (change)="OnLabTypeChange()">
+                    <option *ngFor="let labtype of coreService.labTypes" value="{{labtype.LabTypeName}}">
+                      {{labtype.DisplayName}}
+                    </option>
+                  </select>
+                </div>
                 <div class="col-md-12">
                   <table class="table billing-table inv_table table-bordered p2">
                     <thead>
                       <tr>
                         <th></th>
                         <th sortable-header col="department"><b>Department</b></th>
-                        <th sortable-header col="doctorname"><b>RequestedBy Dr.</b></th>
-                        <th sortable-header col="doctorname"><b>AssignedTo Dr.</b></th>
+                        <th sortable-header col="refdoctorname" *ngIf="BillingRequestDisplaySettings.RequestedBy">
+                          <b>RequestedBy Dr.</b></th>
+                        <th sortable-header col="assigndoctorname" *ngIf="BillingRequestDisplaySettings.AssignedToDr">
+                          <b>AssignedTo Dr.</b></th>
                         <th></th>
                         <th sortable-header col="itemnames"><b>ItemName</b></th>
                         <th sortable-header col="quantity"><b>Qty</b></th>
                         <th><b>Price</b></th>
-                        <th><b>Discount %</b></th>
+                        <!-- <th *ngIf="BillingRequestDisplaySettings.Inpatient.ItemLevelDiscountPercentage"><b>Discount %</b></th> -->
                         <th *ngIf="taxDetail.taxPercent!=0"><b>{{billingService.taxName}}</b></th>
                         <th *ngIf="taxDetail.taxPercent!=0"><b>Tax Amt </b></th>
-                        <th><b>Total Amt </b></th>
+                        <th sortable-header col="SubTotal"><b>SubTotal </b></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr *ngFor="let row of billingTransaction.BillingTransactionItems; let i = index">
-                        <td><a (click)="deleteRow(i)" title="Click to remove this item"><i
-                              class=" btn btn-danger delBtn fa fa-times" style="color: #fff !important;"></i></a></td>
+                        <td>
+                          <a (click)="deleteRow(i)" title="Click to remove this item">
+                            <i class=" btn btn-danger delBtn fa fa-times" style="color: #fff !important;"></i>
+                          </a>
+                        </td>
                         <td>
                           <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                             <input class="form-control cstm-form-control" danphe-auto-complete
@@ -75,7 +86,7 @@
                               [hidden]="row.IsValidSelDepartment">Select Department from the list.</div>
                           </form>
                         </td>
-                        <td>
+                        <td *ngIf="BillingRequestDisplaySettings.RequestedBy">
                           <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                             <input [disabled]="disableTextBox" class="form-control cstm-form-control "
                               danphe-auto-complete [(ngModel)]="selectedRequestedByDr[i]" formControlName="RequestedBy"
@@ -87,7 +98,7 @@
                               [hidden]="row.IsValidCheck('RequestedBy','required')">Requesting Dr is mandatory.</div>
                           </form>
                         </td>
-                        <td>
+                        <td *ngIf="BillingRequestDisplaySettings.AssignedToDr">
                           <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                             <input [disabled]="disableTextBox" class="form-control cstm-form-control"
                               danphe-auto-complete formControlName="ProviderId"
@@ -100,18 +111,22 @@
                               [hidden]="row.IsValidCheck('ProviderId','required')">Assigned Doctor is mandatory</div>
                           </form>
                         </td>
-                        <td><a (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"><i
-                              class="fa fa-plus btn btn-success delBtn" style="color: #fff !important;"></i></a></td>
-                        <td style="width:250px" [ngClass]="{'duplication-item':row.IsDoubleEntry_Now || row.IsDoubleEntry_Past}">
+                        <td>
+                          <a (click)="AddNewBillTxnItemRow(i)" title="Click to add new item">
+                            <i class="fa fa-plus btn btn-success delBtn" style="color: #fff !important;"></i>
+                          </a>
+                        </td>
+                        <td style="width:250px"
+                          [ngClass]="{'duplication-item':row.IsDoubleEntry_Now || row.IsDoubleEntry_Past}">
                           <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
-                            <input (keyup.enter)="AddNewBillTxnItemRow(i)" class="form-control cstm-form-control"
+                            <input (keyup.enter)="AddTxnItemRowOnClick(i)" class="form-control cstm-form-control"
                               danphe-auto-complete title="{{row.ItemName}}" autocomplete="off"
-                              formControlName="ItemName"
+                              formControlName="ItemName" [min-chars]="1"
                               [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
                               [(ngModel)]="selectedItems[i]" [list-formatter]="ItemsListFormatter"
                               [source]="row.ItemList" placeholder="Enter Item Name" display-property-name="ItemName"
-                              value-property-name=null style="width:282px" match-formatted="true"
-                              (focusout)="AssignSelectedItem(i)" max-num-list="50" onClick="this.select();"
+                              value-property-name=null style="width:282px; text-transform: uppercase;" match-formatted="true"
+                              (ngModelChange)="AssignSelectedItem(i)" max-num-list="50" onClick="this.select();"
                               id="{{ 'items-box'+i }}" />
                             <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
                             <div class="color-red font-sm" *ngIf="row.IsDirty('ItemName')"
@@ -122,8 +137,7 @@
                             </div>
                             <div class="color-red font-sm" *ngIf="row.IsDoubleEntry_Past">
                               <i class="fa fa-warning"></i>Duplicate
-                              Entry ( < {{BillRequestDoubleEntryWarningTimeHrs}} hours)
-                            </div>
+                              Entry ( < {{BillRequestDoubleEntryWarningTimeHrs}} hours) </div>
                           </form>
                         </td>
                         <td>
@@ -147,28 +161,32 @@
                               [hidden]="row.IsValidCheck('Price','invalidNumber')">Enter valid number.</div>
                           </form>
                         </td>
-                        <td>
+                        <!-- <td *ngIf="BillingRequestDisplaySettings.Inpatient.ItemLevelDiscountPercentage">
                           <form [formGroup]="row.BillingTransactionItemValidator">
                             <input [(ngModel)]="row.DiscountPercent" onClick="this.select();" style="width:75px" min="0"
-                              formControlName="DiscountPercent" class="form-control cstm-form-control" max="100"
-                              (ngModelChange)="Calculationforall()" name="discountpercent" type="number"
-                              (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                   formControlName="DiscountPercent" class="form-control cstm-form-control" max="100"
+                                   (ngModelChange)="Calculationforall()" name="discountpercent" type="number"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                             <div class="color-red font-sm" *ngIf="row.IsDirty('DiscountPercent')"
-                              [hidden]="row.IsValidCheck('DiscountPercent','invalidPercent')">Enter valid number.</div>
+                                 [hidden]="row.IsValidCheck('DiscountPercent','invalidPercent')">Enter valid number.</div>
                           </form>
-                        </td>
+                        </td> -->
                         <td *ngIf="taxDetail.taxPercent!=0">
                           <input [(ngModel)]="taxDetail.taxPercent" disabled style="width:60px" onClick="this.select();"
                             class="form-control cstm-form-control" name="taxPercent" type="number">
                         </td>
-                        <td *ngIf="taxDetail.taxPercent!=0"><input [(ngModel)]="row.Tax" disabled style="width:60px"
-                            onClick="this.select();" class="form-control cstm-form-control" name="Taxamount"
-                            type="number">
+                        <td *ngIf="taxDetail.taxPercent!=0">
+                          <input [(ngModel)]="row.Tax" disabled style="width:60px" onClick="this.select();"
+                            class="form-control cstm-form-control" name="Taxamount" type="number">
                         </td>
                         <td>
-                          <input [(ngModel)]="row.TotalAmount" style="width:90px" disabled
-                            class="form-control cstm-form-control" name="total" type="number">
+                          <input [(ngModel)]="row.SubTotal" style="width:90px" disabled
+                            class="form-control cstm-form-control" name="subTotal" type="number">
                         </td>
+                        <!--<td>
+                          <input [(ngModel)]="row.TotalAmount" style="width:90px" disabled
+                                 class="form-control cstm-form-control" name="total" type="number">
+                        </td>-->
                       </tr>
                     </tbody>
                   </table>
@@ -177,36 +195,51 @@
                   <div class="mt20 t-wrap">
                     <div *ngIf="billingTransaction !=null">
                       <table>
-                        <tr class="form-group">
+                        <!-- <tr class="form-group">
                           <td width="30%"> SubTotal: </td>
-                          <td style="padding: 2px;"><input class="form-control"
-                              [(ngModel)]="billingTransaction.SubTotal" (ngModelChange)="Calculationforall()" disabled
-                              id="subtotal" name="subtotal" type="number"></td>
-                        </tr>
-                        <tr class="form-group">
+                          <td style="padding: 2px;">
+                            <input class="form-control"
+                                   [(ngModel)]="billingTransaction.SubTotal" (ngModelChange)="Calculationforall()" disabled
+                                   id="subtotal" name="subtotal" type="number">
+                          </td>
+                        </tr> -->
+                        <!-- <tr class="form-group">
                           <td width="30%">Discount % Total </td>
-                          <td><input [(ngModel)]="groupDiscountPercent" min="0" max="100"
-                              (ngModelChange)="ItemGroupDiscount()" class="form-control" name="DiscountPercent"
-                              type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"></td>
-                        </tr>
-                        <tr class="form-group">
+                          <td>
+                            <input [(ngModel)]="groupDiscountPercent" min="0" max="100" id="discountPercentage"
+                                   (ngModelChange)="ItemGroupDiscount()" class="form-control" name="DiscountPercent"
+                                   type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                   (keyup.enter)="setFocusById('billRequest')">
+                          </td>
+                        </tr> -->
+                        <!-- <tr class="form-group">
                           <td width="30%"> Discount Amt: </td>
-                          <td style="padding: 2px;"><input [(ngModel)]="billingTransaction.DiscountAmount" disabled
-                              class="form-control" name="DiscountAmount" value="{{0}}" type="number"></td>
-                        </tr>
+                          <td style="padding: 2px;">
+                            <input [(ngModel)]="billingTransaction.DiscountAmount" disabled
+                                   class="form-control" name="DiscountAmount" value="{{0}}" type="number">
+                          </td>
+                        </tr> -->
                         <tr class="form-group">
                           <td width="30%">Total Amount: </td>
-                          <td style="padding: 2px;"><input [(ngModel)]="billingTransaction.TotalAmount" disabled
-                              class="form-control" name="TotalAmount" type="number"></td>
+                          <td style="padding: 2px;">
+                            <input [(ngModel)]="billingTransaction.TotalAmount" disabled class="form-control"
+                              name="TotalAmount" type="number">
+                          </td>
                         </tr>
                         <tr class="form-group" style="display:none">
                           <td width="30%">Remarks: </td>
-                          <td style="padding: 2px;"><input [(ngModel)]="billingTransaction.Remarks" class="form-control"
-                              name="Remarks" type="text"></td>
+                          <td style="padding: 2px;">
+                            <input [(ngModel)]="billingTransaction.Remarks" class="form-control" name="Remarks"
+                              type="text">
+                          </td>
                         </tr>
                         <tr class="dot">
-                          <td colspan="2" class="text-capitalize" style="padding: 2px;"><label class="text-primary">In
-                              Words : <b>{{billingTransaction.TotalAmount | NumberInWords}} </b>Only.</label></td>
+                          <td colspan="2" class="text-capitalize" style="padding: 2px;">
+                            <label class="text-primary">
+                              In
+                              Words : <b>{{billingTransaction.TotalAmount | NumberInWords}} </b>Only.
+                            </label>
+                          </td>
                         </tr>
                         <tr></tr>
                       </table>
@@ -222,11 +255,11 @@
             <br />
             <div class="page-bar-secondary">
               <div class="text-center">
-                <input *ngIf="'EnableBillRequestSlip' | booleanParameter : 'Billing'" type="submit" class="btn blue"
-                  [disabled]="loading" value="Print Slip"
+                <input *ngIf="'EnableBillRequestSlip' | booleanParameter : 'Billing'" type="submit"
+                  class="btn green btn-success" [disabled]="loading" value="Print Slip" id="billRequestNprint"
                   (click)="loading=true;PostSuccessBool=true;SubmitBillingTransaction();" />
                 &nbsp;
-                <input type="submit" class="btn btn-success" [disabled]="loading" value="Request"
+                <input id="billRequest" type="submit" class="btn green btn-success" [disabled]="loading" value="Request"
                   (click)="loading=true;PostSuccessBool=false;SubmitBillingTransaction();" />
               </div>
             </div>
@@ -236,5 +269,23 @@
     </div>
   </div>
 </div>
-<ip-bill-item-request-slip *ngIf="showIpBillRequestSlip" [receipt]="IpBillRequestDetails"
-  (emit-IpBillReq)="CloseIpBillRequestSlip($event)"></ip-bill-item-request-slip>
+
+<!--Start: provisional-slip Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showIpBillRequestSlip">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-11">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseIpBillRequestSlip()">X</a>
+          <div>
+            <bil-print-provisional-slip *ngIf="showIpBillRequestSlip" [PatientId]="provReceiptInputs.PatientId"
+              [ProvFiscalYrId]="provReceiptInputs.ProvFiscalYrId" [ProvReceiptNo]="provReceiptInputs.ProvReceiptNo"
+              [visitType]="provReceiptInputs.visitType">
+            </bil-print-provisional-slip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: provisional-slip Print Popup-->

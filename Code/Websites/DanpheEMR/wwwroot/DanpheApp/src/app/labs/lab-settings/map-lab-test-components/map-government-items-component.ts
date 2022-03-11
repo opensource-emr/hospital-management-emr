@@ -66,6 +66,15 @@ export class MapGovernmentItemsComponent{
                 this.update = true;
                 this.showMapGovItemsPage = true;
             }
+            break;
+            case "add": {
+                this.showMapGovItemsPage = false;
+                this.selectedItem = new MappedGovernmentItems();
+                this.changeDetector.detectChanges();
+                this.selectedItem = Object.assign(this.selectedItem, event.Data);
+                this.showMapGovItemsPage = true;
+                this.update = false;
+            }break;
             default:
                 break;
         }

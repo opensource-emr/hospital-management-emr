@@ -334,6 +334,9 @@
   <ItemGroup>
     <Compile Include="AdmissionDbContext.cs" />
     <Compile Include="BillingDbContext.cs" />
+    <Compile Include="LISDbContext.cs" />
+    <Compile Include="QueueManagementDbContext.cs" />
+    <Compile Include="SocialServiceUnitDbContext.cs" />
     <Compile Include="DALFunctions.cs" />
     <Compile Include="DataTableToList.cs" />
     <Compile Include="DicomDbContext.cs" />
@@ -343,13 +346,16 @@
     <Compile Include="AccountingDbContext.cs" />
     <Compile Include="FractionDbContext.cs" />
     <Compile Include="IncentiveDbContext.cs" />
+    <Compile Include="InsuranceDbContext.cs" />
     <Compile Include="InventoryDbContext.cs" />
     <Compile Include="LabDbContext.cs" />
     <Compile Include="MasterDbContext.cs" />
     <Compile Include="AppointmentDbContext.cs" />
     <Compile Include="ClinicalDbContext.cs" />
+    <Compile Include="MaternityDbContext.cs" />
     <Compile Include="MedicalRecordsDbContext.cs" />
     <Compile Include="NotiFicationDbContext.cs" />
+    <Compile Include="OtDbContext.cs" />
     <Compile Include="PayrollDbContext.cs" />
     <Compile Include="PharmacyDbContext.cs" />
     <Compile Include="PharmacyReportingDbContext.cs" />
@@ -360,6 +366,7 @@
     <Compile Include="SchedulingDbContext.cs" />
     <Compile Include="SystemAdminDbContext.cs" />
     <Compile Include="DoctorsDbContext.cs" />
+    <Compile Include="VaccinationDbContext.cs" />
     <Compile Include="VisitDbContext.cs" />
     <Compile Include="PatientDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

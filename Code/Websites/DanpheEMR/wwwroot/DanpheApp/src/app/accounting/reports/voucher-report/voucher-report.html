@@ -35,7 +35,7 @@
                     </div>
                 </div>
             </div> -->
-            <div class="col-md-2 col-xs-12" style="margin-right: 10px;">
+            <div class="col-md-2 col-xs-12" style="margin-right: 10px; margin-top: 6px;">
                 <div class="form-group">
                     <label class="control-label">Voucher Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
                     <div>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2 col-xs-12" style="margin-right: -15px;">
+            <div class="col-md-2 col-xs-12" style="margin-right: -15px;margin-top:6px">
                 <label class="control-label no-padding">Select Module<b class="color-red">  *</b><b style="float:right;">:</b></label>
                 <div>
                     <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}" style="width:150px;height:30px;" (ngModelChange)="GetChangedSection()">
@@ -56,12 +56,12 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-1 col-xs-12" style=" padding: 5px;"  >
+            <div class="col-md-1 col-xs-12" style=" margin-top:8px"  >
                 <div class="form-group">
                     <br>
-                    <button class="btn blue" type="button" (click)="GetTxnList()">
-                        <i class="fa fa-search"></i>
-                        Show Details
+                    <button class="btn blue" type="button"[disabled]="btndisabled" (click)="GetTxnList()">
+                        <i class="fa fa-refresh"></i>
+                        Load
                     </button>
                 </div>
             </div>

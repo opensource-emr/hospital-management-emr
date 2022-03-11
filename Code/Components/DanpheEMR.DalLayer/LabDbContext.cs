@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,6 +43,10 @@ namespace DanpheEMR.DalLayer
         public DbSet<LabGovReportMappingModel> LabGovReportMapping { get; set; }
 
         public DbSet<CountrySubDivisionModel> CountrySubdivisions { get; set; }
+        public DbSet<LabSMSModel> LabSms { get; set; }
+        public DbSet<LabTypesModel> LabTypes { get; set; }
+
+        public DbSet<MunicipalityModel> Municipalities { get; set; }
 
         public LabDbContext(string conn) : base(conn)
         {
@@ -56,6 +62,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabRequisitionModel>().ToTable("LAB_TestRequisition");
             modelBuilder.Entity<EmployeeModel>().ToTable("EMP_Employee");
             modelBuilder.Entity<LabTestModel>().ToTable("LAB_LabTests");
+            modelBuilder.Entity<LabSMSModel>().ToTable("LAB_Sms");
 
             modelBuilder.Entity<LabReportTemplateModel>().ToTable("Lab_ReportTemplate");
 
@@ -87,11 +94,32 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabTestCategoryModel>().ToTable("LAB_TestCategory");
             modelBuilder.Entity<LabTestMasterSpecimen>().ToTable("LAB_MST_TestSpecimen");
             modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
+            modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
+            modelBuilder.Entity<LabTypesModel>().ToTable("MST_LabTypes");
         }
 
         public void Attach(LabGovReportMappingModel dbComp)
         {
             throw new NotImplementedException();
         }
+
+        #region sms applicable tests
+        public DataTable GetAllSmsApplicableTests(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                 new SqlParameter("@ToDate", ToDate)
+            };
+            foreach (SqlParameter parameter in paramList)
+            {
+                if (parameter.Value == null)
+                {
+                    parameter.Value = "";
+                }
+            }
+            DataTable stockItems = DALFunctions.GetDataTableFromStoredProc("SP_LAB_GetAllSmsApplicableTests", paramList, this);
+            return stockItems;
+        }
+        #endregion
     }
 }

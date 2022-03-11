@@ -1,0 +1,161 @@
+<style>
+  .info-icon-wrapper {
+    padding: 0;
+    background-color: orange;
+    border-radius: 50% !important;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: #fff;
+  }
+</style>
+
+<div class="headin-left"
+  style="width:100%;border: 1px solid #96969a;margin-top: 20px; margin-bottom:5px; border-radius: 2px !important;padding: 20px 0px 10px;">
+  <h3 class="visit-head"><i class="fa fa-calendar"></i>Visit Information</h3>
+  <div class="col-md-12">
+    <form [formGroup]="visit.VisitValidator" class="form-horizontal">
+      <div class="row">
+        <div class="col-md-12">
+          <div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label col-md-4">Department<sup class="color-red"> *</sup></label>
+                <div class="col-md-8">
+                  <input id="txtDepartment" class="form-control" danphe-auto-complete
+                    [ngClass]="!visit.IsValidSelDepartment? 'bg-on' : 'bg-off'" [(ngModel)]="selectedDepartment"
+                    [list-formatter]="myDepartmentListFormatter" [source]="departmentList" formControlName="Department"
+                    placeholder="Department Name" display-property-name="DepartmentName" onClick="this.select();"
+                    (focusout)="AssignSelectedDepartment()" match-formatted="true" [grid-sort]="'DepartmentName'"
+                    max-num-list="10" (keyup.enter)="SetFocusById('btnPrintInvoice')" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Department')"
+                    [hidden]="visit.IsValidCheck('Department','required')">Department is mandatory.</span>
+                  <span class="color-red" *ngIf="visit.IsDirty('Department') && !visit.IsValidSelDepartment"
+                    [hidden]="!visit.IsValidCheck('Department','required')">Select Department from the list.</span>
+                </div>
+              </div>
+
+              <div class="form-group" *ngIf="ShowDoctor">
+                <label class="control-label col-md-4">Doctor<sup class="color-red" *ngIf="showDocMandatory">
+                    *</sup></label>
+                <div class="col-md-8">
+                  <input class="form-control" danphe-auto-complete
+                    [ngClass]="!visit.IsValidSelProvider? 'bg-on' : 'bg-off'" formControlName="Doctor"
+                    [(ngModel)]="selectedDoctor" [list-formatter]="DocListFormatter" [source]="filteredDocList"
+                    placeholder="Doctor's Name" display-property-name="ProviderName" (focusout)="AssignSelectedDoctor()"
+                    onClick="this.select();" max-num-list="10" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')"
+                    [hidden]="visit.IsValidCheck('Doctor','required')">Doctor is mandatory.</span>
+                  <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelProvider"
+                    [hidden]="!visit.IsValidCheck('Doctor','required')">Select doctor from the list.</span>
+                </div>
+              </div>
+              <div class="form-group" *ngIf="ShowReason">
+                <label class="control-label col-md-4">Reason</label>
+                <div class="col-md-8">
+                  <select class="form-control" [(ngModel)]="visit.Comments" [ngModelOptions]="{standalone: true}"
+                    placeholder="Comments">
+                    <option value="Surgery">Surgery</option>
+                    <option value="Normal Checkup">Normal Checkup</option>
+                    <option value="Head Ache">Headache</option>
+                    <option value="Sore Throat">Sore Throat</option>
+                    <option value="Stomach Pain">Stomach Pain</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label col-md-4">Visit Date<sup class="color-red"> *</sup></label>
+                <div class="col-md-8">
+                  <input id="appdate" class="form-control" type="date" name="" value="" [(ngModel)]="visit.VisitDate"
+                    formControlName="VisitDate" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','required')"> Date is required.</span>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','invalidDate')"> Enter Valid Date.</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Visit Time</label>
+                <div class="col-md-8">
+                  <input class="form-control" type="time" name="" value="" [(ngModel)]="visit.VisitTime"
+                    formControlName="VisitTime" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidCheck('VisitTime','required')"> Time is required.</span>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidDateTime('invalidDateTime')"> Enter Valid Time.</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4"> Claim code<sup class="color-red"> *</sup></label>
+                <div class="col-md-6">
+                  <td style="width: 25%;">
+                    <input #ClaimCode id="ClaimCode"
+                      style=" color:darkgreen; font-weight: bold; font-size: 20px !important;  width: 147px !important;"
+                      type="text" formControlName="ClaimCode" disabled [(ngModel)]="visit.ClaimCode" required
+                      value="{{visit.ClaimCode}}" placeholder="Claim Code" />
+                  </td>
+                  <td style="width:20px">
+                    <div class="tooltip list-tooltip" style="padding-left: 5px;">
+                      <span class="fa fa-info info-icon-wrapper"></span>
+                      <p class="tooltiptext ttptextdown no-print">
+                        Actual ClaimCode may be different than this after Save
+                      </p>
+                    </div>
+
+                    <!-- <a class="col-md-2 " (click)="GetClaimcode()"title="Refersh for new ClaimCode"><i class="fa fa-refresh"></i></a> -->
+                  </td>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('ClaimCode')"
+                    [hidden]="visit.IsValidCheck('ClaimCode','required')"> Claim code is required.</span>
+                </div>
+              </div>
+              <form class="form-horizontal hm-form">
+                <div class="form-body">
+                  <div class="form-group">
+                    <div class="control-label col-md-12">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline mapped mapped-outline">
+                            <input name="claimCodeType" [ngModelOptions]="{standalone: true}" type="radio" value="new"
+                              [(ngModel)]="claimCodeType" (change)="GetClaimcode()">
+                            <span> </span> <b> New Code </b>
+                          </label>
+                          <label class="mt-checkbox mt-checkbox-outline mapped mapped-outline" *ngIf="isLastClaimCodeFound">
+                            <input name="claimCodeType" [ngModelOptions]="{standalone: true}" type="radio" value="old"
+                              [(ngModel)]="claimCodeType" (change)="GetClaimcode()" >
+                            <span> </span> <b>Last Code</b>
+                          </label>
+                          <div style="color: red;" *ngIf="!isLastClaimCodeFound">
+                             Last Code Not Found or Expired.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row community-card no-margin no-padding" *ngIf="ShowReferredBy">
+        <div class="col-md-12">
+          <div class="form-group ">
+            <label class="control-label col-md-2">Referred By</label>
+            <div class="col-md-8">
+              <select-referrer [selected-ref-id]="selectedRefId" [allow-external]="ExtRefSettings.EnableExternal"
+                [default-external]="ExtRefSettings.DefaultExternal" (on-referrer-change)="OnReferrerChanged($event)">
+              </select-referrer>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

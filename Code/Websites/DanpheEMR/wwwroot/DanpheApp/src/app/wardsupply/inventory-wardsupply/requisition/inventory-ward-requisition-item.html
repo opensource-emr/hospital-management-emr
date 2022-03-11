@@ -1,31 +1,32 @@
 <div class="row">
   <div class="col-md-12">
     <div class="caption lb-caption">
-      <h3><i class="glyphicon glyphicon-asterisk"></i><span class="caption-subject"><span
-            *ngIf="!isEditMode">Add</span><span *ngIf="isEditMode">Update</span> Requisition</span></h3>
+      <h3><i class="glyphicon glyphicon-asterisk"></i><span class="caption-subject"><span *ngIf="!isEditMode">Add</span><span *ngIf="isEditMode">Update</span> Requisition</span></h3>
     </div>
   </div>
 </div>
 <form [formGroup]="requisition.RequisitionValidator" class="form-horizontal">
-  <div class="col-md-4 hidden">
+  <div class="col-md-5 ">
     <div class="form-group">
       <div class="row">
-        <label class="control-label col-md-3"><b>Store : </b></label>
-        <div class="col-md-9">
-          <input class="form-control" type="number" value="" [(ngModel)]="requisition.StoreId"
-            formControlName="StoreId" />
+        <label class="control-label col-md-4"><b>Target Inventory : </b> <sup style="color: red;">*</sup></label>
+        <div class="col-md-7">
+          <input danphe-auto-complete [(ngModel)]="selectedInventory" class="form-control" [list-formatter]="InventoryListFormatter" formControlName="RequestToStoreId" [source]="inventoryList" placeholder="Enter Inventory Name" display-property-name="Name" value-property-name=null onclick="this.select();" id="activeInventory" (valueChanged)="OnInventoryChange()" max-num-list="10"/>
+          <span *ngIf="requisition.IsDirty('RequestToStoreId')" style="color: red" [hidden]="requisition.IsValidCheck('RequestToStoreId','required')">
+            Inventory is required
+          </span>
         </div>
+
       </div>
     </div>
   </div>
-  <div class="col-md-5">
+  <div class="col-md-4">
     <div class="form-group">
       <div class="row">
         <label class="control-label col-md-4"><b>Requisition Date<b style="float:right">:</b> </b></label>
         <div class="col-md-8">
-          <danphe-date-picker [(ngModel)]="requisition.RequisitionDate" [ngModelOptions]="{standalone:true}"
-            ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
-            <div class="error-message" *ngIf="IsReqDateValid == false"> Invalid Fiscal Year Date. </div>
+          <danphe-date-picker [(ngModel)]="requisition.RequisitionDate" [ngModelOptions]="{standalone:true}" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+          <div class="error-message" *ngIf="IsReqDateValid == false"> Invalid Fiscal Year Date. </div>
         </div>
       </div>
     </div>
@@ -35,8 +36,7 @@
       <div class="row">
         <label class="control-label col-md-4"><b>Issue No<b style="float:right">:</b></b></label>
         <div class="col-md-5">
-          <input class="form-control" type="number" value="" placeholder="Issue No" [(ngModel)]="requisition.IssueNo"
-            [ngModelOptions]="{standalone: true}" />
+          <input class="form-control" type="number" value="" placeholder="Issue No" [(ngModel)]="requisition.IssueNo" [ngModelOptions]="{standalone: true}" />
         </div>
       </div>
     </div>
@@ -66,21 +66,15 @@
           </td>
           <td style="width:250px">
             <form [formGroup]="row.RequisitionItemValidator">
-              <input danphe-auto-complete class="form-control" id="itemName{{i}}" *ngIf="row.IsEditApplicable == true"
-                [(ngModel)]="row.SelectedItem" [source]="ItemList" [list-formatter]="myListFormatter"
-                placeholder="Item Name" display-property-name="ItemName" value-property-name=null
-                onclick="this.select();" (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="20"
-                formControlName="ItemId" (keyup.enter)="GoToNextInput('qtyip'+i)" (keyup.esc)="DeleteAction(i)" />
-              <input class="form-control" *ngIf="row.IsEditApplicable == false" disabled [ngModel]="row.ItemName"
-                formControlName="ItemId" />
+              <input danphe-auto-complete class="form-control" id="itemName{{i}}" *ngIf="row.IsEditApplicable == true" [(ngModel)]="row.SelectedItem" [source]="filteredItemList" [list-formatter]="myListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null onclick="this.select();" (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" min-chars="1" max-num-list="20" formControlName="ItemId" (keyup.enter)="OnPressedEnterKeyInItemField(i)" (keyup.esc)="DeleteAction(i)" />
+              <input class="form-control" *ngIf="row.IsEditApplicable == false" disabled [ngModel]="row.ItemName" formControlName="ItemId" />
               <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')">
                 Item is required</div>
             </form>
           </td>
           <td style="width:100px">
             <form [formGroup]="row.RequisitionItemValidator">
-              <input [(ngModel)]="row.UOMName" [ngModelOptions]="{standalone:true}" min="0" disabled="disabled"
-                class="form-control " name="unitname" type="text">
+              <input [(ngModel)]="row.UOMName" [ngModelOptions]="{standalone:true}" min="0" disabled="disabled" class="form-control " name="unitname" type="text">
             </form>
           </td>
           <!-- <td style="vertical-align:middle;width:20px">
@@ -88,29 +82,22 @@
           </td> -->
           <td style="width:100px">
             <form [formGroup]="row.RequisitionItemValidator">
-              <input [(ngModel)]="row.Code" [ngModelOptions]="{standalone:true}" min="0" disabled="disabled"
-                class="form-control " name="code" type="text">
+              <input [(ngModel)]="row.Code" [ngModelOptions]="{standalone:true}" min="0" disabled="disabled" class="form-control " name="code" type="text">
             </form>
           </td>
           <td style="width:100px">
             <form [formGroup]="row.RequisitionItemValidator">
-              <input name="quantity" type="number" [attr.value]="row.Quantity > 0?row.Quantity:1"
-                [(ngModel)]="row.Quantity" min="0" [disabled]="disableTextBox || row.IsActive == false"
-                formControlName="Quantity" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
-                class="form-control" id="qtyip{{i}}" (keyup.enter)="AddRowRequest()">
-              <div style="color:red" *ngIf="row.IsDirty('Quantity')"
-                [hidden]="row.IsValidCheck('Quantity','invalidNumber')">
+              <input name="quantity" type="number" [attr.value]="row.Quantity > 0?row.Quantity:1" [(ngModel)]="row.Quantity" min="0" onFocus="this.select();" [disabled]="disableTextBox || row.IsActive == false" onclick="this.select();" formControlName="Quantity" (wheel)="coreService.PreventNumberChangeOnScroll($event)" class="form-control" id="qtyip{{i}}" (keyup.enter)="OnPressedEnterKeyInQuantityField(i)">
+              <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')"> 
                 Quantity is required
               </div>
             </form>
           </td>
           <td style="width:200px">
-            <input [(ngModel)]="row.Remark" [disabled]="disableTextBox || row.IsActive == false" class="form-control "
-              name="remark" type="text">
+            <input [(ngModel)]="row.Remark" [disabled]="disableTextBox || row.IsActive == false" class="form-control " name="remark" type="text">
           </td>
           <td *ngIf="isEditMode==true" style="width:200px">
-            <input id="withdrawRemarks{{i}}" *ngIf="row.IsActive == false" [(ngModel)]="row.CancelRemarks" [disabled]="disableTextBox"
-              class="form-control " name="cancelRemark" type="text">
+            <input id="withdrawRemarks{{i}}" *ngIf="row.IsActive == false" [(ngModel)]="row.CancelRemarks" [disabled]="disableTextBox" class="form-control " name="cancelRemark" type="text">
             <div class="error-message animated-btn blinking-btn-warning" style="color:red" *ngIf="row.IsActive == false && row.CancelRemarks.length==0">
               Withdraw remarks is required.
             </div>
@@ -126,14 +113,15 @@
   </div>
   <div class="col-md-12">
     <span class="col-md-2 control-label">Remarks<span class="right">:</span></span>
-    <textarea name="Remarks" [(ngModel)]="requisition.Remarks" cols="70" rows="3"></textarea>
+    <textarea name="Remarks" id="remarks" [(ngModel)]="requisition.Remarks" cols="70" rows="3" (keyup.enter)="SetFocusById('save_requisition')"></textarea>
   </div>
   <div class="col-sm-offset-5 col-sm-5" style="width:30%">
-    <input type="button" class="btn btn-success" *ngIf="!isEditMode" value="Request" (click)="AddRequisition()" />
-    <input type="button" class="btn btn-warning" *ngIf="isEditMode" value="Update" (click)="UpdateRequisition()" />
+    <input type="button"  id="save_requisition" class="btn green btn-success margin-7-hr" *ngIf="!isEditMode" value="Request" [disabled]="loading" (click)="AddRequisition()" />
+    <input type="button" id="save_requisition" class="btn primary-btn" *ngIf="isEditMode" value="Update" (click)="UpdateRequisition()" />
     <span></span>&nbsp;
     <input type="button" class="btn btn-danger" (click)="Cancel()" value="Discard Changes">
-    <span></span> </div>
+    <span></span>
+  </div>
 </div>
 
 <!-- <item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp"

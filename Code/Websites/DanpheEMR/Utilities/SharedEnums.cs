@@ -43,6 +43,18 @@ namespace DanpheEMR.Enums
         public static readonly string DepositDeduct = "depositdeduct";
         public static readonly string DepositCancel = "depositcancel";
     }
+    public static class ENUM_InvoiceType
+    {
+        public static readonly string inpatientPartial = "ip-partial";
+        public static readonly string inpatientDischarge = "ip-discharge";
+        public static readonly string outpatient = "op-normal";
+    }
+
+    public static class ENUM_AdmissionStatus
+    {
+        public static readonly string discharged = "discharged";
+        public static readonly string admitted = "admitted";
+    }
 
 
     public static class ENUM_VisitType
@@ -117,12 +129,47 @@ namespace DanpheEMR.Enums
         public static readonly int Store = 2;
     }
     //TODO: This is incomplete. Need to identify all transactions and complete this enum.
+    public static class ENUM_PHRM_StockTransactionType
+    {
+        public static readonly string PurchaseItem = "gr-item";
+        public static readonly string PurchaseReturnedItem = "rts-item";
+        public static readonly string CancelledGR = "cancel-gr-item";
+
+        public static readonly string WriteOffItem = "write-off-item";
+
+        public static readonly string SaleItem = "sale-item";
+        public static readonly string SaleReturnedItem = "sale-returned-item";
+        public static readonly string ManualSaleReturnedItem = "manual-sales-return";
+        
+        public static readonly string ProvisionalSaleItem = "provisional-sale-item";
+        public static readonly string ProvisionalCancelItem = "provisiona-cancel-item";
+        public static readonly string ProvisionalToSale = "provisional-to-sale";
+
+        public static readonly string DispatchedItem = "dispensary-dispatched-item";
+        public static readonly string DispatchedItemReceivingSide = "dispatched-item";
+
+        public static readonly string TransferItem = "transfer-item";
+
+        public static readonly string StockManage = "stock-managed-item";
+
+    }
     public static class ENUM_INV_StockTransactionType
     {
-        public static readonly string GoodReceiptItem = "goodsreceipt-items";
-        public static readonly string CancelledGR = "goodsreceipt-items";
-        public static readonly string StockManaged = "goodsreceipt-items";
-        public static readonly string DispatchedItem = "goodsreceipt-items";
+        public static readonly string PurchaseItem = "goodreceipt-items";
+        public static readonly string PurchaseReturnedItem = "returntovendor-items";
+        public static readonly string CancelledGR = "cancel-gr-items";
+
+        public static readonly string WriteOffItem = "writeoff-items";
+
+        public static readonly string DispatchedItem = "dispatched-item-from";
+        public static readonly string DispatchedItemReceivingSide = "dispatched-item-to";
+
+        public static readonly string TransferItem = "transfer-item";
+
+        public static readonly string ConsumptionItem = "consumption-items";
+        public static readonly string StockManageItem = "stock-managed-item";
+        public static readonly string FiscalYearStockManageItem = "fy-managed-item";
+
     }
 
     public static class ENUM_BillingOrderStatus
@@ -130,6 +177,35 @@ namespace DanpheEMR.Enums
         public static readonly string Active = "active";
         public static readonly string Pending = "pending";
         public static readonly string Final = "final";
+    }
+    public static class ENUM_StoreCategory
+    {
+        public static readonly string Store = "store";
+        public static readonly string Dispensary = "dispensary";
+        public static readonly string Substore = "substore";
+    }
+    public static class ENUM_StoreSubCategory
+    {
+        public static readonly string Inventory = "inventory";
+        public static readonly string Pharmacy = "pharmacy";
+    }
+    public static class ENUM_DispensarySubCategory
+    {
+        public static readonly string Normal = "normal";
+        public static readonly string Insurance = "insurance";
+    }
+    public static class ENUM_CssdStatus
+    {
+        public static readonly string Pending = "pending";
+        public static readonly string Finalized = "finalized";
+        public static readonly string Complete = "completed";
+    }
+    public static class ENUM_SupplierLedgerTransaction
+    {
+        public static readonly string GoodsReceipt = "goods-receipt";
+        public static readonly string CancelledGR = "cancel-goods-receipt";
+        public static readonly string ReturnFromSupplier = "return-from-supplier";
+        public static readonly string MakePayment = "payment";
     }
 }
 //public enum ENUM_LabOrderStatus_Test

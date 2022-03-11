@@ -1,16 +1,6 @@
-﻿import {
-    NgForm,
-    FormGroup,
-    FormControl,
-    Validators,
-    FormBuilder,
-    ReactiveFormsModule
-} from '@angular/forms';
-import * as moment from 'moment/moment';
+﻿import { FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms';
 import { PHRMItemMasterModel } from "./phrm-item-master.model";
 import { PHRMItemTypeModel } from "./phrm-item-type.model"
-import { PHRMPackingTypeModel } from './phrm-packing-type.model';
-import { PHRMPurchaseOrder } from "./phrm-purchase-order.model";
 
 export class PHRMPurchaseOrderItems {
     public PurchaseOrderItemId: number = 0;
@@ -48,15 +38,13 @@ export class PHRMPurchaseOrderItems {
     public Item: PHRMItemMasterModel = null;
     public ItemType: PHRMItemTypeModel = null;
     public PurchaseOrderItemValidator: FormGroup = null;
-    public PackingQty:number = 0;
-    public PackingName:any;
-    public Packing: PHRMPackingTypeModel = null;
+
     constructor() {
 
         var _formBuilder = new FormBuilder();
         this.PurchaseOrderItemValidator = _formBuilder.group({
             'ItemId': ['', Validators.compose([Validators.required])],
-            'Quantity': ['', Validators.compose([Validators.required,this.wholeNumberRequired])],
+            'Quantity': ['', Validators.compose([Validators.required, this.wholeNumberRequired])],
         });
     }
 
@@ -68,7 +56,7 @@ export class PHRMPurchaseOrderItems {
     }
 
 
-    public IsValid():boolean{if(this.PurchaseOrderItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.PurchaseOrderItemValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.PurchaseOrderItemValidator.valid;
         }
@@ -80,7 +68,7 @@ export class PHRMPurchaseOrderItems {
             if (control.value % 1 != 0) return { 'wrongDecimalValue': true };
         }
         else
-        return { 'wrongDecimalValue': true };
+            return { 'wrongDecimalValue': true };
     }
 
 }

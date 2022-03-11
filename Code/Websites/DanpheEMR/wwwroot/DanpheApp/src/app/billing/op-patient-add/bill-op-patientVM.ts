@@ -36,6 +36,7 @@ export class BillingOpPatientVM {
   public ModifiedOn: string = null;
   public ModifiedBy: number = null;
   public IsActive: boolean = true;
+  public MunicipalityId: number = 0;
 
   public OutPatientValidator: FormGroup = null;
 
@@ -116,6 +117,13 @@ export class BillingOpPatientVM {
         currCtrol.disable();
       }
     }
+  }
+
+  public UpdateValidator(onOff: string, formControlName: string){
+    if (formControlName == "PhoneNumber" && onOff == "off") {
+      this.OutPatientValidator.controls['PhoneNumber'].validator = Validators.compose([]);
+    }
+    this.OutPatientValidator.controls[formControlName].updateValueAndValidity();
   }
 
 }

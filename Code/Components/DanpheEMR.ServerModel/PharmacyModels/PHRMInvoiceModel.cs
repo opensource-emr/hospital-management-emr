@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int InvoiceId { get; set; }
+        public int StoreId { get; set; }
         //set invoice 
         public int InvoicePrintId { get; set; }
         public int? PatientId { get; set; }
@@ -22,6 +23,7 @@ namespace DanpheEMR.ServerModel
         public double? TotalQuantity { get; set; }
         public decimal? SubTotal { get; set; }
         public decimal? DiscountAmount { get; set; }
+        public double? DiscountPer { get; set; }
         public decimal? VATAmount { get; set; }
         public decimal? TotalAmount { get; set; }
         public decimal? PaidAmount { get; set; }
@@ -58,20 +60,25 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public double? DepositBalance { get; set; }
+        [NotMapped]
+        public bool? IsInsurancePatient { get; set; }
 
         public int? SettlementId { get; set; }
         public DateTime? PaidDate { get; set; }
         public DateTime? Creditdate { get; set; }
         public int? OrganizationId { get; set; }
-        [NotMapped]
-        public virtual PHRMPatient SelectedPatient { get; set; }
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? ClaimCode { get; set; }
+        public PHRMPatient SelectedPatient;
         public static PHRMInvoiceTransactionModel GetCloneWithItems(PHRMInvoiceTransactionModel txnToClone)
         {
             PHRMInvoiceTransactionModel retTxnModel = new PHRMInvoiceTransactionModel()
             {
                 InvoiceId = txnToClone.InvoiceId,
+                StoreId = txnToClone.StoreId,
                 InvoiceItems = txnToClone.InvoiceItems,
-                FiscalYearId = txnToClone.FiscalYearId,               
+                FiscalYearId = txnToClone.FiscalYearId,
                 InvoicePrintId = txnToClone.InvoicePrintId,
                 SubTotal = txnToClone.SubTotal,
                 DiscountAmount = txnToClone.DiscountAmount,

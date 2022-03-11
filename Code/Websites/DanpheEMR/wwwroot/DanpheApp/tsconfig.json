@@ -14,6 +14,7 @@
     "typeRoots": [ "node_modules/@types" ],
     "lib": [ "es2018", "dom" ],
     "strict": false,
+    "skipLibCheck": true,
     "paths": {
       "*": [ "./typings/*" ],
       "htmlDocx": [

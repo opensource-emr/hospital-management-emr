@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
-   public class PurchaseOrderItemsModel
+    public class PurchaseOrderItemsModel
     {
         [Key]
         public int PurchaseOrderItemId { get; set; }
-        public int ItemId { get; set; }    
+        public int ItemId { get; set; }
         public int PurchaseOrderId { get; set; }
         public double Quantity { get; set; }
         public decimal StandardRate { get; set; }
@@ -27,7 +23,9 @@ namespace DanpheEMR.ServerModel
         public DateTime? CreatedOn { get; set; }
         public string Remark { get; set; }
         public string POItemStatus { get; set; }
+        public string POItemSpecification { get; set; }
         public decimal? VATAmount { get; set; }
+        public double VatPercentage { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public PurchaseOrderModel PurchaseOrder { get; set; }
@@ -44,5 +42,8 @@ namespace DanpheEMR.ServerModel
         public int? CancelledBy { get; set; }
         public DateTime? CancelledOn { get; set; }
         public string CancelRemarks { get; set; }
+
+        public string ItemCategory { get; set; }//sud:18Sep'21: For Capital/Consumable combined..
+        public string VendorItemCode { get; set; }
     }
 }

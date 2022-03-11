@@ -1,56 +1,85 @@
+<style>
+  .table>tbody>tr>td,
+  .table>tbody>tr>th,
+  .table>tfoot>tr>td,
+  .table>tfoot>tr>th,
+  .table>thead>tr>td,
+  .table>thead>tr>th {
+    padding: 3px 8px;
+    border-bottom-width: 1px;
+    font-size: 12px;
+  }
+
+  .table thead tr th {
+    font-size: 12px;
+  }
+
+  .mt-checkbox>span,
+  .mt-radio>span {
+    height: 15px;
+    width: 15px;
+  }
+
+  .mt-checkbox>span:after {
+    left: 5px;
+    top: 0px;
+  }
+
+  input.cstm-res-input {
+    padding: 2px 8px;
+    height: 25px;
+    line-height: 25px;
+  }
+
+  .ar-table-template .btn-addnew-comp,
+  .btn-delete-comp {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+  }
+
+  .info-item p {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  .info-item {
+    align-self: center;
+  }
+</style>
 <div class="wrapper">
   <div class="clearfix"></div>
   <div class="row" *ngIf="showAddEditResult && templateReport">
-    <div
-      class="col-lg-12 col-sm-12 margin-15-tp"
-      *ngIf="templateReport.TemplateType == 'normal' || templateReport.TemplateType == 'culture'"
-    >
+    <div class="col-lg-12 col-sm-12 mt7"
+      *ngIf="templateReport.TemplateType == 'normal' || templateReport.TemplateType == 'culture'">
       <div class="flex-container">
-        <div class="info-item text-capitalize flex-2">
+        <div class="info-item text-capitalize flex-2" *ngIf="allowRunNoChange">
           <p>
             <b>{{templateReport.Lookups.VisitType}} Run Number :</b>
             {{templateReport.Lookups.SampleCodeFormatted}} &nbsp;
             <a (click)="ConfirmChangeRunNumber()"> (Change) </a>
           </p>
         </div>
-        <div
-          *ngIf="patientService.globalPatient.WardName"
-          class="info-item text-capitalize flex-2"
-        >
+        <div *ngIf="patientService.globalPatient.WardName" class="info-item text-capitalize flex-2">
           <p>
             <b>Ward :</b> {{patientService.globalPatient.WardName}}
-            <span class="bold green" *ngIf="hasInsurance"
-              >(Under Insurance)</span
-            >
+            <span class="bold green" *ngIf="hasInsurance">(Under Insurance)</span>
           </p>
         </div>
-        <div
-          *ngIf="patientService.globalPatient.WardName"
-          class="info-item text-capitalize flex-2"
-        >
+        <div *ngIf="patientService.globalPatient.WardName" class="info-item text-capitalize flex-2">
           <p><b>Requested By :</b> {{templateReport.Lookups.ReferredBy}}</p>
         </div>
         <div class="info-item text-capitalize">
-          <button
-            class="btn primary-btn"
-            [disabled]="loading"
-            (click)="loading=true;Submit()"
-          >
+          <button class="btn green btn-success " [disabled]="loading" (click)="loading=true;Submit()">
             {{isEditResult == true ? 'Update' : 'Save Result' }}
             <i class="fa fa-save"></i>
           </button>
         </div>
       </div>
-      <div class="flex-container margin-15-tp">
-        <div
-          *ngFor="let template of templateReport.Templates; let i=index;"
-          class="table-responsive add-res-table-holder"
-        >
-          <table
-            *ngIf="template.TemplateType=='normal'"
-            class="table table-bordered tbl-templatewise table-striped ar-table-template"
-            style="margin-bottom: 0px;"
-          >
+      <div class="flex-container mt7 add-result-scroll">
+        <div *ngFor="let template of templateReport.Templates; let i=index;" class="add-res-table-holder">
+          <table *ngIf="template.TemplateType=='normal'"
+            class="table table-bordered tbl-templatewise table-striped ar-table-template" style="margin-bottom: 0px;">
             <thead>
               <tr class="tmplate-name-hdr">
                 <td colspan="6" class="text-center">
@@ -76,17 +105,15 @@
                 </tr>
                 <tr class="test-infos-detail">
                   <td colspan="4">
-                    <div
-                      class="flex-container justify-sp-between flex-align-center"
-                    >
+                    <div class="flex-container justify-sp-between flex-align-center">
                       <div class="flex-1 font-600">
-                        <span class="test-title"
-                          >{{j+1}}.&nbsp;{{test.TestName}}</span
-                        >
+                        <span class="test-title">{{j+1}}.&nbsp;{{test.TestName}}</span>
                       </div>
                       <div class="flex-1 text-black text-center">
-                        <b>Requested On:</b> {{test.RequestDate |
-                        DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                        <b>Requested On:</b> {{
+                        test.RequestDate |
+                        DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'
+                        }}
                       </div>
                       <div class="flex-1 text-black text-center">
                         <b>Sample Collected By:</b> {{test.SampleCollectedBy}}
@@ -95,47 +122,33 @@
                   </td>
                   <td colspan="1" class="text-center align-vertical-mid">
                     <label class="mt-checkbox mt-checkbox-outline">
-                      <input
-                        autocomplete="off"
-                        *ngIf="!isEditResult"
-                        type="checkbox"
-                        [(ngModel)]="test.SelectAll"
-                        class="zoomcheckbox margin-0-vr top-0"
-                        ng-checked="test.SelectAll"
-                        (change)="TestCheckBoxOnChange(test)"
-                        title="Check/Uncheck all components of: {{test.TestName}}"
+                      <input autocomplete="off" *ngIf="!isEditResult" type="checkbox" [(ngModel)]="test.SelectAll"
+                        class="zoomcheckbox margin-0-vr top-0" ng-checked="test.SelectAll"
+                        (change)="TestCheckBoxOnChange(test)" title="Check/Uncheck all components of: {{test.TestName}}"
                         [ngModelOptions]="{standalone: true}" />
-                      <span></span
-                    ></label>
+                      <span></span>
+                    </label>
 
                     <!--
-                  <input autocomplete="off" *ngIf="!isEditResult" type="checkbox" [(ngModel)]="test.SelectAll" class="zoomcheckbox margin-0-vr top-0" ng-checked="test.SelectAll" (change)="TestCheckBoxOnChange(test)" title="Check/Uncheck all components of: {{test.TestName}}"
-                         [ngModelOptions]="{standalone: true}" />
--->
+                                      <input autocomplete="off" *ngIf="!isEditResult" type="checkbox" [(ngModel)]="test.SelectAll" class="zoomcheckbox margin-0-vr top-0" ng-checked="test.SelectAll" (change)="TestCheckBoxOnChange(test)" title="Check/Uncheck all components of: {{test.TestName}}"
+                                             [ngModelOptions]="{standalone: true}" />
+                    -->
                   </td>
                   <td></td>
                 </tr>
 
-                <tr
-                  class="txt-black single-test-add"
-                  *ngFor="let comp of test.Components;let k = index"
-                  [formGroup]="comp.ComponentValidator"
-                >
+                <tr class="txt-black single-test-add" *ngFor="let comp of test.Components;let k = index"
+                  [ngClass]="test.Components[k].IsAbnormal && test.Components[k].IsValueValid ? 'bg-red' : ''"
+                  [formGroup]="comp.ComponentValidator">
                   <td>
-                    <div
-                      [style.padding-left]="comp.Indent ? '10px' : '0px'"
-                      class="component-name test-name-ellipsis"
+                    <div [style.padding-left]="comp.Indent ? '10px' : '0px'" class="component-name test-name-ellipsis"
                       title="{{comp.ComponentName}}"
-                      *ngIf="!comp.IsDynamic && comp.ControlType && comp.ControlType=='Label'"
-                    >
+                      *ngIf="!comp.IsDynamic && comp.ControlType && comp.ControlType=='Label'">
                       <b>{{comp.ComponentName}}</b>
                     </div>
-                    <div
-                      [style.padding-left]="comp.Indent ? '10px' : '0px'"
-                      class="component-name test-name-ellipsis"
+                    <div [style.padding-left]="comp.Indent ? '10px' : '0px'" class="component-name test-name-ellipsis"
                       title="{{comp.ComponentName}}"
-                      *ngIf="!comp.IsDynamic && ( !comp.ControlType || comp.ControlType !='Label' )"
-                    >
+                      *ngIf="!comp.IsDynamic && ( !comp.ControlType || comp.ControlType !='Label' )">
                       {{comp.ComponentName}}
                     </div>
 
@@ -144,140 +157,75 @@
                     <div *ngIf="comp.IsDynamic">
                       <span class="input_name">
                         <sup class="color-red">*</sup>
-                        <input
-                          autocomplete="off"
-                          tabindex="1"
-                          class="cstm-res-input"
-                          [(ngModel)]="comp.ComponentName"
-                          placeholder="Component Name"
-                          type="text"
-                          formControlName="ComponentName"
-                        />
+                        <input autocomplete="off" tabindex="1" class="cstm-res-input" [(ngModel)]="comp.ComponentName"
+                          placeholder="Component Name" type="text" formControlName="ComponentName" />
                       </span>
-                      <span
-                        class="color-red font-sm error-message"
+                      <span class="color-red font-sm error-message"
                         *ngIf="comp.IsDynamic && comp.IsDirty('ComponentName')"
-                        [hidden]="comp.IsValidCheck('ComponentName','required')"
-                      >
+                        [hidden]="comp.IsValidCheck('ComponentName','required')">
                         name is required
                       </span>
                     </div>
                   </td>
                   <td width="270">
                     <div class="test-data-input-box">
-                      <input
-                        autocomplete="off"
-                        id="inputbox{{i}}{{j}}{{k}}"
-                        (keyup.enter)="GoToNextBox(i,j,k)"
-                        class="cstm-res-input pull-left inputbox"
-                        [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                        type="text"
-                        *ngIf="comp.ValueType == 'number'"
-                        tabindex="1"
-                        [(ngModel)]="comp.Value"
+                      <input autocomplete="off" id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
+                        class="cstm-res-input pull-left inputbox" [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
+                        type="text" *ngIf="comp.ValueType == 'number'" tabindex="1" [(ngModel)]="comp.Value"
                         formControlName="Value"
-                        (ngModelChange)="CheckComponentValueIsValid(comp, template.TemplateType)"
-                        (focusout)="CheckIfAbnormal(comp,test)"
-                      />
-                      <input
-                        autocomplete="off"
-                        id="inputbox{{i}}{{j}}{{k}}"
-                        (keyup.enter)="GoToNextBox(i,j,k)"
-                        class="cstm-res-input pull-left inputbox"
-                        [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                        type="text"
+                        (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType)"
+                        (focusout)="CheckIfAbnormal(comp,test)" />
+                      <input class="testInput" autocomplete="off" id="inputbox{{i}}{{j}}{{k}}"
+                        (keyup.enter)="GoToNextBox(i,j,k)" class="cstm-res-input pull-left inputbox"
+                        [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" type="text"
                         *ngIf="(comp.ValueType==null || comp.ValueType == 'string') && (comp.ControlType==null || comp.ControlType=='TextBox')"
-                        tabindex="1"
-                        [(ngModel)]="comp.Value"
-                        (ngModelChange)="CheckComponentValueIsValid(comp, template.TemplateType)"
-                        (focusout)="CheckIfAbnormal(comp,test)"
-                        formControlName="Value"
-                        placeholder="enter value"
-                      />
-                      <span
-                        class="color-red font-sm"
-                        *ngIf="comp.ControlType=='Label'"
-                      ></span>
-                      <div
-                        class="cstm-res-autocomplete pull-left"
-                        *ngIf="comp.ValueType == 'string' && comp.ControlType=='SearchBox'"
-                      >
-                        <input
-                          autocomplete="off"
-                          danphe-auto-complete
-                          class="form-control cstm-res-input inputbox"
-                          id="inputbox{{i}}{{j}}{{k}}"
-                          (keyup.enter)="GoToNextBox(i,j,k)"
-                          [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                          formControlName="Value"
-                          [(ngModel)]="comp.Value"
-                          [source]="comp.ValueDataSource"
-                          placeholder="enter text"
-                          display-property-name="Value"
-                          value-property-name="null"
-                          no-match-found-text=" "
+                        tabindex="1" [(ngModel)]="comp.Value"
+                        (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType)"
+                        (focusout)="CheckIfAbnormal(comp,test)" formControlName="Value" placeholder="enter value" />
+                      <span class="color-red font-sm" *ngIf="comp.ControlType=='Label'"></span>
+                      <div class="cstm-res-autocomplete pull-left"
+                        *ngIf="comp.ValueType == 'string' && comp.ControlType=='SearchBox'">
+                        <input autocomplete="off" danphe-auto-complete class="form-control cstm-res-input inputbox"
+                          id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
+                          [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" formControlName="Value"
+                          [(ngModel)]="comp.Value" [source]="comp.ValueDataSource" placeholder="enter text"
+                          display-property-name="Value" value-property-name="null" no-match-found-text=" "
                           onClick="this.select();"
-                          (ngModelChange)="CheckComponentValueIsValid(comp, template.TemplateType)"
-                          (focusout)="CheckIfAbnormal(comp,test)"
-                          [tab-to-select]="false"
-                          max-num-list="10"
-                          tabindex="1"
-                        />
+                          (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType)"
+                          (focusout)="CheckIfAbnormal(comp,test)" [tab-to-select]="false" max-num-list="10"
+                          tabindex="1" />
                       </div>
-                      <div
-                        class="test-error-msg pull-left"
-                        *ngIf="comp.IsSelected==true"
-                      >
-                        <i
-                          class="fa fa-close msg-icn-err"
-                          *ngIf="comp.IsDirty('Value') && !comp.IsValueValid"
-                          title="value is invalid"
-                        ></i>
-                        <i
-                          *ngIf="comp.IsDirty('Value') && comp.IsAbnormal && comp.IsValueValid"
-                          class="fa fa-warning msg-icn-warn"
-                          title="abnormal"
-                        ></i>
+                      <div class="test-error-msg pull-left" *ngIf="comp.IsSelected==true">
+                        <i class="fa fa-close msg-icn-err" *ngIf="comp.IsDirty('Value') && !comp.IsValueValid"
+                          title="value is invalid"></i>
+                        <!-- <i *ngIf="comp.IsDirty('Value') && comp.IsAbnormal && comp.IsValueValid"
+                          class="fa fa-warning msg-icn-warn" title="abnormal"></i> -->
                       </div>
                     </div>
                     <div *ngIf="comp.IsSelected==true">
-                      <i
-                        *ngIf="comp.IsDirty('Value') && !comp.IsGroupValid"
-                        class="fa fa-info-circle icn-group"
-                        title="{{comp.ErrorMessage}}"
-                      ></i>
+                      <i *ngIf="comp.IsDirty('Value') && !comp.IsGroupValid" class="fa fa-info-circle icn-group"
+                        title="{{comp.ErrorMessage}}"></i>
                     </div>
                   </td>
                   <td width="130">
-                    <span *ngIf="!comp.IsDynamic">
-                      <app-inline-edit
-                        [ngModelOptions]="{standalone: true}"
-                        [(ngModel)]="comp.Unit"
-                        type="text"
-                        [tooltip-text]="'click to edit Unit'"
-                      >
+                    <span *ngIf="!comp.IsDynamic && allowUnitEdit">
+                      <app-inline-edit [ngModelOptions]="{standalone: true}" [(ngModel)]="comp.Unit" type="text"
+                        [tooltip-text]="'click to edit Unit'">
                       </app-inline-edit>
                     </span>
+                    <span *ngIf="!comp.IsDynamic && !allowUnitEdit">
+                      {{comp.Unit}}
+                    </span>
                     <span *ngIf="comp.IsDynamic">
-                      <input
-                        tabindex="1"
-                        class="cstm-res-input"
-                        [(ngModel)]="comp.Unit"
-                        placeholder="unit"
-                        type="text"
-                        formControlName="Unit"
-                      />
+                      <input tabindex="1" class="cstm-res-input" [(ngModel)]="comp.Unit" placeholder="unit" type="text"
+                        formControlName="Unit" />
                     </span>
                   </td>
                   <td width="220">
                     <span *ngIf="!comp.IsDynamic">
-                      <app-inline-edit
-                        [ngModelOptions]="{standalone: true}"
-                        [(ngModel)]="comp.RangeDescription"
-                        (getBack)="CheckIfAbnormal(comp,test,1,localRangeDesc)"
-                        type="text"
-                        [tooltip-text]="'click to edit Range'"
-                      >
+                      <app-inline-edit [ngModelOptions]="{standalone: true}" [(ngModel)]="comp.RangeDescription"
+                        (getBack)="CheckIfAbnormal(comp,test,1,localRangeDesc)" type="text"
+                        [tooltip-text]="'click to edit Range'">
                       </app-inline-edit>
                       <!--<span *ngIf="test.TestName.toLowerCase()=='pt' || test.TestName.toLowerCase()=='aptt (activated partial thromboplastin time)'">
                                         <input autocomplete="off" tabindex="1"
@@ -292,16 +240,9 @@
                                       </span>-->
                     </span>
                     <span *ngIf="comp.IsDynamic">
-                      <input
-                        autocomplete="off"
-                        tabindex="1"
-                        class="cstm-res-input"
-                        [(ngModel)]="comp.RangeDescription"
-                        placeholder="range"
-                        type="text"
-                        formControlName="RangeDescription"
-                        (focusout)="CheckIfAbnormal(comp,test,1)"
-                      />
+                      <input autocomplete="off" tabindex="1" class="cstm-res-input" [(ngModel)]="comp.RangeDescription"
+                        placeholder="range" type="text" formControlName="RangeDescription"
+                        (focusout)="CheckIfAbnormal(comp,test,1)" />
                     </span>
                   </td>
                   <!--<td width="200">
@@ -309,47 +250,31 @@
                                   </td>-->
                   <td class="text-center align-vertical-mid" width="100">
                     <label class="mt-checkbox mt-checkbox-outline">
-                      <input
-                        autocomplete="off"
-                        tabindex="5"
-                        class="zoomcheckbox margin-0-vr top-0 align-vertical-mid"
-                        [(ngModel)]="comp.IsSelected"
-                        name="IsSelected"
-                        width="100"
-                        type="checkbox"
-                        ng-checked="comp.IsSelected=true"
-                        value=""
+                      <input autocomplete="off" tabindex="5" class="zoomcheckbox margin-0-vr top-0 align-vertical-mid"
+                        [(ngModel)]="comp.IsSelected" name="IsSelected" width="100" type="checkbox"
+                        ng-checked="comp.IsSelected=true" value=""
                         (change)="ComponentChkBoxOnChange(test,comp,comp.ControlType)"
-                        [ngModelOptions]="{standalone: true}"
-                      />
+                        [ngModelOptions]="{standalone: true}" />
                       <span></span>
                     </label>
                   </td>
                   <td class="text-center">
-                    <i
-                      *ngIf="comp.IsDynamic"
-                      class="btn btn-sm btn-danger btn-delete-comp"
-                      title="Remove this Component"
-                      (click)="RemoveComponent(test, k)"
-                      >X</i
-                    >
+                    <i *ngIf="comp.IsDynamic" class="btn btn-sm btn-danger btn-delete-comp"
+                      title="Remove this Component" (click)="RemoveComponent(test, k)">X</i>
                   </td>
                 </tr>
 
                 <!--<tr *ngIf="test.IsNegativeResult">
-                  <td>
-                      Remarks:  <textarea [(ngModel)]="test.NegativeResultText" style="width:500px"></textarea>
-                  </td>
-              </tr>-->
+                    <td>
+                        Remarks:  <textarea [(ngModel)]="test.NegativeResultText" style="width:500px"></textarea>
+                    </td>
+                </tr>-->
                 <!--see for validation..here the validation is used inside the ngFor-->
 
                 <tr>
                   <td colspan="6">
-                    <button
-                      class="btn btn-addnew-comp primary-btn btn-xs"
-                      title="Add New Component to {{test.TestName}}"
-                      (click)="AddNewComponent(test)"
-                    >
+                    <button class="btn btn-addnew-comp primary-btn btn-xs"
+                      title="Add New Component to {{test.TestName}}" (click)="AddNewComponent(test)">
                       <i class="fa fa-plus"></i>
                     </button>
                   </td>
@@ -358,11 +283,8 @@
             </tbody>
           </table>
 
-          <table
-            *ngIf="template.TemplateType=='culture'"
-            class="table table-bordered tbl-templatewise table-striped ar-table-template"
-            style="margin-bottom: 0px;"
-          >
+          <table *ngIf="template.TemplateType=='culture'"
+            class="table table-bordered tbl-templatewise table-striped ar-table-template" style="margin-bottom: 0px;">
             <thead>
               <tr class="tmplate-name-hdr">
                 <td colspan="6" class="text-center">
@@ -384,17 +306,15 @@
                 </tr>
                 <tr class="test-infos-detail">
                   <td colspan="2">
-                    <div
-                      class="flex-container justify-sp-between flex-align-center"
-                    >
+                    <div class="flex-container justify-sp-between flex-align-center">
                       <div class="flex-1 font-600">
-                        <span class="test-title"
-                          >{{j+1}}.&nbsp;{{test.TestName}}</span
-                        >
+                        <span class="test-title">{{j+1}}.&nbsp;{{test.TestName}}</span>
                       </div>
                       <div class="flex-1 text-black text-center">
-                        <b>Requested On:</b> {{test.RequestDate |
-                        DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                        <b>Requested On:</b> {{
+                        test.RequestDate |
+                        DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'
+                        }}
                       </div>
                       <div class="flex-1 text-black text-center">
                         <b>Sample Collected By:</b> {{test.SampleCollectedBy}}
@@ -404,18 +324,13 @@
                   <td colspan="1">
                     <div>
                       <label class="mt-checkbox mt-checkbox-outline">
-                        <input
-                          autocomplete="off"
-                          *ngIf="!isEditResult"
-                          type="checkbox"
-                          [(ngModel)]="test.SelectAll"
-                          class="zoomcheckbox margin-0-vr top-0"
-                          ng-checked="test.SelectAll"
+                        <input autocomplete="off" *ngIf="!isEditResult" type="checkbox" [(ngModel)]="test.SelectAll"
+                          class="zoomcheckbox margin-0-vr top-0" ng-checked="test.SelectAll"
                           (change)="TestCheckBoxOnChange(test)"
                           title="Check/Uncheck all components of: {{test.TestName}}"
                           [ngModelOptions]="{standalone: true}" />
-                        <span></span
-                      ></label>
+                        <span></span>
+                      </label>
                     </div>
                   </td>
                 </tr>
@@ -426,16 +341,9 @@
                   <td colspan="1" style="text-align: left;">
                     <div class="culture-ip-wrapper">
                       <div class="test-data-input-box">
-                        <input
-                          autocomplete="off"
-                          tabindex="1"
-                          id="inputbox{{i}}{{j}}x01"
-                          (keyup.enter)="GoToNextBox(i,j,-1,true)"
-                          class="cstm-res-input"
-                          type="text"
-                          placeholder="Specimen"
-                          [(ngModel)]="test.Specimen"
-                        />
+                        <input autocomplete="off" tabindex="1" id="inputbox{{i}}{{j}}x01"
+                          (keyup.enter)="GoToNextBox(i,j,-1,true)" class="cstm-res-input" type="text"
+                          placeholder="Specimen" [(ngModel)]="test.Specimen" />
                       </div>
                     </div>
                   </td>
@@ -444,57 +352,31 @@
                 <tr *ngIf="test.ShowNegativeCheckbox">
                   <td colspan="1">
                     <div>
-                      <label
-                        class="margin-0-vr pull-left lbl-no-growth"
-                        for="negRes"
-                        >No Growth:</label
-                      >
-                      <input
-                        autocomplete="off"
-                        tabindex="1"
-                        id="negRes"
-                        type="checkbox"
-                        [(ngModel)]="test.IsNegativeResult"
-                        class="zoomcheckbox top-0 margin-7-hr"
-                        [ngModelOptions]="{standalone: true}"
-                      />
+                      <label class="margin-0-vr pull-left lbl-no-growth" for="negRes">No Growth:</label>
+                      <input autocomplete="off" tabindex="1" id="negRes" type="checkbox"
+                        [(ngModel)]="test.IsNegativeResult" class="zoomcheckbox top-0 margin-7-hr"
+                        [ngModelOptions]="{standalone: true}" />
                     </div>
                   </td>
                   <td colspan="2">
-                    <textarea
-                      tabindex="1"
-                      id="inputbox{{i}}{{j}}x02"
-                      (keyup.enter)="GoToNextBox(i,j,-1)"
-                      class="form-control no-resize"
-                      style="width: 100%;"
-                      *ngIf="test.IsNegativeResult"
-                      [(ngModel)]="test.NegativeResultText"
-                      [ngModelOptions]="{standalone: true}"
-                    ></textarea>
+                    <textarea tabindex="1" id="inputbox{{i}}{{j}}x02" (keyup.enter)="GoToNextBox(i,j,-1)"
+                      class="form-control no-resize" style="width: 100%;" *ngIf="test.IsNegativeResult"
+                      [(ngModel)]="test.NegativeResultText" [ngModelOptions]="{standalone: true}"></textarea>
                   </td>
                 </tr>
                 <ng-container *ngIf="!test.IsNegativeResult">
                   <tr>
                     <td>
-                      <button
-                        [disabled]="test.MaxResultGroup == maxIsolatedOrganismCount"
-                        class="btn btn-primary"
-                        (click)="AddNewCultureGroupResult(test)"
-                      >
+                      <button [disabled]="test.MaxResultGroup == maxIsolatedOrganismCount" class="btn btn-primary"
+                        (click)="AddNewCultureGroupResult(test)">
                         +1 More Isolated Organism
                       </button>
                     </td>
                     <td colspan="2">
                       <div class="culture-ip-wrapper">
-                        <div
-                          class="test-data-input-box pos-rel"
-                          *ngFor="let tg of arrayFromNum(test.MaxResultGroup); let nd = index;"
-                        >
-                          <button
-                            *ngIf="nd > 0"
-                            (click)="RemoveCultureGroupResult(test,nd)"
-                            class="remove-group"
-                          >
+                        <div class="test-data-input-box pos-rel"
+                          *ngFor="let tg of arrayFromNum(test.MaxResultGroup); let nd = index;">
+                          <button *ngIf="nd > 0" (click)="RemoveCultureGroupResult(test,nd)" class="remove-group">
                             X
                           </button>
                           <input type="text" style="visibility: hidden;" />
@@ -502,182 +384,90 @@
                       </div>
                     </td>
                   </tr>
-                  <tr
-                    class="txt-black single-test-add"
-                    *ngFor="let comp of test.Components;let k = index"
-                  >
+                  <tr class="txt-black single-test-add" *ngFor="let comp of test.Components;let k = index">
                     <td width="120">
-                      <div
-                        [style.padding-left]="comp.Indent ? '10px' : '0px'"
-                        class="component-name test-name-ellipsis"
+                      <div [style.padding-left]="comp.Indent ? '10px' : '0px'" class="component-name test-name-ellipsis"
                         title="{{comp.ComponentName}}"
-                        *ngIf="!comp.IsDynamic && comp.ControlType && comp.ControlType=='Label'"
-                      >
+                        *ngIf="!comp.IsDynamic && comp.ControlType && comp.ControlType=='Label'">
                         <b>{{comp.ComponentName}}</b>
                       </div>
-                      <div
-                        [style.padding-left]="comp.Indent ? '10px' : '0px'"
-                        class="component-name test-name-ellipsis"
+                      <div [style.padding-left]="comp.Indent ? '10px' : '0px'" class="component-name test-name-ellipsis"
                         title="{{comp.ComponentName}}"
-                        *ngIf="!comp.IsDynamic && ( !comp.ControlType || comp.ControlType !='Label' )"
-                      >
+                        *ngIf="!comp.IsDynamic && ( !comp.ControlType || comp.ControlType !='Label' )">
                         {{comp.ComponentName}}
                       </div>
-                      <div
-                        [formGroup]="comp.ComponentValidator"
-                        *ngIf="comp.IsDynamic"
-                      >
+                      <div [formGroup]="comp.ComponentValidator" *ngIf="comp.IsDynamic">
                         <span class="input_name">
                           <sup class="color-red">*</sup>
-                          <input
-                            autocomplete="off"
-                            tabindex="1"
-                            class="cstm-res-input"
-                            [(ngModel)]="comp.ComponentName"
-                            placeholder="Component Name"
-                            type="text"
-                            formControlName="ComponentName"
-                          />
+                          <input autocomplete="off" tabindex="1" class="cstm-res-input" [(ngModel)]="comp.ComponentName"
+                            placeholder="Component Name" type="text" formControlName="ComponentName" />
                         </span>
-                        <span
-                          class="color-red font-sm error-message"
+                        <span class="color-red font-sm error-message"
                           *ngIf="comp.IsDynamic && comp.IsDirty('ComponentName')"
-                          [hidden]="comp.IsValidCheck('ComponentName','required')"
-                        >
+                          [hidden]="comp.IsValidCheck('ComponentName','required')">
                           name is required
                         </span>
                       </div>
                     </td>
                     <td colspan="2">
                       <div class="culture-ip-wrapper">
-                        <div
-                          [formGroup]="comp.ComponentValidator"
-                          class="test-data-input-box"
-                        >
-                          <input
-                            autocomplete="off"
-                            id="inputbox{{i}}{{j}}{{k}}"
-                            (keyup.enter)="GoToNextBox(i,j,k)"
+                        <div [formGroup]="comp.ComponentValidator" class="test-data-input-box">
+                          <input autocomplete="off" id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
                             class="cltr-cstm-res-input pull-left inputbox"
-                            [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                            type="text"
-                            *ngIf="comp.ValueType == 'number'"
-                            tabindex="1"
-                            [(ngModel)]="comp.Value"
-                            [ngModelOptions]="{standalone: true}"
-                            (focusout)="CheckIfAbnormal(comp,test)"
-                          />
-                          <input
-                            autocomplete="off"
-                            id="inputbox{{i}}{{j}}{{k}}"
-                            (keyup.enter)="GoToNextBox(i,j,k)"
+                            [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" type="text"
+                            *ngIf="comp.ValueType == 'number'" tabindex="1" [(ngModel)]="comp.Value"
+                            [ngModelOptions]="{standalone: true}" (focusout)="CheckIfAbnormal(comp,test)" />
+                          <input autocomplete="off" id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
                             class="cltr-cstm-res-input pull-left inputbox"
-                            [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                            type="text"
+                            [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" type="text"
                             *ngIf="(comp.ValueType==null || comp.ValueType == 'string') && (comp.ControlType==null || comp.ControlType=='TextBox')"
-                            tabindex="1"
-                            [(ngModel)]="comp.Value"
-                            (focusout)="CheckIfAbnormal(comp,test)"
-                            [ngModelOptions]="{standalone: true}"
-                            placeholder="enter value"
-                          />
-                          <span
-                            class="color-red font-sm"
-                            *ngIf="comp.ControlType=='Label'"
-                          ></span>
-                          <div
-                            class="cstm-res-autocomplete pull-left"
-                            *ngIf="comp.ValueType == 'string' && comp.ControlType=='SearchBox'"
-                          >
-                            <input
-                              autocomplete="off"
-                              danphe-auto-complete
-                              class="form-control cstm-res-input inputbox"
-                              id="inputbox{{i}}{{j}}{{k}}"
-                              (keyup.enter)="GoToNextBox(i,j,k)"
-                              [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
-                              [(ngModel)]="comp.Value"
-                              [ngModelOptions]="{standalone: true}"
-                              [source]="comp.ValueDataSource"
-                              placeholder="enter text"
-                              display-property-name="Value"
-                              value-property-name="null"
-                              no-match-found-text=" "
-                              onClick="this.select();"
-                              [tab-to-select]="false"
-                              max-num-list="10"
-                              tabindex="1"
-                            />
+                            tabindex="1" [(ngModel)]="comp.Value" (focusout)="CheckIfAbnormal(comp,test)"
+                            [ngModelOptions]="{standalone: true}" placeholder="enter value" />
+                          <span class="color-red font-sm" *ngIf="comp.ControlType=='Label'"></span>
+                          <div class="cstm-res-autocomplete pull-left"
+                            *ngIf="comp.ValueType == 'string' && comp.ControlType=='SearchBox'">
+                            <input autocomplete="off" danphe-auto-complete class="form-control cstm-res-input inputbox"
+                              id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
+                              [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" [(ngModel)]="comp.Value"
+                              [ngModelOptions]="{standalone: true}" [source]="comp.ValueDataSource"
+                              placeholder="enter text" display-property-name="Value" value-property-name="null"
+                              no-match-found-text=" " onClick="this.select();" [tab-to-select]="false" max-num-list="10"
+                              tabindex="1" />
                           </div>
                         </div>
 
-                        <div
-                          class="test-data-input-box pos-rel"
-                          *ngFor="let compgrp of comp.CultureAddedGroup; let g = index;"
-                        >
-                          <input
-                            autocomplete="off"
-                            id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
+                        <div class="test-data-input-box pos-rel"
+                          *ngFor="let compgrp of comp.CultureAddedGroup; let g = index;">
+                          <input autocomplete="off" id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
                             (keyup.enter)="GoToNextGroupBox(i,j,k,g)"
-                            class="cltr-cstm-res-input pull-left inputbox bg-off"
-                            type="text"
-                            *ngIf="compgrp.ValueType == 'number'"
-                            tabindex="1"
-                            [(ngModel)]="compgrp.Value"
-                            (focusout)="CheckIfAbnormal(compgrp,test)"
-                          />
-                          <input
-                            autocomplete="off"
-                            id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
+                            class="cltr-cstm-res-input pull-left inputbox bg-off" type="text"
+                            *ngIf="compgrp.ValueType == 'number'" tabindex="1" [(ngModel)]="compgrp.Value"
+                            (focusout)="CheckIfAbnormal(compgrp,test)" />
+                          <input autocomplete="off" id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
                             (keyup.enter)="GoToNextGroupBox(i,j,k,g)"
-                            class="cltr-cstm-res-input pull-left inputbox bg-off"
-                            type="text"
+                            class="cltr-cstm-res-input pull-left inputbox bg-off" type="text"
                             *ngIf="(compgrp.ValueType==null || compgrp.ValueType == 'string') && (compgrp.ControlType==null || compgrp.ControlType=='TextBox')"
-                            tabindex="1"
-                            [(ngModel)]="compgrp.Value"
-                            placeholder="enter value"
-                            (focusout)="CheckIfAbnormal(compgrp,test)"
-                          />
-                          <div
-                            class="cstm-res-autocomplete pull-left"
-                            *ngIf="compgrp.ValueType == 'string' && compgrp.ControlType=='SearchBox'"
-                          >
-                            <input
-                              autocomplete="off"
-                              danphe-auto-complete
-                              class="form-control cstm-res-input inputbox bg-off"
-                              id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
-                              (keyup.enter)="GoToNextGroupBox(i,j,k,g)"
-                              [(ngModel)]="compgrp.Value"
-                              [source]="compgrp.ValueDataSource"
-                              placeholder="enter text"
-                              display-property-name="Value"
-                              value-property-name="null"
-                              no-match-found-text=" "
-                              onClick="this.select();"
-                              [tab-to-select]="false"
-                              max-num-list="10"
-                              tabindex="1"
-                            />
+                            tabindex="1" [(ngModel)]="compgrp.Value" placeholder="enter value"
+                            (focusout)="CheckIfAbnormal(compgrp,test)" />
+                          <div class="cstm-res-autocomplete pull-left"
+                            *ngIf="compgrp.ValueType == 'string' && compgrp.ControlType=='SearchBox'">
+                            <input autocomplete="off" danphe-auto-complete
+                              class="form-control cstm-res-input inputbox bg-off" id="inputboxGrp{{i}}{{j}}{{k}}{{g}}"
+                              (keyup.enter)="GoToNextGroupBox(i,j,k,g)" [(ngModel)]="compgrp.Value"
+                              [source]="compgrp.ValueDataSource" placeholder="enter text" display-property-name="Value"
+                              value-property-name="null" no-match-found-text=" " onClick="this.select();"
+                              [tab-to-select]="false" max-num-list="10" tabindex="1" />
                           </div>
                         </div>
-                        <i
-                          *ngIf="comp.IsDynamic"
-                          class="btn btn-sm btn-danger btn-delete-comp"
-                          title="Remove this Component"
-                          (click)="RemoveComponent(test, k)"
-                          >X</i
-                        >
+                        <i *ngIf="comp.IsDynamic" class="btn btn-sm btn-danger btn-delete-comp"
+                          title="Remove this Component" (click)="RemoveComponent(test, k)">X</i>
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td colspan="3">
-                      <button
-                        class="btn btn-addnew-comp primary-btn btn-xs"
-                        title="Add New Component to {{test.TestName}}"
-                        (click)="AddNewComponent(test, 'culture')"
-                      >
+                      <button class="btn btn-addnew-comp primary-btn btn-xs"
+                        title="Add New Component to {{test.TestName}}" (click)="AddNewComponent(test, 'culture')">
                         <i class="fa fa-plus"></i>
                       </button>
                     </td>
@@ -690,7 +480,6 @@
                             </td>
                         </tr>-->
                 <!--see for validation..here the validation is used inside the ngFor-->
-
                 <!-- <tr *ngIf="!test.IsNegativeResult">
                   <td colspan="6">
                     <button
@@ -708,28 +497,18 @@
         </div>
       </div>
       <div class="text-center margin-20-vr">
-        <button
-          tabindex="2"
-          class="btn primary-btn margin-7-hr"
-          [disabled]="loading"
-          (click)="loading=true;Submit()"
-        >
+        <button tabindex="2" class="btn green btn-success margin-7-hr" [disabled]="loading"
+          (click)="loading=true;Submit()" id="btnSaveResult">
           {{isEditResult == true ? 'Update' : 'Save Result' }}
           <i class="fa fa-save"></i>
         </button>
-        <button
-          class="btn btn-cancel btn-outline margin-7-hr"
-          (click)="loading=true;Cancel()"
-        >
+        <button class="btn btn-cancel btn-outline margin-7-hr" (click)="loading=true;Cancel()">
           Cancel
         </button>
       </div>
     </div>
-    <div
-      *ngIf="templateReport.TemplateType == 'html'"
-      [class.maximize-window]="maximize"
-      class="col-lg-12 col-sm-12 margin-15-tp cstm-maxmin"
-    >
+    <div *ngIf="templateReport.TemplateType == 'html'" [class.maximize-window]="maximize"
+      class="col-lg-12 col-sm-12 mt7 cstm-maxmin">
       <div class="flex-container">
         <div class="info-item text-capitalize flex-2">
           <p>
@@ -738,49 +517,31 @@
             <a (click)="ConfirmChangeRunNumber()"> (Change) </a>
           </p>
         </div>
-        <div
-          *ngIf="patientService.globalPatient.WardName"
-          class="info-item text-capitalize flex-2"
-        >
+        <div *ngIf="patientService.globalPatient.WardName" class="info-item text-capitalize flex-2">
           <p>
             Ward : {{patientService.globalPatient.WardName}}
-            <span class="bold green" *ngIf="hasInsurance"
-              >(Under Insurance)</span
-            >
+            <span class="bold green" *ngIf="hasInsurance">(Under Insurance)</span>
           </p>
         </div>
         <!--<div *ngIf="patientService.globalPatient.WardName" class="info-item text-capitalize flex-2">
-        <p>Requested By : {{templateReport.Lookups.ReferredBy}}</p>
-      </div>-->
+          <p>Requested By : {{templateReport.Lookups.ReferredBy}}</p>
+        </div>-->
         <div class="info-item text-capitalize">
-          <button
-            class="btn btn-primary"
-            [disabled]="loading"
-            (click)="loading=true;Submit()"
-          >
+          <button class="btn btn-primary" [disabled]="loading" (click)="loading=true;Submit()">
             {{isEditResult == true ? 'Update' : 'Save Result' }}
             <i class="fa fa-save"></i>
           </button>
         </div>
       </div>
       <div style="width: 100%; display: table;">
-        <div
-          class="html-tmplate-holder"
-          *ngFor="let template of templateReport.Templates; let i=index;"
-        >
+        <div class="html-tmplate-holder" *ngFor="let template of templateReport.Templates; let i=index;">
           <div class="tmplate-name-hdr">
             <p class="text-center margin-0-vr pad-8-all">
               {{template.TemplateName}}
             </p>
           </div>
-          <div
-            class="col-md-12"
-            *ngFor="let test of template.Tests; let j=index;"
-          >
-            <div
-              *ngIf="test.VendorDetail && !test.VendorDetail.IsDefault"
-              class="row"
-            >
+          <div class="col-md-12" *ngFor="let test of template.Tests; let j=index;">
+            <div *ngIf="test.VendorDetail && !test.VendorDetail.IsDefault" class="row">
               <div class="col-md-12 text-center vender-detail">
                 <p class="text-center margin-0-vr pad-8-all">
                   Send to Vendor: {{test.VendorDetail.VendorName}}
@@ -792,48 +553,33 @@
                 <span class="test-title font-600">{{test.TestName}}</span>
               </div>
               <div class="col-md-4 text-center">
-                <span class="text-black"
-                  ><b>Requested On:</b> {{test.RequestDate |
-                  DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</span
-                >
+                <span class="text-black">
+                  <b>Requested On:</b> {{
+                  test.RequestDate |
+                  DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'
+                  }}
+                </span>
               </div>
               <div class="col-md-4">
-                <a
-                  *ngIf="maximize"
-                  (click)="Maximize(0)"
-                  class="remove pull-right"
-                ></a>
-                <a
-                  *ngIf="!maximize"
-                  (click)="Maximize(1)"
-                  class="fullscreen pull-right"
-                ></a>
+                <a *ngIf="maximize" (click)="Maximize(0)" class="remove pull-right"></a>
+                <a *ngIf="!maximize" (click)="Maximize(1)" class="fullscreen pull-right"></a>
               </div>
               <div class="col-md-4 text-center">
-                <span class="text-black"
-                  >Requested On: {{test.RequestDate |
-                  DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</span
-                >
+                <span class="text-black">
+                  Requested On: {{
+                  test.RequestDate |
+                  DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'
+                  }}
+                </span>
               </div>
               <div class="col-md-4">
                 <div class="row">
-                  <a
-                    *ngIf="maximize"
-                    (click)="Maximize(0)"
-                    class="remove pull-right"
-                  ></a>
-                  <a
-                    *ngIf="!maximize"
-                    (click)="Maximize(1)"
-                    class="fullscreen pull-right"
-                  ></a>
+                  <a *ngIf="maximize" (click)="Maximize(0)" class="remove pull-right"></a>
+                  <a *ngIf="!maximize" (click)="Maximize(1)" class="fullscreen pull-right"></a>
                 </div>
               </div>
             </div>
-            <div
-              class="row"
-              style="padding: 5px 0px; border: 1px solid #e8e8e8;"
-            >
+            <div class="row" style="padding: 5px 0px; border: 1px solid #e8e8e8;">
               <div class="col-md-12 col-xs-12 col-sm-12">
                 <div class="row" style="padding: 5px 0px;">
                   <div class="col-md-5">
@@ -845,30 +591,16 @@
                     </p>
                   </div>
                   <div class="col-md-4">
-                    <a
-                      *ngIf="!changeReportTemplate"
-                      (click)="showLists()"
-                      title="click to change report template"
-                      style="color: #b56714; font-size: 13px;"
-                    >
+                    <a *ngIf="!changeReportTemplate" (click)="showLists()" title="click to change report template"
+                      style="color: #b56714; font-size: 13px;">
                       Select different template ?
                     </a>
                     <div *ngIf="changeReportTemplate">
-                      <input
-                        autocomplete="off"
-                        class="form-control"
-                        danphe-auto-complete
-                        [(ngModel)]="selectedHTMLTemplate"
-                        [source]="reportTemplates"
-                        placeholder="search template"
-                        [list-formatter]="ReportTempListFormatter"
-                        display-property-name="ReportTemplateName"
-                        value-property-name="null"
-                        match-formatted="true"
-                        (focusout)="AssignSelectedTemplate()"
-                        onClick="this.select();"
-                        max-num-list="10"
-                      />
+                      <input autocomplete="off" class="form-control" danphe-auto-complete
+                        [(ngModel)]="selectedHTMLTemplate" [source]="reportTemplates" placeholder="search template"
+                        [list-formatter]="ReportTempListFormatter" display-property-name="ReportTemplateName"
+                        value-property-name="null" match-formatted="true" (focusout)="AssignSelectedTemplate()"
+                        onClick="this.select();" max-num-list="10" />
                     </div>
                   </div>
                   <div class="col-md-4"></div>
@@ -877,11 +609,8 @@
             </div>
             <div class="row">
               <div *ngFor="let comp of test.Components; let k=index;">
-                <danphe-ckeditor
-                  [readonly]="isReadOnly"
-                  (get-html-content)="onChangeEditorData($event,i,j,k)"
-                  [set-html-content]="ckHtmlContent"
-                >
+                <danphe-ckeditor [readonly]="isReadOnly" (get-html-content)="onChangeEditorData($event,i,j,k)"
+                  [set-html-content]="ckHtmlContent">
                 </danphe-ckeditor>
               </div>
             </div>
@@ -891,18 +620,11 @@
       <div class="row margin-20-vr">
         <div class="col-md-12">
           <div class="text-center">
-            <button
-              class="btn btn-primary margin-7-hr"
-              [disabled]="loading"
-              (click)="loading=true;Submit()"
-            >
+            <button class="btn btn-primary margin-7-hr" [disabled]="loading" (click)="loading=true;Submit()">
               {{isEditResult == true ? 'Update' : 'Save Result' }}
               <i class="fa fa-save"></i>
             </button>
-            <button
-              class="btn btn-cancel margin-7-hr"
-              (click)="loading=true;Cancel()"
-            >
+            <button class="btn btn-cancel margin-7-hr" (click)="loading=true;Cancel()">
               Cancel
             </button>
           </div>
@@ -912,10 +634,7 @@
   </div>
 
   <!--Model Box Starting Here-->
-  <div
-    class="popup-static portlet box portlet-fullscreen"
-    *ngIf="showWarningConfirmBox"
-  >
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showWarningConfirmBox">
     <div class="portlet-body form">
       <div class="col-md-offset-4 col-md-4">
         <div class="modelbox-div">
@@ -931,18 +650,11 @@
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button
-                type="button"
-                class="btn btn-primary btn-sm margin-7-hr"
-                (click)="SaveResult();showWarningConfirmBox=false"
-              >
+              <button type="button" class="btn green btn-success btn-sm margin-7-hr" id="proceedWithAbnormalResult"
+                (click)="SaveResult();showWarningConfirmBox=false">
                 Proceed
               </button>
-              <button
-                type="button"
-                class="btn btn-cancel btn-sm margin-7-hr"
-                (click)="ReviewValues()"
-              >
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="ReviewValues()">
                 Review Values
               </button>
             </div>
@@ -955,10 +667,7 @@
     </div>
   </div>
 
-  <div
-    class="popup-static portlet box portlet-fullscreen inv_modal"
-    *ngIf="showChangeSample"
-  >
+  <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showChangeSample">
     <div class="portlet-body form">
       <div class="col-md-6 col-md-offset-3">
         <div class="modelbox-div">
@@ -972,12 +681,8 @@
             <div class="row">
               <div class="col-md-5">Sample Collection Date <b>:</b></div>
               <div class="col-md-7">
-                <danphe-date-picker
-                  [(ngModel)]="sampleCode.SampleCreatedOn"
-                  ngDefaultControl
-                  [CalendarTypes]="'np'"
-                  (ngModelChange)="SampleDateChanged()"
-                ></danphe-date-picker>
+                <danphe-date-picker [(ngModel)]="sampleCode.SampleCreatedOn" ngDefaultControl [CalendarTypes]="'np'"
+                  (ngModelChange)="SampleDateChanged()"></danphe-date-picker>
               </div>
             </div>
             <div class="row margin-15-tp">
@@ -985,22 +690,14 @@
                 {{RunNumberType}} ({{visitType}}) Run Number <b>:</b>
               </div>
               <div class="col-md-7">
-                <input
-                  autocomplete="off"
-                  [(ngModel)]="sampleCode.RunNumber"
-                  style="
+                <input autocomplete="off" [(ngModel)]="sampleCode.RunNumber" style="
                     width: 100px;
                     height: 31px;
                     font-size: 20px;
                     font-weight: 700;
                     text-align: center;
                     display: inline-block;
-                  "
-                  min="1"
-                  class="form-control cstm-form-control"
-                  name="Run Number"
-                  type="number"
-                />
+                  " min="1" class="form-control cstm-form-control" name="Run Number" type="number" />
                 <!--<span style="font-size: 20px;font-weight: 700;text-align: center;">&nbsp;&nbsp;/&nbsp;&nbsp;</span>-->
                 <!--<input autocomplete="off" [(ngModel)]="sampleCode.SampleCode"
                      disabled
@@ -1014,28 +711,21 @@
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button
-                type="button"
-                class="btn btn-primary btn-sm margin-7-hr"
-                (click)="CheckIfSampleCodeExist()"
-              >
+              <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="CheckIfSampleCodeExist()">
                 Update
               </button>
               <!-- <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showChangeSample=false;"> Close </button> -->
             </div>
           </div>
           <!-- <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="showChangeSample=false;">X</button>
-        </div> -->
+            <button class="btn btn-danger" (click)="showChangeSample=false;">X</button>
+          </div> -->
         </div>
       </div>
     </div>
   </div>
 
-  <div
-    class="popup-static portlet box portlet-fullscreen"
-    *ngIf="showConfirmationBox"
-  >
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
     <div class="portlet-body form">
       <div class="col-md-6 col-md-offset-3">
         <div class="modelbox-div">
@@ -1045,9 +735,7 @@
             </h4>
           </div>
           <div class="modelbox-body">
-            <div
-              *ngIf="templateReport.Lookups.PatientId != sampleCodeExistingDetail.PatientId"
-            >
+            <div *ngIf="templateReport.Lookups.PatientId != sampleCodeExistingDetail.PatientId">
               <div>
                 <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">
                   <span style="text-transform: capitalize;">{{visitType}}</span>
@@ -1065,49 +753,31 @@
               </div>
               <div class="modelbox-footer">
                 <div class="all-buttons text-right">
-                  <button
-                    type="button"
-                    class="btn btn-cancel btn-sm margin-7-hr"
-                    (click)="showConfirmationBox=false"
-                  >
+                  <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false">
                     Close
                   </button>
                 </div>
               </div>
             </div>
-            <div
-              *ngIf="templateReport.Lookups.PatientId == sampleCodeExistingDetail.PatientId"
-            >
+            <div *ngIf="templateReport.Lookups.PatientId == sampleCodeExistingDetail.PatientId">
               <div>
                 <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">
                   {{visitType}} Run Number
                   <b>{{sampleCode.RunNumber}} / {{sampleCode.SampleCode}}</b> is
-                  already used for another test for the same patient<b
-                    >({{sampleCodeExistingDetail.PatientName}})</b
-                  >
+                  already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b>
                 </p>
                 <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">
                   {{visitType}} Run Number <b>{{sampleCode.RunNumber}}</b> is
-                  already used for another test for the same patient<b
-                    >({{sampleCodeExistingDetail.PatientName}})</b
-                  >
+                  already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b>
                 </p>
                 <p>Do you want to continue with the same run number?</p>
               </div>
               <div class="modelbox-footer">
                 <div class="all-buttons text-right">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm margin-7-hr"
-                    (click)="UpdateSampleCode()"
-                  >
+                  <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="UpdateSampleCode()">
                     Continue
                   </button>
-                  <button
-                    type="button"
-                    class="btn btn-cancel btn-sm margin-7-hr"
-                    (click)="showConfirmationBox=false"
-                  >
+                  <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false">
                     Cancel
                   </button>
                 </div>

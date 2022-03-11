@@ -8,6 +8,10 @@ using DanpheEMR.Utilities;
 using System.Reflection;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel.NotificationModels;
+using DanpheEMR.ViewModel.Procurement;
+using DanpheEMR.Enums;
+using DanpheEMR.ServerModel.InventoryModels;
+using DanpheEMR.Services;
 
 namespace DanpheEMR.Controllers
 {
@@ -18,109 +22,176 @@ namespace DanpheEMR.Controllers
         //This function is complete transaction after dispatch items. Transactions as below
         //1)Save Dispatched Items,                          2)Save Stock Transaction 
         //3) Update Stock model (available Quantity)        4) Update Requisition and Requisition Items (Status and ReceivedQty,PendingQty, etc)
-        public static int DispatchItemsTransaction(RequisitionStockVM requisitionStockVMFromClient, InventoryDbContext inventoryDbContext, RbacUser currentUser)
+        public static int DispatchItemsTransaction(List<DispatchItemsModel> dispatchItems, IInventoryReceiptNumberService receiptNumberService, InventoryDbContext inventoryDb, RbacUser currentUser)
         {
-            //DbContext Transaction has been moved to the outer function i.e. NormalDispatch and DirectDispatch
-            ArrangeStockInFIFO(requisitionStockVMFromClient, inventoryDbContext, currentUser);
+            var currentDate = DateTime.Now;
+            var currentFiscYrId = GetFiscalYear(inventoryDb).FiscalYearId;
 
-            //Save Dispatched Items 
-            var DispatchId = AddDispatchItemsAndUpdateReqItemQty(inventoryDbContext, requisitionStockVMFromClient.dispatchItems, requisitionStockVMFromClient.requisition.RequisitionItems);
+            var newDispatchId = receiptNumberService.GenerateDispatchNo(currentFiscYrId, dispatchItems.FirstOrDefault().ReqDisGroupId);
 
-            UpdateRequisitionStatusAfterDispatch(inventoryDbContext, requisitionStockVMFromClient.requisition, currentUser);
+            // pre-load requisition items in bulk to reduce db connections
+            var requisitionItemIds = dispatchItems.Select(d => d.RequisitionItemId).ToList();
+            List<RequisitionItemsModel> requisitionItems = inventoryDb.RequisitionItems.Where(r => requisitionItemIds.Contains(r.RequisitionItemId)).ToList();
 
-            #region Logic for -Set ReferenceNo in StockTransaction Model from DispatchItems
-            //This for get ReferenceNO (DispatchItemsId from Dispatched Items) and save to StockTransaction                    
-            foreach (var stockTXN in requisitionStockVMFromClient.stockTransactions)
+            foreach (var dispatchItem in dispatchItems)
             {
-                var DispatchItemId = 0;
-                var ItemId = 0;
-                var stockIdFromsTXN = stockTXN.StockId;
+                dispatchItem.CreatedOn = DateTime.Now;
+                dispatchItem.FiscalYearId = GetFiscalYear(inventoryDb).FiscalYearId;
+                dispatchItem.DispatchId = newDispatchId;
+                dispatchItem.DispatchNo = receiptNumberService.GenerateDispatchNo(dispatchItem.FiscalYearId, dispatchItem.ReqDisGroupId);
+                inventoryDb.DispatchItems.Add(dispatchItem);
 
-                foreach (var stkItem in requisitionStockVMFromClient.stock)
-                {
-                    if (stkItem.StockId == stockIdFromsTXN)
-                    {
-                        ItemId = stkItem.ItemId;
-                        stockTXN.GoodsReceiptItemId = stkItem.GoodsReceiptItemId;
-                    }
-                }
-                foreach (var dItem in requisitionStockVMFromClient.dispatchItems)
-                {
-                    if (ItemId == dItem.ItemId)
-                    {
-                        DispatchItemId = dItem.DispatchItemsId;
-                    }
-                }
+                // update requisition tables
 
-                stockTXN.ReferenceNo = DispatchItemId;
+                // find the requisition items and update the quantity and status.
+                var requisitionItem = requisitionItems.FirstOrDefault(r => r.RequisitionItemId == dispatchItem.RequisitionItemId);
+                requisitionItem.ReceivedQuantity = dispatchItem.DispatchedQuantity;
+                requisitionItem.PendingQuantity = requisitionItem.PendingQuantity - requisitionItem.ReceivedQuantity;// Rohit partial dispatch
+                requisitionItem.RequisitionItemStatus = (requisitionItem.PendingQuantity > 0) ? "partial" : "complete";
+                requisitionItem.ModifiedBy = currentUser.EmployeeId;
+                requisitionItem.ModifiedOn = currentDate;
 
             }
-            #endregion
-            //Save Stock Transaction record
-            AddStockTransaction(inventoryDbContext, requisitionStockVMFromClient.stockTransactions);
+            //Save Dispatch Items
+            inventoryDb.SaveChanges();
 
-            //Update Ward Inventory
-            UpdateWardInventory(inventoryDbContext, requisitionStockVMFromClient.dispatchItems, currentUser);
-            return DispatchId;
-        }
-
-        private static void UpdateRequisitionStatusAfterDispatch(InventoryDbContext inventoryDbContext, RequisitionModel requisition, RbacUser currentUser)
-        {
-            Boolean IsRequisitionComplete = requisition.RequisitionItems.All(rItem => rItem.RequisitionItemStatus == "complete");
-            requisition.RequisitionStatus = IsRequisitionComplete ? "complete" : "partial";
-            //Update Requisition and Requisition Items after Dispatche Items
-            UpdateRequisitionWithRItems(inventoryDbContext, requisition, 0, currentUser);
-        }
-        private static void ArrangeStockInFIFO(RequisitionStockVM requisitionStockVMFromClient, InventoryDbContext inventoryDbContext, RbacUser currentUser)
-        {
-            //set requisition items in dispatch items variable
-            requisitionStockVMFromClient.dispatchItems.ForEach(dItem =>
+            // Find the stock from source store for each dispatched item
+            // Apply FIFO Logic and decrement the stock, also increment the stock to the target store as well.
+            foreach (var dispatchItem in dispatchItems)
             {
-                var totalRemainingQty = dItem.DispatchedQuantity;
-                dItem.RequisitionId = requisitionStockVMFromClient.requisition.RequisitionId;
-                dItem.Remarks = requisitionStockVMFromClient.requisition.Remarks;
-                dItem.ReceivedBy = requisitionStockVMFromClient.requisition.ReceivedBy;
-                dItem.RequisitionItemId = requisitionStockVMFromClient.requisition.RequisitionItems.FirstOrDefault(ritem => ritem.ItemId == dItem.ItemId).RequisitionItemId;
-                var stockList = inventoryDbContext.Stock.Where(stock => stock.ItemId == dItem.ItemId && stock.AvailableQuantity > 0).OrderBy(stock => stock.TransactionDate).ToList();
-                if (stockList.Count > 0)
+                var stockList = inventoryDb.StoreStocks
+                                        .Include(s => s.StockMaster)
+                                        .Where(s => s.StoreId == dispatchItem.SourceStoreId && s.ItemId == dispatchItem.ItemId && s.AvailableQuantity > 0 && s.IsActive == true)
+                                        .OrderBy(s => s.StockMaster.ExpiryDate)
+                                        .ToList();
+                //If no stock found, stop the process
+                if (stockList == null) throw new Exception($"Stock is not available for ItemId = {dispatchItem.ItemId}, BatchNo ={dispatchItem.BatchNo}");
+                //If total available quantity is less than the required/dispatched quantity, then stop the process
+                if (stockList.Sum(s => s.AvailableQuantity) < dispatchItem.DispatchedQuantity) throw new Exception($"Stock is not available for ItemId = {dispatchItem.ItemId}, BatchNo ={dispatchItem.BatchNo}");
+
+                var totalRemainingQty = dispatchItem.DispatchedQuantity;
+                foreach (var mainStoreStock in stockList)
                 {
-                    foreach (var stock in stockList)
+                    //Increase Stock in PHRM_DispensaryStock
+                    //Find if the stock is available in dispensary
+                    var substoreStock = inventoryDb.StoreStocks
+                                                    .FirstOrDefault(s => s.StockId == mainStoreStock.StockId && s.StoreId == dispatchItem.TargetStoreId && s.IsActive == true);
+                    // check if receive feature is enabled, to decide whether to increase in stock or increase unconfirmed quantity
+                    var isReceiveFeatureEnabled = inventoryDb.CfgParameters
+                                                    .Where(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "EnableReceivedItemInSubstore")
+                                                    .Select(param => param.ParameterValue == "true" ? true : false)
+                                                    .FirstOrDefault();
+                    //Add Txn in PHRM_StockTxnItems table
+
+
+
+                    if (mainStoreStock.AvailableQuantity < totalRemainingQty)
                     {
-                        var stockTxn = new StockTransactionModel();
-                        stockTxn.StockId = stock.StockId;
-                        stockTxn.InOut = "out";
-                        stockTxn.ItemId = stock.ItemId;
-                        stockTxn.TransactionType = "dispatched-items";
-                        stockTxn.CreatedBy = currentUser.EmployeeId;
-                        stockTxn.CreatedOn = DateTime.Now;
-                        stockTxn.MRP = stock.MRP;
-                        stockTxn.Price = stock.Price;
-                        stockTxn.TransactionDate = stockTxn.CreatedOn;
-                        stockTxn.FiscalYearId = GetFiscalYear(inventoryDbContext).FiscalYearId;
-                        stockTxn.IsActive = true;
-                        stockTxn.GoodsReceiptItemId = stock.GoodsReceiptItemId;
-                        if (stock.AvailableQuantity < totalRemainingQty)
+                        var dispatchQtyForThisStock = mainStoreStock.AvailableQuantity;
+                        totalRemainingQty -= mainStoreStock.AvailableQuantity;
+                        //Decrease Stock From Main Store
+                        mainStoreStock.DecreaseStock(
+                                quantity: mainStoreStock.AvailableQuantity,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItem,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId
+                            );
+                        // Add Stock to Dispensary
+                        if (substoreStock == null)
                         {
-                            totalRemainingQty -= stock.AvailableQuantity;
-                            stockTxn.Quantity = stock.AvailableQuantity;
-                            stock.AvailableQuantity = 0;
+                            // add new stock
+                            substoreStock = new StoreStockModel(
+                                stockMaster: mainStoreStock.StockMaster,
+                                storeId: dispatchItem.TargetStoreId,
+                                quantity: dispatchQtyForThisStock,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId,
+                                needConfirmation: isReceiveFeatureEnabled
+                                );
+                            inventoryDb.StoreStocks.Add(substoreStock);
                         }
                         else
                         {
-                            stock.AvailableQuantity -= totalRemainingQty;
-                            stockTxn.Quantity = totalRemainingQty;
-                            totalRemainingQty = 0;
+                            // update old stock
+                            substoreStock.AddStock(
+                                quantity: dispatchQtyForThisStock,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId,
+                                needConfirmation: isReceiveFeatureEnabled
+                                );
                         }
-                        requisitionStockVMFromClient.stock.Add(stock);
-                        requisitionStockVMFromClient.stockTransactions.Add(stockTxn);
-                        if (totalRemainingQty == 0)
+                        inventoryDb.SaveChanges();
+                    }
+                    else
+                    {
+                        //Decrease Stock From Main Store
+                        mainStoreStock.DecreaseStock(
+                                quantity: totalRemainingQty,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItem,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId
+                            );
+                        // Add Stock to Dispensary
+                        if (substoreStock == null)
                         {
-                            break; //it takes out of the foreach loop. line : foreach (var stock in stockList)
+                            // add new stock
+                            substoreStock = new StoreStockModel(
+                                stockMaster: mainStoreStock.StockMaster,
+                                storeId: dispatchItem.TargetStoreId,
+                                quantity: totalRemainingQty,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId,
+                                needConfirmation: isReceiveFeatureEnabled
+                                );
+                            inventoryDb.StoreStocks.Add(substoreStock);
                         }
+                        else
+                        {
+                            // update old stock
+                            substoreStock.AddStock(
+                                quantity: totalRemainingQty,
+                                transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                transactionDate: dispatchItem.DispatchedDate,
+                                currentDate: currentDate,
+                                referenceNo: dispatchItem.DispatchItemsId,
+                                createdBy: currentUser.EmployeeId,
+                                fiscalYearId: currentFiscYrId,
+                                needConfirmation: isReceiveFeatureEnabled
+                                );
+                        }
+                        totalRemainingQty = 0;
+                        inventoryDb.SaveChanges();
+                        break;
                     }
                 }
-                //all the modification in the stock will be updated once SaveChanges() is called, but SaveChanges() in done in next function to optimize the cost of operation.
-            });
+            }
+
+            var requisition = inventoryDb.Requisitions.Find(dispatchItems[0].RequisitionId);
+            Boolean IsRequisitionComplete = requisitionItems.All(rItem => rItem.RequisitionItemStatus == "complete");
+            requisition.RequisitionStatus = IsRequisitionComplete ? "complete" : "partial";
+            requisition.ModifiedBy = currentUser.EmployeeId;
+            requisition.ModifiedOn = currentDate;
+            inventoryDb.SaveChanges();
+
+            return newDispatchId;
         }
 
         public static bool IsItemReceiveFeatureEnabled(InventoryDbContext db)
@@ -138,105 +209,68 @@ namespace DanpheEMR.Controllers
         //This function is Transaction and do followig things
         //1) Save WriteOff Items entry in WriteOff Table    2) WriteOff Items Entry in Stock_Transaction table
         //3) Update Stock Table Quantity
-        public static Boolean WriteOffItemsTransaction(List<WriteOffItemsModel> writeOffItemsFromClient, InventoryDbContext inventoryDbContext)
+        public static Boolean WriteOffItemsTransaction(List<WriteOffItemsModel> writeOffItemsFromClient, InventoryDbContext db, RbacUser currentUser)
         {
             //Transaction Begin
             //We first Need to make Stock, Stock_Transaction Object with WriteOff data (which has client data)
-            using (var dbContextTransaction = inventoryDbContext.Database.BeginTransaction())
+            using (var dbContextTransaction = db.Database.BeginTransaction())
             {
                 try
                 {
-                    //This is updated list of stock records after write off items
-                    List<StockModel> stockListForUpdate = new List<StockModel>();
-                    //This is transaction list of write off items
-                    List<StockTransactionModel> stockTxnListForInsert = new List<StockTransactionModel>();
+
+                    //Save WriteOffItems in database
+                    AddWriteOffItems(db, writeOffItemsFromClient);
+
+                    var currentDate = DateTime.Now;
+                    var currentFiscalYearId = GetFiscalYear(db).FiscalYearId;
+
                     //This is WriteOff List for insert into writeOff table
                     List<WriteOffItemsModel> writeOffListForInsert = new List<WriteOffItemsModel>();
-                    var createdOn = DateTime.Now;
-
-                    for (int i = 0; i < writeOffItemsFromClient.Count; i++)
+                    foreach (var writeoffItem in writeOffItemsFromClient)
                     {
 
-                        List<StockModel> currStockList = new List<StockModel>();
-                        currStockList = GetStockItemsByItemIdBatchNO(writeOffItemsFromClient[i].ItemId, writeOffItemsFromClient[i].BatchNO, inventoryDbContext);
-                        if (currStockList.Count > 0)
-                        {
-                            foreach (var currStkItm in currStockList)
-                            {
-                                if (writeOffItemsFromClient[i].WriteOffQuantity > 0)
-                                {
-                                    //When stockItem availableQuantity is > WriteOffQuantity
-                                    if (currStkItm.AvailableQuantity > writeOffItemsFromClient[i].WriteOffQuantity)
-                                    {
-                                        WriteOffItemsModel woItemsClone = new WriteOffItemsModel();
-                                        //Clone WriteList item 
-                                        woItemsClone = Clone(writeOffItemsFromClient[i]);
-                                        currStkItm.AvailableQuantity = currStkItm.AvailableQuantity - woItemsClone.WriteOffQuantity.Value;
-                                        //Push Updated StockItem into StockList for Update Stock                                
-                                        stockListForUpdate.Add(currStkItm);
-                                        woItemsClone.StockId = currStkItm.StockId;
-                                        woItemsClone.GoodsReceiptItemId = currStkItm.GoodsReceiptItemId;
-                                        woItemsClone.WriteOffQuantity = woItemsClone.WriteOffQuantity.Value;
-                                        woItemsClone.Remark = woItemsClone.Remark.ToString();
-                                        woItemsClone.CreatedOn = createdOn;
-                                        //Push Updated WriteOff Item Into WriteOffItemList for Save
-                                        writeOffListForInsert.Add(woItemsClone);
-                                        //updated Current WriteOff Item Quantity as 0                                             
-                                        writeOffItemsFromClient[i].WriteOffQuantity = 0;
-                                    }
-                                    else if (currStkItm.AvailableQuantity < writeOffItemsFromClient[i].WriteOffQuantity)
-                                    {
-                                        //when curStkItm.AvailableQuantity< woitm.WriteOffQuantity
+                        var stockList = db.StoreStocks.Include(s => s.StockMaster).Where(s => s.ItemId == writeoffItem.ItemId && s.AvailableQuantity > 0 && s.StockMaster.BatchNo == writeoffItem.BatchNO && s.IsActive == true && s.StoreId == writeoffItem.StoreId).ToList();
+                        //If no stock found, stop the process
+                        if (stockList == null) throw new Exception($"Stock is not available for ItemId = {writeoffItem.ItemId}, BatchNo ={writeoffItem.BatchNO}");
+                        //If total available quantity is less than the required/dispatched quantity, then stop the process
+                        if (stockList.Sum(s => s.AvailableQuantity) < writeoffItem.WriteOffQuantity) throw new Exception($"Stock is not available for ItemId = {writeoffItem.ItemId}, BatchNo ={writeoffItem.BatchNO}");
 
-                                        WriteOffItemsModel woItemsClone = new WriteOffItemsModel();
-                                        woItemsClone = Clone(writeOffItemsFromClient[i]);
-                                        woItemsClone.StockId = currStkItm.StockId;
-                                        woItemsClone.WriteOffQuantity = currStkItm.AvailableQuantity;
-                                        //double and decimal can't multiply so, need explicitly typecasting
-                                        woItemsClone.TotalAmount = (decimal)currStkItm.AvailableQuantity * woItemsClone.ItemRate.Value;
-                                        woItemsClone.GoodsReceiptItemId = currStkItm.GoodsReceiptItemId;
-                                        //Push Updated WriteOff Item Into WriteOffItemList for Save
-                                        writeOffListForInsert.Add(woItemsClone);
-                                        currStkItm.AvailableQuantity = 0;
-                                        //Push Updated StockItem into StockList for Update Stock                                
-                                        stockListForUpdate.Add(currStkItm);
-                                        writeOffItemsFromClient[i].WriteOffQuantity = writeOffItemsFromClient[i].WriteOffQuantity - currStkItm.AvailableQuantity;
-                                    }
-                                }
+                        //Run the fifo logic in stocklist based on Created On
+                        double totalRemainingQty = writeoffItem.WriteOffQuantity.Value;
+                        foreach (var stock in stockList)
+                        {
+                            if (stock.AvailableQuantity < totalRemainingQty)
+                            {
+                                totalRemainingQty -= stock.AvailableQuantity;
+                                stock.DecreaseStock(
+                                    quantity: stock.AvailableQuantity,
+                                    transactionType: ENUM_INV_StockTransactionType.WriteOffItem,
+                                    transactionDate: writeoffItem.WriteOffDate,
+                                    currentDate: currentDate,
+                                    referenceNo: writeoffItem.WriteOffId,
+                                    createdBy: currentUser.EmployeeId,
+                                    fiscalYearId: currentFiscalYearId
+                                    );
+                                db.SaveChanges();
+                            }
+                            else
+                            {
+                                stock.DecreaseStock(
+                                   quantity: totalRemainingQty,
+                                   transactionType: ENUM_INV_StockTransactionType.WriteOffItem,
+                                   transactionDate: writeoffItem.WriteOffDate,
+                                   currentDate: currentDate,
+                                   referenceNo: writeoffItem.WriteOffId,
+                                   createdBy: currentUser.EmployeeId,
+                                   fiscalYearId: currentFiscalYearId
+                                   );
+                                db.SaveChanges();
+                                totalRemainingQty = 0;
+                                break; //it takes out of the foreach loop. line : foreach (var stock in stockList)
                             }
                         }
                     }
-                    //Save WriteOffItems in database
-                    AddWriteOffItems(inventoryDbContext, writeOffListForInsert);
 
-                    //Make Fill data into Stock_transaction object for save into INV_TXN_StockTransaction table
-                    foreach (var woItem in writeOffListForInsert)
-                    {
-                        StockTransactionModel stkTxnItem = new StockTransactionModel();
-                        stkTxnItem.StockId = woItem.StockId;
-                        stkTxnItem.Quantity = (int)woItem.WriteOffQuantity;
-                        stkTxnItem.InOut = "out";
-                        stkTxnItem.ReferenceNo = woItem.WriteOffId;
-                        stkTxnItem.CreatedBy = woItem.CreatedBy;
-                        stkTxnItem.CreatedOn = woItem.CreatedOn;
-                        stkTxnItem.TransactionType = "writeoff-items";
-                        stkTxnItem.ItemId = woItem.ItemId;
-                        stkTxnItem.FiscalYearId = InventoryBL.GetFiscalYear(inventoryDbContext).FiscalYearId;
-                        stkTxnItem.TransactionDate = stkTxnItem.CreatedOn;
-                        stkTxnItem.IsActive = true;
-                        var stockData = inventoryDbContext.Stock.Where(S => S.StockId == woItem.StockId).Select(S => new { S.MRP, S.Price, S.GoodsReceiptItemId }).FirstOrDefault();
-                        stkTxnItem.MRP = stockData.MRP;
-                        stkTxnItem.Price = stockData.Price;
-                        stkTxnItem.GoodsReceiptItemId = stockData.GoodsReceiptItemId;
-
-                        //Push current StkTxnItem into StkTxnItemList for Save to database
-                        stockTxnListForInsert.Add(stkTxnItem);
-                    }
-
-                    //Save Stock Transaction record
-                    AddStockTransaction(inventoryDbContext, stockTxnListForInsert);
-                    //Update Stock records
-                    UpdateStock(inventoryDbContext, stockListForUpdate);
                     //Commit Transaction
                     dbContextTransaction.Commit();
                     return true;
@@ -247,8 +281,6 @@ namespace DanpheEMR.Controllers
                     dbContextTransaction.Rollback();
                     throw ex;
                 }
-
-
             }
         }
 
@@ -261,84 +293,70 @@ namespace DanpheEMR.Controllers
         //2. Add ReturnToVendorItems
         //3. Add StockTransaction
         //4. Update StockUpdate (AvailableQuantity)
-        public static Boolean ReturnToVendorTransaction(ReturnToVendorModel returnToVendor, InventoryDbContext inventoryDbContext)
+        public static Boolean ReturnToVendorTransaction(ReturnToVendorModel returnToVendor, InventoryDbContext db, RbacUser currentUser)
         {
             //Transaction Begin
             //We first Need to make Stock, Stock_Transaction Object with WriteOff data (which has client data)
-            using (var dbContextTransaction = inventoryDbContext.Database.BeginTransaction())
+            using (var dbContextTransaction = db.Database.BeginTransaction())
             {
                 try
                 {
-                    List<ReturnToVendorItemsModel> retrnToVendorItemsFromClient = returnToVendor.itemsToReturn;
-                    //This is updated list of stock records after write off items
-                    List<StockModel> stockListForUpdate = new List<StockModel>();
-                    //This is transaction list of write off items
-                    List<StockTransactionModel> stockTxnListForInsert = new List<StockTransactionModel>();
-                    //This is WriteOff List for insert into writeOff table
-                    List<ReturnToVendorItemsModel> retrnToVndrListForInsert = new List<ReturnToVendorItemsModel>();
-
-
-
+                    var currentDate = DateTime.Now;
+                    var currentFiscalYearId = GetFiscalYear(db).FiscalYearId;
 
                     // Bikash:26June'20 : storing return-details (not return-item details) in return-to-vendor table
-                    inventoryDbContext.ReturnToVendor.Add(returnToVendor);
-                    inventoryDbContext.SaveChanges();
-                    var ReturnToVendorId = returnToVendor.ReturnToVendorId;
-
-                    //Stock data
-                    foreach (var rtvItm in retrnToVendorItemsFromClient)
-                    {
-                        StockModel curStock = new StockModel();
-
-                        curStock = GetStockbyStockId(rtvItm.StockId, inventoryDbContext);
-                        //curStock.StockId = rtvItm.StockId;
-                        curStock.AvailableQuantity = curStock.AvailableQuantity - rtvItm.Quantity;
-
-                        stockListForUpdate.Add(curStock);
-                    }
-
-                    //ReturnToVendorItems data
-                    foreach (var retItm in retrnToVendorItemsFromClient)
-                    {
-                        retItm.ReturnToVendorId = ReturnToVendorId;
-
-                        ReturnToVendorItemsModel retVendor = new ReturnToVendorItemsModel();
-
-                        retVendor = rtvClone(retItm);
-
-                        retrnToVndrListForInsert.Add(retVendor);
-                    }
+                    db.ReturnToVendor.Add(returnToVendor);
+                    db.SaveChanges();
 
                     //Save ReturnToVendorItems in database
-                    AddretrnToVndrItems(inventoryDbContext, retrnToVndrListForInsert);
+                    returnToVendor.itemsToReturn.ForEach(item => item.ReturnToVendorId = returnToVendor.ReturnToVendorId);
+                    AddretrnToVndrItems(db, returnToVendor.itemsToReturn);
 
-                    //stocktxn data
-                    foreach (var rtvItem in retrnToVndrListForInsert)
+                    foreach (var returnItem in returnToVendor.itemsToReturn)
                     {
-                        StockTransactionModel stkTxnItem = new StockTransactionModel();
 
-                        stkTxnItem.StockId = rtvItem.StockId;
-                        stkTxnItem.Quantity = (int)rtvItem.Quantity;
-                        stkTxnItem.ItemId = rtvItem.ItemId;
-                        stkTxnItem.InOut = "out";
-                        stkTxnItem.ReferenceNo = rtvItem.ReturnToVendorItemId;
-                        stkTxnItem.CreatedBy = rtvItem.CreatedBy;
-                        stkTxnItem.CreatedOn = rtvItem.CreatedOn;
-                        stkTxnItem.TransactionType = "returntovendor-items";
-                        stkTxnItem.TransactionDate = stkTxnItem.CreatedOn;
-                        stkTxnItem.FiscalYearId = GetFiscalYear(inventoryDbContext).FiscalYearId;
-                        stkTxnItem.IsActive = true;
-                        var stockData = inventoryDbContext.Stock.Where(S => S.StockId == rtvItem.StockId).Select(S => new { S.MRP, S.Price, S.GoodsReceiptItemId }).FirstOrDefault();
-                        stkTxnItem.MRP = stockData.MRP;
-                        stkTxnItem.Price = stockData.Price;
-                        stkTxnItem.GoodsReceiptItemId = stockData.GoodsReceiptItemId;
-                        stockTxnListForInsert.Add(stkTxnItem);
+                        var stockList = db.StoreStocks.Include(s => s.StockMaster).Where(s => s.ItemId == returnItem.ItemId && s.AvailableQuantity > 0 && s.StockMaster.BatchNo == returnItem.BatchNo && s.IsActive == true && s.StoreId == returnToVendor.StoreId).ToList();
+                        //If no stock found, stop the process
+                        if (stockList == null) throw new Exception($"Stock is not available for ItemId = {returnItem.ItemId}, BatchNo ={returnItem.BatchNo}");
+                        //If total available quantity is less than the required/dispatched quantity, then stop the process
+                        if (stockList.Sum(s => s.AvailableQuantity) < returnItem.Quantity) throw new Exception($"Stock is not available for ItemId = {returnItem.ItemId}, BatchNo ={returnItem.BatchNo}");
+
+                        //Run the fifo logic in stocklist based on Created On
+                        double totalRemainingQty = returnItem.Quantity;
+                        foreach (var stock in stockList)
+                        {
+                            if (stock.AvailableQuantity < totalRemainingQty)
+                            {
+                                totalRemainingQty -= stock.AvailableQuantity;
+                                stock.DecreaseStock(
+                                    quantity: stock.AvailableQuantity,
+                                    transactionType: ENUM_INV_StockTransactionType.PurchaseReturnedItem,
+                                    transactionDate: null,
+                                    currentDate: currentDate,
+                                    referenceNo: returnItem.ReturnToVendorItemId,
+                                    createdBy: currentUser.EmployeeId,
+                                    fiscalYearId: currentFiscalYearId
+                                    );
+                                db.SaveChanges();
+                            }
+                            else
+                            {
+                                stock.DecreaseStock(
+                                   quantity: totalRemainingQty,
+                                   transactionType: ENUM_INV_StockTransactionType.PurchaseReturnedItem,
+                                   transactionDate: null,
+                                   currentDate: currentDate,
+                                   referenceNo: returnItem.ReturnToVendorItemId,
+                                   createdBy: currentUser.EmployeeId,
+                                   fiscalYearId: currentFiscalYearId
+                                   );
+                                db.SaveChanges();
+                                totalRemainingQty = 0;
+                                break; //it takes out of the foreach loop. line : foreach (var stock in stockList)
+                            }
+                        }
                     }
 
-                    //Save Stock Transaction record
-                    AddStockTransaction(inventoryDbContext, stockTxnListForInsert);
-                    //Update Stock records
-                    UpdateStockAvailQty(inventoryDbContext, stockListForUpdate);
                     //Commit Transaction
                     dbContextTransaction.Commit();
                     return true;
@@ -352,48 +370,6 @@ namespace DanpheEMR.Controllers
             }
         }
 
-        #endregion
-
-        #region Add DispatchItems
-        //Save all Disaptch Items in database
-        //dispatchItems and requisitionItems is parsed by reference. After this, each of them will have dispatchItemId assigned to them.
-        public static int AddDispatchItemsAndUpdateReqItemQty(InventoryDbContext inventoryDbContext, List<DispatchItemsModel> dispatchItems, List<RequisitionItemsModel> requisitionItems)
-        {
-            try
-            {
-                int dispatchId;
-                //var test= inventoryDbContext.DispatchItems.Last().DispatchId;
-                int? maxDispatchId = inventoryDbContext.DispatchItems.Max(a => a.DispatchId);
-                if (maxDispatchId == null || maxDispatchId == 0)
-                {
-                    dispatchId = 1;
-                }
-                else
-                {
-                    dispatchId = (int)maxDispatchId + 1;
-                }
-
-                foreach (var dispatchItem in dispatchItems)
-                {
-                    dispatchItem.CreatedOn = DateTime.Now;
-                    dispatchItem.DispatchId = dispatchId;
-                    inventoryDbContext.DispatchItems.Add(dispatchItem);
-
-                    var requisitionItem = requisitionItems.Find(a => a.RequisitionItemId == dispatchItem.RequisitionItemId);
-                    requisitionItem.ReceivedQuantity += dispatchItem.DispatchedQuantity;
-                    requisitionItem.PendingQuantity = requisitionItem.Quantity - requisitionItem.ReceivedQuantity;
-                    requisitionItem.RequisitionItemStatus = (requisitionItem.PendingQuantity > 0) ? "partial" : "complete";
-
-                }
-                //Save Dispatch Items
-                inventoryDbContext.SaveChanges();
-                return dispatchId;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
         #endregion
 
         #region Add WriteOff Items
@@ -441,33 +417,61 @@ namespace DanpheEMR.Controllers
             {
                 foreach (var GRItem in goodsReceipt.GoodsReceiptItem)
                 {
+                    //Since GR Item has GR Item Id as not null, front end sends new GR Item with GR Item Id as 0
+                    //This was done to reduce the impact of changes as GR ITem server model changes may have other impacts
                     GRItem.ModifiedBy = currentUser.EmployeeId;
                     GRItem.ModifiedOn = DateTime.Now;
-                    db.GoodsReceiptItems.Attach(GRItem);
-                    db.Entry(GRItem).Property(x => x.ReceivedQuantity).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.RejectedQuantity).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.DiscountAmount).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.CcAmount).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.VATAmount).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.SubTotal).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.TotalAmount).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.ModifiedBy).IsModified = true;
-                    db.Entry(GRItem).Property(x => x.ModifiedOn).IsModified = true;
-                    //these are the extra cases to look at during verification.
-                    if (GRItem.IsActive == false && GRItem.CancelledBy == null) //do not change this condition as it impacts verification.
+                    if (GRItem.GoodsReceiptItemId == 0)
                     {
-                        GRItem.CancelledBy = currentUser.EmployeeId;
-                        GRItem.CancelledOn = DateTime.Now;
-                        db.Entry(GRItem).Property(x => x.CancelledOn).IsModified = true;
-                        db.Entry(GRItem).Property(x => x.CancelledBy).IsModified = true;
-                        db.Entry(GRItem).Property(GRI => GRI.IsActive).IsModified = true;
+                        db.GoodsReceiptItems.Add(GRItem);
                     }
+                    else
+                    {
+                        db.GoodsReceiptItems.Attach(GRItem);
+                        db.Entry(GRItem).Property(x => x.ReceivedQuantity).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.RejectedQuantity).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.DiscountAmount).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.CcAmount).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.VATAmount).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.SubTotal).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.TotalAmount).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.ModifiedBy).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.ModifiedOn).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.ManufactureDate).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.BatchNO).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.ExpiryDate).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.SampleRemoved).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.SamplingBoxes).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.SamplingQuantity).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.SamplingDate).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.NoOfBoxes).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.IsSamplingLabel).IsModified = true;
+                        db.Entry(GRItem).Property(x => x.IdentificationLabel).IsModified = true;
+
+
+
+                        //these are the extra cases to look at during verification.
+                        if (GRItem.IsActive == false && GRItem.CancelledBy == null) //do not change this condition as it impacts verification.
+                        {
+                            GRItem.CancelledBy = currentUser.EmployeeId;
+                            GRItem.CancelledOn = DateTime.Now;
+                            db.Entry(GRItem).Property(x => x.CancelledOn).IsModified = true;
+                            db.Entry(GRItem).Property(x => x.CancelledBy).IsModified = true;
+                            db.Entry(GRItem).Property(GRI => GRI.IsActive).IsModified = true;
+                        }
+                    }
+                    db.SaveChanges();
                 }
                 goodsReceipt.ModifiedBy = currentUser.EmployeeId;
                 goodsReceipt.ModifiedOn = DateTime.Now;
                 goodsReceipt.VerificationId = verificationId;
                 db.GoodsReceipts.Attach(goodsReceipt);
                 db.Entry(goodsReceipt).Property(x => x.GRStatus).IsModified = true;
+                db.Entry(goodsReceipt).Property(x => x.GoodsReceiptNo).IsModified = true;
+                db.Entry(goodsReceipt).Property(x => x.GoodsReceiptDate).IsModified = true;
+                db.Entry(goodsReceipt).Property(x => x.IMIRNo).IsModified = true;
+                db.Entry(goodsReceipt).Property(x => x.IMIRDate).IsModified = true;
+                db.Entry(goodsReceipt).Property(x => x.FiscalYearId).IsModified = true;
                 db.Entry(goodsReceipt).Property(x => x.ModifiedOn).IsModified = true;
                 db.Entry(goodsReceipt).Property(x => x.ModifiedBy).IsModified = true;
                 db.Entry(goodsReceipt).Property(GR => GR.VATTotal).IsModified = true;
@@ -595,283 +599,89 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region  Cancel Goods Receipt
-        public static Boolean CancelGoodsReceipt(InventoryDbContext inventoryDbContext, int grId, string CancelRemarks, RbacUser rbacUser, string GRStatus = "cancelled", int? VerificationId = null)
+        public static void CancelGoodsReceipt(InventoryDbContext inventoryDbContext, int grId, string CancelRemarks, RbacUser rbacUser, string GRStatus = "cancelled", int? VerificationId = null)
         {
             //Transaction Begin
             using (var dbContextTransaction = inventoryDbContext.Database.BeginTransaction())
             {
                 try
                 {
-                    Boolean flag = true;
-                    if (flag == true)
+                    var gr = (
+                                from g in inventoryDbContext.GoodsReceipts
+                                where g.GoodsReceiptID == grId
+                                select g
+                             ).FirstOrDefault();
+                    gr.IsCancel = true;
+                    gr.GRStatus = GRStatus;
+                    gr.CancelledBy = rbacUser.EmployeeId;
+                    gr.CancelledOn = DateTime.Now;
+                    gr.CancelRemarks = CancelRemarks;
+
+                    if (VerificationId != null && VerificationId > 0)
                     {
-                        var gr = (from g in inventoryDbContext.GoodsReceipts
-                                  where g.GoodsReceiptID == grId
-                                  select g).FirstOrDefault();
-                        gr.IsCancel = true;
-                        gr.GRStatus = GRStatus;
-                        //sud:15-Oct-2020: Updating GrCancel properties.
-                        gr.CancelledBy = rbacUser.EmployeeId;
-                        gr.CancelledOn = DateTime.Now;
-                        //commented as per requirement
-                        //gr.Remarks = "Cancelled"; //sanjit:25Mar'2020:the remark should not be updated instead isCancel field should be used. And a cancelRemark field is there.
-                        gr.CancelRemarks = CancelRemarks;
-                        if (VerificationId != null && VerificationId > 0)
+                        //Set IMIR No and Date once the verification is done.
+                        gr.IMIRDate = DateTime.Now;
+                        if (gr.IMIRNo == null)
                         {
-                            gr.VerificationId = VerificationId;
-                            inventoryDbContext.Entry(gr).Property(x => x.VerificationId).IsModified = true;
+                            gr.IMIRNo = VerificationBL.GetIMIRNo(inventoryDbContext, gr.IMIRDate);
                         }
-                        inventoryDbContext.GoodsReceipts.Attach(gr);
-                        inventoryDbContext.Entry(gr).State = EntityState.Modified;
-                        inventoryDbContext.Entry(gr).Property(x => x.IsCancel).IsModified = true;
-                        inventoryDbContext.Entry(gr).Property(x => x.CancelRemarks).IsModified = true;
-                        inventoryDbContext.Entry(gr).Property(x => x.GRStatus).IsModified = true;
-                        //sud:15-Oct-2020: Updating GrCancel properties.
-                        inventoryDbContext.Entry(gr).Property(x => x.CancelledOn).IsModified = true;
-                        inventoryDbContext.Entry(gr).Property(x => x.CancelledBy).IsModified = true;
-                        inventoryDbContext.SaveChanges();
+                        gr.VerificationId = VerificationId;
+                        inventoryDbContext.Entry(gr).Property(x => x.VerificationId).IsModified = true;
+                    }
+                    if (gr.FiscalYearId < 1)
+                    {
+                        gr.FiscalYearId = GetFiscalYear(inventoryDbContext).FiscalYearId;
+                        inventoryDbContext.Entry(gr).Property(x => x.FiscalYearId).IsModified = true;
+                    }
 
-                        var gritms = inventoryDbContext.GoodsReceiptItems.Where(a => a.GoodsReceiptId == grId).ToList();
-                        foreach (var gritem in gritms)
+                    var gritms = inventoryDbContext.GoodsReceiptItems.Where(a => a.GoodsReceiptId == grId).ToList();
+                    foreach (var gritem in gritms)
+                    {
+                        gritem.CancelledBy = rbacUser.EmployeeId;
+                        gritem.CancelledOn = DateTime.Now;
+                        /* if goods receipt is not receive, then there is no need to decrease the stock as the stock has not been created yet. */
+                        if (gr.ReceivedBy != null)
                         {
-                            gritem.CancelledBy = rbacUser.EmployeeId;
-                            gritem.CancelledOn = DateTime.Now;
-                            //sanjit: if this method is called from verification, this means stock is not yet registered.
-                            if (VerificationId == null)
-                            {
-                                var stk = (from s in inventoryDbContext.Stock
-                                           where s.GoodsReceiptItemId == gritem.GoodsReceiptItemId
-                                           select s).FirstOrDefault();
-                                if (gritem.ReceivedQuantity + gritem.FreeQuantity > stk.AvailableQuantity)
-                                {
-                                    var ex = new Exception("Failed.Stock is not available.");
-                                    throw ex;
-                                }
-                                //Add the cancel gr as cancelled in stock transaction
-                                var StockTxn = new StockTransactionModel();
-                                StockTxn.StockId = stk.StockId;
-                                StockTxn.Quantity = gritem.ReceivedQuantity + gritem.FreeQuantity;
-                                StockTxn.InOut = "out";
-                                StockTxn.ReferenceNo = gritem.GoodsReceiptItemId;
-                                StockTxn.CreatedBy = rbacUser.EmployeeId;
-                                StockTxn.CreatedOn = DateTime.Now;
-                                StockTxn.ItemId = gritem.ItemId;
-                                StockTxn.TransactionType = "cancel-gr-items";
-                                StockTxn.IsTransferredToACC = null;
-                                StockTxn.MRP = stk.MRP;
-                                StockTxn.Price = stk.Price;
-                                StockTxn.GoodsReceiptItemId = stk.GoodsReceiptItemId;
-                                StockTxn.TransactionDate = StockTxn.CreatedOn;
-                                StockTxn.FiscalYearId = GetFiscalYear(inventoryDbContext).FiscalYearId;
-                                StockTxn.IsActive = true;
-                                inventoryDbContext.StockTransactions.Add(StockTxn);
-                                inventoryDbContext.SaveChanges();
-
-                                stk.AvailableQuantity = 0;
-                                inventoryDbContext.Stock.Attach(stk);
-                                inventoryDbContext.Entry(stk).State = EntityState.Modified;
-                                inventoryDbContext.Entry(stk).Property(x => x.AvailableQuantity).IsModified = true;
-                                inventoryDbContext.SaveChanges();
-                            }
+                            DecreaseStockByGRItem(inventoryDbContext, rbacUser, gritem);
                         }
                     }
-                    else
-                    {
-                        flag = false;
-                    }
+                    inventoryDbContext.SaveChanges();
                     dbContextTransaction.Commit();
-                    return flag;
                 }
                 catch (Exception ex)
                 {
                     dbContextTransaction.Rollback();
-                    return false;
+                    throw ex;
                 }
             }
 
         }
-        #endregion
-        #region Add Stock Transaction
-        //All the stock transaction save to database
-        public static void AddStockTransaction(InventoryDbContext inventoryDbContext, List<StockTransactionModel> stockTransactions)
-        {
-            try
-            {
-                foreach (var stockTransactinItem in stockTransactions)
-                {
-                    stockTransactinItem.CreatedOn = System.DateTime.Now;
-                    stockTransactinItem.FiscalYearId = GetFiscalYear(inventoryDbContext, (DateTime)stockTransactinItem.CreatedOn).FiscalYearId;
-                    stockTransactinItem.TransactionDate = stockTransactinItem.CreatedOn;
-                    stockTransactinItem.IsActive = true;
-                    inventoryDbContext.StockTransactions.Add(stockTransactinItem);
-                }
-                //Save Stock Transactions
-                inventoryDbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-        #region Update Ward Inventory
-        public static void UpdateWardInventory(InventoryDbContext db, List<DispatchItemsModel> dispatchItems, RbacUser currentUser, string ReceivedRemarks = "")
-        {
-            try
-            {
-                bool isItemReceiveFeatureEnabled = IsItemReceiveFeatureEnabled(db);
-                if (dispatchItems != null)
-                {
-                    foreach (var dispatchItem in dispatchItems)
-                    {
-                        var invDispatchStockTxnList = db.StockTransactions.Where(stockTxn => stockTxn.ReferenceNo == dispatchItem.DispatchItemsId && stockTxn.TransactionType == "dispatched-items").ToList();
-                        foreach (var invDispatchStockTxn in invDispatchStockTxnList)
-                        {
-                            WARDInventoryTransactionModel wardTxn = new WARDInventoryTransactionModel();
-                            var GrItemIdInContext = (int)invDispatchStockTxn.GoodsReceiptItemId;
-                            if (db.WardInventoryStockModel.Any(stock => stock.GoodsReceiptItemId == GrItemIdInContext && stock.StoreId == dispatchItem.StoreId))
-                            {
-                                var existingStock = db.WardInventoryStockModel.FirstOrDefault(stock => stock.GoodsReceiptItemId == GrItemIdInContext && stock.StoreId == dispatchItem.StoreId);
-                                //Check if item receive is enabled, if yes: do not increase the stock directly but instead increase unconfirmed qty
-                                if (isItemReceiveFeatureEnabled)
-                                    existingStock.UnConfirmedQty += (double)invDispatchStockTxn.Quantity;
-                                else
-                                    existingStock.AvailableQuantity += (double)(invDispatchStockTxn.Quantity);
-                                db.SaveChanges();
-                                wardTxn.StockId = existingStock.StockId;
-                                wardTxn.GoodsReceiptItemId = existingStock.GoodsReceiptItemId;
-                            }
-                            else
-                            {
-                                WARDInventoryStockModel wardStock = new WARDInventoryStockModel();
-                                wardStock.CreatedBy = currentUser.EmployeeId;
-                                wardStock.CreatedOn = DateTime.Now;
-                                wardStock.ItemId = invDispatchStockTxn.ItemId;
-                                wardStock.StoreId = dispatchItem.StoreId;
-                                wardStock.Price = invDispatchStockTxn.Price;
-                                wardStock.GoodsReceiptItemId = GrItemIdInContext;
-                                //Check if item receive is enabled, if yes: do not increase the stock directly but instead increase unconfirmed qty
-                                if (isItemReceiveFeatureEnabled)
-                                    wardStock.UnConfirmedQty = (double)invDispatchStockTxn.Quantity;
-                                else
-                                    wardStock.AvailableQuantity = (double)invDispatchStockTxn.Quantity;
-                                wardStock.DepartmentId = dispatchItem.DepartmentId;
-                                wardStock.MRP = Convert.ToDecimal(invDispatchStockTxn.MRP);
-                                var invStockDetail = db.Stock.Where(stk => stk.StockId == invDispatchStockTxn.StockId).Select(stk => new { stk.BatchNO, stk.ExpiryDate }).FirstOrDefault();
-                                wardStock.BatchNo = invStockDetail.BatchNO;
-                                wardStock.ExpiryDate = invStockDetail.ExpiryDate;
-                                db.WardInventoryStockModel.Add(wardStock);
-                                db.SaveChanges();
-                                wardTxn.StockId = wardStock.StockId;
-                                wardTxn.GoodsReceiptItemId = wardStock.GoodsReceiptItemId;
-                            }
-                            //add ward transaction
-                            wardTxn.StoreId = dispatchItem.StoreId;
-                            wardTxn.ItemId = dispatchItem.ItemId;
-                            wardTxn.Quantity = Convert.ToDouble(invDispatchStockTxn.Quantity);
-                            wardTxn.TransactionType = "dispatched-items";
-                            wardTxn.Remarks = "Received From Main Store";
-                            wardTxn.ReceivedBy = dispatchItem.ReceivedBy;
-                            wardTxn.CreatedBy = currentUser.EmployeeId;
-                            wardTxn.CreatedOn = DateTime.Now;
-                            wardTxn.ReferenceNo = dispatchItem.DispatchItemsId;
-                            wardTxn.InOut = "in";
-                            wardTxn.Price = Convert.ToDecimal(invDispatchStockTxn.Price);
-                            wardTxn.MRP = Convert.ToDecimal(invDispatchStockTxn.MRP);
-                            wardTxn.TransactionDate = wardTxn.CreatedOn;
-                            wardTxn.FiscalYearId = GetFiscalYear(db).FiscalYearId;
-                            wardTxn.IsActive = true;
-                            db.WardInventoryTransactionModel.Add(wardTxn);
-                            db.SaveChanges();
-                        }
-                        if (isItemReceiveFeatureEnabled == false)
-                        {
-                            dispatchItem.ReceivedById = currentUser.EmployeeId;
-                            dispatchItem.ReceivedOn = DateTime.Now;
-                            dispatchItem.ReceivedRemarks = ReceivedRemarks;
-                            db.SaveChanges();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
 
-        #endregion
-        #region Update Stock
-        //Update Stock records
-        public static void UpdateStock(InventoryDbContext inventoryDbContext, List<StockModel> Stock)
+        private static void DecreaseStockByGRItem(InventoryDbContext inventoryDbContext, RbacUser rbacUser, GoodsReceiptItemsModel gritem)
         {
-            try
+            var currentDate = DateTime.Now;
+            var currentFiscYearId = GetFiscalYear(inventoryDbContext).FiscalYearId;
+            var purchaseTxnType = ENUM_INV_StockTransactionType.PurchaseItem;
+            var stkTxns = (from s in inventoryDbContext.StockTransactions
+                           where s.ReferenceNo == gritem.GoodsReceiptItemId && s.TransactionType == purchaseTxnType
+                           select s).FirstOrDefault();
+            var stk = inventoryDbContext.StoreStocks.Include(a => a.StockMaster).FirstOrDefault(s => s.StoreStockId == stkTxns.StoreStockId);
+            if (gritem.ReceivedQuantity + gritem.FreeQuantity > stk.AvailableQuantity)
             {
-                foreach (var stkItem in Stock)
-                {
-                    inventoryDbContext.Entry(stkItem).State = EntityState.Modified;
-                }
-                //Update Stock records
-                inventoryDbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
+                var ex = new Exception("Failed.Stock is not available.");
                 throw ex;
             }
-        }
-        #endregion
-        #region Update Stock (updating only available quantity)
-        //this is used for ReturnToVendor
-        //here we are updating only stock's available quantity
-        public static void UpdateStockAvailQty(InventoryDbContext inventoryDbContext, List<StockModel> Stock)
-        {
-            try
-            {
-                foreach (var stkItem in Stock)
-                {
-                    inventoryDbContext.Stock.Attach(stkItem);
-                    inventoryDbContext.Entry(stkItem).Property(x => x.AvailableQuantity).IsModified = true;
-                }
-                inventoryDbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-
-        #region Update Requisition and Requisition Items
-        //Update Stock records
-        public static void UpdateRequisitionWithRItems(InventoryDbContext inventoryDbContext, RequisitionModel requisition, int? VerificationId, RbacUser currentUser)
-        {
-            try
-            {
-                foreach (var rItems in requisition.RequisitionItems)
-                {
-                    rItems.ModifiedBy = currentUser.EmployeeId;
-                    rItems.ModifiedOn = DateTime.Now;
-                    inventoryDbContext.RequisitionItems.Attach(rItems);
-                    inventoryDbContext.Entry(rItems).Property(x => x.ReceivedQuantity).IsModified = true;
-                    inventoryDbContext.Entry(rItems).Property(x => x.PendingQuantity).IsModified = true;
-                    inventoryDbContext.Entry(rItems).Property(x => x.CancelQuantity).IsModified = true;
-                    inventoryDbContext.Entry(rItems).Property(x => x.ModifiedOn).IsModified = true;
-                    inventoryDbContext.Entry(rItems).Property(x => x.ModifiedBy).IsModified = true;
-                    inventoryDbContext.Entry(rItems).Property(x => x.RequisitionItemStatus).IsModified = true;
-                }
-                requisition.ModifiedBy = currentUser.EmployeeId;
-                requisition.ModifiedOn = DateTime.Now;
-                inventoryDbContext.Requisitions.Attach(requisition);
-                inventoryDbContext.Entry(requisition).Property(x => x.RequisitionStatus).IsModified = true;
-                inventoryDbContext.Entry(requisition).Property(x => x.ModifiedOn).IsModified = true;
-                inventoryDbContext.Entry(requisition).Property(x => x.ModifiedBy).IsModified = true;
-
-                inventoryDbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            stk.DecreaseStock(
+                quantity: stk.AvailableQuantity,
+                transactionType: ENUM_INV_StockTransactionType.CancelledGR,
+                transactionDate: null,
+                currentDate: currentDate,
+                referenceNo: gritem.GoodsReceiptItemId,
+                createdBy: rbacUser.EmployeeId,
+                fiscalYearId: currentFiscYearId,
+                needConfirmation: false
+                );
+            inventoryDbContext.SaveChanges();
         }
         #endregion
 
@@ -895,48 +705,6 @@ namespace DanpheEMR.Controllers
                     inventoryDbContext.Entry(req).Property(x => x.RequisitionStatus).IsModified = true;
                 }
                 inventoryDbContext.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-
-        #region Get Stock Records Against ItemId && BatchNO
-        //This is Used for WriteOff or may be for other purpose
-        public static List<StockModel> GetStockItemsByItemIdBatchNO(int ItemId, string BatchNO, InventoryDbContext inventoryDBContext)
-        {
-            try
-            {
-                if (BatchNO == "NA")
-                {
-                    BatchNO = string.Empty;
-                }
-                List<StockModel> stockItems = (from stock in inventoryDBContext.Stock
-                                               where stock.ItemId == ItemId && stock.BatchNO == BatchNO
-                                               select stock
-                                               ).ToList();
-                return stockItems;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-
-        #region GET: stock record against StockId
-        //this is used for ReturnToVendor
-        public static StockModel GetStockbyStockId(int stockId, InventoryDbContext inventoryDBContext)
-        {
-            try
-            {
-                StockModel stockItem = (from stock in inventoryDBContext.Stock
-                                        where stock.StockId == stockId
-                                        select stock
-                                       ).FirstOrDefault();
-                return stockItem;
             }
             catch (Exception ex)
             {
@@ -1143,20 +911,164 @@ namespace DanpheEMR.Controllers
         /// 2. Arrange the stock by FIFO(based on TransactionDate.) and update the stock and crete the stock Txns accordingly.
         /// 3. Dispatch the requested items.
         /// </summary>
-        /// <param name="requisitionStockVMFromClient"></param>
+        /// <param name="dispatchItems"></param>
         /// <param name="inventoryDb"></param>
         /// <param name="currentUser"></param>
-        internal static void DirectDispatch(RequisitionStockVM requisitionStockVMFromClient, InventoryDbContext inventoryDb, RbacUser currentUser)
+        public static void DirectDispatch(List<DispatchItemsModel> dispatchItems, IInventoryReceiptNumberService _receiptNumberService, InventoryDbContext inventoryDb, RbacUser currentUser)
         {
             //Transaction Begin
             using (var dbContextTransaction = inventoryDb.Database.BeginTransaction())
             {
                 try
                 {
-                    bool isRequisitionCreated = CreateRequisition(requisitionStockVMFromClient.requisition, inventoryDb, currentUser);
-                    if (isRequisitionCreated == true)
+                    var currentDate = DateTime.Now;
+
+                    var currentFiscYrId = GetFiscalYear(inventoryDb).FiscalYearId;
+                    bool isRequisitionCreated = CreateRequisitionForDirectDispatch(dispatchItems, inventoryDb, currentUser, currentFiscYrId);
+
+                    var newDispatchId = _receiptNumberService.GenerateDispatchNo(currentFiscYrId, dispatchItems.FirstOrDefault().ReqDisGroupId);
+
+                    foreach (var dispatchItem in dispatchItems)
                     {
-                        InventoryBL.DispatchItemsTransaction(requisitionStockVMFromClient, inventoryDb, currentUser);
+                        dispatchItem.CreatedBy = currentUser.EmployeeId;
+                        dispatchItem.CreatedOn = currentDate;
+                        dispatchItem.DispatchId = newDispatchId;
+                        dispatchItem.DispatchNo = newDispatchId;
+                        dispatchItem.FiscalYearId = currentFiscYrId;
+                        inventoryDb.DispatchItems.Add(dispatchItem);
+
+                    }
+                    //Save Dispatch Items
+                    inventoryDb.SaveChanges();
+
+                    // Find the stock from source store for each dispatched item
+                    // Apply FIFO Logic and decrement the stock, also increment the stock to the target store as well.
+
+                    foreach (var dispatchItem in dispatchItems)
+                    {
+                        var stockList = inventoryDb.StoreStocks
+                                                .Include(s => s.StockMaster)
+                                                .Where(s => s.StoreId == dispatchItem.SourceStoreId && s.ItemId == dispatchItem.ItemId && s.AvailableQuantity > 0 && s.StockMaster.BatchNo == dispatchItem.BatchNo && s.IsActive == true)
+                                                .ToList();
+                        //If no stock found, stop the process
+                        if (stockList == null) throw new Exception($"Stock is not available for ItemId = {dispatchItem.ItemId}, BatchNo ={dispatchItem.BatchNo}");
+                        //If total available quantity is less than the required/dispatched quantity, then stop the process
+                        if (stockList.Sum(s => s.AvailableQuantity) < dispatchItem.DispatchedQuantity) throw new Exception($"Stock is not available for ItemId = {dispatchItem.ItemId}, BatchNo ={dispatchItem.BatchNo}");
+
+                        var totalRemainingQty = dispatchItem.DispatchedQuantity;
+                        foreach (var mainStoreStock in stockList)
+                        {
+                            //Find if the stock is available in substore
+                            var substoreStock = inventoryDb.StoreStocks
+                                                            .FirstOrDefault(s => s.StockId == mainStoreStock.StockId && s.StoreId == dispatchItem.TargetStoreId && s.IsActive == true);
+                            // check if receive feature is enabled, to decide whether to increase in stock or increase unconfirmed quantity
+                            var isReceiveFeatureEnabled = inventoryDb.CfgParameters
+                                                            .Where(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "EnableReceivedItemInSubstore")
+                                                            .Select(param => param.ParameterValue == "true" ? true : false)
+                                                            .FirstOrDefault();
+                            //Add Txn in PHRM_StockTxnItems table
+
+
+
+                            if (mainStoreStock.AvailableQuantity < totalRemainingQty)
+                            {
+                                var dispatchQtyForThisStock = mainStoreStock.AvailableQuantity;
+
+                                totalRemainingQty -= mainStoreStock.AvailableQuantity;
+
+                                //Decrease Stock From Main Store
+                                mainStoreStock.DecreaseStock(
+                                        quantity: mainStoreStock.AvailableQuantity,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItem,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId
+                                    );
+                                // Add Stock to Dispensary
+                                if (substoreStock == null)
+                                {
+                                    // add new stock
+                                    substoreStock = new StoreStockModel(
+                                        stockMaster: mainStoreStock.StockMaster,
+                                        storeId: dispatchItem.TargetStoreId,
+                                        quantity: dispatchQtyForThisStock,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId,
+                                        needConfirmation: isReceiveFeatureEnabled
+                                        );
+                                    inventoryDb.StoreStocks.Add(substoreStock);
+                                }
+                                else
+                                {
+                                    // update old stock
+                                    substoreStock.AddStock(
+                                        quantity: dispatchQtyForThisStock,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId,
+                                        needConfirmation: isReceiveFeatureEnabled
+                                        );
+                                }
+                                inventoryDb.SaveChanges();
+                            }
+                            else
+                            {
+                                //Decrease Stock From Main Store
+                                mainStoreStock.DecreaseStock(
+                                        quantity: totalRemainingQty,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItem,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId
+                                    );
+                                // Add Stock to Dispensary
+                                if (substoreStock == null)
+                                {
+                                    // add new stock
+                                    substoreStock = new StoreStockModel(
+                                        stockMaster: mainStoreStock.StockMaster,
+                                        storeId: dispatchItem.TargetStoreId,
+                                        quantity: totalRemainingQty,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId,
+                                        needConfirmation: isReceiveFeatureEnabled
+                                        );
+                                    inventoryDb.StoreStocks.Add(substoreStock);
+                                }
+                                else
+                                {
+                                    // update old stock
+                                    substoreStock.AddStock(
+                                        quantity: totalRemainingQty,
+                                        transactionType: ENUM_INV_StockTransactionType.DispatchedItemReceivingSide,
+                                        transactionDate: dispatchItem.DispatchedDate,
+                                        currentDate: currentDate,
+                                        referenceNo: dispatchItem.DispatchItemsId,
+                                        createdBy: currentUser.EmployeeId,
+                                        fiscalYearId: currentFiscYrId,
+                                        needConfirmation: isReceiveFeatureEnabled
+                                        );
+                                }
+                                totalRemainingQty = 0;
+                                inventoryDb.SaveChanges();
+                                break;
+                            }
+                        }
                     }
                     dbContextTransaction.Commit();
                 }
@@ -1176,62 +1088,57 @@ namespace DanpheEMR.Controllers
         /// <param name="inventoryDb">Current Db Context</param>
         /// <param name="currentUser">Current Logged-in user</param>
         /// <returns> true if created successfully, false if failed </returns>
-        public static bool CreateRequisition(RequisitionModel requisition, InventoryDbContext inventoryDb, RbacUser currentUser)
+        public static bool CreateRequisitionForDirectDispatch(List<DispatchItemsModel> dispatchItems, InventoryDbContext inventoryDb, RbacUser currentUser, int fiscalYearId)
         {
-            List<RequisitionItemsModel> requisitionItems = new List<RequisitionItemsModel>();
-
-            //giving List Of RequisitionItems to requItemsFromClient because we have save the requisition and RequisitionItems One by one ..
-            //first the requisition is saved  after that we have to take the requisitionid and give the requisitionid  to the RequisitionItems ..and then we can save the RequisitionItems
-            requisitionItems = requisition.RequisitionItems;
-
-            //removing the RequisitionItems from RequisitionFromClient because RequisitionItems will be saved later 
-            requisition.RequisitionItems = null;
-            var maxRequisitionList = inventoryDb.Requisitions.ToList();
-            if (maxRequisitionList.Count() == 0)
+            var currentDate = DateTime.Now;
+            // Create a requisition from dispatchItem
+            var requisition = new RequisitionModel()
             {
-                requisition.RequisitionNo = 1;
-            }
-            else
-                requisition.RequisitionNo = maxRequisitionList.Max(a => a.RequisitionNo) + 1;
-
-            requisition.IssueNo = requisition.IssueNo;
-            //asigining the value to POFromClient with POitems= null
-            requisition.CreatedBy = currentUser.EmployeeId;
-            requisition.CreatedOn = DateTime.Now;
-            //sanjit: 8 Apr'20: added to maintain history table.
-            requisition.ModifiedBy = currentUser.EmployeeId;
-            requisition.ModifiedOn = requisition.CreatedOn; //to make the modifiedOn date same as createdOn Date so that records don't mismatch by milliseconds
-            if (requisition.RequisitionDate == null)
-            {
-                requisition.RequisitionDate = DateTime.Now;
-            }
+                RequisitionDate = dispatchItems[0].DispatchedDate,
+                CreatedBy = currentUser.EmployeeId,
+                CreatedOn = currentDate,
+                RequisitionStatus = "complete",
+                IssueNo = dispatchItems[0].IssueNo,
+                RequestFromStoreId = dispatchItems[0].TargetStoreId,
+                RequestToStoreId = dispatchItems[0].SourceStoreId,
+                FiscalYearId = fiscalYearId,
+                RequisitionNo = inventoryDb.Requisitions.Select(a => a.RequisitionNo).DefaultIfEmpty(0).Max() + 1,
+                Remarks = dispatchItems[0].Remarks,
+                MatIssueDate = dispatchItems[0].MatIssueDate,
+                MatIssueTo = dispatchItems[0].MatIssueTo,
+                ModifiedBy = currentUser.EmployeeId,
+                ModifiedOn = currentDate
+            };
             inventoryDb.Requisitions.Add(requisition);
-
-            //this is for requisition only
             inventoryDb.SaveChanges();
 
-            //getting the lastest RequistionId 
-            int lastRequId = requisition.RequisitionId;
-            int lastRequNo = requisition.RequisitionNo;
-            int? issueNo = requisition.IssueNo;
-            //assiging the RequisitionId and CreatedOn i requisitionitem list
-            requisitionItems.ForEach(reqItem =>
+            // Create requisition items from dispatchItems
+            foreach (var dItem in dispatchItems)
             {
-                reqItem.RequisitionId = lastRequId;
-                reqItem.RequisitionNo = lastRequNo;
-                reqItem.IssueNo = issueNo;
-                reqItem.CreatedBy = currentUser.EmployeeId;
-                reqItem.CreatedOn = DateTime.Now;
-                reqItem.ModifiedBy = reqItem.CreatedBy;
-                reqItem.ModifiedOn = reqItem.CreatedOn;
-                reqItem.AuthorizedOn = DateTime.Now;
-                reqItem.PendingQuantity = (double)reqItem.Quantity;
-                reqItem.CancelQuantity = 0;
+                var reqItem = new RequisitionItemsModel()
+                {
+                    ItemId = dItem.ItemId,
+                    Quantity = (int)dItem.DispatchedQuantity,
+                    ReceivedQuantity = dItem.DispatchedQuantity,
+                    PendingQuantity = 0,
+                    RequisitionId = requisition.RequisitionId,
+                    RequisitionNo = requisition.RequisitionNo,
+                    CreatedBy = currentUser.EmployeeId,
+                    CreatedOn = currentDate,
+                    RequisitionItemStatus = "complete",
+                    Remark = dItem.ItemRemarks,
+                    IssueNo = dItem.IssueNo,
+                    ModifiedBy = currentUser.EmployeeId,
+                    ModifiedOn = currentDate,
+                    MatIssueDate = dItem.MatIssueDate,
+                    MatIssueTo = dItem.MatIssueTo
+                };
                 inventoryDb.RequisitionItems.Add(reqItem);
-
-            });
-            //this Save for requisitionItems
-            inventoryDb.SaveChanges();
+                inventoryDb.SaveChanges();
+                // Save Requisition Ids in dispatch items
+                dItem.RequisitionId = requisition.RequisitionId;
+                dItem.RequisitionItemId = reqItem.RequisitionItemId;
+            }
             return true; //this value will be used in direct dispatch for further decision-making
         }
 
@@ -1253,15 +1160,6 @@ namespace DanpheEMR.Controllers
         {
             DecidingDate = (DecidingDate == null) ? DateTime.Now.Date : DecidingDate;
             return inventoryDbContext.InventoryFiscalYears.Where(fsc => fsc.StartDate <= DecidingDate && fsc.EndDate >= DecidingDate).FirstOrDefault();
-        }
-
-        public static int GetGoodReceiptNo(InventoryDbContext inventoryDbContext, int fiscalYearId)
-        {
-
-            int goodreceiptnumber = (from invtxn in inventoryDbContext.GoodsReceipts
-                                     where invtxn.FiscalYearId == fiscalYearId
-                                     select invtxn.GoodsReceiptNo).DefaultIfEmpty(0).Max();
-            return goodreceiptnumber + 1;
         }
         public static void CreateNotificationForPRVerifiers(int PurchaseRequestId, int RoleId, NotiFicationDbContext notificationDB)
         {
@@ -1291,8 +1189,13 @@ namespace DanpheEMR.Controllers
                 {
                     POItems.ModifiedBy = currentUser.EmployeeId;
                     POItems.ModifiedOn = DateTime.Now;
+                    POItems.PendingQuantity = POItems.Quantity;
                     db.PurchaseOrderItems.Attach(POItems);
                     db.Entry(POItems).Property(x => x.Quantity).IsModified = true;
+                    db.Entry(POItems).Property(x => x.StandardRate).IsModified = true;
+                    db.Entry(POItems).Property(x => x.TotalAmount).IsModified = true;
+                    db.Entry(POItems).Property(x => x.VATAmount).IsModified = true;
+                    db.Entry(POItems).Property(x => x.PendingQuantity).IsModified = true;
                     db.Entry(POItems).Property(x => x.POItemStatus).IsModified = true;
                     db.Entry(POItems).Property(x => x.ModifiedOn).IsModified = true;
                     db.Entry(POItems).Property(x => x.ModifiedBy).IsModified = true;
@@ -1320,6 +1223,9 @@ namespace DanpheEMR.Controllers
                     purchaseOrder.ModifiedOn = DateTime.Now;
                     db.PurchaseOrders.Attach(purchaseOrder);
                     db.Entry(purchaseOrder).Property(x => x.POStatus).IsModified = true;
+                    db.Entry(purchaseOrder).Property(x => x.SubTotal).IsModified = true;
+                    db.Entry(purchaseOrder).Property(x => x.TotalAmount).IsModified = true;
+                    db.Entry(purchaseOrder).Property(x => x.VAT).IsModified = true;
                     db.Entry(purchaseOrder).Property(x => x.ModifiedOn).IsModified = true;
                     db.Entry(purchaseOrder).Property(x => x.ModifiedBy).IsModified = true;
                     if (VerificationId > 0)
@@ -1349,6 +1255,179 @@ namespace DanpheEMR.Controllers
             return DanpheJSONConvert.SerializeObject(VerifierList).Replace(" ", String.Empty);
         }
         #endregion
+        #region Get Procurement GR View
+        internal static GetProcurementGRViewVm GetProcurementGRView(int GoodsReceiptId, InventoryDbContext inventoryDb, MasterDbContext masterDbContext, IVerificationService verificationService)
+        {
+            // Take Only First Item from each group of gr items based on itemId, as breakage of item will only occur after GR Verification, but procurement has to see what procurement has entered in the first place.
+            var grItemGrouped = inventoryDb.GoodsReceiptItems.Where(a => a.GoodsReceiptId == GoodsReceiptId).ToList();
+            var gritems = (from gritms in grItemGrouped
+                           join itms in inventoryDb.Items on gritms.ItemId equals itms.ItemId
+                           join uom in inventoryDb.UnitOfMeasurementMaster on itms.UnitOfMeasurementId equals uom.UOMId
+                           join category in inventoryDb.ItemCategoryMaster on itms.ItemCategoryId equals category.ItemCategoryId into ctgGroup
+                           from ctg in ctgGroup.DefaultIfEmpty()
+                           where gritms.GoodsReceiptId == GoodsReceiptId
+                           select new GrItemsDTO
+                           {
+                               ItemId = gritms.ItemId,
+                               ItemName = itms.ItemName,
+                               ItemCode = itms.Code,
+                               MSSNO = itms.MSSNO,
+                               UOMName = uom.UOMName,
+                               ItemCategory = gritms.ItemCategory,//sud:26Sept'21--Updated to make same as other api.
+                               ItemCategoryCode = (ctg == null) ? "" : ctg.CategoryCode,
+                               BatchNo = gritms.BatchNO,
+                               ExpiryDate = gritms.ExpiryDate,
+                               InvoiceQuantity = gritms.ReceivedQuantity + gritms.RejectedQuantity,
+                               ArrivalQuantity = gritms.ArrivalQuantity,
+                               ReceivedQuantity = gritms.ReceivedQuantity,
+                               RejectedQuantity = gritms.RejectedQuantity,
+                               FreeQuantity = gritms.FreeQuantity,
+                               GRItemRate = gritms.ItemRate,
+                               VATPercentage = gritms.VAT,
+                               VATAmount = gritms.VATAmount,
+                               ItemSubTotal = gritms.SubTotal,
+                               CcAmount = gritms.CcAmount,
+                               CcChargePercent = gritms.CcCharge,
+                               DiscountAmount = gritms.DiscountAmount,
+                               DiscountPercent = gritms.DiscountPercent,
+                               ItemTotalAmount = gritms.TotalAmount,
+                               OtherCharge = gritms.OtherCharge,
+                               GoodsReceiptId = gritms.GoodsReceiptId,
+                               GoodsReceiptItemId = gritms.GoodsReceiptItemId,
+                               IsTransferredToACC = gritms.IsTransferredToACC,
+                               ManufactureDate = gritms.ManufactureDate,
+                               SamplingDate = gritms.SamplingDate,
+                               NoOfBoxes = gritms.NoOfBoxes,
+                               SamplingQuantity = gritms.SamplingQuantity,
+                               IdentificationLabel = gritms.IdentificationLabel,
+                               GRItemSpecification = gritms.GRItemSpecification,
+                               Remarks = gritms.Remarks,
+                               RegisterPageNumber = itms.RegisterPageNumber,
+                               StockId = gritms.StockId
+                           }).OrderBy(g => g.GoodsReceiptItemId).ToList();//sud:28Sept'21--to show in the same order as entry.
+            var grdetails = (from gr in inventoryDb.GoodsReceipts
+                             join ven in inventoryDb.Vendors on gr.VendorId equals ven.VendorId
+                             join verif in inventoryDb.Verifications on gr.VerificationId equals verif.VerificationId into verifJ
+                             from verifLJ in verifJ.DefaultIfEmpty()
+                             from po in inventoryDb.PurchaseOrders.Where(p => p.PurchaseOrderId == gr.PurchaseOrderId).DefaultIfEmpty()
+                             from ganFy in inventoryDb.InventoryFiscalYears.Where(a => a.StartDate <= gr.GoodsArrivalDate && a.EndDate >= gr.GoodsArrivalDate).DefaultIfEmpty()
+                             from fyLj in inventoryDb.FiscalYears.Where(fy => fy.FiscalYearId == gr.FiscalYearId).DefaultIfEmpty()
+                             where gr.GoodsReceiptID == GoodsReceiptId
+                             select new GrDTO
+                             {
+                                 GoodsReceiptID = gr.GoodsReceiptID,
+                                 GoodsReceiptNo = gr.GoodsReceiptNo,
+                                 GoodsArrivalNo = gr.GoodsArrivalNo,
+                                 DonationId = gr.DonationId,
+                                 GoodsArrivalFiscalYearFormatter = ganFy.FiscalYearName,
+                                 PurchaseOrderId = gr.PurchaseOrderId,
+                                 PurchaseOrderDate = (po != null) ? po.PoDate : null,
+                                 PONumber = (po != null) ? po.PONumber : null,
+                                 GoodsArrivalDate = gr.GoodsArrivalDate,
+                                 GoodsReceiptDate = gr.GoodsReceiptDate,
+                                 ReceivedDate = gr.ReceivedDate,
+                                 BillNo = gr.BillNo,
+                                 TotalAmount = gr.TotalAmount,
+                                 SubTotal = gr.SubTotal,
+                                 DiscountAmount = gr.DiscountAmount,
+                                 TDSAmount = gr.TDSAmount,
+                                 TotalWithTDS = gr.TotalWithTDS,
+                                 CcCharge = gr.CcCharge,
+                                 VATTotal = gr.VATTotal,
+                                 IsCancel = gr.IsCancel,
+                                 Remarks = gr.Remarks,
+                                 MaterialCoaDate = gr.MaterialCoaDate,
+                                 MaterialCoaNo = gr.MaterialCoaNo,
+                                 VendorName = ven.VendorName,
+                                 ContactAddress = ven.ContactAddress,
+                                 VendorNo = ven.ContactNo,
+                                 CreditPeriod = gr.CreditPeriod,
+                                 PaymentMode = gr.PaymentMode,
+                                 OtherCharges = gr.OtherCharges,
+                                 InsuranceCharge = gr.InsuranceCharge,
+                                 CarriageFreightCharge = gr.CarriageFreightCharge,
+                                 PackingCharge = gr.PackingCharge,
+                                 TransportCourierCharge = gr.TransportCourierCharge,
+                                 OtherCharge = gr.OtherCharge,
+                                 IsTransferredToACC = gr.IsTransferredToACC == null ? false : gr.IsTransferredToACC,
+                                 CancelRemarks = gr.CancelRemarks,
+                                 CreatedBy = gr.CreatedBy,
+                                 CreatedOn = gr.CreatedOn,
+                                 CurrentFiscalYear = (fyLj != null) ? fyLj.FiscalYearFormatted : "",
+                                 IsVerificationEnabled = gr.IsVerificationEnabled,
+                                 VerifierIds = gr.VerifierIds,
+                                 IsSupplierApproved = gr.IsSupplierApproved ?? false,
+                                 IsDeliveryTopClosed = gr.IsDeliveryTopClosed ?? false,
+                                 IsBoxNumbered = gr.IsBoxNumbered ?? false,
+                                 GRStatus = gr.GRStatus,
+                                 GRCategory = gr.GRCategory,
+                                 CurrentVerificationLevelCount = (verifLJ == null) ? 0 : verifLJ.CurrentVerificationLevelCount,
+                                 VerificationId = gr.VerificationId
+                             }).FirstOrDefault();
+            var CreatedById = grdetails.CreatedBy;
+            var creator = (from emp in masterDbContext.Employees
+                           join r in masterDbContext.EmployeeRole on emp.EmployeeRoleId equals r.EmployeeRoleId into roleTemp
+                           from role in roleTemp.DefaultIfEmpty()
+                           where emp.EmployeeId == CreatedById
+                           select new CreatedByUserDTO
+                           {
+                               Name = emp.Salutation + ". " + emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                               Role = role.EmployeeRoleName
+                           }).FirstOrDefault();
+
+            // Verifiers Details -- using Common Method from Verification Service
+            var Verifiers = new List<VerificationViewModel>();
+            if (grdetails.VerificationId != null)
+            {
+                Verifiers = verificationService.GetVerificationViewModel(grdetails.VerificationId.Value).OrderBy(x => x.CurrentVerificationLevel).ToList();
+            }
+            //TODO: Sanjit: Please review the criteria to edit date later
+            var canUserEditDate = false;
+            var goodsreceiptDetails = new GetProcurementGRViewVm { grItems = gritems, grDetails = grdetails, creator = creator, canUserEditDate = canUserEditDate, verifier = Verifiers };
+            return goodsreceiptDetails;
+
+        }
+        #endregion
+
+        //Sud:25Sept'21--We need to change the logic after we bring StoreId and GroupId into the picture..
+        //currently StoreId is there in Db but not in Model.
+        public static string GetNewItemCode(InventoryDbContext inventoryDbContext, ItemMasterModel itemMaster)
+        {
+            ItemSubCategoryMasterModel subCat = inventoryDbContext.ItemSubCategoryMaster.Where(sub => sub.SubCategoryId == itemMaster.SubCategoryId).FirstOrDefault();
+
+
+            if (subCat != null && subCat.SubCategoryId > 0)
+            {
+                //Note: we're using count logic for item code.. (different than that in GR, PO, etc)..
+                int existingItmCount = inventoryDbContext.Items.Where(itm => itm.SubCategoryId == subCat.SubCategoryId).Count();
+
+                string subCategoryCode = subCat.Code;
+
+                int newCodeIntValue = existingItmCount + 1;//current count plus 1 is new code..
+                string formattedCode = String.Format("{0:D3}", newCodeIntValue);//this addes upto 3 zero before the integer value.
+
+                string finalItemCode = subCategoryCode + formattedCode;
+                return finalItemCode;
+            }
+
+
+            return null;
+
+        }
+
+        //Sud:25Sept'21--We need to change the logic after we bring StoreId and GroupId into the picture..
+        public static string GetNewVendorCode(InventoryDbContext inventoryDbContext)
+        {
+
+            //Note: we're using count logic for vendor code.. (different than that in GR, PO, etc)..
+            int existingVendorCount = inventoryDbContext.Vendors.Count();
+
+            int newCodeIntValue = existingVendorCount + 1;//current count plus 1 is new code..
+            string formattedCode = String.Format("{0:D5}", newCodeIntValue);//this addes upto precedding zeroes to make the code 5 digits minumum...
+            return formattedCode;
+        }
+
+
     }
 }
 

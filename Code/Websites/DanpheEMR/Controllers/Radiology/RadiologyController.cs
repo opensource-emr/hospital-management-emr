@@ -83,6 +83,14 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = imgReqList;
                 }
+                else if (reqType == "getFilmTypeData")
+                {
+                    List<FilmTypeModel> filmTypes = (from filmType in radioDbContext.FilmType.Where(a => a.IsActive == true)
+                                                     select filmType).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = filmTypes;
+                }
+
                 //get requisition items with status=active and report item with status=pending
                 else if (reqType == "reqNReportListByStatus")
                 {
@@ -245,7 +253,7 @@ namespace DanpheEMR.Controllers
                          join requisition in radioDbContext.ImagingRequisitions on i.ImagingRequisitionId equals requisition.ImagingRequisitionId
                          where i.OrderStatus == reportOrderStatus && (requisition.BillingStatus.ToLower() == "paid"
                          || requisition.BillingStatus.ToLower() == "unpaid"
-                         || requisition.BillingStatus.ToLower() == "provisional")
+                         || requisition.BillingStatus.ToLower() == "provisional") 
                          && imgValidTypeList.Contains(requisition.ImagingTypeId.Value)
                          join pat in radioDbContext.Patients
                          on i.PatientId equals pat.PatientId
@@ -278,6 +286,7 @@ namespace DanpheEMR.Controllers
                              IsActive = requisition.IsActive,
                              HasInsurance = requisition.HasInsurance,
                              IsShowButton = IsShowButton,
+                             IsReportSaved = requisition.IsReportSaved,
                              Patient = new
                              {
                                  Age = i.Patient.Age,
@@ -300,6 +309,7 @@ namespace DanpheEMR.Controllers
                                       && (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid" || req.BillingStatus.ToLower() == "provisional")
                                           && (DbFunctions.TruncateTime(req.CreatedOn) >= fromDate && DbFunctions.TruncateTime(req.CreatedOn) <= toDate)
                                           && imgValidTypeList.Contains(req.ImagingTypeId.Value)
+                                          && (req.IsReportSaved != true)
                                       select new
                                       {
                                           ImagingRequisitionId = req.ImagingRequisitionId,
@@ -399,7 +409,7 @@ namespace DanpheEMR.Controllers
                             imgReportList.Add(imgReport);
                         });
                     }
-
+                    
                     responseData.Status = "OK";
                     responseData.Results = imgReportList;
 
@@ -486,8 +496,14 @@ namespace DanpheEMR.Controllers
 
                     ImagingReportViewModel imgReport = (from report in radioDbContext.ImagingReports
                                                         join patient in radioDbContext.Patients on report.PatientId equals patient.PatientId
-                                                        //join doc in radioDbContext.ReportingDoctors on report.ReportingDoctorId equals doc.ReportingDoctorId into docTemp
-                                                        //from repDoc in docTemp.DefaultIfEmpty()
+                                                        join req in radioDbContext.ImagingRequisitions on report.ImagingRequisitionId equals req.ImagingRequisitionId
+                                                        join countrySudDivision in radioDbContext.CountrySubDivision on patient.CountrySubDivisionId equals countrySudDivision.CountrySubDivisionId into csd
+                                                        from countrySudDivision in csd.DefaultIfEmpty()
+                                                        join muncipality in radioDbContext.Muncipality on patient.MunicipalityId equals muncipality.MunicipalityId into mun
+                                                        from muncipality in mun.DefaultIfEmpty()
+
+                                                            //join doc in radioDbContext.ReportingDoctors on report.ReportingDoctorId equals doc.ReportingDoctorId into docTemp
+                                                            //from repDoc in docTemp.DefaultIfEmpty()
                                                         where report.ImagingRequisitionId == requisitionId
                                                         select new ImagingReportViewModel
                                                         {
@@ -499,10 +515,13 @@ namespace DanpheEMR.Controllers
                                                             ImagingTypeName = report.ImagingTypeName,
                                                             ImagingItemName = report.ImagingItemName,
                                                             CreatedOn = report.CreatedOn,
+                                                            BillingDate = req.CreatedOn,
                                                             ReportText = report.ReportText,
                                                             ImageName = report.ImageName,
                                                             PatientName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
                                                             Address = patient.Address,
+                                                            Muncipality = muncipality.MunicipalityName == null ? null : muncipality.MunicipalityName,
+                                                            CountrySubDivision = countrySudDivision.CountrySubDivisionName == null ? null : countrySudDivision.CountrySubDivisionName,
                                                             PatientNameLocal = patient.PatientNameLocal,
                                                             //DoctorSignatureJSON = repDoc.DoctorSignatureJSON,
                                                             Signatories = report.Signatories,
@@ -662,6 +681,11 @@ namespace DanpheEMR.Controllers
                                   select rpt
                                  ).FirstOrDefault();
 
+                        var scannedDate = (from req in radioDbContext.ImagingRequisitions
+                                           where req.ImagingRequisitionId == report.ImagingRequisitionId  //here is work as ImagingReportId
+                                           select req.ScannedOn
+                                            ).FirstOrDefault();
+
 
                         var reptTemplate = (from rpt in radioDbContext.ImagingReports
                                             join temp in radioDbContext.RadiologyReportTemplate
@@ -694,7 +718,8 @@ namespace DanpheEMR.Controllers
                             ReportTemplateId = report.ReportTemplateId,
                             ReportText = report.ReportText,
                             ImageFullPath = report.ImageFullPath,
-                            ImageName = report.ImageName
+                            ImageName = report.ImageName,
+                            ScannedOn = scannedDate
                         };
                     }
                     responseData.Status = "OK";
@@ -844,7 +869,7 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "getImagingTypes")
                 {
-                    var types = radioDbContext.ImagingTypes.ToList();
+                    var types = radioDbContext.ImagingTypes.Where(i => i.IsActive == true).ToList();
                     responseData.Status = "OK";
                     responseData.Results = types;
                 }
@@ -877,7 +902,7 @@ namespace DanpheEMR.Controllers
                 RadiologyDbContext dbContext = new RadiologyDbContext(base.connString);
                 DicomDbContext dicomDbContext = new DicomDbContext(base.connStringPACSServer);
 
-
+             
 
                 if (reqType == "postRequestItems")
                 {
@@ -914,7 +939,7 @@ namespace DanpheEMR.Controllers
                             }
                             else
                             {
-                                req.ImagingTypeId = Imgtype.Where(a => a.ImagingTypeName == req.ImagingTypeName).Select(a => a.ImagingTypeId).FirstOrDefault();
+                                req.ImagingTypeId = Imgtype.Where(a => a.ImagingTypeName.ToLower() == req.ImagingTypeName.ToLower()).Select(a => a.ImagingTypeId).FirstOrDefault();
                             }
                             if (!notValidForReportingItem.Contains(req.ImagingItemId.Value))
                             {
@@ -950,7 +975,7 @@ namespace DanpheEMR.Controllers
                             //returns Imaging Report Object after updating Imaging Name and ImagingFullPath
                             imgReport = UploadReportFile(imgReport, files, localFolder);
                         }
-
+                       
                         imgReport.CreatedBy = currentUser.EmployeeId;
                         imgReport.OrderStatus = orderStatus;
                         imgReport.CreatedOn = System.DateTime.Now;
@@ -1518,6 +1543,8 @@ namespace DanpheEMR.Controllers
                             imagingRequest.ScanRemarks = scandetail.Remarks;
                             imagingRequest.ScannedBy = currentUser.EmployeeId;
                             imagingRequest.ScannedOn = System.DateTime.Now;
+                            imagingRequest.FilmTypeId = scandetail.FilmTypeId;
+                            imagingRequest.FilmQuantity = scandetail.FilmQuantity;
                             imagingRequest.OrderStatus = ENUM_BillingOrderStatus.Pending;
 
 
@@ -1525,6 +1552,8 @@ namespace DanpheEMR.Controllers
                             dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScanRemarks).IsModified = true;
                             dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScannedBy).IsModified = true;
                             dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScannedOn).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.FilmTypeId).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.FilmQuantity).IsModified = true;
                             dbContextUpdate.Entry(imagingRequest).Property(ent => ent.OrderStatus).IsModified = true;
 
                             dbContextUpdate.SaveChanges();
@@ -1580,6 +1609,7 @@ namespace DanpheEMR.Controllers
                 if (reqItem != null)
                 {
                     reqItem.OrderStatus = orderStatus.ToLower();
+                    reqItem.IsReportSaved = true;
                     dbContextUpdate.Entry(reqItem).State = EntityState.Modified;
                     dbContextUpdate.SaveChanges();
                     return "OK";

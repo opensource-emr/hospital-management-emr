@@ -8,6 +8,7 @@ import * as moment from 'moment/moment';
 import { SecurityService } from '../../../security/shared/security.service';
 import { BillingService } from "../../shared/billing.service";
 import { CallbackService } from '../../../shared/callback.service';
+import { CoreService } from '../../../core/shared/core.service';
 
 @Component({
   selector: 'insurance-settlement',
@@ -18,7 +19,7 @@ export class InsuranceSettlementsComponent {
   public unclaimedInvoices: Array<any> = [];
   public selectAllInvoices: boolean = false;
   public counterId: number = 0;
-  public currencyUnit: string;
+  //public currencyUnit: string;
   public filterBy: string;
   public allInvoice: Array<any> = [];
 
@@ -37,10 +38,11 @@ export class InsuranceSettlementsComponent {
     public msgBoxServ: MessageboxService,
     public billingService: BillingService,
     public callbackservice: CallbackService,
-    public router: Router) {
+    public router: Router,
+    public coreService: CoreService) {
 
     this.counterId = this.securityService.getLoggedInCounter().CounterId;
-    this.currencyUnit = this.billingService.currencyUnit;
+    //this.currencyUnit = this.billingService.currencyUnit;
     this.RangeTypeOnChange();
 
     let counterId: number = this.securityService.getLoggedInCounter().CounterId;

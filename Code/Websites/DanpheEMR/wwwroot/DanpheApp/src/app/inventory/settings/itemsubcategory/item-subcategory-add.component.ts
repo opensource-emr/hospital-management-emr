@@ -15,7 +15,8 @@ import { isNumeric } from "rxjs/internal-compatibility";
 
 @Component({
       selector: 'itemsubcategory-add',
-      templateUrl: './item-subcategory-add.html'
+      templateUrl: './item-subcategory-add.html',
+      host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class ItemSubCategoryAddComponent {
@@ -148,8 +149,10 @@ export class ItemSubCategoryAddComponent {
                               err => {
                                     this.logError(err);
                                     this.loading = false;
+                                    this.FocusElementById('ItemSubCategoryName');
                               });
             }
+            this.FocusElementById('ItemSubCategoryName');
       }
       //adding new department
       Update() {
@@ -171,8 +174,10 @@ export class ItemSubCategoryAddComponent {
                               err => {
                                     this.logError(err);
                                     this.loading = false;
+                                    this.FocusElementById('ItemSubCategoryName');
                               });
             }
+            this.FocusElementById('ItemSubCategoryName');
       }
 
       Close() {
@@ -230,4 +235,17 @@ export class ItemSubCategoryAddComponent {
       changeLedger(){
             this.currentItemSubCategory.LedgerId = +this.ledgerId;
       }
+      FocusElementById(id: string) {
+            window.setTimeout(function () {
+              let itmNameBox = document.getElementById(id);
+              if (itmNameBox) {
+                itmNameBox.focus();
+              }
+            }, 600);
+          }
+        hotkeys(event){
+            if(event.keyCode==27){
+                this.Close()
+            }
+        }
 }

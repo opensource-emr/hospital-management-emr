@@ -24,7 +24,7 @@
                 </td>
                 <td>{{itm.GoodsReceiptDate  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                 <td>{{itm.VendorName}}</td>
-                <td>{{itm.TotalAmount | ParseAmount  | Currency}}</td>
+                <td>{{itm.TotalAmount | ParseAmount  | Currency:'4'}}</td>
                 <td>{{itm.Remarks | CapitalFirstLetter}}</td>
                 <td><button type="button" (click)="ViewDetail(itm)" class="btn btn-default">ViewDetail</button></td>
             </tr>
@@ -63,9 +63,9 @@
                             <tr *ngFor="let invItm of selItem.GoodsReceiptItems">
                                 <td>{{invItm.ItemName}}</td>
                                 <td>{{invItm.ReceivedQuantity}}</td>
-                                <td>{{invItm.ItemRate | ParseAmount  | Currency}}</td>
-                                <td>{{invItm.VATAmount | ParseAmount  | Currency}}</td>
-                                <td>{{invItm.TotalAmount | ParseAmount  | Currency}}</td>
+                                <td>{{invItm.ItemRate | ParseAmount  | Currency:'4'}}</td>
+                                <td>{{invItm.VATAmount | ParseAmount  | Currency:'4'}}</td>
+                                <td>{{invItm.TotalAmount | ParseAmount  | Currency:'4'}}</td>
                             </tr>
                         </table>
                 </div>

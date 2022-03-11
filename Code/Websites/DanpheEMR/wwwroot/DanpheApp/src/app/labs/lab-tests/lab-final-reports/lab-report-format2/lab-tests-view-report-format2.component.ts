@@ -51,6 +51,7 @@ import {
   DanpheCache,
   MasterType,
 } from "../../../../shared/danphe-cache-service-utility/cache-services";
+import { LabService } from "../../../shared/lab.service";
 
 @Component({
   selector: "danphe-lab-view-report-format2",
@@ -72,6 +73,17 @@ export class LabTestsViewReportFormat2Component {
   @Input("enableEdit")
   public enableEdit: boolean = true;
 
+  @Input("showUplaodToTeleMedicine")
+  public showUplaodToTeleMedicine : boolean = false;
+
+  public IsTeleMedicineEnabled : boolean = false;
+
+  @Input("hidePrintButton")
+  public hidePrintButton: boolean = false;
+
+  @Input("IsFileUploaded")
+  public IsFileUploaded : boolean = false;
+
   @Output("callbackBackToGrid") callbackAddUpdate: EventEmitter<
     object
   > = new EventEmitter<object>();
@@ -79,6 +91,7 @@ export class LabTestsViewReportFormat2Component {
     object
   > = new EventEmitter<object>();
 
+  @Output("callBackUplaod") callBackUplaod : EventEmitter<any> = new EventEmitter<any>();
   public doctorsList: Array<any> = [];
   public doctorSelected: any;
 
@@ -87,7 +100,7 @@ export class LabTestsViewReportFormat2Component {
   public enableDrEdit: boolean = false;
   public oldName: string = null;
   public showInterpretation: boolean = false;
-
+  public showGap: boolean = true;
   public showChangeSample: boolean = false;
   public showConfirmationBox: boolean = false;
   public sampleCode = { RunNumber: 0, SampleCreatedOn: null, SampleCode: 0 };
@@ -145,8 +158,13 @@ export class LabTestsViewReportFormat2Component {
   public colonyCount: string = "";
   //@ViewChild("exportContent") content: ElementRef;
 
+  public routeAfterVerification: string;
+  public qrCode: string;
+  public collectionSite: string;
+  public allValues: any;
+  public referredByLabelInLabReport : string = 'Referred By';
   constructor(
-    public labBLService: LabsBLService,
+    public labBLService: LabsBLService, public labService: LabService,
     public npCalendarService: NepaliCalendarService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
@@ -158,24 +176,48 @@ export class LabTestsViewReportFormat2Component {
     this.CurrentDateTime = moment().format("YYYY-MM-DD HH:mm");
     this.GetDoctorsList();
     this.CreatedByUser = this.securityService.GetLoggedInUser().Employee;
-    this.showLoggedInUserSignatory = this.coreService.ShowLoggedInUserSignatory();
-    this.showReportDispatcherSignatory = this.coreService.ShowLabReportDispatcherSignatory();
-    this.showPrintInfo = this.coreService.ShowPrintInformationInLabReport();
-    this.showBarCode = this.coreService.ShowBarCodeInLabReport();
-    this.verificationEnabled = this.coreService.EnableVerificationStep();
-    this.preliminaryText = this.coreService.GetPreliminaryNoteText();
-    this.preliminarySignature = this.coreService.GetPreliminaryReportSignatureText();
-    this.showVerifierSignature = this.coreService.EnableVerifierSignatureInLab();
-    this.hospitalCode = this.coreService.GetHospitalCode();
+    let TeleMedicineConfig = this.coreService.Parameters.find(p =>p.ParameterGroupName == "TeleMedicine" && p.ParameterName == "DanpheConfigurationForTeleMedicine").ParameterValue;
+    this.IsTeleMedicineEnabled = JSON.parse(JSON.parse(TeleMedicineConfig).IsTeleMedicineEnabled);
+    this.allValues = this.coreService.GetAllParametersDataForLabReport();
+    if (this.allValues) {
+      this.showGap = Boolean(JSON.parse(this.allValues.showGap));
+      this.referredByLabelInLabReport = this.allValues.referredByLabelInLabReport;
+      this.showLoggedInUserSignatory = Boolean(JSON.parse(this.allValues.LoggedInUserSignatory));
+      this.showReportDispatcherSignatory = Boolean(JSON.parse(this.allValues.ReportDispatcherSignature));
+      this.showPrintInfo = Boolean(JSON.parse(this.allValues.DisplayPrintInfo));
+      this.showBarCode = Boolean(JSON.parse(this.allValues.LabBarCodeInReport));
+      if (!_.isEmpty(this.allValues.LabReportVerificationB4Print)) {
+        this.verificationEnabled = Boolean(JSON.parse(this.allValues.LabReportVerificationB4Print.EnableVerificationStep));
+        this.preliminaryText = this.allValues.LabReportVerificationB4Print.PreliminaryReportText;
+        this.preliminarySignature = this.allValues.LabReportVerificationB4Print.PreliminaryReportSignature;
+        this.showVerifierSignature = Boolean(JSON.parse(this.allValues.LabReportVerificationB4Print.ShowVerifierSignature));
+      }
+      this.hospitalCode = this.allValues.HospitalCode;
+      this.showIntermediateInCultureRpt = Boolean(JSON.parse(this.allValues.CultureIntermediateResults));
+      this.showHideHighLowNormalFlag = Boolean(JSON.parse(this.allValues.HighLowNormalFlag));
+      this.showDigitalSignature = Boolean(JSON.parse(this.allValues.DigitalSignatureEnabled));
+      this.collectionSite = this.allValues.CollectionSite;
+    }
+console.log(this.showGap);
     if (!this.hospitalCode) {
       this.hospitalCode = "default-lab-report";
     }
-    this.showIntermediateInCultureRpt = this.coreService.ShowIntermediateResultOfCulture();
-    this.showHideHighLowNormalFlag = this.coreService.ShowHideAbnormalFlag();
-    this.showDigitalSignature = this.coreService.EnableDigitalSignatureInLabReport();
+
+    if (this.labService.routeNameAfterverification) {
+      if (this.labService.routeNameAfterverification.toLowerCase() == 'addresult') {
+        this.routeAfterVerification = 'PendingLabResults';
+      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'finalreports') {
+        this.routeAfterVerification = 'FinalReports';
+      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'pendingreports') {
+        this.routeAfterVerification = 'PendingReports';
+      }
+
+    }
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+
+  }
 
   ngAfterViewChecked() {
     var doc = document.getElementById("lab-report-main");
@@ -184,14 +226,18 @@ export class LabTestsViewReportFormat2Component {
       this.printDirectlyFromGrid = false;
       this.printLabReport();
     }
+
   }
 
   @Input("templateReport")
   public set tempReport(_templateReport: LabReportVM) {
+
     this.allEmployeeList = DanpheCache.GetData(MasterType.Employee, null);
     this.isCultureRptLoaded = true; //reset value at beginning: sud: 3sept'18
 
     if (_templateReport) {
+      this.qrCode = _templateReport.CovidFileUrl;
+      this.hasInsurance = _templateReport.HasInsurance;
       _templateReport.VerifiedByList = [];
       if (_templateReport.Lookups.VisitType.toLowerCase() == "outpatient") {
         _templateReport.Lookups.VisitTypeCode = "OP";
@@ -227,9 +273,6 @@ export class LabTestsViewReportFormat2Component {
                 !_templateReport.VerifiedByList.includes(test.VerifiedBy)
               ) {
                 _templateReport.VerifiedByList.push(test.VerifiedBy);
-              }
-              if (test.HasInsurance) {
-                this.hasInsurance = test.HasInsurance;
               }
               test["Print"] = true;
               test["PrintInterpretation"] = false;
@@ -344,12 +387,6 @@ export class LabTestsViewReportFormat2Component {
         }
 
         if (this.showVerifierSignature) {
-          //for (var i = 0; i < signs.length; i++) {
-          //  if (this.templateReport.VerifiedByList && this.templateReport.VerifiedByList.includes(signs[i])) {
-          //    signs.splice(i, 1);
-          //    i--;
-          //  }
-          //}
           signs.forEach((item, index) => {
             if (
               this.templateReport.VerifiedByList &&
@@ -408,8 +445,20 @@ export class LabTestsViewReportFormat2Component {
 
       this.signatories = JSON.stringify(signArr);
       this.templateReport.Signatories = signArr;
+
+      if (this.templateReport.ReportId) {
+        if (this.verificationRequired) {
+          this.coreService.FocusInputById('btnVerify');
+        } else {
+          if (this.templateReport.ValidToPrint) {
+            this.coreService.FocusInputById('btnPrint');
+          }
+        }
+      }
+
     } else {
       this.showSignatoriesEdit = true;
+      this.coreService.FocusInputById('btnUpdateSignatories');
     }
   }
 
@@ -542,22 +591,23 @@ export class LabTestsViewReportFormat2Component {
         if (res.Status == "OK") {
           this.templateReport.ReportId = res.Results.LabReportId;
           this.templateReport.ValidToPrint = res.Results.ValidToPrint;
+          this.qrCode = this.templateReport.CovidFileUrl = res.Results.CovidFileUrl;
           this.ParseSignatories(labReport.Signatories);
 
           if (this.verificationEnabled) {
+            this.coreService.FocusInputById('btnVerify');
             this.router.navigate(["/Lab/PendingReports"]);
           }
-
           if (exportType == "print") this.printLabReport();
           else if (exportType == "word") this.exportToWord();
           else if (exportType == "pdf") this.exportToPdf();
-          this.loading = false;
+          this.loading = this.coreService.loading = false;
         } else {
           this.msgBoxServ.showMessage("failed", ["Unable to post Report."]);
           console.log(res.ErrorMessage);
-          this.loading = false;
+          this.loading = this.coreService.loading = false;
         }
-      });
+      }, (err) => { this.loading = this.coreService.loading = false; });
     }
   }
 
@@ -588,19 +638,18 @@ export class LabTestsViewReportFormat2Component {
       this.labBLService.PutLabReport(labReport).subscribe((res) => {
         if (res.Status == "OK") {
           this.ParseSignatories(labReport.Signatories);
-          this.loading = false;
+          this.loading = this.coreService.loading = false;
         } else {
           this.msgBoxServ.showMessage("failed", ["Unable to post Report."]);
           console.log(res.ErrorMessage);
-          this.loading = false;
+          this.loading = this.coreService.loading = false;
         }
-      });
+      }, (err) => { this.loading = this.coreService.loading = false; });
     }
   }
   CheckSignatoriesValidation() {
     //signatories component binds "[]" if empty so length >2 is checked.
     if (this.signatories && this.signatories.length > 2) {
-      console.log(this.signatories);
       return true;
     } else {
       this.msgBoxServ.showMessage("failed", ["Select Lab Signatories."]);
@@ -608,12 +657,13 @@ export class LabTestsViewReportFormat2Component {
     }
   }
   SubmitLabReport() {
-    this.loading = true;
+    this.loading = this.coreService.loading = true;
     if (this.loading) {
       if (this.templateReport.ReportId) {
         this.UpdateLabReport();
       } else {
         this.PostLabReport();
+        this.coreService.FocusInputById('btnVerify');
       }
     }
   }
@@ -703,13 +753,29 @@ export class LabTestsViewReportFormat2Component {
     /// documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     ///Sud:22Aug'18--added no-print class in below documeentContent
 
+    // documentContent +=
+    //   '<body class="lab-rpt4moz" onload="window.print()">' +
+    //   printContents +
+    //   "</body></html>";
+    // popupWinindow.document.write(documentContent);
+    // document.getElementById("lab-report-main").style.border = "1px solid";
+    // popupWinindow.document.close();
+
+
     documentContent +=
-      '<body class="lab-rpt4moz" onload="window.print()">' +
+      '<body class="lab-rpt4moz">' +
       printContents +
       "</body></html>";
     popupWinindow.document.write(documentContent);
     document.getElementById("lab-report-main").style.border = "1px solid";
     popupWinindow.document.close();
+
+    let tmr = setTimeout(function () {
+      popupWinindow.print();
+      popupWinindow.close();
+    }, 300);
+
+
     if (this.printDirectlyFromGrid) {
       this.printDirectlyFromGrid = false;
       this.callbackAddUpdate.emit({
@@ -1041,7 +1107,7 @@ export class LabTestsViewReportFormat2Component {
           this.sampleCode.RunNumber,
           this.visitType,
           this.sampleCode.SampleCreatedOn,
-          this.RunNumberType
+          this.RunNumberType, this.hasInsurance
         )
         .subscribe((res) => {
           if (res.Status == "OK" && res.Results) {
@@ -1072,7 +1138,7 @@ export class LabTestsViewReportFormat2Component {
         //if user don't change sample code or date and press OK
         if (
           this.sampleCode.RunNumber ==
-            Number(this.templateReport.Lookups.SampleCode) &&
+          Number(this.templateReport.Lookups.SampleCode) &&
           checkToday == 0
         ) {
           this.showChangeSample = false;
@@ -1150,7 +1216,7 @@ export class LabTestsViewReportFormat2Component {
     }
   }
 
-  ShowHideInterpretationToPrint(test: LabResult_TestVM) {}
+  ShowHideInterpretationToPrint(test: LabResult_TestVM) { }
 
   Verify() {
     this.templateReport.Templates.forEach((val) => {
@@ -1204,6 +1270,12 @@ export class LabTestsViewReportFormat2Component {
 
       this.labBLService.VerifyAllLabTests(labReport).subscribe((res) => {
         if (res.Status == "OK") {
+          if (this.routeAfterVerification && this.routeAfterVerification.trim() && this.routeAfterVerification.trim().length > 0) {
+            let route = '/Lab/' + this.routeAfterVerification;
+            this.loading = false;
+            this.router.navigate([route]);
+            return;
+          }
           this.callbackAddUpdate.emit({ verified: true });
           this.loading = false;
         } else {
@@ -1283,4 +1355,11 @@ export class LabTestsViewReportFormat2Component {
   }
 
   //end: Pratik: 20Sept'19--For External Referrals
+
+  public callBackUpload(){
+    this.callBackUplaod.emit();
+    setTimeout(() => {
+      this.loading = false;
+    },500);
+  }
 }

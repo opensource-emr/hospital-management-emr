@@ -9,15 +9,17 @@ import { BillItemPriceVM } from '../../shared/billing-view-models';
 import { CoreService } from '../../../core/shared/core.service';
 import { Membership } from "../../../settings-new/shared/membership.model";
 import { SecurityService } from '../../../security/shared/security.service';
+import { FormControl, FormGroup } from '@angular/forms';
 
 @Component({
   selector: "group-discount",
-  templateUrl: "./group-discount.html"
+  templateUrl: "./group-discount.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class GroupDiscountComponent {
 
-  public isAllItemsSelected: boolean = true;  //yubraj: 28th Nov '18
-  public groupDiscountPercent: number = null;
+  public isAllItemsSelected: boolean = false;  //yubraj: 28th Nov '18
+  public groupDiscountPercent: number = 0;
   public showMessage: boolean = false;
   @Output("close-popup")
   closeGroupDiscountPopUp: EventEmitter<Object> = new EventEmitter<Object>();
@@ -30,11 +32,20 @@ export class GroupDiscountComponent {
   public ipItemListToUpdate: Array<BillingTransactionItem> = [];
 
   public groupDiscountItems: Array<BillingTransactionItem> = [];
+  public itemValidator: BillingTransactionItem = new BillingTransactionItem();
 
   @Input("admissionInfo")
   public admissionInfo: any = null;
 
   public allBillItmsList: Array<BillItemPriceVM> = null;
+  public itemFocusJumpSequencesArray = [];
+
+  public model:any = {
+    "Subtotal": 0,
+    "DiscountAmount": 0,
+    "TotalAmount": 0
+  }
+  public loading: boolean = false; //To prevent double click on the save items button.. //Krishna ' 24th JAN'22
 
   constructor(public msgBoxServ: MessageboxService,
     public billingBLService: BillingBLService,
@@ -52,7 +63,7 @@ export class GroupDiscountComponent {
     //otherwise ipItemListToUpdate and groupDiscountItems will point to same object and will change below without saving..
     if (this.ipItemListToUpdate && this.ipItemListToUpdate.length > 0) {
       this.groupDiscountItems = this.ipItemListToUpdate.map(a => Object.assign({}, a));
-      this.groupDiscountItems.forEach(item => item.IsSelected = true);
+      // this.groupDiscountItems.forEach(item => item.IsSelected = true);
     }
 
     if (this.enableDiscScheme) {
@@ -62,7 +73,7 @@ export class GroupDiscountComponent {
     }
 
 
- 
+
     if (this.groupDiscountItems && this.groupDiscountItems.length > 0 && this.allBillItmsList && this.allBillItmsList.length > 0) {
       this.groupDiscountItems.forEach(itm => {
         itm.OldDiscountPercent = itm.DiscountPercent;//sud:6Sept'19--this will be needed in case of Un-Check items.
@@ -74,24 +85,34 @@ export class GroupDiscountComponent {
         }
       });
     }
+    this.itemFocusJumpSequencesArray = []; //reset jump sequence array..
+    for(let i = 0; i< this.groupDiscountItems.length; i++){
+      if(this.groupDiscountItems[i].DiscountApplicable == true){
+        this.itemFocusJumpSequencesArray.push(i);
+      }
+      this.groupDiscountItems[i].IsValidIPItemLevelDisocunt = true;
+      //this.groupDiscountItems[i].BillingTransactionItemValidator = this.itemValidator.BillingTransactionItemValidator;
+    }
+    this.Calculations();
+    this.FocusNextItemRow(-1);// index = -1 for first time loading.
 
   }
 
 
   //yubraj: 28th Nov '18
-  OnChangeItemSelect(itm: BillingTransactionItem) {
-    let discPercent = this.discTypeToUse == "group" ? this.groupDiscountPercent : this.currMemDiscountPercent;
+  OnChangeItemSelect(itm: BillingTransactionItem,showMessage:boolean) {
+    /* let discPercent = this.discTypeToUse == "group" ? this.groupDiscountPercent : this.currMemDiscountPercent;
 
     itm.DiscountPercent = itm.IsSelected ? discPercent : itm.OldDiscountPercent;
 
     //below logic is copied from group-disc onchange.
     let itemDiscount = itm.SubTotal * (itm.DiscountPercent / 100);
     itm.TotalAmount = itm.SubTotal - itemDiscount;
-    let invoiceDiscount = itm.TotalAmount * (this.estimatedDiscountPercent / 100);
-    itm.TotalAmount = itm.TotalAmount - (invoiceDiscount ? invoiceDiscount : 0);
-    itm.DiscountAmount = itemDiscount + (invoiceDiscount ? invoiceDiscount : 0);
+    // let invoiceDiscount = itm.TotalAmount * (this.estimatedDiscountPercent / 100);
+    // itm.TotalAmount = itm.TotalAmount - (invoiceDiscount ? invoiceDiscount : 0);
+    // itm.DiscountAmount = itemDiscount + (invoiceDiscount ? invoiceDiscount : 0);
 
-
+ */
 
     if ((this.groupDiscountItems.every(a => a.IsSelected == true))) {
       this.isAllItemsSelected = true;
@@ -99,7 +120,7 @@ export class GroupDiscountComponent {
     else {
       this.isAllItemsSelected = false;
       //if all Items are deselected then show the warning message box.
-      if (this.groupDiscountItems.every(a => a.IsSelected == false)) {
+      if (this.groupDiscountItems.every(a => a.IsSelected == false) && showMessage) {
         this.msgBoxServ.showMessage("Warning!", ["Please select at least one Item to give Group Discount."]);
       }
     }
@@ -124,7 +145,7 @@ export class GroupDiscountComponent {
     if (!this.isAllItemsSelected) {
       this.msgBoxServ.showMessage("Warning!", ["Please select Item to give Group Discount."]);
     }
-
+   this.GroupDiscountOnChange();
   }
 
   GroupDiscountOnChange() {
@@ -136,7 +157,7 @@ export class GroupDiscountComponent {
     this.showMessage = false;
     this.groupDiscountItems.forEach(item => {
 
-      this.OnChangeItemSelect(item);
+      this.OnChangeItemSelect(item,false);
 
     });
   }
@@ -144,16 +165,18 @@ export class GroupDiscountComponent {
 
   //yubraj: 28th Nov '18
   SubmitGroupDiscount() {
+    this.loading = true;
     let isValid = this.CheckForValidation();
 
     if (isValid) {
-      let itemsToUpdate = this.groupDiscountItems.filter(a => a.IsSelected);
+      //let itemsToUpdate = this.groupDiscountItems.filter(a => a.IsSelected);
+      let itemsToUpdate = this.groupDiscountItems;
 
       this.billingBLService.UpdateBillTxnItems(itemsToUpdate)
         .subscribe(res => {
           if (res.Status == 'OK') {
             this.msgBoxServ.showMessage("success", ["Discount updated successfully"]);
-
+            this.loading = false;
             //this.UpdateLocalListItems(itemsToUpdate);
 
             //sud:1May'20--Need to set modifiedbyid to currentloggedinemployee..--
@@ -167,12 +190,13 @@ export class GroupDiscountComponent {
                 }
               });
             }
-
+            //this.groupDiscountItems.forEach(item=>item.IsSelected = false);
             this.closeGroupDiscountPopUp.emit(this.groupDiscountItems);
           }
         },
           err => {
             this.msgBoxServ.showMessage("error", ["Some error issue in updating group discount. Please try again."]);
+            this.loading = false;
           });
 
     }
@@ -183,11 +207,11 @@ export class GroupDiscountComponent {
 
   CheckForValidation(): boolean {
     let retVal = false;
-    if (this.groupDiscountItems.filter(a => a.IsSelected).length == 0) {
-      retVal = false;
-      this.msgBoxServ.showMessage("Warning!", ["Please  select at least one item for discount."]);
-      return retVal;
-    }
+    // if (this.groupDiscountItems.filter(a => a.IsSelected).length == 0) {
+    //   retVal = false;
+    //   this.msgBoxServ.showMessage("Warning!", ["Please  select at least one item for discount."]);
+    //   return retVal;
+    // }
 
     if (this.discTypeToUse == "group") {
       if (this.groupDiscountPercent != null && this.groupDiscountPercent != undefined
@@ -211,6 +235,12 @@ export class GroupDiscountComponent {
 
     }
 
+    let itemsHavingInvalidDiscount = this.groupDiscountItems.filter(a => a.DiscountPercent < 0 || a.DiscountPercent > 100);
+    if(itemsHavingInvalidDiscount.length > 0){
+      retVal = false;
+      this.msgBoxServ.showMessage('warning',["Some Items have invalid discounts."]);
+    }
+
 
     return retVal;
   }
@@ -227,7 +257,7 @@ export class GroupDiscountComponent {
   public DiscountPercentSchemeValid: boolean = true;
   public currMemDiscountPercent: number = 0;
   public DiscountSchemaId: number = null;
-  public discTypeToUse: string = "group";//it has two options: group, scheme
+  public discTypeToUse: string = "scheme";//it has two options: group, scheme -- set scheme for LPH, need to manage this somehow.
 
 
   LoadDiscountOptions() {
@@ -240,10 +270,12 @@ export class GroupDiscountComponent {
         this.enableGroupDiscount = paramJson.EnableGroupDiscount;
         this.enableDiscScheme = paramJson.EnableDiscountScheme;
 
+        let defaultDiscType = paramJson.Default;
+
         //set default discount type.
         //discount type will be scheme only when discScheme is enabled and groupDiscount is disabled.
         //it'll be 'group' in all other cases. i.e: if both are enabled then by default 'group' will be selected.
-        if (this.enableDiscScheme && !this.enableGroupDiscount) {
+        if (defaultDiscType == "scheme") {
           this.discTypeToUse = "scheme";
         }
         else {
@@ -320,5 +352,78 @@ export class GroupDiscountComponent {
 
   }
   //end: sundeep:14Nov'19--for membership/community scheme
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.CloseGroupDiscountPopUp();
+    }
+  }
 
+  public DiscountPercentChanged(index:number){
+
+    let currentItem = this.groupDiscountItems[index];
+
+    //if disocunt %  is zero or empty then just remove the selection. 
+    if (currentItem.DiscountPercent == null) {
+      currentItem.IsSelected = false; 
+    }
+    else if (currentItem.DiscountPercent < 0 || currentItem.DiscountPercent > 100) {
+      currentItem.IsSelected = false;
+      currentItem.IsValidIPItemLevelDisocunt = false;
+    }
+    else {
+      currentItem.IsSelected = true;
+      currentItem.IsValidIPItemLevelDisocunt = true;
+    }
+
+    this.RecalculateAmounts();
+  }
+
+  public FocusNextItemRow(index:number){
+    if (index == -1) {
+      //currIndex is minus(1) for First Load, this time, go directly to 0th index
+      let itemIndex = this.itemFocusJumpSequencesArray[0];
+      this.coreService.FocusInputById('id_discPercent_' + itemIndex, 300);
+     
+    }
+    else {
+      //first find the array index of current item's index. then find out itemIndex.
+      let arrayIndex = this.itemFocusJumpSequencesArray.indexOf(index) + 1;
+      
+      //continue finding next item's index using and jump. Else jump to Remarks textbox.
+      if (this.itemFocusJumpSequencesArray.length > arrayIndex) {
+        let nextItemIndex = this.itemFocusJumpSequencesArray[arrayIndex];
+        this.coreService.FocusInputById('id_discPercent_' + nextItemIndex);
+      }
+      else {
+        this.coreService.FocusInputById("id_saveItems");
+      }
+    }
+    //this.RecalculateAmounts();
+
+  }
+
+  public RecalculateAmounts(){
+    this.groupDiscountItems.forEach(itm => {
+
+      let itemDiscount = itm.SubTotal * (itm.DiscountPercent / 100);
+      itm.TotalAmount = itm.SubTotal - itemDiscount;
+      itm.DiscountAmount = itemDiscount;
+      //this.model.DiscountAmount += itm.DiscountAmount;
+
+    });
+    this.model.DiscountAmount = 0;
+    this.model.TotalAmount = 0;
+    this.groupDiscountItems.forEach(a =>{
+      this.model.DiscountAmount += a.DiscountAmount;
+      this.model.TotalAmount += a.TotalAmount;
+    })
+    
+  }
+  public Calculations(){
+    this.groupDiscountItems.forEach(a => {
+      this.model.Subtotal += a.SubTotal;
+      this.model.DiscountAmount += a.DiscountAmount;
+      this.model.TotalAmount += a.TotalAmount;
+    })
+  }
 }

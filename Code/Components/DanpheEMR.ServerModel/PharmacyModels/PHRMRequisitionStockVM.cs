@@ -9,9 +9,9 @@ namespace DanpheEMR.ServerModel
 {
    public class PHRMRequisitionStockVM
     {
-        public List<PHRMDispensaryStockModel> stock = new List<PHRMDispensaryStockModel>();
+        //public List<PHRMDispensaryStockModel> stock = new List<PHRMDispensaryStockModel>();
         public PHRMStoreRequisitionModel requisition = new PHRMStoreRequisitionModel();
         public List<PHRMDispatchItemsModel> dispatchItems = new List<PHRMDispatchItemsModel>();
-        public List<PHRMStoreStockModel> stockTransactions = new List<PHRMStoreStockModel>();
+        public List<PHRMStockTransactionModel> stockTransactions = new List<PHRMStockTransactionModel>();
     }
 }

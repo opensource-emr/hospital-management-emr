@@ -31,7 +31,7 @@
                   </div>-->
             <div class="col-md-2 col-xs-12">
               <div class="form-group">
-                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                <button class="btn green btn-success" type="button" (click)="Load();this.loading=true;" [disabled]="loading"> <i class="fa fa-search"></i> Show Report </button>
               </div>
             </div>
           </div>
@@ -47,10 +47,20 @@
         <span style="font-size:14px;">{{headerDetail.address}}</span><br />
       </div>
       <div class="col-md-12"> <span class="col-md-2 left" style="padding:0px">Report Date: {{selDailyMIS.fromDate}} To {{selDailyMIS.toDate}} </span> <span class="col-md-8" style="text-align:center;padding:0px"><b>Daily MIS REPORT (DETAILED VIEW)</b></span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
-      <div class="col-md-12" *ngFor="let row of filteredReportData.deptsItems"> <span class="left" style="font-size:20px;font-weight:bold">{{row.departmentName}}</span> <span class="right" style="font-size:20px;font-weight:bold">{{row.departmentTotal}}</span>
-        <div class="col-md-12" style="padding:0px" *ngFor="let type of row.billingType"> <span style="font-weight:bold">{{type.billType}}</span>
+      <div id ="daily-mis">
+      <div class="col-md-12" *ngFor="let row of filteredReportData.deptsItems"> 
+        <div class="col-md-12" style="padding:0px" *ngFor="let type of row.billingType" > 
           <table class="table table-striped table-hover table-bordered" style="background-color:initial">
             <thead style="background-color:whitesmoke">
+              <tr>
+                <td colspan="5" style="text-align: left;">
+                  <span class="left" style="font-size:20px;font-weight:bold">{{row.departmentName}}</span> &nbsp;&nbsp; <span style="font-weight:bold">{{type.billType}}</span> 
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <span class="right" style="font-size:20px;font-weight:bold">{{row.departmentTotal}}</span>
+                  <!-- <span style="font-weight:bold">{{type.billType}}</span> -->
+                </td>
+              </tr>
               <tr>
                 <th>Hospital No</th>
                 <th>Patient Name</th>
@@ -120,9 +130,10 @@
         </div>
       </div>
     </div>
+    </div>
     <div class="form-group" style="text-align:center">
       <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
-      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('daily-mis')"> <i class="fa fa-file-excel-o"></i> Export </button>
     </div>
   </div>
   <!--Summary view-->
@@ -133,7 +144,7 @@
         <span style="font-size:14px;">{{headerDetail.address}}</span><br />
       </div>
       <div class="col-md-12"> <span class="col-md-2 left" style="padding:0px">Report Date: {{selDailyMIS.fromDate}} To {{selDailyMIS.toDate}} </span> <span class="col-md-8" style="text-align:center;padding:0px"><b>MIS REPORT (SUMMARY VIEW)</b></span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
-      <div class="col-md-12"> 
+      <div class="col-md-12" id = "daily-mis-summary-view"> 
         <!--OPD-->
         <table class="table table-striped table-hover table-bordered" style="background-color:gainsboro ; text-align:left">
           <tbody>
@@ -390,7 +401,7 @@
     </div>
     <div class="form-group" style="text-align:center">
       <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
-      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('daily-mis-summary-view')"> <i class="fa fa-file-excel-o"></i> Export </button>
     </div>
   </div>
 </div>

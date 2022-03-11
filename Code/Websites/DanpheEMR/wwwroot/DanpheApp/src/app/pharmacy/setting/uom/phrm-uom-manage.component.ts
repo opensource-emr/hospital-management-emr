@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, EventEmitter, Input, Output } from "@angular/core";
+﻿import { Component, ChangeDetectorRef, EventEmitter, Input, Output, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -23,6 +23,8 @@ export class PHRMUnitOfMeasurementManageComponent {
     public showUnitOfMeasurementAddPage: boolean = false;
     public update: boolean = false;
     public index: number;
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;   //to close the window on click of ESCape.
 
     @Input("selectedUom")
     public selectedUom: PHRMUnitOfMeasurementModel;
@@ -31,18 +33,26 @@ export class PHRMUnitOfMeasurementManageComponent {
 
     @Input("showAddPage")
     public set value(val: boolean) {
-      this.showUnitOfMeasurementAddPage = val;
+        this.showUnitOfMeasurementAddPage = val;
+        this.setFocusById('uomname');
     }
 
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public changeDetector: ChangeDetectorRef,
         public securityService: SecurityService,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService,public renderer2:Renderer2) {
         this.unitofmeasurementGridColumns = PHRMGridColumns.PHRMUnitOfMeasurementList;
         this.getUnitOfMeasurementList();
     }
 
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+    }
     public getUnitOfMeasurementList() {
         this.pharmacyBLService.GetUnitOfMeasurementList()
             .subscribe(res => {
@@ -91,6 +101,7 @@ export class PHRMUnitOfMeasurementManageComponent {
         this.showUnitOfMeasurementAddPage = false;
         this.changeDetector.detectChanges();
         this.showUnitOfMeasurementAddPage = true;
+        this.setFocusById('uomname');
     }
 
     Add() {
@@ -102,19 +113,19 @@ export class PHRMUnitOfMeasurementManageComponent {
             this.CurrentUnitOfMeasurement.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.pharmacyBLService.AddUnitOfMeasurement(this.CurrentUnitOfMeasurement)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ["Unit Of Measurement Added."]);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentUnitOfMeasurement = new PHRMUnitOfMeasurementModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ["Unit Of Measurement Added."]);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentUnitOfMeasurement = new PHRMUnitOfMeasurementModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -126,19 +137,19 @@ export class PHRMUnitOfMeasurementManageComponent {
         if (this.CurrentUnitOfMeasurement.IsValidCheck(undefined, undefined)) {
             this.pharmacyBLService.UpdateUnitOfMeasurement(this.CurrentUnitOfMeasurement)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ['Unit Of Measurement Details Updated.']);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentUnitOfMeasurement = new PHRMUnitOfMeasurementModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ['Unit Of Measurement Details Updated.']);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentUnitOfMeasurement = new PHRMUnitOfMeasurementModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -149,7 +160,6 @@ export class PHRMUnitOfMeasurementManageComponent {
             uom.UOMName = res.Results.UOMName;
             uom.Description = res.Results.Description;
             uom.IsActive = res.Results.IsActive;
-            this.AddUpdateResponseEmitter(uom);
             this.CallBackAdd(uom);
         }
         else {
@@ -158,14 +168,16 @@ export class PHRMUnitOfMeasurementManageComponent {
     }
 
     CallBackAdd(uofm: PHRMUnitOfMeasurementModel) {
-        this.unitofmeasurementList.push(uofm);
         if (this.index != null)
-            this.unitofmeasurementList.splice(this.index, 1);
+            this.unitofmeasurementList.splice(this.index, 1, uofm);
+        else
+            this.unitofmeasurementList.unshift(uofm);
         this.unitofmeasurementList = this.unitofmeasurementList.slice();
         this.changeDetector.detectChanges();
         this.showUnitOfMeasurementAddPage = false;
         this.selectedItem = null;
         this.index = null;
+        this.AddUpdateResponseEmitter(uofm);
     }
     ActivateDeactivateStatus(currUOM: PHRMUnitOfMeasurementModel) {
         if (currUOM != null) {
@@ -175,19 +187,19 @@ export class PHRMUnitOfMeasurementManageComponent {
                 currUOM.IsActive = status;
                 this.pharmacyBLService.UpdateUnitOfMeasurement(currUOM)
                     .subscribe(
-                    res => {
-                        if (res.Status == "OK") {
-                            let responseMessage = res.Results.IsActive ? "Unit of Measurement is now activated." : "Unit of Measurement is now Deactivated.";
-                            this.msgBoxServ.showMessage("success", [responseMessage]);
-                            this.getUnitOfMeasurementList();
-                        }
-                        else {
-                            this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
-                        }
-                    },
-                    err => {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                    });
+                        res => {
+                            if (res.Status == "OK") {
+                                let responseMessage = res.Results.IsActive ? "Unit of Measurement is now activated." : "Unit of Measurement is now Deactivated.";
+                                this.msgBoxServ.showMessage("success", [responseMessage]);
+                                this.getUnitOfMeasurementList();
+                            }
+                            else {
+                                this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                        });
             }
             //to refresh the checkbox if we cancel the prompt
             //this.getUnitOfMeasurementList();
@@ -202,5 +214,10 @@ export class PHRMUnitOfMeasurementManageComponent {
 
     AddUpdateResponseEmitter(uom) {
         this.callbackAdd.emit({ uom: uom });
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

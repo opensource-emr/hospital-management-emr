@@ -19,8 +19,8 @@ import { forEach } from "@angular/router/src/utils/collection";
 
 @Component({
   selector: "billingItem-add",
-  templateUrl: "./billing-item-add.html"
-
+  templateUrl: "./billing-item-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 })
 export class BillingItemAddComponent {
   //declare boolean loading variable for disable the double click event of button
@@ -63,6 +63,7 @@ export class BillingItemAddComponent {
 
     this.allEmployeeList = DanpheCache.GetData(MasterType.Employee, null);
     this.docterList = this.allEmployeeList.filter(a => a.IsAppointmentApplicable == true);
+    this.GoToNextInput("ServiceDepartmentName");
   }
 
   ngOnInit() {
@@ -480,6 +481,7 @@ export class BillingItemAddComponent {
 
     item.IsInsForeignerPriceApplicable = updatedItem.IsInsForeignerPriceApplicable;
     item.InsForeignerPrice = updatedItem.InsForeignerPrice;
+    item.IsErLabApplicable = updatedItem.IsErLabApplicable;
 
     let srvDept = this.srvdeptList.find(a => a.ServiceDepartmentId == updatedItem.ServiceDepartmentId);
     item.ServiceDepartmentName = srvDept ? srvDept.ServiceDepartmentName : "";
@@ -676,6 +678,20 @@ export class BillingItemAddComponent {
       var abd = this.docterList.find(b => b.EmployeeId == a);
       this.PreSelectedDoctors.push(abd);
     });
+  }
+
+  public GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event){
+    if(event.keyCode == 27){ // For ESCAPE_KEY =>close pop up
+      this.Close(); 
+    }
   }
 
 }

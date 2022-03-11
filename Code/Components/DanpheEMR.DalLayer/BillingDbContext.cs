@@ -20,7 +20,7 @@ namespace DanpheEMR.DalLayer
         //public DbSet<LabTest> LabTests { get; set; }
         public DbSet<BillItemPrice> BillItemPrice { get; set; }
         public DbSet<BillItemRequisition> BillItemRequisitions { get; set; }
-        public DbSet<BillReturnRequestModel> BillReturnRequests { get; set; }
+        //public DbSet<BillReturnRequestModel> BillReturnRequests { get; set; }//removed: sud-1May'21
         public DbSet<BillingTransactionItemModel> BillingTransactionItems { get; set; }
         public DbSet<BillingDeposit> BillingDeposits { get; set; }
         public DbSet<BillingCounter> BillingCounter { get; set; }
@@ -38,7 +38,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<BillingFiscalYear> BillingFiscalYears { get; set; }
         //end: ashim-5May for fiscalYear
         //start: sud-5May for InvoiceReturn
-        public DbSet<BillInvoiceReturnModel> BillReturns { get; set; }
+        public DbSet<BillInvoiceReturnModel> BillInvoiceReturns { get; set; }
         //end: sud-5May for InvoiceReturn
         public DbSet<BillSettlementModel> BillSettlements { get; set; }
         public DbSet<SyncBillingAccountingModel> SyncBillingAccounting { get; set; }
@@ -65,11 +65,25 @@ namespace DanpheEMR.DalLayer
 
         //credit Organization --yubraj 19th April 2019
         public DbSet<CreditOrganizationModel> CreditOrganization { get; set; }
+        public DbSet<BanksModel> Banks { get; set; }
+        public DbSet<BillingHandoverTransactionModel> HandoverTransaction { get; set; }
         public DbSet<BillingHandoverModel> Handover { get; set; }
         public DbSet<BillingDenominationModel> Denomination { get; set; }
         public DbSet<LabTestModel> LabTests { get; set; }
         public DbSet<AdminParametersModel> AdminParameters { get; set; }
+        public DbSet<EmpCashTransactionModel> EmpCashTransactions { get; set; }
+        public DbSet<EmpDueAmountModel> EmpDueAmounts { get; set; }
+        public DbSet<BillInvoiceReturnItemsModel> BillInvoiceReturnItems { get; set; }//sud-1May'21
+        public DbSet<PrinterSettingsModel> PrinterSettings { get; set; }//pratik:24May'21
+        public DbSet<DynamicReportNameModel> DynamicReportNameModels { get; set; }//aniket:28Jul'21
+        public DbSet<ReportingItemsModel>ReportingItemsModels { get; set; }//aniket:28Jul'21
+        public DbSet<ReportingItemBillingItemMapping> ReportingItemsAndBillingItemMappingModels { get; set; }//aniket:28Jul'21 
 
+        public DbSet<RadiologyImagingTypeModel> RadiologyImagingTypes { get; set; } //Krishna: 2nd'Jan 22
+        public DbSet<RadiologyImagingItemModel> RadiologyImagingItems { get; set; } //Krishna: 2nd'Jan 22
+        public DbSet<LabVendorsModel> LabVendors { get; set; } //Krishna: 2nd'Jan 22
+
+        public object ReportingItemsModel { get; set; }
 
         public BillingDbContext(string conn) : base(conn)
         {
@@ -78,6 +92,8 @@ namespace DanpheEMR.DalLayer
             this.AuditDisabled = true;
 
         }
+        public DbSet<IntegrationModel> IntegrationName { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
 
@@ -91,6 +107,10 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabRequisitionModel>().ToTable("LAB_TestRequisition");
             modelBuilder.Entity<ImagingRequisitionModel>().ToTable("RAD_PatientImagingRequisition");
             modelBuilder.Entity<VisitModel>().ToTable("PAT_PatientVisits");
+            //Reporting Items Mapping
+            modelBuilder.Entity<ReportingItemsModel>().ToTable("MST_RPT_DynamicReportingItems");
+            modelBuilder.Entity<DynamicReportNameModel>().ToTable("MST_RPT_DynamicReportName");
+            modelBuilder.Entity<ReportingItemBillingItemMapping>().ToTable("BIL_MAP_ReportingItem_BillingItems");
             //Billing mapping
             modelBuilder.Entity<BillingTransactionItemModel>().ToTable("BIL_TXN_BillingTransactionItems");
             modelBuilder.Entity<BillingTransactionItemModel>()
@@ -103,7 +123,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<RadiologyImagingItemModel>().ToTable("RAD_MST_ImagingItem");
             modelBuilder.Entity<BillItemRequisition>().ToTable("BIL_BillItemRequisition");
             modelBuilder.Entity<BillingDeposit>().ToTable("BIL_TXN_Deposit");
-            modelBuilder.Entity<BillReturnRequestModel>().ToTable("BIL_TXN_BillingReturn");
+            //modelBuilder.Entity<BillReturnRequestModel>().ToTable("BIL_TXN_BillingReturn");//table removed: sud-1May'21
             modelBuilder.Entity<BillingCounter>().ToTable("BIL_CFG_Counter");
             modelBuilder.Entity<BillingPackageModel>().ToTable("BIL_CFG_Packages");
             modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
@@ -139,12 +159,21 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<InsuranceProviderModel>().ToTable("INS_CFG_InsuranceProviders");
             modelBuilder.Entity<PatientInsurancePackageTransactionModel>().ToTable("INS_TXN_PatientInsurancePackages");
             modelBuilder.Entity<CreditOrganizationModel>().ToTable("BIL_MST_Credit_Organization");
+            modelBuilder.Entity<BanksModel>().ToTable("MST_Bank");
+            modelBuilder.Entity<BillingHandoverTransactionModel>().ToTable("BIL_TXN_CashHandover");//pratik: 25March'21
             modelBuilder.Entity<BillingHandoverModel>().ToTable("BIL_MST_Handover");
             modelBuilder.Entity<BillingDenominationModel>().ToTable("BIL_TXN_Denomination");
             modelBuilder.Entity<LabTestModel>().ToTable("LAB_LabTests");
             modelBuilder.Entity<AdminParametersModel>().ToTable("CORE_CFG_Parameters");
             modelBuilder.Entity<RbacUser>().ToTable("RBAC_User");
 
+            modelBuilder.Entity<EmpCashTransactionModel>().ToTable("TXN_EmpCashTransaction");
+            modelBuilder.Entity<EmpDueAmountModel>().ToTable("TXN_EmpDueAmount");
+            modelBuilder.Entity<BillInvoiceReturnItemsModel>().ToTable("BIL_TXN_InvoiceReturnItems");
+            modelBuilder.Entity<PrinterSettingsModel>().ToTable("CFG_PrinterSettings");
+
+            modelBuilder.Entity<LabVendorsModel>().ToTable("Lab_MST_LabVendors");
+            modelBuilder.Entity<IntegrationModel>().ToTable("ServiceDepartment_MST_IntegrationName");
         }
 
         //Sud: 14sept'18 -- 

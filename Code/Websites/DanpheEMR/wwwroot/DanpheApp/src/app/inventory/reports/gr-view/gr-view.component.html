@@ -84,7 +84,7 @@
                                     <div class="row" style="margin-bottom: 10px;">
                                         <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
                                             <img class="img-responsive" style="max-height:70px;"
-                                                src="../../../themes/theme-default/images/manmohan_logo.png" /> </div>
+                                                src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
                                         <div style="width: 64%;float: left;padding-bottom:  0px;">
                                             <div class="text-center bill-head"
                                                 style="text-align: center;font-family:sans-serif; margin-top: 10px;">
@@ -115,10 +115,10 @@
                                         <p>Vendor Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
                                     </div>
                                     <div class="right" style="text-align:right;">
-                                        <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
-                                                ({{goodsreceiptDetails.CreatedOn | nepaliDate }})</b></p>
-                                        <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
+                                        <p>Goods Receipt Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
                                                 ({{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }})</b></p>
+                                        <p>Vendor Bill Date:<b> {{goodsreceiptDetails.VendorBillDate | date:'yyyy-MM-dd'}}
+                                                ({{goodsreceiptDetails.VendorBillDate | nepaliDate }})</b></p>
                                         <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
                                         <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
                                     </div>
@@ -157,17 +157,17 @@
                                                         <td><b>{{row.ItemCode}}</b></td>
                                                         <td><b>{{row.ItemName}}</b></td>
                                                         <td><b>{{row.ItemCategory}}</b></td>
-                                                        <td>{{row.BatchNo}}</td>
+                                                        <td>{{row.BatchNO}}</td>
                                                         <td style="width:100px">{{row.ExpiryDate}}</td>
-                                                        <td>{{row.ReveivedQuantity}}</td>
+                                                        <td>{{row.ReceivedQuantity}}</td>
                                                         <td>{{row.FreeQuantity}}</td>
-                                                        <td>{{row.GRItemRate | number : "1.2-2"}}</td>
+                                                        <td>{{row.ItemRate | number : "1.2-2"}}</td>
                                                         <!-- @*<td  *ngIf="goodsreceiptDetails.CcCharge > 0">{{row.CcAmount}}</td>*@ -->
                                                         <td *ngIf="goodsreceiptDetails.DiscountAmount > 0">
                                                             {{row.DiscountAmount}}</td>
                                                         <td *ngIf="goodsreceiptDetails.VATTotal > 0">{{row.VATAmount}}
                                                         </td>
-                                                        <td>{{row.ItemTotalAmount | number: "1.2-2"}}</td>
+                                                        <td>{{row.TotalAmount | number: "1.2-2"}}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>

@@ -360,6 +360,7 @@ namespace DanpheEMR.Sync.IRDNepal.Models
             //assign in both hst+vat since we've already set values in respective fields while local syncing
             IRD_BillReturnViewModel saleReturn = new IRD_BillReturnViewModel()
             {
+                isrealtime = isRealTime,
                 ref_invoice_number = "BL" + billReturn.RefInvoiceNum,
                 seller_pan = seller_pan,
                 buyer_name = billReturn.Patient.ShortName,

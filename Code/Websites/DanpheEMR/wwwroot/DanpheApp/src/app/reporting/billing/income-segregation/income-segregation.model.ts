@@ -11,11 +11,6 @@ export class RPT_BIL_IncomeSegregationModel {
 
     public fromDate: string = "";
     public toDate: string = "";
-    ////public patientName: string = "";
-    ////public Date: string = null;
-    ////public DistrictName: string = null;
-    ////public Total_Appointment: number = 0;
-   
     public IncomeSegregationValidator: FormGroup = null;
 
     constructor() {

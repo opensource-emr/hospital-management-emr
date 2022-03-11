@@ -47,7 +47,7 @@ img:hover {
         <td>{{doc.UploadedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
         <td>{{doc.UploadedBy}}</td>
         <td>{{doc.Description}}</td>
-        <td><button class="button button1" (click)="openImage(doc)">View</button></td>
+        <td><button class="button button1" (click)="openImage(doc.PatientFileId)">View</button></td>
       </tr>
     </table>
   </div>

@@ -20,6 +20,8 @@ namespace DanpheEMR.ServerModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MiddleName { get; set; }
+        public string FatherName { get; set; }
+        public string MotherName { get; set; }
         //public string ShortName { get; set; }
         public string Gender { get; set; }
         public string Age { get; set; }
@@ -52,6 +54,10 @@ namespace DanpheEMR.ServerModel
         public string TreatmentType { get; set; }
         public bool? IsOutdoorPat { get; set; }
         public int? DialysisCode { get; set; }
+        public int? MunicipalityId { get; set; }
+
+        [NotMapped]
+        public string MunicipalityName { get; set; }
         //[NotMapped]
         //combination of firstname and last name for search purpose, it's not mapped with the database.
         public string ShortName
@@ -90,7 +96,7 @@ namespace DanpheEMR.ServerModel
         public List<SocialHistory> SocialHistory { get; set; }
         public List<HomeMedicationModel> HomeMedication { get; set; }
 
-        public List<BillingTransactionItemModel> BillingTransactionItems { get; set; }
+        //public List<BillingTransactionItemModel> BillingTransactionItems { get; set; }
         //public List<PHRMPrescriptionItemModel> MedicationPrescriptions { get; set; }
         public List<MedicationPrescriptionModel> MedicationPrescriptions { get; set; }//need to change to above later on.
 
@@ -129,5 +135,22 @@ namespace DanpheEMR.ServerModel
         public string MembershipTypeName { get; set; }
         [NotMapped]
         public double MembershipDiscountPercent { get; set; }
+
+        public bool? Ins_HasInsurance { get; set; }
+        public string Ins_NshiNumber { get; set; }
+        public double? Ins_InsuranceBalance { get; set; }
+
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? Ins_LatestClaimCode { get; set; }
+        // Bikash 18th-Feb'21: SSU information added
+        public bool? IsSSUPatient { get; set; }
+        public bool? SSU_IsActive { get; set; }
+        public bool? IsVaccinationPatient { get; set; }
+        public bool? IsVaccinationActive { get; set; }
+        public int? VaccinationRegNo { get; set; }
+        public int? VaccinationFiscalYearId { get; set; }
+        [NotMapped]
+        public SSU_InformationModel SSU_Information { get; set; }
     }
 }

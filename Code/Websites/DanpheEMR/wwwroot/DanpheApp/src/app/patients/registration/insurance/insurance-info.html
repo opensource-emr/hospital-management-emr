@@ -28,15 +28,15 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Card Number [NSTC No]<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" formControlName="CardNumber" [(ngModel)]="currentInsurance.CardNumber"
-                                       placeholder="card number" />
+                      <input class="form-control" autofocus (keyup.enter)="GoToNextInput('InsuranceNumber')" type="text" formControlName="CardNumber" [(ngModel)]="currentInsurance.CardNumber"
+                                       placeholder="card number" autofocus/>
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('CardNumber')"
                                       [hidden]="currentInsurance.IsValidCheck('CardNumber','required')">Card Number is required</span> </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-4">Insurance Number [NSSI No.]<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" formControlName="InsuranceNumber" [(ngModel)]="currentInsurance.InsuranceNumber"
+                      <input class="form-control" id="InsuranceNumber" (keyup.enter)="GoToNextInput('IMISNumber')" type="text" formControlName="InsuranceNumber" [(ngModel)]="currentInsurance.InsuranceNumber"
                                        required value="" placeholder="insurance number [NSTC number]" />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('InsuranceNumber')"
                                       [hidden]="currentInsurance.IsValidCheck('InsuranceNumber','required')">Insurance Number is required</span> </div>
@@ -44,7 +44,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">IMIS Code<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" formControlName="IMISCode" [(ngModel)]="currentInsurance.IMISCode"
+                      <input class="form-control" id="IMISNumber" (keyup.enter)="GoToNextInput('InitialBalance')" type="text" formControlName="IMISCode" [(ngModel)]="currentInsurance.IMISCode"
                                        required value="" placeholder="IMIS Code" />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('IMISCode')"
                                       [hidden]="currentInsurance.IsValidCheck('IMISCode','required')">IMIS Code is required</span> </div>
@@ -52,8 +52,9 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Initial Balance<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" formControlName="InitialBalance" [(ngModel)]="currentInsurance.InitialBalance"
-                                       required value="" placeholder="Insurance Initial Balance" />
+                      <input class="form-control" id="InitialBalance" type="number" formControlName="InitialBalance" [(ngModel)]="currentInsurance.InitialBalance"
+                                       required value="" placeholder="Insurance Initial Balance" 
+                                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"/>
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('InitialBalance')"
                                       [hidden]="currentInsurance.IsValidCheck('InitialBalance','required')">Insurance Current Balance is required</span> </div>
                   </div>

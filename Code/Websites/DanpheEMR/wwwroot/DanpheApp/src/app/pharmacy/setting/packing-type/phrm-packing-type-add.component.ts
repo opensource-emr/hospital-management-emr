@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, Input, Output, OnDestroy } from "@angular/core";
+import { Component, ChangeDetectorRef, Input, Output, OnDestroy, OnInit, Renderer2 } from "@angular/core";
 import { PHRMItemTypeModel } from "../../shared/phrm-item-type.model";
 import { PHRMCategoryModel } from "../../shared/phrm-category.model"
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service"
@@ -14,7 +14,7 @@ import { EventEmitter } from "@angular/core";
 
 })
 
-export class PHRMPackingTypeAddComponent {
+export class PHRMPackingTypeAddComponent implements OnInit {
 
 
 
@@ -30,11 +30,13 @@ export class PHRMPackingTypeAddComponent {
     public update: boolean = false;
     public index: number = -1;
     public showAddPage: boolean;
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;   //to close the window on click of ESCape.
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.GetPackingTypeList();
     }
     @Input("showAddPage")
@@ -45,19 +47,29 @@ export class PHRMPackingTypeAddComponent {
             this.CurrentPackingType = Object.assign(this.CurrentPackingType, this.selectedPacking);
             this.CurrentPackingType.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.CurrentPackingType.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
+            this.setFocusById('packing');
         }
         else {
 
             this.CurrentPackingType = new PHRMPackingTypeModel();
             this.CurrentPackingType.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.update = false;
+
         }
+    }
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
     }
     AddPackingType() {
         this.update = false;
         this.showPackingTypeAddPage = false;
         this.changeDetector.detectChanges();
         this.showPackingTypeAddPage = true;
+        this.setFocusById('packing');
     }
     public GetPackingTypeList() {
         this.pharmacyBLService.GetPackingTypeList()
@@ -120,7 +132,7 @@ export class PHRMPackingTypeAddComponent {
     }
 
     CallBackAddUpdate(res) {
-        var packingtype : PHRMPackingTypeModel = new PHRMPackingTypeModel();
+        var packingtype: PHRMPackingTypeModel = new PHRMPackingTypeModel();
         packingtype.PackingTypeId = res.Results.PackingTypeId;
         packingtype.PackingName = res.Results.PackingName;
         packingtype.PackingQuantity = res.Results.PackingQuantity;
@@ -137,5 +149,10 @@ export class PHRMPackingTypeAddComponent {
     }
     AddUpdateResponseEmitter(packingType) {
         this.callbackAdd.emit({ packingType: packingType });
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

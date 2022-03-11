@@ -1,0 +1,111 @@
+<style>
+    table tr th,
+    table tr td {
+        padding: 1px 3px;
+    }
+</style>
+<div class="col-md-12">
+    <div class="caption custom-caption">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Daily Collection Vs Handover Report</span>
+    </div>
+    <div class="col-md-7">
+        <from-to-date-select (on-change)="OnDateRangeChange($event)">
+
+        </from-to-date-select>
+    </div>
+    <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+            <button class="btn green btn-success" type="button" (click)="loadDailyCollectionVsHandoverReport()">
+                <i class="fa fa-search"></i>
+                Show Report
+            </button>
+        </div>
+    </div>
+</div>
+<div class="col-md-12" *ngIf="DailyCollectionVsHandoverReportList && DailyCollectionVsHandoverReportList.length">
+    <danphe-grid [grid-colDefaults]="DailyCollectionVsHandoverReportGridColumns"
+        [grid-data]="DailyCollectionVsHandoverReportList" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footer"
+        [report-for]="billing" (grid-actions)="DailyCollectionVsHandoverListGridActions($event)"
+        [grid-date-range]="dateRange">
+    </danphe-grid>
+</div>
+<br>
+<br>
+<div *ngIf="summaryData && summaryData.length" id="summaryFooter"
+    style="width: 100%; float: left;">
+    <div class="col-lg-12 col-sm-12" *ngIf="DailyCollectionVsHandoverReportList.length>0">
+        <div class="row" style="margin-bottom: 25px;">
+            <div class="col-md-12 col-xs-12">
+                <div style="padding-top:7px;">
+                    <h4 class="no-print" style="font-weight:bold;text-align: center;">
+                        Collection vs Handover Summary Report
+                    </h4>
+                    <div>
+                        <table class="tbl-summ" border="1" style="width:100%;">
+                            <tr>
+                                <th>S.N.</th>
+                                <th>User Name</th>
+                                <th>Total Collection</th>
+                                <th>Total Handover</th>
+                                <th>Total Due Amount</th>
+                            </tr>
+                            <tr *ngFor="let row of summaryData ;let i=index">
+                                <td>{{i+1}}</td>
+                                <td>{{row.FullName}}</td>
+                                <td>{{row.CollectionTillDate | ParseAmount}}</td>
+                                <td>{{row.HandoverTillDate | ParseAmount}}</td>
+                                <td>{{row.DueAmount | ParseAmount}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="text-align: right;"><b>Total</b></td>
+                                <td><strong>{{summaryOfTotal.TotalCollection | ParseAmount}}</strong></td>
+                                <td><strong>{{summaryOfTotal.TotalHandover | ParseAmount}}</strong></td>
+                                <td><strong>{{summaryOfTotal.TotalDueAmount | ParseAmount}}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+ 
+</div>
+<div *ngIf="summaryData && summaryData.length" class="form-group" style="text-align:center">
+    <button class="btn green btn-success no-print" type="button" (click)="PrintSummary()"> <i class="fa fa-print"></i> Print Summary </button>
+</div>
+
+<br>
+<br>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showHandoverDetail">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 mt20">
+                <div class="modelbox-div no-margin no-padding clearfix">
+                    <div class="caption custom-caption">
+                        //<h3> <span style="color:black;">Handover Detail of
+                                <b>{{HandoverDetailReportList[0].UserName}}</b></span></h3>
+                        <a style="float:right;" class="btn btn-danger" (click)="CloseHandoverDetail()"
+                            title="Close">X</a>
+                    </div>
+                    <div class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <danphe-grid [grid-colDefaults]="HandoverDetailReportGridColumns"
+                                [grid-data]="HandoverDetailReportList" [supressPagination]="true"
+                                [NepaliDateInGridParams]="NepaliDateInGridSettingsForHandoverDetail"
+                                [grid-exportOptions]="HandoverDetailgridExportOptions" [grid-showExport]="true">
+                            </danphe-grid>
+                        </div>
+                        <!-- <div class="panel-footer">
+                            <div class="row clearfix">
+
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

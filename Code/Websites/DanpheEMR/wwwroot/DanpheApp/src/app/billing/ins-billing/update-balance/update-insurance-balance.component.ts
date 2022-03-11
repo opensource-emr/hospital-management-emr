@@ -5,6 +5,7 @@ import { InsuranceVM } from '../../shared/patient-billing-context-vm';
 import { BillingService } from "../../shared/billing.service";
 
 import { NumericDictionary } from "lodash";
+import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
   selector: 'insurance-update-balance',
@@ -13,7 +14,7 @@ import { NumericDictionary } from "lodash";
 
 export class UpdateInsuranceBalanceComponent {
 
-  public currencyUnit: string;
+  //public currencyUnit: string;
   public updatedBalance: number = 0;
 
   @Input("insurance-detail")
@@ -25,8 +26,9 @@ export class UpdateInsuranceBalanceComponent {
   constructor(
     public msgBoxServ: MessageboxService,
     public billingBLService: BillingBLService,
-    public billingService: BillingService) {
-    this.currencyUnit = this.billingService.currencyUnit;
+    public billingService: BillingService,
+    public coreService: CoreService) {
+    //this.currencyUnit = this.billingService.currencyUnit;
   }
 
 
@@ -37,7 +39,7 @@ export class UpdateInsuranceBalanceComponent {
         .subscribe(res => {
           if (res.Status == "OK") {
             this.callBackUpdateBalance.emit({ action: "balance-updated", UpdatedBalance: this.updatedBalance, PatientId: this.insuraceDetail.PatientId});
-            this.msgBoxServ.showMessage("success", ["Insurance Balance of " + this.currencyUnit + this.updatedBalance + " Updated successfully."]);
+            this.msgBoxServ.showMessage("success", ["Insurance Balance of " + this.coreService.currencyUnit + this.updatedBalance + " Updated successfully."]);
            // this.showInsBalanceUpdate = false;
           }
           else {

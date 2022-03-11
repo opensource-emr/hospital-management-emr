@@ -89,6 +89,7 @@ namespace DanpheEMR.DalLayer
             return stockItems;
         }
         #endregion
+
         #region Narcorics Dispensary Store Stock report
         public DataTable PHRMNarcoticsDispensaryStoreStockReport()
         {
@@ -96,6 +97,7 @@ namespace DanpheEMR.DalLayer
             return stockItems;
         }
         #endregion
+
         #region PHRM UserwiseCollection DataTable
         //public DataTable PHRMUserwiseCollectionReport(DateTime FromDate, DateTime ToDate)
         //{
@@ -115,14 +117,15 @@ namespace DanpheEMR.DalLayer
         //    DataTable stockItems = DALFunctions.GetDataTableFromStoredProc("SP_PHRM_UserwiseCollectionReport", paramList, this);
         //    return stockItems;
         //}
-        public DynamicReport PHRMUserwiseCollectionReport(DateTime FromDate, DateTime ToDate, string CounterId, string CreatedBy)
+        public DynamicReport PHRMUserwiseCollectionReport(DateTime FromDate, DateTime ToDate, string CounterId, string CreatedBy, int? StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
             new SqlParameter("@FromDate", FromDate),
                  new SqlParameter("@ToDate", ToDate),
                     new SqlParameter("@CounterId", CounterId),
-                            new SqlParameter("@CreatedBy", CreatedBy == null ? string.Empty : CreatedBy)
-                            
+                            new SqlParameter("@CreatedBy", CreatedBy == null ? string.Empty : CreatedBy),
+                                 new SqlParameter("@StoreId", StoreId)
+
               };
 
             DataSet dataSet = DALFunctions.GetDatasetFromStoredProc("SP_PHRM_UserwiseCollectionReport", paramList, this);
@@ -142,21 +145,22 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region PHRM CashCollectionSummary Report DataTable
-        public DataTable PHRMCashCollectionSummaryReport(DateTime FromDate, DateTime ToDate)
+        public DataTable PHRMCashCollectionSummaryReport(DateTime FromDate, DateTime ToDate, int? StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                  new SqlParameter("@StoreId", StoreId)
             };
 
-            foreach (SqlParameter parameter in paramList)
-            {
-                if (parameter.Value == null)
-                {
-                    parameter.Value = "";
+            //foreach (SqlParameter parameter in paramList)
+            //{
+            //    if (parameter.Value == null)
+            //    {
+            //        parameter.Value = "";
 
-                }
-            }
+            //    }
+            //}
             DataTable stockItems = DALFunctions.GetDataTableFromStoredProc("SP_PHRM_CashCollectionSummaryReport", paramList, this);
             return stockItems;
         }
@@ -204,7 +208,7 @@ namespace DanpheEMR.DalLayer
             return stockItems;
         }
         #endregion
-        
+
         #region PHRM Breakage Items DataTable
         public DataTable PHRMBreakageItemReport(DateTime FromDate, DateTime ToDate)
         {
@@ -291,7 +295,7 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region PHRM Goods Receipt Product 
-        public DataTable PHRMGoodReceiptProductReport(DateTime FromDate, DateTime ToDate,int ItemId)
+        public DataTable PHRMGoodReceiptProductReport(DateTime FromDate, DateTime ToDate, int ItemId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
@@ -320,7 +324,7 @@ namespace DanpheEMR.DalLayer
             return data.ToList<PHRMItemWiseStockReportModel>();
         }
         #endregion
-      
+
         #region Doctor Revenue Report        
         public DataTable PHRMSupplierInformationReport()
         {
@@ -430,22 +434,34 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region PHRM Expiry Report        
-        public DataTable PHRMExpiryReport(string ItemName)
+        public DataTable PHRMExpiryReport(int? ItemId, int? StoreId, DateTime FromDate, DateTime ToDate)
         {
-            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@ItemName", ItemName) };
-
-
-            foreach (SqlParameter parameter in paramList)
+            List<SqlParameter> paramList = new List<SqlParameter>()
             {
-                if (parameter.Value == null)
-                {
-                    parameter.Value = "";
+                new SqlParameter("@ItemId", ItemId),
+                 new SqlParameter("@StoreId", StoreId),
+                  new SqlParameter("@FromDate", FromDate),
+                   new SqlParameter("@ToDate", ToDate)
+            };
 
-                }
-            }
             DataTable expiryStock = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_ExpiryReport", paramList, this);
 
             return expiryStock;
+        }
+        #endregion
+        #region PHRM Item Wise Purchase Report SP call
+        public DataTable PHRMItemWisePurchaseReport(DateTime FromDate, DateTime ToDate, int? itemId, string invoiceNo, int? grNo, int? supplierId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                 new SqlParameter("@ToDate", ToDate),
+                  new SqlParameter("@ItemId", (Object)itemId ?? DBNull.Value),
+                   new SqlParameter("@InvoiceNo", (Object)invoiceNo ?? DBNull.Value),
+                    new SqlParameter("@GoodsReceiptNo", (Object)grNo ?? DBNull.Value),
+                      new SqlParameter("@SupplierId", (Object)supplierId ?? DBNull.Value)
+            };
+            DataTable purchaseDetails = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_ItemWisePurchaseReport", paramList, this);
+            return purchaseDetails;
         }
         #endregion
 
@@ -489,12 +505,13 @@ namespace DanpheEMR.DalLayer
             return stockItems;
         }
         #endregion
+
         #region PHRM Supplier Stock Report        
-        public DataTable PHRMSupplierStockReport(DateTime FromDate,DateTime ToDate,string SupplierName)
+        public DataTable PHRMSupplierStockReport(DateTime FromDate, DateTime ToDate, int SupplierId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>()
             {
-                new SqlParameter("@SupplierName", SupplierName),
+                new SqlParameter("@SupplierId", SupplierId),
                 new SqlParameter("@fromDate",FromDate),
                 new SqlParameter("@toDate",ToDate)
             };
@@ -574,22 +591,24 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region PHRM  Stock Summary Report        
-        public DataTable PHRMStockSummaryReport(DateTime FromDate, DateTime ToDate)
+        public DataTable PHRMStockSummaryReport(DateTime FromDate, DateTime ToDate, int FiscalYearId, int? StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>()
             {
-                new SqlParameter("@FromDate",FromDate.Date.ToShortDateString()),
-                new SqlParameter("@ToDate", ToDate.Date)
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@FiscalYearId", FiscalYearId),
+                new SqlParameter("@StoreId", (Object)StoreId ?? DBNull.Value)
              };
-            foreach (SqlParameter parameter in paramList)
-            {
-                if (parameter.Value == null)
-                {
-                    parameter.Value = "";
+            //foreach (SqlParameter parameter in paramList)
+            //{
+            //    if (parameter.Value == null)
+            //    {
+            //        parameter.Value = null;
 
-                }
-            }
-            DataTable StkSummary = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_StockSummaryReport", paramList, this);
+            //    }
+            //}
+            DataTable StkSummary = DALFunctions.GetDataTableFromStoredProc("SP_PHRM_RPT_GetStockSummary", paramList, this);
             return StkSummary;
         }
         #endregion
@@ -599,8 +618,8 @@ namespace DanpheEMR.DalLayer
         {
             List<SqlParameter> paramList = new List<SqlParameter>()
             {
-                new SqlParameter("@FromDate",FromDate.Date.ToShortDateString()),
-                new SqlParameter("@ToDate", ToDate.Date),
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate", ToDate),
                 new SqlParameter("@Itemid", ItemId)
              };
             foreach (SqlParameter parameter in paramList)
@@ -672,6 +691,177 @@ namespace DanpheEMR.DalLayer
             }
             DataTable dailyStkSummary = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_DrugCategoryWiseReport", paramList, this);
             return dailyStkSummary;
+        }
+        #endregion
+
+        #region Date Wise Purchase Repoprt
+        public DataTable PHRMDateWisePurchaseReport(DateTime FromDate, DateTime ToDate, int? supplierId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDate),
+                new SqlParameter("@SupplierId",supplierId)
+            };
+
+            DataTable dateWisePurchaseDetails = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_DateWisePurchaseReport", paramList, this);
+            return dateWisePurchaseDetails;
+        }
+        #endregion
+
+        #region Get Return From Customer Report Data
+        public DataTable ReturnFromCustomerReport(DateTime fromDate, DateTime toDate, int? userId, int? dispensaryId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",fromDate),
+                new SqlParameter("@ToDate",toDate),
+                new SqlParameter("@UserId",userId),
+                new SqlParameter("@DispensaryId",dispensaryId),
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("SP_PHRMReport_ReturnFromCustomerReport", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region Sales Statement Report
+        public DataTable SalesStatementReport(DateTime FromDate, DateTime ToDate)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne),
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_SalesStatementReport", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region Insurance Patient Bima Report
+        public DataTable InsurancePatientBimaReport(DateTime FromDate, DateTime ToDate, int? CounterId, int? UserId, Int64? ClaimCode, string NSHINumber)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne),
+                new SqlParameter("@CounterId",CounterId),
+                new SqlParameter("@UserId",UserId),
+                new SqlParameter("@ClaimCode",ClaimCode),
+                new SqlParameter("@NSHINumber",NSHINumber)
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_INS_PATIENT_BIMA", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region PatientSalesDetailReport
+        public DataTable PatientSalesDetailReport(DateTime FromDate, DateTime ToDate, int? PatientId, int? CounterId, int? UserId, int? StoreId)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne),
+                new SqlParameter("@CounterId",CounterId),
+                new SqlParameter("@UserId",UserId),
+                new SqlParameter("@StoreId",StoreId),
+                new SqlParameter("@PatientId",PatientId)
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_PatientSalesDetail", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region Sales Summary Report
+        public DataTable SalesSummaryReport(DateTime FromDate, DateTime ToDate)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne)
+            };
+            DataTable settlementSummaryResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_SalesSummary", paramList, this);
+            return settlementSummaryResult;
+        }
+        #endregion
+
+        #region Settlement Summary Report
+        public DataTable SettlementSummaryReport(DateTime FromDate, DateTime ToDate, int? StoreId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDate),
+                new SqlParameter("@StoreId",StoreId)
+            };
+            DataTable settlementSummaryResult = DALFunctions.GetDataTableFromStoredProc("SP_PHRM_GetSettlementSummaryReport", paramList, this);
+            return settlementSummaryResult;
+        }
+        #endregion
+
+
+        #region Purchase Summary Report
+        public DataTable PurchaseSummaryReport(DateTime FromDate, DateTime ToDate, int? StoreId)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne),
+                new SqlParameter("@StoreId",StoreId),
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_PurchaseSummary", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region Stock Summary II Report
+        public DataTable StockSummarySecondReport(DateTime TillDate)
+        {
+            //var TillDatePlusOne = TillDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@TillDate",TillDate)
+            };
+            DataTable returnFromCustomerResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_StockSummary2", paramList, this);
+            return returnFromCustomerResult;
+        }
+        #endregion
+
+        #region Stock Transfers Report
+        public DataTable PHRMStockTransfersReport(DateTime FromDate, DateTime ToDate, int? itemId, int? sourceStoreId,int? targetStoreId, bool notReceivedStocks)
+        {
+            var ToDatePlusOne = ToDate.AddDays(1);
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDatePlusOne),
+                new SqlParameter("@ItemId",itemId),
+                new SqlParameter("@SourceStoreId",sourceStoreId),
+                new SqlParameter("@TargetStoreId",targetStoreId),
+                new SqlParameter("@NotReceivedStocks",notReceivedStocks)
+            };
+            DataTable stockTransfersResult = DALFunctions.GetDataTableFromStoredProc("PHRM_RPT_StockTransfers", paramList, this);
+            return stockTransfersResult;
+        }
+        #endregion
+
+        #region Supplier Wise Stock report
+        public DataTable PHRMSupplierWiseStockReport(DateTime FromDate, DateTime ToDate, int? itemId, int? storeId, int? supplierId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDate),
+                new SqlParameter("@ItemId",itemId),
+                new SqlParameter("@StoreId",storeId),
+                new SqlParameter("@SupplierId",supplierId)
+            };
+            DataTable supplierWiseStockReportResult = DALFunctions.GetDataTableFromStoredProc("SP_Report_Pharmacy_SupplierWiseStock", paramList, this);
+            return supplierWiseStockReportResult;
         }
         #endregion
     }

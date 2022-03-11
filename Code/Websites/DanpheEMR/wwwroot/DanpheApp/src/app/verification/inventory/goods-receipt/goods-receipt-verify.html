@@ -98,7 +98,7 @@
           <div class="row" style="margin-bottom: 10px;">
             <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
               <img class="img-responsive" style="max-height:70px;"
-                src="../../../themes/theme-default/images/hams-logo.PNG" />
+                src="../../../themes/theme-default/images/hospital-logo.PNG" />
             </div>
             <div style="width: 64%;float: left;padding-bottom:  0px;">
               <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
@@ -126,8 +126,12 @@
               <i>({{GoodsReceipt.CreatedOn | nepaliDate }} BS)</i>
             </div>
             <div>
-              Bill Date:<b> {{GoodsReceipt.GoodsReceiptDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
+              GR Date:<b> {{GoodsReceipt.GoodsReceiptDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
               <i *ngIf="GoodsReceipt.GoodsReceiptDate">({{GoodsReceipt.GoodsReceiptDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+            </div>
+            <div>
+              Bill Date:<b> {{GoodsReceipt.VendorBillDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
+              <i *ngIf="GoodsReceipt.VendorBillDate">({{GoodsReceipt.VendorBillDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
             </div>
             <div>Bill No:<b> {{GoodsReceipt.BillNo}}</b></div>
           </div>
@@ -146,7 +150,7 @@
                   <td>Item Code</td>
                   <td>Unit</td>
                   <td>Received Quantity</td>
-                  <td>Free Quantity</td>
+                  <td *ngIf="showFreeQty">Free Quantity</td>
                   <td>Rate</td>
                   <td>Total</td>
                   <td>Status</td>
@@ -174,7 +178,7 @@
                         class="fa fa-times"></i>&nbsp;instead.
                     </div>
                   </td>
-                  <td>{{receivedItem.FreeQuantity}}</td>
+                  <td *ngIf="showFreeQty">{{receivedItem.FreeQuantity}}</td>
                   <td>{{receivedItem.ItemRate}}</td>
                   <td>{{receivedItem.TotalAmount}}</td>
                   <td>
@@ -204,12 +208,12 @@
                   <td>{{GoodsReceipt.SubTotal | number: "1.2-2"}}</td>
                 </tr>
                 <tr>
-                  <td><b>Discount:</b></td>
-                  <td>{{GoodsReceipt.DiscountAmount | number: "1.2-2"}}</td>
+                  <td *ngIf="showDiscount"><b>Discount:</b></td>
+                  <td *ngIf="showDiscount">{{GoodsReceipt.DiscountAmount | number: "1.2-2"}}</td>
                 </tr>
                 <tr>
-                  <td><b>CcCharge:</b></td>
-                  <td>{{GoodsReceipt.CcCharge | number: "1.2-2"}}</td>
+                  <td *ngIf="showCCCharge"><b>CcCharge:</b></td>
+                  <td *ngIf="showCCCharge">{{GoodsReceipt.CcCharge | number: "1.2-2"}}</td>
                 </tr>
                 <tr>
                   <td><b>Vat:</b></td>
@@ -260,10 +264,20 @@
             </div>
           </div>
           <div class="clearfix"></div>
-          <div class="col-md-12 hidden-in-print" style="margin:10px 0" [hidden]="isVerificationAllowed==false">
-            <label for="VerificationRemarks" class="col-md-2">Remarks <span class="right">:</span></label>
-            <textarea class="col-md-10" [(ngModel)]="VerificationRemarks" name="VerificationRemarks"
-              rows="3"></textarea>
+            <div class="col-md-12 hidden-in-print" style="margin:10px 0" [hidden]="isVerificationAllowed==false">
+            <form [formGroup]="verificationForm" class="form-horizontal hm-form">
+              <div class="col-md-12">
+                <span class="col-md-2">Remarks<sup style="color: red;">*</sup><span class="right">:</span></span>
+                <span class="col-md-10">
+                  <textarea name="VerificationRemarks" id="VerificationRemarks" formControlName="VerificationRemarks" cols="10" rows="3"></textarea>
+                  <div *ngIf="verificationForm.get('VerificationRemarks').invalid && (verificationForm.get('VerificationRemarks').dirty || verificationForm.get('VerificationRemarks').touched)" class="error-message">
+                    <div *ngIf="verificationForm.get('VerificationRemarks').errors.required">
+                      Remarks is required
+                    </div>
+                  </div>
+                </span>
+              </div>
+            </form>
           </div>
           <hr />
           <div class="col-md-12" *ngIf="GoodsReceiptVM != null" style="font-size: 12px;">
@@ -272,12 +286,13 @@
               <div>{{GoodsReceiptVM.ReceivingUser.Name}}</div>
               <div>{{GoodsReceiptVM.ReceivingUser.Date | date : 'medium'}}</div>
             </div>
-            <div class="col-md-5" style="text-align: left;padding:0px;" *ngIf="GoodsReceiptVM.Verifiers != null">
+            <div class="col-md-10" style="text-align: left;padding:0px;" *ngIf="GoodsReceiptVM.Verifiers != null">
               <u>Verified By</u>:
               <div *ngFor="let verifier of GoodsReceiptVM.Verifiers;let i = index;">
                 {{i+1}}&nbsp;{{verifier.Name}}&nbsp;({{verifier.Date | date : 'medium'}})&nbsp;
-                  <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span
-                      [title]="verifier.Remarks">{{verifier.Remarks | slice:0:10 }}..</span></span>
+                  <span *ngIf="!!verifier.Remarks "><i>Remarks:</i><span
+                      [title]="verifier.Remarks">{{verifier.Remarks }}.</span></span>
+                      <!-- | slice:0:10 -->
               </div>
             </div>
           </div>
@@ -310,7 +325,7 @@
             <tr>
               <td width="20%">
                 <img style="max-height:70px;"
-                  src="../../../themes/theme-default/images/hams-logo.PNG" />
+                  src="../../../themes/theme-default/images/hospital-logo.PNG" />
               </td>
               <td width="50%" style="text-align: center;">
                 <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
@@ -457,7 +472,7 @@
                     <td colspan="4" style="text-align: left">4  ► Good.</td>
                   </tr>
                   <tr style="text-align: center;">
-                    <td rowspan="4"><b>Amount in Words (Rs.) :</b></td>
+                    <td rowspan="4"><b>Amount in Words ({{coreService.currencyUnit}}) :</b></td>
                     <td style="text-align: left" rowspan="4"><b>{{GoodsReceipt.TotalAmount | Currency | NumberInWords | CapitalFirstLetter}}</b></td>
                     <td colspan="3" style="text-align: left"><b>Non Taxable Amount</b></td>
                     <td style="text-align: right"> </td>

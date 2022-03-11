@@ -36,6 +36,8 @@ namespace DanpheEMR.ServerModel
         public bool ValidToPrint { get; set; }
         [NotMapped]
         public bool? VerificationEnabled { get; set; }
+        [NotMapped]
+        public string CovidFileUrl { get; set; }
 
     }
     

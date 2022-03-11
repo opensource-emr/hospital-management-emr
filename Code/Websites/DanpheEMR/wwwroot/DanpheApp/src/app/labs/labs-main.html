@@ -1,6 +1,5 @@
-
 <style>
-  li.horizontal-bar:hover > a {
+  li.horizontal-bar:hover>a {
     background: none;
   }
 
@@ -10,7 +9,7 @@
   }
 
   .dropdown.bil-hr-bar.open a.dropdown-toggle {
-    background: linear-gradient(to bottom, #006687 0%,#035671 50%,#034256 100%);
+    background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
     border-radius: 4px !important;
   }
 
@@ -31,7 +30,8 @@
   <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
     <!--Start: Primary Menu Items -->
     <li *ngFor="let route of primaryNavItems">
-      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'"
+        *ngIf="route.IsSecondaryNavInDropdown!=1">
         {{route.DisplayName}}
         <i class="{{route.Css}}"></i>
       </a>
@@ -39,7 +39,8 @@
 
     <!--End: Primary Menu Items -->
     <!--Start: Secondary Menu Items-->
-    <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;">
+    <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar"
+      style="display:inline-block;">
       <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
         More...
         <span class="caret"></span>
@@ -55,5 +56,49 @@
     </li>
     <!--End: Secondary Menu Items-->
   </ul>
+  <div>
+    <div *ngIf="showActiveLabInfo" class="modal-content col-md-2 col-xs-2 col-lg-2 col-md-offset-10"
+      style="position: absolute;top: 100%; right: 20px;background-color: black; color: white;">
+
+
+      <div class="fa fa-caret-up" style="
+      float: right;
+      font-size: 25px;
+      left: 6px;
+      bottom: 11px;
+      color: #313131;
+      position: relative;"></div>
+      <i (click)="CloseInfo()" class="fa fa-close" style="
+      cursor: pointer;
+      float: right;
+      font-size: 15px;
+      font-weight: lighter;
+      left: 18px;
+      top: 3px;
+      position: relative;
+      z-index: 9;
+    "></i>
+      <h6>
+        You are currently in {{securityService.getActiveLab()?.LabTypeName}} lab. To
+        change, you can always click here.
+      </h6>
+    </div>
+    <span style="padding: 10px;" class="right">
+      <label class="label label-primary">
+        Active lab : <b>{{securityService.getActiveLab()?.LabTypeName}}</b>
+      </label>
+      <i (mouseenter)="ShowInfo()" (click)="UnsetGloballab()" style="
+      cursor: pointer;
+      margin-left: 5px;
+      font-size: 20px;
+      position: relative;
+      top: 2px;
+      left: 5px;
+    " class="fa fa-sign-out" *ngIf="!coreService.singleLabType"></i>
+    </span>
+  </div>
+
 </div>
+
+
 <router-outlet></router-outlet>

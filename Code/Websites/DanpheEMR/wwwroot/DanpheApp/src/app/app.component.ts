@@ -23,6 +23,8 @@ import { NavigationService } from './shared/navigation-service';
 import { DanpheHTTPResponse } from './shared/common-models';
 import { DanpheCache, MasterType } from './shared/danphe-cache-service-utility/cache-services';
 import { EmployeeService } from './employee/shared/employee.service';
+import { LabsBLService } from './labs/shared/labs.bl.service';
+import { LabTypesModel } from './labs/lab-selection/lab-type-selection.component';
 // import { parse } from 'path';
 
 
@@ -45,6 +47,7 @@ export class AppComponent {
   public empPre = { np: false, en: false };
   public selectedDatePref: string = "";
   public defaultCal = "";
+
   constructor(public _http: HttpClient, _serv: PatientService,
     public router: Router,
     public VisService: VisitService,
@@ -76,12 +79,12 @@ export class AppComponent {
     this.coreService.GetMasterEntities().subscribe(res => {
       this.coreService.SetMasterEntities(res);
     });
-   
+
     //load all the application lookups.
     this.coreService.GetAllLookups().subscribe(res => {
       this.coreService.SetAllLookUps(res);
     });
-  
+
 
     //Get Valid Navigation Routes list
     this.SetValidNavigationRoute();
@@ -112,8 +115,17 @@ export class AppComponent {
       this.navigationInterceptor(event);
     });
 
+    this.coreService.GetLabTypes().subscribe(res => {
+      this.coreService.SetLabTypes(res);
+      if (res.Status == "OK") {
+        this.GetActiveLab();
+      }
+    });
 
 
+
+    this.GetMunicipalities();
+    this.GetGovLabItems();
     //add windows listener for logout-event.. this will be triggered from Logout button on top.
     //If logout-event is fired from any other tab (of the curent session), it'll logout from this tab as well.
     window.addEventListener('storage', (event) => {
@@ -134,8 +146,20 @@ export class AppComponent {
         }
       }
     });
-  }
+    //set qz-tray config setting and all
+    this.coreService.SetQZTrayObject();
 
+    //sud:21May'21--Get/Set of AllPrinterSettings
+    //need to first call the server api to get the data and then set values using below function.
+    this.coreService.GetPrinterSettings().subscribe(res => {
+      this.coreService.SetPrinterSettings(res);
+    });
+
+    //sud:10-Oct'21--To load all memberships into core service variables..
+    this.LoadAllMembershipTypes();
+    this.GetPrintExportConfiguration();
+
+  }
 
   // Sets initial value to true to show loading spinner on first load
   loading: boolean = true;
@@ -333,6 +357,8 @@ export class AppComponent {
         if (res.Status == 'OK') {
           //set to userpermissions in securityService
           this.securityService.UserPermissions = res.Results;
+
+          //this.GetActiveLab();
         }
         else {
           //alert('failed to get user permissions.. please check log for details.');
@@ -351,6 +377,9 @@ export class AppComponent {
       this.coreService.Parameters = res.Results;
       this.coreService.SetTaxLabel();
       this.coreService.SetCurrencyUnit();
+      this.coreService.SetCalendarADBSButton();
+      this.coreService.SetLocalNameFormControl();
+      this.coreService.SetCountryMapOnLandingPage();
       this.setLoadingScreenVal();
       //commented: customername, landingpage, empilabels etc for UAT: sudarshan--13jul2017
       //this.pageParameters.CustomerName = res.Results.filter(a => a.ParameterName == 'CustomerName')[0]["ParameterValue"];
@@ -369,7 +398,7 @@ export class AppComponent {
       //console.log(res.ErrorMessage);
     }
   }
- 
+
 
 
   DownloadUserManual() {
@@ -393,6 +422,7 @@ export class AppComponent {
     //removing landing page from session
     sessionStorage.removeItem("isLandingVisited");
     localStorage.removeItem('isLandingVisitedNewTab');
+    localStorage.removeItem('selectedLabCategory');
     //when logged out from one tab, add a key : logout-event to local storage, which will be continuously listened by other windows.
     localStorage.setItem('logout-event', 'logout' + Math.random());
     //after setting localstorage, redirect to Logout page.
@@ -458,11 +488,11 @@ export class AppComponent {
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == 'OK') {
           this.securityService.SetAccHospitalInfo(res.Results);
-          this.coreService.GetCodeDetails().subscribe(res => {      
+          this.coreService.GetCodeDetails().subscribe(res => {
             this.coreService.SetCodeDetails(res);
           });
-         
-          this.coreService.GetFiscalYearList().subscribe(res => {      
+
+          this.coreService.GetFiscalYearList().subscribe(res => {
             this.coreService.SetFiscalYearList(res);
           });
         }
@@ -473,5 +503,86 @@ export class AppComponent {
         });
   }
 
+  public labTypes: Array<LabTypesModel> = [];
+  public currentLabId: number = 0;
+  public currentLabName: string = null;
 
+  public CheckLabPermissions() {
+    var labSelectionPermData = this.securityService.UserPermissions.filter(a =>
+      this.labTypes && this.labTypes.find(l => ('lab-type-' + l.PermName) == a.PermissionName)
+    );
+
+    //for multiple roles same permission is provided, so this caused multiple rows of same permission
+    //this code is for getting the unique permissions only
+    const labSelectionPerm = labSelectionPermData.filter((data, index, self) => self.findIndex(d => d.PermissionId == data.PermissionId) === index);
+
+    if (labSelectionPerm && labSelectionPerm.length && (labSelectionPerm.length == 1)) {
+      let type = this.labTypes.find(l => ('lab-type-' + l.PermName) == labSelectionPerm[0].PermissionName);
+      this.coreService.singleLabType = true;
+      if (type) {
+        this.securityService.setActiveLab(type);
+        this.ActivateLab(type);
+      }
+    }
+  }
+
+
+  GetActiveLab() {
+    this.labTypes = this.coreService.labTypes;
+    this.securityBlService.GetActiveLab()
+      .subscribe(res => {
+        if ((res.Status == "OK")) {
+          if ((res.Results.LabTypeId > 0)) {
+            let type = this.labTypes.find(l => l.LabTypeId == res.Results.LabTypeId);
+            if (type) {
+              this.securityService.setActiveLab(type);
+              this.ActivateLab(type);
+            }
+          } else {
+            this.CheckLabPermissions();
+          }
+        } else {
+          this.CheckLabPermissions();
+        }
+      },
+        err => {
+          this.logError(err.ErrorMessage);
+        }
+      );
+  }
+
+  //this is called from Lab module.
+  //it Activates the labtype and sets the value in SecurityServie so that it can  be used further in all Lab Module Pages.
+  ActivateLab(lab) {
+    this.dlService.ActivateLab(lab.LabTypeId, lab.LabTypeName).subscribe(
+      res => {
+        if (res.Status == "OK") {
+          let actLabId = res.Results;
+          this.securityService.getActiveLab().LabTypeId = actLabId.LabTypeId;
+          this.securityService.getActiveLab().LabTypeName = actLabId.LabTypeName;
+        }
+      })
+  }
+
+  GetMunicipalities() {
+    this.coreService.GetAllMunicipalities();
+  }
+
+  GetGovLabItems() {
+    this.coreService.GetAllGovLabComponents();
+  }
+
+  //sud:10Oct'21--Since membership is used accross the modules, we need to set in core service from app.component.
+  LoadAllMembershipTypes() {
+    //  return this.http.get<any>("/api/BillSettings?reqType=get-membership-types", this.options);
+    this.dlService.GetAllMembershipType()
+      .map(res => res)
+      .subscribe(res => {
+        this.coreService.AllMembershipTypes = res.Results;
+      });
+  }
+
+  GetPrintExportConfiguration() {
+    this.coreService.GetPrintExportConfiguration();
+  }
 }

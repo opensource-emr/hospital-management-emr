@@ -34,7 +34,7 @@ export class DanpheAutoCompleteDirective implements OnInit {
   @Input("select-value-of") selectValueOf: string;
 
   @Input("list-formatter") listFormatter;
-   @Input("grid-sort") gridsort: any;
+  @Input("grid-sort") gridsort: any;
 
   @Input("loading-text") loadingText: string = "Loading";
   @Input("blank-option-text") blankOptionText: string;
@@ -42,6 +42,10 @@ export class DanpheAutoCompleteDirective implements OnInit {
   @Input("value-formatter") valueFormatter: any;
   @Input("tab-to-select") tabToSelect: boolean = true;
   @Input("match-formatted") matchFormatted: boolean = false;
+  //sud:23May'21--Precondition: matchFormatted should be true.
+  //if propertyNameToMatch is given, then the matching function checks only for the given property name's value.
+  //Check in its implementation for details.
+  @Input("match-property-csv") propertyNamesToMatchCSV: string;
 
   @Input() ngModel: String;
   @Input('formControlName') formControlName: string;
@@ -60,11 +64,11 @@ export class DanpheAutoCompleteDirective implements OnInit {
   inputEl: HTMLInputElement;  // input element of this element
   formControl: AbstractControl;
   revertValue: any;
-  
+
   constructor(public resolver: ComponentFactoryResolver,
-              public renderer: Renderer,
-              public  viewContainerRef: ViewContainerRef,
-              @Optional() @Host() @SkipSelf() public parentForm: ControlContainer) {
+    public renderer: Renderer,
+    public viewContainerRef: ViewContainerRef,
+    @Optional() @Host() @SkipSelf() public parentForm: ControlContainer) {
     this.el = this.viewContainerRef.element.nativeElement;
   }
 
@@ -102,7 +106,7 @@ export class DanpheAutoCompleteDirective implements OnInit {
     // if this element is not an input tag, move dropdown after input tag
     // so that it displays correctly
     this.inputEl = this.el.tagName === "INPUT" ?
-        <HTMLInputElement>this.el : <HTMLInputElement>this.el.querySelector("input");
+      <HTMLInputElement>this.el : <HTMLInputElement>this.el.querySelector("input");
 
     this.inputEl.addEventListener('focus', e => this.showAutoCompleteDropdown(e));
     this.inputEl.addEventListener('blur', e => this.hideAutoCompleteDropdown(e));
@@ -145,6 +149,7 @@ export class DanpheAutoCompleteDirective implements OnInit {
     component.noMatchFoundText = this.noMatchFoundText;
     component.tabToSelect = this.tabToSelect;
     component.matchFormatted = this.matchFormatted;
+    component.propertyNamesToMatchCSV = this.propertyNamesToMatchCSV;//sud:23May'21--custom functionality added.<check for it's implementation inside autocomplete
 
     component.valueSelected.subscribe(this.selectNewValue);
 
@@ -156,7 +161,7 @@ export class DanpheAutoCompleteDirective implements OnInit {
     if (this.el.tagName !== "INPUT" && this.acDropdownEl) {
       this.inputEl.parentElement.insertBefore(this.acDropdownEl, this.inputEl.nextSibling);
     }
-    
+
     this.revertValue = typeof this.ngModel !== "undefined" ? this.ngModel : this.inputEl.value;
 
     setTimeout(() => {
@@ -170,16 +175,16 @@ export class DanpheAutoCompleteDirective implements OnInit {
     if (this.componentRef) {
       let currentItem: any;
       let hasRevertValue = (typeof this.revertValue !== "undefined");
-      if(this.inputEl && hasRevertValue && this.acceptUserInput === false) {
+      if (this.inputEl && hasRevertValue && this.acceptUserInput === false) {
         currentItem = this.componentRef.instance.findItemFromSelectValue(this.inputEl.value);
       }
-      
+
       this.componentRef.destroy();
       this.componentRef = undefined;
-      
-      if(
-        this.inputEl && 
-        hasRevertValue && 
+
+      if (
+        this.inputEl &&
+        hasRevertValue &&
         this.acceptUserInput === false &&
         currentItem === null
       ) {

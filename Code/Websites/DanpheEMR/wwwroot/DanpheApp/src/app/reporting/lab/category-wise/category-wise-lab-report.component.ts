@@ -20,7 +20,9 @@ export class RPT_LAB_CategoryWiseLabReportComponent {
     public currentcategorywiselab: DynamicReport = new DynamicReport(); 
     public fromDate: string = null;
     public toDate: string = null;
-
+    public dateRange:string="";	
+    public statusAbove:number =0;
+    public orderStatus={statusList: ''};
     constructor(
         public dlService: DLService,
         public msgBoxServ: MessageboxService,
@@ -40,7 +42,8 @@ export class RPT_LAB_CategoryWiseLabReportComponent {
       this.fromDate = this.currentcategorywiselab.fromDate;
       this.toDate = this.currentcategorywiselab.toDate;
       this.dlService.Read("/Reporting/CategoryWiseLabReport?FromDate="
-        + this.fromDate + "&ToDate=" + this.toDate)
+        + this.fromDate + "&ToDate=" + this.toDate+
+        "&orderStatus="+this.orderStatus.statusList)
         .map(res => res)
         .subscribe(res => this.Success(res),
           err => this.Error(err));
@@ -61,7 +64,7 @@ export class RPT_LAB_CategoryWiseLabReportComponent {
         else if (res.Status == "OK" && res.Results.length == 0) {
             this.msgBoxServ.showMessage("notice-message", ['No Data is Avaliable for Selected Parameters.....Try Different'])
             this.CategoryWiseLabReportColumns = this.reportServ.reportGridCols.CategoryWiseLabTest;
-            this.CategoryWiseLabReportColumns = res.Results;
+            this.CategoryWiseLabReportData = [];
         }
         else {
             this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -117,5 +120,6 @@ export class RPT_LAB_CategoryWiseLabReportComponent {
 
     this.currentcategorywiselab.fromDate = this.fromDate;
     this.currentcategorywiselab.toDate = this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 }

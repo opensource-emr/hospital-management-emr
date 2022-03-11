@@ -30,7 +30,7 @@
             <div class="col-md-2 col-xs-12">
               <div class="col-md-2 col-xs-12">
                 <div class="form-group">
-                  <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                  <button class="btn green btn-success" type="button" (click)="Load();this.loading=true;" [disabled]="loading"> <i class="fa fa-search"></i> Show Report </button>
                 </div>
               </div>
             </div>
@@ -100,9 +100,9 @@
           &nbsp;
         </span>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-12" id="patient-census">
         <div class="table-responsive">
-          <table class="table-hover tblReport" border="1" style="background-color:initial;margin-top:10px">
+          <table class="table-hover tblReport" border="1" style="background-color:initial;margin-top:10px" >
             <tbody *ngFor="let doc of ReportData">
               <tr>
                 <td colspan="2" style="font-weight:bold">Doctor's Name</td>
@@ -155,7 +155,7 @@
     </div>
     <div class="form-group" style="text-align:center">
       <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
-      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('patient-census')"> <i class="fa fa-file-excel-o"></i> Export </button>
     </div>
   </div>
 </div>

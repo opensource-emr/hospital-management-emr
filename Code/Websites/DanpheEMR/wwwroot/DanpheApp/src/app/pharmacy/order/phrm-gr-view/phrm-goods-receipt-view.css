@@ -40,21 +40,21 @@
   border-top: dotted 1px;
   border-bottom: dotted 1px;
 }
-table#total-table {
-  background-color: initial;
-  margin-top: 10px;
-}
 #cancelButtonContainer {
   float: right;
-  margin-right: 10px;
   margin-bottom: 5px;
 }
+.view-actions > * {
+  margin-right: 5px;
+  float: right;
+}
+
 .cancelStamp {
   transform: rotate(-14deg);
   color: #d23;
   border: 0.5rem solid #d23;
   border-radius: 0;
-  font-size: 3rem;
+  font-size: 10pt;
   font-weight: 700;
   border: 0.25rem solid #555;
   display: inline-block;

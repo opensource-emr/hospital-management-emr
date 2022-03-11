@@ -1,0 +1,177 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="currentIncomeSegregation.IncomeSegregationValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject">Income Segregation Report (Govt-Insurance)</span>
+          </div>
+          <!--<div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentIncomeSegregation.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentIncomeSegregation.IsDirty('fromDate')" [hidden]="currentIncomeSegregation.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentIncomeSegregation.IsDirty('fromDate')" [hidden]="currentIncomeSegregation.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+    </div>
+  </div>
+  <div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentIncomeSegregation.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentIncomeSegregation.IsDirty('toDate')" [hidden]="currentIncomeSegregation.IsValidCheck('toDate','required')"> To Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentIncomeSegregation.IsDirty('toDate')" [hidden]="currentIncomeSegregation.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+    </div>
+  </div>-->
+          <div class="col-md-7 col-xs-12">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)">
+            </from-to-date-select>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="IncomeSegregationData.length>0">
+      <danphe-grid [grid-colDefaults]="IncomeSegregationColumns"
+                 [grid-data]="IncomeSegregationData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"> </danphe-grid>
+      <div class="table-responsive">
+        <table class="table-hover tblReport" border="1" width="100%" style="background-color:initial;margin-top:10px">
+          <tbody>
+            <tr>
+              <td style="font-weight:bold">Grand Total</td>
+            </tr>
+            <tr>
+              <td rowspan="3" style="font-weight:bold; text-align:right;">Unit</td>
+              <td colspan="4" style="font-weight:bold; text-align:center;">Sales</td>
+              <td colspan="3" style="font-weight:bold; text-align:center;">Return Sales</td>
+              <td colspan="3" style="font-weight:bold; text-align:center;">Total Sales</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="font-weight:bold; text-align:center;">Cash Sales</td>
+              <td colspan="2" style="font-weight:bold; text-align:center;">Credit Sales</td>
+              <td colspan="3" style="font-weight:bold; text-align:center;">Return Cash/Credit</td>
+              <td rowspan="2" style="font-weight:bold; text-align:center;">Gross Sales</td>
+              <td rowspan="2" style="font-weight:bold; text-align:center;">Discount</td>
+              <td rowspan="2" style="font-weight:bold; text-align:center;">Net Sales</td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold">Gross Sales</td>
+              <td style="font-weight:bold">Discount</td>
+              <td style="font-weight:bold">Gross Sales</td>
+              <td style="font-weight:bold">Discount</td>
+              <td style="font-weight:bold">RetQty</td>
+              <td style="font-weight:bold">Amount</td>
+              <td style="font-weight:bold">Discount</td>
+            </tr>
+            <tr *ngFor="let row of grandTotal">
+              <td style="text-align:right">{{row.Unit}}</td>
+              <td style="text-align:right">{{row.CashSales}}</td>
+              <td style="text-align:right">{{row.CashDiscount}}</td>
+              <td style="text-align:right">{{row.CreditSales}}</td>
+              <td style="text-align:right">{{row.CreditDiscount}}</td>
+              <td style="text-align:right">{{row.ReturnQuantity}}</td>
+              <td style="text-align:right">{{row.ReturnAmount}}</td>
+              <td style="text-align:right">{{row.ReturnDiscount}}</td>
+              <td style="text-align:right">{{row.GrossSales}}</td>
+              <td style="text-align:right">{{row.Discount}}</td>
+              <td style="text-align:right">{{row.NetSales}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <br />
+  <br />
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="IncomeSegregationData.length>0">
+      <div class="col-md-12 col-xs-12">
+        <div class="table-responsive" style="width:100%;">
+          <div class="caption lb-caption">
+            <h3><i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Calculation Summary</span></h3>
+          </div>
+          <table class="table table-striped table-hover table-responsive">
+            <tr style="width:100px;">
+              <th> Price:</th>
+              <td>{{tot_Price}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> Cancel Amount:</th>
+              <td>{{tot_CancelAmount}}</td>
+            </tr>
+          </table>
+          <div class="table table-bordered table-condensed table-hover table-striped col-md-10 " style="border:1px solid#333;border:double">
+            <div class="col-md-5  table-hover "> <b style="padding-right:5px"> Total </b> <br />
+              ------------------------------------------<br />
+              Less:Return <br />
+              Less:Discount <br />
+              ------------------------------------------<br />
+              <b>Net Sales </b> <br />
+              Add:Advanced Received <br />
+              Less: Advance Settled <br />
+              ------------------------------------------<br />
+              <b>Total Receivable </b> <br />
+              Less: Credit Sales <br />
+              Add: Credit Received <br />
+              ------------------------------------------<br />
+              <b> Net Cash Collection </b><br />
+            </div>
+            <div class="col-md-5  table-hover "> <b>{{tot_Price}} </b><br />
+              ------------------------------------------<br />
+              <b> {{tot_ReturnAmount}}</b> <br />
+              <b> {{tot_DiscntAmt}}</b> <br />
+              ------------------------------------------<br />
+              <b>{{tot_NetSales}}</b> <br />
+              <b>{{tot_AdvanceReceived}} </b> <br />
+              <b>{{tot_AdvanceSettlement}} </b><br />
+              ------------------------------------------<br />
+              <b>{{tot_Receivable}} </b> <br />
+              <b>{{tot_CreditSales}} </b> <br />
+              <b>{{tot_CreditReceived}}</b> <br />
+              ------------------------------------------<br />
+              <b>{{tot_NetCashCollection }}</b> <br />
+            </div>
+          </div>
+          <div class="table table-bordered table-condensed table-hover table-striped col-md-10 " style="border:1px solid#333;border:double">
+            <div class="col-md-5  table-hover ">
+              <label style="color:darkblue"><b>For Accounting Records </b></label>
+              <br />
+              Sales/Income: <br />
+              Discount: <br />
+              Return: <br />
+              ------------------------------------------<br />
+              Taxable income/Net Sale:<br />
+              ------------------------------------------<br />
+              Total Sales:<br />
+              <b></b> <br />
+              Credit Receivables: <br />
+              Advance Received:<br />
+              Advance Settled:<br />
+              CashCollection: </div>
+            <div class="col-md-5  table-hover "> <b></b><br />
+              <b>{{tot_Price}}</b> <br />
+              <b>{{tot_DiscntAmt}}</b> <br />
+              <b>{{tot_ReturnAmount}}</b> <br />
+              ------------------------------------------<br />
+              <b>{{tot_accRecord_taxableIncome}}</b> <br />
+              ------------------------------------------<br />
+              <b>{{tot_accRecord_totalSales}}</b><br />
+              <b> </b><br />
+              <b>{{tot_CreditSales}}</b><br />
+              <b>{{tot_AdvanceReceived}} </b><br />
+              <b>{{tot_AdvanceSettlement}}</b><br />
+              <b>{{tot_NetCashCollection}}</b> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

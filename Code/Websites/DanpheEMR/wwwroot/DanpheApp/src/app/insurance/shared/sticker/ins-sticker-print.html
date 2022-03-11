@@ -1,0 +1,103 @@
+<style>
+  .circularQueueDiv {
+    position: absolute;
+    left: 35%;
+    bottom: 100px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 35px;
+    text-align: center;
+    padding-top: 5px;
+  }
+
+  .opdstickercontainer {
+    font-size: 12px;
+  }
+</style>
+
+
+<div class="col-md-12">
+  <div id="insSticker" *ngIf="isStickerInfoLoaded && insStickerDetails !=null"
+    style="border: 1px dotted black;margin-top: 10% !important; width: 400px;">
+    <div id="opdprintpage" [ngClass]="'opdstkcontainer-' + hospitalCode"
+      style="width: 370px; margin: 0px;display: block;font-size: 11px;">
+      <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
+        <div>
+          <div> <span> Date: {{insStickerDetails.VisitDate |
+              DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp;({{localDateTime}}) </span> <span
+              style="float:right;padding-right: 5px;"> Time: {{insStickerDetails.VisitTime}} </span> </div>
+          <div>
+            <div style="display:inline-block;width: 15%;vertical-align: top;"> Name&nbsp;:&nbsp; </div>
+            <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+              <div style="display:inline-block;"> {{insStickerDetails.PatientName}} &nbsp;&nbsp;&nbsp; </div>
+              <div style="display:inline-block;font-style:italic;"> {{ageSex}} </div>
+            </div>
+          </div>
+          <div> <span style="display:inline-block;"> Hospital No. : {{insStickerDetails.PatientCode}} </span>
+            <span style="float:right;padding-right: 5px;"> Contact : {{insStickerDetails.PhoneNumber}} </span>
+          </div>
+
+          <div> <span style="display:inline-block;"> NSHI Number : {{insStickerDetails.Ins_NshiNumber}} </span>
+            <span style="float:right;padding-right: 5px;"> Claim Code : {{insStickerDetails.ClaimCode}} </span>
+          </div>
+          <div>
+            <div *ngIf="insStickerDetails.CountryName == 'Nepal'"><span>
+                Address&nbsp;:&nbsp;{{insStickerDetails.Address}} , {{insStickerDetails.District}} </span> <span
+                style="float:right;padding-right: 5px;" *ngIf="showRoomNumber"> {{roomNo}} :
+                {{insStickerDetails.DeptRoomNumber}} </span> </div>
+            <div *ngIf="insStickerDetails.CountryName != 'Nepal'">
+              Address&nbsp;:&nbsp;{{insStickerDetails.Address}},{{insStickerDetails.CountryName}} </div>
+          </div>
+        </div>
+        <hr style="border:0.5px solid black;margin:0px;" />
+      </div>
+      <div style="width:100%;margin-top:2px">
+        <b style="text-transform:uppercase">
+          <span class="left" *ngIf="insStickerDetails.DoctorName">
+            {{insStickerDetails.DoctorName}} </span> </b>
+      </div>
+      <div [ngClass]="'dptdescleft-' + hospitalCode" class="dptdesc-left">
+        <div style="text-transform:capitalize "> Department : <b>{{insStickerDetails.Department}}</b> <span
+            style="padding-left:12px;" *ngIf="insStickerDetails.RoomNo">Room No : {{insStickerDetails.RoomNo}}
+          </span> </div>
+        <div style="padding-top: 2px; display: flex;align-items: center;">
+          <div style="flex: 3; flex-direction: column;">
+            <div *ngIf="EnableShowTicketPrice && insStickerDetails.OpdTicketCharge>0" style="font-weight: bold;">
+              <span> Ticket Charge: {{coreService.currencyUnit}} {{insStickerDetails.OpdTicketCharge}}</span>
+            </div>
+          </div>
+          <div style="flex: 1">
+            <div *ngIf="QueueNoSetting.ShowInSticker && insStickerDetails.QueueNo">
+              Q.No. <strong *ngIf="insStickerDetails.QueueNo<10">(0{{insStickerDetails.QueueNo}})</strong>
+              <strong *ngIf="insStickerDetails.QueueNo >= 10">({{insStickerDetails.QueueNo}})</strong>
+            </div>
+          </div>
+        </div>
+        <div> <span style="text-transform:uppercase;font-weight:bold;">
+            {{insStickerDetails.AppointmentType}} </span> <span style="float:right;padding-right: 20px;">
+            User&nbsp;: {{insStickerDetails.User}} </span> </div>
+      </div>
+      <div class="opd-qrcode" [ngClass]="'opdqrcode-' + hospitalCode">
+        <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+    <button class="btn green btn-success" value="" (click)="print()" id="btnPrintInsSticker" [disabled]="coreService.loading">
+      <span>Print</span>&nbsp;&nbsp;
+      &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+    </button>
+  </div>
+
+  <select-printer [group-name]="'reg-sticker'" [storage-key]="'ins-sticker'"
+    (on-printer-change)="OnPrinterChanged($event)">
+  </select-printer>
+
+</div>
+
+
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

@@ -1,0 +1,315 @@
+<style>
+  .hm-form .control-label {
+    font-size: 11px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .hm-form .filter-label {
+    font-size: 14px;
+  }
+
+  .col-md-5 .col-md-7 .ng-untouched.ng-pristine.ng-valid,
+  .col-md-5 .col-md-7 .ng-valid.ng-dirty.ng-touched {
+    width: 100%;
+  }
+
+  .hm-form input {
+    margin-bottom: 0 !important;
+  }
+
+  .table>thead>tr>th {
+    padding: 0px !important;
+    vertical-align: bottom;
+  }
+
+  .no-border {
+    border: none;
+    font-weight: bold;
+  }
+
+  .align {
+    margin-left: 10px;
+  }
+</style>
+
+<div class="col-md-12">
+  <div>
+    <table class="table billing-table" style="background-color:initial;margin-bottom:0px;">
+      <thead>
+        <tr>
+          <th><b class="align">Module<sup> *</sup></b></th>
+          <th *ngIf="invSectionFlag&&!otherSectionFlag"><b class="align">Vendor<sup> *</sup></b></th>
+          <th *ngIf="phrmSectionFlag&&!otherSectionFlag"><b class="align">Supplier<sup> *</sup></b></th>
+          <th></th>
+          <th *ngIf="invSectionFlag&&!otherSectionFlag"><b class="align">GR No</b></th>
+          <th *ngIf="phrmSectionFlag&&!otherSectionFlag"><b class="align">Invoice No</b></th>
+          <th></th>
+          <th *ngIf="!otherSectionFlag"><b class="align">GR Date</b>(Search by date?) <input name="salutation" type="checkbox"
+              [(ngModel)]="isDateSelected" (ngModelChange)="onSearchByDate()">
+          </th>
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #dde3e9;">
+        <tr>
+          <td>
+            <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}"
+              style="width: 100%;height: 32px !important;" (change)="onSectionChange()" *ngIf='!otherSectionFlag'>
+              <option *ngFor="let s of FilteredSectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+            </select>
+            <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}" 
+            style="width: 20%;height: 32px !important;" (change)="onSectionChange()" *ngIf='otherSectionFlag'>
+            <option *ngFor="let s of FilteredSectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+          </select>
+          </td>
+          <td *ngIf='!otherSectionFlag'>
+            <form class="bill-itemname" *ngIf="invSectionFlag">
+              <input id="srch_itemName" class="form-control cstm-form-control" danphe-auto-complete title=""
+                autocomplete="off" [(ngModel)]="selectedVendor" [list-formatter]="vendorOrSupplierListFormatter"
+                [source]="VendorList" placeholder="Enter Vendor Name" display-property-name="VendorName"
+                value-property-name=null match-formatted="true" [ngModelOptions]="{standalone: true}"
+                onClick="this.select();" (ngModelChange)="clearGrList()" />
+              <p *ngIf="selectedVendor && selectedVendor.LedgerId">
+                <strong><em>Ledger: {{selectedVendor.LedgerName}}</em></strong>
+              </p>
+              <p *ngIf="selectedVendor&&!selectedVendor.IsMapped">
+                <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
+                  style="color: blue;cursor: pointer;">
+                  <strong
+                    style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create
+                    ledger for selected vendor</strong>
+                </i>
+              </p>
+            </form>
+            <form class="bill-itemname" *ngIf="phrmSectionFlag">
+              <div class="autocomplete-item">
+                <input id="srch_itemName" class="form-control cstm-form-control" danphe-auto-complete title=""
+                  autocomplete="off" [(ngModel)]="selectedSupplier" [list-formatter]="vendorOrSupplierListFormatter"
+                  [source]="SupplierList" placeholder="Enter Supplier Name" display-property-name="SupplierName"
+                  value-property-name=null match-formatted="true" [ngModelOptions]="{standalone: true}"
+                  onClick="this.select();" (ngModelChange)="clearGrList()"/>
+                <p *ngIf="selectedSupplier && selectedSupplier.LedgerId">
+                    <strong><em>Ledger: {{selectedSupplier.LedgerName}}</em></strong>
+                </p>
+                <p *ngIf="selectedSupplier&&!selectedSupplier.IsMapped">
+                  <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
+                    style="color: blue;cursor: pointer;">
+                    <strong
+                      style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create
+                      ledger for selected supplier</strong>
+                  </i>
+                </p>
+              </div>
+            </form>
+          </td>
+          <td></td>
+          <td style="width: 200px;" *ngIf='!otherSectionFlag'>
+            <form class="bill-itemname">
+              <div class="autocomplete-item">
+                <input id="srch_itemName" class="form-control cstm-form-control" [(ngModel)]="grNumber"
+                  [ngModelOptions]="{standalone: true}" *ngIf="invSectionFlag" placeholder="Enter GR Number" />
+                <input id="srch_itemName" class="form-control cstm-form-control" [(ngModel)]="invoiceNumber"
+                  [ngModelOptions]="{standalone: true}" *ngIf="phrmSectionFlag" placeholder="Enter Invoice Number" />
+              </div>
+            </form>
+          </td>
+          <td></td>
+          <td *ngIf='!otherSectionFlag'>
+            <form>
+              <danphe-date-picker [(ngModel)]="selectedDate" ngDefaultControl [CalendarTypes]="'np,en'"
+                [ngModelOptions]="{standalone:true}">
+              </danphe-date-picker>
+            </form>
+          </td>
+          <td  *ngIf='!otherSectionFlag'>
+            <button class="btn btn-primary btn-add-new-row" title="Click To load Item" (click)="load()">load
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf='!otherSectionFlag'>
+    <danphe-grid [grid-colDefaults]="SetupInvGridColumns" [grid-data]="GrList"
+      (grid-actions)="gRListGridActions($event)" *ngIf="invSectionFlag">
+    </danphe-grid>
+    <danphe-grid [grid-colDefaults]="SetupPhrmGridColumns" [grid-data]="GrList"
+      (grid-actions)="gRListGridActions($event)" *ngIf="phrmSectionFlag">
+    </danphe-grid>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPaymentPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3>
+              <span *ngIf="invSectionFlag&&selectedVendor">Payment for
+                <b>{{selectedVendor.VendorName}}
+                  <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
+                    style="color: blue;cursor: pointer;" *ngIf="!payment.LedgerId">
+                    <strong
+                      style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create
+                      ledger for selected vendor</strong>
+                  </i>
+                <em *ngIf="payment.LedgerId">Ledger: {{selectedVendor.LedgerName}}</em></b></span>
+              <span *ngIf="phrmSectionFlag&&selectedSupplier">Payment for
+                <b>{{selectedSupplier.SupplierName}}
+                  <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
+                    style="color: blue;cursor: pointer;"  *ngIf="!payment.LedgerId">
+                    <strong
+                      style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create
+                      ledger for selected supplier</strong>
+                  </i>
+                <em *ngIf="payment.LedgerId">Ledger: {{selectedSupplier.LedgerName}}</em></b></span>
+            </h3>
+            <a class="btn btn-danger" (click)="close()" title="Cancel">X</a>
+          </div>
+          <form [formGroup]="payment.PaymentValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-6 col-xs-6">
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Total Amount<b>:</b></label>
+                    <div class="col-md-7">
+                      <label class="form-control no-border">{{payment.TotalAmount}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Paid Amount<b>:</b></label>
+                    <div class="col-md-7">
+                      <label class="form-control no-border">{{payment.PaidAmount}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Due Amount<b>:</b></label>
+                    <div class="col-md-7">
+                      <label class="form-control no-border">{{payment.DueAmount}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Voucher Amount<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" [(ngModel)]="payment.VoucherAmount" formControlName="VoucherAmount"
+                        id="VoucherAmount" placeholder="Voucher Amount" type="number"
+                        (keyup.enter)="FocusElementById('PaymentFrom')" (focusout)="amountCalculations()" />
+                      <span class="error-msg" *ngIf="payment.IsDirty('VoucherAmount')"
+                        [hidden]="payment.IsValidCheck('VoucherAmount','required')"> Voucher Amount is required</span>
+                      <span *ngIf="payment.VoucherAmount" style="color:green;">
+                        ( In Words: {{payment.VoucherAmount | NumberInWords | CapitalFirstLetter}} )
+                      </span>
+                      <span class="error-msg"  *ngIf="payment.VoucherAmount"
+                        [hidden]="payment.VoucherAmount <= payment.DueAmount">Voucher Amount should be less than or equal to Due Amount</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Remaining Amount<b>:</b></label>
+                    <div class="col-md-7">
+                      <label class="form-control no-border">{{payment.RemainingAmount}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                  </div>
+                  <div class="form-group">
+                  </div>
+                </div>
+                <div class="col-md-6 col-xs-6">
+                  <div class="form-group">
+                    <label class="control-label col-md-5" *ngIf="invSectionFlag">GR No<b>:</b></label>
+                    <label class="control-label col-md-5" *ngIf="phrmSectionFlag">Invoice No<b>:</b></label>
+                    <div class="col-md-7 div-relative">
+                      <label class="form-control no-border" *ngIf="invSectionFlag">{{payment.GrNo}}</label>
+                      <label class="form-control no-border" *ngIf="phrmSectionFlag">{{payment.InvoiceNo}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">GR Date<b>:</b></label>
+                    <div class="col-md-7">
+                      <label class="form-control no-border"><b>(AD)</b>{{payment.GrDate |
+                        DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;<b>(BS)</b> {{payment.GrDate |
+                        nepaliDate:'format':'YYYY-MM-DD'}}</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Payment From<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <div>
+                        <input class="form-control" danphe-auto-complete [source]="allLedgerList" placeholder="Ledger Name"
+                          display-property-name="LedgerName" formControlName="PaymentFrom"
+                          value-property-name="LedgerName" [list-formatter]="LedgerListFormatter"
+                          [(ngModel)]="selectedLedger" (keyup.enter)="FocusElementById('PaymentMode')" 
+                          [grid-sort]="'LedgerName'" onClick="this.select();" id="PaymentFrom" />
+                        <span class="color-red font-sm" *ngIf="payment.IsDirty('PaymentFrom')"
+                          [hidden]="payment.IsValidCheck('PaymentFrom','required')">Payment from is required.</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Payment Mode <sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <select [(ngModel)]="payment.PaymentMode" class="form-control" formControlName="PaymentMode"
+                        (change)="paymentModeChange()" id="PaymentMode">
+                        <option value="NA">Choose payment mode</option>
+                        <option value="cash">Cash</option>
+                        <option value="cheque">Cheque</option>
+                      </select>
+                      <span class="error-msg" *ngIf="payment.IsDirty('PaymentMode')"
+                        [hidden]="payment.IsValidCheck('PaymentMode','required')"> Payment mode is required</span>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="showPayeeAndCheque">
+                    <label class="control-label col-md-5">Payee Name<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" [(ngModel)]="payment.PayeeName" id="PayeeName"
+                        placeholder="Payee Name" [ngModelOptions]="{standalone: true}"
+                        (keyup.enter)="FocusElementById('ChequeNo')" />
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="showPayeeAndCheque">
+                    <label class="control-label col-md-5">Cheque No<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input type="number" [(ngModel)]="payment.ChequeNo" min="0" placeholder="Cheque no"
+                        [ngModelOptions]="{standalone: true}" class="form-control" id="ChequeNo"
+                        (keyup.enter)="FocusElementById('Narration')" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Narration<sup class="color-red">*</sup><b> :</b></label>
+                    <div class="col-md-7">
+                      <textarea class="form-control" id="Narration" maxlength="400" rows="5"
+                        [(ngModel)]="payment.Narration" formControlName="Narration" placeholder="Narration"
+                        (keydown.enter)="FocusElementById('MakePayment')">
+                      </textarea>
+                      <span class="error-msg" *ngIf="payment.IsDirty('Narration')"
+                        [hidden]="payment.IsValidCheck('Narration','required')"> Narration is required</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12">
+                <div class="form-actions" style="float: right;">
+                  <input type="button" class="btn green btn-success margin-7-hr" (click)="loading=true;makePayment()"
+                    value="{{loading == true ? 'Making payment..': 'Make Payment'}}" [disabled]="loading"
+                    id="MakePayment" />
+                    <!-- <input type="button" class="btn green btn-success margin-7-hr" (click)="loading=true;makePayment()"
+                    value="{{loading == true ? 'Making payment..': 'Make Payment'}}" [disabled]="!payment.LedgerId"  *ngIf="!payment.LedgerId"
+                    id="MakePayment" /> -->
+                  <input type="button" class="btn btn-danger margin-7-hr" (click)="loading=true;cancel()"
+                    [disabled]="loading" value="Cancel" />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId"></transaction-view>
+<ng-container *ngIf="showAddLedgerBox">
+  <ledger-create-shared [show-add-ledger-page]="showAddLedgerBox" [ledger-type]="ledgerType"
+    [reference-id]="ledReferenceId" (callback-add)="OnNewLedgerAdded($event)"></ledger-create-shared>
+</ng-container>

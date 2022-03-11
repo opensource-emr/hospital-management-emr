@@ -18,7 +18,8 @@ import { CommonFunctions } from '../../shared/common.functions';
 import { APIsByType, SearchService } from '../../shared/search.service';
 
 @Component({
-  templateUrl: "./list-visit.html" //"/AppointmentView/ListVisit",
+  templateUrl: "./list-visit.html", //"/AppointmentView/ListVisit",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class VisitListComponent {
@@ -40,8 +41,13 @@ export class VisitListComponent {
   public patGirdDataApi: string = "";
   public patientVisitId: number;
   public status: string = "";
-  searchText: string = '';
+  public searchText: string = '';
+  public immDeptName: string = "";
   public enableServerSideSearch: boolean = false;
+  public showDob: boolean;
+  public bil_InvoiceNo: number = 0;
+  public bil_FiscalYrId: number = 0;
+  public bil_BilTxnId: number = null;
   constructor(
     public visitService: VisitService,
     public patientService: PatientService,
@@ -54,7 +60,7 @@ export class VisitListComponent {
     public securityService: SecurityService,
     public coreService: CoreService,
     public _searchService: SearchService) {
-
+    this.immDeptName = this.coreService.GetImmunizationDepartmentName().toLowerCase();
     this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
 
     if (this.currentCounter < 1) {
@@ -94,7 +100,7 @@ export class VisitListComponent {
   }
   //today's all visit or all visits with IsVisitContinued status as false
   LoadVisitList(searchTxt): void {
-    this.visitBlService.GetVisitsByStatus(this.status, this.maxLastVisitDays, searchTxt)
+    this.visitBlService.GetVisits(this.maxLastVisitDays, searchTxt)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.visits = res.Results;
@@ -126,39 +132,42 @@ export class VisitListComponent {
 
   VisitGridActions($event: GridEmitModel) {
     switch ($event.Action) {
-      case "transfer":
-        {
-          //cloning the object inorder to change the transfer from original object, to avoid changing the original object.
-          var selectedVisit = Object.create($event.Data);
-          let todaysdate = moment().format('YYYY-MM-DD');
-          let visitdate = moment($event.Data.VisitDate).format('YYYY-MM-DD');
+      //sud:03May'21--commented transfer case since it's not required after Credit Note implemented.
+      //we'll revise the requirement later to give some easier solution to change the doctor/department..
+      
+      // case "transfer":
+      //   {
+      //     //cloning the object inorder to change the transfer from original object, to avoid changing the original object.
+      //     var selectedVisit = Object.create($event.Data);
+      //     let todaysdate = moment().format('YYYY-MM-DD');
+      //     let visitdate = moment($event.Data.VisitDate).format('YYYY-MM-DD');
 
-          //if the provider transfers another provider in followup then it should be treated as another visit.
+      //     //if the provider transfers another provider in followup then it should be treated as another visit.
 
-          //Ashim:31stOct2017- Commented the below condition as the requirement was changed.
-          //New Req: Transfer can be done in case of followup as well and the time limit changed from 1 day to 15 days.
-          //if (selectedVisit.AppointmentType == "followup") {
-          //    this.msgBoxServ.showMessage("failed", ["Cannot Transfer from followup visit, please create a new visit instead."]);
-          //}
-          //else {
-          //only today's visit can be transfered
-          //Ashim:31stOct2017- Modified the below condition as the requirement was changed.
-          //New Req: only today's or past visit can be transfered, future visit cannot be transfered.
-          if ((moment(visitdate).diff(todaysdate)) <= 0) {
+      //     //Ashim:31stOct2017- Commented the below condition as the requirement was changed.
+      //     //New Req: Transfer can be done in case of followup as well and the time limit changed from 1 day to 15 days.
+      //     //if (selectedVisit.AppointmentType == "followup") {
+      //     //    this.msgBoxServ.showMessage("failed", ["Cannot Transfer from followup visit, please create a new visit instead."]);
+      //     //}
+      //     //else {
+      //     //only today's visit can be transfered
+      //     //Ashim:31stOct2017- Modified the below condition as the requirement was changed.
+      //     //New Req: only today's or past visit can be transfered, future visit cannot be transfered.
+      //     if ((moment(visitdate).diff(todaysdate)) <= 0) {
 
-            this.selectedVisit = selectedVisit;
-            this.visitService.appointmentType = "Transfer";
-            //sud:26June'19--needed to assign parent's visit info in current one.
-            this.visitService.ParentVisitInfo = selectedVisit;//IMPORTANT..! It's used extensively throughout visit module, Don't Remove It.
-            this.AssignPatientToGlobal($event.Data.Patient);
-            this.router.navigate(['/Appointment/Visit']);
-          }
-          else {
-            this.msgBoxServ.showMessage("failed", ["Only past or today's visit can be transfered to another doctor."]);
-          }
-          break;
+      //       this.selectedVisit = selectedVisit;
+      //       this.visitService.appointmentType = "Transfer";
+      //       //sud:26June'19--needed to assign parent's visit info in current one.
+      //       this.visitService.ParentVisitInfo = selectedVisit;//IMPORTANT..! It's used extensively throughout visit module, Don't Remove It.
+      //       this.AssignPatientToGlobal($event.Data.Patient);
+      //       this.router.navigate(['/Appointment/Visit']);
+      //     }
+      //     else {
+      //       this.msgBoxServ.showMessage("failed", ["Only past or today's visit can be transfered to another doctor."]);
+      //     }
+      //     break;
 
-        }
+      //   }
       case "referral":
         {
 
@@ -171,10 +180,11 @@ export class VisitListComponent {
             this.selectedVisit = selectedVisit;
             this.visitService.appointmentType = "Referral";
             this.visitService.ParentVisitInfo = selectedVisit;
-
+           
             //this.visitService.globalVisit.PatientVisitId = $event.Data.PatientVisitId;
             //this.visitService.globalVisit.ProviderId = $event.Data.ProviderId;
-            this.AssignPatientToGlobal($event.Data.Patient);
+            //this.AssignPatientToGlobal($event.Data.Patient);
+            this.AssignPatientToGlobal($event.Data);
 
 
             //start: sud: 3June'19--Decide whether to go for paid-referral or free-referral.
@@ -268,6 +278,10 @@ export class VisitListComponent {
         {
           this.showGenericSticker = false;//sud:19Nov'18--to hide Generic sticker on other action.
           //this.selectedVisit = this.visitService.CreateNewGlobal();
+
+
+          this.showDob = $event.Data && $event.Data.DepartmentName && ($event.Data.DepartmentName.toLowerCase() == this.immDeptName);
+
           var selectedVisit = Object.create($event.Data);
           if (selectedVisit.VisitType == "emergency") {
             this.showERSticker = false;
@@ -421,6 +435,20 @@ export class VisitListComponent {
       if (parVisObj) {
         parVisObj.IsVisitContinued = true;
       }
+
+      this.showOpdSticker = false;
+      this.changeDetector.detectChanges();
+      this.selectedVisit = this.visitService.CreateNewGlobal();
+      this.selectedVisit.PatientVisitId = newFolVisit.PatientVisitId;
+      this.selectedVisit.QueueNo = newFolVisit.QueueNo;
+
+      this.selectedVisit.PatientId = newFolVisit.PatientId;
+      if(newFolVisit.BillingTransaction){
+        this.bil_InvoiceNo = newFolVisit.BillingTransaction.InvoiceNo;
+        this.bil_FiscalYrId = newFolVisit.BillingTransaction.FiscalYearId;
+        this.bil_BilTxnId = newFolVisit.BillingTransaction.BillingTransactionId;
+      }
+      this.showOpdSticker = true;
       this.visits.unshift($event.data);
       //returns fresh copy of the array, inorder to notify angular some change is made in the array.
       this.visits = this.visits.slice();
@@ -429,6 +457,14 @@ export class VisitListComponent {
 
 
 
+  }
+
+  hotkeys(event) {
+    if (event.keyCode == 27 && this.showERSticker) {
+      this.Close_ER_Sticker_Popup();
+    }else if(event.keyCode == 27 && this.showOpdSticker){
+      this.Close_OPD_Sticker_Popup();
+    }
   }
 
 

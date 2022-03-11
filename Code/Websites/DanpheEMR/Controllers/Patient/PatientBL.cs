@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
+
 
 namespace DanpheEMR.Controllers
 {
@@ -22,9 +24,12 @@ namespace DanpheEMR.Controllers
             int newPatNo = 0;
             string newPatCode = "";
 
-            PatientDbContext patientDbContext = new PatientDbContext(connString);
-            var maxPatNo = patientDbContext.Patients.DefaultIfEmpty().Max(p => p == null ? 0 : p.PatientNo);
-            newPatNo = maxPatNo.Value + 1;
+            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted }))
+            {
+                PatientDbContext patientDbContext = new PatientDbContext(connString);
+                var maxPatNo = patientDbContext.Patients.DefaultIfEmpty().Max(p => p == null ? 0 : p.PatientNo);
+                newPatNo = maxPatNo.Value + 1;
+            }
 
 
             string patCodeFormat = "YYMM-PatNum";//this is default value.
@@ -104,7 +109,7 @@ namespace DanpheEMR.Controllers
 
             //Use 'X' if middlename is not there.
             string strMiddleName = string.IsNullOrEmpty(obj.MiddleName) ? "X" : obj.MiddleName.Substring(0, 1);
-            string strLastName = obj.LastName.Substring(0, 1);
+            string strLastName = string.IsNullOrEmpty(obj.LastName)? "X" : obj.LastName.Substring(0, 1);
             string strdateofbrith = obj.DateOfBirth.Value.ToString("ddMMyy");
             int randomnos = (new Random()).Next(1000, 10000);
             var empi = strCountrySubDivision +
@@ -208,17 +213,17 @@ namespace DanpheEMR.Controllers
             return retPat;
         }
 
-        public static InsuranceModel GetInsuranceModelFromInsPatientVM(GovInsurancePatientVM govPatientVM)
+        public static InsuranceModel GetInsuranceModelFromInsPatientVM(GovInsurancePatientVM govPatientVM, int currentUserId)
         {
             InsuranceModel retInsInfo = new InsuranceModel()
             {
                 InsuranceProviderId = govPatientVM.InsuranceProviderId,
                 InsuranceName = govPatientVM.InsuranceName,
                 IMISCode = govPatientVM.IMISCode,
+                CreatedBy = currentUserId,
                 CreatedOn = DateTime.Now,
                 InitialBalance = govPatientVM.InitialBalance,
-                CurrentBalance = govPatientVM.CurrentBalance
-
+                CurrentBalance = govPatientVM.CurrentBalance               
             };
 
             return retInsInfo;
@@ -246,7 +251,8 @@ namespace DanpheEMR.Controllers
                 CountrySubDivisionName = outPatientVM.CountrySubDivisionName,
                 MembershipTypeId = 0,
                 PhoneNumber = outPatientVM.PhoneNumber,
-                IsActive = outPatientVM.IsActive
+                IsActive = outPatientVM.IsActive,
+                MunicipalityId = outPatientVM.MunicipalityId
             };
 
 

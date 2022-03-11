@@ -57,7 +57,10 @@ export class DischargeSummary {
   public ProcedureNts: string = null;
   public SelectedImagingItems: string = null;
   public DischargeType: string = null;
+  
+  public ProvisionalDiagnosis: string = null;
 
+  public DiagnosisFreeText: string;
 
   constructor() {
 
@@ -69,8 +72,8 @@ export class DischargeSummary {
       'OperativeProcedure': ['', Validators.compose([Validators.maxLength(1000)])],
       'OperativeFindings': ['', Validators.compose([Validators.maxLength(1000)])],
       //'Diagnosis': ['', Validators.compose([Validators.required, Validators.maxLength(1000)])],
-      'CaseSummary': ['', Validators.compose([Validators.required, Validators.maxLength(1000)])],
-      'Condition': ['', Validators.compose([Validators.required, Validators.maxLength(1000)])],
+      'CaseSummary': ['', Validators.compose([Validators.maxLength(1000)])],
+      'Condition': ['', Validators.compose([Validators.maxLength(1000)])],
       //ramavtar: 12May18: Treatment is not mandatory
       'Treatment': ['', Validators.compose([Validators.maxLength(1000)])],
       'HistologyReport': ['', Validators.compose([Validators.maxLength(1000)])],
@@ -85,13 +88,9 @@ export class DischargeSummary {
       'HospitalCourse': ['', Validators.compose([Validators.maxLength(1000)])],
       'PresentingIllness': ['', Validators.compose([Validators.maxLength(1000)])],
       'ProcedureNts': ['', Validators.compose([Validators.maxLength(1000)])],
-      //Ashim: 15Dec2017 : ResidenceDr is not mandatory
-      //'ResidenceDrId': ['', Validators.compose([Validators.required])]
+      
       'DischargeConditionId': ['', Validators.compose([])],
-      'DeliveryTypeId': ['', Validators.compose([])],
-      //'BabyBirthConditionId': ['', Validators.compose([])],
-      //'DeathTypeId': ['', Validators.compose([])],
-      //'BabysFathersName': ['', Validators.compose([])],
+      'DiagnosisFreeText': ['', Validators.compose([Validators.maxLength(1000)])]
     });
   }
   public IsDirty(fieldName): boolean {

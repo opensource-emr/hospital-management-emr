@@ -1,0 +1,40 @@
+<div class="row">
+  <div class="col-lg-6 col-sm-12 text-left">
+    <div class="caption lb-caption">
+      <h3><span><i class="fa fa-user"></i>Insurance Patient Visit List</span></h3>
+    </div>
+  </div>
+  <div class="col-lg-6 col-sm-12 text-right"> <a class="btn blue" (click)="LoadVisitList('')"> <i
+        class="fa fa-refresh "></i> Reload </a> </div>
+  <div class="col-lg-12 col-sm-12">
+    <div class="warning_div">
+      <p>* Followup is valid upto {{maxLastVisitDays}} days of last visit with same doctor</p>
+    </div>
+    <danphe-grid [grid-colDefaults]="insVisitGridColumns" [grid-data]="insVisits"
+      (grid-actions)="InsVisitGridActions($event)" (serverSearchText)="serverSearchTxt($event)"
+      [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+  </div>
+</div>
+
+
+<!--Start:Sticker Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showOpdSticker">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseStickerPrintPopup()">X</a>
+          <div>
+            <ins-sticker *ngIf="showOpdSticker" [SelectedVisitDetails]="selectedVisit" [isInsuranceBilling]="true">
+            </ins-sticker>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Sticker Print Popup-->
+
+
+<ins-danphe-followup-visit *ngIf="showFollowupPage" [parent-visit]="selectedVisit"
+  (on-followup-add)="FollowupPopupOnClose($event)"></ins-danphe-followup-visit>

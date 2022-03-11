@@ -10,8 +10,9 @@ import { InventoryBLService } from "../shared/inventory.bl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { ActivateInventoryService } from '../../shared/activate-inventory/activate-inventory.service';
 @Component({
-  templateUrl: "../../view/inventory-view/StockDetails.html" // "/InventoryView/StockDetails"
+  templateUrl: "./stock-details.component.html" // "/InventoryView/StockDetails"
 })
 export class StockDetailsComponent {
   public stockdetailsList: Array<StockModel> = new Array<StockModel>();
@@ -19,22 +20,24 @@ export class StockDetailsComponent {
   public itemId: number = null;
   public itemName: string = null;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  StoreId: number;
 
   constructor(
     public inventoryBLservice: InventoryBLService,
     public inventoryservice: InventoryService,
-    public router: Router,
+    public router: Router, public _activateInventoryService: ActivateInventoryService,
     public msgBoxServ: MessageboxService) {
     this.stockdetailGridColumns = GridColumnSettings.StockDetails;
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('GoodsReceiptDate', false));
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('GoodsReceiptDate', false)]);
     this.loadStockDetails(this.inventoryservice.ItemId);
   }
-  //load stock item detail using item id
+  //load stock item detail using item id, batch no and expiryDate;
   loadStockDetails(id: number) {
     if (id != null) {
       this.itemId = id;
+      this.StoreId = this._activateInventoryService.activeInventory.StoreId;
       this.itemName = this.inventoryservice.ItemName;//sud:3Mar'20-Property Rename in InventoryService
-      this.inventoryBLservice.GetStockDetailsByItemId(this.itemId)
+      this.inventoryBLservice.GetStockDetailsByItemId(this.itemId, this.StoreId)
         .subscribe(res => {
           if (res.Status == "OK") {
             this.stockdetailsList = res.Results;

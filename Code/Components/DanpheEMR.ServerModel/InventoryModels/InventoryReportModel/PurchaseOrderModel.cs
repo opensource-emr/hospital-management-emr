@@ -9,19 +9,17 @@ namespace DanpheEMR.ServerModel.ReportingModels
    public class PurchaseOrderModel
     {
         public DateTime Date { get; set; }
-        
-        public Int32 OrderNumber { get; set; }
+        public int PONumber { get; set; }
+        public string VendorName { get; set; }
         public string ItemName { get; set; }
-        public Nullable<double> TotalQty { get; set; }
-        public Nullable<double> ReceivedQuantity { get; set; }
-        public Nullable<double> PendingQuantity { get; set; }
+        public string ItemCode { get; set; }
+        public string ItemType { get; set; }
+        public string SubCategory { get; set; }
+        public Nullable<double> Quantity { get; set; }
         public Nullable<decimal> StandardRate { get; set; }
-        public DateTime DueDate { get; set; }
-
-        public string Code { get; set; }
-        public string UOMName { get; set; }
-
-
+        public Nullable<decimal> VAT { get; set; }
+        public Nullable<decimal> TotalAmount { get; set; }
+        public string Remarks { get; set; }
 
     }
        

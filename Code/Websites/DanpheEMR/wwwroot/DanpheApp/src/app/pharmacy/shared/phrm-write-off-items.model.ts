@@ -11,6 +11,7 @@ import { PHRMGoodsReceiptItemsModel } from "./phrm-goods-receipt-items.model";
 export class PHRMWriteOffItemModel {
     public WriteOffItemId: number = 0;
     public WriteOffId: number = 0;
+    public DispensaryId: number;
     public GoodReceiptItemId: number = 0;
     public ItemId: number = 0;
     public BatchNo: string = null;
@@ -24,10 +25,10 @@ export class PHRMWriteOffItemModel {
     public FreeQuantity: number = 0;
     public MRP: number = 0;
     public WriteOffItemValidator: FormGroup = null;
-    
-   ////Flag to Check Proper Item Selected From ItemList or NOT
+
+    ////Flag to Check Proper Item Selected From ItemList or NOT
     public checkSelectedItem: boolean = false;
-     /////Only To Display and Calculation Purpose
+    /////Only To Display and Calculation Purpose
     public tempBatchNo: string = null;
     public SelectedItem: null;
     public ItemName: string = "";
@@ -58,7 +59,7 @@ export class PHRMWriteOffItemModel {
     }
 
 
-    public IsValid():boolean{if(this.WriteOffItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.WriteOffItemValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.WriteOffItemValidator.valid;
         }

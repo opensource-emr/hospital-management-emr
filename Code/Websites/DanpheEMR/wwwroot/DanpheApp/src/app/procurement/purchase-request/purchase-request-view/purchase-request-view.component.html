@@ -1,0 +1,248 @@
+<style>
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 100px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+
+  td i.fa {
+    cursor: pointer;
+  }
+
+  tr.rq-row-background-red,
+  #itemRow.rq-row-background-red {
+    color: #674d4d;
+    background: #9983839e !important;
+  }
+
+  tr.rq-row-background-red:hover,
+  tr#itemRow.rq-row-background-red:hover {
+    color: #000;
+    background: #ff0000a6 !important;
+  }
+
+  .rqRowEditQty {
+    width: 70px;
+    height: 17px;
+  }
+
+  .hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .logo {
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .img-responsive {
+    position: static;
+  }
+</style>
+<div class="wrapper">
+  <div class="col-md-12">
+    <div class="left">
+      <button class="btn btn-primary btn-sm" (click)="RouteBack()"><i class="fa fa-backward"></i> &nbsp;Back to Purchase
+        Request
+        List</button>
+    </div>
+    <div class="right">
+      <button class="btn btn-primary btn-sm" (click)="print()"><i class="fa fa-print"></i>&nbsp;Print</button>
+    </div>
+  </div>
+
+  <div class="col-md-12" *ngIf="PurchaseRequestVM.PurchaseRequest">
+    <div id="printpage" class="row printStyle print-border">
+      <div style="text-align:center;">
+        <div class="col-md-12">
+          <div class="print-header">
+            <div class="row clearfix" style="margin-bottom: 10px;">
+              <div class="col-md-3" style="padding: 0 0 0 10px !important;">
+                <div class="logo" style="padding:0px 0">
+                  <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div style="padding-bottom:  0px;">
+                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                    <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                    <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                      headerDetail.tel}}</span><br />
+                    <span style="font-size:15px;"><strong> Procurement Unit </strong></span><br />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div style="text-align: right;">
+                  <div class="qr-code" style="width: 100%;position: static;height: 90px;justify-content: center;flex-direction: column;display: flex;">
+                    <qr-code [size]="75" [backgroundAlpha]="0" style="display: block; width: 100%; text-align: right;">
+                    </qr-code>
+                  </div>
+                </div>
+              </div>
+              <!-- Inventory Header  -->
+              <div style="clear:left"></div>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="left" style="text-align:left;">
+            <div>PR No:<b> {{PurchaseRequestVM.PurchaseRequest.PRNumber}}</b></div>
+            <div *ngIf="!!PurchaseRequestVM.PurchaseRequest.VendorName">Supplier Name:<b>
+                {{PurchaseRequestVM.PurchaseRequest.VendorName}}</b></div>
+          </div>
+          <div class="right" style="text-align:right;">
+            <div>
+              Requested Date:<b> {{PurchaseRequestVM.PurchaseRequest.RequestDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
+              <i *ngIf="PurchaseRequestVM.PurchaseRequest.RequestDate">({{PurchaseRequestVM.PurchaseRequest.RequestDate
+                | nepaliDate:'format':'YYYY-MM-DD'}}
+                BS )</i>
+            </div>
+          </div>
+
+          <div class="clear"></div>
+          <p class="text-center btm-pad border-up-down"><b>&nbsp;PURCHASE&nbsp;REQUEST&nbsp;DETAILS&nbsp;PRINT</b></p>
+          <div class="clear"></div>
+          <div class="clear footer"></div>
+          <div *ngIf="PurchaseRequestVM.PurchaseRequest != null">
+            <table class="table table-striped table-hover req_table" style="background-color:initial;margin-top:10px;width:100%">
+              <thead>
+                <tr style="font-weight: bold;text-align:center">
+                  <!-- <td>MSS No.</td> -->
+                  <td>Item Category</td>
+                  <td>Item Name</td>
+                  <!-- <td>Supplier Name</td> -->
+                  <td>UOM</td>
+                  <td>Item Code</td>
+                  <td>Quantity Required</td>
+                  <td>Quantity Avaiable In Stores</td>
+                  <td>Quantity verified On</td>
+                  <td>Supply Required Before</td>
+                  <td>Approved Quantity by Top Management</td>
+                  <td>Po No.& Date</td>
+                  <td>Supplier Invoice No. & Date</td>
+                  <td>Status</td>
+                  <td>Remarks</td>
+                </tr>
+              </thead>
+              <tbody *ngFor="let reqItm of PurchaseRequestVM.RequestedItemList;let i = index">
+                <tr id="itemRow" style="text-align:center" [ngClass]="{'rq-row-background-red': !reqItm.IsActive}">
+                  <!-- <td>{{reqItm.MSSNO}}</td> -->
+                  <td>{{reqItm.ItemCategory}}</td>
+                  <td>{{reqItm.ItemName}}</td>
+                  <!-- <td>{{PurchaseRequestVM.PurchaseRequest.VendorName}}</td> -->
+                  <td>{{reqItm.UOMName}}</td>
+                  <td>{{reqItm.Code}}</td>
+
+                  <td>
+                    <span [hidden]="reqItm.IsEdited">{{reqItm.RequestedQuantity}}</span>
+                  </td>
+                  <td><span *ngIf="reqItm.AvailableQuantity != undefined; else availableQty0">{{reqItm.AvailableQuantity}}</span>
+                    <ng-template #availableQty0>0</ng-template>
+                  </td>
+                  <td>{{reqItm.QuantityVerifiedOn | date :'dd-MMM-yy'}}</td>
+                  <td>{{reqItm.SupplyRequiredBefore}}</td>
+                  <td></td>
+                  <!--  -->
+                  <td>{{PurchaseRequestVM.PurchaseRequest.PONumber}}
+                    <b *ngIf="PurchaseRequestVM.PurchaseRequest.PODate">/</b>
+                    {{PurchaseRequestVM.PurchaseRequest.PODate | date: 'dd-MM-yyyy' }}
+                  </td>
+                  <td>
+                    {{PurchaseRequestVM.PurchaseRequest.SupplierInvoice}}
+                    <b *ngIf="PurchaseRequestVM.PurchaseRequest.SupplierInvoiceDate">/</b>
+                    {{PurchaseRequestVM.PurchaseRequest.SupplierInvoiceDate | date: 'dd-MM-yyyy'}}
+                  </td>
+                  <td>
+                    <b>{{reqItm.RequestItemStatus}}</b>
+                    <span *ngIf="reqItm.IsActive == false && reqItm.CancelledBy != null" id="CancellationToolTip" class="tooltip">
+                      <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                      </span>
+                      <p class="tooltiptext ttptextdown no-print">
+                        Cancelled&nbsp;By:&nbsp;{{reqItm.CancelledBy}}<br />
+                        Cancelled&nbsp;On:&nbsp;{{reqItm.CancelledOn | date : 'medium'}}<br />
+                        <em *ngIf="!!reqItm.CancelRemarks">Remarks:&nbsp;{{reqItm.CancelRemarks}}</em>
+                      </p>
+                    </span>
+                  </td>
+                  <td>{{reqItm.Remarks}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- <div *ngIf="!!PurchaseRequestVM.PurchaseRequest.Remarks" class="col-md-12 hidden-in-print text-left"
+            style="margin:10px 0">
+            <label for="Remarks" class="col-md-2">Remarks<span class="right">:</span></label>&nbsp;&nbsp;
+            <span>{{PurchaseRequestVM.PurchaseRequest.Remarks}}</span>
+          </div> -->
+          <hr />
+
+          <table width="100%" align="center">
+            <thead>
+              <tr>
+                <th>Prepared by Stores-RM/PM in Charge Sign with Date</th>
+                <th>Processd by Purchase In Charge Sign With Date</th>
+                <th>Approved by Top management Sign with Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="col-md-12" *ngIf="PurchaseRequestVM.PurchaseRequest != null" style="font-size: 12px;">
+            <div class="col-md-2" style="text-align: left;padding:0px;">
+              <div><u>Requested By</u>:</div>
+              <div>{{PurchaseRequestVM.RequestingUser.Name}}</div>
+              <div>{{PurchaseRequestVM.RequestingUser.Date | date : 'medium'}}</div>
+            </div>
+            <div class="col-md-5" style="text-align: left;padding:0px;" *ngIf="PurchaseRequestVM.Verifiers != null">
+              <u>Verified By</u>:
+              <div *ngFor="let verifier of PurchaseRequestVM.Verifiers;let i = index;">
+                {{i+1}}&nbsp;{{verifier.Name}}&nbsp;({{verifier.Date | date : 'medium'}})&nbsp;
+                <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span [title]="verifier.Remarks">{{verifier.Remarks |
+                    slice:0:10 }}..</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row center-style">
+    <div class="col-md-12 col-xs-12 ">
+      <button [disabled]="isAddPOApplicable==false" class="btn btn-primary" (click)="AddPurchaseOrder()">
+        Add&nbsp;Purchase&nbsp;Order&nbsp;&nbsp;<i class="fa icon-share-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

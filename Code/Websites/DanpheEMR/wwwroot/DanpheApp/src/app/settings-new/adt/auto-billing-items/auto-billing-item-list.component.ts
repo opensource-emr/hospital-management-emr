@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef, Renderer2 } from "@angular/core";
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { SettingsService } from "../../shared/settings-service";
 import { SettingsBLService } from "../../shared/settings.bl.service";
@@ -26,15 +26,23 @@ export class AutoBillingItemListComponent {
     public AutoAddBillingItems: boolean = false;
     public AutoAddBedItem: boolean = false;
     public paramterUpdated: boolean = false;
-
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
+    public check = 0; //used for purpose of focus
     constructor(public settingsBLService: SettingsBLService,
         public settingsServ: SettingsService,
         public changeDetector: ChangeDetectorRef,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService,
+        public renderer: Renderer2,) {
         this.GetBillingItems();
-        this.GetSrvDeptList();
+      this.GetSrvDeptList();
+      this.SetFocusById("dept0");
+        this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+              this.ClosePopUp();
+            }
+          }); 
     }
-
+    globalListenFunc: Function;
     //Checking if column of AutoBillingItems is available in table 
     checkEnable() {
         this.loading = false;
@@ -44,8 +52,10 @@ export class AutoBillingItemListComponent {
         this.selectedServDepts = []
         this.selectedBillItems = [];
         this.showAutoBillingItemPopUp = true;
+       
         this.autoBillingItemList = new BillingItemVM;
         this.AddRow(-1);
+        
     }
 
     ///getting auto billing items from Core_CFG_Parameter tables
@@ -197,7 +207,6 @@ export class AutoBillingItemListComponent {
 
         if (index == this.autoBillingItemList.ItemList.length - 1)
             this.initialAssign = false;
-
         this.txnItemList[index].filteredItem = this.masterItemList.filter(a => a.ServiceDepartmentId == this.txnItemList[index].ServiceDepartmentId);
 
     }
@@ -209,7 +218,7 @@ export class AutoBillingItemListComponent {
 
     //assigns service department id and filters item list
     ServiceDeptOnChange(index) {
-        let srvDeptObj = null;
+        let srvDeptObj = null;  
         // check if user has given proper input string for department name 
         //or has selected object properly from the dropdown list.
         if (typeof (this.selectedServDepts[index]) == 'string') {
@@ -221,10 +230,24 @@ export class AutoBillingItemListComponent {
         //if selection of department from string or selecting object from the list is true
         //then assign proper department name
         if (srvDeptObj) {
-            if (srvDeptObj.ServiceDepartmentId != this.txnItemList[index].ServiceDepartmentId) {
+            if (this.txnItemList[index].ItemName) {
+                this.txnItemList[index].ServiceDepartmentId = srvDeptObj.ServiceDepartmentId;
+                this.txnItemList[index].IsValidSelDepartment = true;
+                this.initialAssign=true;
+                this.FilterBillItems(index);
+                if(index == this.txnItemList.length-1 && this.check == 0){
+                    this.SetFocusById('dept0');
+                    this.check++;
+                }
+                else{
+                    this.SetFocusById('itemName'+index);
+                }   
+            }
+            else{
                 this.ResetSelectedRow(index);
                 this.txnItemList[index].ServiceDepartmentId = srvDeptObj.ServiceDepartmentId;
                 this.txnItemList[index].IsValidSelDepartment = true;
+                this.SetFocusById('itemName'+index);
                 this.FilterBillItems(index);
             }
         }
@@ -282,12 +305,13 @@ export class AutoBillingItemListComponent {
     UpdateAutoBillingItems() {
         this.loading = true;
         var isItemsValid: boolean;
-
+        this.check = 0;
         //Checking validation
         for (var listItem of this.txnItemList) {
             for (var i in listItem.BillingItemValidator.controls) {
                 listItem.BillingItemValidator.controls[i].markAsDirty();
                 listItem.BillingItemValidator.controls[i].updateValueAndValidity();
+             this.SetFocusById('dept0');
             }
             if (listItem.IsValid(undefined, undefined)) {
                 isItemsValid = true;
@@ -311,6 +335,7 @@ export class AutoBillingItemListComponent {
                         else {
                             this.msgBoxServ.showMessage("failed", ["Something is wrong, Check log for error message."]);
                             this.logError(res.ErrorMessage);
+                            this.SetFocusById("dept0");
                             this.loading = false;
                         }
                         this.autoBillingItemList = new BillingItemVM();
@@ -337,6 +362,7 @@ export class AutoBillingItemListComponent {
                 if (!itm.IsValidSelItemName) {
                     this.msgBoxServ.showMessage("failed", ["Invalid Item Name. Please select Item from the list."]);
                     this.loading = false;
+                    this.SetFocusById('itemName0')
                     return false;
                 }
                 if (itm.IsDuplicateItem) {
@@ -356,6 +382,7 @@ export class AutoBillingItemListComponent {
 
     //Close Function
     ClosePopUp() {
+        this.check = 0;
         this.showAutoBillingItemPopUp = false;
         this.txnItemList = [];
         this.enable = true;
@@ -389,6 +416,7 @@ export class AutoBillingItemListComponent {
 
     //Adding Row
     public AddRow(index) {
+        this.SetFocusById("dept"+(index+1));
         let txnItem: TxnBillItem = new TxnBillItem();
         if (index >= 0)
             txnItem.ServiceDepartmentId = this.txnItemList[index].ServiceDepartmentId;
@@ -415,5 +443,25 @@ export class AutoBillingItemListComponent {
             html += "(<i>" + docName + "</i>)";
         }
         return html;
+    }
+    public SetFocusById(id: string) {
+        if(this.selectedBillItems.length>0){
+            if(this.selectedBillItems[0] == null || this.selectedBillItems[0] == "" ){
+               id="itemName0";
+            }
+        }
+        window.setTimeout(function () {
+            let elementToBeFocused = document.getElementById(id);
+            if (elementToBeFocused) {
+                elementToBeFocused.focus();
+            }
+            else{
+                id="Update"
+                let elementToBeFocused = document.getElementById(id);
+                if (elementToBeFocused) {
+                    elementToBeFocused.focus();
+                }
+            }
+        }, 600);
     }
 }

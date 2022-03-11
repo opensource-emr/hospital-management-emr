@@ -1,0 +1,191 @@
+<div class="row">
+  <div class="form-body col-md-12">
+    <form [formGroup]="patient.PatientValidator" class="form-horizontal hm-form">
+      <div>
+        <div class="form-group" >
+          <label class="control-label col-md-3" style="font-size: 20px !important;"> NSHI <b>:</b> </label>
+          <label class="control-label col-md-3" style="font-size: 20px !important;color: darkgreen !important;"> {{patient.NSHI}} </label>
+          <!-- <div class="col-md-3 pr-0">
+            <input #firstname id="NSHI" disabled class="form-control" type="text" [(ngModel)]="patient.NSHI"
+              value="{{patient.NSHI}}" placeholder="NSHI" [ngModelOptions]="{standalone: true}"
+              style="font-size: 15px !important;" />
+          </div> -->
+        </div>
+        <div class="form-group">         
+          <label class="control-label col-md-3" > Insurance Balance Amt<b>:</b> </label>
+          <label class="control-label col-md-3" style="font-size: 20px !important;color: darkgreen !important;"> {{patient.Ins_InsuranceBalance | ParseAmount}} </label>
+
+          <!-- <div class="col-md-3 pr-0">
+            <input #firstname id="aptPatFirstName" class="form-control" maxlength="30" type="text" 
+             [(ngModel)]="patient.Ins_InsuranceBalance" disabled
+              [ngModelOptions]="{standalone: true}" required value="{{patient.Ins_InsuranceBalance | Currency }}"/>
+          </div> -->
+          <!-- <label class="control-label col-md-3"> Current Balance <b>:</b></label>
+          <div class="col-md-3 pr-0">
+            <input #firstname id="aptPatFirstName" class="form-control" maxlength="30" type="text" 
+             [(ngModel)]="patient.Ins_InsuranceCurrentBalance" disabled
+              [ngModelOptions]="{standalone: true}" required value="{{patient.Ins_InsuranceCurrentBalance | Currency }}"/>
+          </div> -->
+        </div>
+        <div class="form-group">
+          <label class="control-label col-md-3">Name<sup>*</sup><b>:</b></label>
+          <div class="col-md-3 pr-0">
+            <input #firstname id="aptPatFirstName" class="form-control" maxlength="30" type="text"
+              formControlName="FirstName" [(ngModel)]="patient.FirstName" required
+              value="{{patient.FirstName | CapitalFirstLetter}}" placeholder="First Name"
+              (keyup.enter)="GoToNext(middlename)" />
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('FirstName')"
+              [hidden]="patient.IsValidCheck('FirstName','required')"> First Name is required.</span> <span
+              class="color-red font-sm" *ngIf="patient.IsDirty('FirstName')"
+              [hidden]="patient.IsValidCheck('FirstName','maxlength')"> First Name must be less than 30
+              characters.</span>
+          </div>
+          <div class="col-md-3 pr-0">
+            <input #middlename class="form-control" maxlength="30" type="text" formControlName="MiddleName"
+              [(ngModel)]="patient.MiddleName" value="{{patient.MiddleName | CapitalFirstLetter}}"
+              placeholder="Middle Name" (keyup.enter)="GoToNext(lastname)" />
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('MiddleName')"
+              [hidden]="patient.IsValidCheck('MiddleName','maxlength')">Middle Name must be less than 30
+              characters.</span>
+          </div>
+          <div class="col-md-3">
+            <input #lastname class="form-control" maxlength="30" type="text" formControlName="LastName"
+              [(ngModel)]="patient.LastName" required value="{{patient.LastName | CapitalFirstLetter}}"
+              placeholder="Last Name" (keyup.enter)="SetFocusById('txtAgeInput')" />
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('LastName')"
+              [hidden]="patient.IsValidCheck('LastName','required')"> Last Name is required.</span> <span
+              class="color-red font-sm" *ngIf="patient.IsDirty('LastName')"
+              [hidden]="patient.IsValidCheck('LastName','maxlength')"> Last Name must be less than 30
+              characters.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-md-3">Have DOB ? <b>:</b></label>
+          <div class="col-md-1 pr-0">
+            <div class="input-group">
+              <div class="icheck-inline">
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input name="IsDobAvailable" type="checkbox" value="" [(ngModel)]="patient.IsDobVerified"
+                    [ngModelOptions]="{standalone: true}" (ngModelChange)="ConditionalValidationOfAgeAndDOB()"
+                    [disabled]="patient.PatientId">
+                  <span></span> </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8" *ngIf="patient.IsDobVerified">
+            <danphe-date-picker [(ngModel)]="patient.DateOfBirth" ngDefaultControl [CalendarTypes]="calendarType"
+              formControlName="DateOfBirth" (ngModelChange)="CalculateAge()" [year-settings]="'DateOfBirth'">
+            </danphe-date-picker>
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('DateOfBirth')"
+              [hidden]="patient.IsValidCheck('DateOfBirth','required')">DateOfBirth is required.</span> <span
+              class="color-red font-sm" *ngIf="patient.IsDirty('DateOfBirth')"
+              [hidden]="patient.IsValidCheck('DateOfBirth','wrongDate')">Wrong date is selected.</span>
+          </div>
+        </div>
+        <div class="form-group" *ngIf="!patient.IsDobVerified">
+          <div class="">
+            <label class="control-label col-md-3">Age <sup>*</sup><b>:</b> </label>
+            <div class="col-md-9">
+              <div class="col-md-3">
+                <div class="row">
+                  <input id="txtAgeInput" class="form-control" type="number" min="0" max="150" formControlName="Age"
+                    (focusout)="CalculateDob();" [(ngModel)]="patient.Age" placeholder="Age" style="width:90%"
+                    (keyup.enter)="GoToNextSelect(gender)" />
+                </div>
+              </div>
+              <div class="col-md-9" style="padding-right: 0px;padding-left: 5px;">
+                <div class="input-group">
+                  <select class="form-control" [(ngModel)]="patient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="CalculateDob();">
+                    <option value="Y" selected>Years</option>
+                    <option value="M">Months</option>
+                    <option value="D">Days</option>
+                  </select>
+                </div>
+              </div>
+              <span class="color-red font-sm" *ngIf="patient.IsDirty('Age')"
+                [hidden]="patient.IsValidCheck('Age','required')"> Age is required.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-md-3">Gender<sup>*</sup><b>:</b></label>
+          <div class="col-md-9">
+            <div class="input-group">
+
+              <select #gender class="form-control" [(ngModel)]="patient.Gender" formControlName="Gender"
+                (change)="SetFocusById('txtPhone')">
+                <option value="null" selected>--select--</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Other</option>
+              </select>
+            </div>
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('Gender')"
+              [hidden]="patient.IsValidCheck('Gender','required')"> Gender is required.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-md-3">Phone No. <sup *ngIf="isPhoneMandatory"> *</sup> <b>:</b> </label>
+          <div class="col-md-3 pr-0">
+            <input id="txtPhone" class="form-control" maxlength="11" type="tel" [(ngModel)]="patient.PhoneNumber"
+              formControlName="PhoneNumber" placeholder="Mobile Number *"
+              (keyup.enter)="SetFocusById('ddlCountrySubdivision')" />
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('PhoneNumber')"
+              [hidden]="patient.IsValidCheck('PhoneNumber','pattern')">Please enter valid contact number.</span> <span
+              class="color-red font-sm" *ngIf="patient.IsDirty('PhoneNumber')"
+              [hidden]="patient.IsValidCheck('PhoneNumber','required')">Cell number is required.</span>
+          </div>
+          <div class="col-md-3 pr-0">
+            <input class="form-control" maxlength="11" type="tel" [(ngModel)]="patient.LandLineNumber"
+              formControlName="LandLineNumber" placeholder="LandLine Number" />
+            <span class="color-red font-sm" *ngIf="patient.IsDirty('LandLineNumber')"
+              [hidden]="patient.IsValidCheck('LandLineNumber','pattern')">Please enter valid landline number.</span>
+          </div>
+          <div class="col-md-3"></div>
+        </div>
+
+      </div>
+      <div class="row">
+        <label class="control-label col-md-3">Address<sup>*</sup><b>:</b></label>
+        <div class="col-md-3 pr-0">
+          <select id="ddlCountry" class="form-control" [(ngModel)]="patient.CountryId" formControlName="CountryId"
+            (ngModelChange)="GetCountrySubDivision()">
+            <option *ngFor="let country of countries" value="{{country.CountryId}}">{{country.CountryName}}</option>
+          </select>
+          <span class="color-red font-sm" *ngIf="patient.IsDirty('CountryId')"
+            [hidden]="patient.IsValidCheck('CountryId','required')"> Country is required.</span>
+        </div>
+        <div *ngIf="patient.CountryId == 1" class="col-md-3 pr-0">
+          <input id="ddlCountrySubdivision" class="form-control" danphe-auto-complete
+            formControlName="CountrySubDivisionId" [(ngModel)]="countrySubDivision"
+            [list-formatter]="districtListFormatter" [source]="countrySubDivisions" placeholder="District"
+            display-property-name="CountrySubDivisionName" value-property-name=null
+            (valueChanged)="AssignSelectedDistrict()" onClick="this.select();" max-num-list="10"
+            (keyup.enter)="SetFocusById('txtAddress')" />
+          <span class="color-red font-sm" *ngIf="patient.IsDirty('CountrySubDivisionId') && patient.CountryId == 1"
+            [hidden]="patient.IsValidCheck('CountrySubDivisionId','required')"> District/State is required.</span>
+        </div>
+        <div class="col-md-3">
+          <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="patient.Address" [source]="olderAddressList" placeholder="Address"
+            display-property-name="PatAddress" value-property-name=null no-match-found-text=" " onClick="this.select();"
+            min-chars="2" style="text-transform: capitalize;" [grid-sort]="'sortonbasicdatatype'" max-num-list="10"
+            id="txtAddress" (keyup.enter)="SetFocusById('txtDepartment')" />
+        </div>
+        <div *ngIf="patient.CountryId != 1" class="col-md-3 pr-0">
+          <input class="form-control" style="height: 30px !important;font-size: 0.95em !important" maxlength="15"
+            type="text" [(ngModel)]="patient.PassportNumber" formControlName="PassportNumber"
+            placeholder="Passport Number" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 form-module">
+          <membership-select *ngIf="isPatientInfoLoaded" [show-community]="membershipSchemeParam.ShowCommunity"
+            [selected-id]="this.patient.MembershipTypeId" (on-membership-change)="OnMembershipChanged($event)"
+            [is-mandatory]="membershipSchemeParam.IsMandatory"> </membership-select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

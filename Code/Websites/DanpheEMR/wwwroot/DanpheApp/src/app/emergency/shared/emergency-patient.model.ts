@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { DischargeSummary } from '../../adt/shared/discharge-summary.model';
 import { EmergencyDischargeSummary } from './emergency-discharge-summary.model';
+import { EmergencyPatientCases } from './emergency-patient-cases.model';
 
 export class EmergencyPatientModel {
   public ERPatientNumber: number = 0;
@@ -22,7 +23,7 @@ export class EmergencyPatientModel {
   public ShortName: string = null;
   public LastName: string = "";
   public DateOfBirth: string = null;
-  public Gender: string = null;
+  public Gender: string = 'null';
   public Age: string = null;
   public AgeSex: string = null;
   public ContactNo: string = "";
@@ -70,13 +71,24 @@ export class EmergencyPatientModel {
   public ERPatientValidator: FormGroup = null;
 
   public Sex: string = "";   // ag7_mig_fix: property doest not exist used in er-lama.html
+
+  public MainCase: number = 0;
+  public SubCase: number = null;
+  public OtherCaseDetails: string = null;
+  public MunicipalityId: number = 0;
+  public MunicipalityName: string = null;
+
+  public PatientCases: EmergencyPatientCases = new EmergencyPatientCases();
+  
   constructor() {
     var _formBuilder = new FormBuilder();
     this.ERPatientValidator = _formBuilder.group({
       'FirstName': ['', Validators.compose([Validators.required, Validators.maxLength(40)])],
       'LastName': ['', Validators.compose([Validators.required, Validators.maxLength(40)])],
       'Gender': ['', Validators.required],
-      'PhoneNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,10}$')])]
+      'PhoneNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,10}$')])],
+      'Age': ['', Validators.compose([Validators.required])],
+      //'MainCase': ['', Validators.required]
     });
 
   }
@@ -117,6 +129,19 @@ export class EmergencyPatientModel {
         currCtrol.disable();
       }
     }
+  }
+
+  //dynamically sets ON and OFF the validation on LastName controlname.
+  public UpdateValidator(onOff: string, formControlName: string, validatorType: string) {
+    let validator = null;
+    if (validatorType == 'required' && onOff == "on") {
+      validator = Validators.compose([Validators.required]);
+    }
+    else {
+      validator = Validators.compose([]);
+    }
+    this.ERPatientValidator.controls[formControlName].validator = validator;
+    this.ERPatientValidator.controls[formControlName].updateValueAndValidity();
   }
 
 }

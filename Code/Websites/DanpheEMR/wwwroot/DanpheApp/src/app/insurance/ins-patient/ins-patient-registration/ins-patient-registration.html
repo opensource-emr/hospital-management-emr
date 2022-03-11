@@ -1,0 +1,484 @@
+<!-- <button class="btn btn-primary" (click)="AddPatient()">
+  Add Patient
+</button> -->
+
+<div class="wrapper">
+  <div class="popup-static portlet box portlet-fullscreen inv_modal">
+    <div class="portlet-body form">
+      <!--Model Box Body Start-->
+      <div class="col-md-12">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 *ngIf="popupAction=='add'" class="margin-0-vr"><strong>New Patient Registration</strong></h4>
+            <h4 *ngIf="popupAction=='edit'" class="margin-0-vr"><strong>Update Patient Information</strong></h4>
+          </div>
+          <button class="btn btn-danger history-del-btn" (click)="Close()">X</button>
+          <div class="modelbox-body">
+            <h4 [ngClass]="insPatient.PatientId ? 'clp clp-hd collapsed' : 'clp clp-hd'"
+              [attr.aria-expanded]="insPatient.PatientId ? 'false' : 'true'" data-toggle="collapse"
+              data-target="#patInfoSection">
+              Patient Information
+            </h4>
+            <div class="row">
+              <div class="col-md-12">
+                <div [ngClass]="insPatient.PatientId ? 'collapse clp-cntnt' : 'collapse clp-cntnt in'"
+                  id="patInfoSection">
+                  <form [formGroup]="insPatient.GovInsPatientValidator" class="form-horizontal">
+                    <div class="row">
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <label for="aptPatFirstName" class="control-label col-md-4">
+                            First Name<b class="color-red">
+                              *
+                            </b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input id="aptPatFirstName" class="form-control" maxlength="30" type="text"
+                              formControlName="FirstName" [(ngModel)]="insPatient.FirstName" required
+                              value="{{insPatient.FirstName | CapitalFirstLetter}}" placeholder="First Name"
+                              (keyup.enter)="setFocusById('middleName')" />
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('FirstName')"
+                              [hidden]="insPatient.IsValidCheck('FirstName','required')"> First Name is required.</span>
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('FirstName')"
+                              [hidden]="insPatient.IsValidCheck('FirstName','maxlength')">
+                              First Name must be less than
+                              30 characters.
+                            </span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                        <div class="form-group">
+                          <label for="middleName" class="control-label col-md-4">
+                            Middle Name<b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input id="middleName" class="form-control" maxlength="30" type="text"
+                              formControlName="MiddleName" [(ngModel)]="insPatient.MiddleName"
+                              value="{{insPatient.MiddleName | CapitalFirstLetter}}" placeholder="Middle Name"
+                              (keyup.enter)="setFocusById('lastName')" />
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('MiddleName')"
+                              [hidden]="insPatient.IsValidCheck('MiddleName','maxlength')">
+                              Middle Name must be less than
+                              30 characters.
+                            </span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                        <div class="form-group">
+                          <label for="lastName" class="control-label col-md-4">
+                            Last Name<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input id="lastName" class="form-control" maxlength="30" type="text"
+                              formControlName="LastName" [(ngModel)]="insPatient.LastName" required
+                              value="{{insPatient.LastName | CapitalFirstLetter}}" placeholder="Last Name"
+                              (keyup.enter)="setFocusById('selGender')" />
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('LastName')"
+                              [hidden]="insPatient.IsValidCheck('LastName','required')"> Last Name is required.</span>
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('LastName')"
+                              [hidden]="insPatient.IsValidCheck('LastName','maxlength')">
+                              Last Name must be less than 30
+                              characters.
+                            </span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Gender<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <!--<div class="input-group">
+                              <div>
+                                <div class="rad-holder">
+                                  <label for="genderMale" class="mt-radio mt-radio-outline">
+                                    <input id="genderMale" type="radio" value="Male" [(ngModel)]="insPatient.Gender"
+                                           formControlName="Gender">
+                                    <span></span>Male
+                                  </label>
+                                </div>
+                                <div class="rad-holder">
+                                  <label for="genderFemale" class="mt-radio mt-radio-outline">
+                                    <input id="genderFemale" type="radio" value="Female" [(ngModel)]="insPatient.Gender"
+                                           formControlName="Gender">
+                                    <span></span>Female
+                                  </label>
+                                </div>
+                                <div class="rad-holder">
+                                  <label for="genderOther" class="mt-radio mt-radio-outline">
+                                    <input id="genderOther" type="radio" value="Others" [(ngModel)]="insPatient.Gender"
+                                           formControlName="Gender">
+                                    <span></span>Other
+                                  </label>
+                                </div>
+                              </div>
+                            </div>-->
+                            <select id="selGender" class="form-control" [(ngModel)]="insPatient.Gender"
+                              formControlName="Gender" (change)="setFocusById('age')">
+                              <option value="null" selected>--select--</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Others">Other</option>
+                            </select>
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('Gender')"
+                              [hidden]="insPatient.IsValidCheck('Gender','required')"> Gender is required.</span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                        <div class="form-group">
+                          <label for="age" class="control-label col-md-4">
+                            Age <b class="color-red"> *</b> <b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <div class="col-md-3">
+                              <div class="row">
+                                <input id="age" class="form-control" type="number" min="0" max="150"
+                                  formControlName="Age" (focusout)="CalculateDob();" [(ngModel)]="insPatient.Age"
+                                  placeholder="Age" (keyup.enter)="setFocusById('phoneNo')" (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                              </div>
+                            </div>
+                            <div class="col-md-9">
+                              <div class="row">
+                                <div class="col-md-12">
+                                  <div class="input-group">
+                                    <!--<div>
+                                      <div class="rad-holder">
+                                        <label for="agUnitYear" class="mt-radio mt-radio-outline">
+                                          <input id="agUnitYear" name="AgeUnit" type="radio" value="Y"
+                                                 [(ngModel)]="insPatient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                                                 (focusout)="CalculateDob();" [disabled]="insPatient.PatientId">
+                                          <span></span>Yrs
+                                        </label>
+                                      </div>
+                                      <div class="rad-holder">
+                                        <label for="agUnitMonth" class="mt-radio mt-radio-outline">
+                                          <input id="agUnitMonth" name="AgeUnit" type="radio" value="M"
+                                                 [(ngModel)]="insPatient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                                                 (focusout)="CalculateDob();" [disabled]="insPatient.PatientId">
+                                          <span></span>Month
+                                        </label>
+                                      </div>
+                                      <div class="rad-holder">
+                                        <label for="agUnitDay" class="mt-radio mt-radio-outline">
+                                          <input id="agUnitDay" name="AgeUnit" type="radio" value="D"
+                                                 [(ngModel)]="insPatient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                                                 (focusout)="CalculateDob();" [disabled]="insPatient.PatientId">
+                                          <span></span>Days
+                                        </label>
+                                      </div>
+                                    </div>-->
+                                    <select id="ageUnit" class="form-control" [(ngModel)]="insPatient.AgeUnit"
+                                      [ngModelOptions]="{standalone: true}" 
+                                      (ngModelChange)="CalculateDob()">
+                                      <option value="Y">Years</option>
+                                      <option value="M">Months</option>
+                                      <option value="D">Days</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-md-12">
+                                  <span class="color-red font-sm" *ngIf="insPatient.IsDirty('Age')"
+                                    [hidden]="insPatient.IsValidCheck('Age','required')"> Age is required.</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Contact Number <b class="color-red" *ngIf="isPhoneMandatory"> *</b><b
+                              style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input id="phoneNo" class="form-control" maxlength="11" type="tel"
+                              [(ngModel)]="insPatient.PhoneNumber" formControlName="PhoneNumber"
+                              placeholder="Contact Number" (keyup.enter)="setFocusById('district')" />
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('PhoneNumber')"
+                              [hidden]="insPatient.IsValidCheck('PhoneNumber','pattern')">
+                              Please enter valid contact
+                              number.
+                            </span> <span class="color-red font-sm" *ngIf="insPatient.IsDirty('PhoneNumber')"
+                              [hidden]="insPatient.IsValidCheck('PhoneNumber','required')">
+                              Contact number is
+                              required.
+                            </span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <div class="col-md-1"></div>
+                          <label class="control-label col-md-4">
+                            Country<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <select id="ddlCountry" class="form-control" [(ngModel)]="insPatient.CountryId"
+                              formControlName="CountryId" (ngModelChange)="CountryDDL_OnChange()">
+                              <option *ngFor="let cont of Country_All" value="{{cont.CountryId}}">
+                                {{cont.CountryName}}
+                              </option>
+                            </select>
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('CountryId')"
+                              [hidden]="insPatient.IsValidCheck('CountryId','required')"> Country is required.</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="col-md-1"></div>
+                          <label class="control-label col-md-4">
+                            District/State<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input class="form-control" danphe-auto-complete formControlName="CountrySubDivisionId"
+                              [(ngModel)]="selectedDistrict" [list-formatter]="districtListFormatter"
+                              [source]="districts_Filtered" placeholder="District" id="district"
+                              (keyup.enter)="showMunicipality? setFocusById('municipality') : setFocusById('address')" display-property-name="CountrySubDivisionName"
+                              value-property-name=null (focusout)="AssignSelectedDistrict()"
+                              onClick="this.select();" max-num-list="10" />
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('CountrySubDivisionId')"
+                              [hidden]="insPatient.IsValidCheck('CountrySubDivisionId','required')">
+                              District/State is
+                              required.
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group" *ngIf="showMunicipality">
+                          <div class="col-md-1"></div>
+                          <label class="control-label col-md-4">Municipality<b style="float:right;">:</b></label>
+                          <div class="col-md-7">
+                            <municipality-select *ngIf="insPatient" [municipalityId]='insPatient.MunicipalityId' [subDivisionId] = 'insPatient.CountrySubDivisionId' (valueChange) ="updateMunicipality($event)"></municipality-select>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="col-md-1"> </div>
+                          <label class="control-label col-md-4">Address<b style="float:right;">:</b></label>
+                          <div class="col-md-7">
+                            <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                              id="address" [(ngModel)]="insPatient.Address" [source]="olderAddressList"
+                              placeholder="Address" display-property-name="PatAddress" value-property-name=null
+                              no-match-found-text=" " onClick="this.select();" min-chars="2"
+                              style="text-transform: capitalize;" [grid-sort]="'sortonbasicdatatype'" max-num-list="10"
+                              (keyup.enter)="setFocusById('Ins_NshiNumber')" />
+                          </div>
+                        </div>
+                        <div *ngIf="showLocalName" class="form-group">
+                          <div class="col-md-1"> </div>
+                          <label class="control-label col-md-4">
+                            नाम थर <b class="color-red"></b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <input id="patNameLocal" class="form-control" [(ngModel)]="insPatient.PatientNameLocal"
+                              [ngModelOptions]="{standalone: true}" (focus)="translate('nepali')"
+                              (focusout)="translate('english')" style="font-size: 20px" type="text" maxlength="30"
+                              placeholder="नाम थर" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <h4 class="clp clp-hd" aria-expanded="true" data-toggle="collapse" data-target="#insuranceInfoSection">
+                  Insurance Information
+                </h4>
+                <div class="collapse clp-cntnt in" id="insuranceInfoSection">
+                  <form [formGroup]="insPatient.GovInsPatientValidator" class="form-horizontal">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Insurance Provider<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-8">
+                            <select class="form-control" [(ngModel)]="insPatient.InsuranceProviderId"
+                              formControlName="InsuranceProviderId">
+                              <option *ngFor="let insu of insProviderList" value="{{insu.InsuranceProviderId}}">
+                                {{insu.InsuranceProviderName}}
+                              </option>
+                            </select>
+                            <span class="color-red" *ngIf="insPatient.IsDirty('InsuranceProviderId')"
+                              [hidden]="insPatient.IsValidCheck('InsuranceProviderId','required')">
+                              Insurance Provider
+                              Name is required
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            NSHI Number<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-8">
+                            <input class="form-control" type="text" maxlength="10" formControlName="Ins_NshiNumber"
+                              id="Ins_NshiNumber" [(ngModel)]="insPatient.Ins_NshiNumber" required value=""
+                              placeholder="NSHI Number" (keyup.enter)="setFocusById('Ins_InsuranceBalance')" />
+                            <span class="color-red" *ngIf="insPatient.IsDirty('Ins_NshiNumber')"
+                              [hidden]="insPatient.IsValidCheck('Ins_NshiNumber','required')">
+                              Number is
+                              required
+                            </span>
+                            <span class="color-red" *ngIf="insPatient.IsDirty('Ins_NshiNumber')"
+                              [hidden]="insPatient.IsValidCheck('Ins_NshiNumber','pattern')">
+                              Enter numbers only
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Insurance Balance Amt.<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-8">
+                            <input class="form-control" type="number" formControlName="Ins_InsuranceBalance" #Ins_InsuranceBalance
+                              [(ngModel)]="insPatient.Ins_InsuranceBalance" required value="" id="Ins_InsuranceBalance"
+                              placeholder="Insurance Balance Amt." (keyup.enter)="setFocusById('firstServicePoint')" (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                            <span class="color-red" *ngIf="insPatient.IsDirty('Ins_InsuranceBalance')"
+                              [hidden]="insPatient.IsValidCheck('Ins_InsuranceBalance','required')">
+                              Balance amount is
+                              required
+                            </span>
+                            <span class="color-red" *ngIf="Ins_InsuranceBalance.value > maxInsuranceAmtLimit">
+                              Amount should be less than Maximum Insurance Limit
+                            </span>
+                            <br>
+                            <!-- <p id="Ins_InsuranceBalanceInWords">
+                              {{insPatient.GovInsPatientValidator.value.Ins_InsuranceBalance | NumberInWords}}
+                            </p> -->
+                          </div>
+                          <span class="control-label col-md-4" style="font-weight:lighter"id="Ins_InsuranceBalanceInWords">
+                            ( In words: {{insPatient.GovInsPatientValidator.value.Ins_InsuranceBalance | NumberInWords}} only ) </span>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            First Service Point ?<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <div class="input-group">
+                              <!--<div>
+                                <div class="rad-holder">
+                                  <label for="servicepointYes" class="mt-radio mt-radio-outline">
+                                    <input id="servicepointYes" type="radio" value="true"
+                                           [(ngModel)]="insPatient.Ins_IsFirstServicePoint"
+                                           formControlName="Ins_IsFirstServicePoint">
+                                    <span></span>Yes
+                                  </label>
+                                </div>
+                                <div class="rad-holder">
+                                  <label for="servicepointNo" class="mt-radio mt-radio-outline">
+                                    <input id="servicepointNo" type="radio" value="false"
+                                           [(ngModel)]="insPatient.Ins_IsFirstServicePoint"
+                                           formControlName="Ins_IsFirstServicePoint">
+                                    <span></span>No
+                                  </label>
+                                </div>
+                              </div>-->
+                              <select id="firstServicePoint" class="form-control"
+                                [(ngModel)]="insPatient.Ins_IsFirstServicePoint"
+                                formControlName="Ins_IsFirstServicePoint" (change)="setFocusById('IsFamilyHead')">
+                                <!-- <option value="null" selected>--select--</option> -->
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                              </select>
+                            </div>
+                            <span class="color-red font-sm" *ngIf="insPatient.IsDirty('Ins_IsFirstServicePoint')"
+                              [hidden]="insPatient.IsValidCheck('Ins_IsFirstServicePoint','required')">
+                              First Service
+                              Point is required.
+                            </span>
+                          </div>
+                          <div class="col-md-1"> </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Is Family Head :<b class="color-red"> *</b><b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-2">
+                            <select id="IsFamilyHead" class="form-control" [(ngModel)]="insPatient.Ins_IsFamilyHead"
+                              formControlName="Ins_IsFamilyHead" (change)="SelectIsFamilyHead()">
+                              <!-- <option value="" selected>--select--</option> -->
+                              <option value="true">Yes</option>
+                              <option value="false">No</option>
+                            </select>
+                          </div>
+                          <span class="color-red font-sm" *ngIf="insPatient.IsDirty('Ins_IsFamilyHead')"
+                          [hidden]="insPatient.IsValidCheck('Ins_IsFamilyHead','required')">
+                          Family head 
+                          is required.
+                        </span>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Family Head NSHI Number <b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-4">
+                            <input class="form-control" type="text" pattern="\d*" maxlength="10"
+                              [ngModelOptions]="{standalone: true}" [(ngModel)]="insPatient.Ins_FamilyHeadNshi"
+                              id="Ins_FamilyHeadNshi" required value="" placeholder="Family Head NSHI Number"
+                              (keyup.enter)="setFocusById('Ins_FamilyHeadName')"
+                              [disabled]="insPatient.Ins_IsFamilyHead" #Ins_FamilyHeadNshi="ngModel" />
+                            <!--<span class="color-red" *ngIf="insPatient.IsDirty('Ins_FamilyHeadNshi')"
+                                  [hidden]="insPatient.IsValidCheck('Ins_FamilyHeadNshi','required')">
+                              Family Head NSHI
+                              Number
+                              is required
+                            </span>-->
+                            <span class="color-red" *ngIf="Ins_FamilyHeadNshi.errors"
+                              [hidden]="!Ins_FamilyHeadNshi.errors.pattern">
+                              Enter Numbers only
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">
+                            Family Head Name <b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-4">
+                            <input class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="insPatient.Ins_FamilyHeadName" required value=""
+                              placeholder="Family Head Name" id="Ins_FamilyHeadName"
+                              (keyup.enter)="InsFamilyHeadNameEnterKey()" [disabled]="insPatient.Ins_IsFamilyHead" />
+                            <!--<span class="color-red" *ngIf="insPatient.IsDirty('Ins_FamilyHeadName')"
+                                  [hidden]="insPatient.IsValidCheck('Ins_FamilyHeadName','required')">
+                              Family Head Name
+                              required
+                            </span>-->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button *ngIf="popupAction=='add'" type="button" class="btn green btn-success margin-7-hr" id="register"
+                [disabled]="disableButton" (click)="RegisterInsurancePatient()">
+                Register
+              </button>
+              <button *ngIf="popupAction=='edit'" type="button" class="btn green btn-success margin-7-hr" id="update"
+                (click)="UpdateInsurancePatient()" [disabled]="disableButton">
+                Update
+              </button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="Close()"> Close </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Model Box Body End-->
+    </div>
+  </div>
+  <ins-patient-duplicate-warning-box *ngIf="showExistingPatientListPage"
+                               [matchedPatResult]="matchedPatientList"
+                               [currentPatInfo]="insPatient"
+                               (emit-close-action)="DuplicateWarningBoxOnClose($event)">
+  </ins-patient-duplicate-warning-box>
+</div>

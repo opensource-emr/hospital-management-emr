@@ -1,13 +1,11 @@
 <style>
-  .control-label {
-    font-size: 13px;
-  }
-
-  .form-control {
-    font-size: 13px;
-  }
-
-  /*div.col-md-7 {
+.control-label {
+	font-size: 13px;
+}
+.form-control {
+	font-size: 13px;
+}
+/*div.col-md-7 {
       padding: 0px;
     }
 
@@ -23,31 +21,29 @@
       padding: 0px;
     }
   */
-  .mt-checkbox {
-    font-size: 13px;
-  }
-
-  /* div.col-xs-12 {
+.mt-checkbox {
+	font-size: 13px;
+}
+/* div.col-xs-12 {
       padding-left: 10px;
       margin-left: 25px;
       margin-right: 15px;
     }*/
 
-  /*This class for background border red */
-  .bg-on {
-    font-weight: bold;
-    border: solid 1px red;
-  }
-
-  /*This class for */
-  .bg-off {
-    font-weight: bold;
-  }
+    /*This class for background border red */
+.bg-on {
+	font-weight: bold;
+	border: solid 1px red;
+}
+/*This class for */
+.bg-off {
+	font-weight: bold;
+}
 </style>
 
 <form class="hm-form">
   <div class="text-head-wrapper clearfix"> </div>
-  <div class="row">
+  <div class="row"> 
     <!--<div class="col-md-4">
     <div class="form-group">
       <div class="row">
@@ -68,7 +64,7 @@
       </div>
     </div>
   </div>-->
-
+    
     <div class="col-md-12">
       <div class="row">
         <div class="col-md-6">
@@ -77,16 +73,28 @@
               <div class="row">
                 <label class="control-label ">Brought In </label>
                 <label class="mt-checkbox mt-checkbox-outline">
-                  <input name="broughtIn" type="radio" value="stretcher" [(ngModel)]="notes.EmergencyNote.BroughtIn"
-                    (focusout)="FocusOut()" style="width:15px;height:15px">
+                  <input name="broughtIn"
+                       type="radio"
+                       value="stretcher"
+                       [(ngModel)]="notes.EmergencyNote.BroughtIn"
+                       (focusout)="FocusOut()"
+                       style="width:15px;height:15px">
                   <span></span>Stretcher </label>
                 <label class="mt-checkbox mt-checkbox-outline ">
-                  <input name="broughtIn" type="radio" value="wheelChair" [(ngModel)]="notes.EmergencyNote.BroughtIn"
-                    (focusout)="FocusOut()" style="width:15px;height:15px">
+                  <input name="broughtIn"
+                       type="radio"
+                       value="wheelChair"
+                       [(ngModel)]="notes.EmergencyNote.BroughtIn"
+                       (focusout)="FocusOut()"
+                       style="width:15px;height:15px">
                   <span></span>Wheel-Chair </label>
                 <label class="mt-checkbox mt-checkbox-outline ">
-                  <input name="broughtIn" type="radio" value="walking" [(ngModel)]="notes.EmergencyNote.BroughtIn"
-                    (focusout)="FocusOut()" style="width:15px;height:15px">
+                  <input name="broughtIn"
+                       type="radio"
+                       value="walking"
+                       [(ngModel)]="notes.EmergencyNote.BroughtIn"
+                       (focusout)="FocusOut()"
+                       style="width:15px;height:15px">
                   <span></span>Walking </label>
               </div>
             </div>
@@ -97,12 +105,20 @@
             <div class="icheck-inline">
               <label class="control-label">Trauma</label>
               <label class="mt-checkbox mt-checkbox-outline">
-                <input name="trauma" type="radio" [value]="true" [(ngModel)]="notes.EmergencyNote.Trauma"
-                  (focusout)="FocusOut()" style="width:15px;height:15px" />
+                <input name="trauma"
+                     type="radio"
+                     [value]="true"
+                     [(ngModel)]="notes.EmergencyNote.Trauma"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
                 <span></span>Yes </label>
               <label class="mt-checkbox mt-checkbox-outline">
-                <input name="trauma" type="radio" [value]="false" [(ngModel)]="notes.EmergencyNote.Trauma"
-                  (focusout)="FocusOut()" style="width:15px;height:15px" />
+                <input name="trauma"
+                     type="radio"
+                     [value]="false"
+                     [(ngModel)]="notes.EmergencyNote.Trauma"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
                 <span></span>No </label>
             </div>
           </div>
@@ -116,9 +132,13 @@
         <div class="row">
           <label class="control-label col-md-5">Brought By <b>:</b></label>
           <div class="col-md-7">
-            <input class="form-control" maxlength="30" type="text" [(ngModel)]="notes.EmergencyNote.BroughtBy"
-              (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}"
-              placeholder="Enter Person's name who brought the patient" />
+            <input class="form-control"
+                   maxlength="30"
+                   type="text"
+                   [(ngModel)]="notes.EmergencyNote.BroughtBy"
+                   (focusout)="FocusOut()"
+                   [ngModelOptions]="{standalone:true}"
+                   placeholder="Enter Person's name who brought the patient" />
           </div>
         </div>
       </div>
@@ -128,8 +148,13 @@
         <div class="row">
           <label class="control-label col-md-5">Relationship <b>:</b></label>
           <div class="col-md-7">
-            <input class="form-control" maxlength="30" type="text" [(ngModel)]="notes.EmergencyNote.Relationship"
-              (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}" placeholder="Relation with Patient" />
+            <input class="form-control"
+                   maxlength="30"
+                   type="text"
+                   [(ngModel)]="notes.EmergencyNote.Relationship"
+                   (focusout)="FocusOut()"
+                   [ngModelOptions]="{standalone:true}"
+                   placeholder="Relation with Patient" />
           </div>
         </div>
       </div>
@@ -139,8 +164,12 @@
         <div class="row">
           <label class="control-label col-md-5">Phone Number <b>:</b> </label>
           <div class="col-md-7">
-            <input class="form-control" type="number" [(ngModel)]="notes.EmergencyNote.PhoneNumber"
-              (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}" placeholder="Enter Phone Number" />
+            <input class="form-control"
+                   type="number"
+                   [(ngModel)]="notes.EmergencyNote.PhoneNumber"
+                   (focusout)="FocusOut()"
+                   [ngModelOptions]="{standalone:true}"
+                   placeholder="Enter Phone Number" />
           </div>
         </div>
       </div>
@@ -150,17 +179,21 @@
         <div class="row">
           <label class="control-label col-md-4">Mode of Arrival : </label>
           <div class="col-md-4">
-            <select class="form-control height30px" [(ngModel)]="notes.EmergencyNote.ModeOfArrival"
-              (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}">
+            <select class="form-control height30px"
+                    [(ngModel)]="notes.EmergencyNote.ModeOfArrival"
+                    (focusout)="FocusOut()"
+                    [ngModelOptions]="{standalone:true}">
               <option [ngValue]="null" disabled hidden>Select..</option>
               <option value="self">Self</option>
               <option value="referral">Referral</option>
             </select>
           </div>
           <div class="col-md-4" *ngIf="notes.EmergencyNote.ModeOfArrival=='referral'">
-            <input type="text" [ngModelOptions]="{standalone:true}"
-              [(ngModel)]="notes.EmergencyNote.ReferralDoctorOrHospital" (focusout)="FocusOut()"
-              placeholder="Referred-by Doctor or Hospital" />
+            <input type="text"
+                   [ngModelOptions]="{standalone:true}"
+                   [(ngModel)]="notes.EmergencyNote.ReferralDoctorOrHospital"
+                   (focusout)="FocusOut()"
+                   placeholder="Referred-by Doctor or Hospital" />
           </div>
         </div>
       </div>
@@ -172,8 +205,11 @@
             <div class="row">
               <label class="control-label col-md-5"> Triage Time <b>:</b></label>
               <div class="col-md-7">
-                <input class="form-control" type="time" [(ngModel)]="notes.EmergencyNote.TriageTime"
-                  (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}" />
+                <input class="form-control"
+                     type="time"
+                     [(ngModel)]="notes.EmergencyNote.TriageTime"
+                     (focusout)="FocusOut()"
+                     [ngModelOptions]="{standalone:true}" />
               </div>
             </div>
           </div>
@@ -184,12 +220,20 @@
               <div class="icheck-inline">
                 <label class="control-label col-md-4">Triaged By</label>
                 <label class="mt-checkbox mt-checkbox-outline">
-                  <input name="triagedBy" type="radio" value="HA" [(ngModel)]="notes.EmergencyNote.TriagedBy"
-                    (focusout)="FocusOut()" style="width:10px;height:15px;margin-left:0!important;">
+                  <input name="triagedBy"
+                       type="radio"
+                       value="HA"
+                       [(ngModel)]="notes.EmergencyNote.TriagedBy"
+                       (focusout)="FocusOut()"
+                       style="width:10px;height:15px;margin-left:0!important;">
                   <span></span>HA </label>
                 <label class="mt-checkbox mt-checkbox-outline">
-                  <input name="triagedBy" type="radio" value="Nurse" [(ngModel)]="notes.EmergencyNote.TriagedBy"
-                    (focusout)="FocusOut()" style="width:10px;height:15px;margin-left:0!important;">
+                  <input name="triagedBy"
+                       type="radio"
+                       value="Nurse"
+                       [(ngModel)]="notes.EmergencyNote.TriagedBy"
+                       (focusout)="FocusOut()"
+                       style="width:10px;height:15px;margin-left:0!important;">
                   <span></span>Nurse </label>
               </div>
             </div>
@@ -201,10 +245,20 @@
       <div class="form-group row">
         <label class="control-label col-md-3">ER Course:</label>
         <div class="autocomplete-item col-md-4" *ngIf="ICD10List">
-          <input danphe-auto-complete class="form-control" [(ngModel)]="icd10Selected" [source]="ICD10List"
-            [list-formatter]="ICDListFormatter" placeholder="Select ICD10" display-property-name="ICD10Description"
-            value-property-name=null onClick="this.select();" match-formatted="true" [grid-sort]="'ICD10Description'"
-            max-num-list="20" (focusout)="FocusOut()" [ngModelOptions]="{standalone:true}" />
+          <input danphe-auto-complete
+                 class="form-control"
+                 [(ngModel)]="icd10Selected"
+                 [source]="ICD10List"
+                 [list-formatter]="ICDListFormatter"
+                 placeholder="Select ICD10"
+                 display-property-name="ICD10Description"
+                 value-property-name=null
+                 onClick="this.select();"
+                 match-formatted="true"
+                 [grid-sort]="'ICD10Description'"
+                 max-num-list="20"
+                 (focusout)="FocusOut()"
+                 [ngModelOptions]="{standalone:true}" />
         </div>
       </div>
     </div>
@@ -213,9 +267,13 @@
         <div class="row">
           <label class="control-label col-md-3">ER Course Description<b>:</b></label>
           <div class="col-md-8">
-            <textarea class="form-control" [(ngModel)]="notes.EmergencyNote.ErCourseDescription" maxlength="800"
-              rows="2" placeholder="Enter Er course description" [ngModelOptions]="{standalone:true}"
-              (focusout)="FocusOut()"></textarea>
+            <textarea class="form-control"
+                      [(ngModel)]="notes.EmergencyNote.ErCourseDescription"
+                      maxlength="800"
+                      rows="2"
+                      placeholder="Enter Er course description"
+                      [ngModelOptions]="{standalone:true}"                      
+                      (focusout)="FocusOut()"></textarea>
           </div>
         </div>
       </div>
@@ -223,119 +281,153 @@
   </div>
 </form>
 <div>
-  <!-- Subjective Notes related fields for Emergency Note-->
-  <div *ngIf="showSOnotes">
-    <subjective-note [subjective-note]="notes.SubjectiveNote" [clinical-detail]="clinicalDetail"
-      (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
-  </div>
+<!-- Subjective Notes related fields for Emergency Note-->
+<div *ngIf="showSOnotes">
+  <subjective-note [subjective-note]="notes.SubjectiveNote"
+                     [clinical-detail]="clinicalDetail" (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
+</div>
 
-  <!-- Objective Notes fields-->
-  <div class="tab-pane" id="objective" *ngIf="showSOnotes">
-    <objective-note [objective-note]="notes.ObjectiveNote" [clinical-detail]="clinicalDetail"
-      (callback-objectivenote)="CallBackObjective($event)"></objective-note>
-  </div>
+<!-- Objective Notes fields-->
+<div class="tab-pane" id="objective" *ngIf="showSOnotes">
+  <objective-note [objective-note]="notes.ObjectiveNote"
+                    [clinical-detail]="clinicalDetail" (callback-objectivenote)="CallBackObjective($event)"></objective-note>
+</div>
 
-  <!-- ER-Course -->
+<!-- ER-Course --> 
 
-  <!-- Assessment-Plan -->
-  <!-- <div class="tab-pane" id="assessment" *ngIf="showAP">
+<!-- Assessment-Plan -->
+<div class="tab-pane" id="assessment" *ngIf="showAP">
   <assessment-plan
                        [editMode]="APeditMode"
                        [assessments]="assessment"
                        (callback-assessmentandplan)="CallBackAssesmentAndPlan($event)"> </assessment-plan>
-</div> -->
+</div>
 
-  <!-- Start: Disposition related fields for Emergency Note-->
-  <div class="col-md-12" style="margin-top:30px!important">
-    <div class="form-group">
-      <div class="row">
-        <label class="control-label col-md-2" style="font-weight:700;font-size:medium;">Disposition : </label>
-        <div class="col-md-7">
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="admitted" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>Admitted </label>
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="dischargeHome" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>Discharge Home </label>
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="referral" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>Referral </label>
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="lama" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>LAMA </label>
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="death" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>Death </label>
-          <label class="mt-checkbox mt-checkbox-outline">
-            <input type="radio" name="disposition" value="eloped" [(ngModel)]="notes.EmergencyNote.Disposition"
-              (focusout)="FocusOut()" style="width:15px;height:15px" />
-            <span></span>Eloped </label>
-        </div>
-        <div class="col-md-3" *ngIf="notes.EmergencyNote.Disposition == 'admitted'">
-          <input class="form-control" danphe-auto-complete [(ngModel)]="selectedDepartment"
-            [list-formatter]="myDepartmentListFormatter" [source]="departmentList" [ngModelOptions]="{standalone: true}"
-            placeholder="Department Name" display-property-name="DepartmentName" (focusout)="FocusOut()"
-            onClick="this.select()" (focus)="AssignSelectedDepartment()" match-formatted="true"
-            (valueChanged)="AssignDispositionDepartment()" [grid-sort]="'DepartmentName'" max-num-list="10" />
-        </div>
+<!-- Start: Disposition related fields for Emergency Note-->
+<div class="col-md-12" style="margin-top:30px!important">
+  <div class="form-group">
+    <div class="row">
+      <label class="control-label col-md-2" style="font-weight:700;font-size:medium;">Disposition : </label>
+      <div class="col-md-7">
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="admitted"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>Admitted </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="dischargeHome"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>Discharge Home </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="referral"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>Referral </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="lama"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>LAMA </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="death"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>Death </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio"
+                     name="disposition"
+                     value="eloped"
+                     [(ngModel)]="notes.EmergencyNote.Disposition"
+                     (focusout)="FocusOut()"
+                     style="width:15px;height:15px" />
+          <span></span>Eloped </label>
+      </div>
+      <div class="col-md-3" *ngIf="notes.EmergencyNote.Disposition == 'admitted'">
+        <input class="form-control" danphe-auto-complete
+                   [(ngModel)]="selectedDepartment"
+                   [list-formatter]="myDepartmentListFormatter"
+                   [source]="departmentList"
+                   [ngModelOptions]="{standalone: true}"
+                   placeholder="Department Name"
+                   display-property-name="DepartmentName"
+                   (focusout)="FocusOut()"
+                   onClick="this.select()"
+                   (focus)="AssignSelectedDepartment()"
+                   match-formatted="true"
+                   (valueChanged)="AssignDispositionDepartment()"
+                   [grid-sort]="'DepartmentName'"
+                   max-num-list="10" />
       </div>
     </div>
-    <!-- End: Disposition related fields for Emergency Note-->
-    <!-- Start: Instructions related fields for Emergency Note-->
-    <div class="tab-pane" id="instructions">
-      <div class="col-md-6">
-        <div class="hm-form">
-          <div class="text-head-wrapper clearfix">
-            <h3 class="text-head cstm-add-heading">Prescription</h3>
-          </div>
-          <div class="form-group">
-            <div class="row">
-              <label class="control-label col-md-4">Follow Up<b>:</b></label>
-              <div class="col-md-8">
-                <div class="row">
-                  <div class="col-md-3">
-                    <input class="form-control" type="number" min="0" max="150" onFocus="this.value=0"
-                      [(ngModel)]="notes.FollowUp" (focusout)="FocusOut()" />
-                  </div>
-                  <div class="col-md-9">
-                    <div class="input-group">
-                      <div class="icheck-inline">
-                        <label class="mt-radio mt-radio-outline">
-                          <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="notes.FollowUpUnit"
-                            (focusout)="FocusOut()">
-                          <span></span>Days </label>
-                        <label class="mt-radio mt-radio-outline">
-                          <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="notes.FollowUpUnit"
-                            (focusout)="FocusOut()">
-                          <span></span>Weeks </label>
-                        <label class="mt-radio mt-radio-outline">
-                          <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="notes.FollowUpUnit"
-                            (focusout)="FocusOut()">
-                          <span></span>Months </label>
-                      </div>
+  </div>
+  <!-- End: Disposition related fields for Emergency Note--> 
+  <!-- Start: Instructions related fields for Emergency Note-->
+  <div class="tab-pane" id="instructions">
+    <div class="col-md-6">
+      <div class="hm-form">
+        <div class="text-head-wrapper clearfix">
+          <h3 class="text-head cstm-add-heading">Instructions</h3>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-4">Follow Up<b>:</b></label>
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-3">
+                  <input class="form-control" type="number" min="0" max="150" onFocus="this.value=0"
+                           [(ngModel)]="notes.FollowUp"
+                           (focusout)="FocusOut()"/>
+                </div>
+                <div class="col-md-9">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                        <span></span>Days </label>
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                        <span></span>Weeks </label>
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                        <span></span>Months </label>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="form-group">
-            <div class="row">
-              <label class="control-label col-md-4">Free Text<b>:</b></label>
-              <div class="col-md-8">
-                <textarea class="form-control" [(ngModel)]="notes.Remarks" maxlength="500" rows="3"
-                  (focusout)="FocusOut()"></textarea>
-              </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-4">Remarks<b>:</b></label>
+            <div class="col-md-8">
+              <textarea class="form-control"
+                          [(ngModel)]="notes.Remarks"
+                          maxlength="500"
+                          rows="3" 
+                          (focusout)="FocusOut()"></textarea>
             </div>
           </div>
         </div>
-        <br />
       </div>
+      <br />
     </div>
-    <!-- End: Instructions related fields for Emergency Note-->
   </div>
+  <!-- End: Instructions related fields for Emergency Note--> 
+</div>

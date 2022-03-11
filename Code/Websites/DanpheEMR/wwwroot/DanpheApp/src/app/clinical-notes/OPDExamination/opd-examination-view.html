@@ -1,0 +1,164 @@
+<style>
+  b {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  p {
+    font-weight: 500;
+    font-size: medium
+  }
+
+  label {
+    padding: 2px 5px;
+    margin-right: 5px;
+    background: #C0C0C0;
+    color: #fff;
+  }
+
+</style>
+
+
+<div class="row">
+  
+    <div class="row" style="margin-bottom: 10px; margin-left: 10px;">
+        <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+        <div style="width: 64%;float: left;padding-bottom:  0px;">
+          <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+            <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+            <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
+          </div>
+        </div>
+        <div style="float: left;">
+          <div class="qr-code" style="margin-left:20px; top:35px;">
+            <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+          </div>
+        </div>
+        <!-- Billing Header  -->
+        <div style="clear:left"></div>
+      </div>
+      <div class="panel-body row" style="text-align:left;margin-left: 10px;" *ngIf="hpNote !=null">
+        <p class="col-md-4">Patient Name:<b>{{hpNote.PatientName}} </b></p>
+        <p class="col-md-4">Primary Doctor:<b>{{hpNote.PrimaryDoctor}}</b></p>
+        <p class="col-md-4">Secondary Doctor:<b>{{hpNote.SecondaryDoctor}}</b></p>
+        <p class="col-md-4">Age/ Sex:<b>{{hpNote.Age}}/{{hpNote.Sex}} </b></p>
+        <p class="col-md-4">Written By:<b>{{hpNote.WrittenBy}}</b></p>
+        <p class="col-md-4">Date:<b> </b>{{hpNote.CreatedOn | date:'yyyy-MM-dd'}}</p>
+        <p class="col-md-4">Note Type:<b>{{hpNote.NoteType}}</b></p>
+        <p class="col-md-4">Start Time :<b>{{hpNote.CreatedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+        <p class="col-md-4">Finish Time:<b>{{hpNote.ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+      </div>
+  <div class="col-md-12" style="margin-left: 10px;">
+    <div class="col-md-6">
+      <!--<p style="font-weight:600; font-size:medium">Clinical Subjective Notes</p>-->
+      <h4><strong>Subjective Notes</strong></h4>
+      <div *ngIf="subjectiveNote">
+        <p>Chief Complaint<b>:</b> {{subjectiveNote.ChiefComplaint}}</p>
+        <p>History Of Presenting Illness<b>:</b> {{subjectiveNote.HistoryOfPresentingIllness}}</p>
+        <p>Review Of Systems<b>:</b> {{subjectiveNote.ReviewOfSystems}}</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row form-group">
+            <div class="col-md-4">
+              <h4><strong>Clinical Notes</strong></h4>
+            </div>
+            <div class="col-md-8" *ngIf="Prescription">
+              {{Prescription.PrescriptionNoteText}}
+            </div>
+          </div>
+          <div class="row form-group">
+            <div class="col-md-4"><strong>Diagnosis(ICD 10 code)</strong></div>
+            <div class="col-md-8" *ngIf="diagnosisOrderList && diagnosisOrderList.length">
+              <div class="row margin-5-bt">
+                <div class="col-md-12" *ngFor="let icd of diagnosisOrderList; let i=index;">
+                  {{i+1}})&nbsp;{{icd.ICD10Description}}
+                </div>
+              </div>
+            </div>
+          </div>
+    </div> 
+    <div class="col-md-6">
+      <!--<p style="font-weight:600; font-size:large">Objective Notes</p>-->
+      <h4><strong>Objective Notes</strong></h4>
+      <div *ngIf="objectiveNote">
+        <p>HEENT<b>:</b> {{objectiveNote.HEENT}}</p>
+        <p>Chest <b>:</b> {{objectiveNote.Chest}}</p>
+        <p>CVS <b>:</b> {{objectiveNote.CVS}}</p>
+        <p>Abdomen <b>:</b> {{objectiveNote.Abdomen}}</p>
+        <p>Extremity <b>:</b> {{objectiveNote.Extremity}}</p>
+        <p>Skin <b>:</b> {{objectiveNote.Skin}}</p>
+        <p>Neurological <b>:</b> {{objectiveNote.Neurological}}</p>
+      </div>
+    </div>
+ <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-12 form-group">
+              <h4><strong>Lab and Orders</strong></h4>
+            </div>
+            <div class="col-md-12">
+              <div class="row form-group">
+                <div class="col-md-12" *ngIf="OrdersList && OrdersList.length">
+                  <div style="display: inline-block;padding: 7px 12px;" *ngFor="let odr of OrdersList; let j=index;">
+                    {{odr.ItemName}}({{odr.Type}}) <span *ngIf="j+1 != OrdersList.length">,&nbsp;</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+      </div> 
+  </div>
+  <!-- <div class="col-md-12">
+    <div class="prob-entry hm-form">
+      <div class="text-head-wrapper clearfix">
+        <h4><strong>Assessment and Orders</strong></h4>
+      </div>
+
+      <div>
+        <p>No Assessment Plan and Orders yet</p>
+        <table class="table table-bordered allIcdOrdersTable" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Assessment Name</th>
+              <th>Orders</th>
+            </tr>
+          </thead>
+
+          <tr *ngFor="let assessment of diagnosisOrderList; let assessIndex=index;">
+            <td width="38%">
+            <p *ngIf="assessment && assessment.ICD">  ({{assessment.ICD[0].ICD10Code}}) {{assessment.ICD[0].ICD10Description}}
+           </p> 
+          </td>
+            <td>
+              <p *ngIf="assessment && assessment.AllIcdLabOrders && assessment.AllIcdLabOrders.length>0" style="font-weight:700!important;">Lab: </p>
+              <label *ngFor="let lo of assessment.AllIcdLabOrders">
+                {{lo.ItemName}}
+              </label>
+
+              <p *ngIf="assessment && assessment.AllIcdImagingOrders && assessment.AllIcdImagingOrders.length>0" style="font-weight:700!important;">Imaging: </p>
+              <label *ngFor="let io of assessment.AllIcdImagingOrders">
+                {{io.ItemName}}
+              </label>
+
+              <p *ngIf="assessment && assessment.AllIcdPrescriptionOrders && assessment.AllIcdPrescriptionOrders.length>0" style="font-weight:700!important;">Medication: </p>
+              <label *ngFor="let mo of assessment.AllIcdPrescriptionOrders">
+                {{mo.ItemName}}
+              </label>
+
+            </td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </div> -->
+
+  <div class="col-md-12" style="margin-left:15px;">
+    <h4><strong>Instructions:</strong></h4>
+    <p>Follow Up<b>:</b>{{hpNote?.FollowUp}} {{hpNote?.FollowUpUnit}}</p>
+    <p>Remarks<b>:</b>{{hpNote?.Remarks}}</p>
+  </div>
+</div>
+

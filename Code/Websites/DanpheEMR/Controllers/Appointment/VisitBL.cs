@@ -242,7 +242,7 @@ namespace DanpheEMR.Controllers
                 if (visitList[count].AppointmentType == "followup")
                 {
                     int? parentVisitId = visitList[count].ParentVisitId;
-                    SearchParent:
+                SearchParent:
                     if (parentVisitId != null)
                     {
                         ListVisitsVM parentVisit = (from vis in visitList
@@ -390,7 +390,7 @@ namespace DanpheEMR.Controllers
                 {
                     //VisitDbContext visitDbContext = new VisitDbContext(connString);
                     var year = DateTime.Now.Year;
-                    var patVisitId = visitDbContext.Visits.Where(s => s.VisitType == visitType && s.VisitDate.Year == year).DefaultIfEmpty()
+                    var patVisitId = visitDbContext.Visits.Where(s => s.VisitType == visitType && s.VisitDate.Year == year && s.VisitCode != null).DefaultIfEmpty()
                         .Max(t => t.PatientVisitId == null ? 0 : t.PatientVisitId);
                     string codeChar;
                     switch (visitType)
@@ -427,7 +427,7 @@ namespace DanpheEMR.Controllers
         }
 
 
-        public static VisitModel GetVisitItemsMapped(int patientId, string visitType, int providerId, DateTime visitDate, int userID, string connString)
+        public static VisitModel GetVisitItemsMapped(int patientId, string visitType, int? providerId, DateTime visitDate, int userID, string connString)
         {
             var visit = new VisitModel();
             visit.PatientId = patientId;

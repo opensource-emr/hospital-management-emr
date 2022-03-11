@@ -78,7 +78,19 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public bool IsActive { get; set; }
+         
+        public bool? Ins_HasInsurance { get; set; }
+        public string Ins_NshiNumber { get; set; }
+        public float? Ins_InsuranceBalance { get; set; }
+        public int? Ins_InsuranceProviderId { get; set; }
+        public bool? Ins_IsFamilyHead { get; set; }
+        public string Ins_FamilyHeadNshi { get; set; }
+        public string Ins_FamilyHeadName { get; set; }
+        public bool? Ins_IsFirstServicePoint { get; set; }
 
+        //Municipality Information
+        public int? MunicipalityId { get; set; }
+        public string MunicipalityName { get; set; }
     }
 
     public class BillingOpPatientVM
@@ -109,6 +121,7 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public bool IsActive { get; set; }
+        public int? MunicipalityId { get; set; }
     }
 
 

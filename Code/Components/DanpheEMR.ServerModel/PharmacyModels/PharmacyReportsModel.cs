@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
-   
+
     public class PHRMPurchaseOrderReportModel
     {
         public DateTime Date { get; set; }
@@ -18,7 +18,7 @@ namespace DanpheEMR.ServerModel
         public decimal SubTotal { get; set; }
         public decimal VATAmount { get; set; }
         public decimal TotalAmount { get; set; }
-        
+
     }
 
     public class PHRMItemWiseStockReportModel
@@ -63,43 +63,46 @@ namespace DanpheEMR.ServerModel
     }
     public class StockSummaryDTO
     {
+        public int StoreId { get; set; }
+        public string StoreName { get; set; }
         public int ItemId { get; set; }
+        public string GenericName { get; set; }
         public string ItemName { get; set; }
+        public string ItemCode { get; set; }
         public string UOMName { get; set; }
-        public int OpeningQuantity { get; set; }
-        public decimal OpeningAmount { get; set; }
-        public int Purchase { get; set; }
-        public decimal PurchaseAmount { get; set; }
-        public int PurchaseReturn { get; set; }
-        public decimal PurchaseReturnAmount { get; set; }
-        public int StockManageIn { get; set; }
-        public decimal StockManageInAmount { get; set; }
-        public int StockManageOut { get; set; }
-        public decimal StockManageOutAmount { get; set; }
-        public int Sale { get; set; }
-        public decimal SaleAmount { get; set; }
-        public int SaleReturn { get; set; }
-        public decimal SaleReturnAmount { get; set; }
-        public int ClosingQuantity { get; set; }
-        public decimal ClosingAmount { get; set; }
-    }
-    public class GrandTotalDTO
-    {
-        public int OpeningQuantity { get; set; }
-        public decimal OpeningAmount { get; set; }
-        public int Purchase { get; set; }
-        public decimal PurchaseAmount { get; set; }
-        public int PurchaseReturn { get; set; }
-        public decimal PurchaseReturnAmount { get; set; }
-        public int StockManageIn { get; set; }
-        public decimal StockManageInAmount { get; set; }
-        public int StockManageOut { get; set; }
-        public decimal StockManageOutAmount { get; set; }
-        public int Sale { get; set; }
-        public decimal SaleAmount { get; set; }
-        public int SaleReturn { get; set; }
-        public decimal SaleReturnAmount { get; set; }
-        public int ClosingQuantity { get; set; }
-        public decimal ClosingAmount { get; set; }
+        public string BatchNo { get; set; }
+        public DateTime ExpiryDate { get; set; }
+        public decimal CostPrice { get; set; }
+        public decimal MRP { get; set; }
+        public double OpeningQty { get; set; }
+        public double OpeningValue { get; set; }
+        public double OpeningQty_WithProvisional { get; set; }
+        public double OpeningValue_WithProvisional { get; set; }
+        public double PurchaseQty { get; set; }
+        public double PurchaseValue { get; set; }
+        public double PurchaseReturnQty { get; set; }
+        public double PurchaseReturnValue { get; set; }
+        public double SalesQty { get; set; }
+        public double SalesValue { get; set; }
+        public double SaleReturnQty { get; set; }
+        public double SaleReturnValue { get; set; }
+        public double ProvisionalQty { get; set; }
+        public double ProvisionalValue { get; set; }
+        public double WriteOffQty { get; set; }
+        public double WriteOffValue { get; set; }
+        public double ConsumptionQty { get; set; }
+        public double ConsumptionValue { get; set; }
+        public double StockManageInQty { get; set; }
+        public double StockManageInValue { get; set; }
+        public double StockManageOutQty { get; set; }
+        public double StockManageOutValue { get; set; }
+        public double TransferInQty { get; set; }
+        public double TransferInValue { get; set; }
+        public double TransferOutQty { get; set; }
+        public double TransferOutValue { get; set; }
+        public double ClosingQty { get; set; }
+        public double ClosingValue { get; set; }
+        public double ClosingQty_WithProvisional { get; set; }
+        public double ClosingValue_WithProvisional { get; set; }
     }
 }

@@ -45,6 +45,7 @@ import * as _ from "lodash";
   selector: "danphe-lab-add-result",
   templateUrl: "./lab-tests-add-result.html",
   styleUrls: ["./lab-tests-add-result.style.css"],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class LabTestsAddResultComponent {
   @Input("showAddEditResult")
@@ -97,6 +98,8 @@ export class LabTestsAddResultComponent {
 
   public hasInsurance: boolean = false;
   public maxIsolatedOrganismCount: number = 3;
+  public allowRunNoChange: boolean = true;
+  public allowUnitEdit: boolean;
 
   constructor(
     public labBLService: LabsBLService,
@@ -108,6 +111,10 @@ export class LabTestsAddResultComponent {
   ) {
     this.labLookups = this.coreService.GetModuleLookups("Lab");
     this.maxIsolatedOrganismCount = this.coreService.GetMaxNumberOfIsolatedOrganismCount();
+    var sampleCollectionParam = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'lab' && a.ParameterName == 'LabReportDisplaySettings');
+    var paramValue = JSON.parse(sampleCollectionParam.ParameterValue);
+    this.allowRunNoChange = paramValue.ShowChangeLabNumber;
+    this.allowUnitEdit = this.coreService.IsUnitEditApplicableWhileResultAdd();
   }
 
   @Input("templateReport")
@@ -121,12 +128,39 @@ export class LabTestsAddResultComponent {
     }
   }
 
+
+  ngAfterViewInit() {
+    window.setTimeout(function () {
+      let firstIdIndex = "inputbox00";
+      let firstId = "";
+      for (var j = 0; j < 5; j++) {
+        let id = firstIdIndex + j;
+        if (document.getElementById(id)) {
+          document.getElementById(id).focus();
+          break;
+        }
+      }
+    }, 500);
+
+
+
+    // window.setTimeout(function () {
+    //   let itmNameBox = document.getElementById('inputbox000');
+    //   if (itmNameBox) {
+    //     itmNameBox.focus();
+    //   }
+    // }, 500);
+
+    //this.coreService.FocusInputById("inputbox000", 0);
+  }
+
+
   AssignSelectedTemplate() {
     if (
       this.selectedHTMLTemplate &&
       this.selectedHTMLTemplate.ReportTemplateID &&
       this.templateReport.TemplateId !=
-        this.selectedHTMLTemplate.ReportTemplateID
+      this.selectedHTMLTemplate.ReportTemplateID
     ) {
       if (this.templateReport.TemplateHTML) {
         var change: boolean;
@@ -198,6 +232,7 @@ export class LabTestsAddResultComponent {
   }
 
   MapTestAndComponents() {
+    this.hasInsurance = this.templateReport.HasInsurance;
     if (this.templateReport.Templates.length) {
       this.templateReport.Templates.forEach((template) => {
         let testList = new Array<LabResult_TestVM>();
@@ -205,9 +240,6 @@ export class LabTestsAddResultComponent {
           //this.comments = template.Tests[0].Comments;
 
           //let components: Array<any> = JSON.parse(labTest.ComponentJSON);
-          if (labTest.HasInsurance) {
-            this.hasInsurance = labTest.HasInsurance;
-          }
 
           this.requisitionIdList.push(labTest.RequisitionId);
           //To check if the new Custom Component is added and there is empty ComponentJSON
@@ -280,8 +312,8 @@ export class LabTestsAddResultComponent {
 
                     let lkpSrc = _cmp
                       ? this.labLookups.find(
-                          (a) => a.LookupName == _cmp.ValueLookup
-                        )
+                        (a) => a.LookupName == _cmp.ValueLookup
+                      )
                       : null;
                     _testComponent.ValueDataSource =
                       _cmp && _cmp.ValueLookup && lkpSrc
@@ -347,7 +379,7 @@ export class LabTestsAddResultComponent {
               let matchingComp = newLabtestVm.Components.filter((c) => {
                 if (
                   c.ComponentName.toLowerCase() ==
-                    cmpnt.ComponentName.toLowerCase() &&
+                  cmpnt.ComponentName.toLowerCase() &&
                   c.ResultGroup == 1
                 ) {
                   return true;
@@ -372,8 +404,8 @@ export class LabTestsAddResultComponent {
                 newComp.CultureAddedGroup = [];
                 let lkpSrc = cmpnt
                   ? this.labLookups.find(
-                      (a) => a.LookupName == cmpnt.ValueLookup
-                    )
+                    (a) => a.LookupName == cmpnt.ValueLookup
+                  )
                   : null;
                 newComp.ValueDataSource =
                   cmpnt && cmpnt.ValueLookup && lkpSrc
@@ -400,7 +432,7 @@ export class LabTestsAddResultComponent {
                       (gc) =>
                         gc.ResultGroup == g &&
                         gc.ComponentName.toLowerCase() ==
-                          c.ComponentName.toLowerCase()
+                        c.ComponentName.toLowerCase()
                     );
                     //if there is multiple comp with same name then it must be another group inside same Component
                     if (gcmp) {
@@ -579,7 +611,6 @@ export class LabTestsAddResultComponent {
         this.ComponentChkBoxOnChange(test, comp, comp.ControlType);
       });
     }
-    console.log(test);
   }
 
   onChangeEditorData(data, i, j, k) {
@@ -652,21 +683,32 @@ export class LabTestsAddResultComponent {
     return validationSummary;
   }
 
-  CheckComponentValueIsValid(comp: LabTestComponent, type: string) {
+  CheckComponentValueIsValid(test, comp: LabTestComponent, type: string) {    
+    comp.IsSelected = true;
     if (comp.Value == null || comp.Value == "" || comp.Value.trim() == "") {
       comp.IsValueValid = false;
       comp.IsAbnormal = false;
+      comp.IsSelected = false;
     } else {
       ///for ValueType other than "number" -- non-empty values are normal
       if (comp.ValueType != "number") {
         comp.IsValueValid = true;
       } else {
+        let valToCheck = comp.Value;
+        let containsGLchar = comp && comp.Value && (comp.Value.startsWith("<") || comp.Value.startsWith(">"));
+        if (containsGLchar) { valToCheck = valToCheck.substring(valToCheck.length, 1); }
         //assinging the value to a variable to maintain "," or "02" in the display value even if the value is parsed as Number()
-        let value = Number(comp.Value.replace(/,/g, ""));
+        let value = Number(valToCheck.replace(/,/g, ""));
         //check if the value is number or not.
         if (isNaN(value)) comp.IsValueValid = false;
         ///if the value is number then then it is Valid
         else comp.IsValueValid = true;
+      }
+
+      if (test.Components.every(a => a.Value != null && a.Value != " ")) {
+        test.SelectAll = true;
+      } else {
+        test.SelectAll = false;
       }
     }
   }
@@ -759,10 +801,25 @@ export class LabTestsAddResultComponent {
       comp.IsSelected = true;
       comp.IsAbnormal = false;
       comp.AbnormalType = "normal";
+
+      let compval = comp.Value;
+      let hasLessThan = comp.Value && comp.Value.startsWith("<");
+      let hasGreaterThan = comp.Value && comp.Value.startsWith(">");
+      let containsGLchar = hasLessThan || hasGreaterThan;
+      if (containsGLchar) {
+        let val = Number(compval.substring(compval.length, 1));
+        if (hasLessThan && !isNaN(val)) {
+          compval = (val - 1).toString();
+        }
+        if (hasGreaterThan && !isNaN(val)) {
+          compval = (val + 1).toString();
+        }
+      }
+
       //comp.Range && comp.ValueType  => True only if these fields are present & has some value.
       //check abnormal only for valuetype=number, for string we cannot detect which value is abnormal.--sud:11Apr'18
       if (comp.Range && valueType && valueType == "number") {
-        let value = Number(comp.Value.replace(/,/g, ""));
+        let value = Number(compval.replace(/,/g, ""));
         if (comp.Range.includes("-")) {
           comp.Range = comp.Range.replace(/,/g, "");
           let range = comp.Range.split("-");
@@ -778,7 +835,7 @@ export class LabTestsAddResultComponent {
           }
         } else if (comp.Range.includes("<")) {
           let range = comp.Range.split("<");
-          if (value > Number(range[1])) {
+          if (value >= Number(range[1])) {
             //comp.IsAbnormal = false;
             //this.changeDetector.detectChanges();
             comp.AbnormalType = "high";
@@ -786,7 +843,7 @@ export class LabTestsAddResultComponent {
           }
         } else if (comp.Range.includes(">")) {
           let range = comp.Range.split(">");
-          if (value < Number(range[1])) {
+          if (value <= Number(range[1])) {
             //comp.IsAbnormal = false;
             //this.changeDetector.detectChanges();
             comp.AbnormalType = "low";
@@ -840,8 +897,9 @@ export class LabTestsAddResultComponent {
     groupComponents: Array<LabTestComponent>
   ): { isGroupValid: boolean; validationMessage: string } {
     var groupValidation = { isGroupValid: true, validationMessage: "" };
+    groupName = groupName ? groupName.toLowerCase() : '';
     switch (groupName) {
-      case "Check100":
+      case "check100":
         let valueArray = groupComponents.map((a) => {
           //Anish: 3 Oct, Added IsSelected Option As Well
           if (a.ValueType == "number" && a.IsSelected == true) {
@@ -873,6 +931,7 @@ export class LabTestsAddResultComponent {
   // in this first validation is checked for component..
   //then the component is posted to the db using PostComponent function
   Submit(): void {
+    this.coreService.loading = true;
     if (this.loading) {
       this.loading = true;
       let allComponents: Array<LabTestComponent> = new Array<
@@ -1069,10 +1128,13 @@ export class LabTestsAddResultComponent {
             this.SaveResult();
           } else {
             this.showWarningConfirmBox = true;
+            setTimeout(() => {
+              document.getElementById("proceedWithAbnormalResult") && document.getElementById("proceedWithAbnormalResult").focus();
+            }, 100);
           }
         } else {
           this.msgBoxServ.showMessage("error", valSummary.Messages);
-          this.loading = false;
+          this.coreService.loading = this.loading = false;
         }
       }
     }
@@ -1099,14 +1161,18 @@ export class LabTestsAddResultComponent {
       .PostComponent(components, this.cultureSpecimen)
       .subscribe((res) => {
         if (res.Status == "OK") {
+          this.coreService.loading = this.loading = false;
           this.CallBackAddUpdate();
         } else {
-          this.loading = false;
+          this.coreService.loading = this.loading = false;
           this.msgBoxServ.showMessage("failed", [
             "failed to add result.. please check log for details.",
           ]);
           console.log(res.ErrorMessage);
         }
+      }, (err) => {
+        console.log(err.ErrorMessage);
+        this.coreService.loading = this.loading = false;
       });
   }
 
@@ -1117,18 +1183,19 @@ export class LabTestsAddResultComponent {
       .subscribe(
         (res) => {
           if (res.Status == "OK") {
+            this.coreService.loading = this.loading = false;
             this.CallBackAddUpdate();
           } else {
             this.msgBoxServ.showMessage("failed", [
               "Sorry!!! Not able to update the lab result",
             ]);
             console.log(res.ErrorMessage);
-            this.loading = false;
+            this.coreService.loading = this.loading = false;
           }
         },
         (err) => {
           console.log(err.ErrorMessage);
-          this.loading = false;
+          this.coreService.loading = this.loading = false;
         }
       );
   }
@@ -1136,7 +1203,7 @@ export class LabTestsAddResultComponent {
   CallBackAddUpdate() {
     this.showAddEditResult = false;
     this.callBackAddUpdate.emit({ selReqIdList: this.selReqIdList });
-    this.loading = false; //sud: 24sept'18
+    this.coreService.loading = this.loading = false; //sud: 24sept'18
     this.cultureSpecimen = [];
   }
 
@@ -1161,7 +1228,7 @@ export class LabTestsAddResultComponent {
 
   ReviewValues() {
     this.showWarningConfirmBox = false;
-    this.loading = false;
+    this.coreService.loading = this.loading = false;
   }
 
   RemovePossibleLabel(allComps: Array<LabTestComponent>) {
@@ -1245,7 +1312,7 @@ export class LabTestsAddResultComponent {
           this.sampleCode.RunNumber,
           this.visitType,
           this.sampleCode.SampleCreatedOn,
-          this.RunNumberType
+          this.RunNumberType, this.hasInsurance
         )
         .subscribe((res) => {
           if (res.Status == "OK" && res.Results) {
@@ -1276,7 +1343,7 @@ export class LabTestsAddResultComponent {
         //if user don't change sample code or date and press OK
         if (
           this.sampleCode.RunNumber ==
-            Number(this.templateReport.Lookups.SampleCode) &&
+          Number(this.templateReport.Lookups.SampleCode) &&
           checkToday == 0
         ) {
           this.showChangeSample = false;
@@ -1371,6 +1438,7 @@ export class LabTestsAddResultComponent {
     var initvar = "inputbox";
     var nextId = "";
 
+    //thiComponentChkBoxOnChange();
     //For Enter effect in the culture test add where there is specimen and Negtive test addition textarea
     if (sameLevelSpCheck && componentNum < 0) {
       var num = componentNum * -1;
@@ -1454,7 +1522,7 @@ export class LabTestsAddResultComponent {
     if (
       this.templateReport.Templates[templateNum] &&
       this.templateReport.Templates[templateNum].Tests[testNum].Components[
-        componentNum
+      componentNum
       ] &&
       this.templateReport.Templates[templateNum].Tests[testNum].Components[
         componentNum
@@ -1479,11 +1547,12 @@ export class LabTestsAddResultComponent {
     if (
       this.templateReport.Templates[templateNum].Tests[testNum].Components &&
       this.templateReport.Templates[templateNum].Tests[testNum].Components[
-        componentNum
+      componentNum
       ]
     ) {
       return false;
     } else {
+      document.getElementById('btnSaveResult').focus();
       return true;
     }
   }
@@ -1545,7 +1614,7 @@ export class LabTestsAddResultComponent {
 
 
     console.log(test.Components);
-   
+
   }
 
   CheckAddedGroupComponentValueIsValid(comp: LabTestComponent) {
@@ -1580,4 +1649,19 @@ export class LabTestsAddResultComponent {
       return Array(1);
     }
   }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.closeAllPopUp();
+    }
+  }
+
+  public closeAllPopUp() {
+    this.showWarningConfirmBox = false;
+    this.showChangeSample = false;
+    this.showConfirmationBox = false;
+    this.loading = false;
+  }
+
+
 }

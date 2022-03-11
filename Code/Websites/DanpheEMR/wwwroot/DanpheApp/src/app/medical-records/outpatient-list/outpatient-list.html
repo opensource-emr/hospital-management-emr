@@ -1,0 +1,94 @@
+<div class="row col-md-12" style="padding-bottom: 15px;">
+  <div class="col-md-6 col-sm-12">
+    <label for="#ProviderList" class="label label-default col-md-3" style="height: 25px; padding-top: 7px;">
+      <i class="fa fa-filter"></i> Doctor Filter :
+    </label>
+    <!-- This is for auto-complete -->
+    <div class="col-md-6">
+      <input danphe-auto-complete [(ngModel)]="SelectedDoctor" [source]="providerList" class="form-control"
+        [list-formatter]="providerListFormatter" placeholder="Doctor Name"
+        (focusout)="FilterList(SelectedDepartmentId, SelectedDoctor)" display-property-name="FullName"
+        value-property-name=null max-num-list="10" />
+    </div>
+  </div>
+  <div class="col-md-6 col-sm-12">
+    <label for="#departmentlist" class="label label-default"><i class="fa fa-filter"></i> Department Filter :
+      &nbsp;</label>
+    <select style="height: 26px; margin-left: 1px;" [(ngModel)]="SelectedDepartmentId"
+      (change)="FilterList(SelectedDepartmentId, SelectedDoctorId)" id="departmentlist">
+      <option [ngValue]="undefined" selected>ALL</option>
+      <option *ngFor="let dept of DepartmentList" [ngValue]="dept.DepartmentId">{{dept.DepartmentName}}</option>
+    </select>
+  </div>
+</div>
+
+<!-- Disease by category start here  -->
+<div class="row col-md-12" style="padding-bottom: 15px;">
+  <div class="col-md-6 col-sm-12">
+    <label for="#diseaseWiseCategory" class="label label-default" style="height: 25px; padding-top: 7px;"><i
+        class="fa fa-filter"></i>
+      Select Disease Category : &nbsp;
+    </label>
+
+    <select [(ngModel)]="selectedReportingGroupId" (ngModelChange)="OnReportingGroupChange()">
+      <option [ngValue]="null" selected>All</option>
+      <option *ngFor="let dep of ICD10ReportingGroupList; let i = index;" [ngValue]="dep.ReportingGroupId">
+        {{dep.ReportingGroupName}} </option>
+    </select>
+
+  </div>
+
+  <div class="col-md-6 col-sm-12">
+    <label for="#diagnosisWiseCategory" class="label label-default col-md-3" style="height: 25px; padding-top: 7px;">
+      <i class="fa fa-filter"></i>
+      Select Diagnosis :
+    </label>
+
+    <div class="col-md-6">
+      <input danphe-auto-complete class="form-control" [(ngModel)]="selectedDiagnosisICD10Code"
+        [source]="icd10DiagnosisFilteredList" [list-formatter]="DignosisFormatter" placeholder="Select ICD10(s)"
+        display-property-name="ICD10Description" value-property-name="ICD10Code"
+        (focusout)="FilterDiagnosisPatientsList()" [match-formatted]='true' [max-num-list]=10
+        [ngModelOptions]="{standalone: true}" />
+    </div>
+  </div>
+</div>
+<!----------Disease by category ends here-->
+<!-- Radio -->
+<div class="col-md-12" style="display: flex; flex-direction: row-reverse;">
+
+  <div class="input-group">
+
+    <div class="icheck-inline">
+      <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+        <input checked="checked" [value]="'all'" [(ngModel)]="diagnosisStatus" (change)="FilterDiagnosisList()"
+          name="name" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+        <span></span>ALL
+      </label>
+      <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+        <input name="name" [value]="'complete'" [(ngModel)]="diagnosisStatus" (change)="FilterDiagnosisList()"
+          style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+        <span></span>Diagnosis Added
+      </label>
+      <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+        <input name="name" [value]="'pending'" [(ngModel)]="diagnosisStatus" (change)="FilterDiagnosisList()"
+          style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+        <span></span>Diagnosis Pending
+      </label>
+    </div>
+  </div>
+</div>
+<!-- radio -->
+<div class="col-md-12">
+  <p>Filter by Appointment Date: </p>
+  <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="finalFilteredOutpatientList"
+    (grid-actions)="GridActions($event)" [rangeType]="dateRange" (onDateChange)="onDateChange($event)"
+    [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-print-button]="false">
+
+  </danphe-grid>
+
+</div>
+
+<add-final-diagnosis *ngIf="showFinalDiagnosis" (CallBack)="CallBack($event)" [SelectedPatient]="selectedPatient">
+
+</add-final-diagnosis>

@@ -12,42 +12,23 @@ import { CoreService } from "../../../core/shared/core.service";
 })
 
 export class SelectReferrerComponent {
-
-  @Input("selected-ref-id")
-  selectedRefId: number = null;
-
-  @Input("selected-ref-name")
-  selectedRefName: string = null;
-
-  @Input("allow-external")
-  allowExternalRef: boolean = true;
-
-  @Output("on-referrer-change")
-  onReferrerChange: EventEmitter<object> = new EventEmitter<object>();
-
-  @Input("default-external")
-  defaultExternal: boolean = false;
-
-
-  @Input("allow-free-text")
-  allowFreeText: boolean = false;
-
+  @Input("selected-ref-id") selectedRefId: number = null;
+  @Input("selected-ref-name") selectedRefName: string = null;
+  @Input("allow-external") allowExternalRef: boolean = true;
+  @Input("default-external") defaultExternal: boolean = false;
+  @Input("allow-free-text") allowFreeText: boolean = false;
+  
   //below property allows us to return ReferrerName from fields other than FullName of employee, eg: LongSignature in Lab.
   //default display property name is fullname.
-  @Input("display-property-name")
-  displayPropertyName: string = "FullName";
-
-  @Input("default-referrer-info")
-  public defaultRefInfo = { AddDefaultReferrer: false, DefaultReferrerId: null, ReferrerName: "SELF" };
-
-
-
+  @Input("display-property-name") displayPropertyName: string = "FullName";
+  @Input("default-referrer-info") public defaultRefInfo = { AddDefaultReferrer: false, DefaultReferrerId: null, ReferrerName: "SELF" };
+  @Output("on-referrer-change") onReferrerChange: EventEmitter<object> = new EventEmitter<object>();
+  @Output("on-enter-key-pressed-in-referrer") onPressedEnterKeyInRefferer: EventEmitter<object> = new EventEmitter<object>();
   public allReferrerList: Array<Employee> = [];//load all data from: get-all-referrer-list
   public filteredReferrerList: Array<Employee> = [];//at first it'll get only internal. later if checkbox is clicked then include 
   public includeExtReferrer: boolean = false;
   public isValidReferrerSelection: boolean = true;
   //public extOrIntRef: string = "(internal) ";
-
   constructor(public settingsBlService: SettingsBLService,
     public msgBoxServ: MessageboxService, public coreService: CoreService) {
     // this.GetAllReferrerList();
@@ -258,7 +239,19 @@ export class SelectReferrerComponent {
 
     }
   }
-
-
+  OnPressedEnterKeyInReferrerField(){
+    this.onPressedEnterKeyInRefferer.emit();
+  }
+  setFocusOnReferrerForNarcoticDrug() {
+    this.currentRequestedByDoctor = null;
+    var Timer = setTimeout(() => {
+      if (document.getElementById("currentRequestedByDoctor")) {
+        let nextEl = <HTMLInputElement>document.getElementById("currentRequestedByDoctor");
+        nextEl.focus();
+        nextEl.select();
+        clearTimeout(Timer);
+      }
+    }, 100)
+  }
 
 }

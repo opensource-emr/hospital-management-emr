@@ -68,7 +68,7 @@ table.patient-info-tabl tr th {
 }
 
 .right-hdrwith-barcode {
-  min-width: 345px;
+  min-width: 385px;
   position: relative;
 }
 
@@ -266,7 +266,7 @@ table.culture-holder-table {
   margin-bottom: 20px;
 }
 table.culture-holder-table thead tr.culture-header th {
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
   padding: 0px 7px;
 }
@@ -357,4 +357,8 @@ tbody.culture-negative-testres tr td {
 }
 .ht-culture-grp-separation {
   height: 25px;
+}
+
+.lab-qrholder{
+     margin-bottom: 12px;
 }

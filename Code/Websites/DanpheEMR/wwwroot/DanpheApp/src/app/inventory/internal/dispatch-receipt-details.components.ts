@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 
 import { RequisitionItems } from "../shared/requisition-items.model";
@@ -10,9 +10,9 @@ import { InventoryService } from '../shared/inventory.service';
 import { CoreService } from "../../core/shared/core.service"
 import * as moment from 'moment/moment';
 @Component({
-    templateUrl: "./DispatchReceiptDetails.html"
+    templateUrl: "./dispatch-receipt-details.component.html"
 })
-export class DispatchReceiptDetailsComponent {
+export class DispatchReceiptDetailsComponent implements OnInit {
     public requisitionItemsDetails: Array<RequisitionItems> = new Array<RequisitionItems>();
     public requisitionId: number = 0;
     public requisitionDate: string = null;
@@ -23,7 +23,10 @@ export class DispatchReceiptDetailsComponent {
     public dispatchedby: string = "";
     public receivedby: string = "";
     public dispatchRemarks: string = "";
-    public requestingStoreName: string = null;
+    public showNepaliReceipt: boolean;
+    public DispatchId: number;
+    sourceStoreName: string;
+    targetStoreName: string;
 
 
     constructor(
@@ -33,10 +36,21 @@ export class DispatchReceiptDetailsComponent {
         public router: Router,
         public routeFrom: RouteFromService,
         public coreservice: CoreService) {
-        this.requestingStoreName = this.inventoryService.StoreName;
         this.requisitionId = this.inventoryService.RequisitionId;
-        this.LoadRDispatchDetails(this.inventoryService.DispatchId);
+        this.CheckReceiptSettings();
+        this.DispatchId = this.inventoryService.DispatchId;
+        // if (this.showNepaliReceipt == false) {
+        //     this.LoadRDispatchDetails(this.inventoryService.DispatchId);
+        // }
         this.GetInventoryBillingHeaderParameter();;
+    }
+    ngOnInit(): void {
+        //check for english or nepali receipt style
+        let receipt = this.coreservice.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+        this.showNepaliReceipt = (receipt == "true");
+        if (this.showNepaliReceipt == false) {
+            this.LoadRDispatchDetails(this.DispatchId);
+        }
     }
 
     LoadRDispatchDetails(DispatchId: number) {
@@ -51,23 +65,27 @@ export class DispatchReceiptDetailsComponent {
             this.requisitionList();
         }
     }
-
+    CheckReceiptSettings() {
+        //check for english or nepali receipt style
+        let receipt = this.coreservice.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+        this.showNepaliReceipt = (receipt == "true");
+    }
     ShowRequisitionDetails(res) {
         if (res.Status == "OK") {
+            this.setFocusById('printBtn');
             this.requisitionItemsDetails = res.Results;
 
             //Check if there is requisition created without any Requisition Item then simply go to requisition List 
             //Because If there is no Items then we can't show anything.
             if (this.requisitionItemsDetails.length > 0) {
-                this.requisitionItemsDetails.forEach(itm => {
-                    itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD');
-                });
-                this.requisitionDate = this.requisitionItemsDetails[0].CreatedOn;
+                this.sourceStoreName = this.requisitionItemsDetails[0].SourceStoreName;
+                this.targetStoreName = this.requisitionItemsDetails[0].TargetStoreName;
+                this.requisitionDate = this.requisitionItemsDetails[0].RequisitionDate;
                 this.createdby = this.requisitionItemsDetails[0].RequestedByName;
                 this.requisitionNo = this.requisitionItemsDetails[0].RequisitionNo;
-                this.dispatchedby = this.requisitionItemsDetails[0].CreatedByName;
-                this.receivedby = this.requisitionItemsDetails.find(a => a.ReceivedBy != null).ReceivedBy;
-                this.dispatchRemarks = this.requisitionItemsDetails.find(a => a.Remarks != null).Remarks;
+                this.dispatchedby = this.requisitionItemsDetails[0].DispatchedByName;
+                this.receivedby = this.requisitionItemsDetails[0].ReceivedBy;
+                this.dispatchRemarks = this.requisitionItemsDetails[0].Remarks;
             }
             else {
                 this.messageBoxService.showMessage("notice-message", ["Selected Requisition is without Items"]);
@@ -98,14 +116,24 @@ export class DispatchReceiptDetailsComponent {
         this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
     }
 
-    public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+    public headerDetail: { header1, header2, header3, header4, hospitalName, address, email, PANno, tel, DDA };
 
     //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
     GetInventoryBillingHeaderParameter() {
-        var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+        var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'Inventory Receipt Header').ParameterValue;
         if (paramValue)
             this.headerDetail = JSON.parse(paramValue);
         else
             this.messageBoxService.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+    }
+
+    setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+        var timer = window.setTimeout(function () {
+            let htmlObject = document.getElementById(targetId);
+            if (htmlObject) {
+                htmlObject.focus();
+            }
+            clearTimeout(timer);
+        }, waitingTimeinMS);
     }
 }

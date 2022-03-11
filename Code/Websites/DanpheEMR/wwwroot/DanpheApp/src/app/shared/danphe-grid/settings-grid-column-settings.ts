@@ -26,6 +26,7 @@ export class SettingsGridColumnSettings {
 
     { headerName: "IsFractionApplicable", field: "IsFractionApplicable", width: 70 },
     { headerName: "IsDoctorMandatory", field: "IsDoctorMandatory", width: 70 },
+    { headerName: "IsZeroPriceAllowed", field: "IsZeroPriceAllowed", width: 70 },
 
     { headerName: "Description", field: "Description", width: 100 },
     {
@@ -37,7 +38,23 @@ export class SettingsGridColumnSettings {
     }
   ]
 
+  public ReportingItemsList = [
+    { headerName: "Reporting Item Name", field: "ReportingItemName", width: 120 },
+    { headerName: "Report Name", field: "ReportName", width: 150 },
+    { headerName: "Reporting Unit", field: "RptCountUnit", width: 150 },
+    {
+      headerName: "IsActive", width: 70,
+      field: "IsActive",
+      cellRenderer: this.BillingItemIsActiveRenderer
+    },
+    {
+      headerName: "Action",
+      field: "",
 
+      width: 200,
+      cellRenderer: this.ReportingItemListActionTemplateWithPermission
+    }
+  ]
 
   public BillingItemIsActiveRenderer(params) {
     let template: string = '';
@@ -146,6 +163,39 @@ export class SettingsGridColumnSettings {
 
   }
 
+  public ReportingItemListActionTemplateWithPermission(params) {
+    if (params.data.IsActive == false) {
+      let template = "";
+      if (SettingsGridColumnSettings.securityServ.HasPermission("btn-settings-reporting-items-activate")) {
+        template += `<a danphe-grid-action="activateDeactivate" class="grid-action"  style="background-color: #afb8af;color: black;">
+              Activate
+             </a>`
+      }
+      return template;
+    }
+    else {
+      let template = "";
+      if (SettingsGridColumnSettings.securityServ.HasPermission("btn-settings-reporting-items-edit")) {
+        template += `<a danphe-grid-action="edit" class="grid-action">
+               Edit
+            </a>`
+      }
+
+      if (SettingsGridColumnSettings.securityServ.HasPermission("btn-settings-reporting-items-manageItem")) {
+        template += `<a danphe-grid-action="manageReportingItem" class="grid-action">
+               Manage Services
+            </a>`
+      }
+
+      if (SettingsGridColumnSettings.securityServ.HasPermission("btn-settings-reporting-items-activate")) {
+        template += `<a danphe-grid-action="activateDeactivate" class="grid-action"  style="background-color: orange;color: black;">
+             Deactivate
+           </a>`
+      }
+      return template;
+    }
+
+  }
   //end:billing
 
   public ServDeptList = [
@@ -269,6 +319,22 @@ export class SettingsGridColumnSettings {
 
   ]
 
+  public MunicipalityList = [
+    { headerName: "Municipality", field: "MunicipalityName", width: 100 },
+    { headerName: "Country", field: "CountryName", width: 150 },
+    { headerName: "Sub Division", field: "CountrySubDivisionName", width: 150 },
+    { headerName: "Type", field: "Type", width: 150 },
+    { headerName: "Is Active", field: "IsActive", width: 150 },
+    {
+      headerName: "Action",
+      field: "",
+
+      width: 120,
+      cellRenderer: this.MunicipalityActionButtonRenderer
+    }
+
+  ]
+
   public ImgTypeList = [
     { headerName: "Type Name", field: "ImagingTypeName", width: 150 },
     { headerName: "IsActive", field: "IsActive", width: 80 },
@@ -304,6 +370,7 @@ export class SettingsGridColumnSettings {
   //start:adt-settings
   public BedList = [
     { headerName: "Ward", field: "WardName", width: 150 },
+    { headerName: "Bed Features", field: "BedFeatures", width: 150 },
     { headerName: "BedNumber", field: "BedNumber", width: 80 },
     { headerName: "BedCode", field: "BedCode", width: 80 },
     { headerName: "IsActive", field: "IsActive", width: 80 },
@@ -353,10 +420,14 @@ export class SettingsGridColumnSettings {
     }
   ]
   public BedStatusRenderer(params) {
-    if (params.data.IsOccupied)
-      return 'Occupied';
-    else
-      return 'Available';
+    if (params.data.IsActive) {
+      if (params.data.IsOccupied)
+        return 'Occupied';
+      else
+        return 'Available';
+    } else {
+      return 'N/A';
+    }
   }
 
   //end:adt-settings
@@ -509,6 +580,24 @@ export class SettingsGridColumnSettings {
       // </a>`
     }
   ]
+
+  public MunicipalityActionButtonRenderer(params) {
+    let template = `<a danphe-grid-action="edit" class="grid-action">
+                Edit
+             </a>`;
+    if (params.data.IsActive) {
+      template += `<a danphe-grid-action="disable" class="grid-action bg-red red">
+                Disable
+             </a>`;
+    }
+    else {
+      template += `<a danphe-grid-action="enable" class="grid-action">
+                Enable
+             </a>`;
+    }
+    return template;
+  }
+
   //This is cell renderer function return Action List as per value for BillingItemList grid
   public ManageUsesActionTemplate(params) {
 
@@ -593,7 +682,6 @@ export class SettingsGridColumnSettings {
     { headerName: "Address", field: "ContactAddress", width: 150 },
     { headerName: "Contact No.", field: "ContactNumber", width: 120 },
     { headerName: "Is Active", field: "IsActive", width: 100 },
-
     {
       headerName: "Action",
       field: "",
@@ -606,7 +694,48 @@ export class SettingsGridColumnSettings {
     }
   ]
 
+  public BanksGridCols = [
+    { headerName: "Bank Short Name", field: "BankShortName", width: 100 },
+    { headerName: "Bank Name", field: "BankName", width: 150 },
+    { headerName: "Description", field: "Description", width: 120 },
+    { headerName: "Is Active", field: "IsActive", width: 100 },
+    {
+      headerName: "Action",
+      field: "",
 
+      width: 120,
+      template:
+        `<a danphe-grid-action="edit" class="grid-action">
+                Edit
+             </a>`
+    }
+  ]
+
+  public PrinterSettingGridColumns = [
+    { headerName: "Printing Type", field: "PrintingType", width: 100 },
+    { headerName: "Group Name", field: "GroupName", width: 100 },
+    { headerName: "Printer Display Name", field: "PrinterDisplayName", width: 120 },
+    { headerName: "Printer Name", field: "PrinterName", width: 120 },
+    { headerName: "Model Name", field: "ModelName", width: 120 },
+    { headerName: "Width_Lines", field: "Width_Lines", width: 120 },
+    { headerName: "Height_Lines", field: "Height_Lines", width: 120 },
+    { headerName: "HeaderGap_Lines", field: "HeaderGap_Lines", width: 120 },
+    { headerName: "FooterGap_Lines", field: "FooterGap_Lines", width: 120 },
+    { headerName: "mh", field: "mh", width: 120 },
+    { headerName: "ml", field: "ml", width: 120 },
+    { headerName: "Is Active", field: "IsActive", width: 100 },
+    {
+      headerName: "Action",
+      field: "",
+
+      width: 120,
+      cellRenderer: this.PrinterSettingActionTemplate
+      // template:
+      //   `<a danphe-grid-action="edit" class="grid-action">
+      //           Edit
+      //        </a>`
+    }
+  ]
 
   public BillingItemNameRenderer(params) {
     let template = '';
@@ -618,5 +747,61 @@ export class SettingsGridColumnSettings {
       template = `<span>` + params.data.ItemName + `</span>`
     }
     return template;
+  }
+
+  public PrinterSettingActionTemplate(params) {
+    if (params.data.IsActive == true) {
+      let template =
+        `<a danphe-grid-action="edit" class="grid-action" >
+        Edit
+        </a>
+        <a danphe-grid-action="deactivatePrinterSetting" class="grid-action blinking-btn-warning" style="background-color: orange;color: black;">
+                Deactivate
+        </a>`
+      return template;
+    }
+    else {
+      let template =
+        `<a danphe-grid-action="activatePrinterSetting" class="grid-action blinking-btn-secondary"  style="background-color: #afb8af;color: black;">
+                Activate
+        </a>`
+      return template;
+    }
+
+  }
+
+  public ICD10GroupList = [
+    { headerName: "Reporting Group SN", field: "ReportingGroup_SN", width: 100 },
+    { headerName: "Reporting Group Name", field: "ReportingGroupName", width: 150 },
+    { headerName: "Disease Group SN", field: "DiseaseGroup_SN", width: 100 },
+    { headerName: "Disease Group ICD10 Code", field: "DiseaseGroup_ICD", width: 150 },
+    { headerName: "Disease Group Name", field: "DiseaseGroupName", width: 150 },
+    { headerName: "ICD10 Code", field: "ICD10_Code", width: 150 },
+    { headerName: "ICD10 Name", field: " ICD10_Name,", width: 150 },
+    // { headerName: "Action", field: "", width: 120,
+    //   template:  `<a danphe-grid-action="edit" class="grid-action"> Edit </a>`
+    // }
+  ]
+
+  public PrintExportConfigurationColumns = [
+    { headerName: "Setting Name", field: "SettingName", width: 140 },
+    { headerName: "Page HeaderText", field: "PageHeaderText", width: 140 },
+    { headerName: "Module Name", field: "ModuleName", width: 100 },
+    { headerName: "Is Active", field: "IsActive", width: 100 },
+    {
+      headerName: "Action",
+      field: "",
+
+      width: 120,
+      cellRenderer: this.PrinterExportConfigurationActionTemplate
+    }
+  ]
+
+   public PrinterExportConfigurationActionTemplate(params) {
+      let template =
+        `<a danphe-grid-action="edit" class="grid-action" >
+        Edit
+        </a>`
+      return template;
   }
 }

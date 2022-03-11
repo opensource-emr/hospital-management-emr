@@ -30,7 +30,8 @@
 <div style="width: 100%;">
   <div *ngIf="showCustomDate" style="width: 100%; display: table;    background: #eaeaea;">
     <div style="display:inline-block;">
-      <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="dateRangeSettingsName" [emit-always]="false">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="dateRangeSettingsName"
+                            [emit-always]="false">
       </from-to-date-select>
     </div>
     <!-- <div style="display: inline-block;vertical-align: top;margin-top: 4px;padding-left: 15px;" *ngIf="showReloadButton">
@@ -46,7 +47,7 @@
 
       <div style="float: left;margin-right: 20px;"
         *ngIf="nepaliDateInGridColDetail && nepaliDateInGridColDetail.ShowNepaliDateInGrid" class="input-group">
-        <div class="icheck-inline">
+        <div *ngIf="showAdBsButton" class="icheck-inline">
           <label style="margin-top: 3px;" class="mt-checkbox mt-checkbox-outline" title="Click to change Date Format">
             <input name="salutation" type="checkbox" [(ngModel)]="showNepaliDateOption"
               (ngModelChange)="OnShowNepaliDateModelChange()">
@@ -88,13 +89,15 @@
         placeholder="search" onfocus="this.placeholder = ''" onfocusout="this.placeholder = 'search'" />
       <div *ngIf="showServerSideSearch && !showCustomSearch"><input (keyup)="searchSeraverSide($event)"
           placeholder="Search (Minimum {{searchMinTxtLeng}} Character)" style="width:360px;" class="searchtbx"
-          type="text" id="quickFilterInput"></div>
+          type="text" id="quickFilterInput" onClick="this.select();"></div>
       <div *ngIf="!showServerSideSearch && showCustomSearch"><input #serverSearchInput
           placeholder="Search (Minimum {{searchMinTxtLeng}} Character)" style="width:360px;" class="searchtbx"
-          type="text" id="quickFilterInput"></div>
+          type="text" id="quickFilterInput" onClick="this.select();"></div>
     </div>
   </div>
-  <div style="clear: both;"></div>
+  <div style="clear: both;">
+    <print-header style="display:none;padding:0px" id="headerForPrint" [report-for]="reportFor" [unit-name]="printTitle" [show-pan-number]="headerDetailParam.showPANNo" [show-phone-number]="headerDetailParam.showPhoneNumber"></print-header>
+  </div>
 
   <div [ngClass]="supressPagination ? 'aggrid-scroll-wrapper':'aggrid-parent-wrapper'" *ngIf="showGrid"
     [ngStyle]="supressPagination && {'height': gridFixedHeight}">

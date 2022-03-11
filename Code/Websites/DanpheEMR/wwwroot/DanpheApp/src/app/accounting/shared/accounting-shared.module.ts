@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { SharedModule } from "../../shared/shared.module";
 import { TransactionViewComponent } from "../transactions/transaction-view.component";
 import { AccountingBLService } from './accounting.bl.service';
@@ -12,7 +12,9 @@ import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete/danph
 import { fiscalyearlogSharedComponent } from './fiscal-yearlog-shared/fiscal-yearlog-shared.component';
 
 @NgModule({
-    providers: [AccountingBLService,AccountingDLService, AccountingService],
+  providers: [AccountingBLService, AccountingDLService,
+    AccountingService //mumbai-team-june2021-danphe-accounting-cache-change
+  ],
     imports: [
         SharedModule,
         CommonModule,

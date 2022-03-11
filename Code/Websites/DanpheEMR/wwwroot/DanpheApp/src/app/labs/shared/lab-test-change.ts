@@ -19,13 +19,13 @@ export class LabTestChangeComponent {
   public labBillItems: Array<any>;
   public loading: boolean = true;
   public noMatchingItem: boolean = true;
-  public CurrencyType: string = null;
+  //public CurrencyType: string = null;
 
   constructor(public labBLService: LabsBLService, public coreService: CoreService,
     public labresultService: LabTestResultService,
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService) {
-    this.CurrencyType = this.coreService.currencyUnit;
+    //this.CurrencyType = this.coreService.currencyUnit;
   }
 
   ngOnInit() {

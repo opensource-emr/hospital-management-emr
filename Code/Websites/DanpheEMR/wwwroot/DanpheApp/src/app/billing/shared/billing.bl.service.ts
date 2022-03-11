@@ -9,12 +9,11 @@ import { LabsDLService } from '../../labs/shared/labs.dl.service';
 import { ImagingDLService } from '../../radiology/shared/imaging.dl.service';
 import { BillingDLService } from './billing.dl.service';
 import { BillItemRequisition } from './bill-item-requisition.model';
-import { BillingTransaction } from './billing-transaction.model';
+import { BillingTransaction, BillingTransactionPost } from './billing-transaction.model';
 import { BillingDeposit } from './billing-deposit.model';
 import { BillingTransactionItem } from './billing-transaction-item.model';
 import { LabTestRequisition } from '../../labs/shared/lab-requisition.model';
 import { ImagingItemRequisition } from '../../radiology/shared/imaging-item-requisition.model';
-import { BillReturnRequest } from './bill-return-request.model';
 import { Patient } from '../../patients/shared/patient.model';
 import { SecurityService } from '../../security/shared/security.service';
 import * as moment from 'moment/moment';
@@ -38,6 +37,8 @@ import { DenominationModel } from './denomination.model';
 import { BillingOpPatientVM } from '../op-patient-add/bill-op-patientVM';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 import { ENUM_VisitStatus, ENUM_AppointmentType, ENUM_BillingStatus, ENUM_VisitType } from '../../shared/shared-enums';
+import { HandOverTransactionModel } from './hand-over-transaction.model';
+import { IpBillingDiscountModel } from './ip-bill-discount.model';
 
 @Injectable()
 export class BillingBLService {
@@ -64,8 +65,8 @@ export class BillingBLService {
       })
   }
 
-  public LoadAllProvisionalBills(from:string, to:string) {
-    return this.billingDLService.LoadAllProvisionalBills(from,to)
+  public LoadAllProvisionalBills(from: string, to: string) {
+    return this.billingDLService.LoadAllProvisionalBills(from, to)
       .map((responseData) => {
         return responseData;
       })
@@ -98,8 +99,27 @@ export class BillingBLService {
         return responseData;
       })
   }
+  public GetBillingInfoOfPatientForSettlement(patientId: number) {
+    return this.billingDLService.GetBillingInfoOfPatientForSettlement(patientId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+  public GetSettlementSingleInvoicePreview(billingTransactionId: number) {
+    return this.billingDLService.GetSettlementSingleInvoicePreview(billingTransactionId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
   public GetInvoiceDetailsForDuplicatebill(from, to) {
     return this.billingDLService.GetInvoiceDetailsForDuplicatebill(from, to)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
+  public GetInvoiceReturnDetailsForDuplicatebill(from, to) {
+    return this.billingDLService.GetInvoiceReturnDetailsForDuplicatebill(from, to)
       .map((responseData) => {
         return responseData;
       })
@@ -135,7 +155,7 @@ export class BillingBLService {
   }
 
   //Get Items requested list for Inpatient
-  public GetInPatientProvisionalItemList(patientId, patientVisitId, module){
+  public GetInPatientProvisionalItemList(patientId, patientVisitId, module) {
     return this.billingDLService.GetInPatientProvisionalItemList(patientId, patientVisitId, module).map((responseData) => {
       return responseData;
     })
@@ -147,6 +167,14 @@ export class BillingBLService {
         return responseData;
       });
   }
+
+  public GetCreditNoteByCreditNoteNo(CreditNoteNo: number, fiscalYrId: number) {
+    return this.billingDLService.GetCreditNoteByCreditNoteNo(CreditNoteNo, fiscalYrId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
   public GetInPatientDetailForPartialBilling(patId: number, patVisitId: number) {
     return this.billingDLService.GetInPatientDetailForPartialBilling(patId, patVisitId)
       .map((responseData) => {
@@ -195,6 +223,19 @@ export class BillingBLService {
       })
   }
 
+  public GetEmpDueAmount() {
+    return this.billingDLService.GetEmpDueAmount()
+      //.map(res => res);
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+  public GetBankList() {
+    return this.billingDLService.GetBankList()
+      .map((responseData) => {
+        return responseData;
+      })
+  }
 
   // Credit Cancellation
   public GetCreditForCancellationbyPatientIdonBillTxnItems(patientId: number) {
@@ -244,6 +285,12 @@ export class BillingBLService {
       });
   }
 
+  public GetDoctorList() {
+    return this.billingDLService.GetDoctorList()
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   public GetInsuranceBillingItems() {
     return this.billingDLService.GetInsuranceBillingItems()
       .map((responseData) => {
@@ -406,6 +453,30 @@ export class BillingBLService {
     return this.billingDLService.GetPatientReturnedReceiptList(patientId)
       .map(res => res);
   }
+
+  public GetHandoverTransactionDetails() {
+    return this.billingDLService.GetHandoverTransactionDetails()
+      .map(res => res);
+  }
+  public GetHandoverReceivedReport(fromDate, Todate) {
+    return this.billingDLService.GetHandoverReceivedReport(fromDate, Todate)
+      .map(res => res);
+  }
+
+  public GetDailyCollectionVsHandoverReport(fromDate, Todate) {
+    return this.billingDLService.GetDailyCollectionVsHandoverReport(fromDate, Todate)
+      .map(res => res);
+  }
+  public loadHandoverDetailReport(fromDate, Todate, employeeId) {
+    return this.billingDLService.GetHandoverDetailReport(fromDate, Todate, employeeId)
+      .map(res => res);
+  }
+
+  public GetHandoverSummaryReport(fiscalYrId: number) {
+    return this.billingDLService.GetHandoverSummaryReport(fiscalYrId)
+      .map(res => res);
+  }
+
   //unclaimed Insurance
   public UpdateInsuranceClaimed(unclaimedInvoices, counterId) {
     let billingTransactionIdList = unclaimedInvoices.map(invoice => {
@@ -516,8 +587,20 @@ export class BillingBLService {
         return responseData;
       });
   }
-
-
+  public PostHandoverTransactionDetails(handoverTransaction: HandOverTransactionModel) {
+    var temp = _.omit(handoverTransaction, ['HandoverTransactionValidator']);
+    return this.billingDLService.PostHandoverTransactionDetails(temp)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  public UpdateHandoverTransactionDetails(handoverTransaction: HandOverTransactionModel) {
+    var temp = _.omit(handoverTransaction, ['HandoverTransactionValidator']);
+    return this.billingDLService.UpdateHandoverTransactionDetails(temp)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   //To cancel the Credit Bill 
   public PutBillStatusOnBillTxnItemCancellation(billTxnItemReq: BillingTransactionItem) {
     let billStatus = ENUM_BillingStatus.cancel;// "cancel";
@@ -653,7 +736,89 @@ export class BillingBLService {
       });
   }
 
+ 
+//This handles the post Invoice request except for the provisional billing..
+public ProceedToBillingTransaction(billingTransaction:BillingTransaction,billingTransactionItems: Array<BillingTransactionItem>, orderStatus: string, billStatus: string, insuranceApplicable: boolean, currPatVisitContext?: CurrentVisitContextVM): Observable<any>{
 
+  let labItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();//local variable for lab department items
+  let imgingItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();//local variable for Imaging/Radiology department
+  let visitItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();
+  let BillingTransactionPostObj: BillingTransactionPost = new BillingTransactionPost();
+
+  billingTransaction.BillingTransactionItems = new Array<BillingTransactionItem>();
+  for (let i = 0; i < billingTransactionItems.length; i++) {
+    billingTransaction.BillingTransactionItems.push(new BillingTransactionItem());
+    billingTransaction.BillingTransactionItems[i] = Object.assign(billingTransaction.BillingTransactionItems[i], billingTransactionItems[i]);
+  }
+
+  for (var s = 0; s < billingTransaction.BillingTransactionItems.length; s++) {
+    let integrationName = this.coreService.GetServiceIntegrationName(billingTransaction.BillingTransactionItems[s].ServiceDepartmentName);
+    integrationName = integrationName ? integrationName.toLowerCase() : '';
+    billingTransaction.BillingTransactionItems[s].ItemIntegrationName = integrationName;
+   
+
+    if (integrationName == "radiology" && !billingTransaction.BillingTransactionItems[s].RequisitionId) {
+      imgingItems.push(billingTransaction.BillingTransactionItems[s]);
+    }
+    else if (integrationName == "lab" && !billingTransaction.BillingTransactionItems[s].RequisitionId) {
+      labItems.push(billingTransaction.BillingTransactionItems[s]);    //Push only Lab items
+    }
+
+    else if (integrationName == "er" && billingTransaction.BillingTransactionItems[s].ItemName.toLowerCase() == "emergency registration" && !billingTransaction.BillingTransactionItems[s].RequisitionId) {
+      visitItems.push(billingTransaction.BillingTransactionItems[s]); //push only opd items.
+    }
+    else if (integrationName == "opd" && billingTransaction.BillingTransactionItems[s].ItemName.toLowerCase() == "consultation charge") {
+      visitItems.push(billingTransaction.BillingTransactionItems[s]); //push only opd items.
+    }
+  }
+
+  let wardName = "outpatient";
+    if (currPatVisitContext && currPatVisitContext.VisitType == "inpatient") {
+      wardName = currPatVisitContext.Current_WardBed;
+    }
+    let labItms = this.GetLabItemsMapped(labItems, orderStatus, billStatus, wardName, insuranceApplicable); //after mapping lab items
+    let imgItems = this.GetImagingItemsMapped(imgingItems, orderStatus, billStatus, wardName, insuranceApplicable); //after mapping imaging items
+
+    let visititems = this.GetVisitItemsMapped(visitItems, orderStatus, billStatus);
+    
+
+    let radReq = JSON.stringify(imgItems);
+    
+
+  let txnItems = billingTransaction.BillingTransactionItems.map(function(item){
+    item.Patient = Patient.GetClone(item.Patient);
+    //set requestedby to null when zero (Foreign key won't allow Zero in db so)
+    if (item.RequestedBy == 0) {
+      item.RequestedBy = null;
+    }
+    if (item.PatientVisitId == 0)
+      item.PatientVisitId = null;
+    var temp = _.omit(item, ['ItemList', 'BillingTransactionItemValidator', 'Patient', 'ServiceDepartment']);
+    return temp;
+  });
+    var billTxn: any;
+    billTxn = Object.assign({}, billingTransaction);
+    billTxn.BillingTransactionItems = txnItems;
+
+  BillingTransactionPostObj.LabRequisition = JSON.parse(labItms);
+  BillingTransactionPostObj.ImagingItemRequisition = JSON.parse(radReq);
+  BillingTransactionPostObj.VisitItems = JSON.parse(visititems);
+  BillingTransactionPostObj.Txn = billTxn;
+
+  //This is to check whether the request is provisional or not..
+  if(BillingTransactionPostObj.Txn.BillingTransactionItems[0].BillStatus.toLocaleLowerCase() === 'provisional'){
+      return this.billingDLService.ProceedToProvisionalBilling(BillingTransactionPostObj)
+    .map((responseData) => {
+      return responseData;
+    });
+  }
+  else{
+    return this.billingDLService.PostInvoice(BillingTransactionPostObj)
+    .map((responseData) => {
+      return responseData;
+    });
+  }
+}
   //This method Post all dept related BillingOrders
   //and after post it take response and add requisitionId to respective billRequisitionItems
   //It return single billRequisitionItem object with or without requisitionId
@@ -665,19 +830,19 @@ export class BillingBLService {
     //Because we post separately Lab and Radiology to DB
     for (var s = 0; s < billingTransactionItems.length; s++) {
       let integrationName = this.coreService.GetServiceIntegrationName(billingTransactionItems[s].ServiceDepartmentName);
-
+      integrationName = integrationName ? integrationName.toLowerCase() : '';
       //ashim : 12Dec2018 : Incase of copy from earlier invoice don't post those lab/imaging items to lab/imaging requisition that was already added in the earlier invoice.
-      if (integrationName == "Radiology" && !billingTransactionItems[s].RequisitionId) {
+      if (integrationName == "radiology" && !billingTransactionItems[s].RequisitionId) {
         imgingItems.push(billingTransactionItems[s]);
       }
-      else if (integrationName == "LAB" && !billingTransactionItems[s].RequisitionId) {
+      else if (integrationName == "lab" && !billingTransactionItems[s].RequisitionId) {
         labItems.push(billingTransactionItems[s]);    //Push only Lab items
       }
       //ashim: 24Sep2018 : Create only Emergency Registration item's visit .
-      else if (integrationName == "ER" && billingTransactionItems[s].ItemName.toLowerCase() == "emergency registration" && !billingTransactionItems[s].RequisitionId) {
+      else if (integrationName == "er" && billingTransactionItems[s].ItemName.toLowerCase() == "emergency registration" && !billingTransactionItems[s].RequisitionId) {
         visitItems.push(billingTransactionItems[s]); //push only opd items.
       }
-      else if (integrationName == "OPD" && billingTransactionItems[s].ItemName.toLowerCase() == "consultation charge") {
+      else if (integrationName == "opd" && billingTransactionItems[s].ItemName.toLowerCase() == "consultation charge") {
         visitItems.push(billingTransactionItems[s]); //push only opd items.
       }
     }
@@ -803,7 +968,7 @@ export class BillingBLService {
         PatientName: null,//this will be assigned from server side.
         Diagnosis: null,
         Urgency: "normal",//default for Billing
-        OrderDateTime: null,
+        OrderDateTime: bill.CreatedOn,
         ProviderName: null,
         BillingStatus: billStatus,
         OrderStatus: orderStatus,
@@ -828,7 +993,10 @@ export class BillingBLService {
         HasInsurance: insuranceApplicable,
         SampleCollectedOnDateTime: null,
         BillCancelledBy: null,
-        BillCancelledOn: null
+        BillCancelledOn: null,
+        LabTypeName: bill.LabTypeName,
+        IsSmsSend: null,
+        IsSelected: false
       });
     });
 
@@ -995,6 +1163,12 @@ export class BillingBLService {
       })
   }
 
+  public GetPatientPastBillSummaryForBillSettlements(patientId: number, IsPatientAdmitted: boolean) {
+    return this.billingDLService.GetPatientPastBillSummaryForBillSettlements(patientId, IsPatientAdmitted)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
   //Yubraj: 8th July '19 -- to show in bill history of insurance provisional billing
   public GetPatientPastInsuranceBillSummary(patientId: number) {
     return this.billingDLService.GetPatientPastInsuranceBillSummary(patientId)
@@ -1042,12 +1216,28 @@ export class BillingBLService {
     return this.billingDLService.GetAdditionalInfoForDischarge(patientVisitId, billingTxnId)
       .map(res => res);
   }
+
+  public GetEstimateBillDetails(patientId: number, patientvisitId: number) {
+    return this.billingDLService.GetEstimateBillDetails(patientId, patientvisitId)
+      .map(res => res);
+  }
+
   //added: ashim : 16Sep2018 : to display admission detail in provisional page.
   public GetBillItemsForIPReceipt(patientId: number, billingTxnId: number, billStatus) {
     return this.billingDLService.GetBillItemsForIPReceipt(patientId, billingTxnId, billStatus)
       .map(res => res);
   }
 
+  public GetProvisionalItemsInfoForPrint(patientId: number, provFiscalYrId: number, provReceiptNo: number, visitType: string) {
+    return this.billingDLService.GetProvisionalItemsInfoForPrint(patientId, provFiscalYrId, provReceiptNo, visitType)
+      .map(res => res);
+  }
+  
+  public GetInsuranceProvisionalInfoForPrint(patientId: number, provFiscalYrId: number, provReceiptNo: number, visitType: string) {
+    return this.billingDLService.GetInsuranceProvisionalInfoForPrint(patientId, provFiscalYrId, provReceiptNo, visitType)
+      .map(res => res);
+  }
+  
 
   //added: ashim: 17Aug'18
   //this function is moved from bill-return-request.component
@@ -1097,7 +1287,7 @@ export class BillingBLService {
     billingTXN.Remarks = returnRemarks;
 
     var data = JSON.stringify(retModel);
-    var biltxndata = JSON.stringify(billingTXN)
+    var biltxndata = "";// JSON.stringify(billingTXN);//sud:30Apr'21--Removing PartialReturnCases forever..
     input.append("billInvReturnModel", data);
     input.append("billTransaction", biltxndata);
 
@@ -1123,16 +1313,24 @@ export class BillingBLService {
       .map(res => res);
   }
 
-  //ashim: 30Sep2018
-
   public DischargePatient(dischargePatient: DischargeDetailBillingVM) {
     return this.admissionDLService.DischargePatient(dischargePatient)
       .map(res => res);
   }
 
-  //ashim: 09Sep2018
-  public UpdateBedDurationBillTxn(bedDurationDetail: Array<BedDurationTxnDetailsVM>) {
-    return this.billingDLService.PutBedDurationBillTxn(bedDurationDetail)
+  public DischargePatientWithZeroItem(obj: any) {
+    let data = JSON.stringify(obj);
+    return this.admissionDLService.DischargePatientWithZeroItem(data)
+      .map(res => res);
+  }
+  //older code
+  // public UpdateBedDurationBillTxn(bedDurationDetail: Array<BedDurationTxnDetailsVM>) {
+  //   return this.billingDLService.PutBedDurationBillTxn(bedDurationDetail)
+  //     .map(res => res);
+  // }
+
+  public UpdateBedDurationBillTxn(visitId: number) {
+    return this.billingDLService.PutBedDurationBillTxn(visitId)
       .map(res => res);
   }
 
@@ -1176,7 +1374,7 @@ export class BillingBLService {
   }
 
   //Anjana: 19Aug-2020: Cancellation of Items in Cancel Bils
-  public CancelItemRequest(item: BillingTransactionItem){
+  public CancelItemRequest(item: BillingTransactionItem) {
     var temp = _.omit(item, [
       "ItemList",
       "BillingTransactionItemValidator",
@@ -1196,6 +1394,52 @@ export class BillingBLService {
     ]);
     let data = JSON.stringify(temp);
     return this.billingDLService.CancelBillRequest(data).map((responseData) => {
+      return responseData;
+    });
+  }
+
+  //Sud:20Feb'21--To get Only IPD Patients List with VisitInfo
+  public GetIpdPatientsWithVisitsInfo(searchTxt) {
+    return this.patientDLService.GetIpdPatientsWithVisitsInfo(searchTxt)
+      .map(res => res);
+  }
+
+  //sud:1May'21--For Credit Note
+  public GetInvoiceDetailsForCreditNote(invoiceNumber: number, fiscalYrId: number, getVisitInfo: boolean, isInsuranceReceipt: boolean) {
+    return this.billingDLService.GetInvoiceDetailsForCreditNote(invoiceNumber, fiscalYrId, getVisitInfo, isInsuranceReceipt)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //sud:1May'21--For Credit Note
+  public PostCreditNote(invoiceReturnObj: BillInvoiceReturnModel) {
+    return this.billingDLService.PostCreditNote(invoiceReturnObj)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //sud:1May'21--For Credit Note
+  public GetInvoiceDetailsForDuplicatePrint(invoiceNumber: number, fiscalYrId: number, billingTxnId: number) {
+    return this.billingDLService.GetInvoiceDetailsForDuplicatePrint(invoiceNumber, fiscalYrId, billingTxnId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //sud:9Sept'21--for visit context.. 
+  public GetPatientLatestVisitContext(patientId: number) {
+    return this.patientDLService.GetPatientLatestVisitContext(patientId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //Krishna, 19th'JAN'22, This updates the Discount Scheme and Discount percent on the Admission table..
+  public UpdateDiscount(ipBillingDiscountModel: IpBillingDiscountModel){
+    return this.billingDLService.UpdateDiscount(ipBillingDiscountModel)
+    .map((responseData) => {
       return responseData;
     });
   }

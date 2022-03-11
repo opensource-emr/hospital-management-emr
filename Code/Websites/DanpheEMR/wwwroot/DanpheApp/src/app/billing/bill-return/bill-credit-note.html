@@ -1,0 +1,256 @@
+<style>
+  .invalid-item {
+    background-color: yellow;
+    border: 2px solid red;
+  }
+
+  .row-selected {
+    background-color: lightgreen !important;
+  }
+
+  /*this is with fixed position*/
+  /* .ret-summary {
+    position: fixed;
+    right: 1%;
+    top: 300px;
+    width: 21%;
+    padding: 10px;
+    background-color: #d6edef;
+    border-radius: 10px 0px 0px 10px !important;
+  } */
+
+  /*this is not fixed position*/
+  .ret-summary {
+    padding: 10px;
+    background-color: #d6edef;
+    border-radius: 10px 0px 0px 10px !important;
+  }
+
+  .table-hover>tbody>tr:hover,
+  .table-hover>tbody>tr:hover>td {
+    background: #c8cdd8 !important;
+    cursor: pointer;
+  }
+
+  .table-prov-bill tr td {
+    font-size: 11px;
+  }
+
+  .table-wrapper table th {
+    position: sticky;
+    top: -1px;
+    background-color: #f1f1f1;
+  }
+
+  .padLess_table th,
+  .padLess_table td {
+    padding: 3px 8px !important;
+  }
+
+  .restricted-itm {
+    padding: 0;
+    background-color: red;
+    border-radius: 50% !important;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: #fff;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12 col-sm-12">
+      <div class="caption lb-caption">
+        <h3><span><i class="fa fa-refresh"></i>CREDIT NOTE</span></h3>
+      </div>
+      <div class="page-bar">
+        <table style="width: 100%;">
+          <tbody>
+            <tr>
+              <td style="width: 20%">
+                <b>Fiscal Year: </b>
+                <select [(ngModel)]="selFiscYrId">
+                  <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}"> {{fisc.FiscalYearFormatted}}
+                  </option>
+                </select>
+              </td>
+              <td style="width: 25%">
+                <b>Invoice Number</b>:
+                <input id="txtInvoiceNumber" [(ngModel)]="selReceiptNo" onClick="this.select();"
+                  placeholder="Enter Invoice No." name="TransactionId" type="number"
+                  style="width:130px; display: inline-block" class="form-control"
+                  (keyup.enter)="coreService.FocusInputById('btn_searchInvoice')" 
+                  (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+              </td>
+              <td>
+                <button id="btn_searchInvoice" class="btn green btn-success" [disabled]="loading"
+                  (click)="GetInvoiceByReceiptNo(selReceiptNo)" style="width:80px">
+                  <i class="fa fa-search"></i>Search
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="isInvoiceItemsLoaded">
+    <div class="col-md-12">
+      <div>
+        <table class="table table-responsive" style="background-color: lightblue;">
+          <tr>
+            <td>
+              Patient: {{crnInfoVM.PatientInfo.ShortName}}
+            </td>
+            <td>
+              Invoice No: {{crnInfoVM.InvoiceInfo.InvoiceNoFormatted}}
+            </td>
+            <td>
+              Invoice Date: {{crnInfoVM.InvoiceInfo.InvoiceDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              ({{crnInfoVM.InvoiceInfo.InvoiceDate | nepaliDate}})
+              Time : {{crnInfoVM.InvoiceInfo.InvoiceDate | DanpheDateTime:'format':'HH:mm'}}
+            </td>
+            <td>
+              Bill Status: <span>{{crnInfoVM.InvoiceInfo.BillStatus | uppercase}}</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="crnInfoVM.TransactionItems.length >0">
+      <div class="row">
+        <div class="col-md-9">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover custom_table padLess_table table-bordered"
+              style="background-color:initial;margin-top:3px;">
+              <thead>
+                <tr>
+                  <input class="zoomcheckbox" [(ngModel)]="selectAll" name="IsSelectedAll" width="100" id="chkSelectAll"
+                    type="checkbox" ng-checked="selectAll=false" (change)="SelectAll()">
+                  <th>SN</th>
+                  <th style="width: 250px;">Item Name</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Subtotal</th>
+                  <th>Discount</th>
+                  <th>Total Amt.</th>
+                  <th>Return Qty.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let itm of crnInfoVM.TransactionItems;let i=index;"
+                  [ngClass]="{'row-selected ':itm.IsSelected}">
+                  <td>
+                    <input *ngIf="!itm.IsReturnRestricted" type="checkbox" [(ngModel)]="itm.IsSelected"
+                      id="chkItemSelect_{{i}}" (change)="OnItemCheckboxChanged(i)" style="zoom: 1.5;" />
+                  </td>
+                  <td>{{i+1}}</td>
+                  <td>{{itm.ItemName}}</td>
+                  <td>{{itm.Price}}</td>
+                  <td>{{itm.RemainingQty}}</td>
+                  <td>{{itm.SubTotal}}</td>
+                  <td>{{itm.DiscountAmount}}</td>
+                  <td>{{itm.TotalAmount}}</td>
+                  <td>
+                    <div>
+                      <input *ngIf="!itm.IsReturnRestricted" type="number" style="width: 80px;"
+                        [(ngModel)]="itm.ReturnQuantity" id="txtRetQty_{{i}}" onClick="this.select();"
+                        (keyup.enter)="FocusNextItemRow(i)" (ngModelChange)="OnReturnQtyChanged(i)" min="0"
+                        (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                        [ngClass]="{'invalid-item':!itm.IsValid}" [disabled]="itm.IsReturnRestricted" />
+
+                      <div class="tooltip list-tooltip" *ngIf="itm.IsReturnRestricted" style="padding-left: 5px;">
+                        <span class="fa fa-info restricted-itm" title="Can't return. Report already processed."></span>
+                        <p class="tooltiptext ttptextdown no-print">
+                          Can't return. Report already processed.
+                        </p>
+                      </div>
+
+                    </div>
+                    <div>
+                      <label *ngIf="!itm.IsValid" style="color:red;">
+                        Invalid Qty.
+                      </label>
+                    </div>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="ret-summary">
+            <div>
+              Total Return Amount : <b style="color:green;font-size: 20px;">{{totalReturnAmt}}</b>
+            </div>
+            <div style="color: blue;">
+              (In words : {{totalReturnAmt | NumberInWords}} <span *ngIf="totalReturnAmt">only.</span>)
+            </div>
+            <div style="margin-top: 20px;">
+              Remarks *:
+              <input type="text" [(ngModel)]="returnRemarks" id="txtReturnRemarks"
+                (keyup.enter)="coreService.FocusInputById('btnSubmit')" style="width:200px" onClick="this.select();" />
+            </div>
+            <button type="button" id="btnSubmit" class="btn green btn-success" (click)="SubmitCreditNote()"
+              [disabled]="loading" style="margin-top:10px;">Submit</button>
+          </div>
+        </div>
+      </div>
+<br>
+    </div>
+    <div class="col-md-12" *ngIf = "isSettled">
+      <div class="col-md-9"></div>
+      <div class="col-md-3">
+        <div style="background-color: #d6edef; border-radius: 5px !important; padding: 10px; height: 100%;">
+          <span>Note: There was additional <span style = "color: green; font-size: 20px;">{{crnInfoVM.InvoiceInfo.CashDiscount}}</span> cash discount given on this
+            invoice during settlement.</span>
+          <br>
+          <input  id = "rtChkBox" type="checkbox" (change) = "EnterReturnAmountChange($event)"><label for="rtChkBox">Enter Return Discount?</label>  <br>
+          <input *ngIf = "enableEnterReturnDiscount" type="number" [(ngModel)] = "DiscountFromSettlement" (ngModelChange) = "ReCalculateReturnAmount()" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+          <br>
+          <span *ngIf = "discountMorethanReturnAmount" class="color-red font-sm">Invalid Discount Amount.</span>
+          <br>
+          <span *ngIf="NetReturnedAmount">Net Return Amount : <label
+              style="font-size: 20px; color: green; width:120px;padding: 5px;">{{NetReturnedAmount}}</label></span><br>
+          <span class="control-label" style="font-weight:bold; color: blue;" *ngIf="NetReturnedAmount">(In Words:
+            {{NetReturnedAmount | NumberInWords}} only /-)</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="crnInfoVM.TransactionItems.length <=0">
+      <h3 style="color: rebeccapurple;">All Items of this Invoice are already returned.</h3>
+      <h5 style="color: red;">Please check the 'Credit Note' details from Duplicate prints>Returned Invoice page.</h5>
+    </div>
+
+    <!-- <div class="col-md-12" *ngIf="isSettled">
+     <span>This invoice is already settled.</span>
+    </div> -->
+
+  </div>
+
+
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showPrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3" style="margin-top: 50px;">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="ClosePrintPage()">X</a>
+          <div *ngIf="showPrintPage">
+            <bill-print-credit-note [credit-note-number]="selCreditNote.CreditNoteNumber"
+              [FiscalYearId]="selCreditNote.FiscalYearId">
+            </bill-print-credit-note>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

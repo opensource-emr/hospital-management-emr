@@ -67,7 +67,7 @@ export class RPT_ADT_TransferredPatientsComponent {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);;;
     }
   }
-
+  public dateRange : string = '';
   //Anjana:11June'20--reusable From-ToDate-In Reports..
   OnFromToDateChange($event) {
     this.fromDate = $event ? $event.fromDate : this.fromDate;
@@ -75,5 +75,6 @@ export class RPT_ADT_TransferredPatientsComponent {
 
     this.currenttransferPatient.fromDate = this.fromDate;
     this.currenttransferPatient.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 }

@@ -24,7 +24,8 @@ namespace DanpheEMR.ViewModel.ADT
         public int PatientVisitId { get; set; }
         public int PatientAdmissionId { get; set; }
         public int BedFeatureId { get; set; }
-        public double BedPrice { get; set; }
+        public string VisitCode { get; set; }
+
         public string Action { get; set; }
         public string Remarks { get; set; }
         public DateTime? StartedOn { get; set; }
@@ -34,5 +35,7 @@ namespace DanpheEMR.ViewModel.ADT
         public string PatientName { get; set; }
         public string WardName { get; set; }
         public string Address { get; set; }
+        public string Age { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }

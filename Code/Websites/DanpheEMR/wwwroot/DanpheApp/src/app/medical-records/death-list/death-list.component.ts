@@ -8,10 +8,10 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { MR_BLService } from '../shared/mr.bl.service';
 import { CoreService } from '../../core/shared/core.service';
 import { HttpClient } from '@angular/common/http';
-import { BabyBirthDetails } from '../../adt/shared/baby-birth-details.model';
 import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
 import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
 import { DeathDetails } from '../../adt/shared/death.detail.model';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./death-list.html"
@@ -28,6 +28,11 @@ export class DeathListComponent {
 
   public selectedDeath: any = null;
   public deathDetailId: number = null;
+  public showDeathRecordWindow: boolean = false;
+
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public hasDeathRecordPermission: boolean = false;
+
 
   constructor(
     public router: Router, public http: HttpClient,
@@ -36,8 +41,13 @@ export class DeathListComponent {
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService) {
+
     this.gridColumns = MRGridColumnSettings.DeathList;
     this.dateRange = "last3Months";
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('DeathDate', false));
+
+    this.hasDeathRecordPermission = this.securityService.HasPermission('btn-mr-add-death-record-button-permission');
+
   }
 
 
@@ -47,7 +57,7 @@ export class DeathListComponent {
 
     if (this.fromDate != null && this.toDate != null) {
       if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-        this.GetAllTheDeathList(this.fromDate, this.toDate);
+        this.GetAllTheDeathList();
       } else {
         this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
       }
@@ -55,7 +65,7 @@ export class DeathListComponent {
     }
   }
 
-  public GetAllTheDeathList(frmDate, toDate) {
+  public GetAllTheDeathList() {
     this.medicalRecordsBLService.GetDeathList(this.fromDate, this.toDate).subscribe(res => {
       if (res.Status == 'OK') {
         this.deathList = res.Results;
@@ -91,4 +101,12 @@ export class DeathListComponent {
     }
   }
 
+  CallBackAddNewDeath(data) {
+    if (data && data.Close) {
+      this.showDeathRecordWindow = false;
+    } else if (data && (data.Add || data.Edit)) {
+      this.showDeathRecordWindow = false;
+      this.GetAllTheDeathList();
+    }
+  }
 }

@@ -8,6 +8,11 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../s
 import { CommonFunctions } from "../../../shared/common.functions";
 import { NepaliCalendarService } from "../../../shared/calendar/np/nepali-calendar.service";
 import { CoreService } from "../../../core/shared/core.service";
+import { ActivateInventoryService } from "../../../shared/activate-inventory/activate-inventory.service";
+import { InventoryBLService } from "../../shared/inventory.bl.service";
+import { InventoryService } from "../../shared/inventory.service";
+import { PurchaseRequestModel } from "../../shared/purchase-request.model";
+import { ItemModel } from "../../settings/shared/item.model";
 @Component({
   templateUrl: './inv-purchase-items-summary.html'
 })
@@ -22,12 +27,19 @@ export class INVPurchaseItemsSummeryReport {
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   public dateRange: any;
+  public itemList: Array<ItemModel> = new Array<ItemModel>();
+  public selecteditemIds: string = null;
+  public selectedItem:any;
+  public ItemId:number=null;
+  public loading: boolean = false;
   constructor(public inventoryBLService: InventoryReportsBLService,
     public inventoryDLService: InventoryReportsDLService,
     public msgBoxServ: MessageboxService,
-    public reportServ: ReportingService, public nepCalendarService: NepaliCalendarService, public coreService: CoreService) {
+    public reportServ: ReportingService, public nepCalendarService: NepaliCalendarService, public coreService: CoreService,
+ public inventoryblService:InventoryBLService,public inventoryService:InventoryService) {
     this.InventoryPurchaseItemsReportColumns = this.reportServ.reportGridCols.InventoryPurchaseItemsReport;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('Dates', false));
+    this.LoadItemList();
   }
 
   public validDate: boolean = true;
@@ -44,16 +56,24 @@ export class INVPurchaseItemsSummeryReport {
     }
   }
 
-  PurchaseItemsReport() {
-    this.inventoryBLService.PurchaseItemsReport(this.FromDate, this.ToDate, this.fiscalYearId)
+    PurchaseItemsReport() {
+        this.loading = true;
+  if (this.selectedItem && this.selecteditemIds.length >0){
+    this.inventoryBLService.PurchaseItemsReport(this.FromDate, this.ToDate, this.fiscalYearId,this.selecteditemIds)
       .map(res => res)
       .subscribe(
         res => this.Success(res),
         res => this.Error(res)
+     
       );
+    }
+    else {
+      this.msgBoxServ.showMessage("Warn", ['Please select Item']);
+    }
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
+    this.loading = false;
   }
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
@@ -67,15 +87,18 @@ export class INVPurchaseItemsSummeryReport {
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }
+    this.loading = false;
 
   }
   public ItemType: string = "Consumables";
   OnItemTypeChange() {
     if (this.ItemType == "Consumables") {
       this.InventoryPurchaseItemsReportData = this.PurchaseItemsReportData.filter(p => p.ItemType == "Consumables");
+      this.InventoryPurchaseItemsReportData = this.PurchaseItemsReportData.filter(p=>p.ItemType = this.selectedItem.ItemType);
     }
     else if (this.ItemType == "CapitalGoods") {
       this.InventoryPurchaseItemsReportData = this.PurchaseItemsReportData.filter(p => p.ItemType == "Capital Goods");
+      this.InventoryPurchaseItemsReportData = this.PurchaseItemsReportData.filter(p=>p.ItemType = this.selectedItem.ItemType);
     }
     this.SummaryCalculation();
   }
@@ -136,6 +159,27 @@ export class INVPurchaseItemsSummeryReport {
     };
     return gridExportOptions;
   }
+  
+  LoadItemList(): void {
+    this.itemList = this.inventoryService.allItemList;
+    this.itemList = this.itemList.filter(item => item.IsActive == true && item.ItemType == this.ItemType);
+    if (this.itemList == undefined || this.itemList.length == 0) {
+      this.msgBoxServ.showMessage("failed", [
+        "failed to get Item.. please check log for details."
+      ]);
+    }
+  }
+  
+  onChange($event) {
+    let x = $event;
+    this.selectedItem = $event;
+    this.selecteditemIds = this.selectedItem.map(({ ItemId }) => ItemId).toString();
+ 
+  }
+
+ItemListFormatter(data: any): string {
+  return data["ItemName"];
+}
 }
 class PurchaseItemSummaryReportSummaryModel {
   public TotalQty: number = 0;

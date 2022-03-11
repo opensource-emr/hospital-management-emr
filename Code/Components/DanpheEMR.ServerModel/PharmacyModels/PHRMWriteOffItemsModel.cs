@@ -13,11 +13,12 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int WriteOffItemId { get; set; }
         public int WriteOffId { get; set; }
+        [NotMapped]
         public int? GoodReceiptItemId { get; set; }
         public int ItemId { get; set; }
         public string BatchNo { get; set; }
         public decimal ItemPrice { get; set; }
-        public int WriteOffQuantity { get; set; }
+        public double WriteOffQuantity { get; set; }
         public decimal SubTotal { get; set; }
         public decimal DiscountPercentage { get; set; }
         public decimal VATPercentage { get; set; }

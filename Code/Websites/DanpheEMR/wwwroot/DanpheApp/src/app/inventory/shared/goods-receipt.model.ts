@@ -1,21 +1,21 @@
-import { 
+import {
   FormGroup,
   FormControl,
   Validators,
   FormBuilder,
 } from '@angular/forms'
 import { GoodsReceiptItems } from "./goods-receipt-item.model"
-import { ENUM_GRCategory } from "../../shared/shared-enums";
+import { ENUM_GRItemCategory } from "../../shared/shared-enums";
 import * as moment from 'moment/moment';
 export class GoodsReceipt {
   public GoodsReceiptValidator: FormGroup = null;
   public VendorName: string = "";
   public VendorNo: string = "";
-  public GRCategory: string = ENUM_GRCategory.Consumables;
+  public ContactAddress: string = "";
+  public GRCategory: string = ENUM_GRItemCategory.Consumables;
   public IsCancel: boolean = false;
   AgingDays: number;
   SupplierId: number;
-  GoodReceiptDate: string | number | Date;
   length: number;
   public FromDate: string = "";
   public ToDate: string = "";
@@ -30,6 +30,11 @@ export class GoodsReceipt {
   public IsVerificationAllowed: boolean;
   public VerificationStatus: string;
   public GRStatus: string;
+  public GoodsArrivalFiscalYearFormatted: string;
+  public GoodsArrivalNo: number;
+  public GoodsArrivalDate : string;
+  public IMIRNo: number;
+  public IMIRDate : string;
   constructor() {
 
     var _formBuilder = new FormBuilder();
@@ -37,8 +42,8 @@ export class GoodsReceipt {
       //sanjit: 2Apr'20: GoodsReceiptDate somehow throws validation error when use with danphe-date-picker, so it is commented. 
       // 'GoodsReceiptDate': ['', Validators.compose([Validators.required])],
       'BillNo': ['', Validators.compose([Validators.required])],
+      // 'DonationId': ['', Validators.compose([Validators.required])],
       'VendorId': ['', Validators.compose([Validators.required])],
-      'GRCategory': ['', Validators.compose([Validators.required])],
       'PaymentMode': ['', Validators.compose([Validators.required])],
     });
   }
@@ -78,6 +83,7 @@ export class GoodsReceipt {
   public GoodsReceiptID: number = 0;
   public GoodsReceiptNo: number = 0;
   public GoodsReceiptDate: string = moment().format('YYYY-MM-DD');
+  public VendorBillDate: string = moment().format('YYYY-MM-DD');
   public PurchaseOrderId: number = null;
   public TotalAmount: number = 0;
   public Remarks: string = "";
@@ -118,4 +124,7 @@ export class GoodsReceipt {
   public IsTransferredToACC: boolean = false;
   public ModifiedBy: number = null;
   public ModifiedOn: Date = null;
+
+  //for Donations purpose tilganga hospital in INV_TXN_FixedAssetStock table 
+  public DonationId: any;
 }

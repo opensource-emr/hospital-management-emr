@@ -1,13 +1,12 @@
-import { Component, Directive, ViewChild } from '@angular/core';
-import { FormControlName } from '@angular/forms';
+import { Component } from '@angular/core';
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { WardSupplyBLService } from "../../shared/wardsupply.bl.service";
 import WARDGridColumns from "../../shared/ward-grid-cloumns";
 import { WARDReportsModel } from '../../shared/ward-report.model';
 import { SecurityService } from '../../../security/shared/security.service';
 import { Router } from '@angular/router';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 
 @Component({
@@ -21,8 +20,12 @@ export class ConsumptionReportComponent {
   ConsumptionReportColumn: Array<any> = null;
   ConsumptionReportData: Array<any> = new Array<WARDReportsModel>();
   public wardReports: WARDReportsModel = new WARDReportsModel();
+  public dateRange: string = null;
+  NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(public wardBLService: WardSupplyBLService, public msgBoxServ: MessageboxService, public securityService: SecurityService, public router: Router) {
+    this.dateRange = 'last1Week';
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('Date', false));
     this.CheckForSubstoreActivation();
   };
 
@@ -39,10 +42,20 @@ export class ConsumptionReportComponent {
         this.wardReports.FromDate = moment().format('YYYY-MM-DD');
         this.wardReports.ToDate = moment().format('YYYY-MM-DD');
         this.wardReports.StoreId = this.CurrentStoreId;
-        this.Load();
       }
     } catch (exception) {
       this.msgBoxServ.showMessage("Error", [exception]);
+    }
+  }
+  onDateChange($event) {
+    this.wardReports.FromDate = $event.fromDate;
+    this.wardReports.ToDate = $event.toDate;
+    if (this.wardReports.FromDate != null && this.wardReports.ToDate != null) {
+      if (moment(this.wardReports.FromDate).isBefore(this.wardReports.ToDate) || moment(this.wardReports.FromDate).isSame(this.wardReports.ToDate)) {
+        this.Load();
+      } else {
+        this.msgBoxServ.showMessage('failed', ['Please enter valid From date and To date']);
+      }
     }
   }
   //Export data grid options for excel file

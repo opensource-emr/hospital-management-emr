@@ -31,4 +31,13 @@ export class PHRMSettlementModel {
   public Patient: Patient = new Patient();//added: sud: 18may'18'
   public PHRMInvoiceTransactions: Array<PHRMInvoiceModel> = null;
   public BillingUser: string = null;//for duplicate print etc.. 
+
+  public CollectionFromReceivable: number = 0
+
+  public PHRMReturnIdsCSV:any[] = [];
+
+  public StoreId:number = 0;
+
+
+
 }

@@ -27,5 +27,7 @@ namespace DanpheEMR.ServerModel
         public int CounterId { get; set; }
         [NotMapped]
         public double ConsumeQuantity { get; set; }
+
+        public int? ConsumptionReceiptId { get; set; }
     }
 }

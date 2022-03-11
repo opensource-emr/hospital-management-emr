@@ -17,5 +17,14 @@ namespace DanpheEMR.Core.Configuration
         public bool RealTimeRemoteSyncEnabled { get; set; }
         public string ApplicationVersionNum { get; set; }
         public bool IsAuditEnable { get; set; }
+        public string LISDataBaseUrl { get; set; }
+        public GoogleDriveConfiguration GoogleDriveFileUpload { get; set; }
+    }
+    public class GoogleDriveConfiguration
+    {
+        public string ServiceAccountKey { get; set; }
+        public string LoggerFilePath { get; set; }
+        public string UploadFileBasePath { get; set; }
+        public string FileUrlCommon { get; set; }
     }
 }

@@ -20,10 +20,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">Hospital Name<sup>*</sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.HospitalName"
-                                 formControlName="HospitalName"
-                                 placeholder="Enter Hospital Name.." />
+                          <input id="hospital" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.HospitalName" formControlName="HospitalName" (keyup.enter)="setFocusById('address')" placeholder="Enter Hospital Name.." />
                           <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('HospitalName','required') || !(selectedInvoiceHeader.IsDirty('HospitalName'))">Enter Valid Hospital Name</span>
 
                         </div>
@@ -33,10 +30,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">Address<sup>*</sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.Address"
-                                 formControlName="Address"
-                                 placeholder="Enter Address.." />
+                          <input id="address" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Address" formControlName="Address" (keyup.enter)="setFocusById('telephone')" placeholder="Enter Address.." />
                           <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Address','required') || !(selectedInvoiceHeader.IsDirty('Address'))">Enter Valid Address</span>
 
                         </div>
@@ -46,10 +40,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">Telephone<sup>*</sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.Telephone"
-                                 formControlName="Telephone"
-                                 placeholder="Enter Telephone.." />
+                          <input id="telephone" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Telephone" formControlName="Telephone" (keyup.enter)="setFocusById('email')" placeholder="Enter Telephone.." />
                           <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Telephone','required') || !(selectedInvoiceHeader.IsDirty('Telephone'))">Enter Valid Telephone</span>
 
                         </div>
@@ -59,10 +50,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">Email<sup>*</sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.Email"
-                                 formControlName="Email"
-                                 placeholder="Enter Email.." />
+                          <input id="email" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Email" formControlName="Email" (keyup.enter)="setFocusById('img')" placeholder="Enter Email.." />
                           <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Email','required') || !(selectedInvoiceHeader.IsDirty('Email'))">Enter Valid Email</span>
                           <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Email','pattern')">Format: example@email.com</span>
                         </div>
@@ -72,10 +60,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">PAN<sup></sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.PAN"
-                                 formControlName="PAN"
-                                 placeholder="Enter PAN.." />
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.PAN" formControlName="PAN" placeholder="Enter PAN.." />
                         </div>
                       </div>
                     </div>
@@ -83,10 +68,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">DDA<sup></sup><b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.DDA"
-                                 formControlName="DDA"
-                                 placeholder="Enter DDA.." />
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.DDA" formControlName="DDA" placeholder="Enter DDA.." />
                         </div>
                       </div>
                     </div>
@@ -94,10 +76,7 @@
                       <div class="row">
                         <label class="control-label col-md-5">Header Description<b>:</b></label>
                         <div class="col-md-7">
-                          <input class="form-control" type="text"
-                                 [(ngModel)]="selectedInvoiceHeader.HeaderDescription"
-                                 [ngModelOptions]="{standalone: true}"
-                                 placeholder="Enter Header Description.." />
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.HeaderDescription" [ngModelOptions]="{standalone: true}" placeholder="Enter Header Description.." />
                         </div>
                       </div>
                     </div>
@@ -108,11 +87,8 @@
                           <div class="input-group">
                             <div class="icheck-inline">
                               <label class="mt-checkbox mt-checkbox-outline">
-                                <input id="isActive" 
-                                       type="checkbox"
-                                       [(ngModel)]="selectedInvoiceHeader.IsActive"
-                                       [ngModelOptions]="{standalone: true}"/>
-                              <span></span>
+                                <input id="isActive" type="checkbox" [(ngModel)]="selectedInvoiceHeader.IsActive" [ngModelOptions]="{standalone: true}" />
+                                <span></span>
                               </label>
                             </div>
                           </div>
@@ -136,10 +112,7 @@
                           Choose Logo Image<sup>*</sup><b>:</b>
                         </label>
                         <div class="col-md-6">
-                          <input class="form-control" #fileInput type="file"
-                                 accept="image/*"
-                                 (change)="ShowLogoPreview(fileInput.files)"
-                                 value="" multiple />
+                          <input id="img" class="form-control" #fileInput type="file" accept="image/*" (change)="ShowLogoPreview(fileInput.files)" (keyup.enter)="!editMode?setFocusById('save'):setFocusById('update')" value="" multiple />
                           <span Class="color-red font-sm" [hidden]="isFileValid">Logo file is required</span>
 
                         </div>
@@ -153,9 +126,10 @@
             </div>
             <!--End: Model Body-->
 
-            <div class="form-group panel-footer text-right">
-              <input *ngIf ="!editMode" type="button" class="btn btn-primary" (click)="SubmitHeader()" value="Submit" [disabled]="loading"/>
-              <input *ngIf ="editMode" type="button" class="btn btn-primary" (click)="SubmitHeader()" value="Update" [disabled]="loading"/>
+
+            <div class="all-buttons text-right">
+              <button type="button" id="save" class="btn green btn-success" *ngIf="!editMode" (click)="SubmitHeader()" [disabled]="loading">Save</button>
+              <button type="button" id="update" class="btn green btn-success" *ngIf="editMode" (click)="SubmitHeader()" [disabled]="loading">Update</button>
             </div>
           </form>
         </div>

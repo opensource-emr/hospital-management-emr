@@ -25,5 +25,6 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public List <ReturnToVendorItemsModel> itemsToReturn { get; set;}
+        public int StoreId { get; set; }
     }
 }

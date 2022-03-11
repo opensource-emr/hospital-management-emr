@@ -12,7 +12,7 @@ import { ENUM_TermsApplication } from '../../shared/shared-enums';
 export class TermsConditionsMasterModel {
     public TermsId: number = 0;
     public ShortName: string = null;
-    public Text: string = null;
+    public Text: string = "";
     public Type: string = null;
     public OrderBy: number = 0;
     public CreatedBy: number = 0;
@@ -25,7 +25,7 @@ export class TermsConditionsMasterModel {
     constructor() {
         var _formBuilder = new FormBuilder();
         this.TermsValidators = _formBuilder.group({
-            'Text': ['', Validators.compose([Validators.required, Validators.maxLength(250)])],
+            // 'Text': ['', Validators.compose([Validators.required, Validators.maxLength(100000000000)])],
         });
     }
 

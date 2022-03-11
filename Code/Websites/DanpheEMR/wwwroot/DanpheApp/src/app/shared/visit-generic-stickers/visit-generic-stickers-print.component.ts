@@ -3,7 +3,8 @@ import { VisitGenericStickerModel } from "./visit-generic-sticker.model";
 
 @Component({
     selector: 'visit-gen-sticker-print',
-    templateUrl: "./visit-generic-stickers-print.html"
+    templateUrl: "./visit-generic-stickers-print.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class VisitSticker_Generic_PrintComponent {
@@ -17,7 +18,7 @@ export class VisitSticker_Generic_PrintComponent {
 
     visitStickerInfo: VisitGenericStickerModel = null;
 
-    
+
     constructor() {
 
     }
@@ -43,6 +44,12 @@ export class VisitSticker_Generic_PrintComponent {
 
         popupWinindow.document.close();
 
+    }
+
+    public hotkeys(event) {
+        if (event.keyCode == 27) {
+            this.CloseWindow();
+        }
     }
 
 }

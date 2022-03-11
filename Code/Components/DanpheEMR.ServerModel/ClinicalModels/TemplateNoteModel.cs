@@ -18,7 +18,6 @@ namespace DanpheEMR.ServerModel.ClinicalModels
         public DateTime? CreatedOn { get; set; }
 
         public bool? IsActive { get; set; }
-        public bool? IsForNursing { get; set; }
     }
 
    

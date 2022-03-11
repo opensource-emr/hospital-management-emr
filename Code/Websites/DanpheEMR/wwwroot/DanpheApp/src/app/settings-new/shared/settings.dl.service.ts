@@ -259,11 +259,19 @@ export class SettingsDLService {
     return this.http.get<any>("/api/EmployeeSettings?reqType=get-all-referrer-list", this.options);
   }
 
+  public GetBankList() {
+    return this.http.get<any>("/api/Billing?reqType=get-bank-list");
+  }
+
+  public GetPrinterSettingList() {
+    return this.http.get<any>("/api/BillSettings?reqType=get-all-printer-settings");
+  }
 
   public PostExtReferrer(extRefObj) {
     let data = JSON.stringify(extRefObj);
     return this.http.post<any>("/api/EmployeeSettings?reqType=post-ext-referrer", data, this.options);
   }
+
 
   public PutExtReferrer(extRefObj) {
     let data = JSON.stringify(extRefObj);
@@ -271,6 +279,25 @@ export class SettingsDLService {
   }
   //end: External-Referrals
 
+  public PostPrinterSetting(printerSettingObj) {
+    let data = JSON.stringify(printerSettingObj);
+    return this.http.post<any>("/api/BillSettings?reqType=post-printer-setting", data, this.options);
+  }
+
+  public PutPrinterSetting(printerSettingObj) {
+    let data = JSON.stringify(printerSettingObj);
+    return this.http.put<any>("/api/BillSettings?reqType=put-printer-setting", data, this.options);
+  }
+
+  public PostBank(banksObj) {
+    let data = JSON.stringify(banksObj);
+    return this.http.post<any>("/api/Settings?reqType=post-bank", data, this.options);
+  }
+
+  public PutBank(extRefObj) {
+    let data = JSON.stringify(extRefObj);
+    return this.http.put<any>("/api/Settings?reqType=put-bank", data, this.options);
+  }
   //start: security
   public GetApplicationList() {
     return this.http.get<any>("/api/SecuritySettings?reqType=get-security-application");
@@ -283,6 +310,9 @@ export class SettingsDLService {
   }
   public GetUserList() {
     return this.http.get<any>("/api/SecuritySettings?reqType=get-security-user");
+  }
+  public GetDiscountScheme() {
+    return this.http.get<any>("/api/BillSettings?reqType=get-membership-types");
   }
   public GetRolePermissionList(roleId: number) {
     return this.http.get<any>("/api/SecuritySettings?reqType=get-security-rolepermission&roleId=" + roleId);
@@ -348,14 +378,45 @@ export class SettingsDLService {
     return this.http.get<any>("/api/BillSettings?reqType=get-billing-itemList&showInactiveItems=" + showInactiveItems);
   }
 
+  public GetReportingItemList() {
+    return this.http.get<any>("/api/BillSettings?reqType=get-reporting-items-List");
+  }
+
+  public GetDynamicReportNameList() {
+    return this.http.get<any>("/api/BillSettings?reqType=get-dynamic-reporting-name-List");
+  }
+
+  public PostReportingItemAndBillItemMapping(freeServiceBillItem) {
+    let data = JSON.stringify(freeServiceBillItem);
+    return this.http.post<any>("/api/BillSettings?reqType=post-security-reportingItemBillItem", data, this.options);
+  }
+
+  public GetReportingItemBillItemList(reportingItemsId: number) {
+    return this.http.get<any>("/api/BillSettings?reqType=get-security-reportingItemBillItem&reportingItemsId=" + reportingItemsId);
+  }
+  
   public PostBillingItem(item) {
     let data = JSON.stringify(item);
     return this.http.post<any>("/api/BillSettings?reqType=post-billing-item", data, this.options);
+  }
+  public PutReportingItemAndBillItemMapping(reportingItemsBillItem) {
+    let data = JSON.stringify(reportingItemsBillItem);
+    return this.http.put<any>("/api/BillSettings?reqType=put-security-reportingItemBillItem", data, this.options);
+  }
+
+  public PostReportingItem(item) {
+    let data = JSON.stringify(item);
+    return this.http.post<any>("/api/BillSettings?reqType=post-reportingItem", data, this.options);
   }
 
   public PutBillingItem(item) {
     let data = JSON.stringify(item);
     return this.http.put<any>("/api/BillSettings?reqType=put-billing-item", data, this.options);
+  }
+
+  public UpdateReportingItem(item) {
+    let data = JSON.stringify(item);
+    return this.http.put<any>("/api/BillSettings?reqType=put-reportingItem", data, this.options);
   }
 
   //GET: Price Change History List of Bill Item by ItemId and ServiceDepartmentId
@@ -437,6 +498,16 @@ export class SettingsDLService {
     let data = JSON.stringify(Country);
     return this.http.post<any>("/api/Settings?reqType=country", data, this.options);
   }
+
+  public AddUpdateMunicipality(municipality) {
+    let data = JSON.stringify(municipality);
+    return this.http.post<any>("/api/Settings?reqType=municipality", data, this.options);
+  }
+
+  public UpdateMunicipalityStatus(municipalityId: number) {
+    return this.http.put<any>("/api/Settings?reqType=municipalityStatusUpdate&municipalityId=" + municipalityId, this.options);
+  }
+
   public PutCountry(country) {
     let data = JSON.stringify(country);
     return this.http.put<any>("/api/Settings?reqType=country", country, this.options);
@@ -444,6 +515,10 @@ export class SettingsDLService {
 
   public GetSubdivisions() {
     return this.http.get<any>("/api/Settings?reqType=subdivisions");
+  }
+
+  public GetMunicipalities() {
+    return this.http.get<any>("/api/Settings?reqType=municipalities");
   }
 
   public PostSubdivision(SubDivision) {
@@ -481,6 +556,19 @@ export class SettingsDLService {
   }
   //end: TaxInfo
 
+  //start: ICD10 Groups
+  public GetICDGroups() {
+    return this.http.get<any>("/api/Settings/GetICD10Groups");
+  }
 
+  public PostConfiguration(value) {
+    let data = JSON.stringify(value);
+    return this.http.post<any>("/api/Settings?reqType=post-print-export-configuration", data, this.options);
+  }
+
+  public PutConfiguration(value) {
+    let data = JSON.stringify(value);
+    return this.http.put<any>("/api/Settings?reqType=put-print-export-configuration", data, this.options);
+  }
 
 }

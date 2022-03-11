@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
 using DanpheEMR.ServerModel;
@@ -28,7 +30,7 @@ namespace DanpheEMR.Services
             var verificationModel = _dbContext.VerificationModel.Find(VerificationId);
             var VerificationViewModel = new VerificationViewModel();
             VerificationViewModel.VerificationId = verificationModel.VerificationId;
-            VerificationViewModel.VerifiedBy = _dbContext.Employees.Find(verificationModel.VerifiedBy);
+            VerificationViewModel.VerifiedBy = _dbContext.Employees.Include(a => a.EmployeeRole).FirstOrDefault(a => a.EmployeeId == verificationModel.VerifiedBy);
             VerificationViewModel.VerifiedOn = verificationModel.VerifiedOn;
             VerificationViewModel.CurrentVerificationLevel = verificationModel.CurrentVerificationLevel;
             VerificationViewModel.VerificationStatus = verificationModel.VerificationStatus;
@@ -47,7 +49,7 @@ namespace DanpheEMR.Services
         /// <param name="MaxVerificationLevel">The maximum verification level set during substore creation.</param>
         /// <param name="VerificationStatus"> The status of the verification.</param>
         /// <returns>The verification id of the newly created verification.</returns>
-        public int CreateVerification(int EmployeeId, int CurrentVerificationLevel,int CurrentVerificationLevelCount, int MaxVerificationLevel, string VerificationStatus, string VerificationRemarks, int? ParentVerificationId)
+        public int CreateVerification(int EmployeeId, int CurrentVerificationLevel, int CurrentVerificationLevelCount, int MaxVerificationLevel, string VerificationStatus, string VerificationRemarks, int? ParentVerificationId)
         {
             VerificationModel verification = new VerificationModel();
             verification.VerifiedBy = EmployeeId;

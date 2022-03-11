@@ -19,6 +19,7 @@ using DanpheEMR.Core.Caching;
 using System.Xml;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel.LabModels;
+using System.Transactions;
 
 namespace DanpheEMR.Controllers
 {
@@ -58,6 +59,7 @@ namespace DanpheEMR.Controllers
                                        join report in labDbContext.LabReportTemplates on test.ReportTemplateId equals report.ReportTemplateID
                                        join billItem in labDbContext.BillItemPrice on test.LabTestId equals billItem.ItemId
                                        join srv in labDbContext.ServiceDepartment on billItem.ServiceDepartmentId equals srv.ServiceDepartmentId
+                                       join category in labDbContext.LabTestCategory on test.LabTestCategoryId equals category.TestCategoryId
                                        where srv.IntegrationName.ToLower() == "lab"
                                        select new
                                        {
@@ -68,6 +70,7 @@ namespace DanpheEMR.Controllers
                                            Description = test.Description,
                                            LabTestSynonym = test.LabTestSynonym,
                                            LabTestName = test.LabTestName,
+                                           LabTestCategory = category.TestCategoryName,
                                            LabTestCategoryId = test.LabTestCategoryId,
                                            LabTestSpecimen = test.LabTestSpecimen,
                                            LabTestSpecimenSource = test.LabTestSpecimenSource,
@@ -87,6 +90,7 @@ namespace DanpheEMR.Controllers
                                            IsValidForReporting = test.IsValidForReporting,
                                            IsActive = test.IsActive,
                                            HasNegativeResults = test.HasNegativeResults,
+                                           SmsApplicable = test.SmsApplicable,
                                            NegativeResultText = test.NegativeResultText,
                                            ServiceDepartmentId = billItem.ServiceDepartmentId,
                                            ReportingName = test.ReportingName,
@@ -115,7 +119,8 @@ namespace DanpheEMR.Controllers
 
 
                     var departmentId = (from dpt in labDbContext.Department
-                                        where (dpt.DepartmentCode.ToLower() == "lab" || dpt.DepartmentCode.ToLower() == "pat")
+                                        where (dpt.DepartmentCode.ToLower() == "lab" || dpt.DepartmentCode.ToLower() == "pat" 
+                                        || dpt.DepartmentName.ToLower() == "pathology" || dpt.DepartmentName.ToLower() == "lab" || dpt.DepartmentName.ToLower() == "laboratory")
                                         select dpt.DepartmentId
                                       ).ToList();
 
@@ -143,39 +148,75 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = allLookUps;
                 }
-                else if(reqType == "allGovLabTestComponentList")
+                else if (reqType == "allGovLabTestComponentList")
                 {
                     List<LabGovReportItemModel> allgovitem = (from item in labDbContext.LabGovReport
                                                               where true
                                                               select item).ToList();
                     responseData.Results = allgovitem;
-                }else if(reqType == "all-mapped-components")
-                {
-                    List<LabGovReportMappingModel> mapitems = (from item in labDbContext.LabGovReportMapping
-                                                                     where true
-                                                                     select item).ToList();
+                }
+                else if (reqType == "all-mapped-components")
+                {                  
+                    var mappedTestItems = (from m in labDbContext.LabGovReportMapping
+                                       join t in labDbContext.LabTests on m.LabItemId equals t.LabTestId
+                                       where m.IsActive == true && m.ReportItemId.HasValue && (!m.ComponentId.HasValue || m.ComponentId.Value==0)
+                                       select new
+                                       {
+                                           m.LabItemId,
+                                           m.ReportItemId,
+                                           m.ReportMapId,
+                                           m.IsResultCount,
+                                           m.PositiveIndicator,
+                                           m.IsComponentBased, 
+                                           ComponentName = "",
+                                           ComponentId = 0,
+                                           t.LabTestName,
+                                           m.IsActive
+                                       }).ToList();
+                    var mappedComponentItems = (from m in labDbContext.LabGovReportMapping
+                                                join l in labDbContext.LabTests on m.LabItemId equals l.LabTestId
+                                                join c in labDbContext.LabTestComponents on m.ComponentId equals c.ComponentId
+                                                where m.IsActive == true && m.ReportItemId.HasValue && (m.ComponentId.HasValue && m.ComponentId.Value > 0)
+                                                select new
+                                                {
+                                                    m.LabItemId,
+                                                    m.ReportItemId,
+                                                    m.ReportMapId,
+                                                    m.IsResultCount,
+                                                    m.PositiveIndicator,
+                                                    m.IsComponentBased,
+                                                    ComponentName = c.ComponentName,
+                                                    ComponentId = c.ComponentId,
+                                                    LabTestName = l.LabTestName,
+                                                    m.IsActive
+                                                }).ToList();
 
-                    var allmappeditems = (from map in labDbContext.LabGovReportMapping
-                                          join test in labDbContext.LabTests on map.LabItemId equals test.LabTestId
-                                          join item in labDbContext.LabGovReport on map.ReportItemId equals item.ReportItemId into temp from t in temp.DefaultIfEmpty()
-                                          where map.IsActive == true
-                                          select new
-                                          {
-                                              ReportMapId = map.ReportMapId,
-                                              LabItemName = test.LabTestName,
-                                              IsComponentBased = map.IsComponentBased,
-                                              ReportItemName = t.TestName,
-                                              ComponentName = map.ComponentName,
-                                              PositiveIndicator = map.PositiveIndicator,
-                                              ReportItemId = (map.ReportItemId).HasValue ? map.ReportItemId : null,
-                                              LabItemId = map.LabItemId,
-                                              IsResultCount = map.IsResultCount,
-                                              IsActive = map.IsActive
+                    var allMappedItems = mappedTestItems.Union(mappedComponentItems);
 
-                                          }).OrderBy(b => b.ReportMapId).ToList();
+                    var masterGovItems = labDbContext.LabGovReport.Where(d => d.IsActive == true).ToList();
+
+                    var allItems = (from item in masterGovItems
+                                        join map in allMappedItems on item.ReportItemId equals map.ReportItemId into temp
+                                        from t in temp.DefaultIfEmpty()                                                                              
+                                        select new
+                                        {
+                                            ReportMapId = (t == null) ? 0 : t.ReportMapId,
+                                            LabItemName = (t == null) ? "" : t.LabTestName,
+                                            IsComponentBased = (t == null) ? false : t.IsComponentBased,
+                                            ReportItemName = item.TestName,
+                                            ComponentName = (t == null) ? "" : t.ComponentName,
+                                            ComponentId = (t == null)? 0 : t.ComponentId,
+                                            PositiveIndicator = (t == null) ? "" : t.PositiveIndicator,
+                                            ReportItemId = item.ReportItemId,
+                                            LabItemId = (t == null) ? 0 : t.LabItemId,
+                                            IsResultCount = (t == null) ? false : t.IsResultCount,
+                                            IsActive = (t == null) ? false: t.IsActive,
+                                            SerialNumber = item.SerialNumber,
+                                            GroupName = item.GroupName
+                                        }).OrderBy(b => b.ReportItemId).ToList();
 
                     responseData.Status = "OK";
-                    responseData.Results =  allmappeditems;
+                    responseData.Results = allItems;
                 }
                 responseData.Status = "OK";
             }
@@ -199,6 +240,7 @@ namespace DanpheEMR.Controllers
             {
                 LabDbContext labDbContext = new LabDbContext(connString);
                 BillingDbContext billDbContext = new BillingDbContext(connString);
+                RbacDbContext rbacDbContext = new RbacDbContext(connString);
 
                 if (reqType != null && reqType == "postLabReport")
                 {
@@ -400,28 +442,47 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "postLabCategory")
                 {
-                    LabTestCategoryModel categoryFromClient = DanpheJSONConvert.DeserializeObject<LabTestCategoryModel>(ipStr);
-
-                    if (categoryFromClient.IsDefault.HasValue && categoryFromClient.IsDefault.Value == true)
+                    using (TransactionScope scope = new TransactionScope())
                     {
-                        var defCat = labDbContext.LabTestCategory.Where(l => l.IsDefault == true).FirstOrDefault();
-                        if (defCat != null)
+                        LabTestCategoryModel categoryFromClient = DanpheJSONConvert.DeserializeObject<LabTestCategoryModel>(ipStr);
+
+                        if (categoryFromClient.IsDefault.HasValue && categoryFromClient.IsDefault.Value == true)
                         {
-                            labDbContext.LabTestCategory.Attach(defCat);
-                            defCat.IsDefault = false;
-                            labDbContext.Entry(defCat).Property(x => x.IsDefault).IsModified = true;
-                            labDbContext.SaveChanges();
+                            var defCat = labDbContext.LabTestCategory.Where(l => l.IsDefault == true).FirstOrDefault();
+                            if (defCat != null)
+                            {
+                                labDbContext.LabTestCategory.Attach(defCat);
+                                defCat.IsDefault = false;
+                                labDbContext.Entry(defCat).Property(x => x.IsDefault).IsModified = true;
+                                labDbContext.SaveChanges();
+                            }
                         }
-                    }
 
-                    categoryFromClient.CreatedBy = currentUser.EmployeeId;
-                    categoryFromClient.CreatedOn = System.DateTime.Now;
+                        categoryFromClient.CreatedBy = currentUser.EmployeeId;
+                        categoryFromClient.CreatedOn = System.DateTime.Now;
 
-                    labDbContext.LabTestCategory.Add(categoryFromClient);
-                    labDbContext.SaveChanges();
+                        var applicationId = rbacDbContext.Applications.Where(a => (a.ApplicationCode.ToLower() == "lab")).FirstOrDefault()?.ApplicationId;
 
-                    responseData.Results = categoryFromClient;//return same data to client.
-                    labDbContext.SaveChanges();
+                        var permissionModel = new RbacPermission();
+                        permissionModel.PermissionName = "lab-category-" + categoryFromClient.TestCategoryName;
+                        permissionModel.IsActive = true;
+                        permissionModel.ApplicationId = applicationId;
+                        permissionModel.CreatedOn = System.DateTime.Now;
+                        permissionModel.CreatedBy = currentUser.EmployeeId;
+                        permissionModel.IsActive = true;
+
+                        rbacDbContext.Permissions.Add(permissionModel);
+                        rbacDbContext.SaveChanges();
+
+                        categoryFromClient.PermissionId = permissionModel.PermissionId;
+                        labDbContext.LabTestCategory.Add(categoryFromClient);
+                        labDbContext.SaveChanges();
+
+                        responseData.Results = categoryFromClient;//return same data to client.
+                        labDbContext.SaveChanges();
+
+                        scope.Complete();
+                    }                    
                 }
                 else if (reqType == "postLabSpecimen")
                 {
@@ -442,7 +503,7 @@ namespace DanpheEMR.Controllers
                         {
                             item.ReportItemId = null;
                         }
-                        
+
                         if (item != null)
                         {
                             labDbContext.LabGovReportMapping.Add(item);
@@ -452,12 +513,12 @@ namespace DanpheEMR.Controllers
                         responseData.Status = "OK";
                         responseData.Results = item;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         responseData.Status = "Failed";
                         responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                     }
-                   
+
                 }
                 responseData.Status = "OK";
             }
@@ -483,6 +544,7 @@ namespace DanpheEMR.Controllers
             {
                 LabDbContext labDbContext = new LabDbContext(connString);
                 BillingDbContext billDbContext = new BillingDbContext(connString);
+                RbacDbContext rbacDbContext = new RbacDbContext(connString);
                 if (reqType == "updateLabReport")
                 {
                     LabReportTemplateModel labReportTemplate = DanpheJSONConvert.DeserializeObject<LabReportTemplateModel>(ipStr);
@@ -594,10 +656,12 @@ namespace DanpheEMR.Controllers
                                         existingMap.IndentationCount = itm.IndentationCount;
                                         existingMap.DisplaySequence = itm.DisplaySequence;
                                         existingMap.ShowInSheet = itm.ShowInSheet;
+                                        existingMap.GroupName = itm.GroupName;
                                         existingMap.ModifiedBy = currentUser.EmployeeId;
                                         existingMap.ModifiedOn = System.DateTime.Now;
 
                                         labDbContext.Entry(existingMap).Property(x => x.IsActive).IsModified = true;
+                                        labDbContext.Entry(existingMap).Property(x => x.GroupName).IsModified = true;
                                         labDbContext.Entry(existingMap).Property(x => x.IndentationCount).IsModified = true;
                                         labDbContext.Entry(existingMap).Property(x => x.DisplaySequence).IsModified = true;
                                         labDbContext.Entry(existingMap).Property(x => x.ShowInSheet).IsModified = true;
@@ -802,7 +866,7 @@ namespace DanpheEMR.Controllers
                         labDbContext.Entry(vendorFromServer).Property(v => v.IsActive).IsModified = true;
                         labDbContext.Entry(vendorFromServer).Property(v => v.IsExternal).IsModified = true;
                         labDbContext.Entry(vendorFromServer).Property(v => v.IsDefault).IsModified = true;
-                        
+
                         labDbContext.SaveChanges();
 
                         responseData.Results = vendorFromClient;//return the same data to client.
@@ -817,38 +881,51 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "updateLabCategory")
                 {
-                    LabTestCategoryModel categoryFromClient = DanpheJSONConvert.DeserializeObject<LabTestCategoryModel>(ipStr);
-                    var category = (from cat in labDbContext.LabTestCategory
-                                    where cat.TestCategoryId == categoryFromClient.TestCategoryId
-                                    select cat).FirstOrDefault();
-
-                    if (categoryFromClient.IsDefault.HasValue && categoryFromClient.IsDefault.Value == true)
+                    using(TransactionScope scope = new TransactionScope())
                     {
-                        var defCat = labDbContext.LabTestCategory.Where(l => l.IsDefault == true).FirstOrDefault();
-                        if (defCat != null)
+                        LabTestCategoryModel categoryFromClient = DanpheJSONConvert.DeserializeObject<LabTestCategoryModel>(ipStr);
+                        var category = (from cat in labDbContext.LabTestCategory
+                                        where cat.TestCategoryId == categoryFromClient.TestCategoryId
+                                        select cat).FirstOrDefault();
+
+                        if (categoryFromClient.IsDefault.HasValue && categoryFromClient.IsDefault.Value == true)
                         {
-                            defCat.IsDefault = false;
-                            labDbContext.Entry(defCat).Property(d => d.IsDefault).IsModified = true;
-                            labDbContext.SaveChanges();
+                            var defCat = labDbContext.LabTestCategory.Where(l => l.IsDefault == true).FirstOrDefault();
+                            if (defCat != null)
+                            {
+                                defCat.IsDefault = false;
+                                labDbContext.Entry(defCat).Property(d => d.IsDefault).IsModified = true;
+                                labDbContext.SaveChanges();
+                            }
                         }
+
+
+                        category.TestCategoryName = categoryFromClient.TestCategoryName;
+                        category.ModifiedOn = System.DateTime.Now;
+                        category.ModifiedBy = currentUser.EmployeeId;
+                        category.IsDefault = categoryFromClient.IsDefault;
+
+                        labDbContext.Entry(category).Property(v => v.TestCategoryName).IsModified = true;
+                        labDbContext.Entry(category).Property(v => v.ModifiedBy).IsModified = true;
+                        labDbContext.Entry(category).Property(v => v.ModifiedOn).IsModified = true;
+                        labDbContext.Entry(category).Property(v => v.IsDefault).IsModified = true;
+                        labDbContext.SaveChanges();
+
+
+                        var selectedPerm = rbacDbContext.Permissions.Where(p => p.PermissionId == category.PermissionId).FirstOrDefault();
+                        selectedPerm.PermissionName = "lab-category-" + category.TestCategoryName;
+
+                        rbacDbContext.Entry(selectedPerm).Property(v => v.PermissionName).IsModified = true;
+                        rbacDbContext.SaveChanges();
+
+                        responseData.Results = category;//return the same data to client.
+                        responseData.Status = "OK";
+
+                        scope.Complete();
                     }
-
-
-                    category.TestCategoryName = categoryFromClient.TestCategoryName;
-                    category.ModifiedOn = System.DateTime.Now;
-                    category.ModifiedBy = currentUser.EmployeeId;
-                    category.IsDefault = categoryFromClient.IsDefault;
-
-                    labDbContext.Entry(category).Property(v => v.TestCategoryName).IsModified = true;
-                    labDbContext.Entry(category).Property(v => v.ModifiedBy).IsModified = true;
-                    labDbContext.Entry(category).Property(v => v.ModifiedOn).IsModified = true;
-                    labDbContext.Entry(category).Property(v => v.IsDefault).IsModified = true;
-                    labDbContext.SaveChanges();
-
-                    responseData.Results = category;//return the same data to client.
-                    responseData.Status = "OK";
+                   
                 }
-                else if(reqType == "edit-mapped-component")
+                else if (reqType == "edit-mapped-component")
                 {
                     LabGovReportMappingModel component = DanpheJSONConvert.DeserializeObject<LabGovReportMappingModel>(ipStr);
                     var dbComp = (from cmp in labDbContext.LabGovReportMapping
@@ -859,20 +936,73 @@ namespace DanpheEMR.Controllers
                     dbComp.IsActive = component.IsActive;
                     dbComp.IsComponentBased = component.IsComponentBased;
                     dbComp.IsResultCount = component.IsResultCount;
-                    dbComp.ComponentName = component.ComponentName;
+                    dbComp.ComponentId = component.ComponentId;
                     dbComp.PositiveIndicator = component.PositiveIndicator;
 
                     labDbContext.Entry(dbComp).Property(v => v.LabItemId).IsModified = true;
                     labDbContext.Entry(dbComp).Property(v => v.IsActive).IsModified = true;
                     labDbContext.Entry(dbComp).Property(v => v.IsComponentBased).IsModified = true;
                     labDbContext.Entry(dbComp).Property(v => v.IsResultCount).IsModified = true;
-                    labDbContext.Entry(dbComp).Property(v => v.ComponentName).IsModified = true;
+                    labDbContext.Entry(dbComp).Property(v => v.ComponentId).IsModified = true;
                     labDbContext.Entry(dbComp).Property(v => v.PositiveIndicator).IsModified = true;
-                    
+
                     labDbContext.SaveChanges();
                     responseData.Results = dbComp;
                     responseData.Status = "OK";
 
+                }
+                else if (reqType == "put-labtest-isactive")
+                {
+                    LabTestModel test = DanpheJSONConvert.DeserializeObject<LabTestModel>(ipStr);
+
+                    labDbContext.LabTests.Attach(test);
+
+                    labDbContext.Entry(test).Property(x => x.IsActive).IsModified = true;
+                    labDbContext.SaveChanges();
+                    responseData.Results = test;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "put-labcategory-isactive")
+                {
+                    using (TransactionScope scope = new TransactionScope())
+                    {
+                        LabTestCategoryModel cat = DanpheJSONConvert.DeserializeObject<LabTestCategoryModel>(ipStr);
+                        labDbContext.LabTestCategory.Attach(cat);
+
+                        labDbContext.Entry(cat).Property(x => x.IsActive).IsModified = true;
+
+                        labDbContext.SaveChanges();
+
+                        var permName = "lab-category-" + cat.TestCategoryName;
+                        var relatedPerm = rbacDbContext.Permissions.Where(p => p.PermissionName == permName).FirstOrDefault();
+                        relatedPerm.IsActive = cat.IsActive.Value;
+                        rbacDbContext.SaveChanges();
+                        scope.Complete();
+                        responseData.Results = cat;
+                        responseData.Status = "OK";
+                    }                    
+                }
+                else if(reqType == "put-lab-report-template-isactive")
+                {
+                    LabReportTemplateModel report = DanpheJSONConvert.DeserializeObject<LabReportTemplateModel>(ipStr);
+
+                    labDbContext.LabReportTemplates.Attach(report);
+
+                    labDbContext.Entry(report).Property(x => x.IsActive).IsModified = true;
+                    labDbContext.SaveChanges();
+                    responseData.Results = report;
+                    responseData.Status = "OK";
+                }
+                else if(reqType == "put-lab-vendor-isactive")
+                {
+                    LabVendorsModel vendor = DanpheJSONConvert.DeserializeObject<LabVendorsModel>(ipStr);
+
+                    labDbContext.LabVendors.Attach(vendor);
+
+                    labDbContext.Entry(vendor).Property(x => x.IsActive).IsModified = true;
+                    labDbContext.SaveChanges();
+                    responseData.Results = vendor;
+                    responseData.Status = "OK";
                 }
             }
             catch (Exception ex)

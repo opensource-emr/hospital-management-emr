@@ -25,9 +25,6 @@ import { AdmittedListComponent } from './admission/adm-list/admitted-list.compon
 import { TransferComponent } from './transfer/transfer.component';
 import { UpgradeComponent } from './upgrade/upgrade.component';
 import { AdmissionCancelComponent } from './admission/adm-cancel/admission-cancel.component';
-
-import { DischargeSummaryAddComponent } from './discharge/discharge-summary-add.component';
-import { DischargeSummaryViewComponent } from './discharge/discharge-summary-view.component';
 import { DischargedListComponent } from './discharge/discharge-list.component';
 import { ChangeDoctorComponent } from './change-doctor/change-doctor.component';
 import { AdtHomeComponent } from './adt-home.component';
@@ -43,6 +40,8 @@ import { AdmittedPatientHistory } from './patient-history/admitted-patient-histo
 import { DischargeSummaryModule } from '../discharge-summary/discharge-summary.module';
 import { ADTSharedModule } from './adt-shared.module';
 import { ClinicalSharedModule } from '../clinical/clinical-shared-module';
+import { SettingsSharedModule } from '../settings-new/settings-shared.module';
+import { BillingPrintSharedModule } from '../billing/print-pages/billing-print-shared.module';
 
 @NgModule({
   providers: [
@@ -65,7 +64,9 @@ import { ClinicalSharedModule } from '../clinical/clinical-shared-module';
     AgGridModule.withComponents(ADTMainComponent),
     FormsModule, SharedModule, ADTSharedModule, DischargeSummaryModule,
     DanpheAutoCompleteModule,
-    ClinicalSharedModule
+    ClinicalSharedModule,
+    SettingsSharedModule,
+    BillingPrintSharedModule
   ],
   declarations: [
     ADTMainComponent,
@@ -73,8 +74,6 @@ import { ClinicalSharedModule } from '../clinical/clinical-shared-module';
     AdmissionSearchPatient,
     AdmittedListComponent,
     //TransferComponent, // moved to shared module to use in nursing modulw
-    DischargeSummaryAddComponent,
-    DischargeSummaryViewComponent,
     DischargedListComponent,
     UpgradeComponent,
     AdtHomeComponent,
@@ -82,7 +81,7 @@ import { ClinicalSharedModule } from '../clinical/clinical-shared-module';
     PatientBedHistory,
     AdmissionCancelComponent,
     IPWristBandPrintComponent,
-    ChangeDoctorComponent,
+    ChangeDoctorComponent
     //AdmittedPatientHistory// moved to shared module to use in nursing modulw
   ],
   bootstrap: []//do we need anything here ? <sudarshan:2jan2017>

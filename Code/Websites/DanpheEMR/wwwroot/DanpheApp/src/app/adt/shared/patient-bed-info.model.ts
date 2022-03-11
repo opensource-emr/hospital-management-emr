@@ -32,6 +32,7 @@ export class PatientBedInfo {
   public RequestingDeptId: number = null;//sud:19Jun'18
   public IsValidReqDepartment: boolean = true; //yub:25th Oct' 18
   public IsExistBedFeatureId: boolean = false;
+  public IsInsurancePatient: boolean = false;
 
   public ReceivedBy: number = null;
   public ReceivedOn: string = null;
@@ -44,7 +45,7 @@ export class PatientBedInfo {
       'BedFeatureId': [0, Validators.compose([Validators.required])],
       'WardId': [0, Validators.compose([Validators.required])],
       'BedId': [0, Validators.compose([Validators.required])],
-      'Remarks': ['', Validators.compose([Validators.maxLength(100)])]
+      'Remarks': ['', Validators.compose([])]
     });
   }
 

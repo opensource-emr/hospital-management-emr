@@ -11,6 +11,7 @@ import { CoreService } from '../../../core/shared/core.service';
 import { SectionModel } from "../shared/section.model";
 import { SettingsBLService } from "../../../settings-new/shared/settings.bl.service";
 import { SecurityService } from "../../../security/shared/security.service";
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
   selector: 'reverse-transaction',
@@ -27,7 +28,7 @@ export class ReverseTransaction {
     public router: Router,
     public accountingBLService: AccountingBLService,
     public coreService: CoreService, public settingsBLService: SettingsBLService,
-    public securityService:SecurityService) {
+    public securityService:SecurityService,public accountingService: AccountingService) {
     //this.transaction.TransactionDate = moment().format('YYYY-MM-DD');
     //this.transaction.Section = 2;
     // this.LoadCalendarTypes();         
@@ -93,9 +94,6 @@ export class ReverseTransaction {
   }
 
   public GetSection() {
-    // this.sectionList = this.securityService.AccHospitalInfo.SectionList;
-    // this.sectionId = 4 ; //this is for Manual_Voucher (Default for DanpheEMR) - Manual voucher will always be there.
-
     this.settingsBLService.GetApplicationList()
       .subscribe(res => {
         if (res.Status == 'OK') {
@@ -104,12 +102,13 @@ export class ReverseTransaction {
           if (sectionApplication != null || sectionApplication != undefined) {
             this.permissions = this.securityService.UserPermissions.filter(p => p.ApplicationId == sectionApplication.ApplicationId);
           }
-          let sList = this.securityService.AccHospitalInfo.SectionList.filter(sec => sec.SectionId != 4); // 4 is Manual_Voucher (FIXED for DanpheEMR)
+          let sList = this.accountingService.accCacheData.Sections.filter(sec => sec.SectionId != 4); // 4 is Manual_Voucher (FIXED for DanpheEMR) //mumbai-team-june2021-danphe-accounting-cache-change
           sList.forEach(s => {
             let sname = s.SectionName.toLowerCase();
             let pp = this.permissions.filter(f => f.PermissionName.includes(sname))[0];
             if (pp != null || pp != undefined) {
               this.sectionList.push(s);
+              this.sectionList = this.sectionList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
             }
           })
           let defSection = this.sectionList.find(s => s.IsDefault == true);

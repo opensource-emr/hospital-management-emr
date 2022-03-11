@@ -34,21 +34,25 @@
         <div class="brth-cert-txt">
           This is to certify that <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">Mr. </span>
                                   <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female' && deadPat.SpouseOf">Mrs. </span>
-          <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female' && !deadPat.SpouseOf">Ms. </span><b>{{deadPat.ShortName}}, </b>
-          <span class="txt-underline">{{deadPat.SpouseOf}}</span>
+          <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female' && !deadPat.SpouseOf">Ms. </span><b style="text-transform: capitalize;">{{deadPat.ShortName}}, </b>
+          <!-- <span class="txt-underline">{{deadPat.SpouseOf}}</span> -->
           <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">son of Mr </ng-container>
           <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">daughter of Mr </ng-container>
-          <span *ngIf="isFinalCertificate" class="txt-underline"><b>{{deadPat.FatherName}}</b></span>
-          <span *ngIf="!isFinalCertificate" class="txt-underline"><input type="text" name="fatherName" [(ngModel)]="deadPat.FatherName" /></span> Ms
-          <span *ngIf="isFinalCertificate" class="txt-underline"><b>{{deadPat.MotherName}}</b></span>
+          <span *ngIf="isFinalCertificate" class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.FatherName}}</b></span>
+          <span *ngIf="!isFinalCertificate" class="txt-underline"><input type="text" name="fatherName" [(ngModel)]="deadPat.FatherName" /></span> and Ms
+          <span *ngIf="isFinalCertificate" class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.MotherName}}</b></span>
           <span *ngIf="!isFinalCertificate" class="txt-underline"><input type="text" name="motherName" [(ngModel)]="deadPat.MotherName" /></span>
-          spoush of <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">Ms </span>
-          <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">Mr </span>
-          <span *ngIf="isFinalCertificate" class="txt-underline">{{deadPat.SpouseOf}}</span>
-          <span *ngIf="!isFinalCertificate"><input type="text" name="spouseOf" [(ngModel)]="deadPat.SpouseOf" /></span> as per
-          hospital record resident of Country <span class="txt-underline"><b>{{deadPat.Country}}</b></span> district
-          <span class="txt-underline"><b>{{deadPat.CountrySubDivision}}</b></span> <span> village/municipality </span>
-          <span class="txt-underline"><b>{{deadPat.Address}}</b></span> and inpatient/Emergency number
+         <!-- Start: spoush data -->
+          <span *ngIf="!(isFinalCertificate && !deadPat.SpouseOf)"> spouse of  {{(deadPat.Sex && deadPat.Sex.toLowerCase() == 'male')?'Ms.':''}} 
+            {{(deadPat.Sex && deadPat.Sex.toLowerCase() == 'female')?'Mr.':''}}
+           </span>
+          <span *ngIf="isFinalCertificate" class="txt-underline" style="text-transform: capitalize;">{{deadPat.SpouseOf}}</span>
+          <span *ngIf="!(isFinalCertificate)"><input type="text" name="spouseOf" [(ngModel)]="deadPat.SpouseOf" /></span>
+         <!-- End: spoush data -->
+          as per
+          hospital record resident of Country <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.Country}}</b></span> district
+          <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.CountrySubDivision}}</b></span> <span> village/municipality </span>
+          <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.Address}}</b></span> and inpatient/Emergency number
           <span class="txt-underline">{{deadPat.VisitCode}}</span> expired on BS
           <span class="txt-underline">{{deadPat.DeathDate | nepaliDate}}</span> <span> (</span>
           <span class="txt-underline"><b><i>{{deadPat.DeathDate}} AD</i></b></span>
@@ -57,7 +61,7 @@
             (24 hours) at the age of {{deadPat.Age}}.
             <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">His</ng-container>
             <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">Her</ng-container> cause of death was
-            <span *ngIf="isFinalCertificate" class="txt-underline">{{deadPat.CauseOfDeath}}</span>
+            <span *ngIf="isFinalCertificate" class="txt-underline" style="text-transform: capitalize;">{{deadPat.CauseOfDeath}}</span>
             <span *ngIf="!isFinalCertificate" class="txt-underline">
               <input type="text" name="CauseOfDeath" [(ngModel)]="deadPat.CauseOfDeath" />
             </span>
@@ -110,6 +114,8 @@
       <button *ngIf="isFinalCertificate" [disabled]="loading" (click)="Edit()" type="button" class="btn btn-cancel btn-sm margin-7-hr">Edit</button>
       <button *ngIf="isFinalCertificate" [disabled]="loading" (click)="loading=true;UpdateDeathCertPrintCount()" type="button" class="btn btn-cancel btn-sm margin-7-hr">Print</button>
       <button (click)="Close()" [disabled]="loading" type="button" class="btn btn-cancel btn-sm margin-7-hr">Cancel</button>
+      <app-print-page *ngIf="showPrint" [print-data]="printDetails" (print-sucess)="callBackPrint()"></app-print-page>
     </div>
   </div>
 </div>
+<!-- for print window -->

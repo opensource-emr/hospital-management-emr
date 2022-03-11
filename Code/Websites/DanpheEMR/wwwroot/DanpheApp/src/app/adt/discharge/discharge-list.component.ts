@@ -37,6 +37,9 @@ export class DischargedListComponent {
   public selectedIndex: number;
   public adtGriColumns: ADTGridColumnSettings = null;//sud: 10Jan'19-- to use parameterized grid-columns, we created separate class for ADT-Grid-Columns.
   public IsCancelDischargePage: boolean = false;
+  public showIsInsurancePatient: boolean = false;
+  public allItemList = [];
+  public filteredItemList = []
 
   loading: boolean = false;
   public showPoliceCase: boolean = false;
@@ -113,12 +116,8 @@ export class DischargedListComponent {
     this.admissionBLService.GetDischargedPatientsList(this.fromDate, this.toDate)
       .subscribe(res => {
         if (res.Status == 'OK') {
-          if (this.showPoliceCase) {
-            this.dischargedList = res.Results.filter(d => d.IsPoliceCase == true);
-          } else {
-            this.dischargedList = res.Results;
-          }
-
+          this.dischargedList = res.Results;
+          this.allItemList = res.Results;
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -150,13 +149,14 @@ export class DischargedListComponent {
         this.ClearDue();
         break;
       }
-      case "discharge-cancel": {
-        this.selectedDischarge = $event.Data;
-        this.selectedIndex = $event.RowIndex;
-        this.IsCancelDischargePage = true;
-        this.selectedDischargeCancel = new DischargeCancel();
-        break;
-      }
+      //sud:3May'21--Hiding Discharge Cancel functionality since Credit Note is introduced in Billing.
+      // case "discharge-cancel": {
+      //   this.selectedDischarge = $event.Data;
+      //   this.selectedIndex = $event.RowIndex;
+      //   this.IsCancelDischargePage = true;
+      //   this.selectedDischargeCancel = new DischargeCancel();
+      //   break;
+      // }
       default:
         break;
     }
@@ -256,16 +256,6 @@ export class DischargedListComponent {
     this.selectedDischargeCancel = new DischargeCancel();
   }
 
-  public checkValue(event) {
-    if (event == true) {
-      this.showPoliceCase = true;
-      this.Load();
-    } else {
-      this.showPoliceCase = false;
-      this.Load();
-    }
-  }
-
   onDateChange($event) {
     this.fromDate = $event.fromDate;
     this.toDate = $event.toDate;
@@ -284,5 +274,31 @@ export class DischargedListComponent {
     if (data.Status == "Ok") {
       this.HideDischargeSummary();
     }
+  }
+
+  public FilterGridItems(event) {
+    this.filteredItemList = [];
+    if (this.showPoliceCase && this.showIsInsurancePatient) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsInsurancePatient == true || s.IsPoliceCase == true);
+    }
+    else if (this.showIsInsurancePatient && !this.showPoliceCase) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsInsurancePatient == true);
+    }
+    else if (!this.showIsInsurancePatient && this.showPoliceCase) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsPoliceCase == true);
+    }
+    else {
+      this.filteredItemList = this.allItemList;
+    }
+    this.dischargedList = this.filteredItemList;
+  }
+
+  public CallbackFromViewPage($event) {
+    this.showSummaryView = false;
+    this.showDischargeSummary = true;
+  }
+  public CallBackFromAddEdit(data){  
+    this.showSummaryView = true;
+    this.showDischargeSummary = false;
   }
 }

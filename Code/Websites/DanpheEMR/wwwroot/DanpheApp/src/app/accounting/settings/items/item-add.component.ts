@@ -9,6 +9,7 @@ import { SecurityService } from '../../../security/shared/security.service';
 //Parse, validate, manipulate, and display dates and times in JS.
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { AccountingService } from "../../shared/accounting.service"
 
 
 @Component({
@@ -38,7 +39,7 @@ export class ItemsAddComponent {
     public selLedger: any;
     constructor(public acctMstBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
-        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
+        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService,public accountingService: AccountingService) {
         this.GetLedger();
     }
     @Input("showAddPage")
@@ -58,13 +59,15 @@ export class ItemsAddComponent {
     }
 
     GetLedger() {
-        this.acctMstBLService.GetLedgers()
-            .subscribe(res => this.CallBackLedger(res));
+        if(!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+            this.CallBackLedger(this.accountingService.accCacheData.Ledgers);//mumbai-team-june2021-danphe-accounting-cache-change
+          }
 
     }
 
     CallBackLedger(res) {
-        this.ledger = res.Results;
+        this.ledger = res;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledger = this.ledger.slice();//mumbai-team-june2021-danphe-accounting-cache-change
 
     }
     //adding new Item

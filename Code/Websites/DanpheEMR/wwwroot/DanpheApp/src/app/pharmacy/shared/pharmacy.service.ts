@@ -19,12 +19,16 @@ export class PharmacyService {
       public currencyUnit: string = "";
       private messageSource = new BehaviorSubject(0);
       gRId = this.messageSource.asObservable();
+      public _DispatchId: number;
+      public defaultPrinterName: string = null;
+      allItemRateList: any[] = [];
+      allMRPList: any[] = [];
       constructor(public coreService: CoreService, public msgBoxServ: MessageboxService) {
             this.GetCurrencyUnit();
       }
-      changeMessage(message:number) {
+      changeMessage(message: number) {
             this.messageSource.next(message)
-          }
+      }
       // <----------ID--------->
       get Id(): number {
             return this._Id;
@@ -38,6 +42,13 @@ export class PharmacyService {
       }
       set GRId(Id: number) {
             this._GRId = Id;
+      }
+      // <----------GRID--------->
+      get DispatchId(): number {
+            return this._DispatchId;
+      }
+      set DispatchId(Id: number) {
+            this._DispatchId = Id;
       }
       // <----------Name--------->
       get Name(): string {
@@ -74,9 +85,9 @@ export class PharmacyService {
       public GetGlobalPharmacyReceipt(): PharmacyReceiptModel {
             return this.globalPharmacyReceipt;
       }
-      globalPharmacyGoodReceipt:PHRMGoodsReceiptModel= new PHRMGoodsReceiptModel();
+      globalPharmacyGoodReceipt: PHRMGoodsReceiptModel = new PHRMGoodsReceiptModel();
       public GetGlobalPharmacyGoodReceipt(id): PHRMGoodsReceiptModel {
-             
+
             return this.globalPharmacyGoodReceipt;
       }
       public CreateNew() {
@@ -102,6 +113,13 @@ export class PharmacyService {
                   this.currencyUnit = JSON.parse(currParameter.ParameterValue).CurrencyUnit;
             else
                   this.msgBoxServ.showMessage("error", ["Please set currency unit in parameters."]);
+      }
+      //SET Item Rate history
+      public setItemRateHistory(itemRateList: Array<any>) {
+            this.allItemRateList = itemRateList;
+      }
+      public setMRPHistory(itemMRPList: Array<any>) {
+            this.allMRPList = itemMRPList;
       }
 
 }

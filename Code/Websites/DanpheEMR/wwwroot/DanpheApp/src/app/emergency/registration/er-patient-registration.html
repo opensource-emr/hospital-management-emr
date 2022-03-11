@@ -1,9 +1,7 @@
-
-<div class="cstm-pat-registration er-pat-registration">
-
-  <div class="row">
-    <form [formGroup]="ERPatient.ERPatientValidator" class="form-horizontal">
-      <div class="form-body">
+<div class="cstm-pat-registration er-pat-registration clearfix">
+  <form [formGroup]="ERPatient.ERPatientValidator" class="form-horizontal">
+    <div class="form-body">
+      <div class="row">
         <div class="col-md-12">
           <div class="form-group">
             <div class="col-md-12">
@@ -21,22 +19,34 @@
 
             <div class="form-group">
               <label class="control-label col-md-4">
-                First Name<b class="color-red"> *</b><b style="float:right;">:</b>
+                <label *ngIf="!ocmcSelected">First Name</label> <label *ngIf="ocmcSelected">Alias Name</label><b class="color-red"> *</b><b style="float:right;">:</b>
               </label>
 
               <!--<div *ngIf="!addNewUnknownERPatient && (!selectionFromExistingPatient || !ERPatient.IsExistingPatient)" class="col-md-8">-->
               <div class="col-md-8">
-                <input style="display: block;" class="form-control capitalize-firstletter" type="text"
-                       maxlength="40" formControlName="FirstName" [(ngModel)]="ERPatient.FirstName"
-                       required value="{{ERPatient.FirstName | CapitalFirstLetter}}"
-                       placeholder="First Name"
-                       (focusout)="ERPatient.FirstName=capitalizeFirstLetter(ERPatient.FirstName)" />
+                <input style="display: block;" class="form-control capitalize-firstletter" type="text" maxlength="40"
+                  formControlName="FirstName" [(ngModel)]="ERPatient.FirstName" required
+                  value="{{ERPatient.FirstName | CapitalFirstLetter}}" [placeholder]="ocmcSelected==true ? 'Alias Name' : 'First Name'"
+                  (keyup.enter)="SetFocusById('erPatMiddleName')" id="erPatFirstName"/>                  
                 <span class="error-msg" *ngIf="ERPatient.IsDirty('FirstName')"
-                      [hidden]="ERPatient.IsValid('FirstName','required')">First Name is required</span>
+                  [hidden]="ERPatient.IsValid('FirstName','required')">
+                  <span *ngIf="!ocmcSelected"> 
+                    First Name is required
+                  </span>
+                  <span *ngIf="ocmcSelected"> 
+                    Alias Name is required
+                  </span>
+                </span>                
                 <span class="error-msg" *ngIf="ERPatient.IsDirty('FirstName')"
-                      [hidden]="ERPatient.IsValid('FirstName','maxlength')">
+                  [hidden]="ERPatient.IsValid('FirstName','maxlength')">                  
+                <span *ngIf="!ocmcSelected"> 
                   First Name must be less than
                   40 characters
+                </span>
+                <span *ngIf="ocmcSelected"> 
+                  Alias Name must be less than
+                  40 characters
+                </span>
                 </span>
               </div>
               <!--<div *ngIf="addNewUnknownERPatient || selectionFromExistingPatient || ERPatient.IsExistingPatient" class="col-md-8">
@@ -47,25 +57,29 @@
             <div class="form-group">
               <label class="control-label col-md-4">Middle Name<b style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input [disabled]="addNewUnknownERPatient || selectionFromExistingPatient || ERPatient.IsExistingPatient"
-                       class="form-control" type="text" [ngModelOptions]="{standalone: true}"
-                       [(ngModel)]="ERPatient.MiddleName" value="" placeholder="Middle Name"
-                       (focusout)="ERPatient.MiddleName=capitalizeFirstLetter(ERPatient.MiddleName)" />
+                <input
+                  id="erPatMiddleName"
+                  [disabled]="addNewUnknownERPatient || selectionFromExistingPatient || ERPatient.IsExistingPatient || ocmcSelected"
+                  class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.MiddleName" value="" placeholder="Middle Name" 
+                  (keyup.enter)="SetFocusById('erPatLastName')"/>
               </div>
             </div>
             <div class="form-group">
-              <label class="control-label col-md-4">Last Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <label class="control-label col-md-4">Last Name<b class="color-red"> *</b><b
+                  style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input style="display: block;" class="form-control" type="text" formControlName="LastName"
-                       [(ngModel)]="ERPatient.LastName" required value="{{ERPatient.LastName| CapitalFirstLetter}}" placeholder="Last Name"
-                       (focusout)="ERPatient.LastName=capitalizeFirstLetter(ERPatient.LastName)" />
-                       <span class="error-msg" *ngIf="ERPatient.IsDirty('LastName')"
-                       [hidden]="ERPatient.IsValid('LastName','required')">Last Name is required</span>
-                    <span class="error-msg" *ngIf="ERPatient.IsDirty('LastName')"
-                          [hidden]="ERPatient.IsValid('LastName','maxlength')">
-                      Last Name must be less than
-                      40 characters
-                    </span>
+                <input style="display: block;"
+                  class="form-control" type="text" formControlName="LastName"
+                  [(ngModel)]="ERPatient.LastName" required value="{{ERPatient.LastName| CapitalFirstLetter}}"
+                  placeholder="Last Name" id="erPatLastName" (keyup.enter)="SetFocusById('erPatGender')" />
+                <span class="error-msg" *ngIf="ERPatient.IsDirty('LastName')"
+                  [hidden]="ERPatient.IsValid('LastName','required')">Last Name is required</span>
+                <span class="error-msg" *ngIf="ERPatient.IsDirty('LastName')"
+                  [hidden]="ERPatient.IsValid('LastName','maxlength')">
+                  Last Name must be less than
+                  40 characters
+                </span>
               </div>
             </div>
 
@@ -75,7 +89,7 @@
               </label>
               <div class="col-md-8">
                 <div class="input-group">
-                  <div class="icheck-inline txt-black">
+                  <!-- <div class="icheck-inline txt-black">
                     <label class="mt-checkbox mt-checkbox-outline">
                       <input type="radio" value="Male" [(ngModel)]="ERPatient.Gender"
                              formControlName="Gender">
@@ -91,10 +105,17 @@
                              formControlName="Gender">
                       <span></span>Other
                     </label>
-                  </div>
+                  </div> -->
+
+                  <select class="form-control" [(ngModel)]="ERPatient.Gender" formControlName="Gender" (change)="SetFocusById('erPatAge')" id="erPatGender">
+                    <option value="null" selected disabled>--select--</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
                 <span class="error-msg" *ngIf="ERPatient.IsDirty('Gender')"
-                      [hidden]="ERPatient.IsValid('Gender','required')">Gender is required</span>
+                  [hidden]="ERPatient.IsValid('Gender','required')">Gender is required</span>
               </div>
             </div>
 
@@ -102,14 +123,13 @@
               <label class="control-label col-md-4">Age<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <div class="col-md-3" style="padding-left:0px;padding-right: 0px;">
-                  <input class="form-control" type="text" min="0" max="150"
-                         [ngModelOptions]="{standalone: true}" onclick="this.select()"
-                         (focusout)="CalculateDob();" [(ngModel)]="ERPatient.Age" placeholder="Age"
-                         style="padding-right:0px;" />
+                  <input class="form-control" type="text" min="0" max="150" formControlName="Age"
+                    onclick="this.select()" (focusout)="CalculateDob();" [(ngModel)]="ERPatient.Age" placeholder="Age"
+                    style="padding-right:0px;" id="erPatAge" (keyup.enter)="SetFocusById('district')"/>
                 </div>
                 <div class="col-md-9" style="padding-right: 0px;">
                   <div class="input-group">
-                    <div class="icheck-inline txt-black">
+                    <!-- <div class="icheck-inline txt-black">
                       <label class="mt-radio mt-radio-outline">
                         <input name="AgeUnit" type="radio" value="Y"
                                [(ngModel)]="ERPatient.AgeUnit"
@@ -128,9 +148,18 @@
                                [ngModelOptions]="{standalone: true}" (click)="CalculateDob(1);">
                         <span></span>Days
                       </label>
-                    </div>
+                    </div> -->
+
+                    <select class="form-control" [(ngModel)]="ERPatient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="CalculateDob();" id="erPatAgeUnit">
+                      <option value="Y">Years</option>
+                      <option value="M">Months</option>
+                      <option value="D">Days</option>
+                    </select>
                   </div>
                 </div>
+                <span class="color-red font-sm" *ngIf="ERPatient.IsDirty('Age')"
+                [hidden]="ERPatient.IsValid('Age','required')"> Age is required.</span>
               </div>
             </div>
 
@@ -139,9 +168,8 @@
                 Date Of Birth<b style="float:right;">:</b>
               </label>
               <div *ngIf="ERPatient && ERPatient.DateOfBirth" class="col-md-8">
-                <danphe-date-picker [(ngModel)]="ERPatient.DateOfBirth" ngDefaultControl
-                                    [CalendarTypes]="calType" [ngModelOptions]="{standalone: true}"
-                                    [year-settings]="'DateOfBirth'">
+                <danphe-date-picker [(ngModel)]="ERPatient.DateOfBirth" ngDefaultControl [CalendarTypes]="calType"
+                  [ngModelOptions]="{standalone: true}" [year-settings]="'DateOfBirth'">
                 </danphe-date-picker>
               </div>
             </div>
@@ -152,8 +180,7 @@
               <label class="control-label col-md-4">Country<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <select id="ddlCountry" class="form-control" [(ngModel)]="ERPatient.CountryId"
-                        [ngModelOptions]="{standalone: true}"
-                        (ngModelChange)="defaultLoad=false;GetCountrySubDivision()">
+                  [ngModelOptions]="{standalone: true}" (ngModelChange)="defaultLoad=false;GetCountrySubDivision()">
                   <option *ngFor="let Country of Countries;" value="{{Country.CountryId}}">
                     {{Country.CountryName}}
                   </option>
@@ -164,22 +191,36 @@
             <div class="form-group">
               <label class="control-label col-md-4">District/State<b style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
-                       [(ngModel)]="selDistrict" [list-formatter]="myListFormatter"
-                       [source]="CountrySubDivisionList" placeholder="Enter District/State"
-                       display-property-name="Value" value-property-name=null
-                       (focusout)="DistrictChanged()" onClick="this.select();" max-num-list="10" />
+                <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}" id="district"
+                  [(ngModel)]="selDistrict" [list-formatter]="myListFormatter" [source]="CountrySubDivisionList"
+                  placeholder="Enter District/State" display-property-name="Value" value-property-name=null
+                  (focusout)="DistrictChanged()" onClick="this.select();" max-num-list="10" (keyup.enter)="showMunicipality? SetFocusById('municipality') : SetFocusById('address')" />
+              </div>
+            </div>
+            <div class="form-group" *ngIf="showMunicipality">
+              <label class="control-label col-md-4">Municipality<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <municipality-select *ngIf="ERPatient" [municipalityId]='ERPatient.MunicipalityId' [subDivisionId] = 'selDistrict? selDistrict.Key : ERPatient.CountrySubDivisionId' (valueChange) ="updateMunicipality($event)"></municipality-select>
               </div>
             </div>
 
             <div class="form-group">
+              <label class="control-label col-md-4">Address<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" maxlength="100" type="text" [(ngModel)]="ERPatient.Address"
+                  [ngModelOptions]="{standalone: true}" value=""
+                  (focusout)="ERPatient.Address=capitalizeFirstLetter(ERPatient.Address)" placeholder="Address" id="address"
+                  (keyup.enter)="SetFocusById('erPatMainCase')"/>
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="showPoliceCase">
               <div class="col-md-12">
                 <div class="input-group">
                   <div class="icheck-inline txt-black">
                     <label class="mt-checkbox mt-checkbox-outline">
-                      <input [disabled]="update && isPoliceCaseState" type="checkbox"
-                             value="PoliceCase" [(ngModel)]="ERPatient.IsPoliceCase"
-                             [ngModelOptions]="{standalone: true}">
+                      <input [disabled]="update && isPoliceCaseState" type="checkbox" value="PoliceCase"
+                        [(ngModel)]="ERPatient.IsPoliceCase" [ngModelOptions]="{standalone: true}">
                       <span></span>This is a Police Case
                     </label>
                   </div>
@@ -193,10 +234,10 @@
             <div class="form-group">
               <label class="control-label col-md-4">Contact number<b style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input class="form-control" type="tel" [(ngModel)]="ERPatient.ContactNo"
-                       formControlName="PhoneNumber" placeholder="phone number" />
+                <input class="form-control" type="tel" [(ngModel)]="ERPatient.ContactNo" formControlName="PhoneNumber"
+                  placeholder="phone number" id="erPatPhone" (keyup.enter)="SetFocusById('register')"/>
                 <span class="error-msg" *ngIf="ERPatient.IsDirty('PhoneNumber')"
-                      [hidden]="ERPatient.IsValid('PhoneNumber','pattern')">
+                  [hidden]="ERPatient.IsValid('PhoneNumber','pattern')">
                   Primary Phone is not
                   proper
                 </span>
@@ -204,22 +245,12 @@
             </div>
 
             <div class="form-group">
-              <label class="control-label col-md-4">Address<b style="float:right;">:</b></label>
-              <div class="col-md-8">
-                <input class="form-control" maxlength="100" type="text" [(ngModel)]="ERPatient.Address"
-                       [ngModelOptions]="{standalone: true}" value=""
-                       (focusout)="ERPatient.Address=capitalizeFirstLetter(ERPatient.Address)"
-                       placeholder="Address" />
-              </div>
-            </div>
-
-            <div class="form-group">
               <label class="control-label col-md-4">Referred By<b style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input class="form-control" maxlength="100" type="text"
-                       [(ngModel)]="ERPatient.ReferredBy" [ngModelOptions]="{standalone: true}" value=""
-                       (focusout)="ERPatient.ReferredBy=capitalizeFirstLetter(ERPatient.ReferredBy)"
-                       placeholder="Referred By" />
+                <input class="form-control" maxlength="100" type="text" [(ngModel)]="ERPatient.ReferredBy"
+                  [ngModelOptions]="{standalone: true}" value=""
+                  (focusout)="ERPatient.ReferredBy=capitalizeFirstLetter(ERPatient.ReferredBy)"
+                  placeholder="Referred By" />
               </div>
             </div>
 
@@ -227,8 +258,8 @@
               <label class="control-label col-md-4">Case<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <input class="form-control" type="text" [(ngModel)]="ERPatient.Case"
-                       [ngModelOptions]="{standalone: true}" value="" placeholder="Case"
-                       (focusout)="ERPatient.Case=capitalizeFirstLetter(ERPatient.Case)" />
+                  [ngModelOptions]="{standalone: true}" value="" placeholder="Case"
+                  (focusout)="ERPatient.Case=capitalizeFirstLetter(ERPatient.Case)" id="erPatCase"/>
               </div>
             </div>
 
@@ -238,9 +269,8 @@
               </label>
               <div class="col-md-8">
                 <textarea class="form-control" type="text" [(ngModel)]="ERPatient.ConditionOnArrival"
-                          [ngModelOptions]="{standalone: true}" value=""
-                          placeholder="Condition during arrival"
-                          (focusout)="ERPatient.ConditionOnArrival=capitalizeFirstLetter(ERPatient.ConditionOnArrival)">
+                  [ngModelOptions]="{standalone: true}" value="" placeholder="Condition during arrival"
+                  (focusout)="ERPatient.ConditionOnArrival=capitalizeFirstLetter(ERPatient.ConditionOnArrival)">
                                 </textarea>
               </div>
             </div>
@@ -249,10 +279,10 @@
               <label class="control-label col-md-4">Mode of arrival<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
-                       [(ngModel)]="SelectedModeOfArrival" [list-formatter]="ModeOfArrivalListFormatter"
-                       [source]="ModeOfArrivalList" placeholder="Enter Mode Of Arrival"
-                       display-property-name="ModeOfArrivalName" value-property-name=null
-                       (focusout)="ModeOfArrivalChanged()" onClick="this.select();" max-num-list="10" />
+                  [(ngModel)]="SelectedModeOfArrival" [list-formatter]="ModeOfArrivalListFormatter"
+                  [source]="ModeOfArrivalList" placeholder="Enter Mode Of Arrival"
+                  display-property-name="ModeOfArrivalName" value-property-name=null (focusout)="ModeOfArrivalChanged()"
+                  onClick="this.select();" max-num-list="10" />
               </div>
             </div>
 
@@ -260,8 +290,8 @@
               <label class="control-label col-md-4">Care Of Person<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <input class="form-control" type="text" [(ngModel)]="ERPatient.CareOfPerson"
-                       [ngModelOptions]="{standalone: true}" value="" placeholder="Care Of Person"
-                       (focusout)="ERPatient.CareOfPerson=capitalizeFirstLetter(ERPatient.CareOfPerson)" />
+                  [ngModelOptions]="{standalone: true}" value="" placeholder="Care Of Person"
+                  (focusout)="ERPatient.CareOfPerson=capitalizeFirstLetter(ERPatient.CareOfPerson)" />
               </div>
             </div>
 
@@ -269,8 +299,8 @@
               <label class="control-label col-md-4">Care Of Person Number<b style="float:right;">:</b></label>
               <div class="col-md-8">
                 <input class="form-control" type="text" [(ngModel)]="ERPatient.CareOfPersonContactNumber"
-                       [ngModelOptions]="{standalone: true}" value="" placeholder="Number"
-                       (focusout)="ERPatient.CareOfPersonContactNumber=capitalizeFirstLetter(ERPatient.CareOfPersonContactNumber)" />
+                  [ngModelOptions]="{standalone: true}" value="" placeholder="Number"
+                  (focusout)="ERPatient.CareOfPersonContactNumber=capitalizeFirstLetter(ERPatient.CareOfPersonContactNumber)" />
               </div>
             </div>
 
@@ -280,59 +310,175 @@
         </div>
 
         <div class="col-md-12">
-          <div class="col-md-6 col-xs-12">
-            <div *ngIf="!update && !selectionFromExistingPatient" class="form-group">
-              <div class="col-md-6">
-                <button [disabled]="loading"
-                        style="font-size: 16px; display: block; font-weight: 700;margin-top: 12px; background-color: #dc353d; border-color: #dc353d;"
-                        class="btn blue bordered btn-sm" name="addanonymous"
-                        (click)="defaultLoad=true;AddUnknownERPatient()">
-                  <i style="font-size: 16px;" class="fa fa-user-secret"></i>
-                  <span *ngIf="!addNewUnknownERPatient"
-                        style="display: inline-block; margin-left: 5px;">Add Unknown ER-Patient</span>
-                  <span *ngIf="addNewUnknownERPatient"
-                        style="display: inline-block; margin-left: 5px;">Reset ER-Patient</span>
-                </button>
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="case" class="control-label col-md-2">Case<b style="float:right;">:</b></label>
+              <div class="col-md-2">
+                <select class="form-control" #allCase [(ngModel)]="ERPatient.PatientCases.MainCase"
+                  [ngModelOptions] = "{standalone: true}" (change)="assignNestedCases(allCase.value);" id="erPatMainCase" (change)="SetFocusById('erPatSubCase')">
+                  <option value="0" selected>--select--</option>
+                  <option *ngFor="let case of allCasesMaster" value="{{case.Id}}">{{case.Name}}</option>
+                </select>
+                <!-- <span class="error-msg" *ngIf="ERPatient.IsDirty('MainCase')"
+                  [hidden]="ERPatient.IsValid('MainCase','required')">Case selection is required</span> -->
+              </div>
+              <div class="col-md-2" *ngIf="nestedCases.length >0">
+                <select class="form-control" #subCase [(ngModel)]="ERPatient.PatientCases.SubCase"
+                  [ngModelOptions]="{standalone: true}" (change)="handleOthersCase(subCase.value)" id="erPatSubCase" (change)="SetFocusById('otherCase')">
+                  <option value="{{c.Id}}" *ngFor="let c of nestedCases">{{c.Name}}</option>
+                </select>
+              </div>
+              <div class="col-md-2" *ngIf="showOthersTextBox">
+                <input style="display: block;" class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.OtherCaseDetails" required value="{{ERPatient.OtherCaseDetails}}"
+                  placeholder="Enter Details" id="otherCase" (keyup.enter)="SetFocusById('erPatPhone')"/>
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-xs-12">
-            <div class="form-group">
-              <label class="control-label col-md-4"></label>
-              <div *ngIf="!update" class="col-md-8">
-                <button [disabled]="loading"
-                        class="cstm-popup-register-btn btn blue bordered btn-sm" name="regiter"
-                        (click)="loading=true;GetMatchingPatientList();">
-                  <i style="font-size: 16px;" class="fa fa-plus-circle"></i><span style="display: inline-block; margin-left: 5px;">Register</span>
-                </button>
+        </div>
+
+        <div class="col-md-12">
+          <div class="col-md-12">
+            <div class="form-group" *ngIf="showAnimalBiteDetailEntry || showSnakeBiteDetailEntry || showDogBiteDetailEntry">
+              <label class="control-label col-md-2">Biting Address <b style="float:right;">:</b></label>
+              <div class="col-md-2">
+                <select id="bitingCountry" class="form-control" [(ngModel)]="ERPatient.PatientCases.BitingCountry"
+                  [ngModelOptions]="{standalone: true}" (ngModelChange)="defaultLoad=false;GetCountrySubDivision()">
+                  <option *ngFor="let Country of Countries;" value="{{Country.CountryId}}">
+                    {{Country.CountryName}}
+                  </option>
+                </select>
               </div>
 
-              <div *ngIf="update && !selectionFromExistingPatient" class="col-md-8">
-                <button [disabled]="loading"
-                        class="cstm-popup-register-btn btn blue bordered btn-sm" name="update"
-                        (click)="loading=true;GetMatchingPatientList();">
-                  <i style="font-size: 16px;" class="fa fa-plus-circle"></i><span style="display: inline-block; margin-left: 5px;">Update</span>
-                </button>
+              <div class="col-md-2">
+                <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="selDistrictOfBite" [list-formatter]="myListFormatter" [source]="CountrySubDivisionList"
+                  placeholder="Enter District/State" display-property-name="Value" value-property-name=null
+                  (focusout)="BitingMunicipalityChanged()" onClick="this.select();" max-num-list="10" />
+              </div>
+
+              <div class="col-md-2">
+                <input class="form-control" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.PatientCases.BitingAddress" placeholder="Enter Address" display-property-name="Value" value-property-name=null
+                   onClick="this.select();" max-num-list="10" id="bitingAddress" (keyup.enter)="SetFocusById('bittenBodyPart')" />
+              </div>
+            </div>
+            <div class="form-group" *ngIf="showAnimalBiteDetailEntry">
+              <label class="control-label col-md-2" >Name of Animal<b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <input style="display: block;" class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.PatientCases.BitingAnimalName" required
+                  value="{{ERPatient.PatientCases.BitingAnimalName}}" placeholder="Enter Details" />
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="showAnimalBiteDetailEntry || showSnakeBiteDetailEntry || showDogBiteDetailEntry">
+              <label class="control-label col-md-2">Date of Bite <b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <danphe-date-picker [(ngModel)]="ERPatient.PatientCases.DateTimeOfBite"
+                  [ngModelOptions]="{standalone: true}" [showTime]="true" [CalendarTypes]="'en,np'">
+                </danphe-date-picker>
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="showAnimalBiteDetailEntry || showSnakeBiteDetailEntry || showDogBiteDetailEntry">
+              <label class="control-label col-md-2">Bitten on <b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <select class="form-control" #bodyPart [(ngModel)]="ERPatient.PatientCases.BitingSite"
+                  [ngModelOptions]="{standalone: true}" (change)="showOtherForBittenOn(bodyPart.value)" id="bittenBodyPart" (change)="SetFocusById('firstAid')" >
+                  <option *ngFor="let part of bittenPart" value="{{part.Id}}">{{part.DisplayName}}</option>
+                </select>
+              </div>
+              <div class="col-md-2" *ngIf="bittenOnPart">
+                <input style="display: block;" class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.PatientCases.BitingSiteOthers" required
+                  value="{{ERPatient.PatientCases.BitingSiteOthers}}" placeholder="Enter Details" />
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="showSnakeBiteDetailEntry">
+              <label class="control-label col-md-2">Biting Snake <b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <select class="form-control" #bitingSnake [(ngModel)]="ERPatient.PatientCases.BitingAnimal"
+                  [ngModelOptions]="{standalone: true}" (change)="showOtherForBitingSnake(bitingSnake.value)">
+                  <option *ngFor="let type of snakeTypes" value="{{type.Id}}">{{type.DisplayName}}</option>
+                </select>
+              </div>
+              <div class="col-md-2" *ngIf="bitingSnakeOther">
+                <input style="display: block;" class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.PatientCases.BitingSiteOthers" required
+                  value="{{ERPatient.PatientCases.BitingSiteOthers}}" placeholder="Enter other Details" />
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="showAnimalBiteDetailEntry || showSnakeBiteDetailEntry || showDogBiteDetailEntry">
+              <label class="control-label col-md-2">First Aid<b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <select class="form-control" #firstAid [(ngModel)]="ERPatient.PatientCases.FirstAid"
+                  [ngModelOptions]="{standalone: true}" (change)="showOtherForFirstAid(firstAid.value)" id="firstAid" (change)="SetFocusById('erPatPhone')" >
+                  <option *ngFor="let type of firstAidData" value="{{type.Id}}">{{type.DisplayName}}</option>
+                </select>
+              </div>
+              <div class="col-md-2" *ngIf="firstAidOther">
+                <input style="display: block;" class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                  [(ngModel)]="ERPatient.PatientCases.FirstAidOthers" required
+                  value="{{ERPatient.PatientCases.FirstAidOthers}}" placeholder="Enter other Details" />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </form>
 
-    <a (click)="Close()"
-       style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;">
-      <i class="fa fa-2x fa-close"></i>
-    </a>
+    </div>
+  </form>
+
+  
+  <div class="col-md-12">
+    <div class="col-md-6 col-xs-12">
+      <div *ngIf="!update && !selectionFromExistingPatient" class="form-group">
+        <div class="col-md-6">
+          <button [disabled]="loading"
+            style="font-size: 16px; display: block; font-weight: 700;margin-top: 12px; background-color: #dc353d; border-color: #dc353d;"
+            class="btn green btn-success btn-sm" name="addanonymous" (click)="AddUnknownERPatient()">
+            <i style="font-size: 16px;" class="fa fa-user-secret"></i>
+            <span *ngIf="!addNewUnknownERPatient" style="display: inline-block; margin-left: 5px;">Add Unknown
+              ER-Patient</span>
+            <span *ngIf="addNewUnknownERPatient" style="display: inline-block; margin-left: 5px;">Reset
+              ER-Patient</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-4"></label>
+        <div *ngIf="!update" class="col-md-8">
+          <button [disabled]="loading" class="btn green btn-success btn-sm" name="regiter"
+            (click)="loading=true;GetMatchingPatientList();" id="register">
+            <i style="font-size: 16px;" class="fa fa-plus-circle"></i><span
+              style="display: inline-block; margin-left: 5px;">Register</span>
+          </button>
+        </div>
+
+        <div *ngIf="update && !selectionFromExistingPatient" class="col-md-8">
+          <button [disabled]="loading" class="btn green btn-success btn-sm" name="update"
+            (click)="loading=true;GetMatchingPatientList();" id="register">
+            <i style="font-size: 16px;" class="fa fa-plus-circle"></i><span
+              style="display: inline-block; margin-left: 5px;">Update</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
+  <a (click)="Close()"
+    style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;">
+    <i class="fa fa-2x fa-close"></i>
+  </a>
 </div>
 
-<patient-duplicate-warning-box *ngIf="showMatchingPatientList"
-                               [btnActionName]="'Use Existing'"
-                               [matchedPatResult]="matchingPatientList"
-                               [currentPatInfo]="ERPatient"
-                               [byPassClientCheck]="true"
-                               (emit-close-action)="emitMatchingListCloseAction($event)">
+
+<patient-duplicate-warning-box *ngIf="showMatchingPatientList" [btnActionName]="'Use Existing'"
+  [matchedPatResult]="matchingPatientList" [currentPatInfo]="ERPatient" [byPassClientCheck]="true"
+  (emit-close-action)="emitMatchingListCloseAction($event)">
 
 </patient-duplicate-warning-box>

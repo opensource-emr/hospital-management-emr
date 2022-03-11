@@ -1,5 +1,5 @@
 <a feature="button" class="btn blue bordered" (click)="AddCreditOrganization()"><i class="fa fa-plus"></i>Add Organization</a>
-<phrm-credit-organizations [showAddPage]="showAddPage"
+<phrm-credit-organizations [showAddPage]="showAddPage" *ngIf="showAddPage"
                    [selectedItem]="selectedItem"
                    (callback-add)="CallBackAdd($event)"></phrm-credit-organizations>
 

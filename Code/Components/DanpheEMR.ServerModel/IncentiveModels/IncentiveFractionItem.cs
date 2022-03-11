@@ -35,5 +35,6 @@ namespace DanpheEMR.ServerModel.IncentiveModels
         public bool IsMainDoctor { get; set; }
         public double? TDSPercentage { get; set; }
         public double? TDSAmount { get; set; }
+        public double? Quantity { get; set; }
     }
 }

@@ -78,13 +78,22 @@ export class RoleListComponent {
   }
 
   CallBackAdd($event) {
-    this.roleList.push($event.role);
-    if (this.selectedID != null) {
-      let i = this.roleList.findIndex(a => a.RoleId == this.selectedID);
+    // this.roleList.push($event.role);
+    // if (this.selectedID != null) {
+    //   let i = this.roleList.findIndex(a => a.RoleId == this.selectedID);
 
-      this.roleList.splice(i, 1);
+    //   this.roleList.splice(i, 1);
+    // }
+    // this.roleList = this.roleList.slice();
+
+    if ($event.action == "add") {
+      this.roleList.push($event.role);
     }
-    this.roleList = this.roleList.slice();
+    else if ($event.action == "update") {
+      let selrole = $event.role;
+      let indx = this.roleList.findIndex(a => a.RoleId == selrole.RoleId);
+      this.roleList.splice(indx, 1, selrole);
+    }
     this.changeDetector.detectChanges();
     this.showAddPage = false;
     this.selectedItem = null;

@@ -12,13 +12,15 @@
   .prov-icon {
     color: #006687;
     width: 20px;
-    height: 15px; /*padding-left: 2px;
+    height: 15px;
+    /*padding-left: 2px;
            padding-right: 2px;*/
   }
 
-    .prov-icon:hover {
-      font-size: 15px; /*padding: 0px;*/
-    }
+  .prov-icon:hover {
+    font-size: 15px;
+    /*padding: 0px;*/
+  }
 
   /*Overwritting Bootstrap's class only for this page*/
 </style>
@@ -26,8 +28,10 @@
   <div class="row">
     <div class="col-md-12">
       <div class="caption custom-caption">
-        <h3 *ngIf="model.InvoiceType != 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Make Payment</h3>
-        <h3 *ngIf="model.InvoiceType == 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Inpatient Partial Clearance</h3>
+        <h3 *ngIf="model.InvoiceType != 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Make
+          Payment</h3>
+        <h3 *ngIf="model.InvoiceType == 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Inpatient
+          Partial Clearance</h3>
       </div>
       <div class="table-responsive">
         <table class="table doc-tbl">
@@ -39,22 +43,31 @@
               <th>ItemName </th>
               <th>Quantity</th>
               <th>Price</th>
-              <th> Discount</th>
-              <th> Total</th>
-              <th>Agg.Discount</th>
+              <!-- <th> Discount</th> -->
+              <th> Sub Total</th>
+              <!-- <th>Agg.Discount</th> -->
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let row of model.BillingTransactionItems; let i = index">
-              <td style="padding: 7px 0px 0px 0px;"><label class="form-control cstm-form-control" style="text-align:center">{{i+1}}</label></td>
-              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ServiceDepartmentName" style="width:150px" value="row.ServiceDepartmentName" disabled name="department"></td>
-              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ProviderName" style="width:120px" disabled></td>
-              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ItemName" style="width:300px" disabled name="itemnames"></td>
-              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Quantity" style="width:60px" disabled name="quantity"></td>
-              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Price" disabled style="width:70px " name="price"></td>
-              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercent" style="width:70px " disabled name="discountpercent"></td>
-              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.TotalAmount" disabled style="width:70px" name="total"></td>
-              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercentAgg" style="width:70px ;background-color:red" disabled name="discountpercentagg"></td>
+              <td style="padding: 7px 0px 0px 0px;"><label class="form-control cstm-form-control"
+                  style="text-align:center">{{i+1}}</label></td>
+              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ServiceDepartmentName"
+                  style="width:150px" value="row.ServiceDepartmentName" disabled name="department"></td>
+              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ProviderName"
+                  style="width:120px" disabled></td>
+              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ItemName"
+                  style="width:300px" disabled name="itemnames"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Quantity"
+                  style="width:60px" disabled name="quantity"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Price" disabled
+                  style="width:70px " name="price"></td>
+              <!-- <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercent"
+                  style="width:70px " disabled name="discountpercent"></td> -->
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.SubTotal" disabled
+                  style="width:70px" name="total"></td>
+              <!-- <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercentAgg"
+                  style="width:70px ;background-color:red" disabled name="discountpercentagg"></td> -->
             </tr>
           </tbody>
         </table>
@@ -71,7 +84,8 @@
             <td>{{patBillHistory.CreditAmount}}</td>
           </tr>
           <tr>
-            <td> Provisional Amount <i class="fa fa-question-circle help-about prov-icon" title="Items in current page are NOT INCLUDED in this Amount"></i> <b class="colon">:</b></td>
+            <td> Provisional Amount <i class="fa fa-question-circle help-about prov-icon"
+                title="Items in current page are NOT INCLUDED in this Amount"></i> <b class="colon">:</b></td>
             <td style="text-decoration:underline;"> {{patBillHistory.ProvisionalAmt}} </td>
           </tr>
           <tr>
@@ -84,9 +98,18 @@
           </tr>
           <tr>
             <td>Balance Amount <b class="colon">:</b></td>
-            <td style="font-weight: bold;color: blue;font-size: 17px;"><span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}} </span></td>
+            <td style="font-weight: bold;color: blue;font-size: 17px;"><span
+                [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}} </span></td>
           </tr>
         </table>
+      </div>
+
+    </div>
+    <div class="col-md-offset-2 col-md-6">
+      <div class="page-bar">
+        <membership-select [show-community]="membershipSchemeParam.ShowCommunity" [selected-id]="memTypeSchemeId"
+          (on-membership-change)="OnMembershipTypeChanged($event)" [is-mandatory]="membershipSchemeParam.IsMandatory">
+        </membership-select>
       </div>
     </div>
     <div class="col-md-offset-4 col-md-4">
@@ -94,45 +117,52 @@
         <table class="" style="width: 100%">
           <tr>
             <td align="right"> SubTotal : </td>
-            <td><input type="number" [(ngModel)]="model.SubTotal" disabled id="subtotal" name="subtotal" class="form-control"></td>
+            <td><input type="number" [(ngModel)]="model.SubTotal" disabled id="subtotal" name="subtotal"
+                class="form-control"></td>
           </tr>
           <tr class="form-group">
             <td align="right">Discount % Total : </td>
             <td style="padding-top: 5px;">
-              <input type="number" [(ngModel)]="model.DiscountPercent" (ngModelChange)="Calculationforall();"
-                     name="DiscountPercent" value="{{0}}" onClick="this.select();" class="form-control">
+              <input type="number" [(ngModel)]="model.DiscountPercent" (ngModelChange)="InvoiceDiscountOnChange();"
+                name="DiscountPercent" value="{{0}}" onClick="this.select();" class="form-control"
+                [disabled]="(!MembershipTypeName || MembershipTypeName == 'General')"
+                (keyup.enter)="coreService.FocusInputById('tenderAmount')"
+                (wheel)="coreService.PreventNumberChangeOnScroll($event)">
             </td>
           </tr>
           <tr class="form-group">
             <td align="right"> Discount Amt : </td>
-            <td style="padding-top: 5px;"><input class="form-control" type="number" disabled [(ngModel)]="model.DiscountAmount" name="DiscountAmount" value="{{0}}"></td>
+            <td style="padding-top: 5px;"><input class="form-control" type="number" disabled
+                [(ngModel)]="model.DiscountAmount" name="DiscountAmount" value="{{0}}"></td>
           </tr>
           <tr class="form-group">
             <td align="right">Total Amount : </td>
-            <td style="padding-top: 5px;"><input class="form-control" type="number" [(ngModel)]="model.TotalAmount" disabled name="TotalAmount"></td>
+            <td style="padding-top: 5px;"><input class="form-control" type="number" [(ngModel)]="model.TotalAmount"
+                disabled name="TotalAmount"></td>
           </tr>
           <tr class="form-group">
-            <td style="vertical-align: top" align="right">Remarks <b *ngIf="model.PaymentMode =='credit'" class="color-red"> *</b>: </td>
-            <td style="padding-top: 5px;"><textarea [(ngModel)]="model.Remarks" placeholder="Remarks" onClick="this.select();" class="form-control"></textarea></td>
+            <td style="vertical-align: top" align="right">Remarks <b *ngIf="model.PaymentMode =='credit' || model.DiscountPercent>0"
+                class="color-red"> *</b>: </td>
+            <td style="padding-top: 5px;"><textarea [(ngModel)]="model.Remarks" placeholder="Remarks"
+                onClick="this.select();" class="form-control"></textarea></td>
           </tr>
-          <!--<tr class="dot">
-            <td colspan="2" class="text-capitalize" style="padding-top: 20px;">In Words : <b class="text-primary">{{currencyUnit}}{{model.TotalAmount}}/-  :{{model.TotalAmount | NumberInWords}} only</b>.
-          </tr>-->
           <tr>
             <td align="right">Tender: </td>
             <td>
-              <input type="number" class="form-control" [(ngModel)]="model.Tender" (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
-                     [disabled]="model.PaymentMode == 'credit'"
-                     value="{{model.TotalAmount}}" onClick="this.select();" />
+              <input type="number" class="form-control" [(ngModel)]="model.Tender"
+                (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                [disabled]="model.PaymentMode == 'credit'" value="{{model.TotalAmount}}" onClick="this.select();" />
             </td>
           </tr>
           <tr>
             <td align="right">Change/Return :</td>
-            <td><span>{{currencyUnit}}<b>{{model.Change}}</b></span></td>
+            <td><span>{{coreService.currencyUnit}}<b>{{model.Change}}</b></span></td>
           </tr>
           <tr>
             <td align="right">Deduct from Deposit:</td>
-            <td><input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit" [disabled]="currentDepositBalance <= 0 || model.PaymentMode == 'credit'" style="width:18px;height:18px;" (change)="DepositDeductCheckBoxChanged()"></td>
+            <td><input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit"
+                [disabled]="currentDepositBalance <= 0 || model.PaymentMode == 'credit'" style="width:18px;height:18px;"
+                (change)="DepositDeductCheckBoxChanged()"></td>
           </tr>
           <tr *ngIf="deductDeposit">
             <td align="right">Deposit Deduction:</td>
@@ -145,43 +175,15 @@
           <tr *ngIf="billingService.BillingFlow !='insurance'" class="ht-managed">
             <td colspan="2">
               <payment-mode-info (on-paymentMode-change)="PaymentModeChanges($event)"
-                                 (on-creditOrganization-change)="CreditOrganizationChanges($event)"
-                                 [show-deduct-from-deposit]="'false'">
+                (on-creditOrganization-change)="CreditOrganizationChanges($event)" [show-deduct-from-deposit]="'false'">
               </payment-mode-info>
             </td>
           </tr>
-          <!--<tr>
-            <td align="right">Payment Mode:</td>
-            <td class="text-primary">
-              <select [(ngModel)]="model.PaymentMode" name="pay_mode" id="pay_mode" (change)="OnPaymentModeChange()">
-                <option value="cash">Cash</option>
-                <option value="credit" style="font-weight:bold" [disabled]="deductDeposit">CREDIT</option>
-                <option value="cheque">Cheque</option>
-                <option value="card">Smart Card</option>
-              </select>
-            </td>
-          </tr>
-          <tr *ngIf="model.PaymentMode =='credit' && 'CreditOrganization' | booleanParameter : 'Billing'">
-            <td style="text-align: right" class="nxt-td">
-              Credit Organization<b *ngIf="CreditOrganizationMandatory" class="color-red"> *</b><b style="float:right;">:</b>
-            </td>
-            <td>
-              <select class="form-control mb-8" [(ngModel)]="model.OrganizationId"
-                      [ngModelOptions]="{standalone: true}">
-                <option *ngFor="let oList of creditOrganizationsList" value="{{oList.OrganizationId}}">
-                  {{oList.OrganizationName}}
-                </option>
-              </select>
-            </td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr *ngIf="model.PaymentMode != 'cash'">
-            <td style="vertical-align: top" align="right">Payment Details:</td>
-            <td><textarea [(ngModel)]="model.PaymentDetails" class="form-control"></textarea></td>
-          </tr>-->
           <tr class="dot">
-            <td colspan="2" class="text-capitalize" style="padding-top: 20px;">paIn Words : <b class="text-primary">{{currencyUnit}}{{model.TotalAmount}}/-  :{{model.TotalAmount | NumberInWords}} only</b>.
+            <td colspan="2" class="text-capitalize" style="padding-top: 20px;">paIn Words : <b
+                class="text-primary">{{coreService.currencyUnit}}{{model.TotalAmount}}/- :{{model.TotalAmount |
+                NumberInWords}}
+                only</b>.
           </tr>
         </table>
       </div>
@@ -191,9 +193,29 @@
   <div class="row">
     <div class="col-md-12 text-right">
       <div class="action-bar">
-        <input type="submit" style="font-weight: bold;" class="btn blue btn-success btn-sm" value="Print Invoice" (click)="loading=true;PostBillingTransaction();" [disabled]="loading" />
-        <button type="button" *ngIf="model.InvoiceType != 'ip-partial'" style="margin-left: 5px;" rbac-permission='{"name":"btn-opbilling-provisional","actionOnInvalid":"remove"}' class="btn btn-success btn-sm" (click)="PrintProvisionalSlip()" [disabled]="loading"><i class="fa fa-print"></i>Print Provisional Slip</button>
+        <input type="submit" style="font-weight: bold;" class="btn blue btn-success btn-sm" value="Print Invoice"
+          (click)="loading=true;PostBillingTransaction();" [disabled]="loading" />
       </div>
     </div>
   </div>
 </div>
+
+
+<!--Start: Invoice Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInvoicePrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-11">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div>
+            <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId"
+              [bil-txn-id]="bil_BilTxnId">
+            </bil-print-invoice-main>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Invoice Print Popup-->

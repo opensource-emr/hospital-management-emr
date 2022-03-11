@@ -15,6 +15,8 @@ export class Voucher {
     public CreatedBy: number = 0;
     public CreatedOn: string = null;
     public IsActive: boolean = true;
+    public ShowPayeeName: boolean = false;
+    public ShowChequeNumber: boolean = false;
     public VoucherCode: string = null;
     public ISCopyDescription:boolean=false;
     public ValidatorVoucher: FormGroup = null;

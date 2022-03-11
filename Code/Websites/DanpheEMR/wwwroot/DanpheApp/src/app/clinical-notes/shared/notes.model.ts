@@ -10,7 +10,6 @@ import * as moment from "moment/moment"
 import { DischargeSummary } from "../../adt/shared/discharge-summary.model";
 import { ProgressNotesModel } from "./progress-note.model";
 import { ClinicalPrescriptionNotesModel } from "./clinical-prescription-note.model";
-import { ICD10 } from "../../clinical/shared/icd10.model";
 export class NotesModel {
   public NotesId: number = 0;
   public PatientVisitId: number = null;
@@ -49,7 +48,5 @@ export class NotesModel {
 
   //used in receive note
   public ReceivedOn: string = null;
-  public ICDSelected: string;
-  public ICDList: Array<ICD10> = [];
 
 }

@@ -50,6 +50,7 @@ import {
   MasterType,
 } from "../../../shared/danphe-cache-service-utility/cache-services";
 import * as _ from "lodash";
+import { LabService } from "../../shared/lab.service";
 
 @Component({
   selector: "danphe-lab-view-report",
@@ -71,13 +72,26 @@ export class LabTestsViewReportComponent {
   @Input("enableEdit")
   public enableEdit: boolean = true;
 
-  @Output("callbackBackToGrid") callbackAddUpdate: EventEmitter<
-    object
-  > = new EventEmitter<object>();
-  @Output("callBackToReportDispatch") callbackToReportDispatch: EventEmitter<
-    object
-  > = new EventEmitter<object>();
+  @Output("callbackBackToGrid") callbackAddUpdate: EventEmitter<object> =
+    new EventEmitter<object>();
+  @Output("callBackToReportDispatch")
+  callbackToReportDispatch: EventEmitter<object> = new EventEmitter<object>();
 
+  @Output("callBackToReportAddUpdate")
+  callBackToReportAddUpdate: EventEmitter<object> = new EventEmitter<object>();
+
+  @Output("callBackUplaod") callBackUplaod : EventEmitter<any> = new EventEmitter<any>();
+
+  @Input("hidePrintButton")
+  public hidePrintButton: boolean = false;
+
+  @Input("showUplaodToTeleMedicine")
+  public showUplaodToTeleMedicine : boolean = false;
+
+  @Input("IsFileUploaded")
+  public IsFileUploaded : boolean = false;
+
+  public IsTeleMedicineEnabled : boolean = false;
   public doctorsList: Array<any> = [];
   public doctorSelected: any;
 
@@ -133,8 +147,16 @@ export class LabTestsViewReportComponent {
 
   //@ViewChild("exportContent") content: ElementRef;
 
+  public allowLabNoChange: boolean = true;
+  public allowReferredByChange: boolean = true;
+  public routeAfterVerification: string;
+  public qrCode: string;
+  public allValues: any;
+  public collectionSite: string;
+  public referredByLabelInLabReport : string = 'Referred By';
   constructor(
     public labBLService: LabsBLService,
+    public labService: LabService,
     public npCalendarService: NepaliCalendarService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
@@ -146,29 +168,76 @@ export class LabTestsViewReportComponent {
     this.CurrentDateTime = moment().format("YYYY-MM-DD HH:mm");
     this.GetDoctorsList();
     this.CreatedByUser = this.securityService.GetLoggedInUser().Employee;
-    this.showLoggedInUserSignatory = this.coreService.ShowLoggedInUserSignatory();
-    this.showReportDispatcherSignatory = this.coreService.ShowLabReportDispatcherSignatory();
-    this.showPrintInfo = this.coreService.ShowPrintInformationInLabReport();
-    this.showBarCode = this.coreService.ShowBarCodeInLabReport();
 
-    this.verificationEnabled = this.coreService.EnableVerificationStep();
-    this.preliminaryText = this.coreService.GetPreliminaryNoteText();
-    this.preliminarySignature = this.coreService.GetPreliminaryReportSignatureText();
-    this.showVerifierSignature = this.coreService.EnableVerifierSignatureInLab();
+    let TeleMedicineConfig = this.coreService.Parameters.find(p =>p.ParameterGroupName == "TeleMedicine" && p.ParameterName == "DanpheConfigurationForTeleMedicine").ParameterValue;
+    this.IsTeleMedicineEnabled = JSON.parse(JSON.parse(TeleMedicineConfig).IsTeleMedicineEnabled);
+    this.allValues = this.coreService.GetAllParametersDataForLabReport();
+    if (this.allValues) {
+      this.referredByLabelInLabReport = this.allValues.referredByLabelInLabReport;
+      this.showLoggedInUserSignatory = Boolean(JSON.parse(this.allValues.LoggedInUserSignatory));
+      this.showReportDispatcherSignatory = Boolean(JSON.parse(this.allValues.ReportDispatcherSignature));
+      this.showPrintInfo = Boolean(JSON.parse(this.allValues.DisplayPrintInfo));
+      this.showBarCode = Boolean(JSON.parse(this.allValues.LabBarCodeInReport));
+      if (!_.isEmpty(this.allValues.LabReportVerificationB4Print)) {
+        this.verificationEnabled = Boolean(JSON.parse(this.allValues.LabReportVerificationB4Print.EnableVerificationStep));
+        this.preliminaryText = this.allValues.LabReportVerificationB4Print.PreliminaryReportText;
+        this.preliminarySignature = this.allValues.LabReportVerificationB4Print.PreliminaryReportSignature;
+        this.showVerifierSignature = Boolean(JSON.parse(this.allValues.LabReportVerificationB4Print.ShowVerifierSignature));
+      }
+      this.hospitalCode = this.allValues.HospitalCode;
+      this.showIntermediateInCultureRpt = Boolean(JSON.parse(this.allValues.CultureIntermediateResults));
+      this.showHideHighLowNormalFlag = Boolean(JSON.parse(this.allValues.HighLowNormalFlag));
+      this.showDigitalSignature = Boolean(JSON.parse(this.allValues.DigitalSignatureEnabled));
+      this.collectionSite = this.allValues.CollectionSite;
+    }
 
-    this.showDigitalSignature = this.coreService.EnableDigitalSignatureInLabReport();
-    this.hospitalCode = this.coreService.GetHospitalCode();
     if (!this.hospitalCode) {
       this.hospitalCode = "default-lab-report";
     }
-    this.showIntermediateInCultureRpt = this.coreService.ShowIntermediateResultOfCulture();
-    this.showHideHighLowNormalFlag = this.coreService.ShowHideAbnormalFlag();
+
+    if (!this.hospitalCode) {
+      this.hospitalCode = "default-lab-report";
+    }
+
+    var coreParam = this.coreService.Parameters.find(
+      (a) =>
+        a.ParameterGroupName.toLowerCase() == "lab" &&
+        a.ParameterName == "LabReportDisplaySettings"
+    );
+    var paramValue = JSON.parse(coreParam.ParameterValue);
+    this.allowLabNoChange = paramValue.ShowChangeLabNumber;
+    this.allowReferredByChange = paramValue.ShowChangeRefferedBy;
+    if (this.labService.routeNameAfterverification) {
+      if (
+        this.labService.routeNameAfterverification.toLowerCase() == "addresult"
+      ) {
+        this.routeAfterVerification = "PendingLabResults";
+      } else if (
+        this.labService.routeNameAfterverification.toLowerCase() ==
+        "finalreports"
+      ) {
+        this.routeAfterVerification = "FinalReports";
+      } else if (
+        this.labService.routeNameAfterverification.toLowerCase() ==
+        "pendingreports"
+      ) {
+        this.routeAfterVerification = "PendingReports";
+      }
+    }
   }
 
   ngOnInit() {
     //if (this.verificationRequired) {
     //  this.reportBg = true;
     //} else { this.reportBg = false; }
+  }
+
+  ngAfterViewInit() {
+    this.changeDetector.detectChanges();
+    let btnObj = document.getElementById("btnUpdateSignatories");
+    if (btnObj) {
+      btnObj.focus();
+    }
   }
 
   ngAfterViewChecked() {
@@ -186,6 +255,8 @@ export class LabTestsViewReportComponent {
     this.isCultureRptLoaded = true; //reset value at beginning: sud: 3sept'18
 
     if (_templateReport) {
+      this.qrCode = _templateReport.CovidFileUrl;
+      this.hasInsurance = _templateReport.HasInsurance;
       _templateReport.VerifiedByList = [];
       if (_templateReport.Lookups.VisitType.toLowerCase() == "outpatient") {
         _templateReport.Lookups.VisitTypeCode = "OP";
@@ -222,10 +293,6 @@ export class LabTestsViewReportComponent {
               ) {
                 _templateReport.VerifiedByList.push(test.VerifiedBy);
               }
-
-              if (test.HasInsurance) {
-                this.hasInsurance = test.HasInsurance;
-              }
               test["Print"] = true;
               test["PrintInterpretation"] = false;
               this.requisitionIdList.push(test.RequisitionId);
@@ -259,6 +326,9 @@ export class LabTestsViewReportComponent {
               if (temp.TemplateColumns[col]) {
                 temp.ColCount = temp.ColCount + 1;
               }
+              if(!temp.TemplateColumns.Method){
+                temp.ColCount = temp.ColCount +1;
+              }
             }
 
             if (
@@ -284,9 +354,11 @@ export class LabTestsViewReportComponent {
       this.templateReport = _templateReport;
       if (!this.templateReport.Signatories) {
         if (this.templateReport.TemplateType == "html") {
-          this.defaultSigEmpIdList = this.coreService.GetDefaultHistoCytoEmpIdForLabSignatories();
+          this.defaultSigEmpIdList =
+            this.coreService.GetDefaultHistoCytoEmpIdForLabSignatories();
         } else {
-          this.defaultSigEmpIdList = this.coreService.GetDefaultEmpIdForLabSignatories();
+          this.defaultSigEmpIdList =
+            this.coreService.GetDefaultEmpIdForLabSignatories();
           //let id = 1;
         }
       }
@@ -390,10 +462,22 @@ export class LabTestsViewReportComponent {
         }
       });
 
+
+      if (this.templateReport.ReportId) {
+        if (this.verificationRequired) {
+          this.coreService.FocusInputById('btnVerify');
+        } else {
+          if (this.templateReport.ValidToPrint) {
+            this.coreService.FocusInputById('btnPrint');
+          }
+        }
+      }
+
       this.signatories = JSON.stringify(signArr);
       this.templateReport.Signatories = signArr;
     } else {
       this.showSignatoriesEdit = true;
+      this.coreService.FocusInputById('btnUpdateSignatories');
     }
   }
 
@@ -483,9 +567,10 @@ export class LabTestsViewReportComponent {
       rcvDates.push(new Date(this.templateReport.Lookups.SampleDate));
       //let rcvDates = this.templateReport.Results.map(a => new Date());
 
-      this.templateReport.Lookups.ReceivingDate = labReport.ReceivingDate = moment(
-        new Date(Math.min.apply(null, rcvDates))
-      ).format("YYYY-MM-DD HH:mm");
+      this.templateReport.Lookups.ReceivingDate = labReport.ReceivingDate =
+        moment(new Date(Math.min.apply(null, rcvDates))).format(
+          "YYYY-MM-DD HH:mm"
+        );
       //ashim: 06Sep2018 : We're now using DateTime.Now for ReportingDate. It is handled in server side.
       //this.templateReport.Lookups.ReportingDate = labReport.ReportingDate = moment(new Date(Math.max.apply(null, reportDates))).format('YYYY-MM-DD HH:mm');
 
@@ -526,11 +611,15 @@ export class LabTestsViewReportComponent {
         if (res.Status == "OK") {
           this.templateReport.ReportId = res.Results.LabReportId;
           this.templateReport.ValidToPrint = res.Results.ValidToPrint;
+          this.qrCode = this.templateReport.CovidFileUrl =
+            res.Results.CovidFileUrl;
           this.ParseSignatories(labReport.Signatories);
 
           if (this.verificationEnabled) {
             this.router.navigate(["/Lab/PendingReports"]);
           }
+
+          this.callBackToReportAddUpdate.emit({ added: true });
 
           if (exportType == "print") this.printLabReport();
           else if (exportType == "word") this.exportToWord();
@@ -573,6 +662,7 @@ export class LabTestsViewReportComponent {
       this.labBLService.PutLabReport(labReport).subscribe((res) => {
         if (res.Status == "OK") {
           this.ParseSignatories(labReport.Signatories);
+          this.callBackToReportAddUpdate.emit({ added: true });
           this.loading = false;
         } else {
           this.msgBoxServ.showMessage("failed", ["Unable to post Report."]);
@@ -685,16 +775,17 @@ export class LabTestsViewReportComponent {
       `<link rel="stylesheet" type="text/css" href="../../../../../../themes/theme-default/DanpheStyle.css" />` +
       `<link rel="stylesheet" type="text/css" href="../../../../../../themes/theme-default/DanphePrintStyle.css" /></head>`;
 
-    /// documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-    ///Sud:22Aug'18--added no-print class in below documeentContent
-
     documentContent +=
-      '<body class="lab-rpt4moz" onload="window.print()">' +
-      printContents +
-      "</body></html>";
+      '<body class="lab-rpt4moz">' + printContents + "</body></html>";
     popupWinindow.document.write(documentContent);
     document.getElementById("lab-report-main").style.border = "1px solid";
     popupWinindow.document.close();
+
+    let tmr = setTimeout(function () {
+      popupWinindow.print();
+      popupWinindow.close();
+    }, 300);
+
     if (this.printDirectlyFromGrid) {
       this.printDirectlyFromGrid = false;
       this.callbackAddUpdate.emit({
@@ -1026,7 +1117,8 @@ export class LabTestsViewReportComponent {
           this.sampleCode.RunNumber,
           this.visitType,
           this.sampleCode.SampleCreatedOn,
-          this.RunNumberType
+          this.RunNumberType,
+          true
         )
         .subscribe((res) => {
           if (res.Status == "OK" && res.Results) {
@@ -1057,7 +1149,7 @@ export class LabTestsViewReportComponent {
         //if user don't change sample code or date and press OK
         if (
           this.sampleCode.RunNumber ==
-            Number(this.templateReport.Lookups.SampleCode) &&
+          Number(this.templateReport.Lookups.SampleCode) &&
           checkToday == 0
         ) {
           this.showChangeSample = false;
@@ -1091,10 +1183,12 @@ export class LabTestsViewReportComponent {
           this.msgBoxServ.showMessage("success", [
             "Sample code updated successfully.",
           ]);
-          this.templateReport.Lookups.SampleCode = this.sampleCode.RunNumber.toString();
+          this.templateReport.Lookups.SampleCode =
+            this.sampleCode.RunNumber.toString();
           this.templateReport.Lookups.SampleCodeFormatted =
             res.Results.FormattedSampleCode;
-          this.templateReport.Lookups.SampleDate = this.sampleCode.SampleCreatedOn;
+          this.templateReport.Lookups.SampleDate =
+            this.sampleCode.SampleCreatedOn;
           this.showChangeSample = false;
           this.showConfirmationBox = false;
         } else {
@@ -1135,7 +1229,7 @@ export class LabTestsViewReportComponent {
     }
   }
 
-  ShowHideInterpretationToPrint(test: LabResult_TestVM) {}
+  ShowHideInterpretationToPrint(test: LabResult_TestVM) { }
 
   Verify() {
     this.templateReport.Templates.forEach((val) => {
@@ -1160,9 +1254,10 @@ export class LabTestsViewReportComponent {
       let rcvDates = [];
       rcvDates.push(new Date(this.templateReport.Lookups.SampleDate));
 
-      this.templateReport.Lookups.ReceivingDate = labReport.ReceivingDate = moment(
-        new Date(Math.min.apply(null, rcvDates))
-      ).format("YYYY-MM-DD HH:mm");
+      this.templateReport.Lookups.ReceivingDate = labReport.ReceivingDate =
+        moment(new Date(Math.min.apply(null, rcvDates))).format(
+          "YYYY-MM-DD HH:mm"
+        );
       this.signatories = JSON.stringify(this.templateReport.Signatories);
 
       if (this.showLoggedInUserSignatory) {
@@ -1189,8 +1284,17 @@ export class LabTestsViewReportComponent {
 
       this.labBLService.VerifyAllLabTests(labReport).subscribe((res) => {
         if (res.Status == "OK") {
+          if (
+            this.routeAfterVerification &&
+            this.routeAfterVerification.trim() &&
+            this.routeAfterVerification.trim().length > 0
+          ) {
+            let route = "/Lab/" + this.routeAfterVerification;
+            this.loading = false;
+            this.router.navigate([route]);
+            return;
+          }
           this.callbackAddUpdate.emit({ verified: true });
-          this.loading = false;
         } else {
           this.msgBoxServ.showMessage("failed", [
             "Unable to Verify the report.",
@@ -1267,4 +1371,11 @@ export class LabTestsViewReportComponent {
     }
   }
   //end: Pratik: 20Sept'19--For External Referrals
+
+  public callBackUpload(){
+    this.callBackUplaod.emit();
+    setTimeout(() => {
+      this.loading = false;
+    }, 500);
+  }
 }

@@ -1,0 +1,18 @@
+<div class="wrapper">
+    <div class="margin-20-tp">
+        <a class="btn blue bordered" feature="button" (click)="ShowAddNewPage()"><i class="fa fa-plus"></i> Add New Setting</a>
+      
+        <div class="row">
+          <div class="col-md-12 col-xs-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="PrintExportConfigurationColumns" [grid-data]="configurationList" (grid-actions)="ConfigurationGridActions($event)"
+                         [show-print-button]="false">
+            </danphe-grid>
+          </div>
+        </div>
+      
+        <div style="margin-top:50px;" *ngIf="showAddNewPage">
+          <add-print-export-config [config-to-edit]="configurationToEdit" (callback-add)="getDataFromAdd($event)">
+          </add-print-export-config>
+        </div>
+      </div>
+</div>

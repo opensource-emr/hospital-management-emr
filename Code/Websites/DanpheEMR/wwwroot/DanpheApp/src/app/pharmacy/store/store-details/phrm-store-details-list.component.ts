@@ -6,59 +6,73 @@ import { PharmacyService } from "../../shared/pharmacy.service"
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service"
 import { Router } from '@angular/router';
 import { PHRMStoreStockModel } from "../../shared/phrm-storestock.model";
-import { PHRMDispensaryModel } from "../../shared/phrm-dispensary.model";
 import { IMRPUpdatedStock } from "../../setting/mrp/phrm-update-mrp.component";
 import { ENUM_StockLocations } from "../../../shared/shared-enums";
 import { SecurityService } from "../../../security/shared/security.service";
 import { PHRMUpdatedStockVM } from "../../setting/expiry-batch/phrm-update-exp-batch.component ";
-import { invalid } from "@angular/compiler/src/render3/view/util";
+import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
+import { PHRMStoreModel } from "../../shared/phrm-store.model";
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
+import * as moment from "moment";
 @Component({
   selector: 'store-details-list',
-  templateUrl: "./phrm-store-details-list.html"
+  templateUrl: "./phrm-store-details-list.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PHRMStoreDetailsListComponent {
 
   public stockDetailsGridColumns: Array<any> = null;
-  public stockDetailsList: Array<any> = new Array<any>();
+  public stockList: Array<any> = new Array<any>();
   loading: boolean = false;
-  public newstockDetailsList: Array<any> = new Array<any>();
+  public stockListCopy: Array<any> = new Array<any>();
   public stockDetailList: Array<any> = new Array<any>();
   public rowIndex: number = null;
   public showStockList: boolean = true;
   public selectedItem: PHRMStoreStockModel = new PHRMStoreStockModel();
   public Status: string = "";
-  public goodReceiptId:any;
+  public goodReceiptId: any;
   public showTransferPage: boolean = false;
 
-  public dispensaryList: Array<any> = new Array<any>();
-  public currentDispensary: PHRMDispensaryModel = new PHRMDispensaryModel();
+  public storeList: Array<any> = new Array<any>();
+  public currentDispensary: PHRMStoreModel = new PHRMStoreModel();
   public showUpdateMRPPopUpBox: boolean = false;
   public showUpdateExpBatchPopUpBox: boolean = false;
   public selectedStockForMRPUpdate: IMRPUpdatedStock;
   public selectedStockForExpBatchUpdate: PHRMUpdatedStockVM;
-  public ZeroAvlQty:any;
+  public showStockWithZeroQty: boolean = false;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public selectedStoreId: number = null;
+  selectedStockBarcodeNumber: number;
+  showBarcodePopUp: boolean;
+  printDetaiils: HTMLElement;
+  showPrint: boolean;
   constructor(
     public pharmacyBLService: PharmacyBLService, public pharmacyService: PharmacyService,
     public changeDetector: ChangeDetectorRef, public router: Router,
-    public msgBoxServ: MessageboxService,
+    public msgBoxServ: MessageboxService, public dispensaryService: DispensaryService,
     public securityService: SecurityService) {
     this.GetStockDetailsList();
-    this.GetDispensaryList();
+    this.GetPharmacyStores();
   }
+  ngOnInit() {
+    var phrmGridColumns = new PHRMGridColumns(this.securityService);
+    this.stockDetailsGridColumns = phrmGridColumns.StoreStockDetailList;
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('ExpiryDate', false)]); 
+  }
+  gridExportOptions = {
+    fileName: 'PharmacyStocksReport_' + moment().format('YYYY-MM-DD') + '.xls',
+  };
   // GET: Stock Details with 0, null or > 0 Quantity
   //this stock details with all unique (by ItemId,ExpiryDate,BatchNo)  records with sum of Quantity
   //items with 0 quantity or more than 0 showing in list    
   //get all items list with 0 or more than 0 stock qty for manage stock items
   GetStockDetailsList() {
-    this.pharmacyBLService.GetStoreRequestedItemList(this.Status)
+    this.pharmacyBLService.GetMainStoreStock(true)
       .subscribe(res => {
-        if (res.Status == 'OK' && res.Results.length > 0) {
-          var phrmGridColumns = new PHRMGridColumns(this.securityService);
-          this.stockDetailsGridColumns = phrmGridColumns.StoreRequestItemsList;
-          this.stockDetailsList = res.Results;
-          this.newstockDetailsList = this.stockDetailsList;
-          this.stockDetailList  =  this.stockDetailsList;
-          this.stockDetailsList = this.stockDetailsList.filter(a=>a.AvailableQty > 0)
+        if (res.Status == 'OK') {
+          this.stockList = res.Results;
+          this.stockListCopy = this.stockList;
+          this.FilterStockList();
 
         }
         if (res.Status == 'OK' && res.Results.length == 0) {
@@ -67,36 +81,33 @@ export class PHRMStoreDetailsListComponent {
       });
   }
   //get all the available Dispensary
-  GetDispensaryList() {
-    this.pharmacyBLService.GetDispensaryList()
+  GetPharmacyStores() {
+    this.dispensaryService.GetAllPharmacyStores()
       .subscribe(res => {
         if (res.Status == 'OK' && res.Results.length > 0) {
-          this.dispensaryList = res.Results;
-          this.dispensaryList = this.dispensaryList.filter(a => a.IsActive == true);
+          this.storeList = res.Results;
         }
         if (res.Status == 'OK' && res.Results.length == 0) {
-          this.msgBoxServ.showMessage("Error", ["Dispensary is not available."]);
+          this.msgBoxServ.showMessage("Error", ["Stores are not available."]);
         }
       });
   }
 
   //Showing zero quantity item details
-  LoadZeroQuantity(){
-    if(this.ZeroAvlQty)
-    {
-      this.stockDetailsList  = this.newstockDetailsList.filter(a=>a.AvailableQty < 1); 
+  FilterStockList() {
+    //filter stock based on store
+    this.stockList = this.stockListCopy.filter(s => s.StoreId == this.selectedStoreId || this.selectedStoreId == null);
+    if (this.showStockWithZeroQty) {
+      this.stockList = this.stockList.filter(a => a.AvailableQuantity < 1);
     }
-    else{
-      this.stockDetailsList  = this.newstockDetailsList.filter(a=>a.AvailableQty > 0);  
-	  
-    } 
-
+    else {
+      this.stockList = this.stockList.filter(a => a.AvailableQuantity > 0);
+    }
   }
   ////Grid Action Method
   StockDetailsGridAction($event: GridEmitModel) {
     switch ($event.Action) {
       case "manage-store": {
-        // let x = $event.Action;
         this.rowIndex = $event.RowIndex;
         this.ManageStock($event.Data);
         break;
@@ -105,7 +116,7 @@ export class PHRMStoreDetailsListComponent {
         this.rowIndex = $event.RowIndex;
         this.selectedItem = Object.assign(this.selectedItem, $event.Data);
         this.showTransferPage = true;
-        this.selectedItem.Quantity = $event.Data.AvailableQty;
+        this.selectedItem.Quantity = $event.Data.AvailableQuantity;
         this.selectedItem.UpdatedQty = 0;
         this.selectedItem.ItemId = $event.Data.ItemId;
         this.selectedItem.GoodsReceiptItemId = $event.Data.GoodsReceiptItemId;
@@ -120,13 +131,17 @@ export class PHRMStoreDetailsListComponent {
       case "update-mrp": {
         this.showUpdateMRPPopUpBox = true;
         this.selectedStockForMRPUpdate = null;
-        this.selectedStockForMRPUpdate = { ItemId: $event.Data.ItemId, BatchNo: $event.Data.BatchNo, ExpiryDate: $event.Data.ExpiryDate, LocationId: ENUM_StockLocations.Store, MRP: $event.Data.MRP, GoodsReceiptItemId: $event.Data.GoodsReceiptItemId,oldMRP:$event.Data.MRP ,StoreStockId:$event.Data.StoreStockId};
+        this.selectedStockForMRPUpdate = { ItemId: $event.Data.ItemId, BatchNo: $event.Data.BatchNo, ExpiryDate: $event.Data.ExpiryDate, LocationId: ENUM_StockLocations.Store, MRP: $event.Data.MRP, GoodsReceiptItemId: $event.Data.GoodsReceiptItemId, oldMRP: $event.Data.MRP, CostPrice: $event.Data.CostPrice };
         break;
       }
       case "update-expirydate-batchno": {
         this.showUpdateExpBatchPopUpBox = true;
         this.selectedStockForExpBatchUpdate = null;
-        this.selectedStockForExpBatchUpdate = { ItemId: $event.Data.ItemId, BatchNo: $event.Data.BatchNo, ExpiryDate: $event.Data.ExpiryDate, LocationId: ENUM_StockLocations.Store, MRP: $event.Data.MRP, GoodsReceiptItemId: $event.Data.GoodsReceiptItemId, OldBatchNo: $event.Data.OldBatchNo, OldExpiryDate: $event.Data.OldExpiryDate, OldMRP: $event.Data.OldMRP };
+        this.selectedStockForExpBatchUpdate = { ItemId: $event.Data.ItemId, BatchNo: $event.Data.BatchNo, ExpiryDate: $event.Data.ExpiryDate, LocationId: ENUM_StockLocations.Store, MRP: $event.Data.MRP, GoodsReceiptItemId: $event.Data.GoodsReceiptItemId, OldBatchNo: $event.Data.OldBatchNo, OldExpiryDate: $event.Data.OldExpiryDate, OldMRP: $event.Data.OldMRP, CostPrice: $event.Data.CostPrice };
+        break;
+      }
+      case "print-barcode": {
+        this.openBarcodePopUp($event.Data.BarcodeNumber);
         break;
       }
       default:
@@ -139,7 +154,7 @@ export class PHRMStoreDetailsListComponent {
       if (data) {
         this.selectedItem = new PHRMStoreStockModel();
         this.selectedItem = Object.assign(this.selectedItem, data);
-        this.selectedItem.Quantity = data.AvailableQty;
+        this.selectedItem.Quantity = data.AvailableQuantity;
         this.selectedItem.UpdatedQty = 0;
         this.selectedItem.ItemId = data.ItemId;
         this.goodReceiptId = data.GoodReceiptId;
@@ -177,11 +192,11 @@ export class PHRMStoreDetailsListComponent {
                 if (res.Results) {
                   this.msgBoxServ.showMessage("success", ["stock adjustment saved"]);
                   this.changeDetector.detectChanges();
-                  let tempItm = this.stockDetailsList[this.rowIndex];
+                  let tempItm = this.stockList[this.rowIndex];
                   if (this.selectedItem.InOut == 'in') {
-                    this.stockDetailsList[this.rowIndex].AvailableQty = tempItm.AvailableQty + this.selectedItem.UpdatedQty;
+                    this.stockList[this.rowIndex].AvailableQuantity = tempItm.AvailableQuantity + this.selectedItem.UpdatedQty;
                   } else if (this.selectedItem.InOut == 'out') {
-                    this.stockDetailsList[this.rowIndex].AvailableQty = tempItm.AvailableQty - this.selectedItem.UpdatedQty;
+                    this.stockList[this.rowIndex].AvailableQuantity = tempItm.AvailableQuantity - this.selectedItem.UpdatedQty;
                   }
                   this.GetStockDetailsList();
                   this.Cancel();
@@ -219,14 +234,14 @@ export class PHRMStoreDetailsListComponent {
   }
   //tranfer to dispensary
   transferToDispensary() {
-    this.selectedItem.DispensaryId = this.currentDispensary.DispensaryId;
+    this.selectedItem.DispensaryId = this.currentDispensary.StoreId;
     if (this.selectedItem.UpdatedQty <= 0) {
       alert("Transfer Quantity is not valid.");
     }
     else if (this.selectedItem.UpdatedQty > this.selectedItem.Quantity) {
       alert("Transfer Quantity is greater than Available Quantity.")
     }
-   else if (this.selectedItem.StoreManageValidator.controls['UpdatedQty'].status == 'INVALID'){
+    else if (this.selectedItem.StoreManageValidator.controls['UpdatedQty'].status == 'INVALID') {
       alert("Transfer Quantity format not proper");
     }
     else {
@@ -238,10 +253,10 @@ export class PHRMStoreDetailsListComponent {
             if (res.Results) {
               this.msgBoxServ.showMessage("success", ["stock adjustment saved"]);
               this.changeDetector.detectChanges();
-              let tempItm = this.stockDetailsList[this.rowIndex];
-              this.stockDetailsList[this.rowIndex].AvailableQty = tempItm.AvailableQty - this.selectedItem.UpdatedQty;
-              //this.stockDetailsList = this.stockDetailsList.filter(a => a.AvailableQty != 0);
-              this.stockDetailsList = this.stockDetailsList.slice();
+              let tempItm = this.stockList[this.rowIndex];
+              this.stockList[this.rowIndex].AvailableQuantity = tempItm.AvailableQuantity - this.selectedItem.UpdatedQty;
+              //this.stockDetailsList = this.stockDetailsList.filter(a => a.AvailableQuantity != 0);
+              this.stockList = this.stockList.slice();
               this.GetStockDetailsList();
             }
             this.Cancel();
@@ -259,7 +274,7 @@ export class PHRMStoreDetailsListComponent {
   //close transfer page
   Close() {
     this.showTransferPage = false;
-    this.currentDispensary=null;
+    this.currentDispensary = null;
   }
 
   myDispensaryListFormatter(data: any): string {
@@ -281,9 +296,9 @@ export class PHRMStoreDetailsListComponent {
     this.showUpdateMRPPopUpBox = false;
     if ($event.event == 'update') {
       let updatedStock = $event.stock;
-      var stockInClient = this.stockDetailsList.filter(s => s.ItemId == updatedStock.ItemId && s.ExpiryDate == updatedStock.ExpiryDate && s.BatchNo == updatedStock.BatchNo);
+      var stockInClient = this.stockList.filter(s => s.ItemId == updatedStock.ItemId && s.ExpiryDate == updatedStock.ExpiryDate && s.BatchNo == updatedStock.BatchNo);
       stockInClient.forEach(stock => stock.MRP = updatedStock.MRP);
-      this.stockDetailsList = this.stockDetailsList.slice();
+      this.stockList = this.stockList.slice();
     }
 
   }
@@ -291,12 +306,48 @@ export class PHRMStoreDetailsListComponent {
     this.showUpdateExpBatchPopUpBox = false;
     if ($event.event == 'update') {
       let updatedStock = $event.stock;
-      var stockInClient = this.stockDetailsList.filter(s => s.ItemId == updatedStock.ItemId && s.ExpiryDate == updatedStock.OldExpiryDate && s.BatchNo == updatedStock.OldBatchNo);
+      var stockInClient = this.stockList.filter(s => s.ItemId == updatedStock.ItemId && s.ExpiryDate == updatedStock.OldExpiryDate && s.BatchNo == updatedStock.OldBatchNo);
       stockInClient.forEach(stock => { stock.ExpiryDate = updatedStock.ExpiryDate; stock.BatchNo = updatedStock.BatchNo });
-      this.stockDetailsList = this.stockDetailsList.slice();
-
+      this.stockList = this.stockList.slice();
     }
   }
+  OnNewStockReceive() {
+    this.GetStockDetailsList();
+  }
+
+
+  // Barcode Pop up
+  openBarcodePopUp(barcodeNumber: number) {
+    if (barcodeNumber == null) {
+      this.msgBoxServ.showMessage("Failed", ["Barcode not found for this stock."])
+      return;
+    }
+    this.selectedStockBarcodeNumber = barcodeNumber;
+    this.showBarcodePopUp = true;
+  }
+  closeBarcodePopUp() {
+    this.showBarcodePopUp = false;
+    this.selectedStockBarcodeNumber = null;
+  }
+  printBarcode() {
+    this.print("stock-barcode");
+  }
+
+  // Print Functions
+  print(idToBePrinted) {
+    this.printDetaiils = document.getElementById(idToBePrinted);
+    this.showPrint = true;
+  }
+  callBackPrint() {
+    this.printDetaiils = null;
+    this.showPrint = false;
+  }
+  public hotkeys(event) {
+    //For ESC key => close the pop up
+    if (event.keyCode == 27) {
+          this.closeBarcodePopUp();
+    }
+}
 }
 
 

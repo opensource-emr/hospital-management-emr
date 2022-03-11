@@ -15,10 +15,13 @@ export class PHRMGoodsReceiptModel {
       public GoodReceiptPrintId: number = 0;
       public PurchaseOrderId: number = 0;
       public SupplierId: number = 0;
-      public GoodReceiptDate: string = "";
+      public SupplierBillDate: string = moment().format("YYYY-MM-DD");
+      public GoodReceiptDate: string = moment().format("YYYY-MM-DD");
       public SubTotal: number = 0;
+      public TaxableSubTotal: number = 0;
+      public NonTaxableSubTotal: number = 0;
       public DiscountAmount: number = 0;
-      public DiscountPercent: number = 0;
+      public DiscountPercentage: number = 0;
       public TotalAmount: number = 0;
       public Remarks: string = "";
       public CreatedBy: number = 0;
@@ -36,21 +39,14 @@ export class PHRMGoodsReceiptModel {
       public VATAmount: number = 0;
       public FiscalYearId: number = 0;
       public CurrentFiscalYear: string = "";
-      public CancelRemarks:string="";
-      public CancelledBy:number=0;
-      public CancelledOn:string = null;
-      public CancelledByName:any;//for UI view of username who cancel gr 
+
       public UserName: any; //for UI view of username who created gr 
       public Time: any;      //for UI view of time of created gr
       public GoodReceiptValidator: FormGroup = null;
       public GoodReceiptItem: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
-
-      // Bikash: 2July'20: Dispensary info added to provide direct stock discptch to Dispensary feature.
-      public SendDirectToDispensary: boolean = false;
-      public SelectedDispensaryId: number = 0;
-
-      public IsPacking:boolean = false;
-      public IsItemDiscountApplicable:boolean = false;
+      IsPacking: boolean;
+      IsItemDiscountApplicable: boolean;
+      public PaymentStatus: string = "pending";
 
       constructor() {
             var _formBuilder = new FormBuilder();

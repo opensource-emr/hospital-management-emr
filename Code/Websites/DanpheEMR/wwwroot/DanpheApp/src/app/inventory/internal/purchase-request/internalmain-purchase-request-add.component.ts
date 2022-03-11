@@ -10,6 +10,9 @@ import { ItemModel } from "../../settings/shared/item.model";
 import { VendorsModel } from "../../settings/shared/vendors.model";
 import { CoreService } from "../../../core/shared/core.service";
 import * as moment from "moment";
+import { ENUM_GRItemCategory } from "../../../shared/shared-enums";
+import { ActivateInventoryService } from "../../../shared/activate-inventory/activate-inventory.service";
+import { ItemMaster } from "../../shared/item-master.model";
 
 
 @Component({
@@ -29,6 +32,8 @@ export class InternalMainPurchaseRequestAddComponent {
   public isEdit: boolean = false;
   public selectedVendor: any = null;
   public showAddVendorPopUp: boolean = false;
+  public PRCategories: string[] = [];
+  public ItemListFiltered: ItemModel[];
   constructor(
     public inventoryBLService: InventoryBLService,
     public messageBoxService: MessageboxService,
@@ -36,10 +41,12 @@ export class InternalMainPurchaseRequestAddComponent {
     public inventoryService: InventoryService,
     public securityService: SecurityService,
     public router: Router,
-    public coreService: CoreService
+    public coreService: CoreService,
+    private _activateInventoryService: ActivateInventoryService
   ) {
     this.LoadItemList();
     this.LoadVendorList();
+    this.LoadPRCategory();
   }
   ngOnInit() {
     if (this.inventoryService.PurchaseRequestId > 0) {
@@ -57,11 +64,24 @@ export class InternalMainPurchaseRequestAddComponent {
   LoadItemList(): void {
     this.ItemList = this.inventoryService.allItemList;
     this.ItemList = this.ItemList.filter(item => item.IsActive == true);
+    //this.FilterItemByPRCategory();
     if (this.ItemList == undefined || this.ItemList.length == 0) {
       this.messageBoxService.showMessage("failed", [
         "failed to get Item.. please check log for details."
       ]);
     }
+  }
+  OnPRCategoryChanged(indx) {
+    var selPRItem = this.currentPurchaseRequest.PurchaseRequestItems[indx];
+    selPRItem.filteredItemList = this.GetItemListByItemCategory(selPRItem.ItemCategory);
+    selPRItem.filteredItemList = selPRItem.filteredItemList.slice();
+    selPRItem.SelectedItem = new ItemModel();
+    selPRItem.PurchaseRequestItemValidator.get("ItemId").setValue("");
+    this.GoToNextInput("itemName" + indx, 100);
+  }
+  GetItemListByItemCategory(itmCategory: string) {
+    let retItemList = this.ItemList.filter(item => item.ItemType === itmCategory);
+    return retItemList;
   }
   LoadVendorList(): void {
     this.VendorList = this.inventoryService.allVendorList
@@ -192,8 +212,16 @@ export class InternalMainPurchaseRequestAddComponent {
         this.currentPurchaseRequest.PurchaseRequestItems[i].CreatedOn = moment().format("YYYY-MM-DD hh:mm:ss");
         this.currentPurchaseRequest.PurchaseRequestItems[i].VendorId = this.currentPurchaseRequest.VendorId;
         this.currentPurchaseRequest.PurchaseRequestItems[i].RequestItemStatus = "active";
+        this.currentPurchaseRequest.PurchaseRequestItems[i].ItemCategory=this.currentPurchaseRequest.PurchaseRequestItems[i].ItemCategory;
       }
 
+      if (!this._activateInventoryService.activeInventory.StoreId) {
+        this.messageBoxService.showMessage("Alert!", ["Cannot find StoreId. Please select Inventory First"])
+        return;
+      } else {
+        this.currentPurchaseRequest.StoreId = this._activateInventoryService.activeInventory.StoreId;
+        this.currentPurchaseRequest.PRGroupId = this._activateInventoryService.activeInventory.INV_PRGroupId;
+      }
 
       this.inventoryBLService.PostToPORequisition(this.currentPurchaseRequest).
         subscribe(res => {
@@ -217,9 +245,7 @@ export class InternalMainPurchaseRequestAddComponent {
             this.messageBoxService.showMessage("failed", ['failed to add Purchase Order Requisition.. please check log for details.']);
           }
         });
-    }
-    else {
-      this.messageBoxService.showMessage("Notice-Message", ["Please check all the fields."])
+
     }
   }
   UpdatePORequisition() {
@@ -255,6 +281,12 @@ export class InternalMainPurchaseRequestAddComponent {
       this.currentPurchaseRequest.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.currentPurchaseRequest.ModifiedOn = moment().format("YYYY-MM-DD");
 
+      if (!this._activateInventoryService.activeInventory.StoreId) {
+        this.messageBoxService.showMessage("Alert!", ["Cannot find StoreId. Please select Inventory First"])
+        return;
+      } else {
+        this.currentPurchaseRequest.StoreId = this._activateInventoryService.activeInventory.StoreId;
+      }
 
       this.inventoryBLService.UpdatePORequisition(this.currentPurchaseRequest).
         subscribe(res => {
@@ -279,6 +311,18 @@ export class InternalMainPurchaseRequestAddComponent {
 
     }
   }
+  OnItemSelected(Item: any) {
+    this.inventoryBLService.GetAvailableQuantityByItemId(Item.ItemId)
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          Item.AvailableStock = res.Results;
+        }
+        else {
+          console.log("Failed to get available Quantity.");
+          Item.AvailableStock = 0;
+        }
+      })
+  }
   //add a new row 
   AddRowRequest() {
     //checking the validation
@@ -293,6 +337,8 @@ export class InternalMainPurchaseRequestAddComponent {
     //if (this.currentPOItem.ItemId != 0 && this.currentPOItem.ItemId != null) {
     this.rowCount++;
     this.currentPurchaseRequestItems = new PurchaseRequestItemModel();
+    this.currentPurchaseRequestItems.ItemCategory = ENUM_GRItemCategory.Consumables;//sud:18Sep'21 : By default category=consumables.
+    this.currentPurchaseRequestItems.filteredItemList = this.GetItemListByItemCategory(this.currentPurchaseRequestItems.ItemCategory);//load item list for 1st row based on itemcategory.
     this.currentPurchaseRequestItems.RequestedQuantity = 1;
     this.currentPurchaseRequest.PurchaseRequestItems.push(this.currentPurchaseRequestItems);
 
@@ -356,9 +402,14 @@ export class InternalMainPurchaseRequestAddComponent {
     var item = $event.item;
     this.ItemList.push(item);
     this.currentPurchaseRequestItems = new PurchaseRequestItemModel();
-    this.currentPurchaseRequestItems.RequestedQuantity = 1;
-    this.currentPurchaseRequest.PurchaseRequestItems.splice(this.index, 1, this.currentPurchaseRequestItems);
-    this.currentPurchaseRequest.PurchaseRequestItems[this.index].SelectedItem = item;
+    if (this.currentPurchaseRequest.PRCategory == item.ItemType) {
+      this.currentPurchaseRequestItems.RequestedQuantity = 1;
+      this.currentPurchaseRequest.PurchaseRequestItems.splice(this.index, 1, this.currentPurchaseRequestItems);
+      this.currentPurchaseRequest.PurchaseRequestItems[this.index].SelectedItem = item;
+    }
+    else {
+      this.messageBoxService.showMessage("Warning", [`${item.ItemName} is added with Category as ${item.ItemType}.`, `Item will not be seen in PO with Category as ${this.currentPurchaseRequest.PRCategory}.`])
+    }
   }
   //for vendor add popup
   AddVendorPopUp() {
@@ -373,11 +424,33 @@ export class InternalMainPurchaseRequestAddComponent {
     this.VendorList.slice();
     this.selectedVendor = newVendor;
   }
-  GoToNextInput(idToSelect: string) {
-    if (document.getElementById(idToSelect)) {
-      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
-      nextEl.focus();
-      nextEl.select();
+  GoToNextInput(id: string, focusDelayInMs: number = 0) {
+    var Timer = setTimeout(() => {
+      if (document.getElementById(id)) {
+        let nextEl = <HTMLInputElement>document.getElementById(id);
+        nextEl.focus();
+        nextEl.select();
+        clearTimeout(Timer);
+      }
+    }, focusDelayInMs)
+  }
+
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    if (this.isEdit) {
+      if (targetId == "RequestPORequisition") {
+        targetId = 'UpdatePORequisition';
+      }
     }
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
+
+  public LoadPRCategory() {
+    this.PRCategories = Object.values(ENUM_GRItemCategory).filter(p => isNaN(p as any));
   }
 }

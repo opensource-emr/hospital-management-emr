@@ -1,23 +1,5 @@
-<!--<style>
-  .headin-left {
-    position: relative;
-    display: table;
-    content: '';
-  }
-
-    .headin-left:after {
-      position: absolute;
-      left: 7px;
-      top: -14px;
-      content: 'Visit Information';
-      font-weight: 700;
-      color: #006687;
-      background: #fff;
-      padding: 0px 5px;
-      line-height: 24px;
-    }
-</style>-->
-<div class="headin-left" style="width:100%;border: 1px solid #96969a;margin-top: 20px; margin-bottom:5px; border-radius: 2px !important;padding: 20px 0px 10px;">
+<div class="headin-left"
+  style="width:100%;border: 1px solid #96969a;margin-top: 20px; margin-bottom:5px; border-radius: 2px !important;padding: 20px 0px 10px;">
   <h3 class="visit-head"><i class="fa fa-calendar"></i>Visit Information</h3>
   <div class="col-md-12">
     <form [formGroup]="visit.VisitValidator" class="form-horizontal">
@@ -26,90 +8,69 @@
           <div>
             <div class="col-md-6">
               <div class="form-group">
-                <label class="control-label col-md-4">Department<sup class="color-red">  *</sup></label>
+                <label class="control-label col-md-4">Department<sup class="color-red"> *</sup></label>
                 <div class="col-md-8">
-                  <input class="form-control" danphe-auto-complete
-                         [ngClass]="!visit.IsValidSelDepartment? 'bg-on' : 'bg-off'"
-                         [(ngModel)]="selectedDepartment"
-                         [list-formatter]="myDepartmentListFormatter"
-                         [source]="departmentList"
-                         formControlName="Department"
-                         placeholder="Department Name"
-                         display-property-name="DepartmentName"
-                         onClick="this.select();"
-                         (focusout)="AssignSelectedDepartment()"
-                         match-formatted="true"
-                         [grid-sort]="'DepartmentName'"
-                         max-num-list="10" />
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')" [hidden]="visit.IsValidCheck('Department','required')">Department is mandatory.</span>
-                  <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelDepartment" [hidden]="!visit.IsValidCheck('Department','required')">Select Department from the list.</span>
+                  <input id="txtDepartment" class="form-control" danphe-auto-complete
+                    [ngClass]="!visit.IsValidSelDepartment? 'bg-on' : 'bg-off'" [(ngModel)]="selectedDepartment"
+                    [list-formatter]="myDepartmentListFormatter" [source]="departmentList" formControlName="Department"
+                    placeholder="Department Name" display-property-name="DepartmentName" onClick="this.select();"
+                    (focusout)="AssignSelectedDepartment()" match-formatted="true" [grid-sort]="'DepartmentName'"
+                    max-num-list="10" [min-chars]="1" (keyup.enter)="enterFromDepartment()" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')"
+                    [hidden]="visit.IsValidCheck('Department','required')">Department is mandatory.</span>
+                  <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelDepartment"
+                    [hidden]="!visit.IsValidCheck('Department','required')">Select Department from the list.</span>
                 </div>
               </div>
 
-              <div class="form-group">
-                <label class="control-label col-md-4">Doctor<sup class="color-red" *ngIf="showDocMandatory"> *</sup></label>
+              <div class="form-group" *ngIf="showDocMandatory">
+                <label class="control-label col-md-4">Doctor<sup class="color-red" *ngIf="showDocMandatory">
+                    *</sup></label>
                 <div class="col-md-8">
-                  <input class="form-control" danphe-auto-complete
-                         [ngClass]="!visit.IsValidSelProvider? 'bg-on' : 'bg-off'"
-                         formControlName="Doctor"
-                         [(ngModel)]="selectedDoctor"
-                         [list-formatter]="DocListFormatter"
-                         [source]="filteredDocList"
-                         placeholder="Doctor's Name"
-                         display-property-name="ProviderName"
-                         (focusout)="AssignSelectedDoctor()"
-                         onClick="this.select();"
-                         max-num-list="10" />
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')" [hidden]="visit.IsValidCheck('Doctor','required')">Doctor is mandatory.</span>
-                  <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelProvider" [hidden]="!visit.IsValidCheck('Doctor','required')">Select doctor from the list.</span>
+                  <input class="form-control" id="doctorName" danphe-auto-complete
+                    [ngClass]="!visit.IsValidSelProvider? 'bg-on' : 'bg-off'" formControlName="Doctor"
+                    [(ngModel)]="selectedDoctor" [list-formatter]="DocListFormatter" [source]="filteredDocList"
+                    placeholder="Doctor's Name" display-property-name="ProviderName" (focusout)="AssignSelectedDoctor()"
+                    onClick="this.select();" max-num-list="10"
+                    (keyup.enter)="enterFromDoctor()"/>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')"
+                    [hidden]="visit.IsValidCheck('Doctor','required')">Doctor is mandatory.</span>
+                  <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelProvider"
+                    [hidden]="!visit.IsValidCheck('Doctor','required')">Select doctor from the list.</span>
                 </div>
               </div>
-              <div class="form-group">
-                <label class="control-label col-md-4">Reason</label>
-                <div class="col-md-8">
-                  <select class="form-control" [(ngModel)]="visit.Comments" [ngModelOptions]="{standalone: true}" placeholder="Comments">
-                    <option value="Surgery">Surgery</option>
-                    <option value="Normal Checkup">Normal Checkup</option>
-                    <option value="Head Ache">Headache</option>
-                    <option value="Sore Throat">Sore Throat</option>
-                    <option value="Stomach Pain">Stomach Pain</option>
-                    <option value="Others">Others</option>
-                  </select>
-                </div>
-              </div>
+
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label class="control-label col-md-4">Visit Date<sup class="color-red">  *</sup></label>
+                <label class="control-label col-md-4">Visit Date<sup class="color-red"> *</sup></label>
                 <div class="col-md-8">
-                  <input id="appdate" class="form-control" type="date" name="" value=""
-                         [(ngModel)]="visit.VisitDate"
-                         formControlName="VisitDate" />
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')" [hidden]="visit.IsValidCheck('VisitDate','required')">  Date is required.</span>
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')" [hidden]="visit.IsValidCheck('VisitDate','invalidDate')"> Enter Valid Date.</span>
+                  <input id="appdate" class="form-control" type="date" name="" value="" [(ngModel)]="visit.VisitDate"
+                    formControlName="VisitDate" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','required')"> Date is required.</span>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','invalidDate')"> Enter Valid Date.</span>
                 </div>
               </div>
               <div class="form-group">
                 <label class="control-label col-md-4">Visit Time</label>
                 <div class="col-md-8">
-                  <input class="form-control" type="time" name="" value=""
-                         [(ngModel)]="visit.VisitTime"
-                         formControlName="VisitTime" />
-                  <!-- <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidCheck('VisitTime','required')">  Time is required.</span>
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidCheck('VisitTime','invalidTime')"> Enter Valid Time.</span> -->
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidCheck('VisitTime','required')">  Time is required.</span>
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidDateTime('invalidDateTime')"> Enter Valid Time.</span>
+                  <input class="form-control" type="time" name="" value="" [(ngModel)]="visit.VisitTime"
+                    formControlName="VisitTime" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidCheck('VisitTime','required')"> Time is required.</span>
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidDateTime('invalidDateTime')"> Enter Valid Time.</span>
                 </div>
               </div>
               <div class="form-group" *ngIf="isInsuranceBilling">
-                <label class="control-label col-md-4">Claim code<sup class="color-red">  *</sup></label>
+                <label class="control-label col-md-4">Claim code<sup class="color-red"> *</sup></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text" name="" value=""
-                         [(ngModel)]="visit.ClaimCode"
-                         formControlName="ClaimCode" />
-                  <!-- <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidCheck('VisitTime','required')">  Time is required.</span>
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')" [hidden]="visit.IsValidCheck('VisitTime','invalidTime')"> Enter Valid Time.</span> -->
-                  <span class="color-red font-sm" *ngIf="visit.IsDirty('ClaimCode')" [hidden]="visit.IsValidCheck('ClaimCode','required')">  Claim code is required.</span>
+                  <input class="form-control" type="text" name="" value="" [(ngModel)]="visit.ClaimCode"
+                    formControlName="ClaimCode" />
+                  <span class="color-red font-sm" *ngIf="visit.IsDirty('ClaimCode')"
+                    [hidden]="visit.IsValidCheck('ClaimCode','required')"> Claim code is required.</span>
 
                 </div>
               </div>
@@ -118,7 +79,7 @@
         </div>
       </div>
 
-      <div class="row community-card no-margin no-padding">
+      <!-- <div class="row community-card no-margin no-padding">
         <div class="col-md-12">          
             <div class="form-group ">
               <label class="control-label col-md-2">Referred By</label>
@@ -129,7 +90,7 @@
               </div>
             </div>          
         </div>
-      </div>
+      </div> -->
     </form>
   </div>
 </div>

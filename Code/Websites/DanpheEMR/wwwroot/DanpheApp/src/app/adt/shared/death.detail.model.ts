@@ -1,20 +1,18 @@
 import {
-  NgForm,
   FormGroup,
-  FormControl,
   Validators,
   FormBuilder,
-  ReactiveFormsModule
 } from '@angular/forms';
+import * as moment from 'moment';
 
 export class DeathDetails {
   public DeathId: number = 0;
-  public PatientId: number = null;
-  public MedicalRecordId: number = null;
-  public PatientVisitId: number = null;
-  public DeathDate: string = null;
-  public DeathTime: string = null;
-  public CertificateNumber: string = null;
+  public PatientId: number;
+  public MedicalRecordId: number;
+  public PatientVisitId: number = 0;
+  public DeathDate: string = moment().format("YYYY-MM-DD");
+  public DeathTime: string = moment().format("HH:mm");
+  public CertificateNumber: string;
   public FiscalYear: string = null;
   public CreatedBy: number = null;
   public ModifiedBy: number = null;
@@ -48,8 +46,9 @@ export class DeathDetails {
   constructor() {
     var _formBuilder = new FormBuilder();
     this.DeathDetailsValidator = _formBuilder.group({
-      'DeathDate': ['', Validators.compose([Validators.required])],
-      'DeathTime': ['', Validators.compose([Validators.required])]
+      // 'CertificateNumber': ['', Validators.compose([Validators.required])],
+      'DeathDate': [this.DeathDate, Validators.compose([Validators.required])],
+      'DeathTime': [this.DeathTime, Validators.compose([Validators.required,Validators.pattern['']])]
     });
   }
 

@@ -63,7 +63,13 @@ export class LedgerModel {
 
   public OrganizationName :string = "";
   public OrganizationId:number = null;
+  public ServiceDepartmentName :string = "";
+  public ServiceDepartmentId:number = null;
+  public ItemId:number = null;
+  public ItemName :string = "";
   public IsMapLedger: boolean;
+  public COAId:number=null;
+  public selectedLedger:any=null;
   constructor() {
 
     var _formBuilder = new FormBuilder();

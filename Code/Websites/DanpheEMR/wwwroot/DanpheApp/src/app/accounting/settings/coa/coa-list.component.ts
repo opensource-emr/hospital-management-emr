@@ -4,6 +4,7 @@ import GridColumnSettings from "../../../shared/danphe-grid/grid-column-settings
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { AccountingSettingsBLService } from "../shared/accounting-settings.bl.service";
 import { ChartofAccountModel } from "../shared/chart-of-account.model";
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
     templateUrl: './coa-list.html'
@@ -24,36 +25,24 @@ export class COAListComponent {
     public update: boolean = false;
 
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
-        public msgBox: MessageboxService) {
+        public msgBox: MessageboxService,public accountingService: AccountingService) {
         this.coaGridColumns = GridColumnSettings.coaList;
         this.getPrimaryGroupList();
         this.getCoaList();
     }
 
     public getCoaList() {
-        this.accountingSettingsBLService.GetChartofAccount()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.coaList = res.Results;
-                    this.showcoaList = true;
-                }
-                else {
-                    this.msgBox.showMessage('Error', res.ErrorMessage);
-                }
-
-            });
+        if (!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+            this.coaList = this.accountingService.accCacheData.COA; //mumbai-team-june2021-danphe-accounting-cache-change
+            this.coaList = this.coaList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+            this.showcoaList = true;
+        }
     }
     public getPrimaryGroupList() {
-        this.accountingSettingsBLService.getPrimaryGroupList()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.primaryGroupList = res.Results;
-                }
-                else {
-                    this.msgBox.showMessage('Error', res.ErrorMessage);
-                }
-
-            });
+            if (this.accountingService.accCacheData.PrimaryGroup && this.accountingService.accCacheData.PrimaryGroup.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+                this.primaryGroupList = this.accountingService.accCacheData.PrimaryGroup;//mumbai-team-june2021-danphe-accounting-cache-change
+                this.primaryGroupList = this.primaryGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        }
     }
     COAGridActions($event: GridEmitModel) {
 
@@ -100,6 +89,7 @@ export class COAListComponent {
                 .subscribe(
                     res => {
                         if (res.Status == "OK") {
+                            this.accountingService.accCacheData.COA.push(res.Results); //mumbai-team-june2021-danphe-accounting-cache-change
                             this.getCoaList();
                             this.showMessageBox("success", "COA Added");
                             this.coaObj = new ChartofAccountModel();
@@ -138,6 +128,10 @@ export class COAListComponent {
             this.accountingSettingsBLService.UpdateCOA(this.coaObj)
                 .subscribe(
                     res => {
+                        // remove the element which was edited
+                        let index = this.accountingService.accCacheData.COA.findIndex(x => x.ChartOfAccountId == this.coaObj.ChartOfAccountId)//mumbai-team-june2021-danphe-accounting-cache-change    
+                        this.accountingService.accCacheData.COA.splice(index,1); //mumbai-team-june2021-danphe-accounting-cache-change    
+                        this.accountingService.accCacheData.COA.push(res.Results); //mumbai-team-june2021-danphe-accounting-cache-change
                         this.getCoaList();
                         this.showMessageBox("success", "COA Updated");
                         this.coaObj = new ChartofAccountModel();

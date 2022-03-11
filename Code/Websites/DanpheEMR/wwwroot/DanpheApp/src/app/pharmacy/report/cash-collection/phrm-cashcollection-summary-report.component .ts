@@ -21,7 +21,7 @@ export class PHRMCashCollectionSummaryReportComponent
     PHRMUserReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-    
+    public pharmacy:string = "pharmacy";
 
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
       this.PHRMUserReportColumn = PHRMReportsGridColumns.PHRMCashCollectionSummaryReport;

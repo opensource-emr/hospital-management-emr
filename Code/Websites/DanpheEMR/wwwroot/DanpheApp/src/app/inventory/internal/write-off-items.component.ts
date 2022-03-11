@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core'
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core'
 import { RouterOutlet, RouterModule, Router } from '@angular/router'
 
 import { RouteFromService } from "../../shared/routefrom.service"
@@ -10,10 +10,11 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { WriteOffItems } from "../shared/write-off-items.model"
 import { ItemMaster } from "../shared/item-master.model"
 import * as moment from 'moment/moment';
+import { ActivateInventoryService } from '../../shared/activate-inventory/activate-inventory.service';
 
 @Component({
 
-  templateUrl: "../../view/inventory-view/WriteOffItems.html" // "/InventoryView/WriteOffItems"
+  templateUrl: "write-off-items.component.html"
 
 })
 export class WriteOffItemsComponent {
@@ -30,18 +31,22 @@ export class WriteOffItemsComponent {
   public ItemList: any;
 
   public checkIsItemPresent: boolean = false;
+  StoreId: number;
 
 
   constructor(public changeDetectorRef: ChangeDetectorRef, public InventoryBLService: InventoryBLService,
     public router: Router,
-    public securityService: SecurityService, public messageBoxService: MessageboxService, ) {
+    public securityService: SecurityService, 
+    public messageBoxService: MessageboxService, 
+    private _activateInventoryService: ActivateInventoryService) {
     //Create one empty record first time
     this.WOItems.push(this.currentWriteOffItem);
+    this.StoreId = this._activateInventoryService.activeInventory.StoreId;
     this.LoadItemList();
   }
   //to load the item in the start
   LoadItemList(): void {
-    this.InventoryBLService.GetAvailableQtyItemList()
+    this.InventoryBLService.GetAvailableQtyItemList(this.StoreId)
       .subscribe(res => this.CallBackAvailableQtyItemList(res));
   }
   //Load all Items which has Available Qty > 0
@@ -51,10 +56,11 @@ export class WriteOffItemsComponent {
       if (res && res.Results) {
         res.Results.forEach(a => {
           this.ItemList.push({
-            "ItemId": a.ItemId, "ItemName": a.ItemName, VAT: a.VAT, Rate: a.Rate,"Code":a.Code
+            "ItemId": a.ItemId, "ItemName": a.ItemName, VAT: a.VAT, Rate: a.Rate,"Code":a.Code,"AvailableQuantity":a.AvailableQuantity
           });
         });
       }
+      this.setFocusById('itemName0');
     }
     else {
       err => {
@@ -65,16 +71,17 @@ export class WriteOffItemsComponent {
     }
   }
 
-  //add a new row 
-  AddRowRequest() {
+  //add a new row
+  AddRowRequest(index:number) {
     this.currentWriteOffItem = new WriteOffItems();
     this.WOItems.push(this.currentWriteOffItem);
+    this.setFocusById('itemName' + index);
   }
   //to delete the row
   DeleteRow(index) {
     //this will remove the data from the array
     this.WOItems.splice(index, 1);
-    // if the index is 0 then .. 
+    // if the index is 0 then ..
     if (index == 0) {
       this.currentWriteOffItem = new WriteOffItems();
       this.WOItems.push(this.currentWriteOffItem);
@@ -95,7 +102,7 @@ export class WriteOffItemsComponent {
         if (a == index) {
           this.WOItems[index].VAT = Item.VAT;
           this.WOItems[index].ItemId = Item.ItemId;
-          this.WOItems[index].AvailableQty = 0;
+          this.WOItems[index].AvailableQty = Item.AvailableQuantity;
           this.WOItems[index].Code = Item.Code;
           //load BatchNoList in dropdown by selected ItemId
           //Get from server or bind from Loacal list
@@ -117,11 +124,11 @@ export class WriteOffItemsComponent {
   //If you have BatchNoList for perticular Item then don't go to server use from existed
   LoadBatchNoByItemId(ItemId, index): void {
 
-    //check if itemlist for this srvdept already exists, get from server if not. 
-    //check if ItemId (with BatchNoList) is exist at local then no need to go server       
+    //check if itemlist for this srvdept already exists, get from server if not.
+    //check if ItemId (with BatchNoList) is exist at local then no need to go server
     let BatchNoMap = this.itemIdBatchNoMap.find(a => a.ItemId == ItemId);
     if (BatchNoMap && ItemId) {
-      //this.WOItems[index].BatchNoList = this.WOItems[index].BatchNoList;            
+      //this.WOItems[index].BatchNoList = this.WOItems[index].BatchNoList;
       this.WOItems[index].BatchNoList = BatchNoMap.BatchDetail;
     }
     else {
@@ -169,6 +176,7 @@ export class WriteOffItemsComponent {
         this.changeDetectorRef.detectChanges();
 
       }
+      this.setFocusById('wqtyip'+ index);
 
     }
     //else {
@@ -238,9 +246,16 @@ export class WriteOffItemsComponent {
       }
 
       //Validation Pass then Post WriteOff Transaction and Save
-      if ((CheckIsValid && CheckValidQty) && this.WOItems.length > 0) {
-
+      if ((CheckIsValid && CheckValidQty) && this.WOItems.length > 0) 
+      {        
         this.loading = true;
+
+        if(!this._activateInventoryService.activeInventory.StoreId){
+          this.messageBoxService.showMessage("Alert!",["Cannot find StoreId. Please select Inventory First"])
+          return;
+        }else{
+          this.WOItems.forEach(a=>a.StoreId = this._activateInventoryService.activeInventory.StoreId);
+        }
 
         this.InventoryBLService.PostToWriteOffItems(this.WOItems)
           .subscribe(
@@ -250,7 +265,7 @@ export class WriteOffItemsComponent {
             },
             err => {
               this.loading = false,
-                this.logError(err);
+                this.logError(err);``
 
             });
       } else {
@@ -297,4 +312,41 @@ export class WriteOffItemsComponent {
     console.log(err);
   }
 
+  public hideScroll(){
+    //x.style.overflow = "inherit";
+    var d = document.getElementById('tableIdResponsive');
+    d.style.overflow = "inherit";
+  }
+
+  public removeScroll(){
+    var d = document.getElementById('tableIdResponsive');
+    d.style.overflow = "auto";
+  }
+
+  GoToNextInput(idToSelect: string,Item?:any,index?:number) {
+    if (document.getElementById(idToSelect) && Item) {
+      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
+      nextEl.focus();
+      nextEl.select();
+    }
+    else{
+      this.DeleteRow(index);
+      idToSelect='Request';
+      if (document.getElementById(idToSelect)) {
+        let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
+        nextEl.focus();
+        nextEl.select();
+      }
+    }
+}
+
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
 }

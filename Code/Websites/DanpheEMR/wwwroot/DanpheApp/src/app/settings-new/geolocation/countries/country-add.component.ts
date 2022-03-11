@@ -6,7 +6,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: "country-add",
-    templateUrl: "./country-add.html"
+    templateUrl: "./country-add.html",
+    host: { '(window:keyup)': 'hotkeys($event)' }
 })
 
 export class CountryAddComponent {
@@ -34,6 +35,7 @@ export class CountryAddComponent {
     @Input("showAddPage")
     public set value(val: boolean) {
         this.showAddPage = val;
+        this.FocusElementById('CountryName');
         if (this.selectedCountry) {
             this.update = true;
             this.CurrentCountry = Object.assign(this.CurrentCountry, this.selectedCountry);
@@ -51,6 +53,7 @@ export class CountryAddComponent {
         for (var i in this.CurrentCountry.CountryValidator.controls) {
             this.CurrentCountry.CountryValidator.controls[i].markAsDirty();
             this.CurrentCountry.CountryValidator.controls[i].updateValueAndValidity();
+            this.FocusElementById('CountryName');
         }
 
         if (this.CurrentCountry.IsValidCheck(undefined, undefined)) {
@@ -63,6 +66,7 @@ export class CountryAddComponent {
                     },
                     err => {
                         this.logError(err);
+                        this.FocusElementById('CountryName');
                     });
         }
     }
@@ -104,6 +108,7 @@ export class CountryAddComponent {
         for (var i in this.CurrentCountry.CountryValidator.controls) {
             this.CurrentCountry.CountryValidator.controls[i].markAsDirty();
             this.CurrentCountry.CountryValidator.controls[i].updateValueAndValidity();
+            this.FocusElementById('CountryName');
         }
 
         if (this.CurrentCountry.IsValidCheck(undefined, undefined)) {
@@ -117,6 +122,7 @@ export class CountryAddComponent {
                     },
                     err => {
                         this.logError(err);
+                        this.FocusElementById('CountryName');
                     });
         }
     }
@@ -140,6 +146,17 @@ export class CountryAddComponent {
     logError(err: any) {
         console.log(err);
     }
-
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+      hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
+    }
 }

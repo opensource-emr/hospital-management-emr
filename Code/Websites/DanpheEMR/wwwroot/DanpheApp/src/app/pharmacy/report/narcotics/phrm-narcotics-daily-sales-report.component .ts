@@ -1,4 +1,4 @@
-﻿import { Component, Directive, ViewChild } from '@angular/core';
+import { Component, Directive, ViewChild } from '@angular/core';
 import { DLService } from "../../../shared/dl.service"
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -23,20 +23,24 @@ export class PHRMNarcoticsDailySalesReportComponent {
     public itemList: Array<any> = new Array<any>();
     public selectedItem: any;
     public itemId: number = null;
+    public storeId: number = null;
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+    public dateRange: string = "";
+    public pharmacy: string = "pharmacy";
+    public loading: boolean = false;
 
     constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService,
         public msgBoxServ: MessageboxService) {
         this.FromDate = moment().format("YYYY-MM-DD");
         this.ToDate = moment().format("YYYY-MM-DD");
-        this.NarcoticsDailySalesSummaryReportColumns = PHRMGridColumns.PHRMSalesitemList;
+        this.NarcoticsDailySalesSummaryReportColumns = PHRMGridColumns.PHRMNarcoticsSalesitemList;
         this.GetNarcoticsItemsListDetails();
         this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("CreatedOn", false));
     }
 
     ////Export data grid options for excel file
     gridExportOptions = {
-        fileName: 'DailyStockSummaryReport_' + moment().format('YYYY-MM-DD') + '.xls',
+        fileName: 'NarcoticsDailySalesReport_' + moment().format('YYYY-MM-DD') + '.xls',
     };
 
     //////Function Call on Button Click of Report
@@ -109,14 +113,16 @@ export class PHRMNarcoticsDailySalesReportComponent {
     }
 
     GetReportData() {
+        this.loading = true;
         if (this.FromDate && this.ToDate) {
-            this.pharmacyBLService.GetNarcoticsDailySalesReport(this.FromDate, this.ToDate, this.itemId)
+            this.pharmacyBLService.GetNarcoticsDailySalesReport(this.FromDate, this.ToDate, this.itemId, this.storeId)
                 .subscribe(res => {
                     if (res.Status == 'OK') {
                         this.NarcoticsDailySalesSummaryReportData = res.Results;
                     } else {
                         this.msgBoxServ.showMessage("failed", [res.ErrorMessage])
                     }
+                    this.loading = false;
 
                 });
         }
@@ -147,6 +153,7 @@ export class PHRMNarcoticsDailySalesReportComponent {
     OnFromToDateChange($event) {
         this.FromDate = $event ? $event.fromDate : this.FromDate;
         this.ToDate = $event ? $event.toDate : this.ToDate;
+        this.dateRange = "<b>Date:</b>&nbsp;" + this.FromDate + "&nbsp;<b>To</b>&nbsp;" + this.ToDate;
     }
 }
 

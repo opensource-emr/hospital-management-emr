@@ -1,11 +1,14 @@
 import { Component } from '@angular/core'
-import { RouterOutlet, RouterModule } from '@angular/router'
+import { RouterOutlet, RouterModule, Router } from '@angular/router'
 import { SecurityService } from "../security/shared/security.service"
 import { DanpheCache, MasterType } from '../shared/danphe-cache-service-utility/cache-services';
 import { VisitBLService } from './shared/visit.bl.service';
 import { DanpheHTTPResponse } from '../shared/common-models';
 import { VisitService } from './shared/visit.service';
 import { CoreService } from '../core/shared/core.service';
+import { CallbackService } from '../shared/callback.service';
+import { BillingBLService } from '../billing/shared/billing.bl.service';
+import { BillingService } from '../billing/shared/billing.service';
 
 @Component({
   selector: 'my-app',
@@ -17,10 +20,14 @@ export class AppointmentsMainComponent {
   validRoutes: any;
   public primaryNavItems: Array<any> = null;
   public secondaryNavItems: Array<any> = null;
+  public currentCounter: number = null;
 
   constructor(public securityService: SecurityService,
     public visitBLService: VisitBLService,
-    public visitService: VisitService, public coreService: CoreService) {
+    public visitService: VisitService, public coreService: CoreService,
+    public callbackService: CallbackService,public router: Router,
+    public billingBlService: BillingBLService,
+    public billingService: BillingService,) {
 
     DanpheCache.GetData(MasterType.AllMasters, null);//sud:25June'19--Dunno what this is doing here.. 
     // get the chld routes of Appointment from valid routes available for this user.
@@ -30,6 +37,13 @@ export class AppointmentsMainComponent {
     //sud: this will load all necessary masters into visit service's variables
     this.LoadDoctorAndDeptPricesToVisitService();
     this.LoadAllBillingItems();
+    this.GetOrganizationList();
+
+    this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
+    if(this.currentCounter <1){
+      this.callbackService.CallbackRoute = '/Appointment/PatientSearch';
+      this.router.navigate(['/Billing/CounterActivate']);
+    }
 
   }
 
@@ -84,24 +98,25 @@ export class AppointmentsMainComponent {
        .subscribe((res: DanpheHTTPResponse) => {
          if (res.Status == "OK") {
            this.visitService.ApptApplicableDepartmentList = res.Results;
-           this.visitService.ApptApplicableDepartmentList =  this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
-             return {
-               DepartmentId: d.DepartmentId,
-               DepartmentName: d.DepartmentName
-             };
-           });
+           console.log("Department list loaded successfully");
+          //  this.visitService.ApptApplicableDepartmentList =  this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
+          //    return {
+          //      DepartmentId: d.DepartmentId,
+          //      DepartmentName: d.DepartmentName
+          //    };
+          //  });
          }
 
        });
 
+     //sud:6Sept'21: removed below code to take department from cache.. it's not working.. hence can't use below. 
     //DepartmentData is already available, so re-use it..
-    
-     this.visitService.ApptApplicableDepartmentList = await this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
-      return {
-        DepartmentId: d.DepartmentId,
-        DepartmentName: d.DepartmentName
-      };
-    });
+    //  this.visitService.ApptApplicableDepartmentList = await this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
+    //   return {
+    //     DepartmentId: d.DepartmentId,
+    //     DepartmentName: d.DepartmentName
+    //   };
+    // });
 
     //check if we can get employee data also from pre-loaded masters.
     this.visitBLService.GetVisitDoctors()
@@ -122,6 +137,19 @@ export class AppointmentsMainComponent {
         }
         else {
           console.log("Couldn't load bill item prices. (appointment-main)");
+        }
+      });
+  }
+
+  public GetOrganizationList() {
+    this.billingBlService.GetOrganizationList()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == 'OK') {
+          console.log("CreditOrganization list are loaded successfully (billing-main).");
+          this.billingService.SetAllCreditOrgList(res.Results);
+        }
+        else {
+          console.log("Couldn't get CreditOrganization List(billing-main).");
         }
       });
   }

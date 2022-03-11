@@ -6,10 +6,7 @@
           No Data Available for this Date Range
         </h3>
 
-        <table
-          *ngIf="reportData.length > 0"
-          class="table table-striped cat-tbl"
-        >
+        <table *ngIf="reportData.length > 0" class="table table-striped cat-tbl">
           <thead>
             <tr>
               <th style="text-align: center;" colspan="3">
@@ -33,11 +30,8 @@
             <tr *ngFor="let data of reportData; let i = index;">
               <td>{{i+1}}</td>
               <td>
-                <a
-                  style="text-decoration: underline; font-weight: 700;"
-                  (click)="CategorySelected(data)"
-                  >{{data.TestCategoryName}}</a
-                >
+                <a style="text-decoration: underline; font-weight: 700;"
+                  (click)="CategorySelected(data)">{{data.TestCategoryName}}</a>
               </td>
               <td>{{data.TotalCount}}</td>
             </tr>
@@ -45,12 +39,8 @@
         </table>
 
       </div>
-      <div class="text-center">
-        <button
-          class="blue btn right non-printable"
-          type="button"
-          (click)="print()"
-        >
+      <div *ngIf="reportData && reportData.length != 0" class="text-center">
+        <button class="blue btn right non-printable" type="button" (click)="print()">
           <i class="fa fa-print"></i> Print
         </button>
       </div>
@@ -65,14 +55,13 @@
       <div class="modelbox-div">
         <div class="modelbox-header">
           <h4 class="margin-0-vr text-danger text-center">
-            <strong>All Test Detail of {{selectedCategory.TestCategoryName}} From: {{fromDate}}&nbsp; To: {{toDate}}</strong>
+            <strong>All Test Detail of {{selectedCategory.TestCategoryName}} From: {{fromDate}}&nbsp; To:
+              {{toDate}}</strong>
           </h4>
         </div>
-        <div class="modelbox-body">          
-          <lab-item-count-report *ngIf="showCategoryDetail"
-                                 [fromDate]="fromDate"
-                                 [toDate]="toDate"
-                                 [category]="selectedCategory"></lab-item-count-report>
+        <div class="modelbox-body">
+          <lab-item-count-report *ngIf="showCategoryDetail" [fromDate]="fromDate" [toDate]="toDate"
+            [category]="selectedCategory" [orderStatus]="orderStatus"></lab-item-count-report>
         </div>
         <div class="close-modelbox">
           <button class="btn btn-danger" (click)="showCategoryDetail=false">

@@ -21,7 +21,8 @@ export class PHRMMinStockComponent {
   public ItemName: string = "";
   public selectedItem: any;
   public itemList: Array<any> = new Array<any>();
-
+  public pharmacy:string = "pharmacy";
+  
   constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService,
     public msgBoxServ: MessageboxService) {
     this.PHRMMinStockColumns = PHRMReportsGridColumns.PHRMMinStockReport;

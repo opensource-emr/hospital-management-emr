@@ -1,0 +1,278 @@
+<style>
+    .main-info {
+        margin-top: 31px;
+    }
+
+    .receipt-watermark:after {
+        font-size: 800% !important;
+        z-index: 0 !important;
+        margin-left: -340px !important;
+    }
+
+    .showPrintDate {
+        display: none;
+    }
+
+    body {
+        font-size: 11px;
+        font-family: 'Poppins', sans-serif !important;
+    }
+
+    .col-left,
+    .col-right {
+        display: flex;
+        padding: 2px 10px;
+    }
+</style>
+
+<div class="wrapper">
+    <div style="border:1px dotted;padding: 10px;">
+        <div id="dvDischargeBillPrintPage" class="printpage">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <td>
+                            <div class="flx" [ngClass]="'ipd-invoice-header-gap-' + hospitalCode"></div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+                            <div class="discharge-bill-sm-holder">
+                                <div class="discharge-bill-sm-header flx justify-center text-uppercase">
+                                    <span>
+                                        <span *ngIf="!isInsurance">
+                                            <b>
+                                                Invoice | Discharge Bill
+                                            </b>
+                                        </span>
+                                        <span *ngIf="isInsurance">
+                                            <b>
+                                                Health Insurance Credit Invoice | Discharge Bill
+                                            </b>
+                                        </span>
+                                    </span>
+                                    <b *ngIf="invoice.InvoiceInfo.PrintCount > 0">
+                                        | COPY ({{invoice.InvoiceInfo.PrintCount}}) OF ORIGINAL
+                                    </b>
+                                </div>
+                                <div class="flx flex-col discharge-bill-description-header"
+                                    style="margin-bottom: 10px; border-bottom: 1px solid;">
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Hospital
+                                                No.&nbsp;:&nbsp;</span><span
+                                                class="text-uppercase text-bold txt-val">{{invoice.PatientInfo.PatientCode}}</span>
+                                        </div>
+                                        <div class="col-right"><span class="text-uppercase text-bold txt-label">IP
+                                                No.&nbsp;:&nbsp;</span><span
+                                                class="text-uppercase text-bold txt-val">{{ipdNumber}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Patient's
+                                                Name&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{invoice.PatientInfo.ShortName}}</span>
+                                        </div>
+                                        <div class="col-right"><span class="text-uppercase text-bold txt-label">
+                                                Invoice No.&nbsp;:&nbsp;</span>
+                                            <span class="text-uppercase text-bold txt-val">
+                                                {{invoice.InvoiceInfo.InvoiceNumFormatted}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">Age/Sex&nbsp;:&nbsp;</span>
+                                            <span class="text-uppercase text-bold txt-val">{{finalAge}}</span>
+                                        </div>
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-label">Trans.
+                                                Date&nbsp;:&nbsp;</span>
+                                            <span class="text-uppercase text-bold txt-val">
+                                                {{invoice.InvoiceInfo.TransactionDate |
+                                                DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;
+                                            </span>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+
+                                        <div class="col-left flex-2">
+                                            <span class="text-uppercase text-bold txt-label">DOA&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{invoice.VisitInfo.AdmissionDate
+                                                | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                                                ({{invoice.VisitInfo.AdmissionDate | nepaliDate}})</span>
+                                        </div>
+
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-label">Invoice
+                                                Date&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{invoice.InvoiceInfo.TransactionDate
+                                                | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2"><span
+                                                class="text-uppercase text-bold txt-label">DOD&nbsp;:&nbsp;</span>
+                                            <span
+                                                class="text-uppercase text-bold txt-val">{{invoice.VisitInfo.DischargeDate
+                                                |
+                                                DanpheDateTime:'format':'YYYY-MM-DD'}}
+                                                ({{invoice.VisitInfo.DischargeDate | nepaliDate}})</span>
+                                        </div>
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-val">
+                                                ({{invoice.InvoiceInfo.TransactionDate | nepaliDate}})
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between" *ngIf="isInsurance">
+                                        <div class="col-left flex-2">
+                                            <span class="text-uppercase text-bold txt-label">
+                                                NSHI: {{invoice.PatientInfo.Ins_NshiNumber}}
+                                            </span>
+                                        </div>
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-label">
+                                                Claim Code:{{invoice.InvoiceInfo.ClaimCode}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                                        <div class="col-left flex-2">
+                                            <span class="text-uppercase text-bold txt-label">
+                                                Room Category&nbsp;:&nbsp;
+                                            </span>
+                                            <span class="text-uppercase text-bold txt-val">
+                                                {{invoice.VisitInfo.WardName}}
+                                            </span>
+                                        </div>
+                                        <div class="col-right">
+                                            <span class="text-uppercase text-bold txt-label">
+                                                Method of Payment:
+                                                {{invoice.InvoiceInfo.PaymentMode}}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <discharge-bill-summary [bill-items]="invoice.InvoiceItems">
+                                </discharge-bill-summary>
+
+                                <div class="flex-container discharge-bill-amount-summary"
+                                    style="padding-bottom: 10px;border-bottom: 1px solid;">
+                                    <div class="flex-2">
+                                        <span *ngIf="invoice.InvoiceInfo.TotalAmount!=0">In Words:
+                                            {{invoice.InvoiceInfo.TotalAmount | number: "1.2-2" | NumberInWords |
+                                            uppercase }} ONLY</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flx flex-col">
+                                            <div style="padding-bottom: 8px;"><span
+                                                    class="text-uppercase">Amount:</span>
+                                                {{invoice.InvoiceInfo.SubTotal | number: "1.2-2"}}</div>
+                                            <div style="padding-bottom: 8px;"><span
+                                                    class="text-uppercase">Discount:</span>
+                                                {{invoice.InvoiceInfo.DiscountAmount | number: "1.2-2"}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex-container user-summary" style="padding-top: 5px;">
+                                    <div class="flex-2">
+                                        <div class="flx flex-col">
+                                            <div class="col-md-12" style="padding-top: 5px;"
+                                                *ngIf="invoice.VisitInfo.ConsultingDoctor != null && ShowProviderName">
+                                                <div class="left" style="font-size:11px;">
+                                                    Consulting Doctor: {{invoice.VisitInfo.ConsultingDoctor}}
+                                                </div>
+                                            </div>
+                                            <div style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">User:
+                                                </span>
+                                                <span>{{invoice.InvoiceInfo.UserName}}</span>
+
+                                            </div>
+                                            <div>
+                                                <span class="text-uppercase">Time: </span><span>{{currTime}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flx flex-col" *ngIf="invoice.InvoiceInfo.Remarks">
+                                            <div style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">Remarks: </span>
+                                                <span>{{invoice.InvoiceInfo.Remarks}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flx flex-col">
+                                            <div style="padding-bottom: 8px;"><span class="text-uppercase">Grand
+                                                    Total:</span>
+                                                {{invoice.InvoiceInfo.TotalAmount | number: "1.2-2"}}</div>
+
+                                            <div *ngIf="invoice.InvoiceInfo.DepositAvailable && invoice.InvoiceInfo.PaymentMode !='credit'"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">Deposit:</span>
+                                                <span>
+                                                    {{invoice.InvoiceInfo.DepositAvailable | number:"1.2-2"}}</span>
+
+                                            </div>
+                                            <div *ngIf="(invoice.InvoiceInfo.TotalAmount > invoice.InvoiceInfo.DepositAvailable) && invoice.InvoiceInfo.PaymentMode !='credit'"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">To Be Paid:</span>
+                                                {{invoice.InvoiceInfo.TotalAmount - invoice.InvoiceInfo.DepositAvailable
+                                                | number: "1.2-2"}}
+                                            </div>
+
+                                            <div *ngIf="invoice.InvoiceInfo.DepositReturnAmount"
+                                                style="padding-bottom: 8px;">
+                                                <span class="text-uppercase">To be Returned:</span>
+                                                {{invoice.InvoiceInfo.DepositReturnAmount | number:
+                                                "1.2-2"}}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" style="padding-top: 5px;"
+                                    *ngIf="InvoiceFooterNoteSettings.ShowFooter">
+                                    <div style="width: 100%;text-align: center;margin-top: 20px;">
+                                        <b *ngIf="InvoiceFooterNoteSettings.ShowEnglish">
+                                            {{InvoiceFooterNoteSettings.EnglishText}} </b> <br />
+                                        <b *ngIf="InvoiceFooterNoteSettings.ShowNepali">
+                                            {{InvoiceFooterNoteSettings.NepaliText}} </b>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="text-align: center;margin-top: 10px;">
+        <button type="button" id="btnPrintDischargeInvoice" class="btn green btn-success" (click)="print()"
+            [disabled]="loading">
+            Print
+        </button>
+    </div>
+
+    <select-printer [group-name]="'bill-receipt'" [storage-key]="'ip-discharge-bill'"
+        (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj"
+    (print-sucess)="UpdatePrintCount()">
+</app-print-page>

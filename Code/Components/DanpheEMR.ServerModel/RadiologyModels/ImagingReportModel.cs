@@ -58,6 +58,7 @@ namespace DanpheEMR.ServerModel
         public string ImagingItemName { get; set; }
         public string ImagingTypeName { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public DateTime? BillingDate { get; set; }
         public string ReportText { get; set; }
         public string ImageName { get; set; }
         public string PhoneNumber { get; set; }
@@ -70,6 +71,8 @@ namespace DanpheEMR.ServerModel
         public string Gender { get; set; }
         public string PatientStudyId { get; set; }
         public string ProviderName { get; set; }
+        public string Muncipality { get; set; }
+        public string CountrySubDivision { get; set; }
         public int? ProviderId { get; set; }
         public int? ReportingDoctorId { get; set; }
         public string ReportingDoctorName { get; set; }

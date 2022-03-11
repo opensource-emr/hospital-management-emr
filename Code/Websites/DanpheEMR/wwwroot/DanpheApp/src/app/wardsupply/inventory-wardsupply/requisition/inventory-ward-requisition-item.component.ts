@@ -1,32 +1,25 @@
 import { Component, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
-
+import { Router } from '@angular/router';
 import { SecurityService } from '../../../security/shared/security.service';
 import { InventoryBLService } from "../../../inventory/shared/inventory.bl.service";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-
 import { Requisition } from "../../../inventory/shared/requisition.model";
 import { RequisitionItems } from "../../../inventory/shared/requisition-items.model";
 import { ItemMaster } from "../../../inventory/shared/item-master.model";
 import { InventoryService } from '../../../inventory/shared/inventory.service';
-//import { VendorMaster } from "../shared/vendor-master.model";
 import { CoreBLService } from "../../../core/shared/core.bl.service";
 import { CoreService } from '../../../core/shared/core.service';
-import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
 import { WardSupplyBLService } from '../../shared/wardsupply.bl.service';
 import * as moment from 'moment/moment';
-@Component({
-
-    templateUrl: "./inventory-ward-requisition-item.html"  //"/InventoryView/InternalMain"
-
-})
+@Component({ templateUrl: "./inventory-ward-requisition-item.html" })
 export class InventoryWardRequisitionItemComponent implements OnDestroy {
     public CurrentStoreId: number = 0;
     ////binding logic
     public currentRequItem: RequisitionItems = new RequisitionItems();
     public requisition: Requisition = new Requisition();
     ////this Item is used for search button(means auto complete button)...
-    public ItemList: any;
+    public ItemList: any[] = [];
+    public filteredItemList: any[] = [];
     ////this is to add or delete the number of row in ui
     public rowCount: number = 0;
     public checkIsItemPresent: boolean = false;
@@ -36,25 +29,23 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
     public showAddItemPopUp: boolean = false;
     public isEditMode: boolean;
     public isRecreateMode: boolean = false;
+    inventoryList: any;
+    selectedInventory: any;
+    ReqDisGroupId: number;
 
-    constructor(
-        public changeDetectorRef: ChangeDetectorRef,
-        public inventoryBLService: InventoryBLService,
-        public inventoryService: InventoryService,
-        public wardsupplyBLService: WardSupplyBLService,
-        public securityService: SecurityService,
-        public router: Router,
-        public messageBoxService: MessageboxService,
-        public coreBLService: CoreBLService,
-        public coreService: CoreService) {
+    constructor(public changeDetectorRef: ChangeDetectorRef, public inventoryBLService: InventoryBLService, public inventoryService: InventoryService, public wardsupplyBLService: WardSupplyBLService, public securityService: SecurityService, public router: Router, public messageBoxService: MessageboxService, public coreBLService: CoreBLService, public coreService: CoreService) {
         //whatever you need to write in constructor, write inside CheckForSubstoreActivation()
         this.CheckForSubstoreActivation();
-
-        /*else {
-          ////pushing currentPOItem for the first Row in UI
-          this.requisition.RequisitionItems.push(this.currentRequItem);
-          this.currentRequItem.Quantity = 1;
-        }*/
+        this.GetInventoryList();
+        this.SetFocusById('activeInventory');
+    }
+    GetInventoryList() {
+        this.inventoryBLService.GetActiveInventoryList()
+            .subscribe(res => {
+                if (res.Status == "OK") {
+                    this.inventoryList = res.Results;
+                }
+            })
     }
     ngOnDestroy(): void {
         this.inventoryService.PurchaseRequestId = 0;
@@ -68,7 +59,7 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                     var Requisition = res.Results;
                     //var RequisitionItemArray: Array<any> = res.Results;
 
-                    this.requisition.StoreId = Requisition.StoreId;
+                    this.requisition.RequestFromStoreId = Requisition.StoreId;
 
                     this.requisition.RequisitionStatus = Requisition.RequisitionStatus;
                     if (this.isRecreateMode == false) {
@@ -77,9 +68,18 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                         this.requisition.IssueNo = Requisition.IssueNo;
                         this.requisition.RequisitionDate = moment(Requisition.RequisitionDate).format("YYYY-MM-DD");
                     }
+                    if (this.isEditMode == true) {
+                        let inventory = null;
+                        inventory = this.inventoryList.find(a => a.StoreId == Requisition.TargetStoreId);
+                        if (inventory) {
 
+                            this.requisition.RequestToStoreId = inventory.StoreId;
+                            this.requisition.RequisitionValidator.get("RequestToStoreId").setValue(inventory.StoreId);
+                            this.selectedInventory = inventory;
+                        }
+                    }
                     for (var i = 0; i < Requisition.RequisitionItems.length; i++) {
-                        if (Requisition.Status == "withdrawn" || Requisition.RequisitionItems[i].IsActive == true) {
+                        if (Requisition.RequisitionStatus == "cancelled" || Requisition.RequisitionStatus == "withdrawn" || Requisition.RequisitionItems[i].IsActive == true) {
                             var newItem = new RequisitionItems();
                             newItem.Quantity = Requisition.RequisitionItems[i].Quantity;
                             newItem.PendingQuantity = Requisition.RequisitionItems[i].PendingQuantity;
@@ -121,6 +121,7 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
     }
     CheckForSubstoreActivation() {
         this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
+        this.ReqDisGroupId = this.securityService.getActiveStore().INV_ReqDisGroupId;
         try {
             if (!this.CurrentStoreId) {
                 //routeback to substore selection page.
@@ -147,9 +148,10 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         else {
             ////pushing currentPOItem for the first Row in UI
             this.requisition.RequisitionItems.push(this.currentRequItem);
-            this.SetFocusOnItemName(0);
-            this.requisition.StoreId = this.CurrentStoreId;
+            //this.SetFocusOnItemName(0);
+            this.requisition.RequestFromStoreId = this.CurrentStoreId;
             this.currentRequItem.Quantity = 1;
+            this.SetFocusById('activeInventory');
         }
     }
 
@@ -164,11 +166,12 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
             if (res && res.Results) {
                 res.Results.forEach(a => {
                     this.ItemList.push({
-                        "ItemId": a.ItemId, "ItemName": a.ItemName, "UOMName": a.UOMName, "Code": a.Code, "IsActive": a.IsActive
+                        ItemId: a.ItemId, ItemName: a.ItemName, UOMName: a.UOMName, Code: a.Code, IsActive: a.IsActive, ItemType: a.ItemType, StoreId: a.StoreId
                     });
                 });
             }
-            this.ItemList = this.ItemList.filter(item => item.IsActive == true);
+            this.ItemList = this.ItemList.filter(item => item.IsActive == true && item.ItemType == 'Consumables');
+            this.filterItemsBasedOnInventory();
             this.InitializeRequisitionItems();
         }
         else {
@@ -178,6 +181,11 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
             }
         }
     }
+    private filterItemsBasedOnInventory() {
+        // show items if their storeId matches with the selected Main Store or if the item is common (StoreId is null).
+        this.filteredItemList = this.ItemList.filter(item => item.StoreId == this.requisition.RequestToStoreId || item.StoreId == null);
+    }
+
     ////add a new row
     AddRowRequest() {
         for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
@@ -193,11 +201,36 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         this.requisition.RequisitionItems.push(this.currentRequItem);
 
         let nextInputIndex = this.requisition.RequisitionItems.length - 1;
-        this.SetFocusOnItemName(nextInputIndex);
+        //this.SetFocusOnItemName(nextInputIndex);
     }
     public SetFocusOnItemName(index: number) {
         let elementToBeFocused = 'itemName' + index;
         this.SetFocusById(elementToBeFocused);
+    }
+    OnPressedEnterKeyInQuantityField(index) {
+        var isinputvalid = this.requisition.RequisitionItems.every(item => item.Quantity > 0)
+        if (isinputvalid == true) {
+            //If index is last element of array, then create new row
+            if (index == (this.requisition.RequisitionItems.length - 1)) {
+                this.AddRowRequest();
+            }
+            this.SetFocusOnItemName(index + 1);
+        }
+    }
+    OnPressedEnterKeyInItemField(index) {
+        if (this.requisition.RequisitionItems[index].SelectedItem != null && this.requisition.RequisitionItems[index].ItemId != null) {
+            this.SetFocusById(`qtyip${index}`);
+        }
+        else {
+            if (this.requisition.RequisitionItems.length == 1) {
+                this.SetFocusOnItemName(index)
+            }
+            else {
+                this.requisition.RequisitionItems.splice(index, 1);
+                this.SetFocusById('save_requisition');
+            }
+
+        }
     }
     public SetFocusById(id: string) {
         window.setTimeout(function () {
@@ -206,6 +239,31 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                 elementToBeFocused.focus();
             }
         }, 600);
+    }
+    InventoryListFormatter(data: any): string {
+        return data["Name"];
+    }
+    OnInventoryChange() {
+        let inventory = null;
+        if (!this.selectedInventory) {
+            this.requisition.RequestToStoreId = null;
+        }
+        else if (typeof (this.selectedInventory) == 'string') {
+            inventory = this.inventoryList.find(a => a.Name.toLowerCase() == this.selectedInventory.toLowerCase());
+        }
+        else if (typeof (this.selectedInventory) == "object") {
+            inventory = this.selectedInventory;
+        }
+        if (inventory) {
+            this.requisition.RequestToStoreId = inventory.StoreId;
+            this.filterItemsBasedOnInventory();
+            //this.requisition.RequisitionValidator.get("TargetStoreId").setValue(inventory.StoreId);
+            this.SetFocusById('itemName');
+            this.SetFocusOnItemName(0);
+        }
+        else {
+            this.requisition.RequestToStoreId = null;
+        }
     }
 
     DeleteAction(index) {
@@ -294,7 +352,10 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
         //if the CheckIsValid == true the validation is proper else no
         var CheckIsValid = true;
-        this.requisition.StoreId = this.CurrentStoreId;
+        this.requisition.RequestFromStoreId = this.CurrentStoreId;
+        this.requisition.ReqDisGroupId = this.ReqDisGroupId;
+        this.requisition.RequisitionValidator.get("RequestFromStoreId").setValue(this.CurrentStoreId);
+
         if (this.requisition.IsValidCheck(undefined, undefined) == false) {
             // for loop is used to show RequisitionValidator message ..if required  field is not filled
             for (var a in this.requisition.RequisitionValidator.controls) {
@@ -372,7 +433,8 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
         //if the CheckIsValid == true the validation is proper else no
         var CheckIsValid = true;
-
+        this.requisition.RequestFromStoreId = this.CurrentStoreId;
+        this.requisition.RequisitionValidator.get("RequestFromStoreId").setValue(this.CurrentStoreId);
         if (this.requisition.IsValidCheck(undefined, undefined) == false) {
             // for loop is used to show RequisitionValidator message ..if required  field is not filled
             for (var b in this.requisition.RequisitionValidator.controls) {
@@ -422,7 +484,6 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                         this.changeDetectorRef.detectChanges();
                         this.messageBoxService.showMessage("success", ["Requisition is Updated."]);
 
-
                         this.requisition.RequisitionItems = new Array<RequisitionItems>();
                         this.requisition = new Requisition();
                         this.currentRequItem = new RequisitionItems();
@@ -462,18 +523,6 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         this.inventoryService.RequisitionId = reqId;
         this.inventoryService.isModificationAllowed = true;
         this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionDetails']);
-        //this.inventoryBLService.GetDepartmentDetailByRequisitionId(data).
-        //  subscribe(res => {
-        //    if (res.Status == 'OK') {
-        //      this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionDetails']);
-        //    }
-        //    else {
-        //      this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
-        //    }
-        //  },
-        //    err => {
-        //      this.messageBoxService.showMessage("failed", ['failed to get Requisitions.....please check log for details.']);
-        //    });
 
     }
     //for item add popup
@@ -489,12 +538,18 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         this.showAddItemPopUp = false;
         var item = $event.item;
         this.ItemList.push({
-            "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT
+            "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT, ItemType: item.ItemType
         });
+        this.filterItemsBasedOnInventory();
         this.currentRequItem = new RequisitionItems();
-        this.currentRequItem.Quantity = 1;
-        this.requisition.RequisitionItems.splice(this.index, 1, this.currentRequItem);
-        this.requisition.RequisitionItems[this.index].SelectedItem = item;
+        if (item.ItemType == 'Consumables') {
+            this.currentRequItem.Quantity = 1;
+            this.requisition.RequisitionItems.splice(this.index, 1, this.currentRequItem);
+            this.requisition.RequisitionItems[this.index].SelectedItem = item;
+        }
+        else {
+            this.messageBoxService.showMessage("Warning", [`Cannot add item with itemtype as ${item.ItemType}. Use Fixed Assets instead.`]);
+        }
     }
 
     GoToNextInput(idToSelect: string) {

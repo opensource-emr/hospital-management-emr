@@ -4,11 +4,7 @@ import { RouterModule } from "@angular/router";
 import { PharmacyMainComponent } from "./pharmacy-main.component";
 import { PHRMBillingMainComponent } from "./billing/phrm-billing-main.component";
 import { PHRMOrderMainComponent } from "./order/phrm-order-main.component";
-import { PHRMPatientMainComponent } from "./patient/phrm-patient-main.component";
-import { PHRMPrescriptionMainComponent } from "./prescription/phrm-prescription-main.component";
 import { PHRMReportMainComponent } from "./report/phrm-report-main.component";
-import { SaleMainComponent } from "./sale/phrm-sale-main.component";
-import { StockMainComponent } from "./stock/stock-main.component";
 import { PHRMSettingMainComponent } from "./setting/phrm-setting-main.component";
 import { PHRMPurchaseOrderListComponent } from "./order/phrm-po-list/phrm-purchase-order-list.component";
 import { PHRMSupplierManageComponent } from "./setting/supplier/phrm-supplier-manage.component";
@@ -19,24 +15,11 @@ import { PHRMUnitOfMeasurementManageComponent } from "./setting/uom/phrm-uom-man
 import { PHRMItemTypeManageComponent } from "./setting/item-type/phrm-item-type-manage.component";
 import { PHRMItemMasterManageComponent } from "./setting/item/phrm-item-manage.component";
 import { PHRMGenericManageComponent } from "./setting/generic/phrm-generic-manage.component";
-import { PHRMPatientListComponent } from "./patient/phrm-patient-list.component";
-import { PHRMPatientComponent } from "./patient/phrm-patient.component";
 import { PHRMGoodsReceiptListComponent } from "./order/phrm-gr-list/phrm-goods-receipt-list.component";
 import { PHRMTAXManageComponent } from "./setting/tax/phrm-tax-manage.component";
 import { PHRMPurchaseOrderReportComponent } from "./report/po/phrm-purchase-order-report.component"
 import { PHRMItemWiseStockReportComponent } from "./report/itemwise-stock/phrm-itemwise-stock-report.component";
-import { PHRMPrescriptionListComponent } from "./prescription/phrm-prescription-list.component";
 import { PharmacyDashboardComponent } from "../dashboards/pharmacy/pharmacy-dashboard.component";
-import { PHRMStockDetailsListComponent } from "./stock/phrm-stock-details-list.component";
-import { PHRMWriteOffItemComponent } from "./stock/write-off/phrm-write-off-items.component";
-import { PHRMWriteOffListComponent } from "./stock/write-off/phrm-write-off-items-list.component";
-import { PHRMSaleComponent } from "./sale/phrm-sale.component";
-import { PHRMSaleListComponent } from "./sale/phrm-sale-list.component";
-import { PHRMStockManageComponent } from "./stock/phrm-stock-manage.component";
-import { PHRMStockBatchItemListComponent } from "./stock/phrm-stock-batch-item-list.component";
-import { PHRMSaleCreditComponent } from "./sale/phrm-sale-credit.component"
-import { PHRMSaleReturnComponent } from "./sale/phrm-sale-return.component";
-import { PHRMReceiptPrintComponent } from "./sale/phrm-receipt-print.component"
 import { PHRMSupplierInformationReportComponent } from './report/supplier-info/phrm-supplier-information-report.component';
 import { PHRMCreditInOutPatientReportComponent } from './report/credit-inout-patient/phrm-credit-in-out-patient-report.component';
 import { PHRMStockItemsReportComponent } from './report/stock-items/phrm-stock-items-report.component';
@@ -51,19 +34,15 @@ import { PHRMExpiryReportComponent } from './report/expiry-stock/phrm-expiry-rep
 import { PHRMMinStockComponent } from './report/min-stock/phrm-minstock-report.component';
 import { PHRMDailySalesSummaryComponent } from './report/daily-sales/phrm-daily-sales-summary.component';
 import { PHRMABCVEDReportComponent } from './report/abc-ved/phrm-abcved-report.component';
-import { PharmacyCounterActivateComponent } from './counter/pharmacy-counter-activate.component'
 import { PHRMUserwiseCollectionReportComponent } from './report/user-collection/phrm-userwise-collection-report.component';
 import { PHRMCounterwiseCollectionReportComponent } from './report/counter-collection/phrm-counterwise-collection-report.component';
 import { PHRMCashCollectionSummaryReportComponent } from './report/cash-collection/phrm-cashcollection-summary-report.component '
-import { PHRMReturnListComponent } from './sale/phrm-return-list.component';
 import { PHRMSaleReturnReportComponent } from './report/sales-return/phrm-sale-return-report.component';
 import { PHRMBreakageItemReportComponent } from "./report/breakage-items/phrm-breakage-item-report.component";
 import { PHRMGoodsReceiptProductReportComponent } from "./report/gr-products/phrm-good-receipt-product-report.component";
 import { PHRMStockManageReportComponent } from "./report/stock-manage/phrm-stock-manage-report.component";
 import { PhrmRackComponent } from './rack/phrm-rack.component';
-import { PHRMCreditBillsComponent } from './sale/credit-billing/phrm-credit-bills.component';
 import { PHRMProvisionalItems } from "./provisional-items/phrm-provisional-items.component"
-import { PHRMDispatchComponent } from './sale/phrm-dispatch.component';
 import { AuthGuardService } from '../security/shared/auth-guard.service';
 import { WardRequisitionItems } from './ward-requisition/phrm-ward-requisition.component';
 import { PHRMStoreDetailsListComponent } from './store/store-details/phrm-store-details-list.component';
@@ -79,20 +58,12 @@ import { PHRMTransferToStoreReportComponent } from './report/transfer-store/phrm
 import { PHRMTransferToDispensaryReportComponent } from './report/transfer-dispensary/phrm-transfer-to-dispensary-report.component';
 import { PHRMDepositBalanceReport } from './report/deposit/phrm-deposit-balance-report.component';
 import { PHRMSalesDetailsListComponent } from './store/sales-category/phrm-sales-category-list.component';
-import { PHRMSettlementComponent } from './sale/settlement/settlement.component';
-import { PHRMRequisitionListComponent } from './stock/requisition/phrm-requisition-list.component';
-import { PHRMRequisitionItemsComponent } from './stock/requisition/phrm-requisition-items.component';
-import { PHRMRequisitionDetailsComponent } from './stock/requisition/phrm-requisition-details.component';
 import { PHRMStoreRequisitionListComponent } from './store/dispensary-request/phrm-store-requisition-list.component';
 import { PHRMStoreRequisitionDetailsComponent } from './store/dispensary-request/phrm-store-requisition-details.component';
 import { PHRMStoreDispatchItemsComponent } from './store/dispensary-dispatch/phrm-store-dispatch-items.component';
 import { PHRMStoreDispatchDetailsComponent } from './store/dispensary-dispatch/phrm-store-dispatch-details.components';
-import { PharmacyDuplicatePrintsMainComponent } from './duplicate-prints/pharmacy-duplicate-prints-main.component';
-import { PHRMReturnInvoiceDuplicatePrintComponent } from './duplicate-prints/return-invoice/return-invoice.component';
-import { PHRMProvisionalReturnComponent } from './duplicate-prints/provisional-return/provisional-return.component';
 import { PHRMNarcoticsDailySalesReportComponent } from './report/narcotics/phrm-narcotics-daily-sales-report.component ';
 import { PHRMNarcoticsStockReportComponent } from './report/narcotics/phrm-narcotics-stock-report.component';
-import { PHRMSettlementDuplicateComponent } from './duplicate-prints/settlement/settlement-duplicate.component';
 
 import { PageNotFound } from '../404-error/404-not-found.component';
 import { TermsListComponent } from '../inventory/settings/termsconditions/terms-list.component';
@@ -101,7 +72,30 @@ import { PHRMRackStockDistributionReportComponent } from './report/rack-stock/ph
 import { InvoiceHeaderListComponent } from '../shared/invoice-header/invoice-header-list.component';
 import { PHRMPackingTypeListComponent } from './setting/packing-type/phrm-packing-type-list.component';
 import { PHRMGoodsReceiptComponent } from './order/phrm-gr/phrm-goods-receipt.component';
+import { DirectDispatchComponent } from './store/direct-dispatch/direct-dispatch.component';
+import { WriteOffItemComponent } from './store/write-off/write-off-item/write-off-item.component';
+import { WriteOffListComponent } from './store/write-off/write-off-list/write-off-list.component';
+import { ItemWisePurchaseReportComponent } from './report/item-wise-purchase-report/item-wise-purchase-report.component';
+import { DatewisePurchaseReportComponent } from './report/datewise-purchase-report/datewise-purchase-report.component';
+import { ReturnFromCustomerComponent } from './report/return-from-customer/return-from-customer.component';
 import { PHRMStockSummaryReportComponent } from './report/stock-summary/phrm-stock-summary-report.component';
+import { PHRMPurchaseReportComponent as PHRMPurchaseReportComponent } from './report/phrm-purchase-report/phrm-purchase-report.component';
+import { PHRMSalesReportComponent as PHRMSalesReportComponent } from './report/phrm-sales-report/phrm-sales-report.component';
+import { PHRMStockReportComponent as PHRMStockReportComponent } from './report/phrm-stock-report/phrm-stock-report.component';
+import { PHRMSupplierReportComponent } from './report/phrm-supplier-report/phrm-supplier-report.component';
+import { PHRMSalesStatementComponent } from './report/phrm-sales-report/sales-statement/phrm-sales-statement.component';
+import { PhrmInsBimaReportComponent } from './report/phrm-sales-report/ins-bima-report/phrm-ins-bima-report.component';
+import { SupplierLedgerComponent } from './supplier-ledger/supplier-ledger.component';
+import { SupplierLedgerViewComponent } from './supplier-ledger/supplier-ledger-view/supplier-ledger-view.component';
+import { PHRMSalesSummaryComponent } from './report/phrm-sales-report/sales-summary/phrm-sales-summary.component';
+import { PHRMPurchaseSummaryComponent } from './report/phrm-purchase-report/purchase-summary/phrm-purchase-summary.component';
+import { PHRMStockSummarySecondComponent } from './report/phrm-stock-report/stock-summary-second/phrm-stock-summary-second.component';
+import { PHRMPatientSalesDetailComponent } from './report/phrm-sales-report/patient-sales-detail/phrm-patient-sales-detail.component';
+import { StockTransfersReportComponent } from './report/phrm-stock-report/stock-transfers-report/stock-transfers-report.component';
+import { SupplierWisePurchaseReportComponent } from './report/supplierwise-purchase-report/supplierwise-purchase-report.component';
+import { StockLedgerReportComponent } from './report/stock-ledger-report/stock-ledger-report.component';
+import { SupplierWiseStockReportComponent } from './report/phrm-supplier-report/supplierwise-stock-report/supplierwise-stock-report.component';
+import { PHRMSettlementSummaryReportComponent } from './report/settlement-summary-report/phrm-settlement-summary-report.component';
 
 @NgModule({
   imports: [
@@ -138,101 +132,79 @@ import { PHRMStockSummaryReportComponent } from './report/stock-summary/phrm-sto
             ]
           },
           {
-            path: 'Patient',
-            component: PHRMPatientMainComponent,
-            children: [
-              { path: '', redirectTo: 'List', pathMatch: 'full' },
-              { path: 'List', component: PHRMPatientListComponent },
-              { path: 'New', component: PHRMPatientComponent },
-              { path: "**", component: PageNotFound }
+            path: 'Report', component: PHRMReportMainComponent, children: [
+              {
+                path: 'Purchase', children: [
+                  { path: '', component: PHRMPurchaseReportComponent },
+                  { path: 'DateWisePurchaseReport', component: DatewisePurchaseReportComponent },
+                  { path: 'GoodsReceiptProductReport', component: PHRMGoodsReceiptProductReportComponent },
+                  { path: 'ItemWisePurchaseReport', component: ItemWisePurchaseReportComponent },
+                  { path: 'PurchaseOrderReport', component: PHRMPurchaseOrderReportComponent },
+                  { path: 'ReturnToSupplierReport', component: PHRMReturnToSupplierReportComponent },
+                  { path: 'PurchaseSummary', component: PHRMPurchaseSummaryComponent },
+                  { path: 'SupplierWisePurchaseReport', component: SupplierWisePurchaseReportComponent,}
+                ]
+              },
+              {
+                path: 'Sales', children: [
+                  { path: '', component: PHRMSalesReportComponent },
+                  { path: 'BillingReport', component: PHRMBillingReportComponent },
+                  { path: 'CounterwiseCollectionReport', component: PHRMCounterwiseCollectionReportComponent },
+                  { path: 'CashCollectionSummaryReport', component: PHRMCashCollectionSummaryReportComponent },
+                  { path: 'DepositBalanceReport', component: PHRMDepositBalanceReport },
+                  { path: 'DrugCategoryWiseReport', component: PHRMDrugCategoryWiseReportComponent },
+                  { path: 'LedgerCreditInOutPatientReport', component: PHRMCreditInOutPatientReportComponent },
+                  { path: 'PHRMDailySalesSummary', component: PHRMDailySalesSummaryComponent },
+                  { path: 'PHRMNarcoticsDailySalesReport', component: PHRMNarcoticsDailySalesReportComponent },
+                  { path: 'SaleReturnReport', component: PHRMSaleReturnReportComponent },
+                  { path: 'UserwiseCollectionReport', component: PHRMUserwiseCollectionReportComponent },
+                  { path: 'SalesStatement', component: PHRMSalesStatementComponent },
+                  { path: 'INSPatientBima', component: PhrmInsBimaReportComponent },
+                  { path: 'SalesSummary', component: PHRMSalesSummaryComponent },
+                  { path: 'PatientWiseSalesDetail', component: PHRMPatientSalesDetailComponent },
+                  { path: 'SettlementSummaryReport', component: PHRMSettlementSummaryReportComponent },
 
+                ]
+              },
+              {
+                path: 'Stock', children: [
+                  { path: '', component: PHRMStockReportComponent },
+                  { path: 'ABCVEDStock', component: PHRMABCVEDReportComponent },
+                  { path: 'BreakageItemReport', component: PHRMBreakageItemReportComponent },
+                  { path: 'BatchStockReport', component: PHRMBatchStockReportComponent },
+                  { path: 'DailyStockSummaryReport', component: PHRMDailyStockSummaryReportComponent },
+                  { path: 'EndingStockSummary', component: PHRMEndingStockSummaryReportComponent },
+                  { path: 'ExpiryReport', component: PHRMExpiryReportComponent },
+                  { path: 'ItemWiseStockReport', component: PHRMItemWiseStockReportComponent },
+                  { path: 'TransferToStoreReport', component: PHRMTransferToStoreReportComponent },
+                  { path: 'TransferToDispensaryReport', component: PHRMTransferToDispensaryReportComponent },
+                  { path: 'PHRMMinStock', component: PHRMMinStockComponent },
+                  { path: 'PHRMNarcoticsStockReport', component: PHRMNarcoticsStockReportComponent },
+                  { path: 'PHRMRackStockDistributionReport', component: PHRMRackStockDistributionReportComponent },
+                  { path: 'ReturnFromCustomerReport', component: ReturnFromCustomerComponent },
+                  { path: 'StockManageDetailReport', component: PHRMStockManageReportComponent },
+                  { path: 'StockSummaryReport', component: PHRMStockSummaryReportComponent },
+                  { path: 'StockItemsReport', component: PHRMStockItemsReportComponent },
+                  { path: 'SupplierStockSummaryReport', component: PHRMSupplierStockSummaryReportComponent },
+                  { path: 'StockMovementReport', component: PHRMStockMovementReportComponent },
+                  { path: 'SupplierStockReport', component: PHRMSupplierStockReportComponent },
+                  { path: 'StockSummarySecond', component: PHRMStockSummarySecondComponent },
+                  { path: 'StockTransfers', component: StockTransfersReportComponent },
+                  { path: 'StockLedgerReport', component: StockLedgerReportComponent },
+                  { path: 'SupplierWiseStockReport', component: SupplierWiseStockReportComponent },
+                  
+                ]
+              },
+              {
+                path: 'Supplier', children: [
+                  { path: '', component: PHRMSupplierReportComponent },
+                  { path: 'SupplierInfoReport', component: PHRMSupplierInformationReportComponent },
+                ]
+              },
+              { path: '', redirectTo: 'Stock', pathMatch: 'full' }
             ]
           },
-          {
-            path: 'Prescription',
-            component: PHRMPrescriptionMainComponent,
-            children: [
-              { path: '', redirectTo: 'List', pathMatch: 'full' },
-              { path: 'List', component: PHRMPrescriptionListComponent },
-              { path: "**", component: PageNotFound }
-
-              //{ path: 'New', component: PHRMPrescriptionComponent, canDeactivate: [ResetPatientcontextGuard] }
-            ]
-          },
-          {
-            path: 'Report', component: PHRMReportMainComponent
-          },
-          { path: 'Report/PurchaseOrderReport', component: PHRMPurchaseOrderReportComponent },
-          { path: 'Report/ItemWiseStockReport', component: PHRMItemWiseStockReportComponent },
-          { path: 'Report/SupplierInfoReport', component: PHRMSupplierInformationReportComponent },
-          { path: 'Report/LedgerCreditInOutPatientReport', component: PHRMCreditInOutPatientReportComponent },
-          { path: 'Report/StockItemsReport', component: PHRMStockItemsReportComponent },
-          { path: 'Report/SupplierStockSummaryReport', component: PHRMSupplierStockSummaryReportComponent },
-          { path: 'Report/StockMovementReport', component: PHRMStockMovementReportComponent },
-          { path: 'Report/BatchStockReport', component: PHRMBatchStockReportComponent },
-          { path: 'Report/SupplierStockReport', component: PHRMSupplierStockReportComponent },
-          { path: 'Report/EndingStockSummary', component: PHRMEndingStockSummaryReportComponent },
-          { path: 'Report/BillingReport', component: PHRMBillingReportComponent },
-          { path: 'Report/DailyStockSummaryReport', component: PHRMDailyStockSummaryReportComponent },
-          { path: 'Report/ExpiryReport', component: PHRMExpiryReportComponent },
-          { path: 'Report/PHRMMinStock', component: PHRMMinStockComponent },
-          { path: 'Report/PHRMDailySalesSummary', component: PHRMDailySalesSummaryComponent },
-          { path: 'Report/ABCVEDStock', component: PHRMABCVEDReportComponent },
-          { path: 'Report/UserwiseCollectionReport', component: PHRMUserwiseCollectionReportComponent },
-          { path: 'Report/CounterwiseCollectionReport', component: PHRMCounterwiseCollectionReportComponent },
-          { path: 'Report/CashCollectionSummaryReport', component: PHRMCashCollectionSummaryReportComponent },
-          { path: 'Report/SaleReturnReport', component: PHRMSaleReturnReportComponent },
-          { path: 'Report/BreakageItemReport', component: PHRMBreakageItemReportComponent },
-          { path: 'Report/GoodsReceiptProductReport', component: PHRMGoodsReceiptProductReportComponent },
-          { path: 'Report/StockManageDetailReport', component: PHRMStockManageReportComponent },
-          { path: 'Report/DrugCategoryWiseReport', component: PHRMDrugCategoryWiseReportComponent },
-          { path: 'Report/ReturnToSupplierReport', component: PHRMReturnToSupplierReportComponent },
-          { path: 'Report/TransferToStoreReport', component: PHRMTransferToStoreReportComponent },
-          { path: 'Report/TransferToDispensaryReport', component: PHRMTransferToDispensaryReportComponent },
-          { path: 'Report/DepositBalanceReport', component: PHRMDepositBalanceReport },
-          { path: 'Report/PHRMNarcoticsDailySalesReport', component: PHRMNarcoticsDailySalesReportComponent },
-          { path: 'Report/PHRMNarcoticsStockReport', component: PHRMNarcoticsStockReportComponent },
-          { path: 'Report/PHRMRackStockDistributionReport', component: PHRMRackStockDistributionReportComponent },
-          { path: 'Report/StockSummaryReport', component: PHRMStockSummaryReportComponent },
           //{ path: 'Report/StoreStockReport', component: PHRMStoreStockReportComponent },
-          {
-            path: 'Sale',
-            component: SaleMainComponent,
-            children: [
-              { path: '', redirectTo: 'New', pathMatch: 'full' },
-              { path: 'List', component: PHRMSaleListComponent },
-              { path: 'New', component: PHRMSaleComponent },
-              { path: 'Dispatch', component: PHRMDispatchComponent },
-              { path: 'SaleCredit', component: PHRMSaleCreditComponent },
-              { path: 'Return', component: PHRMSaleReturnComponent },
-              { path: 'ReceiptPrint', component: PHRMReceiptPrintComponent },
-              { path: 'ReturnList', component: PHRMReturnListComponent },
-              { path: 'CreditBills', component: PHRMCreditBillsComponent },
-              { path: 'Settlement', component: PHRMSettlementComponent },
-              { path: 'ProvisionalReturn', component: PHRMProvisionalReturnComponent, canActivate: [AuthGuardService] },
-              { path: "**", component: PageNotFound }
-
-            ]
-          },
-          {
-            path: 'Stock',
-            component: StockMainComponent,
-            children: [
-
-              { path: '', redirectTo: 'StockDetails', pathMatch: 'full' },
-              { path: 'StockDetails', component: PHRMStockDetailsListComponent },
-              { path: 'WriteOffItems', component: PHRMWriteOffItemComponent },
-              { path: 'WriteOffItemsList', component: PHRMWriteOffListComponent },
-              { path: 'StockManage', component: PHRMStockManageComponent },
-              { path: 'ViewStockBatchItems', component: PHRMStockBatchItemListComponent },
-              { path: 'StoreRequisition', component: PHRMRequisitionListComponent },
-              { path: 'StoreRequisitionItems', component: PHRMRequisitionItemsComponent },
-              { path: 'StoreRequisitionDetails', component: PHRMRequisitionDetailsComponent },
-              { path: "**", component: PageNotFound }
-
-
-            ]
-          },
           {
             path: 'Setting',
             component: PHRMSettingMainComponent,
@@ -257,7 +229,6 @@ import { PHRMStockSummaryReportComponent } from './report/stock-summary/phrm-sto
             ]
           },
           { path: 'ProvisionalItems', component: PHRMProvisionalItems },
-          { path: 'ActivateCounter', component: PharmacyCounterActivateComponent },
           { path: 'WardRequisition', component: WardRequisitionItems },
 
           {
@@ -273,22 +244,20 @@ import { PHRMStockSummaryReportComponent } from './report/stock-summary/phrm-sto
               { path: 'StoreRequisitionDetails', component: PHRMStoreRequisitionDetailsComponent },
               { path: 'StoreDispatch', component: PHRMStoreDispatchItemsComponent },
               { path: 'StoreDispatchDetails', component: PHRMStoreDispatchDetailsComponent },
+              { path: 'DirectDispatch', component: DirectDispatchComponent },
+              {
+                path: 'WriteOffItems', children: [
+                  { path: '', redirectTo: 'List', pathMatch: 'full' },
+                  { path: 'List', component: WriteOffListComponent },
+                  { path: 'Add', component: WriteOffItemComponent },
+                ]
+              },
               { path: "**", component: PageNotFound }
 
             ]
           },
-          {
-            path: 'DuplicatePrints', component: PharmacyDuplicatePrintsMainComponent,
-            children: [
-              { path: '', redirectTo: 'InvoiceReturn', pathMatch: 'full' },
-              { path: 'InvoiceReturn', component: PHRMReturnInvoiceDuplicatePrintComponent, canActivate: [AuthGuardService] },
-              { path: 'ProvisionalReturn', component: PHRMProvisionalReturnComponent, canActivate: [AuthGuardService] },
-              { path: 'SettlementDuplicate', component: PHRMSettlementDuplicateComponent, canActivate: [AuthGuardService] },
-              { path: "**", component: PageNotFound }
-
-            ]
-
-          },
+          { path: 'SupplierLedger', component: SupplierLedgerComponent },
+          { path: 'SupplierLedgerView', component: SupplierLedgerViewComponent },
           { path: "**", component: PageNotFound }
 
 

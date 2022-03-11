@@ -11,7 +11,9 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int WriteOffId { get; set; }
+        public int? WriteOffNo { get; set; }
         public DateTime WriteOffDate { get; set; }
+        public int? StoreId { get; set; }
         public decimal SubTotal { get; set; }
         public decimal VATAmount { get; set; }
         public decimal DiscountAmount { get; set; }

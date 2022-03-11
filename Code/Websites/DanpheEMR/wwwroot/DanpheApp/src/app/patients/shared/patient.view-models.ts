@@ -47,7 +47,10 @@ export class PatientWithVisitInfoVM {
   public MembershipTypeName: string = null;
   public MembershipDiscountPercent: number = null;
   public DialysisCode: number = null;
-
+  //Insurance
+  public  Ins_HasInsurance: boolean=null;
+  public Ins_NshiNumber:string=null;
+  public Ins_InsuranceBalance : number=0;
   constructor() {
   }
 

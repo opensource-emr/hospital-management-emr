@@ -12,13 +12,13 @@
                     <div class="input-group">
                       <div class="icheck-inline">
                         <label class="mt-checkbox mt-checkbox-outline">
-                          <input type="radio" formControlName="KinContactType" value="KIN" [(ngModel)]="currentKinEmergencyContact.KinContactType" checked />
+                          <input type="radio" (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="KIN" [(ngModel)]="currentKinEmergencyContact.KinContactType" checked />
                           <span></span>KIN </label>
                         <label class="mt-checkbox mt-checkbox-outline">
-                          <input type="radio" formControlName="KinContactType" value="EmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
+                          <input type="radio"  (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="EmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
                           <span></span>Emergency Contact </label>
                         <label class="mt-checkbox mt-checkbox-outline">
-                          <input type="radio" formControlName="KinContactType" value="KinAndEmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
+                          <input type="radio" (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="KinAndEmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
                           <span></span>Both </label>
                       </div>
                     </div>
@@ -29,14 +29,14 @@
                 <div class="form-group">
                   <label class="control-label col-md-4">First Name<sup>*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input class="form-control" type="text" formControlName="KinFirstName" [(ngModel)]="currentKinEmergencyContact.KinFirstName"
+                    <input class="form-control" id="FirstName" (keyup.enter)="GoToNextInput('LastName')" type="text" formControlName="KinFirstName" [(ngModel)]="currentKinEmergencyContact.KinFirstName"
                                    required value="" placeholder="First Name" />
                     <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinFirstName')" [hidden]="currentKinEmergencyContact.IsValidCheck('KinFirstName','required')"> First Name is required</span> </div>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-md-4">Last Name<sup>*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input class="form-control" type="text" formControlName="KinLastName" [(ngModel)]="currentKinEmergencyContact.KinLastName"
+                    <input class="form-control" id="LastName" (keyup.enter)="GoToNextInput('Relationship')" type="text" formControlName="KinLastName" [(ngModel)]="currentKinEmergencyContact.KinLastName"
                                    required value="" placeholder="last name" />
                     <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinLastName')" [hidden]="currentKinEmergencyContact.IsValidCheck('KinLastName','required')"> Last Name is required</span> </div>
                 </div>
@@ -50,7 +50,7 @@
                 <div class="form-group">
                   <label class="control-label col-md-4">Relationship<sup>*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input class="form-control" type="text" formControlName="RelationShip" [(ngModel)]="currentKinEmergencyContact.RelationShip"
+                    <input id="Relationship" class="form-control" type="text" formControlName="RelationShip" [(ngModel)]="currentKinEmergencyContact.RelationShip"
                                    required value="" placeholder="Relationship" />
                     <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('RelationShip')" [hidden]="currentKinEmergencyContact.IsValidCheck('RelationShip','required')"> Relationship is required</span> </div>
                 </div>

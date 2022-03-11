@@ -37,8 +37,9 @@ export class SectionListComponent {
   public getsectionList() {
     // this.accountingSettingsBLService.GetsectionList()
     //   .subscribe(res => {
-        if ( this.securityServ.AccHospitalInfo.SectionList.length) {
-          this.sectionList = this.securityServ.AccHospitalInfo.SectionList;
+        if (!!this.accountingservice.accCacheData.Sections && this.accountingservice.accCacheData.Sections.length>0) {//mumbai-team-june2021-danphe-accounting-cache-change
+          this.sectionList = this.accountingservice.accCacheData.Sections;//mumbai-team-june2021-danphe-accounting-cache-change
+          this.sectionList = this.sectionList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
 
           this.showsectionList = true;
          }

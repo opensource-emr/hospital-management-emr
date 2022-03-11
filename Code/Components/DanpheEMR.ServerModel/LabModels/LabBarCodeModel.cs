@@ -11,7 +11,7 @@ namespace DanpheEMR.ServerModel.LabModels
     public class LabBarCodeModel
     {
         [Key]
-        public int BarCodeNumber { get; set; }
+        public Int64 BarCodeNumber { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int BarCodeId { get; set; }
@@ -28,5 +28,6 @@ namespace DanpheEMR.ServerModel.LabModels
     {        
         public int Value { get; set; }
     }
+   
 
 }

@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -24,7 +24,8 @@ export class PHRMCompanyModel {
         var _formBuilder = new FormBuilder();
         this.CompanyValidator = _formBuilder.group({
             'CompanyName': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
-            'ContactNo': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{10}$')])],
+          /*   'ContactNo': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{10}$')])],*/
+          'ContactNo': ['', Validators.pattern('^[0-9]{10}$')],
             'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')]
         });
     }

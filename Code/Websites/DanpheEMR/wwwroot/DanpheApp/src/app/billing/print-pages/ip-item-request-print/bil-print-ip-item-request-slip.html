@@ -1,0 +1,121 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="modelbox-div"
+      style="margin-left:20%;margin-right:5%;margin-top:1%;min-height:450px;width:650px; height: auto;"> <i
+        class="btn btn-danger" style="float: right;margin-right:10px;margin-top:10px"
+        (click)="CloseBillRequestSlip()">X</i>
+      <div id="printpage" style="text-align:center;">
+        <div class="receipt" style="margin-left: 50px;margin-top: 10px;">
+          <billing-header></billing-header>
+          <div class="col-md-12">
+            <p style="text-align:center;font-weight:bold;text-decoration:underline;">Provisional Slip</p>
+          </div>
+          <div class="bill-patinfo" style="font-size: 14px;">
+            <div class="col-md-12" style="padding:0px;">
+              <div class="left">
+                <p class="no-margin" style="text-align:left"> Provisional Receipt No: {{receipt.CurrentFinYear}}/PR/{{
+                  receipt.InvoiceNo}} </p>
+              </div>
+              <div class="right">
+                <!-- <p class="no-margin" style="text-align:right">FiscalYear: {{receipt.ProvisionalFiscalYearId}}</p> -->
+              </div>
+            </div>
+            <div class="clear"></div>
+            <div class="col-md-12" style="padding:0px;">
+              <div class="left">
+                <p class="no-margin" style="text-align:left"> Hospital No: {{receipt.Patient.PatientCode}} </p>
+              </div>
+              <div class="right">
+                <p class="no-margin" style="text-align:right">Date: {{receipt.BillingDate |
+                  DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
+              </div>
+            </div>
+            <div class="clear"></div>
+            <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+              <div class="left" style="width:69%">
+                <div class="no-margin" style="text-align: left;display: inline-block;float: left;width: 31%;">Patient's
+                  Name : </div>
+                <div style="display: inline-block;width: 69%;text-align: left;"> {{receipt.Patient.ShortName}} </div>
+              </div>
+              <div class="right" style="width:31%">
+                <p class="no-margin" style="text-align:right"> Age/Sex : {{receipt.Patient.DateOfBirth |
+                  DanpheDateTime:'age' }}/{{receipt.Patient.Gender}}</p>
+              </div>
+            </div>
+            <div class="col-md-12" style="padding:0px;">
+              <div class="left" style="width: 69%;">
+                <p class="no-margin" style="text-align:left">Address: {{receipt.Patient.Address}},
+                  {{receipt.Patient.CountrySubDivisionName}} </p>
+              </div>
+              <div class="right" style="width:31%">
+                <p class="no-margin" style="text-align:right"> Contact No: {{receipt.Patient.PhoneNumber}} </p>
+              </div>
+            </div>
+            <div class="clear footer"></div>
+            <table class="bill-itms">
+              <tr>
+                <td width="30px" class="print-sn"> Sn.</td>
+                <td width="170px" class="print-par">Particular(s)</td>
+                <td width="20px" class="text-right print-qty">Unit</td>
+                <td width="60px" class="text-right print-rate">Price</td>
+                <td width="60px" class="text-right print-amt">Amount</td>
+              </tr>
+              <tr *ngFor="let row of receipt.BillingItems; let i=index">
+                <td>{{i+1}}</td>
+                <td>{{row.ItemName}}</td>
+                <td class="text-right print-qty">{{row.Quantity}}</td>
+                <td class="text-right print-rate">{{row.Price}}</td>
+                <td class="text-right print-amt">{{row.Quantity * row.Price}}</td>
+              </tr>
+            </table>
+            <div class="col-md-12 bill-summ-div">
+              <div
+                style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
+                In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
+              </div>
+              <div style="padding: 0px;width:54%;display:inline-block;">
+                <table class="bil-summ" style="width:100%">
+                  <tr style="border-top: 0px;">
+                    <td> SubTotal </td>
+                    <td> {{receipt.SubTotal}} </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <!--Removed DiscountPercent Value: sud-12Mar'19-->
+                      <!--Discount ({{receipt.DiscountPercent}}%)-->
+                      Discount
+                    </td>
+                    <td> {{receipt.DiscountAmount}} </td>
+                  </tr>
+                  <tr *ngIf="receipt.TaxableAmount">
+                    <td>Taxable Amount </td>
+                    <td>{{receipt.TaxableAmount}}</td>
+                  </tr>
+                  <tr *ngIf="receipt.TaxTotal">
+                    <td>{{taxLabel}} </td>
+                    <td>{{receipt.TaxTotal}}</td>
+                  </tr>
+                  <tr style="border-bottom: 0px;">
+                    <td>Total Amount </td>
+                    <td>{{receipt.TotalAmount}}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            <div class="col-md-12" style="padding-top: 5px;">
+              <div class="right"> User: {{receipt.BillingUser}} </div>
+            </div>
+            <div style="width: 100%;text-align: center;margin-top: 20px;" *ngIf="provSlipFooterParam.ShowFooter">
+              <b> {{provSlipFooterParam.EnglishText}} </b>
+              <br *ngIf="provSlipFooterParam.VerticalAlign" />
+              <b> {{provSlipFooterParam.NepaliText}} </b>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center; z-index: 4; position: relative; margin-top: 5px;">
+        <button class="btn blue" (click)="print()"> Print <i class="glyphicon glyphicon-print"></i> </button>
+      </p>
+    </div>
+  </div>
+</div>

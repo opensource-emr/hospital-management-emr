@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DanpheEMR.ServerModel;
 using System.Data.Entity;
-
 namespace DanpheEMR.DalLayer
 {
     public class RadiologyDbContext : DbContext
@@ -22,6 +21,11 @@ namespace DanpheEMR.DalLayer
         public DbSet<BillingTransactionItemModel> BillingTransactionItems { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceSepartments { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
+        public DbSet<FilmTypeModel> FilmType { get; set; }
+        public DbSet<CountrySubDivisionModel> CountrySubDivision { get; set; }
+        public DbSet<MunicipalityModel> Muncipality { get; set; }
+
+        //public DbSet<FilmTypeModel> FilmType { get; set; }
         public RadiologyDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -30,6 +34,8 @@ namespace DanpheEMR.DalLayer
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
+            modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
             modelBuilder.Entity<RadiologyImagingItemModel>().ToTable("RAD_MST_ImagingItem");
             modelBuilder.Entity<RadiologyImagingTypeModel>().ToTable("RAD_MST_ImagingType");
             modelBuilder.Entity<ImagingRequisitionModel>().ToTable("RAD_PatientImagingRequisition");
@@ -73,6 +79,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<BillingTransactionItemModel>().ToTable("BIL_TXN_BillingTransactionItems");
             modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
+            modelBuilder.Entity<FilmTypeModel>().ToTable("RAD_MST_FilmType");
         }
 
 

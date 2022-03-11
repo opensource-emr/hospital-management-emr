@@ -1,4 +1,4 @@
-import { Component, Directive, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, Directive, ViewChild, ChangeDetectorRef, Input } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
@@ -6,6 +6,7 @@ import { CommonFunctions } from '../../../shared/common.functions';
 import * as moment from 'moment/moment';
 import { TrialBalanceReportVM } from "../shared/trial-balance-reportvm.model";
 import { CoreService } from '../../../core/shared/core.service';
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
   selector: 'my-app',
@@ -23,19 +24,26 @@ export class TrailBalanceReportComponent {
   public ledgerId: number = 0;
   public ledgerName: string = '';
   public IsShowReport: boolean = false;
-  public dateRange: string = null;
+ // public dateRange: string = null;
   public IsDataLoaded: boolean = false;
   public showExportbtn: boolean = false;
   public ledgerCode: any;
   public showPrint: boolean = false;
   public printDetaiils: any;
   public fiscalYearId:number=0;
+  public showDrCrValuesForTxn=false;
+  btndisabled=false;
+  public IsZeroAmountRecords: boolean = false;
+  public dateRange: string = '';
   constructor(
     public msgBoxServ: MessageboxService,
     public coreservice: CoreService,
-    public accReportBLServ: AccountingReportsBLService, private changeDetector: ChangeDetectorRef) {      
-    this.dateRange = "today";
+    public accReportBLServ: AccountingReportsBLService, private changeDetector: ChangeDetectorRef,
+    public accService : AccountingService) {      
+    //this.dateRange = "today";
     this.showExport();
+    this.showDrCrValues();
+    this.getCoreParameters();
 
   }
   //event onDateChange
@@ -58,6 +66,7 @@ export class TrailBalanceReportComponent {
       this.toDate = event.toDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate = true;
+      this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
     } 
     else {     
       this.validDate =false;
@@ -66,18 +75,22 @@ export class TrailBalanceReportComponent {
   }   
  
   GetTrialBalanceRpt() {
+    this.btndisabled=true;
     if (this.checkDateValidation()) {
       this.accReportBLServ.GetTrailBalanceReport(this.fromDate, this.toDate,this.fiscalYearId).subscribe(res => {
         if (res.Status == "OK") {
+          this.btndisabled=false;
           this.IsShowReport = true;
           this.MapAndMakeTrialReport(res.Results);
         }
         else {
+          this.btndisabled=false;
           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
         }
       });
     }
     else {
+      this.btndisabled=false;
       this.IsShowReport = false;
     }
   }
@@ -145,13 +158,21 @@ export class TrailBalanceReportComponent {
               }
 
               //calculate current Debit/Credit balance (fromDate to toDate)
-              if (ledger.CurrentDr >= ledger.CurrentCr) {
-                subChild.CurrentDr = ledger.CurrentDr - ledger.CurrentCr;
-                subChild.CurrentCr = 0;
-              } else {
-                subChild.CurrentCr = ledger.CurrentCr - ledger.CurrentDr;
-                subChild.CurrentDr = 0;
+              //NageshBB:20May2021-changes as per charak requirement to show both debit and credit amount for transaction             
+              if(this.showDrCrValuesForTxn==true){
+                subChild.CurrentDr = ledger.CurrentDr ;                                          
+                subChild.CurrentCr = ledger.CurrentCr ;                               
+              }else{
+                  if (ledger.CurrentDr >= ledger.CurrentCr) {
+                    subChild.CurrentDr = ledger.CurrentDr - ledger.CurrentCr;                
+                    subChild.CurrentCr = 0;
+                  } else {
+                    subChild.CurrentCr = ledger.CurrentCr - ledger.CurrentDr;                
+                    subChild.CurrentDr = 0;
+                  }
               }
+                
+             
               //calculate total of subChild Dr/Cr
               subChild.TotalDr = subChild.CurrentDr + subChild.OpeningDr;
               subChild.TotalCr = subChild.CurrentCr + subChild.OpeningCr;
@@ -178,9 +199,10 @@ export class TrailBalanceReportComponent {
                 }
                 subChild.Details = ledger.Details;
               }
-              if (subChild.OpeningCr != subChild.OpeningDr || subChild.CurrentCr != subChild.CurrentDr) {
-                this.reportData.push(subChild);//push subchild
-              }
+              // if (subChild.OpeningCr != subChild.OpeningDr || subChild.CurrentCr != subChild.CurrentDr) {
+              //   this.reportData.push(subChild);//push subchild
+              // }
+              this.reportData.push(subChild)
 
               //add current Dr/Cr of subchild to current Dr/Cr of child
               child.CurrentDr = child.CurrentDr + subChild.CurrentDr;
@@ -294,31 +316,33 @@ export class TrailBalanceReportComponent {
       console.log(ex);
     }    
   }
-  Print() {
-    let popupWinindow;
-    var headerContent = document.getElementById("headerForPrint").innerHTML;
-    var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
-    printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;  
-    this.showPrint = false;
-    this.printDetaiils = null;
-    this.changeDetector.detectChanges();
-    this.showPrint = true;
-    this.printDetaiils = headerContent + printContents ; //document.getElementById("printpage");
+  Print(tableId) {
+    // let popupWinindow;
+    // var headerContent = document.getElementById("headerForPrint").innerHTML;
+    // var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+    // printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
+    // printContents += document.getElementById("printpage").innerHTML;  
+    // this.showPrint = false;
+    // this.printDetaiils = null;
+    // this.changeDetector.detectChanges();
+    // this.showPrint = true;
+    // this.printDetaiils = headerContent + printContents ; //document.getElementById("printpage");
+    this.accService.Print(tableId,this.dateRange);
 
   }
 
   ExportToExcel(tableId) {
-    if (tableId) {
-      let workSheetName = 'Trial Balance Report';
-      let Heading = 'Trial Balance Report';
-      let filename = 'TrialBalanceReport';
-      //NBB-send all parameters for now 
-      //need enhancement in this function 
-      //here from date and todate for show date range for excel sheet data
-      CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
-        Heading, filename);
-    }
+    // if (tableId) {
+    //   let workSheetName = 'Trial Balance Report';
+    //   let Heading = 'Trial Balance Report';
+    //   let filename = 'TrialBalanceReport';
+    //   //NBB-send all parameters for now 
+    //   //need enhancement in this function 
+    //   //here from date and todate for show date range for excel sheet data
+    //   CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+    //     Heading, filename);
+    // }
+    this.accService.ExportToExcel(tableId,this.dateRange);
   }
   SwitchViews(row) {
     this.ledgerId = row.LedgerId;
@@ -364,5 +388,17 @@ export class TrailBalanceReportComponent {
     else {
       this.showExportbtn = false;
     }
+  }
+  showDrCrValues(){
+    let flag = this.coreservice.Parameters.find(a => a.ParameterName == "ShowCurrentDrCrBothInTrialBalRpt" && a.ParameterGroupName == "Accounting").ParameterValue;
+    if (flag == "true") {
+      this.showDrCrValuesForTxn = true;
+    }
+    else {
+      this.showDrCrValuesForTxn = false;
+    }
+  }
+  getCoreParameters(){
+    this.accService.getCoreparameterValue();
   }
 }

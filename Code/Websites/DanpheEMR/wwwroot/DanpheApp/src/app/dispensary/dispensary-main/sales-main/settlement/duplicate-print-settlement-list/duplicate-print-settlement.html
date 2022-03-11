@@ -1,0 +1,15 @@
+<div class="row">
+
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="PHRMSettlementGridCols" [grid-data]="allPHRMPSettlements" [rangeType]="dateRange" [date-range-options]="'1W,1M,3M'" (onDateChange)="onGridDateChange($event)" (grid-actions)="PHRMSettlementGridActions($event)" [grid-showExport]="false" [show-print-button]="false" [show-CustomDate]="true">
+        </danphe-grid>
+    </div>
+
+</div>
+<div *ngIf="showReceipt || showActionPanel">
+    <button class="btn btn-primary" (click)="BackToGrid()"><i class="fa fa-backward" style="display:inline-block;"></i>&nbsp;&nbsp;&nbsp;Back</button>
+    <h3 style="display:inline-block;font-size: 15px;margin-left: 10px;margin-bottom: 20px;margin-top: 0;"> <b>Summary View</b></h3>
+</div>
+<div *ngIf="showReceipt">
+    <app-settlement-receipt [settlementId]="SettlementId" [showReceipt]="showReceipt" (close-receipt)="OnReceiptClosed($event)"></app-settlement-receipt>
+</div>

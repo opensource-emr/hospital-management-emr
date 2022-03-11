@@ -12,6 +12,7 @@ import { RouteFromService } from "../../../shared/routefrom.service";
 import { SecurityService } from "../../../security/shared/security.service";
 import { SectionModel } from "../../settings/shared/section.model";
 import { SettingsBLService } from "../../../settings-new/shared/settings.bl.service";
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
     selector: 'voucher-report',
@@ -27,7 +28,7 @@ export class VoucherReportComponent {
     public voucherList: Array<Voucher> = new Array<Voucher>();
     public selVoucher: Voucher = new Voucher();
     public voucherNumber: string = null;
-
+    btndisabled=false;
     public fiscalyearList: any;
 
     public sectionList: Array<SectionModel> = [];
@@ -38,14 +39,14 @@ export class VoucherReportComponent {
     public permissions: Array<any> = new Array<any>();
     public applicationList: Array<any> = new Array<any>();
     constructor(public accReportBLService: AccountingReportsBLService, public msgBoxServ: MessageboxService,
+        public accountingService: AccountingService,
         public accountingBLService: AccountingBLService,
         public changeDetector: ChangeDetectorRef,
         public coreService: CoreService,
         public routeFrom: RouteFromService,
         public securityService: SecurityService,
-        public settingsBLService: SettingsBLService
-
-    ) {
+        public settingsBLService: SettingsBLService,
+        ) {
         this.txnGridColumns = GridColumnSettings.VoucherTransactionList;
         this.fromDate = moment().format("YYYY-MM-DD");
         this.toDate = moment().format("YYYY-MM-DD");
@@ -81,18 +82,21 @@ export class VoucherReportComponent {
         this.calType = calendarTypeObject.AccountingModule;
     }
     public GetFiscalYearList() {
-        this.fiscalyearList = this.securityService.AccHospitalInfo.FiscalYearList;
+        if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+            this.fiscalyearList = this.accountingService.accCacheData.FiscalYearList;//mumbai-team-june2021-danphe-accounting-cache-change
+            this.fiscalyearList = this.fiscalyearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+          }
     }
 
     GetVoucher() {
         try {
-            this.accountingBLService.GetVoucher()
-                .subscribe(res => {
-                    this.voucherList = res.Results;
-                    // this.selVoucher = Object.assign(this.selVoucher, this.voucherList.find(v => v.VoucherName == "Journal Voucher"));//most used voucher
-                    this.selVoucher.VoucherId = -1;
-                    this.AssignVoucher();
-                });
+            if (!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.accountingService.accCacheData.VoucherType;//mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.voucherList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+                this.selVoucher.VoucherId = -1;
+                this.AssignVoucher();
+            }
+    
         } catch (ex) {
             this.msgBoxServ.showMessage("error", ['error ! console log for details.']);
             console.log(ex);
@@ -101,29 +105,37 @@ export class VoucherReportComponent {
 
 
     public GetTxnList() {
+        this.btndisabled=true;
         if (this.checkDateValidation()) {
+            
             if (this.sectionId > 0) {
 
                 this.accReportBLService.GetVoucherReport(this.fromDate, this.toDate, this.sectionId,this.fiscalYearId)
                     .subscribe(res => {
                         if (res.Status == "OK" && res.Results.length) {
+                            this.btndisabled=false;
                             this.txnListAll = res.Results;
                             this.AssignVoucher();
                         }
                         else {
+                            this.btndisabled=false;
                             this.msgBoxServ.showMessage("notice", ["no record found."]);
                             // alert("Failed ! " + res.ErrorMessage);
                         }
+                        
                     });
+                    
             }
             else {
+                this.btndisabled=false;
                 this.msgBoxServ.showMessage("notice", ["please select module"]);
             }
         }
         else {
+            this.btndisabled=false;
             this.msgBoxServ.showMessage("error", ['select proper date(FromDate <= ToDate)']);
         }
-
+        
     }
 
     checkDateValidation() {
@@ -184,9 +196,6 @@ export class VoucherReportComponent {
 
     //sud-nagesh: 21June'20--reusing sectionlist from current active hospital of security service.
     public GetSection() {
-        // this.sectionList = this.securityService.AccHospitalInfo.SectionList;
-        // this.sectionId = 4 ; //this is for Manual_Voucher (Default for DanpheEMR) - Manual voucher will always be there.
-  
         this.settingsBLService.GetApplicationList()
         .subscribe(res => {
           if (res.Status == 'OK') {
@@ -195,12 +204,13 @@ export class VoucherReportComponent {
             if (sectionApplication != null || sectionApplication != undefined) {
               this.permissions = this.securityService.UserPermissions.filter(p => p.ApplicationId == sectionApplication.ApplicationId);
             }
-            let sList = this.securityService.AccHospitalInfo.SectionList;//.filter(sec => sec.SectionId != 4); // 4 is Manual_Voucher (FIXED for DanpheEMR)
+            let sList = this.accountingService.accCacheData.Sections; //mumbai-team-june2021-danphe-accounting-cache-change
             sList.forEach(s => {
               let sname = s.SectionName.toLowerCase();
               let pp = this.permissions.filter(f => f.PermissionName.includes(sname))[0];
               if (pp != null || pp != undefined) {
                 this.sectionList.push(s);
+                this.sectionList = this.sectionList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
               }
             })
             let defSection = this.sectionList.find(s => s.IsDefault == true);

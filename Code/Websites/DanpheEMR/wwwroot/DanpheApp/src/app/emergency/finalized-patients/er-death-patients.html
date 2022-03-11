@@ -52,7 +52,13 @@
   <er-discharge-summary [patientId]="patientId" [visitId]="visitId"></er-discharge-summary>
 </div>
 
+<div class="row">
+  <div class="col-md-4 col-md-offset-8">
+      <patient-cases (selected-cases-list)="PatientCasesOnChange($event)"></patient-cases>
+  </div>
+</div>
+
 <div class="triaged-patient-grid" *ngIf="showGridList">
-  <danphe-grid [grid-colDefaults]="ERDeathPatientGridCol" [grid-data]="allDeathPatients" (grid-actions)="EditAction($event)">
+  <danphe-grid [grid-colDefaults]="ERDeathPatientGridCol" [grid-data]="filteredData" (grid-actions)="EditAction($event)">
   </danphe-grid>
 </div>

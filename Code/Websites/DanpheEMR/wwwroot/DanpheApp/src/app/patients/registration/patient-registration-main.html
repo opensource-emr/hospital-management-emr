@@ -16,11 +16,11 @@
         </li>
 
         <li style="float:right;">
-            <input class="btn blue" type="button" (click)="Add()" *ngIf="patientService.globalPatient.PatientId == 0" [disabled]="loading" value="Register Patient" />
+            <input class="btn green btn-success" id="regPatientSubmitBtn" type="button" (click)="Add()" *ngIf="patientService.globalPatient.PatientId == 0" [disabled]="loading" value="Register Patient" />
 
         </li>
         <li style="float:right;">
-            <input class="btn blue" type="button" (click)="Update()" *ngIf="patientService.globalPatient.PatientId != 0" [disabled]="loading" value="Update Patient Information" />
+            <input class="btn green btn-success" id="editPatientRecordSubmitBtn" type="button" (click)="Update()" *ngIf="patientService.globalPatient.PatientId != 0" [disabled]="loading" value="Update Patient Information" />
         </li>
     </ul>
 </div>

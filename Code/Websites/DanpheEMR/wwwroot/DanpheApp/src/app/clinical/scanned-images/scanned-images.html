@@ -51,21 +51,22 @@
               <div style="position: inherit;"><span><b> {{pdf.caption}}</b></span></div>
               <div class="container">
                 <input type="button" class="btn btn-danger btn-sm" (click)="DeleteUploadedPdf(i)" value="X">
-                <img style="height: 180px;" class="img-responsive" [src]="pdfPath" (click)="openPdfFiles(i)" />
+                <img style="height: 180px;" class="img-responsive"
+                  [src]="pdfBcode"
+                  (click)="openPdfFiles(i)" />
                 <!-- <input type="checkbox" class="checkbox" (click)="makearray(i)" /> -->
               </div>
             </div>
           </div>
-        </div>
+        </div>        
         <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showSelectedPdf">
           <div class="portlet-body form">
             <div class="row">
               <div class="col-md-10 col-md-offset-1">
-                <div class="modelbox-div clearfix"><a class="btn btn-danger del-btn"
-                    (click)="showSelectedPdf=false">X</a>
+                <div class="modelbox-div clearfix"><a class="btn btn-danger del-btn" (click)="showSelectedPdf=false">X</a>
                   <div class="form-body">
-                    <pdf-viewer [src]="SelectedPdfSrc" [render-text]="true" style="display: block;">
-                    </pdf-viewer>
+                    <!-- <pdf-viewer [src]="SelectedPdfSrc" [render-text]="true" style="display: block;">
+                    </pdf-viewer> -->
                   </div>
                   <div class="panel-footer">
                   </div>
@@ -124,8 +125,7 @@
                       </select>
                       <span class="color-red font-sm"
                         [hidden]="selectedImage.IsValidCheck('FileType','required') || !(selectedImage.IsDirty('FileType'))">FileType
-                        is required</span>
-                    </div>
+                        is required</span> </div>
                   </div>
                 </div>
                 <br>

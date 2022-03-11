@@ -18,6 +18,7 @@ export class RPT_PoliceCaseReportComponent {
     public toDate: string = null;
     dlService: DLService = null;
     http: HttpClient = null;
+    public showGrid:boolean = false;
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
     public showDischargedOnly: boolean = false;
 
@@ -45,6 +46,7 @@ export class RPT_PoliceCaseReportComponent {
     }
     Success(res) {
         if(res.Status == "OK" && res.Results.length > 0){
+            this.showGrid = true;
             this.PoliceCaseGridColumns = this.reportService.reportGridCols.PoliceCaseReportCol;
             this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("AdmissionDate", false));
             this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("DischargedDate", false));

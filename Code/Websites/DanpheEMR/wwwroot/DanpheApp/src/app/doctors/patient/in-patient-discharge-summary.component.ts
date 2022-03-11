@@ -16,21 +16,20 @@ export class InPatientDischargeSummaryComponent {
   public currentPatient: Patient = null;
   public patientId: number = null;
   public patientVisitId: number = null;
-  public  showDischargeSummaryView: boolean = false;
-  public  showDischargeSummaryAdd: boolean = false;
-  public  selectedPatient: any;
-    
+  public showDischargeSummaryView: boolean = false;
+  public showDischargeSummaryAdd: boolean = false;
+  public selectedPatient: any;
+
   constructor
     (public patientservice: PatientService,
       public router: Router,
       public visitservice: VisitService,
       public msgBoxServ: MessageboxService,
-    public doctorsBLService: DoctorsBLService,
-    public adtBlService: ADT_BLService)
-  {
+      public doctorsBLService: DoctorsBLService,
+      public adtBlService: ADT_BLService) {
     this.currentPatient = new Patient();
     this.patientVisitId = this.visitservice.globalVisit.PatientVisitId;
-    this.patientId = this.visitservice.globalVisit.PatientId;      
+    this.patientId = this.visitservice.globalVisit.PatientId;
     this.GetPatientPlusBedInfo();
   }
 
@@ -46,14 +45,25 @@ export class InPatientDischargeSummaryComponent {
             this.showDischargeSummaryAdd = true;
           }
           else { // else, discharge Summary has been submitted
-           
+
             this.showDischargeSummaryAdd = false;
             this.showDischargeSummaryView = true;
-            this.msgBoxServ.showMessage("Warning", ["Discharge note is already Finalized !! You can only view it !"]);           
+            this.msgBoxServ.showMessage("Warning", ["Discharge note is already Finalized !! You can only view it !"]);
           }
         }
       }
     });
+  }
+
+  public CallbackFromViewPage(data) {
+    this.showDischargeSummaryView = false
+    this.showDischargeSummaryAdd = true;
+
+  }
+
+  public CallBackFromAddEdit(data) {
+    this.showDischargeSummaryView = true
+    this.showDischargeSummaryAdd = false;
   }
 
 }

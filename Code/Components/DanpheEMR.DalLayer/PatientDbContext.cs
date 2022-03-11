@@ -37,6 +37,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PatientBedInfo> PatientBedInfos { get; set; }
         public DbSet<WardModel> Wards { get; set; }
         public DbSet<BedModel> Beds { get; set; }
+        public DbSet<MunicipalityModel> Municipalities { get; set; }
         public PatientDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -180,8 +181,9 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
             modelBuilder.Entity<PatientBedInfo>().ToTable("ADT_TXN_PatientBedInfo");
             modelBuilder.Entity<WardModel>().ToTable("ADT_MST_Ward");
-
             modelBuilder.Entity<BedModel>().ToTable("ADT_Bed");
+            modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
+
         }
     }
 }

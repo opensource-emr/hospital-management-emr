@@ -16,7 +16,7 @@ namespace DanpheEMR.ServerModel
         [Key, ForeignKey("Visit")]
         public int PatientVisitId { get; set; }
         public int PatientId { get; set; }
-        public int AdmittingDoctorId { get; set; }
+        public int? AdmittingDoctorId { get; set; }
         public DateTime AdmissionDate { get; set; }
         public DateTime? DischargeDate { get; set; }
         public string AdmissionNotes { get; set; }
@@ -39,7 +39,7 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public virtual BillingDeposit BilDeposit { get; set; }
         [NotMapped]
-        public List<BillingTransactionItemModel> BilTxnItems { get; set; }
+        public BillingTransactionModel BillingTransaction { get; set; }
 
         //RequestingDepartmentId is moved to ADT_TXN_PatientBedInfo table.
         [NotMapped]
@@ -47,11 +47,35 @@ namespace DanpheEMR.ServerModel
 
         //Added by Yubraj --19th November 2018
         public DateTime? CancelledOn { get; set; }
-        public int? CancelledBy{ get; set; }
+        public int? CancelledBy { get; set; }
         public string CancelledRemark { get; set; }
 
         public string ProcedureType { get; set; }
-        
+
         public bool? IsPoliceCase { get; set; }
+        [NotMapped]
+        public bool? Ins_HasInsurance { get; set; }
+        [NotMapped]
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? ClaimCode { get; set; }
+        [NotMapped]
+        public string Ins_NshiNumber { get; set; }
+
+        public bool? IsInsurancePatient { get; set; }
+        [NotMapped]
+        public double? Ins_InsuranceBalance { get; set; }
+        public int? DiscountSchemeId { get; set; }
+        public string AdmissionCase { get; set; }
+        [NotMapped]
+        public bool? IsBillingEnabled { get; set; }
+
+        [NotMapped]
+        public bool? IsLastClaimCodeUsed { get; set; }//sud:1-Oct'21
+
+        public double? ProvisionalDiscPercent { get; set; }
+        public Boolean IsItemDiscountEnabled { get; set; }
+
+
     }
 }

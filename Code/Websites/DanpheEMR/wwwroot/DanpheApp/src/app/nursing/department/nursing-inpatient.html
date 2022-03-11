@@ -10,6 +10,7 @@
     border-radius: 4px !important;
     z-index: 99;
   }
+
   .lbl-police-case {
     color: red;
     font-weight: bold;
@@ -22,42 +23,24 @@
     <div class="col-md-4 col-xs-2">
       <ul class="nav nav-tabs">
         <li role="presentation" class="" id="fav">
-          <a class="btn btn-default"
-             role="button" (click)="showFavorites()"><i class="fa fa-star"></i>My Patients</a>
+          <a class="btn btn-default" role="button" (click)="showFavorites()"><i class="fa fa-star"></i>My Patients</a>
         </li>
-        <li role="presentation" class="" id="all"><a class="btn btn-default" (click)="showAllPatients()"> All Patients</a></li>
+        <li role="presentation" class="" id="all"><a class="btn btn-default" (click)="showAllPatients()"> All
+            Patients</a></li>
       </ul>
     </div>
-    
-    <div class="col-md-6">
+
+    <!-- <div class="col-md-6">
       <label class="lbl-police-case" for="isPoliceCase">Show Police Case<b>:</b> </label>
-        <!-- <input id="isPoliceCase" name="isPoliceCase" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
-        (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase" [ngModelOptions]="{standalone: true}" /> -->
+      <input id="isPoliceCase" name="isPoliceCase" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+        type="checkbox" value="" (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase"
+        [ngModelOptions]="{standalone: true}" />
+    </div> -->
 
-        <input id="isPoliceCase" name="isPoliceCase"  style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox" type="checkbox" 
-        value="" (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase" [ngModelOptions]="{standalone: true}" />
-<!-- 
-      <label class="control-label col-md-4">Show Police Case <b>&nbsp; &nbsp;:</b> </label>
-        <div class="col-md-2">
-          <div class="input-group">
-            <div class="icheck-inline">
-              <label class="mt-checkbox mt-checkbox-outline">
-                <input id="isPoliceCase" name="isPoliceCase" type="checkbox" value="" (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase" [ngModelOptions]="{standalone: true}" />
-                <span></span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-      </div> -->
-    </div>
-
-    <div *ngIf="showActiveWardInfo"
-         class="modal-content col-md-2 col-xs-2 col-lg-2">
+    <div *ngIf="showActiveWardInfo" class="modal-content col-md-2 col-xs-2 col-lg-2">
 
 
-      <div class="fa fa-caret-up"
-           style="
+      <div class="fa fa-caret-up" style="
       float: right;
       font-size: 25px;
       left: 6px;
@@ -65,9 +48,7 @@
       color: #313131;
       position: relative;
     "></div>
-      <i (click)="CloseInfo()"
-         class="fa fa-close"
-         style="
+      <i (click)="CloseInfo()" class="fa fa-close" style="
       cursor: pointer;
       float: right;
       font-size: 15px;
@@ -85,28 +66,23 @@
       <label class="label label-primary">
         Active Ward : <b>{{securityService.getActiveWard().WardName}}</b>
       </label>
-      <i (mouseenter)="ShowInfo()"
-         (click)="UnsetGlobalWard()"
-         style="
+      <i (mouseenter)="ShowInfo()" (click)="UnsetGlobalWard()" style="
       cursor: pointer;
       margin-left: 5px;
       font-size: 20px;
       position: relative;
       top: 2px;
       left: 5px;
-    "
-         class="fa fa-sign-out"></i>
+    " class="fa fa-sign-out"></i>
     </span>
   </div>
 </div>
 <div class="clearfix"></div>
 <div class="row">
   <div class="col-md-12">
-    <danphe-grid *ngIf="showInPatGrid && showFavPatGrid"
-                 [grid-colDefaults]="nurFavPatGidColumnSettings"
-                 [grid-data]="FavoritePatients"
-                 [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                 (grid-actions)="NurIPDListGridActions($event)">
+    <danphe-grid *ngIf="showInPatGrid && showFavPatGrid" [grid-colDefaults]="nurFavPatGidColumnSettings"
+      [grid-data]="FavoritePatients" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      (grid-actions)="NurIPDListGridActions($event)">
     </danphe-grid>
   </div>
 </div>
@@ -114,8 +90,9 @@
 
 <div class="row">
   <div class="col-md-12">
-    <danphe-grid *ngIf="showInPatGrid && showAllPatGrid" [grid-colDefaults]="nurIPDGridColumnSettings" [grid-data]="ipdList"
-                 [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="NurIPDListGridActions($event)">
+    <danphe-grid *ngIf="showInPatGrid && showAllPatGrid" [grid-colDefaults]="nurIPDGridColumnSettings"
+      [grid-data]="ipdList" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      (grid-actions)="NurIPDListGridActions($event)">
     </danphe-grid>
   </div>
 </div>
@@ -123,16 +100,14 @@
 <div class="row">
   <div *ngIf="showDocumentsDetails">
     <patient-upload-files [isShowUploadMode]="isShowUploadMode" [isShowListMode]="isShowListMode"
-                          [patientId]="patientId">
+      [patientId]="patientId">
     </patient-upload-files>
   </div>
 </div>
 
 <div class="row">
-  <danphe-bed-transfer *ngIf="showTransferPage"
-                       [selectedBedInfo]="selectedBedInfo"
-                       (transfer)="TransferUpgrade($event)"
-                       [currentModule]="'nursing'">
+  <danphe-bed-transfer *ngIf="showTransferPage" [selectedBedInfo]="selectedBedInfo" (transfer)="TransferUpgrade($event)"
+    [currentModule]="'nursing'" [all-Departments]="allDepartments">
   </danphe-bed-transfer>
 </div>
 
@@ -187,8 +162,7 @@
   </div>
 </div>
 
-<div class="popup-static portlet box portlet-fullscreen"
-     *ngIf="showReceiveNote">
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showReceiveNote">
   <div class="portlet-body form">
     <div class="col-md-12">
       <div class="modelbox-div">

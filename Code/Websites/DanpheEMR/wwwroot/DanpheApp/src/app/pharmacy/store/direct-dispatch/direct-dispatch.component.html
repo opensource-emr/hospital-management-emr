@@ -1,0 +1,150 @@
+<style>
+  .btn {
+    margin: 5px;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>
+
+<div class="panel panel-default">
+  <div class="panel-heading good-panel-heading">
+    <div class="row">
+      <div class="col-md-2">
+        <b>Direct Dispatch</b>
+      </div>
+      <div class="col-md-7 text-right">
+        <label class="control-label">Dispatch&nbsp;Date&nbsp;<span>:</span>
+          <span>&nbsp;
+            {{dispatchItems[0].DispatchedDate |date : 'yyyy-MM-dd'}}
+            &nbsp;&nbsp;
+            <i *ngIf="dispatchItems[0].DispatchedDate ">({{dispatchItems[0].DispatchedDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+          </span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+  <div class="panel-body">
+    <form [formGroup]="directDispatchForm" class="form-horizontal hm-form row">
+      <div class="col-md-3">
+        <div class="form-group">
+          <label class="control-label col-md-4">Dispensary<sup style="color: red;">*</sup> <b>:</b></label>
+          <div class="pull-right col-md-8">
+            <input danphe-auto-complete formControlName="targetStore" [(ngModel)]="selectedDispensary" class="form-control" [list-formatter]="DispensaryListFormatter" [source]="dispensaryList" placeholder="Enter Dispensary Name" display-property-name="Name" value-property-name=null onclick="this.select();" id="dispensary" (valueChanged)="OnDispensaryChange()" max-num-list="10" (keyup.enter)="SetFocusOnItemName(dispatchItems.length - 1)" />
+            <div *ngIf="directDispatchForm.get('targetStore').invalid && (directDispatchForm.get('targetStore').dirty || directDispatchForm.get('targetStore').touched)" class="error-message">
+              <div *ngIf="directDispatchForm.get('targetStore').errors.required">
+                Dispensary is required
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-striped table-hover inv_table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th sortable-header col="itemnames"><b>ItemName</b></th>
+              <th> <b> Code </b> </th>
+              <th> <b> UOM </b> </th>
+              <th> <b> BatchNo </b> </th>
+              <th> <b> Expiry Date </b> </th>
+              <th sortable-header col="quantity" style="width: 70px">
+                <b>Available Qty</b>
+              </th>
+              <th sortable-header col="quantity" style="width: 90px">
+                <b>Dispatched Qty</b>
+              </th>
+              <th sortable-header style="width: 200px"><b>Remark</b></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dispatchItems; let i = index">
+              <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+              <td>
+                <div class="div-relative autocomplete-item">
+                  <form [formGroup]="row.DispatchItemValidator">
+                    <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem" [source]="itemList" [list-formatter]="ItemListFormatter" placeholder="Enter Item Name" display-property-name="ItemName" value-property-name=null onclick="this.select();" min-chars="1" (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="10" formControlName="ItemName" (keyup.enter)="OnPressedEnterKeyInItemField(i)" (keyup.escape)="SetFocusById('qtyip' + (i-1));DeleteRow(i);" />
+                    <div class="error-message" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValidCheck('ItemName','required')"> Item is required</div>
+                  </form>
+                  <!-- <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a> -->
+                </div>
+              </td>
+              <td>
+                {{row.Code}}
+              </td>
+              <td>
+                {{row.UOMName}}
+              </td>
+              <td>
+                {{row.BatchNo}}
+              </td>
+              <td>
+                {{row.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </td>
+              <td>
+                <input type="number" style="width: 90px;" [value]='row.AvailableQuantity' disabled name="availableQty">
+              </td>
+              <td>
+                <form [formGroup]="row.DispatchItemValidator">
+                  <input [(ngModel)]="row.DispatchedQuantity" onwheel="this.blur()" style="width:156px" min="0" [disabled]="disableTextBox" onFocus="this.select();" formControlName="DispatchedQuantity" class="form-control" id="qtyip{{i}}" name="quantity" type="number" value="{{0}}" onclick="this.select();" (keyup.enter)="OnPressedEnterKeyInQuantityField(i)">
+                  <div *ngIf="row.IsDirty('DispatchedQuantity')" class="error-message" [hidden]="row.IsValidCheck('DispatchedQuantity','required')">
+                    Quantity is required
+                  </div>
+                  <div *ngIf="row.IsDirty('DispatchedQuantity')" class="error-message" [hidden]="row.AvailableQuantity >= row.DispatchedQuantity">
+                    Quantity cannot be greater than Available Qty.
+                  </div>
+                </form>
+              </td>
+              <td>
+                <input [(ngModel)]="row.ItemRemarks" [disabled]="disableTextBox" class="form-control" name="ItemRemarks" type="text" (keyup.enter)="SetFocusById('remarks')" />
+              </td>
+              <td><a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success"></i></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <form [formGroup]="directDispatchForm" class="form-horizontal hm-form">
+        <div class="col-md-12">
+          <span class="col-md-2">Remarks<sup style="color: red;">*</sup><span class="right">:</span></span>
+          <span class="col-md-10">
+            <textarea name="Remarks" id="remarks" formControlName="Remarks" cols="10" rows="3" (keyup.enter)="SetFocusById('ReceivedBy')"></textarea>
+            <div *ngIf="directDispatchForm.get('Remarks').invalid && (directDispatchForm.get('Remarks').dirty || directDispatchForm.get('Remarks').touched)" class="error-message">
+              <div *ngIf="directDispatchForm.get('Remarks').errors.required">
+                Remarks is required
+              </div>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-12">
+          <span class="col-md-2"> Received By<span class="right">:</span></span>
+          <span class="col-md-8"><input type="text" id="ReceivedBy" formControlName="ReceivedBy" (keyup.enter)="SetFocusById('directDispatch')"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div class="panel-footer text-center">
+  <div>
+    <mark>Note: Direct Dispatch will automatically create new requisition and dispatch it.</mark>
+  </div>
+  <button id="directDispatch" class="btn green btn-success tooltip"  (click)="DirectDispatch()"
+  [disabled]="loading">Direct Dispatch </button>
+  <span></span>
+  <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Discard Changes">
+  <span></span>
+</div>
+<div>
+  <router-outlet></router-outlet>
+</div>

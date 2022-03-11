@@ -16,6 +16,9 @@ using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Threading.Tasks;
 using DanpheEMR.Enums;
+using System.Data;
+using System.Data.SqlClient;
+using DanpheEMR.ServerModel.BillingModels;
 
 namespace DanpheEMR.Controllers
 {
@@ -38,13 +41,72 @@ namespace DanpheEMR.Controllers
 
 
         [HttpGet]
-        public string Get()
+        public string Get(string reqType, int? invoiceNumber, int? CreditNoteNo, int fiscalYrId, bool getVisitInfo)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            BillingDbContext billingDbContext = new BillingDbContext(connString);
+            RbacDbContext rbacDbContext = new RbacDbContext(connString);
+            MasterDbContext masterDbContext = new MasterDbContext(connString);
+
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
             try
             {
-                responseData.Results = null;
+                if (reqType != null && reqType == "getInvoiceDetailsForCreditNote" && invoiceNumber != null && invoiceNumber != 0)
+                {
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@InvoiceNumber", invoiceNumber),
+                        new SqlParameter("@FiscalYearId", fiscalYrId)};
+
+
+                    //there are four return table coming from this stored procedure.
+                    DataSet dsCreditNoteInfos = DALFunctions.GetDatasetFromStoredProc("SP_BIL_GetInvoiceAndPatientDetailsForCreditNote", paramList, billingDbContext);
+
+                    DataTable dtPatientInfo = dsCreditNoteInfos.Tables[0];
+                    DataTable dtInvoiceInfo = dsCreditNoteInfos.Tables[1];
+                    DataTable dtTxnItemInfo = dsCreditNoteInfos.Tables[2];
+                    DataTable dtAlreadyRetItems = dsCreditNoteInfos.Tables[3];
+
+
+                    //group them in a new anonymous object and send to client.
+                    responseData.Results = new
+                    {
+                        PatientInfo = CRN_PatientInfoVM.GetSinglePatientInfoMappedFromDbTable(dtPatientInfo),
+                        InvoiceInfo = CRN_InvoiceInfoVM.GetSingleInvoiceInfoMappedFromDbTable(dtInvoiceInfo),
+                        TransactionItems = dtTxnItemInfo,
+                        AlreadyReturnedItms = dtAlreadyRetItems,
+                        IsInvoiceFound = dtInvoiceInfo.Rows.Count > 0 ? true : false//this flag decides whether or not to display in client side.
+                    };
+
+
+                }
+
+                else if (reqType != null && reqType == "CreditNoteByCreditNoteNo" && CreditNoteNo != null && CreditNoteNo != 0)
+                {
+
+                    //BillInvoiceReturnModel bilItmRtn = billingDbContext.BillInvoiceReturns.Where(bilItm => bilItm.CreditNoteNumber == CreditNoteNo && bilItm.FiscalYearId == fiscalYrId).FirstOrDefault();
+                    var ReturnReceipt = (from billRtn in billingDbContext.BillInvoiceReturns.Include("Patient")
+                                         join pat in billingDbContext.Patient
+                                                on billRtn.PatientId equals pat.PatientId
+                                         where billRtn.CreditNoteNumber == CreditNoteNo && billRtn.FiscalYearId == fiscalYrId
+                                         select new
+                                         {
+                                             Patient = pat,
+                                             BillReturnTxn = billRtn,
+                                             BillReturnTxnItm = billingDbContext.BillInvoiceReturnItems.Where(itm => itm.BillReturnId == billRtn.BillReturnId)
+
+                                         }).FirstOrDefault();
+
+                    responseData.Status = "OK";
+                    responseData.Results = new
+                    {
+                        //Patient = ReturnReceipt.Patient,
+                        BillReturnTransaction = ReturnReceipt.BillReturnTxn,
+                        BillReturnTransactionItems = ReturnReceipt.BillReturnTxnItm,
+                        UserName = rbacDbContext.Users.Where(usr => usr.EmployeeId == ReturnReceipt.BillReturnTxn.CreatedBy).FirstOrDefault().UserName
+
+                    };
+
+                }
             }
             catch (Exception ex)
             {
@@ -61,6 +123,9 @@ namespace DanpheEMR.Controllers
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             //string ipDataString = this.ReadPostData();
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
+
+            string ipDataString = this.ReadPostData();
+
             try
             {
                 BillingDbContext billingDbContext = new BillingDbContext(connString);
@@ -83,7 +148,7 @@ namespace DanpheEMR.Controllers
                                 billingDbContext.AuditDisabled = false;
                                 BillingFiscalYear currFiscYear = BillingBL.GetFiscalYear(billingDbContext);
                                 //credit note number will continue from current fiscal year, regardless whether the bill was generated in earlier fiscal year.. (sud:30Aug'18)
-                                int? maxCreditNoteNum = billingDbContext.BillReturns.Where(a => a.FiscalYearId == currFiscYear.FiscalYearId).Max(a => a.CreditNoteNumber);
+                                int? maxCreditNoteNum = billingDbContext.BillInvoiceReturns.Where(a => a.FiscalYearId == currFiscYear.FiscalYearId).Max(a => a.CreditNoteNumber);
                                 billInvoiceRet.CreatedOn = DateTime.Now;
                                 if (maxCreditNoteNum == null || !maxCreditNoteNum.HasValue)
                                 {
@@ -95,8 +160,9 @@ namespace DanpheEMR.Controllers
                                 billInvoiceRet.FiscalYearId = currFiscYear.FiscalYearId;
                                 billInvoiceRet.CreditNoteNumber = (int?)(maxCreditNoteNum + 1);
                                 billInvoiceRet.CreatedBy = currentUser.EmployeeId;
-                                billingDbContext.BillReturns.Add(billInvoiceRet);
+                                billingDbContext.BillInvoiceReturns.Add(billInvoiceRet);
                                 billingDbContext.SaveChanges();
+
 
                                 //commented--sud:7Feb--this logic is totally wrong
                                 //var visit = billingDbContext.Visit.Where(x => x.PatientId == billInvoiceRet.PatientId).OrderByDescending(x=>x.VisitDate).FirstOrDefault();
@@ -106,7 +172,7 @@ namespace DanpheEMR.Controllers
                                 //billingDbContext.Entry(visit).Property(a => a.BillingStatus).IsModified = true;
                                 billingDbContext.AuditDisabled = true;
 
-
+                                ///sud:30Apr'21--need to remove below PartialBilling logic altogether from billing
                                 if (!string.IsNullOrEmpty(billTransaction))
                                 {
                                     // Rajesh: 8sept19 once the items are returned then for remaining items will generate new invoice.
@@ -155,6 +221,7 @@ namespace DanpheEMR.Controllers
 
                                         //check this logic: Pratik--
                                         //why are we adding new billingtransactionitems in the database.. ?
+                                        //ans: sud > this was to handle partialreturn cases..
                                         billingTransactionItems.ForEach(item =>
                                         {
                                             item.BillingTransactionId = billingTXN.BillingTransactionId;
@@ -195,19 +262,29 @@ namespace DanpheEMR.Controllers
                                 billingDbContext.Entry(billTxn).Property(a => a.PartialReturnTxnId).IsModified = true;
                                 billingDbContext.SaveChanges();
 
-                                if (billTxn.IsInsuranceBilling == true)
+                                //if (billTxn.IsInsuranceBilling == true)
+                                //{
+                                //    double deductableInsuranceAmount = (billTxn.TotalAmount ?? default(double)) * -1;
+                                //    BillingBL.UpdateInsuranceCurrentBalance(connString,
+                                //        billTxn.PatientId,
+                                //        billTxn.InsuranceProviderId ?? default(int),
+                                //        currentUser.EmployeeId, deductableInsuranceAmount, true);
+                                //}
+
+                                if (billTxn.IsInsuranceBilling == true && billTxn.ClaimCode != null)
                                 {
                                     double deductableInsuranceAmount = (billTxn.TotalAmount ?? default(double)) * -1;
-                                    BillingBL.UpdateInsuranceCurrentBalance(connString,
+                                    InsuranceBL.UpdateInsuranceCurrentBalance(connString,
                                         billTxn.PatientId,
                                         billTxn.InsuranceProviderId ?? default(int),
-                                        currentUser.EmployeeId, deductableInsuranceAmount, true);
+                                        currentUser.EmployeeId, deductableInsuranceAmount, true, "Insurance bill returned by patient");
                                 }
 
                                 var invoiceItems = billingDbContext.BillingTransactionItems.Where(b => b.BillingTransactionId == billInvoiceRet.BillingTransactionId).ToList();
                                 //replaced calling centralized function in BillingBL
                                 for (int i = 0; i < invoiceItems.Count; i++)
                                 {
+                                    ///sud:30Apr'21--need to remove below if condition(PartialBilling) logic altogether from billing
                                     if (string.IsNullOrEmpty(billTransaction))
                                     {
 
@@ -269,7 +346,7 @@ namespace DanpheEMR.Controllers
                                             }
 
 
-                                            
+
 
                                         }
                                         invoiceItems[i].ReturnQuantity = invoiceItems[i].Quantity;
@@ -313,6 +390,20 @@ namespace DanpheEMR.Controllers
                                 billInvoiceRet.PartialReturnTxnId = billTxn.PartialReturnTxnId;
                                 billingDbContext.SaveChanges();
 
+                                //if bill-status is paid, that means user has to return some amount to the patient.
+                                if (billTxnReturnData.BillStatus == ENUM_BillingStatus.paid)
+                                {
+                                    EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                    empCashTransaction.TransactionType = "SalesReturn";
+                                    empCashTransaction.ReferenceNo = billInvoiceRet.BillReturnId;
+                                    empCashTransaction.InAmount = 0;
+                                    empCashTransaction.OutAmount = billInvoiceRet.TotalAmount;
+                                    empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                    empCashTransaction.TransactionDate = DateTime.Now;
+                                    empCashTransaction.CounterID = billInvoiceRet.CounterId;
+                                    BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                                }
+
                                 dbContextTransaction.Commit(); //end of transaction
                                 billInvoiceRet.Patient = patient;
                                 billTxnReturnData.Patient = patient;
@@ -325,6 +416,7 @@ namespace DanpheEMR.Controllers
 
                                 };
 
+
                                 //sync to remote server once return invoice is created
                                 //send to IRD only after transaction is committed successfully: sud-23Dec'18
                                 if (realTimeRemoteSyncEnabled)
@@ -334,7 +426,6 @@ namespace DanpheEMR.Controllers
                                         PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billInvoiceRet.PatientId).FirstOrDefault();
                                         billInvoiceRet.Patient = pat;
                                     }
-
                                     //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
                                     //BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext);
                                     Task.Run(() => BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext));
@@ -354,6 +445,153 @@ namespace DanpheEMR.Controllers
                         responseData.Status = "Failed";
                         responseData.ErrorMessage = "billTransactionitems is invalid";
                     }
+                }
+                else if (reqType == "post-creditnote")
+                {
+                    BillInvoiceReturnModel billInvoiceRet = DanpheJSONConvert.DeserializeObject<BillInvoiceReturnModel>(ipDataString);
+                    DateTime returnDateTime = DateTime.Now;//need same time for CreditNote and Items, hence created a separate variable.
+                    using (var dbContextTransaction = billingDbContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            if (billInvoiceRet != null)
+                            {
+
+                                BillSettlementModel settlement = new BillSettlementModel();
+
+                                //Create new row in settlement if there was cash discount given.
+                                if (billInvoiceRet.DiscountReturnAmount > 0)
+                                {
+                                    //BillSettlementModel settlement = new BillSettlementModel();
+                                    settlement.DiscountReturnAmount = billInvoiceRet.DiscountReturnAmount;
+                                    settlement.PatientId = billInvoiceRet.PatientId;
+                                    settlement.SettlementReceiptNo = GetSettlementReceiptNo(billingDbContext);
+                                    settlement.CreatedOn = System.DateTime.Now;
+                                    settlement.SettlementDate = System.DateTime.Now;
+                                    settlement.FiscalYearId = BillingBL.GetFiscalYear(billingDbContext).FiscalYearId;
+                                    settlement.CreatedBy = currentUser.EmployeeId;
+                                    settlement.CounterId = billInvoiceRet.CounterId;
+                                    settlement.PaymentMode = ENUM_BillPaymentMode.cash;
+
+                                    billingDbContext.BillSettlements.Add(settlement);
+                                    billingDbContext.SaveChanges();
+                                }
+
+                                //section-1: Create new row in creditnote (BillInvoiceReturnModel) table..
+                                billingDbContext.AuditDisabled = false;
+                                BillingFiscalYear currFiscYear = BillingBL.GetFiscalYear(billingDbContext);
+                                //credit note number will continue from current fiscal year, regardless whether the bill was generated in earlier fiscal year.. (sud:30Aug'18)
+                                int? maxCreditNoteNum = billingDbContext.BillInvoiceReturns.Where(a => a.FiscalYearId == currFiscYear.FiscalYearId).Max(a => a.CreditNoteNumber);
+                                billInvoiceRet.CreatedOn = returnDateTime;
+                                if (maxCreditNoteNum == null || !maxCreditNoteNum.HasValue)
+                                {
+                                    maxCreditNoteNum = 0;
+                                }
+
+                                billInvoiceRet.FiscalYear = currFiscYear.FiscalYearFormatted;
+                                billInvoiceRet.FiscalYearId = currFiscYear.FiscalYearId;
+                                billInvoiceRet.CreditNoteNumber = (int?)(maxCreditNoteNum + 1);
+                                billInvoiceRet.CreatedBy = currentUser.EmployeeId;
+                                billInvoiceRet.SettlementId = settlement.SettlementId;
+                                billingDbContext.BillInvoiceReturns.Add(billInvoiceRet);
+                                billingDbContext.SaveChanges();
+                                billingDbContext.AuditDisabled = true;
+
+
+                                /*//Create new row in settlement if there was cash discount while creating settlement.
+                                if (billInvoiceRet.DiscountFromSettlement > 0)
+                                {
+                                    BillSettlementModel settlement = new BillSettlementModel();
+                                    settlement.DiscountReturnAmount = billInvoiceRet.DiscountReturnAmount;
+                                    settlement.ReturnFromReceivable = billInvoiceRet.ReturnFromReceivable;
+                                    settlement.PatientId = billInvoiceRet.PatientId;
+                                    settlement.SettlementReceiptNo = GetSettlementReceiptNo(billingDbContext);
+                                    settlement.CreatedOn = System.DateTime.Now;
+                                    settlement.SettlementDate = System.DateTime.Now;
+                                    settlement.FiscalYearId = BillingBL.GetFiscalYear(billingDbContext).FiscalYearId;
+                                    settlement.CreatedBy = currentUser.EmployeeId;
+
+                                    billingDbContext.BillSettlements.Add(settlement);
+                                    billingDbContext.SaveChanges();
+                                }*/
+
+                                //start--section-2: Add new rows for all returned items in BillInvoiceReturnItemsModel table
+                                if (billInvoiceRet.ReturnInvoiceItems != null && billInvoiceRet.ReturnInvoiceItems.Count > 0)
+                                {
+
+                                    foreach (BillInvoiceReturnItemsModel itm in billInvoiceRet.ReturnInvoiceItems)
+                                    {
+                                        itm.CreatedBy = currentUser.EmployeeId;
+                                        itm.CreatedOn = returnDateTime;
+                                        itm.BillReturnId = billInvoiceRet.BillReturnId;
+                                        billingDbContext.BillInvoiceReturnItems.Add(itm);
+                                    }
+                                    billingDbContext.SaveChanges();
+                                }
+
+                                //end--section-2: Add new rows for all returned items in BillInvoiceReturnItemsModel table
+
+                                //start--section-3: update status of respective department requisition
+                                if (billInvoiceRet.ReturnInvoiceItems != null && billInvoiceRet.ReturnInvoiceItems.Count > 0)
+                                {
+                                    //If either of Lab, Radiology or Visit item is being returned, then we need to update the Billstatus='returned' in those respective tables also. 
+                                    for (int i = 0; i < billInvoiceRet.ReturnInvoiceItems.Count; i++)
+                                    {
+                                        var currRetItmObj = billInvoiceRet.ReturnInvoiceItems[i];
+                                        UpdateDepartemntRequisitionOnReturn(currRetItmObj, billingDbContext);
+                                    }
+                                }
+                                //end--section-3: update status of respective department requisition
+
+                                //start--section-4: Update Insurance Balance if it was Credit Note of INsurance invoice.
+                                if (billInvoiceRet.IsInsuranceBilling == true)
+                                {
+                                    double deductableInsuranceAmount = (billInvoiceRet.TotalAmount ?? default(double)) * -1;
+                                    InsuranceBL.UpdateInsuranceCurrentBalance(connString,
+                                        billInvoiceRet.PatientId,
+                                        billInvoiceRet.InsuranceProviderId ?? default(int),
+                                        currentUser.EmployeeId, deductableInsuranceAmount, true, "Insurance bill returned by patient");
+                                }
+
+                                //end--section-4: Update Insurance Balance if it was Credit Note of INsurance invoice.
+
+                                //start--section-5: Update Cash collection for current user
+                                UpdateEmpCashCollectionAmts(billInvoiceRet, billingDbContext, currentUser, returnDateTime);
+                                //end--section-5: Update Cash collection for current user
+
+                                //start--section-6: Send Return Information to IRD SERVER
+                                if (realTimeRemoteSyncEnabled)
+                                {
+                                    if (billInvoiceRet.Patient == null)
+                                    {
+                                        PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billInvoiceRet.PatientId).FirstOrDefault();
+                                        billInvoiceRet.Patient = pat;
+                                    }
+                                    //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                                    //BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext);
+                                    Task.Run(() => BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext));
+                                }
+                                //end--section-6: Send Return Information to IRD SERVER
+
+                            }
+                            dbContextTransaction.Commit();
+
+                            responseData.Status = "OK";
+                            responseData.Results = billInvoiceRet;//return recently created creditnote to the client for further use.
+
+                        }
+                        catch (Exception ex)
+                        {
+                            dbContextTransaction.Rollback();
+                            throw ex;
+                        }
+
+
+                    }
+
+
+
+
                 }
             }
             catch (Exception ex)
@@ -385,5 +623,106 @@ namespace DanpheEMR.Controllers
         public void Delete(int id)
         {
         }
+
+
+        private void UpdateDepartemntRequisitionOnReturn(BillInvoiceReturnItemsModel currRetItmObj, BillingDbContext billingDbContext)
+        {
+            var requisitionId = currRetItmObj.RequisitionId;
+            var srvDptId = currRetItmObj.ServiceDepartmentId;
+            var patId = currRetItmObj.PatientId;
+            var patVisitId = currRetItmObj.PatientVisitId;
+
+            var serviceDepartment = billingDbContext.ServiceDepartment.Where(a => a.ServiceDepartmentId == srvDptId).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(serviceDepartment.IntegrationName))
+            {
+                if (serviceDepartment.IntegrationName.ToLower() == "lab")
+                {
+                    //RequisitionId is Unique within LabRequisition Table
+                    var LabReq = billingDbContext.LabRequisitions.Where(b => b.RequisitionId == requisitionId).FirstOrDefault();
+                    if (LabReq != null)
+                    {
+                        LabReq.BillingStatus = "returned";
+                        billingDbContext.LabRequisitions.Attach(LabReq);
+                        billingDbContext.Entry(LabReq).Property(a => a.BillingStatus).IsModified = true;
+                        billingDbContext.SaveChanges();
+                    }
+                }
+                else if (serviceDepartment.IntegrationName.ToLower() == "radiology")
+                {
+                    //ImagingRequisitionId is Unique within ImagingRequisition Table
+                    var RadReq = billingDbContext.RadiologyImagingRequisitions.Where(a => a.ImagingRequisitionId == requisitionId).FirstOrDefault();
+                    if (RadReq != null)
+                    {
+                        RadReq.BillingStatus = "returned";
+                        billingDbContext.RadiologyImagingRequisitions.Attach(RadReq);
+                        billingDbContext.Entry(RadReq).Property(a => a.BillingStatus).IsModified = true;
+                        billingDbContext.SaveChanges();
+                    }
+                }
+                else if (serviceDepartment.IntegrationName.ToLower() == "opd")
+                {
+                    //PatientVisitId is unique within PatientVisit Table
+                    VisitModel visit = (from v in billingDbContext.Visit
+                                        where v.PatientId == patId && v.PatientVisitId == patVisitId
+                                        select v).FirstOrDefault();
+                    if (visit != null)
+                    {
+                        visit.BillingStatus = "returned";
+                        billingDbContext.Entry(visit).Property(a => a.BillingStatus).IsModified = true;
+                        billingDbContext.SaveChanges();
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// We need to deduct Current Employee's cash collection if this bill is a Cash Bill.
+        /// </summary>
+        /// <param name="txnDateTime">Taking this input to make sure that all tables has same timestamp</param>
+        private void UpdateEmpCashCollectionAmts(BillInvoiceReturnModel invReturnModel, BillingDbContext billingDbContext, RbacUser currentUser, DateTime txnDateTime)
+        {
+            //if bill-status is paid, that means user has to return some amount to the patient.
+            if (invReturnModel.BillStatus == ENUM_BillingStatus.paid)
+            {
+                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                empCashTransaction.TransactionType = "SalesReturn";
+                empCashTransaction.ReferenceNo = invReturnModel.BillReturnId;
+                empCashTransaction.InAmount = 0;
+                empCashTransaction.OutAmount = invReturnModel.TotalAmount;
+                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                empCashTransaction.TransactionDate = txnDateTime;
+                empCashTransaction.CounterID = invReturnModel.CounterId;
+                BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+
+                //if Cash Discount Returned during settlement, we need to add that as InAmount in the EmpCashTransaciton Table..
+                //It happens when a invoice is returned after settlement. 
+                if (invReturnModel.DiscountReturnAmount > 0)
+                {
+                    EmpCashTransactionModel empCshTxn2 = new EmpCashTransactionModel();
+                    empCshTxn2.TransactionType = "CashDiscountReceived";
+                    empCshTxn2.ReferenceNo = invReturnModel.BillReturnId;
+                    empCshTxn2.InAmount = invReturnModel.DiscountReturnAmount > 0 ? invReturnModel.DiscountReturnAmount : 0;
+                    empCshTxn2.OutAmount = 0;
+                    empCshTxn2.EmployeeId = currentUser.EmployeeId;
+                    empCshTxn2.TransactionDate = txnDateTime;
+                    empCshTxn2.CounterID = invReturnModel.CounterId;
+                    BillingBL.AddEmpCashTransaction(billingDbContext, empCshTxn2);
+                }
+            }
+
+        }
+        private int GetSettlementReceiptNo(BillingDbContext dbContext)
+        {
+            int? currSettlmntNo = dbContext.BillSettlements.Max(a => a.SettlementReceiptNo);
+            if (!currSettlmntNo.HasValue)
+            {
+                currSettlmntNo = 0;
+            }
+
+            return currSettlmntNo.Value + 1;
+        }
     }
+
 }

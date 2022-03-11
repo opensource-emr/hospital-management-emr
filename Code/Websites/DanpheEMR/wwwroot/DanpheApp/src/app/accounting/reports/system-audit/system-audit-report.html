@@ -1,4 +1,8 @@
 <style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
     .form-group {
       margin-bottom: 0px !important;
     }
@@ -12,15 +16,16 @@
      
         <div class="row" style="background: #bcbcbc; padding-top: 15px;">
            
-            <div class="col-md-6" >
+            <div class="col-md-7 col-xs-12"style="margin-right: -45px;" >
                 <div class="form-group">
-                    <label class="control-label" style="margin-left: 5px;">Select Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <label class="control-label" style="margin-left: 5px;">Select Fiscal year<b class="color-red">  
+                        *</b><b style="float:right;">:</b></label>
                     <div>                      
                         <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
                     </div>
                 </div>
             </div>
-            <div class="col-md-2 col-xs-12" style="margin-right: -15px;">
+            <div class="col-md-2 col-xs-12" style="margin-right: -15px; margin-top: 10px;">
                 <label class="control-label no-padding">Select Module<b class="color-red">  *</b><b style="float:right;">:</b></label>
                 <div>
                     <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}" style="width:150px;height:30px;" (ngModelChange)="GetChangedSection()">
@@ -28,7 +33,7 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-2 col-sm-3 col-xs-6" style="    margin-top: 4px !important;" >
+            <div class="col-md-2 col-sm-3 col-xs-6" style="    margin-top: 9px !important;" >
                 <label class="control-label no-padding">Audit Report Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
                 <div>
                     <select [(ngModel)]="voucherType" [ngModelOptions]="{standalone: true}" style="width:150px;height:30px;" (ngModelChange)="GetChangedReportType()">
@@ -38,11 +43,11 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-1 col-sm-3 col-xs-6" style="margin-top: 4px !important;">
+            <div class="col-md-1 col-sm-3 col-xs-6" style="margin-top: 9px !important;">
                 <div class="form-group mt5">
                     <br>
-                    <button class="btn blue" type="button" (click)="Load('')">
-                        <i class="fa fa-search"></i> Load
+                    <button class="btn blue" type="button" [disabled]="btndisabled" (click)="Load('')">
+                        <i class="fa fa-refresh"></i> Load
                     </button>
                 </div>
             </div>

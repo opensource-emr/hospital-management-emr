@@ -20,6 +20,7 @@ import { TaxManageComponent } from "./tax/tax-manage.component";
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete/danphe-auto-complete.module';
 import { SharedModule } from "../shared/shared.module";
 import { DynTemplateModule } from '../core/dyn-templates/dyn-templates.module';
+import { ListPrinterSettingsComponent } from './printers/list/list-printer-settings.component';
 
 
 //Credit Organization
@@ -46,6 +47,7 @@ import { DynTemplateModule } from '../core/dyn-templates/dyn-templates.module';
   declarations: [
     SettingsMainComponent,
     TaxManageComponent,
+    //ListPrinterSettingsComponent
     //CreditOrganizationAddComponent,
     //CreditOrganizationListComponent
   ],

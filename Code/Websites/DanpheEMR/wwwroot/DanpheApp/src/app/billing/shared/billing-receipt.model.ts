@@ -28,6 +28,8 @@ export class BillingReceiptModel {
   public DepositReturnAmount: number = null;
   public Tender: number = null;
   public DepositBalance: number = null;
+  public DepositUsed: number = null;//sud:11May'21--new fields added in billingtransaction table.. 
+  public DepositAvailable: number = null;//sud:11May'21--new fields added in billingtransaction table.. 
   public ReturnedSubTotal: number = null;
   public ReturnedDiscount: number = null;
   public ReturnedTax: number = null;
@@ -82,10 +84,14 @@ export class BillingReceiptModel {
   public ConsultingDrName: string = null;
 
   public OPDReferredByDrName: string = null;//sud:12Aug'19--this will be used for OPD, above will be used for other receipts.
-  
+
   public QueueNo: number = 0;//pratik:6march'20-- to show Queue no. in recipt.
   public IpNumber: number = null;//pratik:21May'20-- for Inpatient partial billing
 
+  public DeptRoomNumber: string = null;
+  public Ins_NshiNumber: string = null;
+  public LabTypeName: string = '';
+  public ClaimCode: number = null;
 
   public static GetReceiptForTransaction(billingTxn: BillingTransaction): BillingReceiptModel {
     let retReceipt: BillingReceiptModel = new BillingReceiptModel();
@@ -93,6 +99,9 @@ export class BillingReceiptModel {
     retReceipt.BillingTransactionId = billingTxn.BillingTransactionId;
     retReceipt.DepositBalance = billingTxn.DepositBalance;
     retReceipt.DepositReturnAmount = billingTxn.DepositReturnAmount;
+    retReceipt.DepositUsed = billingTxn.DepositUsed;//sud:11May'21--new fields added in billingtransaction table.. 
+    retReceipt.DepositAvailable = billingTxn.DepositAvailable;//sud:11May'21--new fields added in billingtransaction table.. 
+
     retReceipt.DiscountAmount = CommonFunctions.parseAmount(billingTxn.DiscountAmount);
     retReceipt.DiscountPercent = CommonFunctions.parseAmount(billingTxn.DiscountPercent);
     retReceipt.TotalAmount = CommonFunctions.parseAmount(billingTxn.TotalAmount);
@@ -116,7 +125,9 @@ export class BillingReceiptModel {
     retReceipt.OrganizationId = billingTxn.OrganizationId
     retReceipt.OrganizationName = billingTxn.OrganizationName
     retReceipt.InsTransactionDate = billingTxn.InsTransactionDate; // sud:20Jul'19--For Insurance Transaction Date.
-
+    retReceipt.Ins_NshiNumber = billingTxn.Ins_NshiNumber;
+    retReceipt.ClaimCode = billingTxn.ClaimCode;//sud:12May'21--for Insurance. 
+    retReceipt.LabTypeName = billingTxn.LabTypeName;
     //retReceipt.TaxableAmount = billingTxn.TaxableAmount;
     billingTxn.BillingTransactionItems.forEach(itm => {
       retReceipt.TaxableAmount += itm.TaxableAmount;
@@ -257,6 +268,9 @@ export class BillingReceiptModel {
 
   public static GetReceiptForDuplicate(receipt): BillingReceiptModel {
 
+    console.log("Input Receipt: GetReceiptForDuplicate(receipt).. Line No: 271");
+    console.log(receipt);
+
     let dupReceipt: BillingReceiptModel = null;
     if (receipt != null) {
       dupReceipt = new BillingReceiptModel();
@@ -268,6 +282,9 @@ export class BillingReceiptModel {
         dupReceipt = BillingReceiptModel.GetReceiptFromTxnItems(receipt.TransactionItems);
         dupReceipt.DepositReturnAmount = receipt.Transaction.DepositReturnAmount;
         dupReceipt.DepositBalance = CommonFunctions.parseAmount(receipt.Transaction.DepositBalance);
+        dupReceipt.DepositUsed = receipt.Transaction.DepositUsed;//sud:11May'21--new fields added in billingtransaction table.. 
+        dupReceipt.DepositAvailable = receipt.Transaction.DepositAvailable;//sud:11May'21--new fields added in billingtransaction table.. 
+
 
         //dupReceipt.ReceiptType = receipt.Transaction.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
         if (receipt.Transaction.TransactionType.toLowerCase() == "inpatient" && receipt.Transaction.InvoiceType != ENUM_InvoiceType.inpatientPartial) {
@@ -305,8 +322,9 @@ export class BillingReceiptModel {
       dupReceipt.InsTransactionDate = receipt.Transaction.InsTransactionDate; // sud:20Jul'19--For Insurance Transaction Date.
       dupReceipt.PartialReturnTxnId = receipt.Transaction.PartialReturnTxnId;// added Rajesh:9Aug19
       dupReceipt.CreditNoteNumber = receipt.Transaction.CreditNoteNumber;// added Shankar:15Nov19
-
-
+      dupReceipt.QueueNo = receipt.LatestPatientVisitInfo ? receipt.LatestPatientVisitInfo.QueueNo : null; // added Anjana: 21Feb,21
+      dupReceipt.LabTypeName = receipt.Transaction.LabTypeName;
+      dupReceipt.BillingType = receipt.Transaction.TransactionType;
 
       if (receipt.Transaction.ReturnStatus) {
         dupReceipt.IsReturned = true;
@@ -319,7 +337,17 @@ export class BillingReceiptModel {
       }
       //dupReceipt.TaxableAmount = receipt.Transaction.TaxableAmount;
       //dupReceipt.TaxableAmount = CommonFunctions.parseAmount(dupReceipt.SubTotal - dupReceipt.DiscountAmount);
+
+      //sud:12May'21--for Insurance. 
+      if (receipt.Transaction.IsInsuranceBilling) {
+        dupReceipt.Ins_NshiNumber = receipt.Patient ? receipt.Patient.Ins_NshiNumber : "";
+        dupReceipt.ClaimCode = receipt.Transaction.ClaimCode;
+      }
     }
+
+    console.log("duplicate receipt from billing-receipt model");
+    console.log(dupReceipt);
+
     return dupReceipt;
   }
 

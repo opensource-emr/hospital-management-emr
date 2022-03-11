@@ -7,6 +7,9 @@ import * as moment from 'moment/moment';
 import { CommonFunctions } from "../../../shared/common.functions";
 import { CoreService } from "../../..//core/shared/core.service";
 import { RouteFromService } from "../../../shared/routefrom.service";
+import { AccountingService } from '../../shared/accounting.service';
+import { SecurityService } from "../../../security/shared/security.service";
+import { NepaliCalendarService } from "../../../shared/calendar/np/nepali-calendar.service";
 
 @Component({
   selector: 'ledger-report',
@@ -36,16 +39,25 @@ export class LedgerReportComponent {
   public datePref: string = "";
   public calType: string = "";
   public showTxnItemLevel: string = 'true'; //default value is true
-
+  clicked=false;
   public showParticularcheckBox:boolean = true;
   public showParticularColumn: boolean = false;
   public ledgerResultView: any;
+  public footerContent = '';
+  public printBy: string = '';
+  public dateRange: string = '';
+  public headerContent = '';
+  public reportHeader : string = 'Report Data';
+  public printTitle: string = "";
   constructor(
     public accReportBLService: AccountingReportsBLService,
     public routeFrom: RouteFromService,
     public coreservice: CoreService,
     public msgBoxServ: MessageboxService,
-    public changeDetector: ChangeDetectorRef) {
+    public accountingService: AccountingService,
+    public changeDetector: ChangeDetectorRef,
+    public securityService : SecurityService,
+    public nepaliCalendarService: NepaliCalendarService,) {
     this.todayDate = moment().format('YYYY-MM-DD');
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
@@ -68,12 +80,14 @@ export class LedgerReportComponent {
   public fiscalYearId:number=null; 
 
   public validDate:boolean=true;
+  public headerDetail: any;
   selectDate(event){
     if (event) {
       this.fromDate = event.fromDate;
       this.toDate = event.toDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate = true;
+      this.dateRange = "&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
     } 
     else {
       this.validDate =false;
@@ -86,6 +100,16 @@ export class LedgerReportComponent {
     var showParticular = this.coreservice.Parameters.filter(p => p.ParameterGroupName.toLowerCase() == "accounting" && p.ParameterName == "AccLedgerReportShowParticulars");
     var val = (showParticular.length > 0) ? showParticular[0].ParameterValue : 'false';
     this.showParticularcheckBox = JSON.parse(val); 
+    var paramValue = this.coreservice.Parameters.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader").ParameterValue;
+    if (paramValue){
+      this.headerDetail = JSON.parse(paramValue);
+    }
+    else{
+      this.msgBoxServ.showMessage("error", ["Error getting parameters"]);
+    }
+
+    this.accountingService.getCoreparameterValue();
+   
   }
   //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
   LoadCalendarTypes() {
@@ -96,16 +120,10 @@ export class LedgerReportComponent {
   }
 
   public GetLedgers() {
-    this.accReportBLService.GetLedgers()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.ledgerList = res.Results;
+        if(!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length>0){ //mumbai-team-june2021-danphe-accounting-cache-change
+          this.ledgerList = this.accountingService.accCacheData.Ledgers; //mumbai-team-june2021-danphe-accounting-cache-change
+          this.ledgerList = this.ledgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-
-      });
   }
  
 
@@ -128,12 +146,14 @@ export class LedgerReportComponent {
   }
 
   public GetTxnList() {
+    this.clicked=true;
     this.ledgerResult = null;
     if (this.CheckSelLedger()  && this.checkDateValidation()) {
       //this.ledgerResult = null;
       this.accReportBLService.GetLedgerReport(Number(this.selLedger.LedgerId), this.fromDate, this.toDate,this.fiscalYearId)
         .subscribe(res => {
           if (res.Status == "OK") {
+            this.clicked=false;
             if (res.Results.result.length) {
               let CrTotalAmt = 0;
               let DrTotalAmt = 0;
@@ -213,6 +233,7 @@ export class LedgerReportComponent {
               this.ledgerResult.OpeningBalanceCrAmount = CommonFunctions.parseAmount(OpeningBalanceCrAmt);
             }
             else {
+              this.clicked=false;
               this.msgBoxServ.showMessage("failed", ["No Records found."]);
               this.ledgerResult = null;
             }
@@ -220,10 +241,14 @@ export class LedgerReportComponent {
             this.BalanceCalculation();
           }//ok if closed here
           else {
+            this.clicked=false;
             this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
           }
         });
 
+    }
+    else{
+      this.clicked=false;
     }
 
   }
@@ -306,8 +331,10 @@ export class LedgerReportComponent {
   CheckSelLedger(): boolean {
 
     if (!this.selLedger || typeof (this.selLedger) != 'object') {
+     
       this.selLedger = undefined;
       this.msgBoxServ.showMessage("failed", ["Select ledger from the list."]);
+      this.clicked=false;
       return false;
     }
     else
@@ -337,29 +364,216 @@ export class LedgerReportComponent {
     
     return flag;
   }
-  Print() {
-    this.showPrint = false;
-    this.printDetaiils = null;
-    this.changeDetector.detectChanges();
-    this.showPrint = true;
-    this.printDetaiils = document.getElementById("printpage");
-
-  }
-  // Export report to Excelsheet
-  ExportToExcel(tableId) {
-    if (tableId) {
-      this.actionView = false;
-      this.changeDetector.detectChanges();
-      let workSheetName = 'Ledger Report';
-      //  {{selLedgerName}} &nbsp; Ledger ( {{selLedger.Code}} )
-      let Heading ="Ledger Report for: "+ this.selLedgerName.toUpperCase()+" ("+this.selLedger.Code+")";
-      let filename = 'LedgerReport';
-      CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
-        Heading, filename);
+ Print(tableId) {
+    // this.showPrint = false;
+    // this.printDetaiils = null;
+    // this.changeDetector.detectChanges();
+    //this.showPrint = true;
+    // this.printDetaiils = document.getElementById("printpage");
+    let date = JSON.parse(JSON.stringify(this.dateRange));
+    var printDate = moment().format("YYYY-MM-DD HH:mm");//Take Current Date/Time for PrintedOn Value.
+    this.printBy = this.securityService.loggedInUser.Employee.FullName;
+       let printBy = JSON.parse(JSON.stringify(this.printBy));
+    let popupWinindow;
+    if (this.accountingService.paramData) {
+      if (!this.printBy.includes("Printed")) {
+        var currDate = moment().format("YYYY-MM-DD HH:mm");
+        var nepCurrDate = NepaliCalendarService.ConvertEngToNepaliFormatted_static(currDate, "YYYY-MM-DD hh:mm");
+       var printedBy = (this.accountingService.paramData.ShowPrintBy) ? "<b>Printed By:</b>&nbsp;" + this.printBy : '';
+        this.printBy = printedBy;
+      }
+      this.dateRange = (this.accountingService.paramData.ShowDateRange) ? date : date = '';
+    var Header = document.getElementById("headerForPrint").innerHTML;     
+ var printContents = `<div>
+                          <p class='alignleft'>${this.reportHeader}</p>
+                          <p class='alignleft'><b>For the period:</b>
+                          ${this.dateRange}<br/></p>
+                          <p class='alignright'>
+                            ${this.printBy}<br /> 
+                            <b>Printed On:</b> (AD)${printDate}<br /> 
+                          </p>
+                        </div>`
+    printContents += "<style> table { border-collapse: collapse; border-color: black;font-size: 11px; background-color: none; } th { color:black; background-color: #599be0;}.ADBS_btn {display:none;padding:0px ;} .tr { color:black; background-color: none;} "
+    printContents += ".alignleft {float:left;width:33.33333%;text-align:left;}.aligncenter {float: left;width:33.33333%;text-align:center;}.alignright {float: left;width:33.33333%;text-align:right;}​</style>";
+  
+   printContents += document.getElementById(tableId).innerHTML
+    popupWinindow = window.open(
+      "",
+      "_blank",
+      "width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no, ADBS_btn=null"
+    );
+    popupWinindow.document.open();
+    let documentContent = "<html><head>";
+    //documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../../themes/theme-default//DanphePrintStyle.css"/>';
+    documentContent +=
+      '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
+    documentContent +=
+      '<link rel="stylesheet" type="text/css" href="../../../themes/theme-default//DanpheStyle.css"/>';
+    documentContent += "</head>";
+    if (this.accountingService.paramData) {
+      this.printTitle = this.accountingService.paramData.HeaderTitle;
+     this.headerContent = Header;
+      printContents = (this.accountingService.paramData.ShowHeader) ? this.headerContent + printContents : printContents;
+      printContents = (this.accountingService.paramData.ShowFooter) ? printContents + this.footerContent : printContents;
     }
-    this.actionView = true;
-    this.changeDetector.detectChanges();
+    documentContent +=
+      '<body onload="window.print()">' + printContents + "</body></html>";
+    popupWinindow.document.write(documentContent);
+    popupWinindow.document.close();
   }
+}
+  // Export report to Excelsheet
+  public ExportToExcel(tableId){
+    try {
+          let Footer = JSON.parse(JSON.stringify(this.footerContent));
+           let date = JSON.parse(JSON.stringify(this.dateRange));
+           date = date.replace("To", " To:");
+          this.printBy = this.securityService.loggedInUser.Employee.FullName;
+          let printBy = JSON.parse(JSON.stringify(this.printBy));
+          let printByMessage = '';
+          var hospitalName;
+          var address;
+          let filename;
+          let workSheetName;
+          filename = workSheetName = this.accountingService.paramExportToExcelData.HeaderTitle;
+          if(!!this.accountingService.paramExportToExcelData){
+          if (!!this.accountingService.paramExportToExcelData.HeaderTitle) {
+            if (this.accountingService.paramExportToExcelData.HeaderTitle) {
+            var headerTitle = this.selLedgerName + ' Ledger'+ '(' + this.selLedger.Code +')'
+            }
+           
+            if (this.accountingService.paramExportToExcelData.ShowPrintBy) {
+              if (!printBy.includes("PrintBy")) {
+                printByMessage = 'Exported By:'
+              }
+              else {
+                printByMessage = ''
+              }
+            }
+            else {
+              printBy = '';
+            }
+            if (!this.accountingService.paramExportToExcelData.ShowDateRange) {
+              date = ""
+            }
+            else{
+                date
+            }
+            //check Header
+            if (this.accountingService.paramExportToExcelData.ShowHeader == true) {
+              hospitalName = this.headerDetail.hospitalName;
+              address = this.headerDetail.address;
+            }
+            else {
+              hospitalName = null;
+                        address = null;
+            }
+            //check Footer
+            if (!this.accountingService.paramExportToExcelData.ShowFooter) {
+              Footer = null;
+            }
+          }
+        }
+          else {
+            Footer = "";
+            printBy = "";
+            date = "";
+            printByMessage = "";
+           
+          }
+          this.ConvertHTMLTableToExcelForAccounting(tableId,workSheetName,date,
+           headerTitle,filename,hospitalName,address, printByMessage,this.accountingService.paramExportToExcelData.ShowPrintBy,this.accountingService.paramExportToExcelData.ShowHeader,
+           this.accountingService.paramExportToExcelData.ShowDateRange, printBy,this.accountingService.paramExportToExcelData.ShowFooter,Footer)
+          
+        } catch (ex) {
+          console.log(ex);
+        }
+}
+ ConvertHTMLTableToExcelForAccounting(table: any, SheetName: string,date:string,  TableHeading: string, filename: string,hospitalName:string,hospitalAddress:string, printByMessage:string,showPrintBy:boolean, showHeader:boolean, showDateRange: boolean, printBy:string,ShowFooter:boolean,  Footer:string  ) {
+  try {
+    var printDate = moment().format("YYYY-MM-DD HH:mm");
+    if (table) {
+      //gets tables wrapped by a div.
+      var _div = document.getElementById(table).getElementsByTagName("table");
+      var colCount = [];
+
+      //pushes the number of columns of multiple table into colCount array.
+      for (let i = 0; i < _div.length; i++) {
+        var col = _div[i].rows[1].cells.length;
+        colCount.push(col);
+      }
+
+      //get the maximum element from the colCount array.
+      var maxCol = colCount.reduce(function (a, b) {
+        return Math.max(a, b);
+      }, 0);
+
+      //define colspan for td.
+      var span = "colspan= " + Math.trunc(maxCol / 3);
+      var hospName;
+      var address;
+      if (showHeader == true) {
+        var Header = `<tr><td></td><td></td><td colspan="4" style="text-align:center;font-size:large;"><strong>${hospitalName}</strong></td></tr><br/><tr> <td></td><td></td><td colspan="4" style="text-align:center;font-size:small;"><strong>${hospitalAddress}</strong></td></tr><br/>
+        <tr><td></td><td></td><td colspan="4" style="text-align:center;font-size:small;width:600px;"><strong>${TableHeading}</strong></td></tr><br/>
+        <tr> <td style="text-align:center;"><strong>${date}</strong></td><td></td><td></td><td></td><td></td><td style="text-align:center;"><strong>${printByMessage}${printBy}</strong></td><td><strong>Exported On: ${printDate}</strong></td></tr><br>`
+       } else {
+        if (date == "") { //if showdate date is false
+          Header = `<tr> <td style="text-align:center;"><strong> ${printByMessage} ${printBy} </strong></td><td><strong>Exported On: ${printDate}</strong></td></tr>`;
+        }
+        else if (printBy == "") { // if  printby is false. 
+          Header = `<tr> <td style="text-align:center;"><strong>${date}</strong></td><td><strong>Exported On: ${printDate}</strong></td></tr>`;
+        }
+        else { //if both are true
+          Header = `<tr> <td style="text-align:center;"><strong>${date}</strong></td><td></td><td></td><td></td><td style="text-align:center;"><strong>${printByMessage}${printBy}</strong></td><td><strong>Exported On: ${printDate}</strong></td></tr><br>`;
+        }
+       
+      }
+      let workSheetName = (SheetName.length > 0) ? SheetName : 'Sheet';
+      let fromDateNp: any;
+      let toDateNp = '';
+      if (this.fromDate.length > 0 && this.toDate.length > 0) {
+        fromDateNp = NepaliCalendarService.ConvertEngToNepaliFormatted_static(this.fromDate, '');
+        toDateNp = NepaliCalendarService.ConvertEngToNepaliFormatted_static(this.toDate, '');
+      }
+      
+      if(ShowFooter == true){
+        Footer = "";
+      }else{
+        Footer = null;
+      }
+      let uri = 'data:application/vnd.ms-excel;base64,'
+        , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><meta http-equiv="content-type" content="text/plain; charset=UTF-8"/></head><body><table><tr>}{Header}</tr>{table}</table></body></html>'
+        , base64 = function (s) { return window.btoa(decodeURIComponent(encodeURIComponent(s))) }
+        , format = function (s, c) { return s.replace(/{(\w+)}/g, function (m, p) { return c[p]; }) }
+      if (!table.nodeType) table = document.getElementById(table)
+      var ctx = { worksheet: name || workSheetName, table: table.innerHTML,Header:Header,
+         footer: Footer }            
+      var link = document.createElement('a');
+      link.href = uri + base64(format(template, ctx));
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  } catch (ex) {
+    console.log(ex);
+  }
+}
+  // ExportToExcel(tableId) {
+  //   if (tableId) {
+  //     this.actionView = false;
+  //     this.changeDetector.detectChanges();
+  //     let workSheetName = 'Ledger Report';
+  //     //  {{selLedgerName}} &nbsp; Ledger ( {{selLedger.Code}} )
+  //     let Heading ="Ledger Report for: "+ this.selLedgerName.toUpperCase()+" ("+this.selLedger.Code+")";
+  //     let filename = 'LedgerReport';
+  //     CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+  //       Heading, filename);
+  //   }
+  //   this.actionView = true;
+  //   this.changeDetector.detectChanges();
+  //  //this.accountingService.ExportToExcel(tableId);
+  // }
   GroupViewData(Result) {
     try {
       if (Result) {

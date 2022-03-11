@@ -1,0 +1,96 @@
+<div *ngFor="let details of RFQDetails; let i=index; ">
+  <div class="col-md-12 noPadding " style="border-bottom:1px dotted ">
+    <div class="col-md-12 col-xs-12 noPadding " style="margin-bottom: 10px;margin-left: -44px;">
+    </div>
+  </div>
+  <div class="col-md-12" style="margin-bottom: 10px;background-color: lightgreen;padding: 5px;">
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-6">
+      <b> Requested Vendor:</b> <span style="font-size: 15px;"> <i>{{details.VendorName}}</i></span>
+    </div>
+    <div class="col-md-3">
+    </div>
+  </div>
+
+  <div class="col-md-5" style="padding:10px;float:left">
+    <div class="col-md-6">
+      <div *ngIf="showViewFiles">
+        <table class="table table-striped table-hover" style="background-color:initial; width:450px; padding:0px">
+          <thead>
+            <tr>
+              <th><b>FileName</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let file of details.AttachedFileList;let i=index; ">
+              <td style="cursor: pointer;" (click)="SelectViewFiles(i,file)">{{file.FileName}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-10" *ngIf="showImage && storeIndex == i ">
+      <div class="col-md-2" style="color:blue;display:flex;">
+        <h3>
+          <span> {{popupImageData.FileName}}</span>
+        </h3>
+        <i style="margin-top:19px; margin-left:144px; height: 33px;" class="btn btn-sm btn-default pull-right" (click)="closeFiles()" title="Cancel"><span class="fa fa-arrow-left fa-sm"></span></i>
+      </div>
+      <div>
+        <img [src]="'data:image/jpeg;base64,'+popupImageData.FileBinaryData" type="application/jpeg" width="500" height="400" />
+      </div>
+    </div>
+    <div class="col-md-10" *ngIf="showPDF && storeIndex == i">
+      <div class="col-md-2" style="color:blue;display:flex;">
+        <h3>
+          <span> {{popupImageData.FileName}}</span>
+        </h3>
+        <i style="margin-top:19px; margin-left:144px; height: 33px;" class="btn btn-sm btn-default pull-right" (click)="closeFiles()" title="Cancel"><span class="fa fa-arrow-left fa-sm"></span></i>
+      </div>
+      <div>
+        <embed id="ShowPDF" width="500" height="400" type="application/pdf" [src]="url ">
+      </div>
+    </div>
+
+  </div>
+  <div class="col-md-7">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+        <thead>
+          <tr>
+            <th><b>Item Name</b></th>
+            <th>Requested Qty</th>
+            <th><b>Price(<small>per unit</small>)</b></th>
+            <th><b>Description</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of details.ItemList; let j=index">
+            <td style=" width: 40%;">
+              {{row.ItemName}}
+            </td>
+            <td style="width:15%">
+              {{row.Quantity}}
+            </td>
+            <td style="width:15%">
+              <input [(ngModel)]="row.Price" class="form-control" id="priceField{{i}}{{j}}" placeholder="Price" (keyup.enter)="onPressEnterKeyInPriceField(i,j)" />
+            </td>
+            <td style="width:30%">
+              <textarea [(ngModel)]="row.Description" class="form-control" placeholder="Description" name="Description" type="text"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="col-md-6 col-md-offset-3 text-center">
+  <input id="btn_Submit" type="button" class="btn green btn-success tooltip" title="Submit Quotation" (click)="SaveQuotation()" value="Submit" />
+  <span></span>&nbsp;&nbsp;&nbsp;
+  <span></span>&nbsp;&nbsp;&nbsp;
+  <button class="btn btn-danger" (click)="Cancel()">
+    Discard Changes
+  </button>
+  <span></span>
+</div>

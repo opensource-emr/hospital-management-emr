@@ -1,4 +1,4 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { ChangeDetectorRef,Component, Directive, ViewChild } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
@@ -38,10 +38,14 @@ export class BalanceSheetReportComponent {
   public showExportbtn: boolean = false;
   public ledgerCode: any;
   public todaysDate: string = "";
+  btndisabled=false;
+  public showPrint: boolean = false;
+  public printDetaiils: any;
   constructor(
     public messageBoxService: MessageboxService,
     public coreservice: CoreService,
-    public accReportBLService: AccountingReportsBLService, public accountingService: AccountingService) {
+    public accReportBLService: AccountingReportsBLService, public accountingService: AccountingService
+    ,private changeDetector: ChangeDetectorRef) {
     this.fromDate = moment().format('YYYY-MM-DD');//default fromdate=today, it'll later be changed from loadfiscalyearlist function. 
     this.toDate = moment().format('YYYY-MM-DD');
     this.todaysDate = moment().format('YYYY-MM-DD');
@@ -51,6 +55,7 @@ export class BalanceSheetReportComponent {
     this.showExport();
 
     this.onDateChange();//Load today's data by default..
+    this.accountingService.getCoreparameterValue();
 
   }
   public selectedDate: string = "";
@@ -61,6 +66,7 @@ export class BalanceSheetReportComponent {
       this.selectedDate = event.selectedDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate =true;
+      this.dateRange = "<b>Date:</b>&nbsp;" + this.selectedDate;
     } 
     else {
       this.validDate =false;
@@ -78,12 +84,14 @@ export class BalanceSheetReportComponent {
   }
   //Load balance sheet data
   LoadData() {
+    this.btndisabled=true;
     // if (this.checkDateValidation() && this.checkValidFiscalYear()) {
       if (this.checkDateValidation() &&	this.selectedDate !=null && this.fiscalYearId !=null) {
       try {
         this.accReportBLService.GetBalanceSheetReportData(this.selectedDate, this.fiscalYearId)
           .subscribe(res => {
             if (res.Status == 'OK') {
+              this.btndisabled=false;
               this.balanceSheetData = null;
               this.DisplayData = null;
               this.netProfitLoss = 0;
@@ -99,6 +107,7 @@ export class BalanceSheetReportComponent {
               this.showResult = true;
             }
             else {
+              this.btndisabled=false;
               this.messageBoxService.showMessage("failed", [res.ErrorMessage])
             }
           });
@@ -106,6 +115,9 @@ export class BalanceSheetReportComponent {
       catch (exception) {
         this.ShowCatchErrMessage(exception);
       }
+    }
+    else{
+      this.btndisabled=false;
     }
   }
   checkDateValidation() {
@@ -239,25 +251,22 @@ export class BalanceSheetReportComponent {
 
 
   loadFiscalYearList() {
-    this.accReportBLService.GetFiscalYearsList().subscribe(res => {
-      if (res.Status == "OK") {
-        this.fiscalYears = res.Results;
-        //this.currentFiscalYear = this.fiscalYears.find(x => x.IsActive == true);
-        this.IsDataLoaded = true;
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYears = this.accountingService.accCacheData.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYears = this.fiscalYears.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
+      this.IsDataLoaded = true;
 
-        //sud:14June'20--to assign Correct FromDate(fiscYearStartDate), otherwise it's not showing anytingin Reusable-Ledger Popup.
-        let todayDate_Obj = moment(this.todaysDate);//taking from same variable, but we need moment() object for comparision.. so 
-        //that year where 
-        let currFiscYr = this.fiscalYears.find(x => x.IsActive == true && moment(x.StartDate) <= todayDate_Obj && todayDate_Obj <= moment(x.EndDate));
-        if (currFiscYr) {
-          this.fromDate = moment(currFiscYr.StartDate).format('YYYY-MM-DD');
-        }
-
+      //sud:14June'20--to assign Correct FromDate(fiscYearStartDate), otherwise it's not showing anytingin Reusable-Ledger Popup.
+      let todayDate_Obj = moment(this.todaysDate);//taking from same variable, but we need moment() object for comparision.. so 
+      //that year where 
+      let currFiscYr = this.fiscalYears.find(x => x.IsActive == true && moment(x.StartDate) <= todayDate_Obj && todayDate_Obj <= moment(x.EndDate));
+      if (currFiscYr) {
+        this.fromDate = moment(currFiscYr.StartDate).format('YYYY-MM-DD');
       }
-      else {
-        this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
-      }
-    });
+    }
+    else {
+      this.messageBoxService.showMessage("failed", ['Unable to Load FiscalYearList']);
+    }
   }
 
   formatDataforDisplay() {
@@ -418,35 +427,32 @@ export class BalanceSheetReportComponent {
 
     return list;
   }
-  Print() {
-    let popupWinindow;
-    var headerContent = document.getElementById("headerForPrint").innerHTML;
-    var printContents = ""; // '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
-    printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage_balanceSheet").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    let documentContent = "<html><head>";
-    //documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    // documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/PrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-    documentContent += '</head>';
-    documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>'
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
+  Print(tableId) {
+    // let popupWinindow;
+    // var headerContent = document.getElementById("headerForPrint").innerHTML;
+    // var printContents = ""; // '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+    // printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
+    // printContents += document.getElementById("printpage_balanceSheet").innerHTML;
+    // this.showPrint = false;
+    // this.printDetaiils = null;
+    // this.changeDetector.detectChanges();
+    // this.showPrint = true;
+    // this.printDetaiils = headerContent + printContents ; //document.getElementById("printpage");
+    this.accountingService.Print(tableId,this.dateRange)
+
   }
   ExportToExcel(tableId) {
-    if (tableId) {
-      let workSheetName = 'Balance Sheet Report';
-      let Heading = 'Balance sheet Report';
-      let filename = 'BalanceSheetReport';
-      //NBB-send all parameters for now 
-      //need enhancement in this function 
-      //here from date and todate for show date range for excel sheet data
-      CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
-        Heading, filename);
-    }
+    // if (tableId) {
+    //   let workSheetName = 'Balance Sheet Report';
+    //   let Heading = 'Balance sheet Report';
+    //   let filename = 'BalanceSheetReport';
+    //   //NBB-send all parameters for now 
+    //   //need enhancement in this function 
+    //   //here from date and todate for show date range for excel sheet data
+    //   CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+    //     Heading, filename);
+    // }
+    this.accountingService.ExportToExcel(tableId,this.dateRange);
   }
 
   SwitchViews(row) {

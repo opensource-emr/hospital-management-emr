@@ -80,6 +80,7 @@ export class DepartmentAddComponent {
   public completeDeptList: Array<Department> = new Array<Department>();
   public deptList: Array<Department> = new Array<Department>();
 
+  //public IsZeroPriceAllowed: boolean = false;//pratik:16March'21 -as per LPH requirement
 
   constructor(public settingsBLService: SettingsBLService,
     public securityService: SecurityService,
@@ -93,11 +94,15 @@ export class DepartmentAddComponent {
   }
 
   ngOnInit() {
+    this.setFocusById('DepartmentCode');
     if (this.selectedDepartment) {
       this.update = true;
       this.CurrentDepartment = new Department;
       this.CurrentDepartment = Object.assign(this.CurrentDepartment, this.selectedDepartment);
       this.CurrentDepartment.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      if (this.CurrentDepartment.ServiceItemsList && this.CurrentDepartment.ServiceItemsList.length > 0) {
+        this.CurrentDepartment.IsZeroPriceAllowed = this.CurrentDepartment.ServiceItemsList.some(a => a.IsZeroPriceAllowed == true) ? true : false;
+      }
       this.deptList = this.deptList.filter(dept => (dept.DepartmentId != this.selectedDepartment.DepartmentId));
 
       //in edit mode get all details and assign it
@@ -107,6 +112,10 @@ export class DepartmentAddComponent {
       this.CurrentDepartment = new Department();
       this.CurrentDepartment.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.update = false;
+      this.CurrentDepartment.ParentDepartmentId = null;
+      this.CurrentDepartment.IsActive = true;
+      this.CurrentDepartment.IsAppointmentApplicable = false;
+      this.CurrentDepartment.IsZeroPriceAllowed = false;
     }
   }
 
@@ -249,9 +258,9 @@ export class DepartmentAddComponent {
         this.callbackAdd.emit({ action: "add", department: res.Results });
       }
 
-     
+
       //res.Results.ParentDepartmentName =
-      
+
     }
     else {
       this.showMessageBox("error", "Check log for details");
@@ -283,8 +292,11 @@ export class DepartmentAddComponent {
             this.allItemsList = res.Results;
             this.opdServicesDetails.forEach(srv => {
               let itmList = this.allItemsList.filter(a => a.ServiceDepartmentName == srv.ServiceDepartmentName);
-              srv.ServiceDepartmentId = itmList ? itmList[0].ServiceDepartmentId : 0;
-              srv.BillItemPriceList = itmList;
+              srv.BillItemPriceList = [];
+              if (itmList && itmList.length) {
+                srv.ServiceDepartmentId = itmList[0].ServiceDepartmentId;
+                srv.BillItemPriceList = itmList;
+              }
               srv.IsServiceEnabled = itmList && itmList.length > 0;
             });
 
@@ -300,9 +312,14 @@ export class DepartmentAddComponent {
   }
 
 
-
+  public onApptApplicable: boolean = false;
   ApptApplicableChkOnChange() {
-    if (this.CurrentDepartment.IsAppointmentApplicable) {
+    if(this.CurrentDepartment.IsAppointmentApplicable != null && this.CurrentDepartment.IsAppointmentApplicable.toString().toLowerCase() == 'true'){
+      this.onApptApplicable = true;
+    }else{
+      this.onApptApplicable = false;
+    }
+    if (this.onApptApplicable) {
       this.opdServicesDetails.forEach(srv => {
         ////OPD is mandatory, so it may have different settings than other.
         srv.IsServiceEnabled = srv.IsMandatory;
@@ -364,6 +381,7 @@ export class DepartmentAddComponent {
     billItem.CreatedOn = moment().format('YYYY-MM-DD HH:mm');
     billItem.DiscountApplicable = true;
     billItem.ServiceDepartmentId = itemDetailVM.ServiceDepartmentId;
+    billItem.ServiceDepartmentName = itemDetailVM.ServiceDepartmentName;
     //when itemObj is not object it's a string, so we can assign it to ItemName
     billItem.ItemName = (itemDetailVM.ItemObj && typeof (itemDetailVM.ItemObj) == 'object') ? itemDetailVM.ItemObj.ItemName : itemDetailVM.ItemObj;
     billItem.Price = itemDetailVM.Price;
@@ -389,16 +407,16 @@ export class DepartmentAddComponent {
   //add below variable to parameter. Default values will remain as it is (below).
   public DocOpdServiceDepartNames = { DeptOPD: "Department OPD", DeptFollowUp: "Department Followup Charges", DeptOldPatOpd: "Department OPD Old Patient" };
 
-  //InitializeSrvDeptNamesParam() {
-  //  let param = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "DocOpdServiceDeptNames");
-  //  if (param && param.ParameterValue) {
-  //    this.DocOpdServiceDepartNames = JSON.parse(param.ParameterValue);
-  //  }
-  //}
+  InitializeSrvDeptNamesParam() {
+   let param = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "DepartmentOpdServiceDeptNames");
+   if (param && param.ParameterValue) {
+     this.DocOpdServiceDepartNames = JSON.parse(param.ParameterValue);
+   }
+  }
 
   InitializeServices_TEMP() {
 
-    //this.InitializeSrvDeptNamesParam();
+    this.InitializeSrvDeptNamesParam();
 
     this.opdServicesDetails = [];
 
@@ -430,18 +448,23 @@ export class DepartmentAddComponent {
       this.CurrentDepartment.ServiceItemsList = [];
 
       this.opdServicesDetails.forEach(srv => {
-        if (srv.IsServiceEnabled) {
+        if (srv.BillItem.ItemId != 0) {
           let srvItm: BillItemPriceModel = _.omit(srv.BillItem, ['DepartmentValidator']);
           srvItm.Price = srv.Price;
           srvItm.EHSPrice = srv.EHSPrice;
           srvItm.SAARCCitizenPrice = srv.SAARCCitizenPrice;
           srvItm.ForeignerPrice = srv.ForeignerPrice;
           srvItm.InsForeignerPrice = srv.InsForeignerPrice;
-
+          srvItm.IsZeroPriceAllowed = this.CurrentDepartment.IsZeroPriceAllowed;
+          if(srv.IsServiceEnabled){
+            srvItm.IsActive=true;
+          }
+          else{
+            srvItm.IsActive=false;
+          }
           this.CurrentDepartment.ServiceItemsList.push(srvItm);
         }
       });
-
     }
     else {
       this.CurrentDepartment.ServiceItemsList = [];
@@ -451,14 +474,14 @@ export class DepartmentAddComponent {
 
 
   public ServiceSelectChange(currentItmDetail: OpdItemDetailVM) {
-    currentItmDetail.Price = 0;
-    currentItmDetail.EHSPrice = 0;
-    currentItmDetail.SAARCCitizenPrice = 0;
-    currentItmDetail.ForeignerPrice = 0;
-    currentItmDetail.InsForeignerPrice = 0;
-    currentItmDetail.ItemObj = "";
-    currentItmDetail.isNormalPriceValid = true;
-    currentItmDetail.isItemNameValid = false;
+    // currentItmDetail.Price = 0;
+    // currentItmDetail.EHSPrice = 0;
+    // currentItmDetail.SAARCCitizenPrice = 0;
+    // currentItmDetail.ForeignerPrice = 0;
+    // currentItmDetail.InsForeignerPrice = 0;
+    // currentItmDetail.ItemObj = "";
+    // currentItmDetail.isNormalPriceValid = true;
+    // currentItmDetail.isItemNameValid = false;
   }
 
 
@@ -477,8 +500,14 @@ export class DepartmentAddComponent {
               this.opdServicesDetails.forEach(srv => {
                 let itm = allEmpBillItms.find(b => b.ServiceDepartmentName == srv.ServiceDepartmentName);
                 if (itm) {
-                  srv.IsServiceEnabled = true;
+                  if(itm.IsActive){
+                    srv.IsServiceEnabled = true;
+                  }
+                  else{
+                    srv.IsServiceEnabled = false;
+                  }                  
                   srv.isItemNameValid = true;
+                  this.CurrentDepartment.IsZeroPriceAllowed = itm.IsZeroPriceAllowed;
                   this.CallBack_SetDepartmentServices(srv, itm);
                 }
                 else {
@@ -514,7 +543,20 @@ export class DepartmentAddComponent {
     currServiceItem.ForeignerPrice = billItmFromServer.ForeignerPrice;
     currServiceItem.InsForeignerPrice = billItmFromServer.InsForeignerPrice;
     currServiceItem.ItemObj = billItmFromServer.ItemName;
-
   }
 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    if (targetId == 'AddDepartment') {
+      if (this.update) {
+        targetId = 'UpdateDepartment'
+      }
+    }
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
 }

@@ -62,7 +62,7 @@
       <div class="col-md-12"> <span class="col-md-2 left"> From Date: {{fromDate}}<br />
         ToDate: {{toDate}}<br />
         </span> <span class="col-md-8" style="text-align:center"><b>DOCTORWISE INCOME SUMMARY (OP + IP) REPORT</b></span> <span class="col-md-2 right">Print Date: {{currentDate}}</span> </div>
-      <div class="col-md-12">
+      <div class="col-md-12" id="doctor-wise-income-summary">
         <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
           <thead>
             <tr>
@@ -127,7 +127,7 @@
     </div>
     <div class="form-group" style="text-align:center">
       <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
-      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('doctor-wise-income-summary')"> <i class="fa fa-file-excel-o"></i> Export </button>
     </div>
   </div>
 </div>

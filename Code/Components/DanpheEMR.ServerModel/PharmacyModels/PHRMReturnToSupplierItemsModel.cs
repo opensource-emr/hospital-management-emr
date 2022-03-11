@@ -16,14 +16,14 @@ namespace DanpheEMR.ServerModel
         public int ItemId { get; set; }
         public int GoodReceiptItemId { get; set; }
         public string BatchNo { get; set; }
-        public int? FreeQuantity { get; set; }
+        public double? FreeQuantity { get; set; }
         public decimal? FreeAmount { get; set; }
         [NotMapped]
         public int? FreeQuantityReturn { get; set; }
         [NotMapped]
         public decimal? FreeAmountReturn { get; set; }
         public decimal? FreeRate { get; set; }
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
         public decimal OldItemPrice { get; set; }
         public decimal ItemPrice { get; set; }
         public decimal SubTotal { get; set; }

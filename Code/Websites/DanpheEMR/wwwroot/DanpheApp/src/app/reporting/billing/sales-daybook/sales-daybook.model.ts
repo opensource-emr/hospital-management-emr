@@ -48,12 +48,17 @@ export class RPT_BIL_SalesDaybookModel {
     public CrRet_TotalAmount: number = 0;
 
     public ReturnAmount: number = 0;//sud:18Aug'18--this is for total returned amount. (Credit+Cash)
-
+    public DepositDeducted : number = 0;
+    public DepositRefund : number = 0;
+    public TotalSalesReturn : number = 0;
+    public TotalReturnDiscount : number = 0;
 
     public fromDate: string = "";
     public toDate: string = "";
 
     public SalesDaybookValidator: FormGroup = null;
+
+
 
     constructor() {
 
@@ -65,6 +70,8 @@ export class RPT_BIL_SalesDaybookModel {
 
         });
     }
+
+
 
 
     dateValidator(control: FormControl): { [key: string]: boolean } {
@@ -111,5 +118,6 @@ export class RPT_BIL_SalesDaybookModel {
         else
             return !(this.SalesDaybookValidator.hasError(validator, fieldName));
     }
+
 
 }

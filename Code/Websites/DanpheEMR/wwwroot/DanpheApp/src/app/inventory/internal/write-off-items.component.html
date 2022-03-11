@@ -1,0 +1,162 @@
+<style>
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+
+    .form-control {
+        padding: 0px;
+        text-align: center;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption lb-caption">
+            <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+            <span class="caption-subject">Write-Off Goods</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover inv_table table-bordered">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Item Name</th>
+                        <th>Code</th>
+                        <th>Batch No.</th>
+                        <th>Available Qty</th>
+                        <th>Write-Off Qty</th>
+                        <th>Write-Off Date</th>
+                        <th>Remark</th>
+                        <th></th>
+                        <th>Item Rate</th>
+                        <th>Sub Total</th>
+                        <th>VAT %</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of WOItems; let i = index">
+
+                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                        <td class="autocomplete-item">
+                            <form [formGroup]="row.WriteOffItemValidator">
+                                <input danphe-auto-complete class="form-control" [(ngModel)]="row.SelectedItem" [source]="ItemList" (ngModelChange)="CalculationAll(i)" [list-formatter]="myListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null onclick="this.select();" (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="10" name="ItemId" id="itemName{{i}}" formControlName="ItemId" style="width:150px" autoComplete="false" [min-chars]="1" (keyup.enter)="GoToNextInput('BatchNo'+ i,row.SelectedItem,i)" />
+                                <span class="error-msg" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item Name is Required</span>
+                            </form>
+                        </td>
+                        <td>
+                            <input class="form-control" [(ngModel)]="row.Code" disabled [ngModelOptions]="{standalone: true}" style="width:80px ; " name="code" value="">
+                        </td>
+                        <td>
+                            <form [formGroup]="row.WriteOffItemValidator">
+                                <select id="BatchNo{{i}}" class="form-control" [(ngModel)]="row.BatchNo" style="width:100px" title="{{row.BatchNo}}" formControlName="BatchNo" (ngModelChange)="SelectBatchNo(row.BatchNo,i)" (change)="setFocusById('wqtyip')">
+                                    <option *ngFor="let BatchNo of row.BatchNoList" value="{{BatchNo.BatchNo}}">
+                                        {{BatchNo.BatchNo}}
+                                    </option>
+                                </select>
+                                <span class="error-msg" *ngIf="row.IsDirty('BatchNo')" [hidden]="row.IsValidCheck('BatchNo','required')"> BatchNo is Required</span>
+                            </form>
+                        </td>
+                        <td>
+                            <input class="form-control" [(ngModel)]="row.AvailableQty" disabled [ngModelOptions]="{standalone: true}" style="width:100px ; " min="0" [disabled]="disableTextBox" name="availableqty" type="number" value="">
+                        </td>
+                        <td>
+                            <form [formGroup]="row.WriteOffItemValidator">
+                                <input id="wqtyip{{i}}" [(ngModel)]="row.WriteOffQuantity" (ngModelChange)="CalculationAll(i)" formControlName="WriteOffQuantity" style="width:80px ; " [ngClass]="row.AvailableQty < row.WriteOffQuantity ? 'bg-on' : 'bg-off'" min="0" class="form-control " name="writeoffquantity" type="number" value="0" (keyup.enter)="setFocusById('WriteOffDate')">
+                                <span class="error-msg" *ngIf="row.WriteOffQuantity>row.AvailableQty">No more Qty Available</span>
+                                <span class="error-msg" *ngIf="row.IsDirty('WriteOffQuantity')" [hidden]="row.IsValidCheck('WriteOffQuantity','required')"> Quantity is Required</span>
+                            </form>
+                        </td>
+                        <td>
+                            <form [formGroup]="row.WriteOffItemValidator">
+                                <input id="WriteOffDate" [(ngModel)]="row.WriteOffDate" style="width:150px ; " formControlName="WriteOffDate" min="0" [disabled]="disableTextBox" class="form-control " name="writeoffdate" type="date" value="" (keyup.enter)="setFocusById('remark'+i)">
+                                <span class="error-msg" *ngIf="row.IsDirty('WriteOffDate')" [hidden]="row.IsValidCheck('WriteOffDate','required')"> Write-Off Date is required</span>
+                                <span class="error-msg" *ngIf="row.IsDirty('WriteOffDate')" [hidden]="row.IsValidCheck('WriteOffDate','wrongDate')">Please Enter Valid Date</span>
+                            </form>
+                        </td>
+                        <td>
+                            <form [formGroup]="row.WriteOffItemValidator">
+                                <input id="remark{{i}}" [(ngModel)]="row.Remark" formControlName="Remark" class="form-control" name="remark" type="text" style="width:150px" value="" (keyup.enter)="AddRowRequest(i+1)" />
+                                <span class="error-msg" *ngIf="row.IsDirty('Remark')" [hidden]="row.IsValidCheck('Remark','required')">Remark is required</span>
+                            </form>
+                        </td>
+                        <td><a (click)="AddRowRequest(i+1)"><i class="glyphicon glyphicon-plus btn btn-success"></i></a></td>
+                        <td>
+                            <input [(ngModel)]="row.ItemRate" (ngModelChange)="CalculationAll(i)" disabled [ngModelOptions]="{standalone: true}" style="width:80px;" min="0" [disabled]="disableTextBox" class="form-control" name="itemrate" type="number" value="">
+                        </td>
+                        <td>
+                            <input [(ngModel)]="row.SubTotal" disabled style="width:80px ;" min="0" [disabled]="disableTextBox" class="form-control" name="subtotal" type="number" value="">
+                        </td>
+                        <td>
+                            <input [(ngModel)]="row.VAT" disabled [ngModelOptions]="{standalone: true}" style="width:80px ; " min="0" [disabled]="disableTextBox" class="form-control " name="vat" type="number" value="">
+                        </td>
+                        <td>
+                            <input [(ngModel)]="row.TotalAmount" disabled style="width:80px ; " min="0" [disabled]="disableTextBox" class="form-control " name="totalamount" type="number" value="">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 col-md-offset-8">
+        <div class="mt20 t-wrap">
+            <table class="inv_table">
+                <tr>
+                    <td class="text-right"><b>SubTotal:</b></td>
+                    <td>
+                        <div class="form-group">
+                            <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="SubTotal" disabled id="subtotal" name="subtotal" type="number">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right"><b>VAT:</b></td>
+                    <td>
+                        <div class="form-group">
+                            <input [(ngModel)]="VAT" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="vat" type="number">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right"><b>Total Amount:</b></td>
+                    <td>
+                        <div class="form-group">
+                            <input [(ngModel)]="TotalAmount" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="totalamount" type="number">
+                        </div>
+                    </td>
+                </tr>
+                <tr class="dot">
+                    <td colspan="2" class="text-capitalize text-right"><b>In Words :</b>{{TotalAmount | NumberInWords}} Only. </td>
+                </tr>
+
+
+            </table>
+            <div class="form-group clearfix">
+                <div class="text-right mt20 ">
+                    <input id="Request" type="button" class="btn green btn-success margin-7-hr" value="Write-Off Request" (click)="AddWriteOffItems()" [disabled]="loading" />
+                    <span></span>
+                    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

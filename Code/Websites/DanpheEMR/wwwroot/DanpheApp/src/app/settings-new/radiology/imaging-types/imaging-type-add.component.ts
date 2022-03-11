@@ -8,8 +8,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: "img-type-add",
-    templateUrl: "./imaging-type-add.html"
-
+    templateUrl: "./imaging-type-add.html",
+    host: { '(window:keyup)': 'hotkeys($event)' }
 })
 
 export class ImagingTypeAddComponent {
@@ -101,4 +101,17 @@ export class ImagingTypeAddComponent {
     showMessageBox(status: string, message: string) {
         this.msgBoxServ.showMessage(status, [message]);
     }
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+      hotkeys(event){
+          if(event.keyCode==27){
+              this.Close()
+          }
+      }
 }

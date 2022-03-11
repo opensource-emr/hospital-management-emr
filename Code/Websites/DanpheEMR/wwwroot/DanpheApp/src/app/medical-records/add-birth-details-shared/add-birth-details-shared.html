@@ -1,0 +1,401 @@
+<style>
+  th {
+    font-size: 13px !important;
+  }
+
+  .total-table td {
+    padding-bottom: 5px !important;
+  }
+
+  .inv_table thead tr th,
+  .inv_table tbody tr td {
+    padding: 3px !important;
+  }
+
+  /*input {
+    border-radius: 8px !important;
+  }*/
+
+  .fa-question {
+    /* top: 6px; */
+    border-top-right-radius: 3px !important;
+    border-bottom-right-radius: 3px !important;
+  }
+
+  input.ng-pristine {
+    border: 1px solid #ddd;
+    height: 30px;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .icon-info {
+    margin-left: 2px !important;
+    background-color: #2d68ea;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .dv-dup-bill-no {
+    background-color: yellow;
+    color: black;
+    cursor: default;
+  }
+
+  .msg-icn-warn {
+    color: #c1c112;
+    font-size: 17px;
+  }
+
+  .verification-card {
+    background-color: #e0e9f1;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 5px !important;
+    text-align: left;
+    width: 100%;
+    margin-top: 25px;
+  }
+
+  .verification-check {
+    background: #fff;
+    color: #2185cc;
+    padding: 3px 15px;
+    margin-bottom: auto;
+    border-radius: 5px !important;
+    box-shadow: 0px 0px 10px #eee;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .verification-check .custom-control-label {
+    margin-bottom: 0;
+    margin-left: 7px;
+    margin-top: 1px;
+    font-weight: 600;
+  }
+
+  .verification-form-control {
+    display: inline-block;
+    margin: 10px -15px;
+    width: 100%;
+  }
+
+  .verification-form-control .btn.btn-sm {
+    display: inline-flex;
+    height: 20px;
+    width: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100% !important;
+    font-size: 12px !important;
+    padding: 10px !important;
+    margin: 4px 3px;
+  }
+
+  .verification-form-control .verifier {
+    padding: 7px 15px;
+    background: #4158d3;
+    border-radius: 20px !important;
+    color: #fff;
+    margin-left: 15px;
+    font-weight: 500;
+    margin-bottom: 0px;
+    font-size: 12px;
+  }
+
+  .verification-form-control .form-control {
+    border: none;
+    box-shadow: 0px 4px 10px #eee;
+    font-size: 13px;
+  }
+
+  .verification-form-control .verifier i {
+    margin-right: 5px
+  }
+
+  .good-receipt-radio-btn label {
+    vertical-align: middle;
+  }
+
+  .good-receipt-radio-btn input[type=radio] {
+    margin: 4px 5px 0 5px;
+  }
+
+  .disable-input-box {
+    cursor: not-allowed;
+    border: 1px solid #ddd;
+    background-color: #eef1f5;
+    opacity: 1;
+  }
+</style>
+<div class="row margin-8-tp">
+  <!-- *ngIf="IsDeliveryCase" -->
+  <div class="col-md-12">
+    <div class="table-responsive">
+      <table class="table brth-detail-holder table-bordered">
+        <thead>
+          <tr>
+            <th colspan="7" class="text-center text-capitalize hdr-bg">Birth List</th>
+          </tr>
+        </thead>
+        <thead>
+          <tr>
+            <th>Cert. No.</th>
+            <th>Sex</th>
+            <th>Wt.(gm)</th>
+            <th>Father Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="BabyBirthDetails && BabyBirthDetails.length == 0">
+          <tr>
+            <td class="text-center" colspan="7">
+              <p><strong>No Birth Certificates Data</strong></p>
+            </td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="BabyBirthDetails && BabyBirthDetails.length > 0">
+          <tr *ngFor="let brth of BabyBirthDetails; let b=index;">
+            <td>{{brth.CertificateNumber}}</td>
+            <td>{{brth.Sex}}</td>
+            <td>{{brth.WeightOfBaby}}</td>
+            <td>{{brth.FathersName}}</td>
+            <td>{{brth.BirthDate | nepaliDate}}</td>
+            <td>{{brth.BirthTime}}</td>
+            <th>
+              <!-- [attr.disabled] = "brth.BabyBirthDetailsId != 0 ? true : false" -->
+              <button style="display: inline-block; border: none;" (click)="EditCurrentBirthDetail(b)"
+                class="margin-7-hr tbl-action-edit" title="edit"><i class="fa fa-edit"></i></button>
+
+              <a *ngIf="!brth.BabyBirthDetailsId && !IsEditMode" (click)="RemoveCurrentBirthDetail(b)"
+                style="display: inline-block;" class="margin-7-hr tbl-action-del" title="delete"><i
+                  class="fa fa-close"></i></a>
+            </th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<form [formGroup]="BirthDetail.BabyBirthDetailsValidator" class="form-horizontal hm-form">
+
+  <div class="form-body">
+    <div class="form-group" style="margin-bottom: 40px; border-style: outset;
+                 border-left: 7px solid #cfcfcf;
+                border-bottom: 3px solid #cfcfcf;
+                border-right: 3px solid #cfcfcf;">
+      <div class="col-md-12" style="margin-top: 15px;" *ngIf="showSelectMother">
+        <label for="srch_PatientList" class="col-md-3" style="font-weight: 600;font-size: medium;"> Select
+          Mother<sup>*</sup>:</label>
+        <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="SelectedPatient"
+          [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+          placeholder="Search by HospitalNo, Patient Name" display-property-name="ShortName" value-property-name=null
+          (valueChanged)="PatientInfoChanged()" onClick="this.select();" max-num-list="500" [min-chars]="3"
+          match-formatted="true" [grid-sort]="'ShortName'" style="width: 494px !important;"
+          [ngModelOptions]="{standalone: true}" />
+        <span class="color-red font-sm" [hidden]="ValidPatient">Patient is Required!</span>
+
+        <!--(keyup.enter)="FocusElementById('itemName0')"-->
+      </div>
+      <div class="col-md-12" *ngIf="showSelectMother" style="
+                    padding: 0px!important; margin-top: 15px; margin-bottom: 15px;">
+        <div class="col-md-5"><label class="control-label lbl-text">Mothers Name:</label>
+          {{SelectedPatient?.ShortName}}
+        </div>
+        <div class="col-md-2"><label class="control-label lbl-text">Age:</label>
+          {{SelectedPatient?.Age}}</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-md-5"><label for="certNum" class="control-label lbl-text">Certificate
+          Number </label></div>
+      <div class="col-md-5">
+        <div [ngClass]="{'alert alert-warning':duplicateCertificateNumber}">
+          <input id="certNum" [(ngModel)]="BirthDetail.CertificateNumber"
+            (ngModelChange)="BirthCertificateNumberDuplicationCheck()" [ngModelOptions]="{standalone:true}" type="text"
+            name="birth-condition" class="cstm-field-ip" />
+          <div class="color-red font-sm" *ngIf="duplicateCertificateNumber">
+            <i class="fa fa-warning"></i>Duplicate birth-certificate not allowed
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-md-5"><label for="ddlBirthCondition" class="control-label lbl-text">Condition at Birth
+          <sup>*</sup></label>
+      </div>
+      <div class="col-md-5">
+        <select id="ddlBirthCondition" [(ngModel)]="BirthDetail.BirthConditionId" type="text" class="cstm-field-ip"
+          formControlName="BirthConditionId">
+          <option value="null">--Please Select--</option>
+          <option *ngFor="let brthcondition of allMasterDataForMR.AllBirthConditions"
+            [ngValue]="brthcondition.BabyBirthConditionId">
+            {{brthcondition.BirthConditionType}}</option>
+        </select>
+
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('BirthConditionId')"
+          [hidden]="BirthDetail.IsValidCheck('BirthConditionId','required')">Birth Condition is Required!</span>
+      </div>
+    </div>
+
+
+    <div class="form-group">
+      <div class="col-md-5"><label for="sex" class="control-label lbl-text">Gender
+          <sup>*</sup></label></div>
+      <div class="col-md-5">
+        <!-- <input id="sex" formControlName="Sex" [(ngModel)]="BirthDetail.Sex" type="text"
+                            name="birth-condition" class="cstm-field-ip" /> -->
+        <select id="sex" formControlName="Sex" [(ngModel)]="BirthDetail.Sex">
+          <option value="">--Select--</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('Sex')"
+          [hidden]="BirthDetail.IsValidCheck('Sex','required')">Gender is
+          Required!</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-5"><label for="babyWt" class="control-label lbl-text">Weight <span
+            style="line-height: 2;">(gram)</span>
+          <sup>*</sup></label>
+      </div>
+      <div class="col-md-5">
+        <div class="row">
+          <div class="col-md-6"><input id="babyWt" formControlName="WeightOfBaby" [(ngModel)]="BirthDetail.WeightOfBaby"
+              type="number" min="0" class="cstm-field-ip" /></div>
+        </div>
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('WeightOfBaby')"
+          [hidden]="BirthDetail.IsValidCheck('WeightOfBaby','required')">Enter baby
+          Weight</span>
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('WeightOfBaby')"
+          [hidden]="BirthDetail.IsValidCheck('WeightOfBaby','min')">Weight can't be 0.</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-md-5"><label for="fatherName" class="control-label lbl-text">Father
+          Name</label>
+      </div>
+      <div class="col-md-5">
+        <input id="fatherName" [(ngModel)]="BirthDetail.FathersName" [ngModelOptions]="{standalone: true}" type="text"
+          class="cstm-field-ip" />
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-5">
+        <label for="birthDate" class="control-label lbl-text">Birth Date
+          <sup>*</sup></label>
+
+      </div>
+      <div class="col-md-4">
+        <danphe-date-picker formControlName="BirthDate" [(ngModel)]="BirthDetail.BirthDate" [CalendarTypes]="'en,np'">
+        </danphe-date-picker>
+        <!--<input id="birthDate" formControlName="BirthDate" [(ngModel)]="BirthDetail.BirthDate" type="date" class="cstm-field-ip" />-->
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('BirthDate')"
+          [hidden]="BirthDetail.IsValidCheck('BirthDate','required')">Enter
+          Birth Date</span>
+      </div>
+
+    </div>
+    <div class="form-group">
+      <div class="col-md-5"><label for="birthTime" class="control-label lbl-text">Birth
+          Time <sup>*</sup></label>
+      </div>
+      <div class="col-md-5">
+        <input class="cstm-field-ip" id="birthTime" type="time" formControlName="BirthTime"
+          [(ngModel)]="BirthDetail.BirthTime" />
+        <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('BirthTime')"
+          [hidden]="BirthDetail.IsValidCheck('BirthTime','required')">Enter Birth
+          Time</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-5"><label for="ddlBirthNumberType" class="control-label lbl-text">Birth Number Type
+        </label>
+      </div>
+      <div class="col-md-5">
+        <select id="ddlBirthNumberType" [(ngModel)]="BirthDetail.BirthNumberType" type="text" class="cstm-field-ip"
+          [ngModelOptions]="{standalone: true}">
+          <option value="single">Single</option>
+          <option value="twins">Twins</option>
+          <option value="multiple">Multiple</option>
+        </select>
+        <!-- <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('BirthNumberType')"
+        [hidden]="BirthDetail.IsValidCheck('BirthNumberType','required')">Enter Birth
+       Number Type.</span> -->
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-5"><label for="ddlBirthType" class="control-label lbl-text">Birth Type
+        </label>
+      </div>
+      <div class="col-md-5">
+        <select id="ddlBirthType" name="BirthType" [(ngModel)]="BirthDetail.BirthType"
+          [ngModelOptions]="{standalone: true}" type="text" class="cstm-field-ip">
+          <option [ngValue]="undefined" selected> --Please select-- </option>
+          <option *ngFor="let brthTypeItem of BirthTypeList" [ngValue]="brthTypeItem.type">
+            {{brthTypeItem.type}}</option>
+          <!-- <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('BirthType')"
+        [hidden]="BirthDetail.IsValidCheck('BirthType','required')">BirthType is
+        Required!</span>
+       formControlName="BirthType" -->
+        </select>
+
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-5"><label for="certNum" class="control-label lbl-text">Issued By:
+        </label></div>
+      <div class="col-md-5">
+        <input danphe-auto-complete class="form-control" [source]="providerList" [list-formatter]="myListFormatter"
+          placeholder="Issued By" display-property-name="FullName" value-property-name=null
+          (valueChanged)="OnChangeIssuedSignatory()" min-chars="0" [(ngModel)]="IssuedSignatory" max-num-list="10"
+          [ngModelOptions]="{standalone: true}" />
+
+        <!-- <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('IssuedBy')"
+        [hidden]="BirthDetail.IsValidCheck('IssuedBy','required')">Issued By is
+        Required!</span> -->
+      </div>
+    </div>
+    <!-- [(ngModel)]="BirthDetail.CertifiedBy"  [(ngModel)]="BirthDetail.IssuedBy"-->
+    <div class="form-group">
+      <div class="col-md-5"><label for="certNum" class="control-label lbl-text">Certified By:
+        </label></div>
+      <div class="col-md-5">
+        <input danphe-auto-complete class="form-control" [(ngModel)]="CertifiedSignatory" [source]="providerList"
+          [list-formatter]="myListFormatter" placeholder="Certified By" display-property-name="FullName"
+          value-property-name=null (valueChanged)="OnChangeCertifiedSignatory()" min-chars="0" max-num-list="10"
+          [ngModelOptions]="{standalone: true}" />
+        <!-- <span class="color-red font-sm" *ngIf="BirthDetail.IsDirty('CertifiedBy')"
+        [hidden]="BirthDetail.IsValidCheck('CertifiedBy','required')">IssuedBy is
+        Required!</span>   -->
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="form-group">
+  <button [attr.disabled]="loading?true:null" *ngIf="!IsEditMode" (click)="AddBirthDetailToList()"
+    class="add-cert btn-pd btn btn-sm btn-primary left" style="margin-left:30px;">Add
+    Certificate</button>
+  <button [attr.disabled]="loading?true:null" *ngIf="IsEditMode" (click)="SaveBirthDetail()"
+    class="add-cert btn-pd btn btn-sm btn-primary left" style="margin-left:30px;">Update Birth
+    Certificate</button>
+  <button *ngIf="IsEditMode" (click)="CancelUpdate()" class="cancel-cert btn-pd btn btn-sm btn-danger right"
+    style="margin-right:3px;">Cancel</button>
+</div>

@@ -1,0 +1,126 @@
+<div class="wrapper" *ngIf="isReceiptLoaded">
+  <div class="col-md-12" style="margin-top: 10px;">
+    <div id="divProvisionalSlipPrintPage" class="bill-receipt-printpage">
+      <div class="ProvisionalSlipDetails receipt">
+        <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+
+        <div *ngIf="!InvoiceDisplaySettings.ShowHeader"
+          [ngClass]="'flex-container provisional-bill-header-gap-' + hospitalCode"></div>
+
+        <div class="col-md-12">
+          <p style="text-align:center;font-weight:bold;"> Provisional Slip</p>
+        </div>
+        <div class="bill-patinfo">
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left">
+              <p class="no-margin" style="text-align:left"> <strong>Hospital No:
+                  {{ProvisionalSlipDetails.PatientCode}}</strong> </p>
+            </div>
+            <div class="right">
+              <p class="no-margin" style="text-align:right">Date: {{CurrentDate| nepaliDate}}</p>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+            <div class="left" style="width:69%">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;width:27%;">
+                <strong>Patient's Name :</strong>
+              </div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                <strong>{{ProvisionalSlipDetails.PatientName}}</strong>
+              </div>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right"> Age/Sex :
+                {{ProvisionalSlipDetails.Age}}/{{ProvisionalSlipDetails.Gender}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width: 69%;">
+              <p class="no-margin" style="text-align:left">Address: {{ProvisionalSlipDetails.Address}},
+                {{ProvisionalSlipDetails.CountrySubdivisionName}} </p>
+            </div>
+            <div class="right" style="width:31%" *ngIf="ProvisionalSlipDetails.PhoneNumber">
+              <p class="no-margin" style="text-align:right"> Contact No: {{ProvisionalSlipDetails.PhoneNumber}} </p>
+            </div>
+          </div>
+          <div class="clear footer"></div>
+          <table class="bill-itms" style="margin-top: 15px;">
+            <tr>
+              <th width="30px" class="print-sn"> Sn.</th>
+              <th width="170px" class="print-ReceiptNo">Receipt No</th>
+              <th width="170px" class="print-Date">Date</th>
+              <th width="170px" class="print-par">Particular(s)</th>
+              <th width="20px" class="text-right print-qty">Unit</th>
+              <th width="60px" class="text-right print-rate">Price</th>
+              <th width="60px" class="text-right print-amt">Amount</th>
+            </tr>
+            <tr *ngFor="let row of ProvisionalSlipDetails.ItemsList; let i=index">
+              <td>{{i+1}}</td>
+              <td>{{row.FiscalYearFormatted}}/PR/{{ row.ProvisionalReceiptNo}}</td>
+              <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+              <td style="text-transform: uppercase;">{{row.ItemName}}</td>
+              <td class="text-right print-qty">{{row.Quantity}}</td>
+              <td class="text-right print-rate">{{row.Price | number : "1.2-2"}}</td>
+              <td class="text-right print-amt">{{row.Quantity * row.Price | number : "1.2-2"}}</td>
+            </tr>
+          </table>
+          <div class="col-md-12 bill-summ-div">
+            <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
+              In Words : {{model.TotalAmount | NumberInWords}} <span
+                *ngIf="ProvisionalSlipDetails.TotalAmount !=0">Only</span>
+            </div>
+            <div style="padding: 0px;width:54%;display:inline-block;">
+              <table class="bil-summ" style="width:100%">
+                <tr style="border-top: 0px;">
+                  <td> SubTotal </td>
+                  <td style="border-right: none;"> {{model.SubTotal | number : "1.2-2"}} </td>
+                </tr>
+                <tr>
+                  <td>
+                    Discount
+                  </td>
+                  <td style="border-right: none;"> {{model.TotalDiscount | number : "1.2-2"}} </td>
+                </tr>
+                <tr *ngIf="ProvisionalSlipDetails.TaxAmount">
+                  <td>{{taxLabel}} </td>
+                  <td style="border-right: none;">{{model.TaxAmount | number : "1.2-2"}}</td>
+                </tr>
+                <tr style="border-bottom: 0px;">
+                  <td>Total Amount </td>
+                  <td style="border-right: none;">{{model.TotalAmount | number : "1.2-2"}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding-top: 5px; padding-left: 0px; padding-right: 0px;">
+            <div class="right"> User: {{ProvisionalSlipDetails.BillingUser}} </div>
+            <div class="left"
+              *ngIf="ProvisionalSlipDetails.ItemsList[0] && ProvisionalSlipDetails.ItemsList[0].Remarks"> Remarks:
+              {{ProvisionalSlipDetails.ItemsList[0].Remarks}} </div>
+          </div>
+        </div>
+        <div style="width: 100%;text-align: center;margin-top: 20px;" *ngIf="provSlipFooterParam.ShowFooter"> <b>
+            {{provSlipFooterParam.EnglishText}} </b> <br *ngIf="provSlipFooterParam.VerticalAlign" />
+          <b> {{provSlipFooterParam.NepaliText}} </b>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+      <button class="btn green btn-success" value="" (click)="print()" id="btnPrintProvisionalSlip">
+        <span>Print</span>&nbsp;&nbsp;
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+
+    <select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-provisional'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+  </div>
+</div>
+
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

@@ -51,6 +51,7 @@ export class AccountHeadListComponent {
         this.changeDetector.detectChanges();
         this.selectedAccountHead = $event.Data;
         this.showAddPage = true;
+        this.FocusElementById('AccountHeadName');
       }
       default:
         break;
@@ -58,6 +59,7 @@ export class AccountHeadListComponent {
   }
   AddAccountHead() {
     this.showAddPage = false;
+    this.FocusElementById('AccountHeadName');
     this.changeDetector.detectChanges();
     this.showAddPage = true;
   }
@@ -80,6 +82,13 @@ export class AccountHeadListComponent {
     this.selectedAccountHead = null;
     this.index = null;
   }
-
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
 
 }

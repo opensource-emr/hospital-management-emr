@@ -1,0 +1,434 @@
+<style>
+  .table thead tr th {
+    font-size: 13px;
+  }
+
+  .delBtn {
+    padding: 1px 7px;
+    margin-top: 1px;
+    margin-right: 0px;
+  }
+
+  table.billing-table tr td {
+    padding: 8px 4px;
+  }
+
+  .duplication-item {
+    background-color: yellow !important;
+  }
+</style>
+<div>
+  <div class="page-bar" style="float:none">
+    <h3 class="header-sm inner-header-sm display-inline">
+      <span *ngIf="insuranceService.BillingFlow=='insurance-package'"> Insurance Package / </span> <span> Insurance /
+      </span> <span>
+        {{billingType}}
+        Billing
+      </span>
+      <span> &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;NSHI Number &nbsp;&nbsp;
+        :{{patientService.getGlobal().NSHI}} &nbsp;&nbsp; Claim Code &nbsp;&nbsp;: {{latestVisitClaimCode}}</span>
+    </h3>
+    &nbsp;&nbsp;
+    <!-- <div class="display-inline">
+      <label class="display-inline">Requested by Dr:</label>
+      &nbsp;&nbsp;
+      <input [disabled]="disableTextBox" class="display-inline form-control cstm-form-control" danphe-auto-complete
+             [ngModelOptions]="{standalone: true}" [(ngModel)]="currentRequestedByDoctor" [source]="doctorsList"
+             [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+             display-property-name="FullName" value-property-name=null match-formatted="true"
+             (focusout)="RequestedByDrOnChange()" onClick="this.select();" max-num-list="10" />
+    </div> -->
+    <div class="pull-right">
+
+      <input type="button" style="font-weight:bold;color:#272b27;" class="btn btn-sm btn-success"
+        value="Update Insurance Balance" (click)="ShowUpdateInsurance()" />
+    </div>
+  </div>
+  <div class="page-bar" style="float:none">
+    <div class="display-inline">
+      <div class="col-md-12">
+        <label>Lab Type:</label>
+        <select [(ngModel)]="LabTypeName" class="mb-8" name="lab_type" id="lab_type" (change)="OnLabTypeChange()">
+          <option *ngFor="let labtype of LabType" value="{{labtype.Value}}">{{labtype.Name}}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div *ngIf="currBillingContext">
+        <div
+          *ngIf="currBillingContext && insuranceService.BillingFlow=='insurance-package' && currBillingContext.Insurance && currBillingContext.Insurance.PatientInsurancePkgTxn ">
+          Insurance Package: <b>{{currBillingContext.Insurance.PatientInsurancePkgTxn.PackageName}}</b> </div>
+        <table class="table billing-table doc-tbl">
+          <thead>
+            <tr>
+              <th></th>
+              <th>S.N</th>
+              <th sortable-header col="department"> <b>Department</b> </th>
+              <th style="width:40px;"> </th>
+
+              <!-- <th sortable-header col="doctorname"><b>AssignedTo Dr.</b></th> -->
+              <th></th>
+              <th sortable-header col="itemnames"><b>ItemName</b></th>
+              <th sortable-header col="quantity"><b>Qty</b></th>
+              <th><b>Price</b></th>
+              <th *ngIf="model.DiscountPercent">
+                <b style="font-size:11px;" title="Includes Item Discount and Additional Discount">Aggregate
+                  Discount%</b>
+              </th>
+
+              <th *ngIf="taxPercent!=0"><b>{{billingService.taxName}}</b></th>
+              <th><b>Total </b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of model.BillingTransactionItems; let i = index">
+              <td style="padding: 7px 0px 0px 0px;">
+                <a class="btn btn-danger btn-round delBtn" *ngIf="!isPackageBilling" (click)="deleteRow(i)"
+                  title="Click to remove this item"><i class=" fa fa-times"></i></a>
+              </td>
+              <td style="padding: 7px 0px 0px 0px;"><label class="form-control cstm-form-control"
+                  style="text-align:center">{{i+1}}</label></td>
+              <td>
+                <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                  <input class="form-control cstm-form-control" danphe-auto-complete
+                    title="{{row.ServiceDepartmentName}}" formControlName="ServiceDepartmentId"
+                    [ngClass]="{'border-red': row.IsDirty('ServiceDepartmentId') && !row.IsValidCheck('ServiceDepartmentId','required'), 'border-red': !row.IsValidSelDepartment }"
+                    [(ngModel)]="selectedServDepts[i]" [list-formatter]="ServiceDeptListFormatter"
+                    [source]="serviceDeptList" placeholder="Enter Department"
+                    display-property-name="ServiceDepartmentName" value-property-name=null
+                    (focusout)="ServiceDeptOnChange(i)" [grid-sort]="'ServiceDepartmentName'" match-formatted="true"
+                    onClick="this.select();" max-num-list="15" />
+                  <div class="color-red font-sm" *ngIf="row.IsDirty('ServiceDepartmentId')"
+                    [hidden]="row.IsValidSelDepartment">Select Department from the list.</div>
+                </form>
+              </td>
+              <td style="padding-left:0px;padding-right:0px;">
+                <!-- Sud:19May'21--Hide Item Edit panel until further requirement clarity -->
+                <div style="display: none;">
+                  <i class="fa fa-pencil" title="Edit Price Category, RequestingDoctor,etc.."
+                    (click)="OpenItemEditPanel(i)"> </i> <span *ngIf="row.PriceCategory=='Normal'"
+                    style="color:green;font-weight:bold;font-size:13px;" title="Normal"> (N) </span> <span
+                    *ngIf="row.PriceCategory=='Foreigner'" style="color:green;font-weight:bold;font-size:13px;"
+                    title="Foreigner"> (F) </span> <span *ngIf="row.PriceCategory=='SAARCCitizen'"
+                    style="color:green;font-weight:bold;font-size:13px;" title="SAARC Citizen"> (S) </span> <span
+                    *ngIf="row.PriceCategory=='EHS'" style="color:green;font-weight:bold;font-size:13px;"
+                    title="Extended Hospital Services"> (E) </span>
+                </div>
+              </td>
+
+              <!-- <td><form [formGroup]="row.BillingTransactionItemValidator" class="bill-itemname">
+                  <input [disabled]="disableTextBox" class="form-control cstm-form-control"
+                         danphe-auto-complete formControlName="ProviderId"
+                         [ngClass]="{'border-red': row.IsDirty('ProviderId') && !row.IsValidCheck('ProviderId','required'), 'border-red': !row.IsValidSelAssignedToDr }"
+                         [(ngModel)]="selectedAssignedToDr[i]" [source]="doctorsList"
+                         [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+                         display-property-name="FullName" value-property-name=null match-formatted="true"
+                         (focusout)="AssignSelectedDoctor(i)" onClick="this.select();" max-num-list="10" />
+                  <div class="color-red font-sm" *ngIf="row.IsDirty('ProviderId')"
+                       [hidden]="row.IsValidCheck('ProviderId','required')"> Assigned Doctor is mandatory </div>
+                </form></td> -->
+              <td style="padding: 7px 0px 0px 0px;">
+                <a [hidden]="disableTextBox" *ngIf="!isPackageBilling" class="btn btn-success delBtn btn-round"
+                  (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"> <i class="fa fa-plus"></i> </a>
+              </td>
+              <td style="width:400px" [ngClass]="{'duplication-item':row.IsDoubleEntry_Now || row.IsDoubleEntry_Past}">
+                <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                  <input class="form-control cstm-form-control" danphe-auto-complete title="{{row.ItemName}}"
+                    autocomplete="off" formControlName="ItemName"
+                    [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
+                    [(ngModel)]="selectedItems[i]" [list-formatter]="ItemsListFormatter" [source]="row.ItemList"
+                    placeholder="Enter Item Name" display-property-name="ItemName" value-property-name=null
+                    match-formatted="true" (ngModelChange)="AssignSelectedItem(i)" max-num-list="30"
+                    onClick="this.select();" (keyup.enter)="AddTxnItemRowOnClick(i)" [grid-sort]="'ItemName'"
+                    id="{{ 'items-box'+i }}" [min-chars]="1" />
+                  <div class="color-red font-sm" *ngIf="row.IsDuplicateItem"> Duplicate Item not allowed </div>
+                  <div class="color-red font-sm" *ngIf="row.IsDirty('ItemName')"
+                    [hidden]="row.IsValidCheck('ItemName','required')">Item Name is required</div>
+                  <div class="color-red font-sm" *ngIf="row.IsDoubleEntry_Now">
+                    <i class="fa fa-warning"></i>Duplicate
+                    Entry (This invoice)
+                  </div>
+                  <div class="color-red font-sm" *ngIf="row.IsDoubleEntry_Past">
+                    <i class="fa fa-warning"></i>Duplicate
+                    Entry ( {{BillRequestDoubleEntryWarningTimeHrs}} hours)
+                  </div>
+                </form>
+              </td>
+              <td>
+                <!-- @* Quantity *@ -->
+
+                <form [formGroup]="row.BillingTransactionItemValidator">
+                  <input [(ngModel)]="row.Quantity" style="width:70px" min="0"
+                    (ngModelChange)="ReCalculateBillItemAmounts(i)" id="{{ 'quantity_'+i }}"
+                    class="form-control cstm-form-control " name="quantity" type="number" onClick="this.select();"
+                    formControlName="Quantity" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                    (keyup.enter)="AddNewBillTxnItemRow(i)">
+                  <div class="color-red font-sm" *ngIf="row.IsDirty('Quantity')"
+                    [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Enter valid number.</div>
+                </form>
+              </td>
+              <td>
+                <!-- @* Price *@ -->
+
+                <form [formGroup]="row.BillingTransactionItemValidator">
+                  <input [(ngModel)]="row.Price" style="width:90px" min="0" formControlName="Price"
+                    (ngModelChange)="ReCalculateBillItemAmounts(i)" onClick="this.select();"
+                    class="form-control cstm-form-control" name="price" type="number" value="row.Price"
+                    [attr.disabled]="!row.InsBillItemPriceEditable ? true: null"
+                    (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+
+                  <div class="color-red font-sm" *ngIf="row.IsDirty('Price')"
+                    [hidden]="row.IsValidCheck('Price','invalidNumber')">Enter valid number.</div>
+                </form>
+              </td>
+              <td *ngIf="model.DiscountPercent">
+                <input [(ngModel)]="row.DiscountPercentAgg" style="width:60px" disabled
+                  class="form-control cstm-form-control" name="total" type="number">
+              </td>
+              <td *ngIf="taxPercent!=0">
+                <input [(ngModel)]="row.Tax" disabled style="width:70px" class="form-control cstm-form-control"
+                  name="Taxamount" type="number">
+              </td>
+              <td>
+                <!-- @* Total Price *@ -->
+
+                <input [(ngModel)]="row.TotalAmount" style="width:90px" disabled class="form-control cstm-form-control"
+                  name="total" type="number">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="row" *ngIf="isPackageBilling && ActivePackageInfo.BillingPackageId"> <span> Active Billing Package
+    </span>: <span style="font-weight:bold;">{{ActivePackageInfo.BillingPackageName}}</span> </div>
+  <div class="row" style="margin-top: 5px;">
+    <style>
+      .colon {
+        float: right;
+        margin-right: 6px;
+        margin-left: 4px;
+      }
+
+      .neg-amt {
+        color: red;
+      }
+
+      .pd-managed {
+        padding: 3px 5px;
+        height: 25px;
+      }
+
+      .ht-managed {
+        height: 30px;
+      }
+    </style>
+    <div class="col-md-12">
+      <div class="page-bar">
+        <div class="row">
+          <div class="col-md-4">
+
+            <!-- @* Insurance Details *@ -->
+            <div *ngIf="currBillingContext.Insurance">
+              <div>
+                <h2 class="header-sm inner-header-sm"> Insurance Details </h2>
+                <table class="doc-tbl">
+
+                  <tr>
+                    <td>Insurance Balance <b class="colon">:</b></td>
+                    <td>{{currBillingContext.Insurance.Ins_InsuranceBalance | ParseAmount}}</td>
+                  </tr>
+
+                  <tr>
+                    <td>Current Transaction <b class="colon">:</b></td>
+                    <td style="text-decoration:underline;">{{model.TotalAmount | ParseAmount}}</td>
+                  </tr>
+                  <tr>
+                    <td>Remaining Balance <b class="colon">:</b></td>
+                    <td style="font-weight: bold;color: blue;font-size: 17px;"><span
+                        [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{RemainingInsuranceBalance | ParseAmount }}</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div *ngIf="model !=null">
+              <table class="col-sm-offset-5 col-md-7">
+                <tr class="ht-managed">
+                  <td></td>
+                  <td> SubTotal: </td>
+                  <td>
+                    <input class="form-control pd-managed" [(ngModel)]="model.SubTotal" disabled id="subtotal"
+                      name="subtotal" type="number">
+                  </td>
+                </tr>
+
+                <tr class="ht-managed">
+                  <td></td>
+                  <td>Total Amount: </td>
+                  <td>
+                    <input [(ngModel)]="model.TotalAmount" style="font-weight:bold;" disabled
+                      class="form-control pd-managed" name="TotalAmount" type="number">
+                  </td>
+                </tr>
+                <!-- <tr class="ht-managed">
+                  <td></td>
+                  <td>Tender:</td>
+                  <td>
+                    <input id="tenderAmount" type="number" [(ngModel)]="model.Tender" class="form-control pd-managed"
+                           (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                           [disabled]="model.PaymentMode == 'credit'" onClick="this.select();"
+                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" (keyup.enter)="SetFocusOnButton('btn_printInvoice')">
+                  </td>
+                </tr> -->
+                <!-- <tr class="ht-managed">
+                  <td></td>
+                  <td>Change/Return :</td>
+                  <td><span>{{currencyUnit}}<b>{{model.Change}}</b></span></td>
+                </tr> -->
+                <tr class="ht-managed">
+                  <td></td>
+                  <td>Remarks: </td>
+                  <td><input id="remarks" [(ngModel)]="model.Remarks" class="form-control pd-managed" name="Remarks"
+                      type="text" (keyup.enter)="SetFocusOnButton('btn_printInvoice')"></td>
+                </tr>
+                <tr class="dot">
+                  <td colspan="3" class="text-capitalize">
+                    <h3 class="header-sm inner-header-sm">In Words : <b> {{model.TotalAmount | NumberInWords}} </b>Only.
+                    </h3>
+                  </td>
+                </tr>
+                <tr></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <div class="form-group" *ngIf="insuranceService.BillingFlow !='normal'">
+      <div class="col-sm-offset-4 col-sm-8">
+        <!-- @*Set loading=true as first statement before entering into the POST function, a lot of logic is based on this flag: so don't change it pls.*@ -->
+        <input [rbac-permission]="{'name':'ins-invoice-bill-submit-btn','actionOnInvalid':'hidden'}" type="submit"
+          id="btn_printInvoice" style="margin-right: 10px;" class="btn green btn-success" [disabled]="loading"
+          value="Print Insurance Invoice" (click)="loading=true;CheckAndSubmitBillingTransaction('insurance');" />
+        &nbsp;&nbsp;&nbsp; <span> </span>
+        <a class="btn btn-danger" routerLink="/Insurance/Patient">Cancel</a>
+        <span></span>&nbsp;&nbsp;&nbsp;
+        <input [rbac-permission]="{'name':'ins-provisional-invoice-bill-submit-btn','actionOnInvalid':'hidden'}"
+          type="submit" class="btn creamyblue btn-success" [disabled]="loading" value="Print Insurance Provisional Slip"
+          (click)="loading=true;CheckAndSubmitBillingTransaction('provisional');" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <label style="cursor: pointer; position: relative; top: -2px;" for="pasttestlist"
+      class="header-sm inner-header-sm">Show Past Tests: </label>
+    <input id="pasttestlist" name="pasttestlist" type="checkbox" [(ngModel)]="showPastBillHistory"
+      ng-checked="showPastBillHistory" style="margin-left: 10px; width: 18px;" (change)="ShowPastBillHistory()">
+  </div>
+  <div class="col-md-12">
+    <past-test-list *ngIf="showPastBillHistory" [patientId]="model.PatientId" (past-tests)="PastTest($event)">
+    </past-test-list>
+  </div>
+  <billing-package-select [showSelectPage]="showSelectPage" (callBack-select)="SelectFromPackage($event)">
+  </billing-package-select>
+
+  <bill-copy-recipt [showTxnCopySelPage]="showTxnCopySelPage" (selreceipt-event)="CopyFromEarlierInvoice()"
+    [patientId]="patientId"></bill-copy-recipt>
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="ShowDuplicateItemComfirmation">
+    <div class="portlet-body form" style='padding: 10px'>
+      <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+        <div>
+          <div>
+            <div class="col-md-12">
+              <a style="float:right;  margin:10px 0px 0px 0px;" class="btn btn-danger"
+                (click)="ShowDuplicateItemComfirmation=false" title="Cancel">X</a>
+            </div>
+            <div class="text-center">
+              <h1 style='color:cadetblue;font-weight: bold;text-decoration: underline'>Duplicate Items Found !!!</h1>
+            </div>
+            <hr />
+          </div>
+          <div class="text-center">
+            <h5 style="color: red;font-weight: bold">**Following are the duplicated item.</h5>
+            <div class="alert alert-info" role="alert" style="margin:0px 10px 0px 10px">
+              <table class="bill-itms" align="center" border="1">
+                <tr>
+                  <th align="center" class="print-sn"> SN.</th>
+                  <th align="center" class="print-par">Particular(s)</th>
+                  <!-- <td width="20px" class="text-center print-qty">Unit</td>
+                  <td width="60px" class="text-center print-rate">Price</td> -->
+                  <th align="center" class="text-center print-repeat">Repeated Times</th>
+                </tr>
+                <tr *ngFor="let row of DuplicateItem.Item; let i=index">
+                  <td align="center">{{i+1}}.</td>
+                  <td align="left">{{row.ItemName}}</td>
+                  <!-- <td class="text-center print-qty">{{row.Quantity}}</td>
+                  <td class="text-center print-rate">{{row.Price}}</td> -->
+                  <td class="text-center print-repeat">{{row.RepeatedTimes}}</td>
+                </tr>
+              </table>
+            </div>
+            <h3 style="font-weight: bold">Are you sure, you want to submit?</h3>
+          </div>
+          <hr />
+          <div class="text-center">
+            <button type="button" class="btn btn-info" style='margin:0px 20px 10px 0px;padding: 5px;width: 200px'
+              (click)="ShowDuplicateItemComfirmation=false;">
+              NO ! Go Back & Review-Items
+            </button>
+            <button type="button" class="btn btn-danger" style="margin:0px 0px 10px 0px;padding: 5px;width: 150px;"
+              [disabled]="loading" (click)="loading=true;SubmitBillingTransaction()">
+              YES, Print Receipt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="showItemEditPanel">
+    <edit-bill-item-doc-price [itemToEdit]="txnItemToEdit" [DoctorsList]="doctorsList"
+      (on-closed)="CloseItemUpdatePanel()" (on-item-updated)="OnPriceCategoryOrReqDocUpdated($event)">
+    </edit-bill-item-doc-price>
+  </div>
+</div>
+<!-- @*Insurance Update Balance*@ -->
+<gov-insurance-update-balance *ngIf="showInsBalanceUpdate" [gov-insurance-detail]="this.currBillingContext.Insurance"
+  (callback-update-balance)="CloseInsBalancePopup($event)">
+</gov-insurance-update-balance>
+
+<!--<past-test-list *ngIf="showPastBillHistory" [patientId]="model.PatientId" (past-tests)="PastTest($event)"> </past-test-list>-->
+
+
+<!--Start: Invoice Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showbillingReceipt">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-11">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div *ngIf = "!isProvisionalBilling">
+          <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId" [bil-txn-id]="bil_BilTxnId"
+            [redirect-path-after-print]="'/Insurance/Patient'">
+          </bil-print-invoice-main>
+        </div>  
+          <div *ngIf="isProvisionalBilling">
+            <bil-print-provisional-slip [PatientId]="provReceiptInputs.PatientId"
+              [ProvFiscalYrId]="provReceiptInputs.ProvFiscalYrId" [ProvReceiptNo]="provReceiptInputs.ProvReceiptNo"
+              [visitType]="provReceiptInputs.visitType" [isInsurance] = "true">
+            </bil-print-provisional-slip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Invoice Print Popup-->

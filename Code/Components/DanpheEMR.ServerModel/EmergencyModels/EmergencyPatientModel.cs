@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DanpheEMR.ServerModel.EmergencyModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,17 +20,17 @@ namespace DanpheEMR.ServerModel
         public DateTime? VisitDateTime { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
-	    public string LastName { get; set; }
-	    public string Gender { get; set; }
+        public string LastName { get; set; }
+        public string Gender { get; set; }
         public string Age { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string ContactNo { get; set; }
         public string CareOfPersonContactNumber { get; set; }
-	    public string Address { get; set; }
+        public string Address { get; set; }
         public string ReferredBy { get; set; }
         public string ReferredTo { get; set; }
         public string Case { get; set; }
-        public string ConditionOnArrival  { get; set; }        
+        public string ConditionOnArrival { get; set; }
         public int? ModeOfArrival { get; set; }
         public string CareOfPerson { get; set; }
         public string ERStatus { get; set; }
@@ -39,7 +40,7 @@ namespace DanpheEMR.ServerModel
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public int? ModifiedBy { get; set; }
-        public DateTime?  ModifiedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public bool IsActive { get; set; }
         public bool IsExistingPatient { get; set; }
         public string OldPatientId { get; set; }
@@ -51,6 +52,12 @@ namespace DanpheEMR.ServerModel
         public int? ProviderId { get; set; }
         public string ProviderName { get; set; }
         public bool? IsPoliceCase { get; set; }
+        [NotMapped]
+        public int? MainCase { get; set; }
+        [NotMapped]
+        public int? SubCase { get; set; }
+        [NotMapped]
+        public string OtherCaseDetails { get; set; }
 
         [NotMapped]
         public string PatientCode { get; set; }
@@ -64,6 +71,13 @@ namespace DanpheEMR.ServerModel
         public string DefaultDepartmentName { get; set; }
         [NotMapped]
         public string ModeOfArrivalName { get; set; }
+        [NotMapped]
+        public EmergencyPatientCases PatientCases { get; set; }
+
+        [NotMapped]
+        public int? MunicipalityId {get; set;}
+        [NotMapped]
+        public string MunicipalityName { get; set; }
 
     }
 

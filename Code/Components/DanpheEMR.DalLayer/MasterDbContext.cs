@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.EmergencyModels;
 
 namespace DanpheEMR.DalLayer
 {
@@ -49,7 +50,16 @@ namespace DanpheEMR.DalLayer
 
             modelBuilder.Entity<BillItemPrice>().ToTable("BIL_CFG_BillItemPrice");
             modelBuilder.Entity<StoreVerificationMapModel>().ToTable("MST_MAP_StoreVerification");
+            modelBuilder.Entity<CoreLookupDetail>().ToTable("CORE_LookupDetail");
 
+            modelBuilder.Entity<BanksModel>().ToTable("MST_Bank");
+            modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
+
+
+
+            modelBuilder.Entity<ICD10ReportingGroupModel>().ToTable("ICD_ReportingGroup");
+            modelBuilder.Entity<ICD10DiseaseGroupModel>().ToTable("ICD_DiseaseGroup");
+            modelBuilder.Entity<PrintExportConfigModel>().ToTable("CFG_PrintExportSettings");
         }
 
 
@@ -57,6 +67,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<CountrySubDivisionModel> CountrySubDivision { get; set; }
         public DbSet<ICD10CodeModel> ICD10Code { get; set; }
         public DbSet<EmployeeModel> Employees { get; set; }
+        public DbSet<BanksModel> Banks { get; set; }
         public DbSet<ReactionModel> Reactions { get; set; }
         public DbSet<RadiologyImagingTypeModel> ImagingTypes { get; set; }
         public DbSet<RadiologyImagingItemModel> ImagingItems { get; set; }
@@ -81,7 +92,12 @@ namespace DanpheEMR.DalLayer
         //and which was using Transaction of MasterDbContext. so couldn't use any other dbcontextes inside of transaction scope.
         public DbSet<BillItemPrice> BillItemPrices { get; set; }
         public DbSet<StoreVerificationMapModel> StoreVerificationMapModel { get; set; }
+        public DbSet<CoreLookupDetail> CoreLookupDetails { get; set; }
+        public DbSet<MunicipalityModel> Municipalities { get; set; }
 
+        public DbSet<ICD10ReportingGroupModel> ICD10ReportingGroups { get; set; }
+        public DbSet<ICD10DiseaseGroupModel> ICD10DiseaseGroups { get; set; }
+        public DbSet<PrintExportConfigModel> PrintExportConfig { get; set; }
 
     }
 }

@@ -7,8 +7,11 @@ import { InventoryBLService } from "../shared/inventory.bl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CommonFunctions } from "../../shared/common.functions"
 import { SecurityService } from '../../security/shared/security.service';
+import { throwToolbarMixedModesError } from '@angular/material';
+import * as moment from 'moment';
+import { ActivateInventoryService } from '../../shared/activate-inventory/activate-inventory.service';
 @Component({
-  templateUrl: "../../view/inventory-view/StockManage.html" // "/InventoryView/StockManage"
+  templateUrl: "./stock-manage.component.html"
 })
 export class StockManageComponent {
   public currQuantity: number = 0;
@@ -22,25 +25,28 @@ export class StockManageComponent {
   public selected: StockModel = new StockModel();
   public stkUpdate: Array<StockModel> = new Array<StockModel>();
   showNepaliDate: boolean = true;
+  showExpiryNepaliDate: boolean = true;
+  StoreId: number;
 
   constructor(public security: SecurityService,
     public inventoryBLservice: InventoryBLService,
     public inventoryservice: InventoryService,
-    public router: Router,
+    public router: Router, public _activateInventoryService: ActivateInventoryService,
     public msgBoxServ: MessageboxService) {
     if (this.security.HasPermission('inventory-stock-manage-button')) {
       this.loadStockDetails(this.inventoryservice.ItemId);//sud:3Mar'20-Property Rename in InventoryService
     }
-    else{
-      this.msgBoxServ.showMessage("Warning",["You are not allowed to edit this stock."]);
+    else {
+      this.msgBoxServ.showMessage("Warning", ["You are not allowed to edit this stock."]);
     }
   }
   //load stock details for manage
   loadStockDetails(itmId: number) {
     if (itmId != null) {
       this.itemId = itmId;
+      this.StoreId = this._activateInventoryService.activeInventory.StoreId;
       this.itemName = this.inventoryservice.ItemName;//sud:3Mar'20-Property Rename in InventoryService
-      this.inventoryBLservice.GetStockManageByItemId(this.itemId)
+      this.inventoryBLservice.GetStockManageByItemId(this.itemId, this.StoreId)
         .subscribe(res => {
           if (res.Status == "OK") {
             this.stockDetails = res.Results.stockDetails;
@@ -166,14 +172,12 @@ export class StockManageComponent {
       this.stkUpdate[indx].StockId = this.stockDetails[j].StockId;
       this.stkUpdate[indx].AvailableQuantity = this.stockDetails[j].ModQuantity;
       this.stkUpdate[indx].curQuantity = this.stockDetails[j].curQuantity;
-      this.stkUpdate[indx].ItemId = this.itemId;
       indx++;
     }
     for (var j = 0; j < this.tempList.length; j++) {
       this.stkUpdate[indx] = new StockModel();
       this.stkUpdate[indx].StockId = this.tempList[j].StockId;
       this.stkUpdate[indx].AvailableQuantity = this.tempList[j].ModQuantity;
-      this.stkUpdate[indx].ItemId = this.itemId;
       indx++;
     }
   }

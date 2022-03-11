@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
+﻿import { Component, ChangeDetectorRef, Input, Output, EventEmitter, OnInit, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -14,7 +14,7 @@ import * as moment from 'moment/moment';
     templateUrl: "./phrm-company-manage.html"
 
 })
-export class PHRMCompanyManageComponent {
+export class PHRMCompanyManageComponent implements OnInit {
     public CurrentCompany: PHRMCompanyModel = new PHRMCompanyModel();
     public selectedItem: PHRMCompanyModel = new PHRMCompanyModel();
     public companyList: Array<PHRMCompanyModel> = new Array<PHRMCompanyModel>();
@@ -22,26 +22,35 @@ export class PHRMCompanyManageComponent {
     public showCompanyList: boolean = true;
     public showCompanyAddPage: boolean = false;
     public update: boolean = false;
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
     public index: number;
     @Input("selectcompany")
     public selectcompany: PHRMCompanyModel;
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
+    public globalListenFunc: Function;
 
     @Input("showAddPage")
     public set value(val: boolean) {
-      this.showCompanyAddPage = val;
+        this.showCompanyAddPage = val;
+        this.setFocusById('companyname');
     }
 
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public changeDetector: ChangeDetectorRef,
         public securityService: SecurityService,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.companyGridColumns = PHRMGridColumns.PHRMCompanyList;
         this.getCompanyList();
     }
-
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+    }
     public getCompanyList() {
         this.pharmacyBLService.GetCompanyList()
             .subscribe(res => {
@@ -93,6 +102,7 @@ export class PHRMCompanyManageComponent {
         this.showCompanyAddPage = false;
         this.changeDetector.detectChanges();
         this.showCompanyAddPage = true;
+        this.setFocusById('companyname');
     }
 
     Add() {
@@ -104,19 +114,19 @@ export class PHRMCompanyManageComponent {
             this.CurrentCompany.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.pharmacyBLService.AddCompany(this.CurrentCompany)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ["Company Added."]);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentCompany = new PHRMCompanyModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ["Company Added."]);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentCompany = new PHRMCompanyModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -128,19 +138,19 @@ export class PHRMCompanyManageComponent {
         if (this.CurrentCompany.IsValidCheck(undefined, undefined)) {
             this.pharmacyBLService.UpdateCompany(this.CurrentCompany)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ['Company Details Updated.']);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentCompany = new PHRMCompanyModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ['Company Details Updated.']);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentCompany = new PHRMCompanyModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -181,19 +191,19 @@ export class PHRMCompanyManageComponent {
                 currCompany.IsActive = status;
                 this.pharmacyBLService.UpdateCompany(currCompany)
                     .subscribe(
-                    res => {
-                        if (res.Status == "OK") {
-                            let responseMessage = res.Results.IsActive ? "Company is now activated." : "Company is now Deactivated.";
-                            this.msgBoxServ.showMessage("success", [responseMessage]);
-                            this.getCompanyList();
-                        }
-                        else {
-                            this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
-                        }
-                    },
-                    err => {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                    });
+                        res => {
+                            if (res.Status == "OK") {
+                                let responseMessage = res.Results.IsActive ? "Company is now activated." : "Company is now Deactivated.";
+                                this.msgBoxServ.showMessage("success", [responseMessage]);
+                                this.getCompanyList();
+                            }
+                            else {
+                                this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                        });
             }
             //to refresh the checkbox if we cancel the prompt
             //this.getCompanyList();
@@ -208,5 +218,10 @@ export class PHRMCompanyManageComponent {
 
     AddUpdateResponseEmitter(company) {
         this.callbackAdd.emit({ company: company });
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

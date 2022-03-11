@@ -1,0 +1,116 @@
+<div class="row mb20">
+    <div class="col-md-12" *ngIf="allMachineMasterData">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-8">
+                <select class="form-control" [(ngModel)]="selectedMachineId" id="ddlMachineSelection"
+                    [disabled]="isEdit || allMachineMasterData.length == 1" (change)="MachineChanged()">
+                    <option value="0" *ngIf="(allMachineMasterData.length > 1) && !isEdit">Select Lab Machine</option>
+                    <option *ngFor="let machine of allMachineMasterData; let i=index;"
+                        [value]="allMachineMasterData[i].MachineId">
+                        {{allMachineMasterData[i].MachineName}}-{{allMachineMasterData[i].ModelName}}
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt25 mb20">
+    <div class="col-md-12">
+        <div class="s_f_wrapper s_f_label">
+            <table *ngIf="showAddForm" class="table table-responsive table-bordered inv_table">
+                <thead>
+                    <tr>
+                        <th>
+                            Danphe Component
+                        </th>
+                        <th class="text-center">Map To</th>
+                        <th>Machine Component</th>
+                        <th>Conversion Factor</th>
+                        <th *ngIf="!isEdit" style="width: 110px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let comp of compMappingArrayTemp; let i= index;"
+                        [ngClass]="compMappingArrayTemp[i].IsDuplicate ? 'bg-yell':''">
+
+                        <td>
+                            <div><input id="ddlDphComp{{i}}" [(ngModel)]="comp.DanpheComponent" class="form-control"
+                                    danphe-auto-complete (keyup.enter)="coreService.FocusInputById('ddlLisComp'+i, 100)"
+                                    [source]="notMappedDataList" [list-formatter]="ComponentListFormatter"
+                                    onClick="this.select();" display-property-name="ComponentName"
+                                    (valueChanged)="ComponentSelected(i,'dph')" type="text">
+                                <span *ngIf="!comp.IsValidComponent" class="color-red font-sm">Invalid Component</span>
+
+                            </div>
+                        </td>
+
+
+                        <td class="text-center" style="vertical-align: middle;"><i class="fa fa-arrow-right"></i></td>
+
+
+                        <td>
+                            <div><input id="ddlLisComp{{i}}" (keyup.enter)="moveCursorToFirstItemOfNextRow(i)"
+                                    danphe-auto-complete [list-formatter]="LisComponentListFormatter"
+                                    [source]="allMasterDataFiltered" display-property-name="ComponentName"
+                                    (valueChanged)="ComponentSelected(i,'lis')" onClick="this.select();"
+                                    [(ngModel)]="comp.LISComponent" class="form-control" type="text">
+                                <span *ngIf="!comp.IsValidLISComponent" class="color-red font-sm">Invalid
+                                    Component</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div><input class="form-control" [(ngModel)]="comp.ConversionFactor" type="number"></div>
+                        </td>
+
+                        <td *ngIf="!isEdit">
+                            <a class="btn btn-success inlie-block" title="Click to add new component mapping"
+                                (click)="AddNewMappingRow()"><i class="fa fa-plus"></i></a>
+                            <a *ngIf="compMappingArrayTemp.length > 1" class="btn btn-danger inlie-block"
+                                title="Click to remove this component mapping" (click)="RemoveCurrentMappingRow(i)"><i
+                                    class="fa fa-remove"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-12 mt20 text-right">
+        <hr />
+        <button class="btn btn-cancel grey" id="btnCancel" (click)="Cancel()">Cancel</button>
+        <button class="btn btn-success blue" id="btnSave" (click)="loading=true;Save()"
+            [disabled]="loading">Save</button>
+    </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showMachineChangeAlert">
+    <div class="portlet-body form">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="modelbox-div">
+                <div class="modelbox-header">
+                    <h4 class="margin-0-vr text-danger text-center">
+                        <strong>Are you sure ?</strong>
+                    </h4>
+                </div>
+                <div class="modelbox-body">
+                    Currently mapped component will be lost.
+                    Are you sure ?
+                </div>
+                <div class="modelbox-footer">
+                    <button class="btn btn-cancel grey" id="btnCancelMachineChange"
+                        (click)="CancelMachineChange()">Cancel</button>
+                    <button class="btn btn-success blue" id="btnProceed"
+                        (click)="ProceedWithMachineChange()">Proceed</button>
+                </div>
+                <div class="close-modelbox lb-close-btn">
+                    <button class="btn btn-danger" (click)="CancelMachineChange()">
+                        <i class=" fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

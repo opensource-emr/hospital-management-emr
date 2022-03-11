@@ -58,6 +58,7 @@ export class ImagingItemListComponent {
     this.showAddPage = false;
     this.changeDetector.detectChanges();
     this.showAddPage = true;
+    this.FocusElementById('imagingType')
   }
 
   CallBackAdd($event) {
@@ -79,6 +80,14 @@ export class ImagingItemListComponent {
     //this.index = null;
     this.selectedID = null;
 
+  }
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
   }
 
 

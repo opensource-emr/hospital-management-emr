@@ -1,33 +1,44 @@
 <!--<input type="checkbox" [(ngModel)]="showCommunity" (change)="CommunityChkboxOnChange()">ShowCommunity-->
 <style>
-.val-message {
-	text-align: center;
-}
-.disable-dropdown {
-	background-color: #eef1f5;
-}
+  .val-message {
+    text-align: center;
+  }
+
+  .disable-dropdown {
+    background-color: #eef1f5;
+  }
+
+  select.comm-list,
+  select.membership-list {
+    width: 180px !important;
+  }
 </style>
 
-<div class="row">
-  <div *ngIf="showCommunity" class="col-md-6">
-    <div class="row no-gutters"><label class="control-label col-md-6">{{labelsInfo.CommunityLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b></label>
-    <div class="col-md-6">
-      <select [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selectedCommunityName" (change)="CommunityDropdownOnChange(false)" [disabled]="dropdownDisabled">
-        <option value="null">--select--</option>
-        <option *ngFor="let community of distinctCommunityList" value="{{community}}">{{community}}</option>
-      </select>
-      <div [ngClass]="{'val-message': showCommunity}" *ngIf="!isMembershipValid" class="text-left small-info color-red"
-           style="margin-top: 0;"><i class="fa fa-info-sign"></i>membership scheme(s) is mandatory.</div>
-    </div></div>
-  </div>
-  <div class="col-md-6">
-    <div class="row no-gutters"><label class="control-label col-md-5" > {{labelsInfo.SchemeLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b></label>
-    <div class="col-md-7">
-      <select [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selMembershipId" (change)="MembershipTypeChange()" [disabled]="dropdownDisabled" style="width: 100%;">
-        <option value="null">--select--</option>
-        <option *ngFor="let membership of filteredMembershipList" value="{{membership.MembershipTypeId}}">{{membership.MembershipDisplayName}}</option>
-      </select>
-      <div style="margin-top: 0;" [ngClass]="{'val-message': showCommunity}" *ngIf="!isMembershipValid" class="text-left small-info color-red"><i class="fa fa-info-sign" ></i>membership scheme(s) is mandatory.</div>
-    </div></div>
-  </div>
+<div>
+  <span *ngIf="showCommunity" style="margin-right: 20px;">
+    {{labelsInfo.CommunityLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b>
+    <select class="comm-list" id="Membership" [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selectedCommunityName"
+      (change)="CommunityDropdownOnChange(false)" [disabled]="dropdownDisabled" style="margin-left: 5px;">
+      <option value="null" disabled>--select--</option>
+      <option *ngFor="let community of distinctCommunityList" value="{{community}}">{{community}}</option>
+    </select>
+  </span>
+
+  <span>
+    {{labelsInfo.SchemeLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b>
+    <select id="Scheme"  class="membership-list" [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selMembershipId"
+      (change)="MembershipTypeChange()" [disabled]="dropdownDisabled" style="width: 100%;margin-left: 5px;">
+      <option value="null" disabled>--select--</option>
+      <option *ngFor="let membership of filteredMembershipList" value="{{membership.MembershipTypeId}}">
+        {{membership.MembershipDisplayName}}</option>
+    </select>
+  </span>
+
+  <span *ngIf="!isMembershipValid">
+    <br />
+    <span style="margin-top: 0;" [ngClass]="{'val-message': showCommunity}" class="text-left small-info color-red"><i
+        class="fa fa-info-sign"></i>Membership Scheme(s) is Mandatory.
+    </span>
+  </span>
+
 </div>

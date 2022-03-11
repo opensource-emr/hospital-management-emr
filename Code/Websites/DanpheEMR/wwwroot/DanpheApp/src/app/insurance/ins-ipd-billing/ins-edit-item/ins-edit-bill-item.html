@@ -1,0 +1,221 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div modelbox-custm clearfix">
+          <div class="caption custom-caption">
+            <h3><span><i class="fa fa-pencil"></i>Edit Item</span></h3>
+            <a class="btn btn-danger closeBtn" (click)="CloseItemEdit()">X</a>
+          </div>
+          <div *ngIf="itemToEdit" id="editPanel">
+
+            <div class="patient_info_modal" *ngIf="selPatInfo">
+              <h4><i class="fa fa-user"></i>{{selPatInfo.ShortName}}</h4>
+              <ul>
+                <li><b><i class="fa fa-h-square"></i>Hospital No: </b> {{selPatInfo.PatientCode}}</li>
+                <li><b><i class="fa fa-male"></i>Age/Sex:</b>{{selPatInfo.Age}}/{{selPatInfo.Gender}}</li>
+              </ul>
+            </div>
+
+            <table class="table doc-tbl custom_table table-bordered padLess_table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Item Name</th>
+                  <th>Price</th>
+                  <th>Qty.</th>
+                  <th>Status</th>
+                  <th>Sub Total</th>
+                  <th *ngIf="BillingRequestDisplaySettings.IpdBilling.ItemLevelDiscountPercentage" >Dis. %</th>
+                  <th *ngIf="!itemToEdit_Input.IsInsurance">Dis. Amt.</th>
+                  <th>Total Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <date-lbl [value]="itemToEdit.CreatedOn" [show-time]="true"></date-lbl>
+                    <!-- {{itemToEdit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                  </td>
+                  <td>
+                    <div style="width: 200px;">{{itemToEdit.ItemName}}</div>
+                  </td>
+                  <td><input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      [(ngModel)]="itemToEdit.Price" (ngModelChange)="OnPriceChanged()" min="0"
+                      class="display-inline form-control" style="width:100px;" onClick="this.select();"/></td>
+                  <td><input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      [(ngModel)]="itemToEdit.Quantity" (ngModelChange)="OnQtyChanged()" min="0"
+                      class="form-control display-inline" style="width:80px;" onClick="this.select();" /></td>
+                  <td>
+                    <div>{{itemToEdit.OrderStatus}}</div>
+                  </td>
+                  <td>
+                    <div>{{itemToEdit.SubTotal}}</div>
+                  </td>
+                  <!-- <td *ngIf="!itemToEdit_Input.IsInsurance">
+                    <input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      [(ngModel)]="itemToEdit.DiscountPercent" (ngModelChange)="OnDiscPercentChanged()" min="0"
+                      class="display-inline form-control" style="width:80px;" />
+                      [attr.disabled]="!discountApplicable == true ? true : null"
+                  </td> -->
+                  <ng-container *ngIf="BillingRequestDisplaySettings.IpdBilling.ItemLevelDiscountPercentage">
+                    <td *ngIf="!itemToEdit_Input.IsInsurance">
+                      <input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                      [(ngModel)]="itemToEdit.DiscountPercent" (ngModelChange)="OnDiscPercentChanged()" min="0"
+                      class="display-inline form-control" style="width:80px;" onClick="this.select();"/>
+                    </td>
+                  </ng-container>
+                  <td *ngIf="!itemToEdit_Input.IsInsurance">
+                    <div>{{itemToEdit.DiscountAmount}}</div>
+                  </td>
+                  <td>
+                    <div>{{itemToEdit.TotalAmount}}</div>
+                  </td>
+
+                </tr>
+
+              </tbody>
+            </table>
+            <table class="table simple-table">
+              <tbody>
+                <tr>
+
+                  <td><label>Assign To Doctor:</label>
+                    <div *ngIf="doctorList && doctorList.length>0" class="display-inline">
+                      <input class="form-control cstm-form-control" danphe-auto-complete
+                        [(ngModel)]="selectedAssignedToDr" [source]="docDDLSource"
+                        [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+                        display-property-name="FullName" value-property-name=null match-formatted="true"
+                        (focusout)="AssignSelectedDoctor()" onClick="this.select();" max-num-list="10"
+                        style="width: 200px" />
+                    </div>
+                  </td>
+                  <td>
+                    <label for="">Referred By:</label>
+                    <div class="display-inline">
+                      <input class="form-control cstm-form-control" danphe-auto-complete [(ngModel)]="requestedByDr"
+                        [source]="docDDLSource" [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+                        display-property-name="FullName" value-property-name=null match-formatted="true"
+                        (focusout)="AssignSelectedRequestedDoctor()" onClick="this.select();" max-num-list="10"
+                        style="width: 200px" />
+                    </div>
+                  </td>
+                  <td>
+                    <label for="">Remarks <sup>*</sup>:</label>
+                    <div class="display-inline"><textarea class="form-control display-inline" rows="1"
+                        [(ngModel)]="cancelRemarks" style="width: 200px"></textarea></div>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-12 page-bar-secondary text-right">
+            <button class="btn primary-btn" (click)="SaveItem()" title="Save Changes">
+              <i class="fa fa-save"
+                 style="cursor:pointer;"></i> Save
+            </button>
+            <ng-container *ngIf="!itemToEdit.AllowCancellation">
+              <button disabled class="text-link btn btn-danger" title="Cancel This Item">
+                <i class="fa fa-trash" style="cursor:pointer;"></i> Cancel Item
+              </button>
+            </ng-container>
+            <ng-container *ngIf="itemToEdit.AllowCancellation">
+              <button class="text-link btn btn-danger" (click)="CancelBillItem()" title="Cancel This Item">
+                <i class="fa fa-trash" style="cursor:pointer;"></i> Cancel Item
+              </button>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- pop up Window for Cancle bill Request -->
+
+<div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom inv_modal"
+  *ngIf="showCancleDeatils">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" (click)="ClosePopup()" title="Cancel"><i
+              class="fa fa-times"></i></a>
+          <div class="form-body">
+            <div id="printpage">
+              <div class="col-md-11">
+                <billing-header></billing-header>
+                <div class="caption" style="color:blue;">
+                  <div style="text-decoration: underline;color: green;margin-top: 15px; text-align:center;">
+                    <h4><b>Item Cancellation</b></h4>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="col-md-12 main-info" style="padding:0px;">
+                  <div class="right">
+                    <p class="no-margin" style="text-align:right;padding-right: 10px"> Date:
+                      {{itemToEdit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}} </p>
+                  </div>
+                </div>
+                <div class="clear footer"></div>
+                <table class="table table-striped table-hover"
+                  style="border-top: 0.5px solid;border-bottom: 0.5px solid">
+                  <tr>
+                    <td width="30px" class="print-sn"> Sn.</td>
+                    <td width="170px" class="print-par">Item Name</td>
+                    <td width="20px" class="text-right print-qty">Unit</td>
+                    <td width="60px" class="text-right print-rate">Price</td>
+                    <td width="60px" class="text-right print-amt">Amount</td>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>{{itemToEdit.ItemName}}</td>
+                    <td class="text-right print-qty">{{itemToEdit.Quantity}}</td>
+                    <td class="text-right print-rate">{{itemToEdit.Price}}</td>
+                    <td class="text-right print-amt">{{itemToEdit.Quantity * itemToEdit.Price | number : "1.2-2"}}</td>
+                  </tr>
+                </table>
+                <div class="bill-summ-div">
+                  <div class="text-capitalize"
+                    style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
+                    In Words : {{itemToEdit.TotalAmount | NumberInWords | uppercase}} <span
+                      *ngIf="itemToEdit.TotalAmount !=0">ONLY</span> </div>
+                  <div style="padding: 0px;width:56%;display:inline-block;">
+                    <table class="bil-summ" style="width:100%">
+                      <tr style="border-top: 0px;">
+                        <td> SubTotal </td>
+                        <td> {{itemToEdit.SubTotal | number : "1.2-2"}} </td>
+                      </tr>
+                      <tr>
+                        <td> Discount </td>
+                        <td> {{itemToEdit.DiscountAmount | number : "1.2-2"}} </td>
+                      </tr>
+                      <tr style="border-bottom: 0px;">
+                        <th>Total Amount </th>
+                        <th>{{itemToEdit.TotalAmount | number : "1.2-2"}}</th>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+                <div class="col-md-12" style="border-top: 0.5px solid #ced0d4; border-bottom: 0.5px solid #ced0d4">
+                  <span class="left" style="padding: 10px 0px 10px 5px"> Consulting Dr: {{selectedAssignedToDr}} </span>
+                  <div class="right" style="padding: 10px 0px 10px 5px;"> Remarks : {{cancelRemarks}} </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12" style="padding-bottom: 18px;">
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary hidden-print" (click)="Print()" value="Print" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

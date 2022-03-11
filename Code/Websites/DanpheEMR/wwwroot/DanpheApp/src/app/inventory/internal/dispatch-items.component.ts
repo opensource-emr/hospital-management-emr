@@ -1,51 +1,39 @@
-import { Component, ChangeDetectorRef } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router'
-
+import { Component, ChangeDetectorRef, AfterViewInit } from '@angular/core'
+import { Router } from '@angular/router'
 import { RouteFromService } from "../../shared/routefrom.service"
 import { InventoryBLService } from "../shared/inventory.bl.service"
 import { SecurityService } from '../../security/shared/security.service';
 import { InventoryService } from '../shared/inventory.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-
 import { DispatchItems } from "../shared/dispatch-items.model"
-import { StockTransaction } from "../shared/stock-transaction.model"
 import { RequisitionStockVMModel } from "../shared/requisition-stock-vm.model"
 import * as moment from 'moment/moment';
-import { Requisition } from '../shared/requisition.model';
 import { CoreService } from '../../core/shared/core.service';
 import { DanpheHTTPResponse } from '../../shared/common-models';
+import { PHRMStoreModel } from '../../pharmacy/shared/phrm-store.model';
+import { ActivateInventoryService } from '../../shared/activate-inventory/activate-inventory.service';
 
 
 
-@Component({
-
-  templateUrl: "../../view/inventory-view/DispatchItems.html"  //"/InventoryView/DispatchItems"
-
-})
+@Component({ templateUrl: "./dispatch-items.html" })
 export class DispatchItemsComponent {
-  public selectedAll: boolean = true;
+  selectedAll: boolean = true;
   //its requisition dispatch component
-  constructor(
-    public routeFrom: RouteFromService, public coreService: CoreService,
-    public InventoryBLService: InventoryBLService,
-    public securityService: SecurityService,
-    public inventoryService: InventoryService,
-    public changeDetectorRef: ChangeDetectorRef,
-    public messageBoxService: MessageboxService,
-    public router: Router) {
-    this.Load(this.inventoryService.RequisitionId);
-  }
-  public loading: boolean = false;
-  onStockShow: boolean = false;
+  loading: boolean = false;
   isDispatchAllowed: boolean = true;
   StoreName: string = "";
-  msgBoxString: string = "";
-  public ReceivedBy: string = "";
-  public Remarks: string = "";
-  public RequestedOn: string = "";
-  public model: Array<DispatchItems> = new Array<DispatchItems>();
-  public requisitionStockVM: RequisitionStockVMModel = new RequisitionStockVMModel();
-  public ReqStatus: Requisition = new Requisition();
+  ReceivedBy: string = "";
+  Remarks: string = "";
+  RequestedOn: string = "";
+  model: Array<DispatchItems> = new Array<DispatchItems>();
+  requisitionStockVM: RequisitionStockVMModel = new RequisitionStockVMModel();
+  currentActiveInventory: PHRMStoreModel;
+  constructor(public routeFrom: RouteFromService, public coreService: CoreService, private _activeInvService: ActivateInventoryService, public InventoryBLService: InventoryBLService, public securityService: SecurityService, public inventoryService: InventoryService, public changeDetectorRef: ChangeDetectorRef, public messageBoxService: MessageboxService, public router: Router) {
+    this.currentActiveInventory = _activeInvService.activeInventory
+  }
+  ngOnInit() {
+    this.Load(this.inventoryService.RequisitionId);
+  }
   //Get Requisition and Requisition Items for Dispatch
   Load(RequisitionId: number) {
     if (RequisitionId != null && RequisitionId != 0) {
@@ -81,14 +69,17 @@ export class DispatchItemsComponent {
         var currDispatchItem = new DispatchItems();
         currDispatchItem.ItemId = this.requisitionStockVM.requisition.RequisitionItems[r].ItemId;
         currDispatchItem.RequisitionItemId = this.requisitionStockVM.requisition.RequisitionItems[r].RequisitionItemId;
-        currDispatchItem.RequiredQuantity = this.requisitionStockVM.requisition.RequisitionItems[r].Quantity - this.requisitionStockVM.requisition.RequisitionItems[r].ReceivedQuantity;
-        currDispatchItem.AvailableQuantity = this.AvalablbleQty(this.requisitionStockVM.requisition.RequisitionItems[r].ItemId);
+        //currDispatchItem.RequiredQuantity = this.requisitionStockVM.requisition.RequisitionItems[r].Quantity - this.requisitionStockVM.requisition.RequisitionItems[r].ReceivedQuantity;
+        currDispatchItem.RequiredQuantity = this.requisitionStockVM.requisition.RequisitionItems[r].PendingQuantity;
+        currDispatchItem.AvailableQuantity = this.requisitionStockVM.requisition.RequisitionItems[r].AvailableQuantity;
         currDispatchItem.ItemName = this.requisitionStockVM.requisition.RequisitionItems[r].Item.ItemName;
         currDispatchItem.DispatchedQuantity = currDispatchItem.RequiredQuantity;
         currDispatchItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        currDispatchItem.StoreId = this.requisitionStockVM.requisition.StoreId;
+        currDispatchItem.TargetStoreId = this.requisitionStockVM.requisition.RequestFromStoreId;
+        currDispatchItem.SourceStoreId = this.currentActiveInventory.StoreId;
         currDispatchItem.RequisitionId = this.inventoryService.RequisitionId;
         this.model.push(currDispatchItem);
+        this.setFocusById('dispatchQty0');
       }
     }
     else {
@@ -125,9 +116,7 @@ export class DispatchItemsComponent {
           if (this.requisitionStockVM.dispatchItems[i].IsValidCheck(undefined, undefined) == false) { CheckIsValid = false; }
 
           //for checking Dispatched quantity is less than required quantity and Available quantity
-          if ((this.requisitionStockVM.dispatchItems[i].AvailableQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)
-            || (this.requisitionStockVM.dispatchItems[i].RequiredQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)) {
-
+          if ((this.requisitionStockVM.dispatchItems[i].AvailableQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity) || (this.requisitionStockVM.dispatchItems[i].RequiredQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)) {
             this.messageBoxService.showMessage("notice-message", ["Dispatch Items must be less than Required and Available Quantity !"]);
             this.requisitionStockVM.dispatchItems[i].IsDisQtyValid = false;
             CheckIsValid = false;
@@ -137,8 +126,8 @@ export class DispatchItemsComponent {
 
         //Validation Pass then Dispatch and Save
         if (CheckIsValid) {
-
-          this.InventoryBLService.PostToDispatchItems(this.requisitionStockVM)
+          this.requisitionStockVM.dispatchItems.forEach(d => d.ReqDisGroupId = this.currentActiveInventory.INV_ReqDisGroupId);
+          this.InventoryBLService.PostToDispatchItems(this.requisitionStockVM.dispatchItems)
             .subscribe(
               (res: DanpheHTTPResponse) => {
                 this.loading = false;
@@ -177,20 +166,6 @@ export class DispatchItemsComponent {
     } else { row.IsDisQtyValid = true; }
 
   }
-
-
-  //This method only for get Item Id and check that perticular Item available quantity in  stock list
-  //sum of Available quantity against ItemId
-  AvalablbleQty(itemId: number): number {
-    let availableQty = 0;
-    for (var i = 0; i < this.requisitionStockVM.stock.length; i++) {
-      if (this.requisitionStockVM.stock[i].ItemId == itemId) {
-        availableQty = availableQty + this.requisitionStockVM.stock[i].AvailableQuantity;
-      }
-    }
-    return availableQty;
-  }
-
   logError(err: any) {
     console.log(err);
   }
@@ -233,5 +208,22 @@ export class DispatchItemsComponent {
       this.model[index].DispatchedQuantity = this.model[index].RequiredQuantity;
     }
     this.CheckAvailableQuantity(this.model[index], index);
+  }
+
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      else if (!htmlObject) {
+        targetId = 'remarks';
+        let htmlObject = document.getElementById(targetId);
+        if (htmlObject) {
+          htmlObject.focus();
+        }
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
   }
 }

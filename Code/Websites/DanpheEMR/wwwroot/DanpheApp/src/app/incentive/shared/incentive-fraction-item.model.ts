@@ -10,6 +10,7 @@ export class IncentiveFractionItemsModel {
   public PatientId: number = null;
   public BillItemPriceId: number = null;
   public ItemName: string = null;
+  public Quantity: number = null;
   public TotalBillAmount: number = null;
   public IncentiveType: string = 'assigned';
   public IncentiveReceiverId: number = null;

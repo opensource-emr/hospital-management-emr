@@ -5,8 +5,7 @@ import {
   FormControl,
   Validators,
   FormBuilder,
-  ReactiveFormsModule,
-  AbstractControl
+  ReactiveFormsModule
 } from '@angular/forms'
 import * as moment from 'moment/moment';
 import { CommonValidators } from "../../shared/common-validator";
@@ -15,8 +14,10 @@ export class GoodsReceiptItems {
   public GoodsReceiptItemId: number = 0;
   public GoodsReceiptId: number = 0;
   public ItemId: number = 0;
+  public ItemCategory: string = "";
   public BatchNO: string = "";
   public ExpiryDate: string = "";
+  public InvoiceQuantity: number = 0;
   public ReceivedQuantity: number = 0;
   public FreeQuantity: number = 0;
   public RejectedQuantity: number = 0;
@@ -27,6 +28,7 @@ export class GoodsReceiptItems {
   public CreatedOn: string = null;
   public IsTransferredToACC: boolean = false;
   //Only for display purpose
+  public ItemCode: string = "";
   public ItemName: string = "";
   public VAT: number = 0;
   public SubTotal: number = 0;
@@ -48,11 +50,24 @@ export class GoodsReceiptItems {
   public IsEdited: boolean;
   public IsActive: boolean = true;
   public CancelledBy: any;
+  //for Donations purpose tilganga hospital
+  public DonationId: number = 0;
+
+  public ManufactureDate: Date = null;
+  public SamplingDate: Date = null;
+  public NoOfBoxes: number = 0;
+  public SamplingQuantity: number = 0;
+  public IdentificationLabel: string = "";
+  public SamplingBoxes: string = "";
+  public IsSamplingLabel: string = "";
+  public SampleRemoved: number = 0;
+  public MaterialNO: string = "";
+  public RegisterPageNumber:number=null;
   constructor() {
     var _formBuilder = new FormBuilder();
     this.GoodsReceiptItemValidator = _formBuilder.group({
       'ReceivedQuantity': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
-      'ItemId': ['', Validators.compose([Validators.required, this.ValidateItemObject])],
+      'ItemId': ['', Validators.compose([Validators.required])],
       'FreeQuantity': ['', Validators.compose([Validators.required])],
       'ItemRate': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
       //'VAT': ['', Validators.compose([Validators.required])],
@@ -86,12 +101,5 @@ export class GoodsReceiptItems {
     }
     //else
     //    return { 'wrongDate': true };
-  }
-  // To validate first name
-  ValidateItemObject(control: AbstractControl) {
-    if (typeof (control.value) != "object") {
-      return { invalidItemName: true };
-    }
-    return null;
   }
 }

@@ -1,0 +1,82 @@
+<div class="row">
+  <div class="col-md-6">
+    <div class="caption custom-caption no-margin"><i class="fa fa-bar-chart"></i>
+      <span class="caption-subject">Return To Supplier Report</span>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+      <from-to-date-select (on-change)="selectDate($event)" >
+      </from-to-date-select>
+  </div>
+  <div class="col-md-3">
+    <div class="form-group row">
+      <label class="control-label col-md-5">Vendor Name<sup>*</sup><b style="float:right;">:</b></label>
+      <div class="col-md-6 autocomplete-item">
+        <input id="VendorName" danphe-auto-complete class="form-control" [(ngModel)]="selectedVndr"
+          [source]="VendorList" [list-formatter]="VendorListFormatter" placeholder="Select Vendor Name"
+          display-property-name="VendorName" value-property-name=null (valueChanged)="GetVendorDetails()"
+          (focusout)="GetVendorDetails()" onclick="this.select();" [match-formatted]="true" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="form-group row">
+      <label class="control-label col-md-5">Item Name<sup>*</sup><b style="float:right;">:</b></label>
+      <div class="col-md-6 autocomplete-item">
+        <input id="ItemName" danphe-auto-complete class="form-control" [(ngModel)]="selecteditem" [source]="itemList"
+          [list-formatter]="ItemListFormatter" placeholder="Select Item Name" display-property-name="ItemName"
+          value-property-name=null (valueChanged)="GetItemDetails()" (focusout)="GetItemDetails()"
+          onclick="this.select();" [match-formatted]="true" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-1">
+    <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="loading">
+      <i class="fa fa-search"></i>&nbsp;
+      <span *ngIf="!loading">Load</span>
+      <span *ngIf="loading">Loading...</span>
+    </button>
+  </div>
+</div><br>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="form-group row">
+      <label class="control-label col-md-5">Batch Number<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <input type="text" [(ngModel)]="BatchNumber" [ngModelOptions]="{standalone: true}" placeholder="Enter Batch No"
+          style="width:100%!important;">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="form-group row">
+      <label class="control-label col-md-5">Good Receipt Number<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <input type="number" [(ngModel)]="GoodReceiptNumber" [ngModelOptions]="{standalone: true}"
+          placeholder="Enter Good Receipt No" style="width:100%!important;">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="form-group row">
+      <label class="control-label col-md-5">Credit Note Number<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <input type="number" [(ngModel)]="CreditNoteNumber" [ngModelOptions]="{standalone: true}"
+          placeholder="Enter Credit Note No" style="width:100%!important;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="returnToSupplierGridColumns" [grid-data]="ReturnToSupplierData"
+      (onDateChange)="OnDateRangeChange($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      [grid-exportOptions]="GetGridExportOptions()" [grid-showExport]="true">
+    </danphe-grid>
+  </div>
+</div>

@@ -225,3 +225,25 @@
 }
 
 
+.bill-header-gap-cmh{height: 50px;}
+.provisional-bill-header-gap-cmh{height: 50px;}
+.ipd-invoice-header-gap-cmh{height: 25px;}
+.ins-bill-header-gap-cmh{height: 50px;}
+.ins-ip-bill-header-gap-cmh{height: 50px;}
+.ins-estimation-bill-header-gap-cmh{height: 50px;}
+.txt-label, .txt-val{font-size: 12px;}
+
+
+.main-info {
+    margin-top: 31px;
+  }
+
+  .ReturnInvoice-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .ReturnInvoice-print-main .print-detail {
+    width: 100%;
+  }

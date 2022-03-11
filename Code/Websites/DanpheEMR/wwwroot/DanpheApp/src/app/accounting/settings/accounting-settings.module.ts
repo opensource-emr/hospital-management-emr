@@ -42,6 +42,8 @@ import { VoucherHeadAddComponent } from './voucherhead/voucher-head-add';
 import { ReverseTransaction } from './reverse-transaction/reverse-transaction.component';
 import { SectionListComponent } from './section/section-list';
 import { COAListComponent } from '../settings/coa/coa-list.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import {TransferRulesComponent} from '../settings/transfer-rules/transfer-rules.component';
 ///import { CommonFunctions } from '../../shared/common.functions';
 @NgModule({
     providers: [AccountingSettingsBLService, AccountingSettingsDLService, 
@@ -52,7 +54,7 @@ import { COAListComponent } from '../settings/coa/coa-list.component';
         FormsModule,
         DanpheAutoCompleteModule,
         AccountingSettingsRoutingModule,
-        SharedModule],
+        SharedModule,ScrollingModule],
     declarations: [
         AccountingSettingsComponent,
         ItemsAddComponent,
@@ -76,6 +78,7 @@ import { COAListComponent } from '../settings/coa/coa-list.component';
         ReverseTransaction,
         SectionListComponent,
         COAListComponent,
+        TransferRulesComponent,
     ],
 
     bootstrap: [AccountingSettingsComponent]

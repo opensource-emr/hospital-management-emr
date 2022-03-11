@@ -12,9 +12,15 @@ export class PurchaseOrderSummeryReport {
     public FromDate: string = "";
     public ToDate: string = "";
     public OrderNumber: number = 0;
+    public VendorId: number = null;
+    public ItemId: number = null;
+    public VendorName: string = "";
+    public ItemName: string = "";
    // public OrderNumber: any = "";
-
-    public PurchaseOrderValidator: FormGroup = null;
+   public ItemType : string = "";
+   public SubCategory: string = "";
+   public ItemCode:string = "";
+   public PurchaseOrderValidator: FormGroup = null;
 
     constructor() {
 

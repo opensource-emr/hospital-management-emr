@@ -8,6 +8,7 @@ import 'rxjs/add/operator/switchMap';
 import { CoreService } from '../core/shared/core.service';
  
 export enum  APIsByType {
+  PatientListForRegNewVisit = "/api/Patient?reqType=patient-search-for-new-visit&search=",  //sud:10-Oct'2021--making new api since other one is very heavy.
   PatByName = "/api/Patient?reqType=patient-search-by-text&search=",  
   BillingPatient="/api/Patient?reqType=patientsWithVisitsInfo",  ///api/Patient?reqType=patientsWithVisitsInfo&admitStatus=
   NursingInpatient="/api/Admission?reqType=getAdmittedList&search=",

@@ -12,6 +12,7 @@ import { RouteFromService } from "../../shared/routefrom.service";
 import * as moment from 'moment/moment';
 import { PatientService } from "../../patients/shared/patient.service";
 import { VisitService } from '../../appointments/shared/visit.service';
+import { CoreService } from "../shared/core.service";
 @Component({
     selector: "notification-icon", ///selector to load the Page inside this selector tag 
     templateUrl: "./notification.html",
@@ -22,13 +23,18 @@ export class NotificationComponent {
     public currtNotification: Array<NotificationViewModel> = new Array<NotificationViewModel>();
     public dropdownOpened: boolean = false;
 
+    public NotificationSettings: any = null;   //{ IsNotificationDisplayEnabled: true, TimeToReloadInSeconds: 60, Push_VisitMessages: true };
+
     public totalMsgCount: number = 0;
     public archivedMsgCount: number = 0;
 
-    public notificationFrequency: number = 60000;//60000 =1 minute: this is the frequency of new Pull-Request for notifications.
+    //public reloadFreqInSecond=300;//this is 5 minutes.
+    public notificationReloadFrequencyInMs: number = 300*1000;//This reloads in every 300 seconds. i.e: 5 minutes.
+
     constructor(public http: HttpClient,
         public msgBoxServ: MessageboxService, public notificationblserv: NotificationBLService,
         public patientService: PatientService,
+        public CoreService: CoreService,
         public visitService: VisitService,
         public router: Router,
         public routeFromService: RouteFromService) {
@@ -43,12 +49,7 @@ export class NotificationComponent {
     public sub: Subscription;
 
     ngOnInit() {
-        //we are using Timer function of Observable to Call the HTTP with angular timer
-        //first Zero(0) means when component is loaded the timer is also start that time
-        //seceond (60000) means after each 1 min timer will subscribe and It Perfrom HttpClient operation 
-        this.timer = Observable.timer(0, this.notificationFrequency);
-        // subscribing to a observable returns a subscription object
-        this.sub = this.timer.subscribe(t => this.tickerFunc(t));
+        this.GetNotificationSettings();
     }
 
     tickerFunc(tick) {
@@ -62,10 +63,10 @@ export class NotificationComponent {
                     //this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
                 }
             },
-            err => {
-                console.log("Some error occured in notification module. Error details: " + err);
-                //this.msgBoxServ.showMessage("error", [err]);
-            });
+                err => {
+                    console.log("Some error occured in notification module. Error details: " + err);
+                    //this.msgBoxServ.showMessage("error", [err]);
+                });
 
         this.ticks = tick
 
@@ -130,7 +131,7 @@ export class NotificationComponent {
         else if (currtNotification.Notification_ModuleName == "Emergency" && currtNotification.Sub_ModuleName == "Emergency") {
             //return true;
         }
-        else if(currtNotification.Notification_ModuleName == "Inventory_Module" && currtNotification.Sub_ModuleName == "PR_Verification"){
+        else if (currtNotification.Notification_ModuleName == "Inventory_Module" && currtNotification.Sub_ModuleName == "PR_Verification") {
             this.router.navigate(['/Verification/PurchaseRequest']);
         }
 
@@ -139,25 +140,25 @@ export class NotificationComponent {
     GetNotificationVisitDetail(noitificationId: number) {
         this.notificationblserv.GetNotificationVisitDetail(noitificationId)
             .subscribe(
-            res => {
-                if (res.Status == "OK") {
+                res => {
+                    if (res.Status == "OK") {
 
-                    //Ashim: 5thApril2018 - workaround since feature is not available in Angular 4
-                    //should use onSameUrlNavigation feature once upgraded to Angular 5
-                    this.router.navigateByUrl("/", { skipLocationChange: true }).then(() => {
-                        this.patientService.getGlobal().PatientId = res.Results.PatientId;
-                        this.visitService.getGlobal().PatientId = res.Results.PatientId;
-                        this.visitService.getGlobal().PatientVisitId = res.Results.PatientVisitId;
-                        this.visitService.getGlobal().ProviderId = res.Results.ProviderId;
-                        this.router.navigate(["/Doctors/PatientOverviewMain/PatientOverview"])
-                    });
+                        //Ashim: 5thApril2018 - workaround since feature is not available in Angular 4
+                        //should use onSameUrlNavigation feature once upgraded to Angular 5
+                        this.router.navigateByUrl("/", { skipLocationChange: true }).then(() => {
+                            this.patientService.getGlobal().PatientId = res.Results.PatientId;
+                            this.visitService.getGlobal().PatientId = res.Results.PatientId;
+                            this.visitService.getGlobal().PatientVisitId = res.Results.PatientVisitId;
+                            this.visitService.getGlobal().ProviderId = res.Results.ProviderId;
+                            this.router.navigate(["/Doctors/PatientOverviewMain/PatientOverview"])
+                        });
 
-                }
-                else {
-                    console.log("Some error occured in notification module. Error details: " + res.ErrorMessage);
-                    this.msgBoxServ.showMessage("failed", ["Cannot Get Notification Detail."]);
-                }
-            });
+                    }
+                    else {
+                        console.log("Some error occured in notification module. Error details: " + res.ErrorMessage);
+                        this.msgBoxServ.showMessage("failed", ["Cannot Get Notification Detail."]);
+                    }
+                });
     }
 
     MarkAsReadButtonClick() {
@@ -238,6 +239,30 @@ export class NotificationComponent {
 
         this.dropdownOpened = true;
 
+    }
+
+    public GetNotificationSettings() {
+
+        this.timer = Observable.timer(0, this.notificationReloadFrequencyInMs);//Reload after mentioned time interval
+
+        this.sub = this.timer.subscribe(t => this.tickerFunc(t));
+
+        //Parameter didn't load until here, hence commenting below for now until we have a proper solution.
+        // var currParameter = this.CoreService.Parameters.find(a => a.ParameterName == "NotificationSettings" && a.ParameterGroupName == "Common");
+        // if (currParameter) {
+        //     this.NotificationSettings = JSON.parse(currParameter.ParameterValue);
+
+        //     //we are using Timer function of Observable to Call the HTTP with angular timer
+        //     //first Zero(0) means when component is loaded the timer is also start that time
+        //     //seceond (60000) means after each 1 min timer will subscribe and It Perfrom HttpClient operation
+        //     this.timer = Observable.timer(0, (this.NotificationSettings.TimeToReloadInSeconds * 1000));
+
+        //     // subscribing to a observable returns a subscription object
+        //     if (this.NotificationSettings.IsNotificationDisplayEnabled) {
+        //         this.sub = this.timer.subscribe(t => this.tickerFunc(t));
+        //     }
+
+        // }
     }
 
 }

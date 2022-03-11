@@ -1,0 +1,198 @@
+<div class="row" *ngIf="showGrid">
+
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="PHRMSettlementGridCols" [grid-data]="filteredPHRMPendingSettlements" (grid-actions)="PHRMSettlementGridActions($event)" [grid-exportOptions]="gridExportOptions" [grid-showExport]="false" [show-print-button]="false">
+        </danphe-grid>
+    </div>
+
+</div>
+
+
+<div *ngIf="showReceipt || showActionPanel">
+    <button class="btn btn-primary" (click)="BackToGrid()"><i class="fa fa-backward" style="display:inline-block;"></i>&nbsp;&nbsp;&nbsp;Back</button>
+    <h3 style="display:inline-block;font-size: 15px;margin-left: 10px;margin-bottom: 20px;margin-top: 0;"> <b>Summary View</b></h3>
+</div>
+<div class="wrapper">
+    <div class="row" *ngIf="showActionPanel">
+        <div class="col-md-8">
+            <div class="table-responsive table-wrapper" style="height: 300px;">
+                <table *ngIf="patCrInvoicDetails && patCrInvoicDetails.length" class="table doc-tbl table-bordered" style="background-color: #e7ecf1;">
+                    <tr style="background-color:whitesmoke">
+                        <th><input type="checkbox" name="" id="" style="zoom: 1.5;" [(ngModel)]="selectAll" ng-checked="selectAll=true" (change)="SelectAll()"></th>
+                        <th style="width: 100px;">S.No.</th>
+                        <th style="width: 200px;">Invoice No</th>
+                        <th style="width: 240px;">Invoice Date</th>
+                        <th style="width: 240px;">Sales Amount</th>
+                        <th style="width: 240px;">Return Amount</th>
+                        <th style="width: 240px;">Net Amount</th>
+                        <!-- <th>Total Amount</th> -->
+                    </tr>
+                    <tr *ngFor="let row of patCrInvoicDetails;let j=index;">
+                        <!-- <td colspan="4">
+                <table class="table doc-tbl table-bordered">
+                  <tr> -->
+                        <td><input type="checkbox" name="" id="" style="zoom: 1.5;" [(ngModel)]='row.isSelected' (change)="OnCheckboxChanged(j)"></td>
+                        <td style="width: 100px;"> {{j+1}} </td>
+                        <td style="width: 200px;"> <a (click)="ShowInvoiceDetail(j)" style="text-decoration: none;">PH{{row.InvoiceNo}}</a></td>
+                        <td style="width: 240px;">
+                            <date-lbl [value]="row.CreateOn" [show-time]="false"></date-lbl>
+                        </td>
+                        <td style="width: 240px;">{{row.SalesAmount}}</td>
+                        <td style="width: 240px;">{{row.ReturnAmount}}</td>
+                        <td style="width: 240px;">{{row.NetAmount}}</td>
+                    </tr>
+                </table>
+                <div *ngIf="!patCrInvoicDetails || !patCrInvoicDetails.length" style="text-align: center;">
+                    <p>There is no pending credit invoices for this patient.</p>
+                    <p>Please proceed for provisional (if any) or Deposit Refund.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="bil-action-2">
+                <table style="width: 100%;">
+                    <tr *ngIf="patCrInvoicDetails && patCrInvoicDetails.length">
+                        <td>Total Credit Amount:</td>
+                        <td>
+                            <label style="background-color:#E6E6E6; width:230px;padding: 5px;">{{
+                                model.CollectionFromReceivable}}</label>
+                        </td>
+                    </tr>
+                    <tr *ngIf="model.CollectionFromReceivable">
+                        <td>Discount On Settlement:</td>
+                        <td><input type="number" [(ngModel)]="model.DiscountAmount" (ngModelChange)="CalculatePaidAmount()" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)" style="width: 230px;">
+                            <br>
+                            <span *ngIf="discountGreaterThanPayable" class="color-red font-sm">Discount amount is invalid.</span>
+                        </td>
+                    </tr>
+
+                    <tr></tr>
+
+                    <tr>
+                        <td>Payable Amount:</td>
+                        <td>
+                            <label style="background-color:#E6E6E6; width:230px;padding: 5px;">
+                                {{ model.PayableAmount }}</label>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Deposit Available:</td>
+                        <td>
+                            <label style="background-color:#E6E6E6; width:230px;padding: 5px;">{{
+                                DepositInfo.Deposit_Balance?DepositInfo.Deposit_Balance:0 }}</label>
+                        </td>
+                    </tr>
+                    <tr *ngIf="model.PaidAmount">
+                        <td>Amount To Pay:</td>
+                        <td>
+                            <label style="background-color:#E6E6E6; width:230px;padding: 5px;">{{model.PaidAmount}}</label>
+                        </td>
+                    </tr>
+                    <tr *ngIf="model.RefundableAmount">
+                        <td>Amount To Return:</td>
+                        <td>
+                            <label style="background-color:#E6E6E6; width:230px;padding: 5px;">{{model.RefundableAmount}}</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <span class="control-label col-md-12" style="font-weight:bold" *ngIf="model.PaidAmount"> ( In words: {{
+                                model.PaidAmount | NumberInWords}} only ) </span>
+                            <span class="control-label col-md-12" style="font-weight:bold" *ngIf="model.RefundableAmount"> ( In words:
+                                {{ model.RefundableAmount | NumberInWords}} only ) </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+
+
+            <div class="bil-action-2" style="margin-top: 20px;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row form-group">
+                            <label class="col-md-4">Payment Mode:</label>
+                            <div class="col-md-8">
+                                <select [(ngModel)]="model.PaymentMode" class="form-control">
+                                    <option value="cash">Cash</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="card">Smart Card</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div *ngIf="model.PaymentMode != 'cash'">
+                            <div class="row form-group">
+                                <label class="col-md-4"> Payment Details: </label>
+                                <div class="col-md-8">
+                                    <textarea [(ngModel)]="model.PaymentDetails" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <strong style="line-height:3;">Remarks:</strong><br />
+                        </div>
+                        <div class="col-md-8">
+                            <textarea rows="2" [(ngModel)]="model.Remarks" class="form-control"></textarea>
+                            <br />
+                            <div class="color-red font-sm" *ngIf="model.IsDiscounted && !model.Remarks">Remarks is mandatory.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <input style="margin-top: 15px;" type="button" class="btn green-meadow" (click)="SettlePatientBills()" [disabled]="loading || !settelmentProceedEnable" value="Proceed" />
+                </div>
+            </div>
+
+
+        </div>
+
+
+    </div>
+    <div class="row" *ngIf="showActionPanel" style="padding-left: 25px;">
+        <div class="bil-action-2">
+            <table>
+
+                <tr *ngIf="ProvisionalInfo.ProvisionalTotal" style="font-size: 14px;">
+                    <td>
+                        Provisional Amount
+                        <b class="colon">:</b>
+                    </td>
+                    <td style="text-decoration:underline;">
+                        <span [ngClass]="{'neg-amt': ProvisionalInfo.ProvisionalTotal > 0}">
+                            {{ProvisionalInfo.ProvisionalTotal}}
+                        </span>
+                        <span *ngIf="ProvisionalInfo.ProvisionalTotal > 0">
+                            <i style="color:blue;text-decoration:underline;cursor:pointer;margin-left: 27px;font-weight:bold;" title="Click to Generate receipt of these items" (click)="PayProvisionalItems()">
+                                Generate Invoice
+                            </i>
+                            <i class="fa fa-hand-o-left" style="font-weight: bold;font-size: 18px;margin-left: 8px;"></i>
+                        </span>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+
+
+    </div>
+</div>
+<div *ngIf="showReceipt">
+    <app-settlement-receipt [settlementId]="SettlementId" [showReceipt]="showReceipt" (close-receipt)="OnReceiptClosed($event)"></app-settlement-receipt>
+</div>
+
+<div *ngIf="showInvoiceDetail">
+    <phrm-settlement-invoice-detail [showInvoiceDetail]="showInvoiceDetail" [InvoiceId]="singleInvoiceId" [PatientInfo]="PatientInfo" (InvoiceDetailCallBack)="InvoiceDetailCallBack($event)"></phrm-settlement-invoice-detail>
+</div>
+
+
+<div *ngIf="provisionalFromSettlement">
+    <app-credit-bills [provisionalFromSettlement]="provisionalFromSettlement" [patientId]="patientId" ></app-credit-bills>
+</div>
+
+

@@ -14,7 +14,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<RadiologyImagingItemModel> ImagingItems { get; set; }
         public DbSet<LabTestModel> LabTests { get; set; }
         public DbSet<PHRMItemMasterModel> PharmacyItems { get; set; }
-        public DbSet<PHRMStockModel> PharmacyStocks { get; set; }
+        public DbSet<PHRMStoreStockModel> PharmacyStocks { get; set; }
         public DbSet<PHRMGenericModel> PharmacyGenericItems { get; set; }
         public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<PHRMGenericDosageNFreqMap> GenericDosageMaps { get; set; }//sud: 15Jul'18
@@ -40,7 +40,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabTestModel>().ToTable("LAB_LabTests");
 
             modelBuilder.Entity<PHRMItemMasterModel>().ToTable("PHRM_MST_Item");
-            modelBuilder.Entity<PHRMStockModel>().ToTable("PHRM_Stock");
+            modelBuilder.Entity<PHRMStoreStockModel>().ToTable("PHRM_TXN_Stock");
             modelBuilder.Entity<PHRMGenericModel>().ToTable("PHRM_MST_Generic");
 
             modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");

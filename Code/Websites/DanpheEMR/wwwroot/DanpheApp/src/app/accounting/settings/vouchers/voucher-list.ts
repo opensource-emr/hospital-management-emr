@@ -8,13 +8,15 @@ import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 
 import * as moment from 'moment/moment';
+import { AccountingService } from "../../shared/accounting.service";
+import { Voucher } from "../../transactions/shared/voucher";
 
 @Component({
     selector: 'voucher-list',
     templateUrl: './voucher-list.html',
 })
 export class VoucherListComponent {
-    public voucherList: Array<VoucherModel> = new Array<VoucherModel>();
+    public voucherList: Array<Voucher> = new Array<Voucher>();//mumbai-team-june2021-danphe-accounting-cache-change
     public showVoucherList: boolean = true;
     public voucherGridColumns: Array<any> = null;
 
@@ -23,23 +25,16 @@ export class VoucherListComponent {
     public index: number;
 
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
-        public changeDetector: ChangeDetectorRef) {
+        public changeDetector: ChangeDetectorRef, public accountingService:AccountingService) {
         this.voucherGridColumns = GridColumnSettings.voucherList;
         this.getVoucherList();
     }
     public getVoucherList() {
-        this.accountingSettingsBLService.GetVouchers()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.voucherList = res.Results;
-                    
-                    this.showVoucherList = true;
-                }
-                else {
-                    alert("Failed ! " + res.ErrorMessage);
-                }
-
-            });
+            if (!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.accountingService.accCacheData.VoucherType;//mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.voucherList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+                this.showVoucherList = true;
+            }
     }
     //VoucherGridActions($event: GridEmitModel) {
 

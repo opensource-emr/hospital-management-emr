@@ -199,4 +199,23 @@ export class LabSettingsBLService {
     return this.labSettingDlServ.UpdateMappedGovLabComponent(data).map(res => {return res });
   }
   //end: Anjana: 8/31/2020 : getting all gov specified lab components
+
+  //activate/deactivate in lab settings page: Anjana: 16/02/2021
+  public DeactivateLab(test){
+    let temp = _.omit(test, ['LabTestValidator']);
+    return this.labSettingDlServ.PutLabTestIsActive(temp).map(res => {return res;});
+  }
+
+  public DeactivateLabCategory(cat){
+    return this.labSettingDlServ.PutLabCategoryIsActive(cat).map(res => {return res; });
+  }
+
+  public DeactivateReportTemplate(rep){
+    let temp =_.omit(rep, ['ReportTemplateValidator']);
+    return this.labSettingDlServ.PutLabReportTemplateIsActive(temp).map(res => {return res; });
+  }
+
+  public DeactivateVendor(vendor){
+    return this.labSettingDlServ.PutLabVendorIsActive(vendor).map(res => {return res; });
+  }
 }

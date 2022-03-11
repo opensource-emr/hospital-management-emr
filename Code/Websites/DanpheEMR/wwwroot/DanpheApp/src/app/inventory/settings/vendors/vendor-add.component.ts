@@ -31,7 +31,8 @@ import { trigger, transition, style, animate } from "@angular/animations";
     ]
     )
   ],
-  templateUrl: './vendor-add.html'
+  templateUrl: './vendor-add.html',
+  host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class VendorsAddComponent {
@@ -53,18 +54,21 @@ export class VendorsAddComponent {
   public showAddCurrencyCodePopUp: boolean = false;
   public isEditItem: boolean = false;
   public loading: boolean = false;
-
+  public vendorDisplayParameter:any=null;
   constructor(public invSettingBL: InventorySettingBLService, public inventoryService: InventoryService,
     public securityService: SecurityService, public coreService: CoreService,
     public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
     //this.GetVendors();
     this.GetCurrencyCode();
-    this.GetItemList();
+    this.GetItemList();  
+    this.FocusElementById('txtVendorName');//sud:20Sept'21--Focus on ItemCategory dropdown by default.
+
   }
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showAddPage = val;
-
+    this.vendorDisplayParameter=null;
+    this.vendorDisplayParameter= this.GetInvVendorAddDisplaySettings();
     if (this.selectedVendor) {
       this.update = true;
       this.CurrentVendor = Object.assign(this.CurrentVendor, this.selectedVendor);
@@ -84,6 +88,7 @@ export class VendorsAddComponent {
     }
   }
 
+  //Sud:25Sept'21:  we're now generating vendorCode in server side itself..below logic is used only within the client side..
   CreateVendorCode() {
     var num: number = 0;
     if ((this.CurrentVendor.VendorCode == null || this.CurrentVendor.VendorCode == "") && !!this.CurrentVendor.VendorName) {
@@ -136,7 +141,7 @@ export class VendorsAddComponent {
     this.invSettingBL.GetCurrencyCode()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetCurrencyCodeList = res.Results.filter(a=> a.IsActive == true);
+          this.GetCurrencyCodeList = res.Results.filter(a => a.IsActive == true);
           //this.CurrentVendor.DefaultCurrencyId = 1;
         } else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -144,36 +149,41 @@ export class VendorsAddComponent {
 
       });
   }
-  //adding new department
+  //adding new vendor
   AddVendor() {
+    if (this.loading == false) return;
     //for checking validations, marking all the fields as dirty and checking the validity.
     for (var i in this.CurrentVendor.VendorsValidator.controls) {
       this.CurrentVendor.VendorsValidator.controls[i].markAsDirty();
       this.CurrentVendor.VendorsValidator.controls[i].updateValueAndValidity();
     }
     if (this.CurrentVendor.IsValidCheck(undefined, undefined)) {
-      this.loading = true;
       //Vendor Code creation
       if (this.CurrentVendor.VendorCode == null) {
         this.CreateVendorCode();
       }
       this.CurrentVendor.DefaultItemJSON = JSON.stringify(this.CurrentVendor.DefaultItem);
       this.invSettingBL.AddVendor(this.CurrentVendor)
+        .finally(() => this.loading = false)
         .subscribe(
           res => {
             this.showMessageBox("success", "Vendor Added");
             this.CurrentVendor = new VendorsModel();
             this.CallBackAddVendor(res)
-            this.loading = false;
           },
           err => {
             this.logError(err);
-            this.loading = false;
+            this.FocusElementById('txtVendorName');
           });
     }
+    else {
+      this.loading = false;
+    }
+    this.FocusElementById('txtVendorName');
   }
   //adding new department
   Update() {
+    if (this.loading == false) return;
     //for checking validations, marking all the fields as dirty and checking the validity.
     for (var i in this.CurrentVendor.VendorsValidator.controls) {
       this.CurrentVendor.VendorsValidator.controls[i].markAsDirty();
@@ -181,22 +191,25 @@ export class VendorsAddComponent {
     }
 
     if (this.CurrentVendor.IsValidCheck(undefined, undefined)) {
-      this.loading = true;
       this.CurrentVendor.DefaultItemJSON = JSON.stringify(this.CurrentVendor.DefaultItem);
       this.invSettingBL.UpdateVendor(this.CurrentVendor)
+        .finally(() => this.loading = false)
         .subscribe(
           res => {
             this.showMessageBox("success", "Vendor Updated");
             this.CurrentVendor = new VendorsModel();
             this.CallBackAddVendor(res);
-            this.loading = false;
 
           },
           err => {
             this.logError(err);
-            this.loading = false;
+            this.FocusElementById('txtVendorName');
           });
     }
+    else {
+      this.loading = false;
+    }
+    this.FocusElementById('txtVendorName');
   }
   AssignItemIdToVendor() {
     if (this.selectedItem != null) {
@@ -268,5 +281,33 @@ export class VendorsAddComponent {
     var CurrencyCode = $event.currency;
     this.GetCurrencyCodeList.push(CurrencyCode);
     this.GetCurrencyCodeList.slice();
+  }
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 200);
+  }
+  hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.Close()
+    }
+  }
+  public GetInvVendorAddDisplaySettings() {
+    var param = this.coreService.Parameters.find(
+      (val) =>
+        val.ParameterName == "VendorAddDisplaySettings" &&
+        val.ParameterGroupName.toLowerCase() == "inventory"
+    );
+    if (param) {
+      return JSON.parse(param.ParameterValue);
+    } else {
+      this.msgBoxServ.showMessage("warning", [
+        "Please set VendorAddDisplaySettings for vendor add in parameters",
+      ]);
+      return null;
+    }
   }
 }

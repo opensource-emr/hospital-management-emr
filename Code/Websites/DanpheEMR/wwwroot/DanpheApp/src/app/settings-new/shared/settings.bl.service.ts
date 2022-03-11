@@ -16,7 +16,7 @@ import { EmployeeRole } from "../../employee/shared/employee-role.model";
 import { EmployeeType } from "../../employee/shared/employee-type.model";
 
 import { Country } from "../shared/country.model";
-import { CountrySubdivision } from "../shared/country-subdivision.model";
+import { CountrySubdivision, Municipality } from "../shared/country-subdivision.model";
 
 import { Reaction } from "../shared/reaction.model";
 
@@ -42,6 +42,11 @@ import { Membership } from './membership.model';
 import { ExternalReferralModel } from './external-referral.model';
 import { PHRMStoreModel } from '../../pharmacy/shared/phrm-store.model';
 import { StoreVerificationMapModel } from './store-role-map.model';
+import { BanksModel } from './banks.model';
+import { PrinterSettingsModel } from '../printers/printer-settings.model';
+import { ReportingItemBillingItemMappingModel } from './reporting-items-bill-item-mapping.model';
+import { ReportingItemsModel } from './reporting-items.model';
+import { PrintExportConfigurationModel } from './print-export-config.model';
 
 @Injectable()
 export class SettingsBLService {
@@ -463,12 +468,21 @@ export class SettingsBLService {
       .map(res => { return res });
   }
 
+  public GetPrinterSettingList() {
+    return this.settingsDLService.GetPrinterSettingList()
+      .map(res => { return res });
+  }
+
   //Get All-Referrer-List
   public GetAllReferrerList() {
     return this.settingsDLService.GetAllReferrerList()
       .map(res => res);
   }
 
+  public GetBankList() {
+    return this.settingsDLService.GetBankList()
+      .map(res => { return res });
+  }
 
   public AddExtReferrer(extRefObj: ExternalReferralModel) {
     var temp = _.omit(extRefObj, ['ExternalRefValidator', '', '']);
@@ -481,9 +495,32 @@ export class SettingsBLService {
     return this.settingsDLService.PutExtReferrer(temp)
       .map(res => { return res });
   }
-
   //end: External Referrals
 
+  public AddPrinterSetting(printerSettingObj: PrinterSettingsModel) {
+    var temp = _.omit(printerSettingObj, ['PrinterSettingsValidator', '', '']);
+    return this.settingsDLService.PostPrinterSetting(temp)
+      .map(res => { return res });
+  }
+
+  public UpdatePrinterSetting(printerSettingObj: PrinterSettingsModel) {
+    var temp = _.omit(printerSettingObj, ['PrinterSettingsValidator', '', '']);
+    return this.settingsDLService.PutPrinterSetting(temp)
+      .map(res => { return res });
+  }
+
+
+  public AddBank(bankObj: BanksModel) {
+    var temp = _.omit(bankObj, ['BanksValidator', '', '']);
+    return this.settingsDLService.PostBank(temp)
+      .map(res => { return res });
+  }
+
+  public UpdateBank(bankObj: BanksModel) {
+    var temp = _.omit(bankObj, ['BanksValidator', '', '']);
+    return this.settingsDLService.PutBank(temp)
+      .map(res => { return res });
+  }
 
 
   //start: billing
@@ -529,12 +566,24 @@ export class SettingsBLService {
     return this.settingsDLService.GetUserList()
       .map(res => { return res });
   }
+  public GetDiscountScheme() {
+    return this.settingsDLService.GetDiscountScheme()
+      .map(res => { return res });
+  }
   public GetRolePermissionList(roleId: number) {
     return this.settingsDLService.GetRolePermissionList(roleId)
       .map(res => { return res });
   }
   public GetUserRoleList(userId: number) {
     return this.settingsDLService.GetUserRoleList(userId)
+      .map(res => { return res });
+  }
+  public GetDynamicReportNameList() {
+    return this.settingsDLService.GetDynamicReportNameList()
+      .map(res => { return res });
+  }
+  public GetReportingItemBillItemList(reportingItemId: number) {
+    return this.settingsDLService.GetReportingItemBillItemList(reportingItemId)
       .map(res => { return res });
   }
   public AddUser(user) {
@@ -566,6 +615,10 @@ export class SettingsBLService {
   }
   public AddUserRoles(userRoles: Array<UserRoleMap>) {
     return this.settingsDLService.PostUserRoles(userRoles)
+      .map(res => { return res });
+  }
+  public AddReportingItemsAndBillItemMapping(reportingItemsBillItem: Array<ReportingItemBillingItemMappingModel>) {
+    return this.settingsDLService.PostReportingItemAndBillItemMapping(reportingItemsBillItem)
       .map(res => { return res });
   }
   public UpdateUser(user: User) {
@@ -612,6 +665,10 @@ export class SettingsBLService {
     return this.settingsDLService.PutUserRoles(userRoles)
       .map(res => { return res });
   }
+  public UpdateReportingItemAndBillItemMapping(reportingItemsBillItem: Array<ReportingItemBillingItemMappingModel>) {
+    return this.settingsDLService.PutReportingItemAndBillItemMapping(reportingItemsBillItem)
+      .map(res => { return res });
+  }
 
   //end: security
 
@@ -620,9 +677,19 @@ export class SettingsBLService {
     return this.settingsDLService.GetBillingItemList(showInactiveItems)
       .map(res => { return res });
   }
+  public GetReportingItemList() {
+    return this.settingsDLService.GetReportingItemList()
+      .map(res => { return res });
+  }
   public AddBillingItem(item) {
     var temp = _.omit(item, ['BillingItemValidator']);
     return this.settingsDLService.PostBillingItem(temp)
+      .map(res => { return res });
+  }
+
+  public AddReportingItem(item:ReportingItemsModel) {
+    var temp = _.omit(item, ['ReportingItemsValidator']);
+    return this.settingsDLService.PostReportingItem(temp)
       .map(res => { return res });
   }
 
@@ -634,6 +701,12 @@ export class SettingsBLService {
       item.ModifiedOn = moment(item.ModifiedOn).format('YYYY-MM-DD HH:mm:ss');
     var temp = _.omit(item, ['BillingItemValidator']);
     return this.settingsDLService.PutBillingItem(temp)
+      .map(res => { return res });
+  }
+
+  public UpdateReportingItem(item:ReportingItemsModel) {
+    var temp = _.omit(item, ['ReportingItemsValidator']);
+    return this.settingsDLService.UpdateReportingItem(temp)
       .map(res => { return res });
   }
 
@@ -742,6 +815,17 @@ export class SettingsBLService {
       .map(res => { return res });
   }
 
+  public AddUpdateMunicipality(CurrMunicipality: Municipality) {
+    var temp = _.omit(CurrMunicipality, ['MunicipalityValidator']);
+    return this.settingsDLService.AddUpdateMunicipality(temp)
+      .map(res => { return res });
+  }
+
+  public UpdateMunicipalityStatus(id: number) {
+    return this.settingsDLService.UpdateMunicipalityStatus(id)
+      .map(res => { return res });
+  }
+
   public UpdateCountry(country: Country) {
     //to fix serializaiton problem in server side
     if (country.CreatedOn)
@@ -755,6 +839,11 @@ export class SettingsBLService {
 
   public GetSubDivisions() {
     return this.settingsDLService.GetSubdivisions()
+      .map(res => { return res });
+  }
+
+  public GetMunicipalities() {
+    return this.settingsDLService.GetMunicipalities()
       .map(res => { return res });
   }
 
@@ -813,4 +902,23 @@ export class SettingsBLService {
 
   //End Tax
 
+
+  //Start ICD10 Groups
+  public GetICDGroups() {
+    return this.settingsDLService.GetICDGroups()
+      .map(res => { return res });
+  }
+  //End ICD10 Groups
+
+  public AddPrintExportConfiguration(data: PrintExportConfigurationModel) {
+    var temp = _.omit(data, ['ConfigurationValidator', '', '']);
+    return this.settingsDLService.PostConfiguration(temp)
+      .map(res => { return res });
+  }
+
+  public UpdatePrintExportConfiguration(data: PrintExportConfigurationModel) {
+    var temp = _.omit(data, ['ConfigurationValidator', '', '']);
+    return this.settingsDLService.PutConfiguration(temp)
+      .map(res => { return res });
+  }
 }

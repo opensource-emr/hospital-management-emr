@@ -33,4 +33,7 @@ export class BillItemPrice {
   public IsSAARCPriceApplicable: boolean = false;
   public IsForeignerPriceApplicable: boolean = false;
 
+  //only for client
+  public IsSelected: boolean = false;
+
 }

@@ -13,6 +13,7 @@ import {
   ValidatorFn
 } from '@angular/forms'
 import { CommonFunctions } from '../../shared/common.functions';
+import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
 
 export class Admission {
   public PatientVisitId: number = 0;
@@ -50,6 +51,23 @@ export class Admission {
 
   public ProcedureType: string = null;
   public IsPoliceCase: boolean = false;
+  public Ins_HasInsurance: boolean = false;
+  public ClaimCode: number = null;//sud:1-oct'21: Changed datatype from String to Number in all places
+  public AdmissionCase: string = null;//pratik:22April'2021 for LPH
+  public Ins_NshiNumber: string = null;
+  public IsInsurancePatient: boolean = false;
+  public Ins_InsuranceBalance: number = 0;
+  public BillingTransaction: BillingTransaction = new BillingTransaction();
+
+  //for membership selection in adt
+  public DiscountSchemeId: number = null;
+  public MembershipTypeName: string = null;
+  public MembershipDiscountPercent: number = 0;
+  public IsValidMembershipTypeName: boolean = true;
+  public IsBillingEnabled: boolean;
+  public IsLastClaimCodeUsed: boolean = false;
+  public ProvisionalDiscPercent: number = null;
+  public IsItemDiscountEnabled: boolean = false;
 
   constructor() {
 
@@ -64,7 +82,9 @@ export class Admission {
       'CareOfPersonPhoneNo': ['', Validators.compose([Validators.pattern('^[0-9]{0,10}$'), Validators.required])],
       'CareOfPersonName': ['', Validators.compose([Validators.maxLength(100)])],
       //'RequestingDeptId': ['', Validators.compose([Validators.required])]         //ramavtar:2oct'18 added as doctor is require so is this (it gets filled while filling doctor)
-      'CareOfPersonRelation': ['', Validators.compose([Validators.maxLength(100)])]
+      'CareOfPersonRelation': ['', Validators.compose([Validators.maxLength(100)])],
+      'ClaimCode': ['', Validators.compose([Validators.required])],
+      'AdmissionCase': ['', Validators.compose([Validators.required])],
     });
   }
   //Modified: Ashim 14thSep : 
@@ -98,5 +118,15 @@ export class Admission {
     else
       return !(this.AdmissionValidator.hasError(validator, fieldName));
   }
-
+  public EnableControl(formControlName: string, enabled: boolean) {
+    let currCtrol = this.AdmissionValidator.controls[formControlName];
+    if (currCtrol) {
+      if (enabled) {
+        currCtrol.enable();
+      }
+      else {
+        currCtrol.disable();
+      }
+    }
+  }
 }

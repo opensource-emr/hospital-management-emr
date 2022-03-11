@@ -1,68 +1,79 @@
-import { Component, ChangeDetectorRef, ElementRef, Input, OnInit } from "@angular/core";
-
+import { Component, ChangeDetectorRef, Output, EventEmitter } from "@angular/core";
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-
 import { PHRMSupplierModel } from "../../shared/phrm-supplier.model"
 import { PHRMGoodsReceiptModel } from "../../shared/phrm-goods-receipt.model"
-import { PHRMGoodsReceiptItemsModel } from "../../shared/phrm-goods-receipt-items.model"
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service"
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service"
-import { CommonFunctions } from "../../../shared/common.functions"
 import * as moment from 'moment/moment';
 import { CoreService } from "../../../core/shared/core.service";
 import { PharmacyService } from "../../shared/pharmacy.service";
 import { Router, ActivatedRoute } from "@angular/router";
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
       selector: 'good-receipt',
       templateUrl: "./phrm-goods-receipt-list.html"
 })
-
 export class PHRMGoodsReceiptListComponent {
-      public currentGRdetails: PHRMGoodsReceiptModel = new PHRMGoodsReceiptModel();
-      public goodReceiptItems: PHRMGoodsReceiptItemsModel = new PHRMGoodsReceiptItemsModel();
-      public selectedDatalist: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
-      public goodsReceiptItemsList: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
-      public goodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
-      public filterGoodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
-      public newGoodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
-      public supplierList: Array<PHRMSupplierModel> = new Array<PHRMSupplierModel>();
-      public goodsreceiptsGridColumns: Array<any> = null;
-      public showGRPopUp: boolean = false;
-      public IsCancelStatus: boolean = false;
-      public printGR: boolean = false;
-      public fromDate: string;
-      public toDate: string;
-      public fromDay: number = null;
-      public toDay: number = null;
-      public supplierId: number = null;
-      public totalAmount: number = null;
-      public subTotal: number = null;
-      public discountTotal: number = null;
-      public currentSupplier: PHRMSupplierModel = new PHRMSupplierModel();
-      public grId: any;
-      public userName: any;//to show the username who generate the receipt
-      public time: any;//to show the time when receipt was created using createdon  
+      currentGRdetails: PHRMGoodsReceiptModel = new PHRMGoodsReceiptModel();
+      goodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
+      filterGoodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
+      newGoodsReceiptList: Array<PHRMGoodsReceiptModel> = new Array<PHRMGoodsReceiptModel>();
+      supplierList: Array<PHRMSupplierModel> = new Array<PHRMSupplierModel>();
+      goodsreceiptsGridColumns: Array<any> = null;
+      fromDate: string;
+      toDate: string;
+      fromDay: number = null;
+      toDay: number = null;
+      supplierId: number = null;
+      totalAmount: number = null;
+      subTotal: number = null;
+      discountTotal: number = null;
+      vatTotal: number;
+      currentSupplier: PHRMSupplierModel = new PHRMSupplierModel();
+      showNepaliReceipt: boolean;
       //for show and hide item level discount features
       IsitemlevlDis: boolean = false;
       //for show and hide packing features
       IsPkgitem: boolean = false;
+      showPopUp: boolean = false;
+      dateRange: string = null;
+      NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+      headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+      gridExportOptions = { fileName: 'PharmacyGoodReceiptLists_' + moment().format('YYYY-MM-DD') + '.xls', };
+      goodReceiptStatus: string = "all";
       constructor(public coreService: CoreService,
             public pharmacyBLService: PharmacyBLService,
             public pharmacyService: PharmacyService,
             public changeDetector: ChangeDetectorRef,
             public msgBoxServ: MessageboxService,
             public router: Router, public route: ActivatedRoute) {
-            //this.fromDate = moment().format('YYYY-MM-DD');
-            //this.toDate = moment().format('YYYY-MM-DD');
-            // this.element = el.nativeElement;
+            this.dateRange = 'last1Week';
+            this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('GoodReceiptDate', false), new NepaliDateInGridColumnDetail('SupplierBillDate', false)]);
             this.GetPharmacyHeaderParameter();
             this.goodsreceiptsGridColumns = PHRMGridColumns.PHRMGoodsReceiptList;
-            this.getGoodsReceiptList();
             this.GetSupplierData();
             this.showitemlvldiscount();
             this.showpacking();
+            this.CheckReceiptSettings();
+      }
+      onDateChange($event) {
+            this.fromDate = $event.fromDate;
+            this.toDate = $event.toDate;
+            if (this.fromDate != null && this.toDate != null) {
+                  if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+                        this.getDateFilteredGoodsReceiptList();
+                  } else {
+                        this.msgBoxServ.showMessage('failed', ['Please enter valid From date and To date']);
+                  }
+            }
+      }
+
+      CheckReceiptSettings() {
+            //check for english or nepali receipt style
+            let receipt = this.coreService.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+            this.showNepaliReceipt = (receipt == "true");
       }
 
 
@@ -93,16 +104,9 @@ export class PHRMGoodsReceiptListComponent {
       //show or hide GR item level discount
       showitemlvldiscount() {
             this.IsitemlevlDis = true;
-            let itmdis = this.coreService.Parameters.find(
-                  (p) =>
-                        p.ParameterName == "PharmacyItemlvlDiscount" &&
-                        p.ParameterGroupName == "Pharmacy"
-            ).ParameterValue;
-            if (itmdis == "true") {
-                  this.IsitemlevlDis = true;
-            } else {
-                  this.IsitemlevlDis = false;
-            }
+            let discountParameter = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyDiscountCustomization" && p.ParameterGroupName == "Pharmacy").ParameterValue;
+            discountParameter = JSON.parse(discountParameter);
+            this.IsitemlevlDis = (discountParameter.EnableItemLevelDiscount == true);
       }
       // for show and hide packing feature
       showpacking() {
@@ -122,11 +126,11 @@ export class PHRMGoodsReceiptListComponent {
             let html = data["SupplierName"];
             return html;
       }
-      public getGoodsReceiptList() {
-            var todat = new Date(this.toDate);
-            this.pharmacyBLService.GetGoodsReceiptList()
+      public getDateFilteredGoodsReceiptList() {
+            this.newGoodsReceiptList = new Array<PHRMGoodsReceiptModel>();
+            this.pharmacyBLService.GetDateFilteredGoodsReceiptList(this.fromDate, this.toDate)
                   .subscribe(res => {
-                        if (res.Status == "OK") {
+                        if (res.Status == "OK" && res.Results.length > 0) {
                               this.newGoodsReceiptList = res.Results;
                               this.goodsReceiptList = res.Results;
 
@@ -143,10 +147,10 @@ export class PHRMGoodsReceiptListComponent {
                               this.totalAmount = this.goodsReceiptList.filter(s => s.IsCancel == false).map(c => c.TotalAmount).reduce((sum, current) => sum + current);
                               this.subTotal = this.goodsReceiptList.filter(s => s.IsCancel == false).map(c => c.SubTotal).reduce((sum, current) => sum + current);
                               this.discountTotal = this.goodsReceiptList.filter(s => s.IsCancel == false).map(c => c.DiscountAmount).reduce((sum, current) => sum + current);
+                              this.vatTotal = this.goodsReceiptList.filter(s => s.IsCancel == false).map(c => c.VATAmount).reduce((sum, current) => sum + current);
 
-                        }
-                        else {
-                              this.msgBoxServ.showMessage("error", ["Failed to get GoodsReceiptList. " + res.ErrorMessage]);
+                              // update grid export option
+                              this.updateGridExportOptions();
                         }
                   },
                         err => {
@@ -159,34 +163,30 @@ export class PHRMGoodsReceiptListComponent {
                         //changing datetime format to date only for view
                         $event.Data.GoodReceiptDate = moment($event.Data.GoodReceiptDate).format("YYYY-MM-DD");
                         this.currentGRdetails = $event.Data;
-                        this.userName = $event.Data.UserName;
-                        this.time = $event.Data.CreatedOn;
-                        this.showGRPopUp = true;
+                        this.currentGRdetails.GoodReceiptId = $event.Data.GoodReceiptId;
+                        this.currentGRdetails.IsCancel = $event.Data.IsCancel;
+                        this.showPopUp = true;
                         break;
                   }
                   default:
                         break;
             }
       }
-
-      OnGRPopUpClose() {
-            this.showGRPopUp = false;
-      }
-
       SupplierChange($event) {
             this.supplierId = $event.SupplierId;
       }
       public filterlist() {
             this.supplierId = this.currentSupplier.SupplierId;
-            if (this.fromDate && this.toDate) {
-                  this.fromDate = moment(this.fromDate).add(this.fromDay, 'days').format('YYYY-MM-DD');
-                  this.toDate = moment(this.toDate).add(-this.toDay, 'days').format('YYYY-MM-DD');
 
-                  this.newGoodsReceiptList = [];
-                  this.filterGoodsReceiptList.forEach(list => {
+            this.filterGoodsReceiptList = [];
+            if (this.fromDay && this.toDay) {
+                  var fromDate = moment().add(this.fromDay, 'days').format('YYYY-MM-DD');
+                  var toDate = moment().add(-this.toDay, 'days').format('YYYY-MM-DD');
+
+                  this.goodsReceiptList.forEach(list => {
                         let selPharmDate = moment(list.CreatedOn).format('YYYY-MM-DD');
-                        let isGreterThanFrom = selPharmDate <= moment(this.fromDate).format('YYYY-MM-DD');
-                        let isSmallerThanTo = selPharmDate >= moment(this.toDate).format('YYYY-MM-DD')
+                        let isGreterThanFrom = selPharmDate <= moment(fromDate).format('YYYY-MM-DD');
+                        let isSmallerThanTo = selPharmDate >= moment(toDate).format('YYYY-MM-DD')
 
 
                         if (isGreterThanFrom && isSmallerThanTo && list.SupplierId == this.supplierId) {
@@ -196,77 +196,59 @@ export class PHRMGoodsReceiptListComponent {
                               var timeDiff = Math.abs(date2.getTime() - date1.getTime());
                               list.AgingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-                              this.newGoodsReceiptList.push(list);
+                              this.filterGoodsReceiptList.push(list);
                         }
                   });
-
-                  this.totalAmount = this.newGoodsReceiptList.filter(a => a.SupplierId == this.supplierId)
-                        .map(c => c.TotalAmount).reduce((sum, current) => sum + current);
-                  this.subTotal = this.newGoodsReceiptList.filter(a => a.SupplierId == this.supplierId)
-                        .map(c => c.SubTotal).reduce((sum, current) => sum + current);
-                  this.discountTotal = this.newGoodsReceiptList.filter(a => a.SupplierId == this.supplierId)
-                        .map(c => c.DiscountAmount).reduce((sum, current) => sum + current);
-
-
-                  this.fromDate = moment().format('YYYY-MM-DD');
-                  this.toDate = moment().format('YYYY-MM-DD');
-
             }
-            else {
-
-                  this.newGoodsReceiptList = this.filterGoodsReceiptList.filter(a => a.SupplierId == this.supplierId);
+            if (this.filterGoodsReceiptList.length == 0) {
+                  this.filterGoodsReceiptList = this.goodsReceiptList;
             }
+            this.filterGoodsReceiptList = this.filterGoodsReceiptList.filter(a => a.SupplierId == this.supplierId || this.supplierId == 0 || this.supplierId == undefined);
 
-      }
-      gridExportOptions = {
-            fileName: 'PharmacyGoodReceiptLists_' + moment().format('YYYY-MM-DD') + '.xls',
-      };
+            if (this.goodReceiptStatus == 'cancelled') {
+                  this.filterGoodsReceiptList = this.filterGoodsReceiptList.filter(s => s.IsCancel == true);
+            } else if (this.goodReceiptStatus == 'complete') {
+                  this.filterGoodsReceiptList = this.filterGoodsReceiptList.filter(s => s.IsCancel != true);
+            } else { this.filterGoodsReceiptList = this.filterGoodsReceiptList; }
 
-      Close() {
-            this.showGRPopUp = false;
-      }
-
-      printGoodReciept() {
-            let popupWinindow;
-            var printContents = document.getElementById("print-good-reciept").innerHTML;
-            popupWinindow = window.open('', '_blank', 'width=1600,height=900,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-            popupWinindow.document.open();
-            popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
-
-            popupWinindow.document.close();
-
-
-      }
-
-      LoadGoodsReceiptListByStatus(flag) {
-            this.filterGoodsReceiptList = new Array<PHRMGoodsReceiptModel>();
-            if (flag == true) {
-                  this.filterGoodsReceiptList = this.goodsReceiptList.filter(s => s.IsCancel == true);
-            }
-            else {
-                  this.filterGoodsReceiptList = this.goodsReceiptList.filter(s => s.IsCancel == false);
-            }
             this.newGoodsReceiptList = this.filterGoodsReceiptList;
-      }
-      //TODO: Edit Receipt is not required, please condfirm and remove this function
-      editReceipt(flag: boolean) {
-            if (flag) {
-                  this.msgBoxServ.showMessage("Access Denied", ["This receipt has been transfered to accounting.", "Further editing is forbidden."]);
+
+            if (this.newGoodsReceiptList.length > 0) {
+                  this.totalAmount = this.newGoodsReceiptList.map(c => c.TotalAmount).reduce((sum, current) => sum + current);
+                  this.subTotal = this.newGoodsReceiptList.map(c => c.SubTotal).reduce((sum, current) => sum + current);
+                  this.discountTotal = this.newGoodsReceiptList.map(c => c.DiscountAmount).reduce((sum, current) => sum + current);
+                  this.vatTotal = this.newGoodsReceiptList.map(c => c.VATAmount).reduce((sum, current) => sum + current);
             }
             else {
-                  this.pharmacyService.GRId = this.currentGRdetails.GoodReceiptId;
-                  this.router.navigate(['/Pharmacy/Order/GoodsReceiptItems']);
+                  this.totalAmount = 0; this.subTotal = 0; this.discountTotal = 0; this.vatTotal = 0;
             }
-      }
-      public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
 
+      }
       //Get customer Header Parameter from Core Service (Database) assign to local variable -- Narayan 08 July 2019
       GetPharmacyHeaderParameter() {
-            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy BillingHeader').ParameterValue;
-            if (paramValue)
+            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy Receipt Header').ParameterValue;
+            if (paramValue) {
                   this.headerDetail = JSON.parse(paramValue);
+            }
             else
                   this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+      }
+
+      grCancelEventHandler($event) {
+            let selectedGR = this.goodsReceiptList.find(a => a.GoodReceiptId == $event.goodsReceiptId);
+            if (selectedGR != null) { selectedGR.IsCancel = true; }
+            this.filterlist();
+      }
+      popUpCloseEventHandler() {
+            this.showPopUp = false;
+      }
+      // Grid Export Function
+
+      _gridExportOptions = { fileName: 'PharmacyGoodReceiptLists_' + moment().format('YYYY-MM-DD') + '.xls', customHeader: 'Purchase Reports', customFooter: '' };
+      updateGridExportOptions() {
+            this._gridExportOptions.fileName = 'PharmacyGoodReceiptLists_' + moment().format('YYYY-MM-DD') + '.xls'
+            this._gridExportOptions.customHeader = `${this.headerDetail.hospitalName}\n${this.headerDetail.address}\nPharamcy Purchase List (${moment(this.fromDate).format('YYYY-MM-DD')}-${moment(this.toDate).format('YYYY-MM-DD')})\n`
+            this._gridExportOptions.customFooter = `\n\nSubTotal, ${this.subTotal}\nDiscount, ${this.discountTotal}\nTotalAmount, ${this.totalAmount}`
       }
 }
 

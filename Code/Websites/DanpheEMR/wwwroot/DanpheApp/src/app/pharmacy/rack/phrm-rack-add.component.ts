@@ -8,6 +8,7 @@ import * as moment from 'moment/moment';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { PhrmRackService } from "../shared/rack/phrm-rack.service";
 import { ENUM_StockLocations } from "../../shared/shared-enums";
+import { Renderer2 } from "@angular/core";
 
 
 @Component({
@@ -21,6 +22,8 @@ export class PhrmRackAddComponent {
     public ParentRackList: any;
     public ParentRackListFiltered: any;
     public showAddPage: boolean = false;
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
     public LocationList;
     @Input("selectedLocation")
     public selectedLocation;
@@ -28,7 +31,7 @@ export class PhrmRackAddComponent {
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
 
     constructor(public phrmRackService: PhrmRackService, public securityService: SecurityService,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.GetParentList();
         this.GetLocationList();
     }
@@ -44,12 +47,21 @@ export class PhrmRackAddComponent {
                 let rack = new PhrmRackModel();
                 this.CurrentRack = Object.assign(rack, this.CurrentRack);
                 this.ParentRackListFiltered = this.ParentRackList.filter(rack => rack.LocationId == this.CurrentRack.LocationId && rack.RackId != this.CurrentRack.RackId);
+
             }
             else {
                 this.CurrentRack = new PhrmRackModel();
                 this.ParentRackListFiltered = this.ParentRackList
+                this.setFocusById('Rack');
             }
         }
+    }
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
     }
     GetParentList() {
         this.phrmRackService.GetParentRackList()
@@ -58,6 +70,7 @@ export class PhrmRackAddComponent {
                 this.ParentRackListFiltered = res;
             });
     }
+
 
 
     //adding new rack
@@ -119,12 +132,25 @@ export class PhrmRackAddComponent {
         console.log(err);
     }
 
-    ViewValue(){
+    LocationValue() {
         this.CurrentRack.LocationId = +this.selectedLocation + 1;
+        //this.setFocusById('Rack');
+        if (!this.CurrentRack.RackId) {
+            this.setFocusById('save')
+        }
+        else {
+            this.setFocusById('update');
+        }
     }
     AssignLocationFromParent() {
         this.CurrentRack.ParentId = +this.CurrentRack.ParentId;
         this.CurrentRack.LocationId = this.ParentRackList.find(PR => PR.RackId == this.CurrentRack.ParentId).LocationId;
         this.selectedLocation = (this.CurrentRack.LocationId - 1).toString();
+        this.setFocusById('description')
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

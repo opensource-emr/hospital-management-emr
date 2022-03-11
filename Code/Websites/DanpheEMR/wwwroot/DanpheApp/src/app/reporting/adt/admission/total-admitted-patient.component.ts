@@ -11,6 +11,7 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../s
   templateUrl: "./total-admitted-patient.html",
 })
 export class RPT_ADT_TotalAdmittedPatientComponent {
+  public dateRange : string = '';
   public fromDate: string = null;
   public toDate: string = null;
   TotalAdmittedPatientColumns: Array<any> = null;
@@ -84,5 +85,6 @@ export class RPT_ADT_TotalAdmittedPatientComponent {
 
     this.currenttotalAdmittedPatient.fromDate = this.fromDate;
     this.currenttotalAdmittedPatient.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 }

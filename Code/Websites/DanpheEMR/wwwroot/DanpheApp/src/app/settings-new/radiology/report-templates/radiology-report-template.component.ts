@@ -13,7 +13,8 @@ import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 
 @Component({
   selector: "rad-report-remplate",
-  templateUrl: "./radiology-report-template.html"
+  templateUrl: "./radiology-report-template.html",
+  host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class RadiologyReportTemplateComponent {
@@ -79,6 +80,7 @@ export class RadiologyReportTemplateComponent {
       this.showAddEditPage = true;
       this.IsUpdate = false;
       this.currentTemplate = new RadiologyReportTemplate();
+      this.FocusElementById('TemplateCode');
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
@@ -93,6 +95,7 @@ export class RadiologyReportTemplateComponent {
           this.currentTemplate = new RadiologyReportTemplate();
           this.showAddEditPage = true;
           this.changeDetector.detectChanges();
+          this.FocusElementById('TemplateCode');
           //check template by template id present at local
           //if find locally then no need of server call 
           let template = this.radTemplateLocalData.find(i => i.TemplateId == $event.Data.TemplateId);
@@ -260,5 +263,19 @@ export class RadiologyReportTemplateComponent {
       console.log("Error Messsage =>  " + ex.message);
       console.log("Stack Details =>   " + ex.stack);
     }
+  }
+  FocusElementById(id: string) {
+      window.setTimeout(function () {
+        let itmNameBox = document.getElementById(id);
+        if (itmNameBox) {
+          itmNameBox.focus();
+        }
+      }, 600);
+   
+  }
+  hotkeys(event){
+      if(event.keyCode==27){
+          this.Close()
+      }
   }
 }

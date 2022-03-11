@@ -1,0 +1,82 @@
+<style>
+  table tr th,
+  table tr td {
+    padding: 1px 3px;
+  }
+</style>
+<div class="col-md-12">
+  <div class="caption custom-caption">
+    <i class="glyphicon glyphicon-asterisk"></i>
+    <span class="caption-subject">Handover Summary Report</span>
+  </div>
+  <div class="col-md-5">
+    <div class="row">
+      <div class="col-md-5">
+        <b>Fiscal Year: </b>
+        <select [(ngModel)]="selFiscYrId">
+          <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}"> {{fisc.FiscalYearFormatted}}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button class="btn green btn-success" type="button" (click)="loadHandoverSummaryReport()">
+          <i class="fa fa-search"></i>
+          Load Summary
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-12">
+  <danphe-grid [grid-colDefaults]="HandOverSummaryReportGridColumns" [grid-data]="HandOverSummaryReportList"
+    [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footer"
+    [report-for]="billing">
+  </danphe-grid>
+</div>
+<br>
+<br>
+<div style="margin-bottom: 25px; width: 100%; float: left;" id="summaryFooter">
+  <div class="col-lg-12 col-sm-12" *ngIf="HandOverSummaryReportList.length>0">
+    <div class="row">
+      <div class="col-md-12 col-xs-12">
+        <div id="print_netCashCollection">
+          <div style="padding-top:7px;">
+            <h4 style="font-weight:bold;">
+              Summary Report
+            </h4>
+            <div style=" margin: 0px auto">
+              <table class="tbl-summ" border="1" style="width:50%;">
+                <tr>
+                  <td>Previous Due Amount</td>
+                  <td> {{summaryFormatted.PreviousDueAmount | ParseAmount:'3'}} </td>
+                </tr>
+                <tr>
+                  <td>Gross Collection</td>
+                  <td> {{summaryFormatted.CollectionTillDate | ParseAmount:'3'}} </td>
+                </tr>
+                <tr>
+                  <td> Gross HandOver </td>
+                  <td> {{summaryFormatted.HandoverTillDate | ParseAmount:'3'}} </td>
+                </tr>
+                <tr>
+                  <td>Gross DueAmount</td>
+                  <td> {{summaryFormatted.DueAmount | ParseAmount:'3'}} </td>
+                </tr>
+                <tr>
+                  <td>Receive Pending Amount</td>
+                  <td> {{summaryFormatted.ReceivePendingAmount | ParseAmount:'3'}} </td>
+                </tr>
+                <tr>
+                  <td>Total Due Amount</td>
+                  <td> {{summaryFormatted.TotalDueAmount | ParseAmount:'3'}} </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>

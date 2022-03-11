@@ -186,7 +186,7 @@
     }
 
     .l-c {
-        margin-top: 15%;
+        margin-top: 3%;
     }
 
     .feature li {
@@ -238,6 +238,9 @@
             float: left;
             margin-top: 1px;
         }
+    .form-group {
+        margin-bottom: 0px !important;
+    }
 </style>
 
 
@@ -256,7 +259,7 @@
                 <div class="col-md-4">
                     <div class="left-img" style=" background-image: url('/themes/theme-default/images/login-left.jpg'); position: relative;">
                         <div class="">
-                            <h1>Danphe Emr</h1>
+                            <h1>Danphe Emr</h1>    
                             <p>A Complete <b style="color: #00ffa1; font-weight: 600 ">Healthcare Management Solution</b> for Hospitals, Clinics and Pharmacy.</p>
                             <ul class="feature">
                                 <li><span>&#9745;</span>EMR</li>
@@ -267,12 +270,14 @@
                                 <li><span>&#9745;</span>Patient Portal</li>
                             </ul>
                             @*<div style="margin-top: 20px;">
-                                    Our &nbsp;<a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a>&nbsp;
-                                </div>*@
+            Our &nbsp;<a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a>&nbsp;
+        </div>*@
                         </div>
                         <p class="text-center footer-btm-cprt">
                             <a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a><br />
-                            &copy; Copyright 2020 <a href="http://www.danphehealth.com/" target="_blank" title="DanpheHealth Pvt. Ltd.">Danphe Health</a>
+                            &copy; Copyright 2022 @*<a href="http://www.danphehealth.com/" target="_blank" title="DanpheHealth Pvt. Ltd.">Danphe Health</a>*@ @*NextChanges: get website and company name from appsettings file*@
+                            <a href="#" target="_blank" title="">Danphe EMR. All Rights Reserved.</a>
+             
                         </p>
                         @*<div style="position: absolute; left: 0; bottom: 30px; font-size: 12px;">
                                 <span>
@@ -310,10 +315,10 @@
                                         <div class="form-horizontal">
 
                                             <div class="form-group text-center">
-                                                <img src="~/themes/theme-default/images/danphe-logo.png" alt="Alternate Text" />
+                                                <img style="width:60%; margin-top:10px !important;" src="~/themes/theme-default/images/danphe-logo.png" alt="Alternate Text" />
                                             </div>
 
-                                            <div class="form-group" style="margin-top: 40px;">
+                                            <div class="form-group" >
                                                 <div class="text-center">
                                                     <h1><small class="balck">Sign in</small></h1>
                                                 </div>
@@ -393,7 +398,10 @@
 
                                             <div class="form-group">
                                                     <div class="col-sm-12">
-                                                        <div class="text-center"><span class="txt-xs" style="font-weight: 600;line-height: 5;">Danphe EMR Version 1.0</span> </div>
+                                                        <div class="text-center">
+                                                            <span class="txt-xs" style="font-weight: 600;line-height: 5;">Danphe EMR Version 1.0.1</span>@*NextChanges:get product name and version number from appsettings and show here*@
+                                                            
+                                                        </div>
                                                     </div>
                                                 </div>
 

@@ -22,7 +22,8 @@ margin: 0;
                 <div class="col-md-7">
                   <input class="form-control" maxlength="30" [(ngModel)]="CurrentCompany.CompanyName"
                                         formControlName="CompanyName" type="text" id="CompanyName" value=""
-                                        placeholder="Company Name" />               
+                                        placeholder="Company Name"
+                                        (keyup.enter)="FocusElementById('AddCompany')" />               
                   <span style="color:red" *ngIf="CurrentCompany.IsDirty('CompanyName')"
                                         [hidden]="CurrentCompany.IsValidCheck('CompanyName','required')"> Company Name
                   is required.</span> </div>
@@ -65,10 +66,10 @@ margin: 0;
                 </div>
               </div>
               <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!CurrentCompany.CompanyId "
-                                    (click)="AddCompany()" value="Add Company" [disabled]="loading"  />
-                <input type="button" class="btn primary-btn" *ngIf="CurrentCompany.CompanyId "
-                                    (click)="UpdateCompany()" value="Update" [disabled]="loading"  />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!CurrentCompany.CompanyId "
+                                    (click)="AddCompany()" value="Add Company" [disabled]="loading" id="AddCompany" />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="CurrentCompany.CompanyId "
+                                    (click)="UpdateCompany()" value="Update" [disabled]="loading" id="AddCompany" />
               </div>
             </div>
           </form>

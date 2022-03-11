@@ -10,13 +10,24 @@
           <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
             (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
         </div>
+          <div class="col-md-3">
+                <div class="form-group row clearfix">
+                <danphe-multiselect *ngIf="itemList  && itemList.length" [ddl-data]="itemList" [placeholder-text]="'---Select Item---'" [value-property-name]="'ItemId'" 
+                (selected-items-list)="onChange($event)" [display-property-name]="'ItemName'" [show-limit]="'1'" 
+                [single-selection]="false">
+                </danphe-multiselect>
+                </div>
+          </div>
+         
         <div class="col-md-2">
-          <button class="btn blue" type="button" (click)="PurchaseItemsReport()">
-            <i class="fa fa-search"></i>
-            Load
+          <button class="btn blue" type="button" (click)="PurchaseItemsReport()" [disabled]="loading">
+            <i class="fa fa-search"></i>&nbsp;
+            <span *ngIf="!loading">Load</span>
+            <span *ngIf="loading">Loading...</span>
+            
           </button>
         </div>
-        <div class="col-md-4 icheck-inline" style="text-align: right;">            
+        <div class="col-md-12 icheck-inline" style="text-align: right;">            
             <label class="mt-checkbox mt-checkbox-outline">
               <input name="salutation" type="radio" value="Consumables" [(ngModel)]="ItemType" (ngModelChange)="OnItemTypeChange()">
               <span></span>Consumables </label>

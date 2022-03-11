@@ -1,4 +1,4 @@
-import { Component, ViewChild, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, ViewChild, Input, Output, EventEmitter, ChangeDetectorRef, OnInit } from "@angular/core";
 import { InvoiceHeaderModel } from "../invoice-header.model";
 import { SecurityService } from "../../security/shared/security.service";
 import { MessageboxService } from "../messagebox/messagebox.service";
@@ -7,12 +7,13 @@ import { DLService } from "../dl.service";
 import * as moment from "moment";
 import { HttpClient } from "@angular/common/http";
 import * as _ from 'lodash';
+import { Renderer2 } from "@angular/core";
 @Component({
   selector: 'add-invoice-header',
   templateUrl: './add-invoice-header.html'
 })
 
-export class AddInvoiceHeaderComponent {
+export class AddInvoiceHeaderComponent implements OnInit {
 
 
   @ViewChild("fileInput") fileInput;
@@ -29,6 +30,8 @@ export class AddInvoiceHeaderComponent {
   @Output('call-back')
   public callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
   public isFileValid: boolean = true;
+  public globalListenFunc: Function;
+  public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
 
   @Input('Module')
   public set moduleValue(value) {
@@ -41,7 +44,7 @@ export class AddInvoiceHeaderComponent {
     public msgBoxSrv: MessageboxService,
     public dlService: DLService,
     public lightbox: Lightbox,
-    public changeDetector: ChangeDetectorRef,) {
+    public changeDetector: ChangeDetectorRef, public renderer2: Renderer2) {
   }
 
   @Input('showAddPage')
@@ -60,10 +63,17 @@ export class AddInvoiceHeaderComponent {
       this.selectedInvoiceHeader = new InvoiceHeaderModel();
       this.selectedInvoiceHeader.Module = this.module;
       this.changeDetector.detectChanges();
-
+      this.setFocusById('hospital');
     }
   }
 
+  ngOnInit() {
+    this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+      if (e.keyCode == this.ESCAPE_KEYCODE) {
+        this.Close()
+      }
+    });
+  }
   SubmitHeader() {
     try {
       this.loading = true;
@@ -74,7 +84,7 @@ export class AddInvoiceHeaderComponent {
       //Header details Validation
       var isValid = true;
       if (this.selectedInvoiceHeader) {
-      var isValid = this.CheckValidation();
+        var isValid = this.CheckValidation();
       }
 
       // Logo Image file Validation
@@ -93,7 +103,7 @@ export class AddInvoiceHeaderComponent {
       if (isValid && this.isFileValid) {
         this.selectedInvoiceHeader.CreatedOn = moment().format("YYYY-MM-DD");
         var headerDetails: any = this.selectedInvoiceHeader;
-        
+
         // Drafting Data for post (Logo Image file detais and Header details)
         let formToPost = new FormData();
         if (headerDetails) {
@@ -108,8 +118,8 @@ export class AddInvoiceHeaderComponent {
           }
           var tempFD: any = _.omit(headerDetails, ['HeaderValidators']);
           var tempHeaderDetails = JSON.stringify(tempFD);
-          formToPost.append("fileDetails", tempHeaderDetails);         
-        } 
+          formToPost.append("fileDetails", tempHeaderDetails);
+        }
 
         if (!this.editMode) {
           this.PostInvoiceHeader(formToPost);
@@ -161,7 +171,7 @@ export class AddInvoiceHeaderComponent {
             else {
               this.loading = false;
               this.msgBoxSrv.showMessage("failed", [res.ErrorMessage]);
-            }               
+            }
           },
           err => {
             console.log(err);
@@ -254,6 +264,11 @@ export class AddInvoiceHeaderComponent {
     else {
       this.msgBoxSrv.showMessage("error", ['Check log for details']);
     }
+  }
+  setFocusById(IdToBeFocused) {
+    window.setTimeout(function () {
+      document.getElementById(IdToBeFocused).focus();
+    }, 20);
   }
 
 }

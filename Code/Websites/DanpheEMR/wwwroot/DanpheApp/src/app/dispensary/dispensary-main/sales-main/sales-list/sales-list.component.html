@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="col-md-6">
+      <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <button class="btn green btn-success" type="button" (click)="LoadSaleInvoiceList()" [disabled]="loading">
+          <span *ngIf="!loading">Load Invoices</span>
+          <span *ngIf="loading">Loading...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="saleGridColumns" [grid-data]="pharmListfiltered" (grid-actions)="SaleInvoiceGridActions($event)" [show-print-button]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<!--START:  Popup for show selected Invoice items details show -->
+<app-phrm-invoice-view *ngIf="showSaleItemsPopup" [showPopUp]="showSaleItemsPopup" [invoiceId]="saleInvoiceDetails.InvoiceId" (call-back-close)="OnInvoicePopUpClose()"></app-phrm-invoice-view>

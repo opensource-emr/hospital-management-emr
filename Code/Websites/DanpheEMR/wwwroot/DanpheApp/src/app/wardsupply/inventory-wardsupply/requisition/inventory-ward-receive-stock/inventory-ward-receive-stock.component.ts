@@ -31,6 +31,7 @@ export class InventoryWardReceiveStockComponent implements OnInit {
             this.Requisition = res.Results.RequisitionDetail;
             this.DispatchList = res.Results.DispatchDetail;
             this.loading = false;
+            this.setFocusById('ReceivedRemarks');
           }
           else {
             this.messageBoxService.showMessage("Failed",[res.ErrorMessage]);
@@ -97,6 +98,15 @@ export class InventoryWardReceiveStockComponent implements OnInit {
   RouteBack() {
     this.InventoryService.RequisitionId = 0;
     this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionList']);
+  }
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
   }
 }
 

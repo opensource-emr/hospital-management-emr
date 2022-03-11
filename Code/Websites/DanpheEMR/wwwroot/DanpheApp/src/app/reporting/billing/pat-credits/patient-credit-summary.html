@@ -3,10 +3,12 @@
     <form [formGroup]="patientCreditSummary.PatientCreditSummaryValidator" class="form-horizontal">
       <div class="form-body">
         <div class="col-md-12">
-          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <b><span class="caption-subject">Patient Wise Credit Report On {{TodayDate}}</span></b> </div>
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <b><span
+                class="caption-subject">Patient Wise Credit Report On {{TodayDate}}</span></b> </div>
           <div class="row">
             <div class="col-md-6">
-              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+              </from-to-date-select>
             </div>
             <!--<div class="col-md-5 col-xs-12">
             <div class="form-group">
@@ -30,7 +32,8 @@
           </div>-->
             <div class="col-md-2 col-xs-12">
               <div class="form-group">
-                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                <button class="btn green btn-success" type="button" (click)="Load();this.loading=true;" [disabled]="loading"> <i
+                    class="fa fa-search"></i> Show Report </button>
               </div>
             </div>
           </div>
@@ -40,11 +43,10 @@
   </div>
   <div class="row">
     <div class="col-lg-12 col-sm-12" *ngIf="patientCreditSummaryData.length>0">
-      <danphe-grid [grid-colDefaults]="patientCreditSummaryColumns"
-                   [grid-data]="patientCreditSummaryData"
-                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
-                   (grid-actions)="OnGridExport($event)"
-                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="patientCreditSummaryColumns" [grid-data]="patientCreditSummaryData"
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="billing"
+        [grid-date-range]="dateRange" (grid-actions)="OnGridExport($event)"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
   </div>
 </div>

@@ -42,7 +42,7 @@
         <hr />
       </div>
     </div>
-    <div class="col-md-9" style="float:none;border-top-color:black;text-align:center"> <a class="btn blue bordered" (click)="showAutoBillingItemPopUp=true"> <span class="glyphicon glyphicon-edit"></span> Edit </a> </div>
+    <div class="col-md-9" style="float:none;border-top-color:black;text-align:center"> <a class="btn blue bordered" (click)="showAutoBillingItemPopUp=true;SetFocusById('dept0')"> <span class="glyphicon glyphicon-edit"></span> Edit </a> </div>
   </div>
 </div>
 
@@ -70,6 +70,7 @@
                   <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
                   <td><form [formGroup]="row.BillingItemValidator" class="form-horizontal">
                       <input class="form-control" danphe-auto-complete
+                                                  id="{{'dept' + i}}"
                                                    style="width: 300px;"
                                                    formControlName="ServiceDepartmentId"
                                                    [ngClass]="{'border-red': row.IsDirty('ServiceDepartmentId') && !row.IsValid('ServiceDepartmentId','required'), 'border-red': !row.IsValidSelDepartment }"
@@ -79,17 +80,20 @@
                                                    placeholder="Enter Department"
                                                    display-property-name="ServiceDepartmentName"
                                                    value-property-name=null
-                                                   (focusout)="ServiceDeptOnChange(i);"
+                                                   (valueChanged)="ServiceDeptOnChange(i);"
                                                    match-formatted="true"
                                                    onClick="this.select();"
-                                                   max-num-list="10" />
+                                                   max-num-list="10" 
+                                                   (keyup.enter)="ServiceDeptOnChange(i)" />
                       <span class="color-red font-sm" [hidden]="row.IsValid('ServiceDepartmentId','required') || !(row.IsDirty('ServiceDepartmentId'))">Select Service Department from List</span>
                     </form></td>
                   <td><a (click)="AddRow(i)"><i class="fa fa-plus btn btn-success"></i></a></td>
                   <td><form [formGroup]="row.BillingItemValidator" class="form-horizontal">
-                      <input class="form-control" danphe-auto-complete
-                                                   style="width:300px"
+                              <input class="form-control" danphe-auto-complete
+                                                   id="{{'itemName'+i}}" 
+                                                   (keyup.enter)="SetFocusById('dept' + (i+1))" 
                                                    formControlName="ItemId"
+                                                   style="width:250px"
                                                    [ngClass]="{'border-red': row.IsDirty('ItemId') && !row.IsValid('ItemId','required'), 'border-red': !row.IsValidSelItemName }"
                                                    [(ngModel)]="selectedBillItems[i]"
                                                    [source]="row.filteredItem"
@@ -100,7 +104,9 @@
                                                    (focusout)="AssignSelectedBillItem(i)"
                                                    onclick="this.select();"
                                                    match-formatted="true"
-                                                   max-num-list="10" />
+                                                   max-num-list="10" 
+                                                   min-chars='1'
+                                                   />                       
                       <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
                       <span class="color-red font-sm" [hidden]="row.IsValid('ItemId','required') || !(row.IsDirty('ItemId'))">Select Item from the list</span>
                     </form></td>
@@ -122,7 +128,7 @@
             </table>
           </div>
           <div class="panel-footer">
-            <input type="button" class="btn btn-primary" [disabled]="loading" (click)="loading=true;UpdateAutoBillingItems()" value="Update" />
+            <input type="button" id="Update" class="btn green btn-success margin-7-hr" [disabled]="loading" (click)="loading=true;UpdateAutoBillingItems()" value="Update" />
           </div>
         </div>
       </div>

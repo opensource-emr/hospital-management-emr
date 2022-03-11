@@ -13,6 +13,7 @@ import { identifierModuleUrl } from "@angular/compiler";
 import * as moment from 'moment/moment';
 import { FractionCalculationViewModel } from "../../shared/fraction-calculation.viewmodel";
 import { FractionPercentModel } from "../../shared/fraction-percent.model";
+import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
     selector: 'fraction-applicable-list',
@@ -37,7 +38,8 @@ export class CalculateDetailsComponent {
         public routeFromService: RouteFromService,
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
-        public router: Router
+        public router: Router,
+        public coreService: CoreService
     ) {
         if (!this.fractionCalculationService.BillTxnId) {
             this.msgBoxServ.showMessage("failed", ["Please select one bill item."]);

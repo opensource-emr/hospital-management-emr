@@ -19,27 +19,27 @@ export class NoteTemplateBLService {
   }
   ///Post Notes Template
   public PostProcedureNoteTemplate(NoteMaster: NotesModel) {
-    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote', 'ClinicalPrescriptionNote']);
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote']);
     return this.clinicalDLService.PostProcedureNoteTemplate(temp)
       .map(res => res);
   }
 
   public PostProgressNoteTemplate(NoteMaster: NotesModel) {
-    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProcedureNote', 'ClinicalPrescriptionNote']);
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProcedureNote']);
     return this.clinicalDLService.PostProgressNoteTemplate(temp)
       .map(res => res);
   }
 
 
   public PostFreetextNoteTemplate(NoteMaster: NotesModel) {
-    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'ProcedureNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote', 'ClinicalPrescriptionNote']);
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'SubjectiveNote', 'ObjectiveNote', 'ProcedureNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote']);
     return this.clinicalDLService.PostFreetextNoteTemplate(temp)
       .map(res => res);
   }
 
 
   public PostDischargeSummary(NoteMaster: NotesModel) {
-    var tempNotes = _.omit(NoteMaster, ['SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ProcedureNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote', 'ClinicalPrescriptionNote']);
+    var tempNotes = _.omit(NoteMaster, ['SubjectiveNote', 'ObjectiveNote', 'FreeTextNote', 'ProcedureNote', 'ClinicalDiagnosis', 'AllIcdAndOrders', 'EmergencyNote', 'ProgressiveNote']);
 
     var tempDischargeSummary = _.omit(tempNotes.DischargeSummaryNote, ['DischargeSummaryValidator']);
     tempNotes.DischargeSummaryNote = tempDischargeSummary;
@@ -53,15 +53,22 @@ export class NoteTemplateBLService {
   }
 
   public PostHistoryAndPhysicalNoteTemplate(NoteMaster: NotesModel) {
-    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'FreeTextNote', 'EmergencyNote', 'ProcedureNote', 'ProgressiveNote', 'ClinicalDiagnosis', 'ClinicalPrescriptionNote']);
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'FreeTextNote', 'EmergencyNote', 'ProcedureNote', 'ProgressiveNote', 'ClinicalDiagnosis']);
     var newtemp = _.omit(temp.SubjectiveNote, ['SubjectiveNoteValidator']);
     temp.SubjectiveNote = newtemp;
     return this.clinicalDLService.PostHistoryAndPhysicalNoteTemplate(temp)
       .map(res => res);
   }
+  public PostOpdExamination(NoteMaster: NotesModel) {
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'EmergencyNote', 'ProgressiveNote']);
+    var newtemp = _.omit(temp.SubjectiveNote, ['SubjectiveNoteValidator']);
+    temp.SubjectiveNote = newtemp;
+    return this.clinicalDLService.PostOpdExamination(temp)
+      .map(res => res);
+  }
 
   public PostEmergencyNoteTemplate(NoteMaster: NotesModel) {
-    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'FreeTextNote', 'ProcedureNote', 'ProgressiveNote', 'ClinicalDiagnosis', 'ClinicalPrescriptionNote']);
+    var temp = _.omit(NoteMaster, ['DischargeSummaryNote', 'FreeTextNote', 'ProcedureNote', 'ProgressiveNote', 'ClinicalDiagnosis']);
     var newtemp = _.omit(temp.SubjectiveNote, ['SubjectiveNoteValidator']);
     temp.SubjectiveNote = newtemp;
     return this.clinicalDLService.PostEmergencyNoteTemplate(temp)
@@ -108,6 +115,10 @@ export class NoteTemplateBLService {
   }
   public GetHistoryAndPhysicalNoteById(NotesId) {
     return this.clinicalDLService.GetHistoryAndPhysicalNoteById(NotesId)
+      .map(res => res);
+  }
+  public GetOpdExaminationdetailsById(patientId,PatientVisitid,notesId) {
+    return this.clinicalDLService.GetOpdExaminationdetailsById(patientId,PatientVisitid,notesId)
       .map(res => res);
   }
   public GetEmergencyNoteById(NotesId) {

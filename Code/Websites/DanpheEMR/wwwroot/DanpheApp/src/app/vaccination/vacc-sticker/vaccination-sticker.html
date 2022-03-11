@@ -1,0 +1,99 @@
+<style>
+  .circularQueueDiv {
+    position: absolute;
+    left: 35%;
+    bottom: 100px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 35px;
+    text-align: center;
+    padding-top: 5px;
+  }
+
+  .opdstickercontainer {
+    padding: 10px;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row" *ngIf="showVaccSticker">
+    <div id="vaccinationSticker" *ngIf="stickerDetail && stickerDetail.PatientName"
+      style="width: 400px;border: 1px dotted black;font-size: 12px;">
+      <div id="opdprintpage" [ngClass]="'opdstkcontainer-' + hospitalCode" class="opdstickercontainer">
+        <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
+          <div>
+            <div>
+              <div>
+                <span>{{stickerDetail.DepartmentName}}</span>
+              </div>
+              <span> Date: {{stickerDetail.VisitDateTime |
+                DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp;({{stickerDetail.VisitDateTime |
+                nepaliDate:'format':'YYYY-MM-DD'}} BS) </span>
+
+              <div style="display: flex; justify-content:space-between;">
+                <span style="display:inline-block;">
+                  Hospital No. : {{stickerDetail.PatientCode}}
+                </span>
+                <span>Vacc. Reg. No : {{stickerDetail.VaccinationRegNo}}</span>
+                <!-- <span style="float:right;padding-right: 5px;"> Contact : {{OpdStickerDetails.PhoneNumber}} </span> -->
+              </div>
+
+              <div>
+                <div style="display:inline-block;width: 15%;vertical-align: top;"> Name&nbsp;: </div>
+                <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                  <div style="display:inline-block;"> {{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp;
+                    {{stickerDetail.Gender}} </div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                  <div style="display:inline-block;" *ngIf="stickerDetail.DateOfBirth"> Baby's DOB&nbsp;:&nbsp;
+                    {{stickerDetail.DateOfBirth | nepaliDate:'format':'YYYY-MM-DD'}} </div>
+                </div>
+              </div>
+              <div style="display:flex; justify-content: space-between;">
+                <span>
+                  Address&nbsp;: <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}},&nbsp;</span> {{stickerDetail.DistrictName}}
+                  <!-- <span *ngIf="stickerDetail.MunicipalityName">, {{stickerDetail.MunicipalityName}}, &nbsp;</span> -->
+                  
+                </span>
+                <span *ngIf="stickerDetail.PhoneNumber">Contact no. : {{stickerDetail.PhoneNumber}}</span>
+              </div>
+            </div>
+            <div style="clear: both;"></div>
+            <hr style="border:0.5px solid black;margin:0px;" />
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding-top: 5px;">
+            <div>
+              <span style="float:right;padding-right: 20px;"> User&nbsp;: {{stickerDetail.UserName}} </span>
+
+              <span style="float:right;padding-right: 20px;"> Time&nbsp;: {{stickerDetail.VisitDateTime |
+                DanpheDateTime:'format':'HH:mm'}} </span>
+            </div>
+          </div>
+
+
+
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+      <button class="btn green btn-success" value="" (click)="print()" id="btnPrintSticker">
+        <span>Print</span>&nbsp;&nbsp;
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+
+    <select-printer [group-name]="'reg-sticker'" [storage-key]="'vaccination-sticker'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

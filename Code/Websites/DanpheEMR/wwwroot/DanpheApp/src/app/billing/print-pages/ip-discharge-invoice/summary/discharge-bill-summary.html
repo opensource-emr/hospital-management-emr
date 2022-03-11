@@ -1,0 +1,26 @@
+<div class="wrapper">
+  <table class="table table-striped table-hover" style="width: 100%;border-bottom: 1px solid;"
+    *ngIf="billItems != null">
+    <thead>
+      <tr>
+        <th border="1" align="left" style="font-size:12px; width:10%;"><strong>S.N.</strong></th>
+        <th border="1" align="left" style="font-size:12px; width:50%"><strong>Service Particular(s)</strong></th>
+        <th border="1" align="left" style="font-size:12px; width:20%"><strong>Quantity</strong></th>
+        <th border="1" style="text-align: right; font-size:12px; width:20%;"><strong>Amount</strong></th>
+      </tr>
+    </thead>
+    <tbody>
+ 
+          <tr *ngFor="let row of data | keyvalue; let i=index;">
+            <td style="text-align:left; font-size:11px; width:10%">{{i+1}}</td>
+            <td style="text-align:left; font-size:11px; width:50%">{{row.value.ItemName}}<span *ngIf="row.ProviderName!=null && ShowProviderName"> ({{row.ProviderName}})</span></td>
+            <td style="text-align:left; font-size:11px; width:20%">{{row.value.Quantity}}</td>
+            <td style="text-align: right; font-size:11px; width:20%;">{{row.value.SubTotal | number : "1.2-2"}}</td>
+          </tr>
+
+         
+
+     
+    </tbody>
+  </table>
+</div>

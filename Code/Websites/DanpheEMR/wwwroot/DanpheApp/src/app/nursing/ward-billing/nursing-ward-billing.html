@@ -105,17 +105,6 @@
   </div>
 </div>
 
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDischargeBill">
-  <div class="portlet-body form" style="text-align: center;">
-    <div class="modelbox-div" style="width: 90%; display: inline-block;">
-      <div style="width: 100%; float: left; background: #fff;">
-        <i class="btn btn-danger" style="float: right;" (click)="CloseRecieptView()">X</i>
-        <discharge-bill-main [ipVisitId]="inPatientVisitId" [patientId]="inPatientId" [billType]="'estimation'"
-                             [billStatus]="'provisional'"></discharge-bill-main>
-      </div>
-    </div>
-  </div>
-</div>
 
 <div class="popup-static portlet box portlet-fullscreen"
      *ngIf="showNewIpRequestPopup && currPatVisitContext && !isPopUp">

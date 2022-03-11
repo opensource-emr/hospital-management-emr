@@ -9,6 +9,7 @@ using DanpheEMR.Utilities;
 using DanpheEMR.CommonTypes;
 using DanpheEMR.Core.Caching;
 using DanpheEMR.DalLayer;
+using DanpheEMR.ServerModel.EmergencyModels;
 
 namespace DanpheEMR.Controllers
 {
@@ -25,10 +26,12 @@ namespace DanpheEMR.Controllers
 
         // GET: api/values
         [HttpGet]
-        public string Get(string type, string reqType, string inputValue, int employeeId, int countryId, int wardId, int bedTypeId, string departmentName)
+        public string Get(string type, string reqType, string inputValue, int employeeId, int countryId,
+            int wardId, int bedTypeId, string departmentName, int lookUpType, int countrySubDivisionId)
         {
             string returnValue = string.Empty;
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            MasterDbContext masterDbContext = new MasterDbContext(connString);
 
             if (type == "department")
             {
@@ -88,6 +91,51 @@ namespace DanpheEMR.Controllers
                 var formatedResult = new DanpheHTTPResponse<List<CountrySubDivisionModel>>() { Results = CountrySubDivision, Status = "OK" };
                 returnValue = DanpheJSONConvert.SerializeObject(formatedResult, true);
 
+
+            }
+            else if (type == "get-municipalities")
+            {
+                MasterDbContext dbMaster = new MasterDbContext(connString);
+                List<MunicipalityModel> Municipality = new List<MunicipalityModel>();
+                try
+                {
+
+                    var retData = (from mun in dbMaster.Municipalities
+                                   join country in dbMaster.Country on mun.CountryId equals country.CountryId
+                                   join subDiv in dbMaster.CountrySubDivision on mun.CountrySubDivisionId equals subDiv.CountrySubDivisionId
+                                   where mun.IsActive == true
+                                   group mun by new { mun.CountryId, mun.CountrySubDivisionId } into munGrp
+                                   select new
+                                   {
+                                       CountryId = munGrp.Key.CountryId,
+                                       CountrySubDivisionId = munGrp.Key.CountrySubDivisionId,
+                                       Municipalities = munGrp.ToList(),
+                                   }).ToList();
+
+                    //if (countrySubDivisionId == 0)
+                    //{
+                    //    Municipality = (from s in dbMaster.Municipalitieslab
+                    //                    where s.IsActive == true
+                    //                    select s).ToList();
+                    //}
+                    //else
+                    //{
+                    //    Municipality = (from mun in dbMaster.Municipalities
+                    //                    select mun).Where(s => s.CountrySubDivisionId == countrySubDivisionId && s.IsActive == true).ToList();
+                    //}
+
+                    var formattedResult = new DanpheHTTPResponse<object>()
+                    {
+                        Results = retData,
+                        Status = "OK"
+                    };
+                    returnValue = DanpheJSONConvert.SerializeObject(formattedResult, true);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+
+                }
 
             }
             else if (type == "get-countries")
@@ -200,19 +248,21 @@ namespace DanpheEMR.Controllers
                                     && emp.IsActive == true
                                     select emp).OrderBy(e => e.DisplaySequence).ToList();
                 }
-                else if(departmentName.ToLower() == "radiology")
+                else if (departmentName.ToLower() == "radiology")
                 {
                     filteredList = (from emp in empListFromCache
                                     join dept in deptList on emp.DepartmentId equals dept.DepartmentId
                                     where (dept.DepartmentName.ToLower() == departmentName.ToLower() || (!String.IsNullOrEmpty(emp.RadiologySignature)))
-                                    && emp.EmployeeRoleId == doctorRoleId
+                                    //&& emp.EmployeeRoleId == doctorRoleId
                                     && emp.IsActive == true //sud:1Jun'19--take only active employees.
                                     select emp).OrderBy(e => e.DisplaySequence).ToList();
-                } else
+                }
+                else
                 {
                     filteredList = (from emp in empListFromCache
                                     join dept in deptList on emp.DepartmentId equals dept.DepartmentId
-                                    where dept.DepartmentName.ToLower() == departmentName.ToLower() && emp.EmployeeRoleId == doctorRoleId
+                                    where dept.DepartmentName.ToLower() == departmentName.ToLower()
+                                    //&& emp.EmployeeRoleId == doctorRoleId
                                     && emp.IsActive == true //sud:1Jun'19--take only active employees.
                                     select emp).OrderBy(e => e.DisplaySequence).ToList();
                 }
@@ -373,13 +423,24 @@ namespace DanpheEMR.Controllers
 
                 var srvDpts = FormatServiceDepts(srvDeptList, departments);
 
-                var masters = new { ServiceDepartments = srvDpts, Departments = departments, Taxes = taxes, UniqueDataList = allPastPatUniqueData, PriceCategories = priceCategoryList , ICD10List = icd10List };
+                var masters = new { ServiceDepartments = srvDpts, Departments = departments, Taxes = taxes, UniqueDataList = allPastPatUniqueData, PriceCategories = priceCategoryList, ICD10List = icd10List };
                 responseData.Results = masters;
                 responseData.Status = "OK";
                 returnValue = DanpheJSONConvert.SerializeObject(responseData, true);
             }
-
-
+            else if (type == "coreLookUpDetails")
+            {
+                var data = masterDbContext.CoreLookupDetails.Where(d => d.IsActive
+                && ((lookUpType > 0) ? (d.Type == (LookUpTypeEnum)lookUpType) : true)).ToList();
+                var allParents = data.Where(s => (!s.ParentId.HasValue || (s.ParentId == 0))).ToList();
+                foreach (var d in allParents)
+                {
+                    d.ChildLookUpDetails = GetChildLookUpDetailData(data, d);
+                }
+                responseData.Results = allParents;
+                responseData.Status = "OK";
+                returnValue = DanpheJSONConvert.SerializeObject(responseData, true);
+            }
 
 
 
@@ -420,13 +481,13 @@ namespace DanpheEMR.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public void Post([FromBody] string value)
         {
         }
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public void Put(int id, [FromBody] string value)
         {
         }
 
@@ -451,6 +512,21 @@ namespace DanpheEMR.Controllers
                                        Isactive = s.IsActive
                                    }).Where(s => s.Isactive == true).ToList();
             return srvDptFormatted;
+        }
+
+        public static List<CoreLookupDetail> GetChildLookUpDetailData(IEnumerable<CoreLookupDetail> master, CoreLookupDetail current)
+        {
+            var child = master.Where(d => d.ParentId == current.Id).ToList();
+            if (child.Count() == 0)
+                return new List<CoreLookupDetail>();
+
+            foreach (var item in child)
+            {
+                item.ChildLookUpDetails = GetChildLookUpDetailData(master, item);
+            }
+
+            return child;
+
         }
     }
 }

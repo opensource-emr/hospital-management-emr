@@ -65,21 +65,24 @@ export class SalesBookReportComponent {
                         //itm.Is_Active = true;
                         // itm.BillNo = itm.Bill_No;
                         itm.BillDate_Np = this.npCalService.ConvertEngToNepDateString(itm.BillDate);
+                        itm.BillDate = moment(itm.BillDate).format("YYYY-MM_DD");
                     });
 
                     this.curtSalesBookDetail = salesDetails;
                     this.curtSalesBookDetail.forEach(itm => {
                         var amt = 0;
-                        itm.Bill_No = this.extractBillNumbers(itm.Bill_No);
+                       // itm.Bill_No = this.extractBillNumbers(itm.Bill_No);
                         itm.DiscountAmount = CommonFunctions.parseAmount(itm.DiscountAmount);
                         itm.Taxable_Amount = CommonFunctions.parseAmount(itm.Taxable_Amount);
                         itm.Tax_Amount = CommonFunctions.parseAmount(itm.Tax_Amount);
                         itm.Total_Amount = CommonFunctions.parseAmount(itm.Total_Amount);
-                        itm.Bill_No_Str = "BL" + itm.Bill_No;
+                        itm.Bill_No_Str = itm.Bill_No.toString();
                         itm.NonTaxable_Amount = CommonFunctions.parseAmount(itm.Total_Amount - itm.Taxable_Amount);
                     }
                     );
-                    this.callBackBillingInvoiceDetails();//call for get phrm invoice details
+                    this.calculation();
+                    this.finalData = Object.assign(this.finalData, this.curtSalesBookDetail);
+                    // this.callBackBillingInvoiceDetails();//call for get phrm invoice details
                 }
                 else if (res.Status == 'Failed') {
                     console.log(res.ErrorMessage);

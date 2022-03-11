@@ -45,6 +45,8 @@ namespace DanpheEMR.ServerModel
         public bool? IsExistBedFeatureId { get; set; }
         [NotMapped]
         public int? ReservedBedId { get; set; }
+        [NotMapped]
+        public bool? IsInsurancePatient { get; set; }
 
         public int? BedQuantity { get; set; }
         public int? SecondaryDoctorId { get; set; }

@@ -1,110 +1,143 @@
 <style>
-    .printStyle {
-        border: dotted 1px;
-        margin: 10px 100px;
-    }
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 100px;
+  }
 
-    .print-border-top {
-        border-top: dotted 1px;
-    }
-     
-    .print-border-bottom {
-        border-bottom: dotted 1px;
-    }
+  .print-border-top {
+    border-top: dotted 1px;
+  }
 
-    .print-border {
-        border: dotted 1px;
-    }
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
 
-    .center-style {
-        text-align: center;
-    }
+  .print-border {
+    border: dotted 1px;
+  }
 
-    .border-up-down {
-        border-top: dotted 1px;
-        border-bottom: dotted 1px;
-    }
-    
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
 </style>
+<app-requisition-np-view *ngIf="showNepaliReceipt; else EnglishReceiptView" [requisition-id]="requisitionId"
+  [module-type]="'pharmacy-dispensary'"></app-requisition-np-view>
+<ng-template #EnglishReceiptView>
   <div id="printpage" class="row printStyle print-border">
     <div style="text-align:center;">
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+          <img class="img-responsive" style="max-height:70px;"
+            src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+        </div>
+        <div style="width: 64%;float: left;padding-bottom:  0px;">
+          <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+            <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+            <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+            <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
+          </div>
+        </div>
+        <div style="float: left;">
+          <div class="qr-code" style="margin-left:20px; top:35px;">
+            <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+          </div>
+        </div>
+        <div style="clear:left"></div>
+      </div>
+      <div class="clear"></div>
+      <div class="left" style="text-align:left;">
+        <p>Requisition No:<b> {{requisition.RequisitionNo}}</b></p>
+        <p>Requisiting Store:<b> {{requisition.RequestedStoreName}}</b></p>
+      </div>
+      <div class="right" style="text-align:right;">
+        <p><strong>Requisition Date:</strong>{{requisition.RequisitionDate | date:"yyy-MM-dd"}}&nbsp;
+          <i *ngIf="requisition.RequisitionDate">({{requisition.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS
+            )</i>
+        </p>
+      </div>
+      <div class="clear"></div>
+      <p class="text-center btm-pad border-up-down"><b> REQUISITION DETAILS PRINT</b></p>
+      <div class="clear"></div>
+      <div class="clear footer"></div>
+      <div>
+        <table class="table table-striped table-hover req_table"
+          style="background-color:initial;margin-top:1rem;width: 100%;">
+          <thead>
+            <tr style="font-weight: bold;text-align:center">
+              <td></td>
+              <td>Medicine Name</td>
+              <td>Quantity</td>
+              <td>Dispatched Qty.</td>
+              <td>Pending Qty.</td>
+              <td>Status</td>
+              <td>Remarks</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="text-align:center" *ngFor="let row of requisition.RequisitionItems">
+              <td>
+                <input *ngIf="row.RequestedItemStatus=='active' || row.RequestedItemStatus=='pending'" class="noPrint"
+                  title="Cancel this item." type="checkbox" [(ngModel)]="row.IsSelected" style="zoom:1.2"
+                  (change)="ShowCancelButtonOnCkboxChange()" />
+              </td>
+              <td>{{row.ItemName}}(<i style="color: blue;">{{row.GenericName}}</i>)</td>
+              <td>{{row.RequestedQuantity}}</td>
+              <td>{{row.ReceivedQuantity}}</td>
+              <td>{{row.PendingQuantity}}</td>
+              <td><b>{{row.RequestedItemStatus}}</b>
+                <span *ngIf="row.RequestedItemStatus == 'cancelled'" id="CancellationToolTip" class="tooltip noPrint">
+                  <span class="fa fa-info"
+                    style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                  </span>
+                  <p class="tooltiptext ttptextdown noPrint">
+                    Cancelled&nbsp;By:&nbsp;{{row.CancelledBy}}<br />
+                    Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}(<i>{{row.CancelledOn | nepaliDate}}</i>)<br />
+                    <em>Remarks:&nbsp;{{row.CancelRemarks}}</em>
+                  </p>
+                </span>
+              </td>
+              <td><b>{{row.Remarks}}</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <hr />
+      <div class="col-md-12 noPrint" style="margin:10px 0" *ngIf="showCancelButton == true">
+        <label for="cancelRemarks" class="col-md-2">Remarks <sup class="color-red">*</sup> <span
+            class="right">:</span></label>
+        <textarea class="col-md-10" [(ngModel)]="cancelRemarks" name="cancelRemarks" rows="3"></textarea>
+      </div>
       <div class="col-md-12">
-        <div class="row" style="margin-bottom: 10px;">
-          <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
-            <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
-          </div>
-          <div style="width: 64%;float: left;padding-bottom:  0px;">
-            <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
-              <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-              <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-              <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
-              <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
-            </div>
-          </div>
-          <div style="float: left;">
-            <div class="qr-code" style="position: absolute; right: 12px; top: 9px;">
-              <qr-code  [size]="75" [backgroundAlpha]="0"></qr-code>
-            </div>
-          </div>
-          <!-- Billing Header  -->
-          <div style="clear:left"></div>
-        </div>
-        <div class="clear"></div>
-        <div class="left" style="text-align:left;">
-          <p>Requisition No:<b> {{requisitionId}}</b></p>
-        </div>
-
-        <div class="right" style="text-align:right;">
-          <p>Requisition Date:<b> {{requisitionDate}}</b></p>
-        </div>
-        <div class="clear"></div>
-        <p class="text-center btm-pad border-up-down"><b> REQUISITION DETAILS PRINT</b></p>
-        <div class="clear"></div>
-        <div class="clear footer"></div>
-        <div class="table-responsive">
-          <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;width:100%">
-            <thead>
-              <tr style="font-weight: bold;text-align:center">
-                <td>Item Name</td>
-                <td>Quantity</td>
-                <td>Received Qty.</td>
-                <td>Pending Qty.</td>
-                <td>Status</td>
-                <td>Remarks</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="text-align:center" *ngFor="let row of requisitionItemsDetails">
-                <td>{{row.ItemName}}</td>
-                <td>{{row.Quantity}}</td>
-                <td>{{row.ReceivedQuantity}}</td>
-                <td>{{row.PendingQuantity}}</td>
-                <td><b>{{row.RequisitionItemStatus}}</b></td>
-                <td><b>{{row.Remark}}</b></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <hr />
-        <div class="col-md-12">
-          <div style="text-align: left" class="col-md-4">Requested By:&nbsp;<b>{{createdby}}</b></div>
-          <div *ngIf="receivedby!=null" style="text-align: left" class="col-md-4">Received By:&nbsp;<b>{{receivedby}}</b></div>
-          <div style="text-align: left" class="col-md-4" *ngIf="dispatchedby">Dispatched By:&nbsp;<b>{{dispatchedby}}</b></div>
-
-        </div>
+        <div style="text-align: left" class="col-md-4">Requested By:&nbsp;<b>{{requisition.RequestedBy}}</b></div>
+        <div *ngIf="requisition.ReceivedBy!=null" style="text-align: left" class="col-md-4">Received
+          By:&nbsp;<b>{{requisition.ReceivedBy}}</b></div>
+        <div style="text-align: left" class="col-md-4" *ngIf="requisition.DispatchedBy">Dispatched
+          By:&nbsp;<b>{{requisition.DispatchedBy}}</b></div>
       </div>
     </div>
-</div>
+  </div>
+</ng-template>
 <div class="row center-style">
-    <div class="col-md-12 col-xs-12 ">
-        <a (click)="print()" class="btn btn-default">
-            Print
-            <i class="glyphicon glyphicon-print"></i>
-        </a><span> </span><span> </span>
-        &nbsp;
-        <a (click)="requisitionList()" class="btn btn-primary">
-            Requisition List
-            <i class="glyphicon glyphicon-share-alt"></i>
-        </a>
-    </div>
+  <div class="col-md-12 col-xs-12 ">
+    <button id="printButton" (click)="print()" class="btn btn-default">Print
+      <i class="glyphicon glyphicon-print"></i>
+    </button><span> </span><span> </span>
+    &nbsp;
+    <button (click)="routeToRequisitionList()" class="btn btn-primary">
+      Requisition List
+      <i class="glyphicon glyphicon-share-alt"></i>
+    </button>
+    <button (click)="CancelSelectedItems()" class="btn btn-danger" *ngIf="showCancelButton">
+      Cancel Item(s)
+      <i class="glyphicon glyphicon-floppy-remove"></i>
+    </button>
+  </div>
 </div>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page>

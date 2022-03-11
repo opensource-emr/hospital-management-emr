@@ -38,7 +38,7 @@ export class InventoryService {
   public allVendorList: Array<VendorsModel> = [];
   public allItemList: Array<ItemModel> = [];
   public allItemPriceList: any[] = [];
-  public allGRBillingList: any[] =[];
+  public allGRBillingList: any[] = [];
   allFiscalYearList: InventoryFiscalYearModel[] = [];
 
   public LoadAllVendorList(vendorList: Array<VendorsModel>) {
@@ -58,6 +58,14 @@ export class InventoryService {
   }
   constructor() {
     console.log("In Inventory Service.");
+  }
+  // for non donation Goods Receipt Creation
+  private _isDonation: boolean = false;
+  public get isDonation(): boolean {
+    return this._isDonation;
+  }
+  public set setDonationMode(donationMode: boolean) {
+    this._isDonation = donationMode;
   }
 
   //public _Name: string = null;

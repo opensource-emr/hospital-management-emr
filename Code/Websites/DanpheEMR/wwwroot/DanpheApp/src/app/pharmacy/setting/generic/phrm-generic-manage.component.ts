@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
+import { Component, ChangeDetectorRef, Input, Output, EventEmitter, OnInit, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -14,7 +14,7 @@ import { PHRMCategoryModel } from "../../shared/phrm-category.model";
     templateUrl: "./phrm-generic-manage.html"
 })
 
-export class PHRMGenericManageComponent {
+export class PHRMGenericManageComponent implements OnInit {
     public genericGridColumns: Array<any> = null;
     public genericList: Array<PHRMGenericModel> = new Array<PHRMGenericModel>();
     public selectedItem: PHRMGenericModel = new PHRMGenericModel();
@@ -28,19 +28,28 @@ export class PHRMGenericManageComponent {
     public index: number;
     public categoryList: Array<PHRMCategoryModel> = new Array<PHRMCategoryModel>();
     public selCategory: PHRMCategoryModel = new PHRMCategoryModel();
-    
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;   //to close the window on click of ESCape.
+
     @Input("showAddPage")
     public set value(val: boolean) {
-      this.showGenericAddPage = val;
+        this.showGenericAddPage = val;
     }
 
-    constructor(public pharmacyBLService: PharmacyBLService,public changeDetector: ChangeDetectorRef,
-        public securityService: SecurityService,public msgBoxServ: MessageboxService) {
+    constructor(public pharmacyBLService: PharmacyBLService, public changeDetector: ChangeDetectorRef,
+        public securityService: SecurityService, public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.genericGridColumns = PHRMGridColumns.GenericList;
-      this.GetGenericList();
-      this.getCategoryList();
+        this.GetGenericList();
+        this.getCategoryList();
     }
 
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+    }
     GetGenericList() {
         this.pharmacyBLService.GetGenericList()
             .subscribe(res => {
@@ -66,7 +75,7 @@ export class PHRMGenericManageComponent {
                     if (res.Status == "OK") {
                         this.msgBoxServ.showMessage("success", ["Generic Name"]);
                         this.CallBackAddToGrid(res);
-                        this.currentGeneric = new PHRMGenericModel();                       
+                        this.currentGeneric = new PHRMGenericModel();
                     } else {
                         this.msgBoxServ.showMessage("failed", ["Sorry!! Generic Name Cannot be Added"]);
                     }
@@ -86,7 +95,7 @@ export class PHRMGenericManageComponent {
                     if (res.Status == "OK") {
                         this.msgBoxServ.showMessage("success", ["Generic Name is Updated"]);
                         this.CallBackAddToGrid(res);
-                        this.currentGeneric = new PHRMGenericModel();                      
+                        this.currentGeneric = new PHRMGenericModel();
                     } else {
                         this.msgBoxServ.showMessage("failed", ["Sorry!! Generic Name Cannot be Updated"]);
                     }
@@ -102,43 +111,43 @@ export class PHRMGenericManageComponent {
             this.genericList.push(res.Results);
         }
         this.genericList = this.genericList.slice();
-        this.changeDetector.detectChanges();       
+        this.changeDetector.detectChanges();
         this.showGenericAddPage = false;
         this.index = null;
         this.AddUpdateResponseEmitter(res.Results);
     }
 
-  public getCategoryList() {
-    this.pharmacyBLService.GetCategoryList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.categoryList = res.Results;
-        }
-        else {
-          alert("Failed ! " + res.ErrorMessage);
-          console.log(res.ErrorMessage)
-        }
-      });
-  }
-  public AssignSelectedCategory() {
-    try {
-      if (this.selCategory.CategoryId) {
-        if ((this.selCategory.CategoryId != 0) && (this.selCategory.CategoryId != null)) {
-          this.currentGeneric.CategoryId = this.selCategory.CategoryId;
-        }
-      }
-    } catch (ex) {
-      this.ShowCatchErrMessage(ex);
+    public getCategoryList() {
+        this.pharmacyBLService.GetCategoryList()
+            .subscribe(res => {
+                if (res.Status == "OK") {
+                    this.categoryList = res.Results;
+                }
+                else {
+                    alert("Failed ! " + res.ErrorMessage);
+                    console.log(res.ErrorMessage)
+                }
+            });
     }
-  }
-  public ShowCatchErrMessage(exception) {
-    if (exception) {
-      let ex: Error = exception;
-      this.msgBoxServ.showMessage("error", ["Check error in Console log !"]);
-      console.log("Error Messsage =>  " + ex.message);
-      console.log("Stack Details =>   " + ex.stack);
+    public AssignSelectedCategory() {
+        try {
+            if (this.selCategory.CategoryId) {
+                if ((this.selCategory.CategoryId != 0) && (this.selCategory.CategoryId != null)) {
+                    this.currentGeneric.CategoryId = this.selCategory.CategoryId;
+                }
+            }
+        } catch (ex) {
+            this.ShowCatchErrMessage(ex);
+        }
     }
-  }
+    public ShowCatchErrMessage(exception) {
+        if (exception) {
+            let ex: Error = exception;
+            this.msgBoxServ.showMessage("error", ["Check error in Console log !"]);
+            console.log("Error Messsage =>  " + ex.message);
+            console.log("Stack Details =>   " + ex.stack);
+        }
+    }
     CategoryListFormatter(data: any): string {
         if (data.IsActive) {
             return data["CategoryName"];
@@ -146,11 +155,12 @@ export class PHRMGenericManageComponent {
         else {
             return data["CategoryName"] + " |(<strong class='text-danger'>Deactivated)</strong>";
         }
-  }
+    }
     ShowAddNewPage() {
         this.currentGeneric = new PHRMGenericModel();
         this.showGenericAddPage = true;
         this.update = false;
+        this.setFocusById('genericname')
         //this.changeDetector.detectChanges();
     }
 
@@ -204,5 +214,10 @@ export class PHRMGenericManageComponent {
 
     AddUpdateResponseEmitter(generic) {
         this.callbackAdd.emit({ generic: generic });
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

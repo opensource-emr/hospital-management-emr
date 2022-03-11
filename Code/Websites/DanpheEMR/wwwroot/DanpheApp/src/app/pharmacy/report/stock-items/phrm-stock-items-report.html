@@ -59,7 +59,8 @@
                         [grid-data]="PHRMStockItemsReportData"
                         [grid-exportOptions]="gridExportOptions"
                         [grid-showExport]="true"
-                        (grid-onExport)="OnGridExport($event)" > </danphe-grid>
+                        (grid-onExport)="OnGridExport($event)" 
+                        [report-for]="pharmacy"> </danphe-grid>
   </div>
 </div>
 <div class="row">

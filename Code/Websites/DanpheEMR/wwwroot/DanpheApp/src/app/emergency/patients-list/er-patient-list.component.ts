@@ -9,6 +9,10 @@ import { Patient } from '../../patients/shared/patient.model';
 import { Visit } from '../../appointments/shared/visit.model';
 import { PatientService } from '../../patients/shared/patient.service';
 import { VisitService } from '../../appointments/shared/visit.service';
+import { PatientsBLService } from '../../patients/shared/patients.bl.service';
+import { Municipality } from '../../shared/address-controls/municipality-model';
+import { BillingBLService } from '../../billing/shared/billing.bl.service';
+import { Observable } from 'rxjs/Rx';
 
 
 @Component({
@@ -28,6 +32,7 @@ export class ERPatientListComponent {
     public allPatients: Array<Patient> = new Array<Patient>();
     public visitId: number = null;
     public showVitalsList: boolean = true;
+    public filteredData: any;
 
     public ERPatientGridCol: Array<any> = null;
     public index: number = null;
@@ -36,29 +41,45 @@ export class ERPatientListComponent {
     public existingPatientSelected: boolean = false;
 
     public selectedExistingPatient: Patient = null;
-    
-
+    public caseIdList: Array<number> = new Array<number>();
+    public casesList = [];
+    public municipalities: Array<Municipality> = [];
+    public allKeys: Array<string>;
+    public showUploadConsent = {
+        
+        "upload_files": false,
+       
+        "remove": false,
+        
+      };
     constructor(public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService,
         public patientServ: PatientService, public visitServ: VisitService,
-        public emergencyBLService: EmergencyBLService, public coreService: CoreService) {
+        public patientBlService: PatientsBLService,
+        public emergencyBLService: EmergencyBLService, public coreService: CoreService,
+        public billingBLService: BillingBLService) {
         this.ERPatientGridCol = EmergencyGridColumnSettings.ERPatientList;
         this.GetERPatientList();
-        this.GetAllExistingPatients();
+        //this.GetAllExistingPatients();
     }
-
-
+    ngOnInit() {
+        this.allKeys = Object.keys(this.showUploadConsent);
+      }
 
     public GetERPatientList() {
-        this.emergencyBLService.GetAllERPatients()
+        var id = this.caseIdList? this.caseIdList : null;
+        this.emergencyBLService.GetAllERPatients(id[0])
             .subscribe(res => {
                 if (res.Status == "OK") {
                     this.ERPatients = res.Results;
+                    this.filteredData = this.ERPatients;
+                    if(this.caseIdList[0] == 6){
+                        this.filterNestedDetails();
+                    }
                 }
                 else {
                     this.msgBoxServ.showMessage("Failed", ["Cannot Get Emergency PatientList !!"]);
                 }
             });
-        //assign this.ERPatients
     }
 
     public GetAllExistingPatients() {
@@ -110,7 +131,7 @@ export class ERPatientListComponent {
     public CloseERRegistrationPopUp() {
         var body = document.getElementsByTagName("body")[0];
         body.style.overflow = "inherit";
-        this.changeDetector.detectChanges();        
+        this.changeDetector.detectChanges();
         this.showERPatRegistration = false;
         this.showTriageOption = false;
         this.existingPatientSelected = false;
@@ -119,13 +140,13 @@ export class ERPatientListComponent {
 
     EditAction(event: GridEmitModel) {
         switch (event.Action) {
-            case "edit": {        
+            case "edit": {
                 this.HideParentBodyScroll();
                 this.selectedERPatientToEdit = new EmergencyPatientModel();
                 this.index = event.RowIndex;//assign index
                 this.showERPatRegistration = false;
                 this.changeDetector.detectChanges();
-                this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, event.Data);                             
+                this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, event.Data);
                 this.showERPatRegistration = true;
             }
                 break;
@@ -148,16 +169,29 @@ export class ERPatientListComponent {
                 this.showAddVitals = true;
             }
                 break;
+                case "consent":{
+                    this.HideParentBodyScroll(); 
+                    this.showUploadConsent.upload_files = true;
+                    this.selectedERPatientToEdit = new EmergencyPatientModel();
+                    this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, event.Data);
+                    this.allKeys.forEach(k => this.showUploadConsent[k] = (k != "upload_files") ? false : true);
+                }
             default:
                 break;
         }
     }
 
-    public AddCurrentExistingPatient() {        
+    public AllPatientSearchAsync = (keyword: any): Observable<any[]> => {
+
+        return this.billingBLService.GetPatientsWithVisitsInfo(keyword);
+    
+      }
+
+    public AddCurrentExistingPatient() {
         this.selectedERPatientToEdit = new EmergencyPatientModel();
 
         this.selectedERPatientToEdit.EnableControl("FirstName", false);
-        this.selectedERPatientToEdit.EnableControl("LastName", false); 
+        this.selectedERPatientToEdit.EnableControl("LastName", false);
         this.selectedERPatientToEdit.EnableControl("Gender", false);
         this.selectedERPatientToEdit.FirstName = this.selectedExistingPatient.FirstName;
         this.selectedERPatientToEdit.LastName = this.selectedExistingPatient.LastName;
@@ -169,22 +203,57 @@ export class ERPatientListComponent {
         this.selectedERPatientToEdit.ContactNo = this.selectedExistingPatient.PhoneNumber;
         this.selectedERPatientToEdit.CountryId = this.selectedExistingPatient.CountryId;
         this.selectedERPatientToEdit.CountrySubDivisionId = this.selectedExistingPatient.CountrySubDivisionId;
-        this.selectedERPatientToEdit.DateOfBirth = this.selectedExistingPatient.DateOfBirth;        
+        this.selectedERPatientToEdit.DateOfBirth = this.selectedExistingPatient.DateOfBirth;
         this.selectedERPatientToEdit.PatientId = this.selectedExistingPatient.PatientId;
-        this.selectedERPatientToEdit.IsExistingPatient = true;            
+        this.selectedERPatientToEdit.IsExistingPatient = true;
         this.changeDetector.detectChanges();
         this.existingPatientSelected = true;
         this.showERPatRegistration = true;
         this.selectedExistingPatient = null;
     }
 
-    
+
     patientListFormatter(data: any): string {
-      let html = data["ShortName"] + ' [ ' + data['PatientCode'] + ' ]' + ' - ' + data['Age'] + ' - ' + ' ' + data['Gender'] + ' - ' + ' ' + data['PhoneNumber'];
+        let html = data["ShortName"] + ' [ ' + data['PatientCode'] + ' ]' + ' - ' + data['Age'] + ' - ' + ' ' + data['Gender'] + ' - ' + ' ' + data['PhoneNumber'];
         return html;
     }
 
     SearchFromExisting() {
         alert("Search From Existing Patients");
+    }
+
+
+    PatientCasesOnChange($event) {
+        if ($event.mainDetails && $event.mainDetails != 0) {
+            this.caseIdList = [];
+            this.casesList = [];
+            this.caseIdList.push($event.mainDetails);
+            if ($event.nestedDetails && $event.nestedDetails.length >= 1) {
+                $event.nestedDetails.forEach(v => {
+                    this.caseIdList.push(v.Id);
+                    this.casesList.push(v);
+                });
+            }
+        }else {
+            this.caseIdList = [];
+            this.caseIdList.push($event.mainDetails)
+        }
+        this.GetERPatientList();
+    }
+    CallBackForClose(event) {
+        if (event && event.close) {
+          this.allKeys.forEach(k => this.showUploadConsent[k] = false);
+         
+        }
+      }
+
+    CloseUpload() {
+        this.showUploadConsent.upload_files = false;
+        this.allKeys.forEach(k => this.showUploadConsent[k] = false); 
+    }  
+
+    filterNestedDetails(){
+        this.caseIdList.slice(1);
+        this.filteredData = this.ERPatients.filter(a => this.caseIdList.includes(a.PatientCases.SubCase));
     }
 }

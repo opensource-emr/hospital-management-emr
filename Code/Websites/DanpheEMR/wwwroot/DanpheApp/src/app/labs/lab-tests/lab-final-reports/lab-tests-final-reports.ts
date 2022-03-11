@@ -7,6 +7,12 @@ import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { PatientService } from '../../../patients/shared/patient.service';
 import { CoreService } from "../../../core/shared/core.service";
+import { SecurityService } from '../../../security/shared/security.service';
+import html2canvas from 'html2canvas';
+import * as jsPDF from 'jspdf';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { LoginToTelemed } from '../../shared/labMasterData.model';
+import { RouteFromService } from '../../../shared/routefrom.service';
 @Component({
   selector: 'lab-final-reports',
   templateUrl: "./lab-tests-final-reports.html"
@@ -29,11 +35,35 @@ export class LabTestsFinalReports implements AfterViewInit {
 
   public printReportFromGrid: boolean = false;
 
+  public timeId: any = null;
+  public catIdList: Array<number> = new Array<number>();
+  public isInitialLoad: boolean = true;
+  public labGridCols: LabGridColumnSettings = null;
+  public enableResultEdit: boolean = false;
+  public allowOutPatientWithProvisional: boolean = false;
+  public loading: boolean = false;
+  public showReportUpload : boolean = false;
+  public TeleMedicineUploadForm:any =
+    {
+      phoneNumber:"",
+      firstName: "",
+      lastName: "",
+      email: ""
+    }
+    public IsTeleMedicineEnabled : boolean = false;
   constructor(public labBLService: LabsBLService, public coreService: CoreService,
     public msgBoxService: MessageboxService,
-    public patientService: PatientService) {
+    public patientService: PatientService,
+    public securityService: SecurityService,
+    public routeFromService: RouteFromService) {
     this.getParamter();
-    this.gridColumns = LabGridColumnSettings.FinalReportListColumnFilter(this.coreService.GetFinalReportListColumnArray());
+    this.labGridCols = new LabGridColumnSettings(this.securityService);
+
+    this.gridColumns = this.labGridCols.FinalReportListColumnFilter(this.coreService.GetFinalReportListColumnArray());
+    if(!this.IsTeleMedicineEnabled)
+    this.gridColumns = this.gridColumns.filter(a =>a.headerName !== "Is Uploaded");
+    this.enableResultEdit = this.coreService.ShowEditResultButtonInLabFinalReport();
+    this.allowOutPatientWithProvisional = this.coreService.AllowOutpatientWithProvisional();
     // this.GetPendingReportList(this.fromDate,this.toDate);
   }
 
@@ -41,62 +71,41 @@ export class LabTestsFinalReports implements AfterViewInit {
     document.getElementById('quickFilterInput').focus()
   }
 
-  onDateChange($event) {
-    this.fromDate = $event.fromDate;
-    this.toDate = $event.toDate;
-    if (this.fromDate != null && this.toDate != null) {
-      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-        this.GetPendingReportList(this.fromDate, this.toDate, this.searchText);
-      } else {
-        this.msgBoxService.showMessage('failed', ['Please enter valid From date and To date']);
-      }
 
-    }
-  }
+
   getParamter() {
     let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
     var data = JSON.parse(parameterData);
     this.enableServerSideSearch = data["LaboratoryFinalReports"];
+    let TeleMedicineConfig = this.coreService.Parameters.find(p =>p.ParameterGroupName == "TeleMedicine" && p.ParameterName == "DanpheConfigurationForTeleMedicine").ParameterValue;
+    this.IsTeleMedicineEnabled = JSON.parse(JSON.parse(TeleMedicineConfig).IsTeleMedicineEnabled);
   }
-  GetPendingReportList(frmdate, todate, searchtxt = '') {
 
-    this.labBLService.GetLabTestFinalReports(frmdate, todate, searchtxt).subscribe((res: DanpheHTTPResponse) => {
+  GetPendingReportList(frmdate, todate, searchtxt = '', categoryList) {
+    this.reportList = [];
+    this.loading=true;
+    this.labBLService.GetPatientListInLabFinalReports(frmdate, todate, categoryList).subscribe((res: DanpheHTTPResponse) => {
       if (res.Status == 'OK') {
-        const reports = res.Results;
-        reports.forEach(result => {
-          let testNameCSV: string;
-          let templateNameCSV: string;
-          const AllowOutPatientWithProvisional = this.coreService.AllowOutpatientWithProvisional();
-          result['allowOutpatientWithProvisional'] = AllowOutPatientWithProvisional;
-          result.Tests.forEach(test => {
-            if (!testNameCSV) {
-              testNameCSV = test.TestName;
-            } else {
-              testNameCSV = testNameCSV + ',' + test.TestName;
-            }
-
-            //this is removed because it didnt show the same TestName of single patient Twice
-            //testNameCSV += testNameCSV.includes(test.TestName) ? "" : "," + test.TestName;
-
-            if (!templateNameCSV) {
-              templateNameCSV = test.ReportTemplateShortName;
-            } else {
-              templateNameCSV += templateNameCSV.includes(test.ReportTemplateShortName) ? '' : ',' + test.ReportTemplateShortName;
-            }
-          });
-          result.LabTestCSV = testNameCSV;
-          result.TemplateName = templateNameCSV;
+        this.reportList = res.Results;
+        this.reportList.forEach((a)=>{
+          if(a.IsFileUploadedToTeleMedicine == false || a.IsFileUploadedToTeleMedicine == null)
+          a.IsFileUploadedToTeleMedicine = "NO";
+          else
+          a.IsFileUploadedToTeleMedicine = "YES";
         });
-        this.reportList = reports.slice();
+        this.loading=false;
       } else {
-        this.msgBoxService.showMessage('failed', ['Unable to get Pending Report List']);
+        this.msgBoxService.showMessage('failed', ['Unable to get Final Report List']);
         console.log(res.ErrorMessage);
+        this.loading=false;
       }
     }, err => {
       this.msgBoxService.showMessage('failed', [err]);
       console.log(err);
+      this.loading=false;
     });
   }
+
   GridActions($event: GridEmitModel) {
 
     switch ($event.Action) {
@@ -112,7 +121,11 @@ export class LabTestsFinalReports implements AfterViewInit {
           this.showGrid = false;
           this.showAddEditResult = false;
           this.showReport = true;
-
+          this.TeleMedicineUploadForm.firstName = ($event.Data.FirstName);
+          this.TeleMedicineUploadForm.lastName = ($event.Data.LastName);
+          this.TeleMedicineUploadForm.phoneNumber = ($event.Data.PhoneNumber);
+          this.TeleMedicineUploadForm.email = ($event.Data.Email);
+          this.routeFromService.RouteFrom = "finalReport";
         }
         break;
       case "Print":
@@ -137,6 +150,7 @@ export class LabTestsFinalReports implements AfterViewInit {
   }
 
   AssignRequisitionData(data) {
+    this.requisitionIdList = [];
     this.patientService.getGlobal().PatientId = data.PatientId;
     this.patientService.getGlobal().ShortName = data.PatientName;
     this.patientService.getGlobal().PatientCode = data.PatientCode;
@@ -144,31 +158,22 @@ export class LabTestsFinalReports implements AfterViewInit {
     this.patientService.getGlobal().Gender = data.Gender;
     this.patientService.getGlobal().WardName = data.WardName;
 
-    data.Tests.forEach(reqId => {
-      if (this.requisitionIdList && this.requisitionIdList.length) {
-        if (!this.requisitionIdList.includes(reqId.RequisitionId)) {
-          this.requisitionIdList.push(reqId.RequisitionId);
-        }
-      }
-      else {
-        this.requisitionIdList.push(reqId.RequisitionId);
-      }
-    });
+    this.requisitionIdList = data.LabRequisitionIdCSV.split(",").map(Number);
   }
 
   serverSearchTxt(searchTxt) {
     this.searchText = searchTxt;
-    this.GetPendingReportList(this.fromDate, this.toDate, this.searchText);
+    this.GetPendingReportList(this.fromDate, this.toDate, this.searchText, this.catIdList);
   }
 
   BackToGrid() {
     this.showGrid = true;
     //reset patient on header;
     this.patientService.CreateNewGlobal();
-    this.reportList = [];
-    this.requisitionIdList = [];
+    // this.reportList = [];
+    // this.requisitionIdList = [];
 
-    this.GetPendingReportList(null, null);
+    //this.GetPendingReportList(this.fromDate, this.toDate, '', this.catIdList);
   }
 
   public CallBackBackToGrid($event) {
@@ -176,5 +181,64 @@ export class LabTestsFinalReports implements AfterViewInit {
       this.printReportFromGrid = false;
       this.BackToGrid();
     }
+  }
+
+  public UpdateUploadStatus($event){
+    this.reportList.forEach((a)=>{
+      if(a.LabRequisitionIdCSV.includes($event.requisition[0]))
+      a.IsFileUploadedToTeleMedicine = "YES";
+    });
+  }
+
+  public GetTestListFilterByCategories() {
+    if ((this.fromDate != null) && (this.toDate != null) && (this.catIdList.length > 0)) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.GetPendingReportList(this.fromDate, this.toDate, this.searchText, this.catIdList);
+      } else {
+        this.msgBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+      }
+    }
+  }
+
+  public LabCategoryOnChange($event) {
+    //Reload the  Pending report list only if Category is Changed. 
+    if($event.length != this.catIdList.length){
+      this.isInitialLoad = false;
+      this.catIdList = [];
+      this.reportList = [];
+      if ($event && $event.length) {
+        $event.forEach(v => {
+          this.catIdList.push(v.TestCategoryId);
+        })
+      }
+      if (this.timeId) {
+        window.clearTimeout(this.timeId);
+        this.timeId = null;
+      }
+      this.timeId = window.setTimeout(() => {
+        this.GetTestListFilterByCategories();
+      }, 400);
+    }
+  }
+
+  //sud:6Sept'21--to reload final report data--
+  LoadDataForFinalReport() {
+    if (this.fromDate != null && this.toDate != null && (this.catIdList.length > 0) && !this.isInitialLoad) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.GetPendingReportList(this.fromDate, this.toDate, this.searchText, this.catIdList);
+      } else {
+        this.msgBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+      }
+    }
+  }
+
+  OnFromToDateChange($event) {
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+  }
+
+  Close(){
+    this.showReportUpload = false;
+    this.requisitionIdList = [];
   }
 }

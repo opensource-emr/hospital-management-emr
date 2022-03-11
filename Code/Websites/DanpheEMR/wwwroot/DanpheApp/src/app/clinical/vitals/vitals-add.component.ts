@@ -118,7 +118,7 @@ export class VitalsAddComponent {
       this.CurrentVital = new Vitals();
       this.painData = [];
       this.painData.push({ BodyPart: "", PainScale: null });
-      this.CurrentVital.OxygenDeliveryMethod = 'NULL';
+      this.CurrentVital.OxygenDeliveryMethod = null;
       this.updateButton = false;
     }
 
@@ -314,6 +314,7 @@ export class VitalsAddComponent {
       this.foot = null;
       this.inch = null;
       this.footInchSelected = false;
+      this.closeAddBox();
     }
     else {
       this.msgBoxServ.showMessage("failed", ['Failed. please check log for details.'], res.ErrorMessage);

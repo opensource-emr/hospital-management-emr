@@ -1,0 +1,10 @@
+<base href="/">
+<div class="sub-navtab fixed-subnavtab">
+  <ul class="nav nav-tabs no-border" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+
+</div>
+<router-outlet></router-outlet>

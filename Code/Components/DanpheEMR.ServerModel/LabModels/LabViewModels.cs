@@ -38,9 +38,11 @@ namespace DanpheEMR.ServerModel
         public string LastSampleCode { get; set; }
         public string SpecimenList { get; set; }
         public string ProviderName { get; set; }
-        public int BarCodeNumber { get; set; }
+        public Int64 BarCodeNumber { get; set; }
 
         public bool? HasInsurance { get; set; }//sud:16Jul'19-- to show insurance flag in collect sample and other pages.
+        public int PatientId { get; set; }
+        public string VisitType { get; set; }
 
         //public string SmCode { get; set; }
         //public int SmNumber { get; set; }
@@ -74,6 +76,7 @@ namespace DanpheEMR.ServerModel
             public string ReportTemplateShortName { get; set; }
             public string RunNumberType { get; set; }
             public int? SampleCollectedBy { get; set; }
+            public bool? IsVerified { get; set; }
             public int? VerifiedBy { get; set; }
             public int? ResultAddedBy { get; set; }
             public int? PrintedBy { get; set; }
@@ -81,7 +84,8 @@ namespace DanpheEMR.ServerModel
             public string BillingStatus { get; set; }
             public bool ValidTestToPrint { get; set; }
             public int? LabCategoryId { get; set; }
-            public int? LabReportId { get; set; }
+            public int? LabReportId { get; set; }   
+            public string CovidFileUrl { get; set; }
         }
 
         public string PatientName { get; set; }
@@ -103,18 +107,29 @@ namespace DanpheEMR.ServerModel
         public bool IsPrinted { get; set; }
         public int? ReportId { get; set; }
         public string BillingStatus { get; set; }
-        public int? BarCodeNumber { get; set; }
+        public Int64? BarCodeNumber { get; set; }
         public string WardName { get; set; }
         public string ReportGeneratedBy { get; set; }
+        public string testNameCSV { get; set; }
+        public bool allowOutpatientWithProvisional { get; set; }
+        public string ReportTemplateCSV { get; set; }
 
         public List<LabTestDetail> Tests { get; set; }
 
 
         //this variable is used when the final report list data is rendered from mastersearch tab
         public bool IsValidToPrint { get; set; }
+        public bool HasInsurance { get; set; }
+        public DateTime? SampleCollectedOn { get; set; }
+        public DateTime? ResultAddedOn { get; set; }
         //ashim: 01Sep2018 : since we're grouping by sample code, TemplateId and TemplateName is now moved to test level. i.e LabTestDetail
         //public List<Int64> RequisitionIdList { get; set; }
     }
+
+
+
+
+
 
     /// <summary>
     /// added: sud-22Jun'18
@@ -143,13 +158,18 @@ namespace DanpheEMR.ServerModel
         public int? CreatedBy { get; set; }
         public DateTime? ReportCreatedOn { get; set; }
         public int? ReportCreatedBy { get; set; }
-        public int? BarCodeNumber { get; set; }
+        public Int64? BarCodeNumber { get; set; }
         public DateTime? PrintedOn { get; set; }
         public int? PrintedBy { get; set; }
         public int? PrintCount { get; set; }
         public string PrintedByName { get; set; }
+        public bool HasInsurance { get; set; }
         //make it array of tests or results whatever needed
         public List<LabReportTemplateVM> Templates { get; set; }
+        public string CovidFileUrl { get; set; }
+
+        public string Email { get; set; }
+        public bool? IsFileUploadedToTeleMedicine { get; set; }
     }
     public class ReportLookup
     {
@@ -160,15 +180,20 @@ namespace DanpheEMR.ServerModel
         public DateTime? DOB { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
+        public string MunicipalityName { get; set; }
+        public string CountrySubDivisionName { get; set; }
         public int? ReferredById { get; set; }
         public string ReferredBy { get; set; }
         public DateTime? ReceivingDate { get; set; }
         public DateTime? ReportingDate { get; set; }
         public DateTime? SampleDate { get; set; }
         public int? SampleCode { get; set; }
+        public DateTime? VerifiedOn { get; set; }
         public string SampleCodeFormatted { get; set; }
         public string VisitType { get; set; }
         public string RunNumberType { get; set; }
+        public string Specimen { get; set; }
+        public string LabTypeName{ get; set; }
     }
     public class LabReportTemplateVM
     {
@@ -183,6 +208,43 @@ namespace DanpheEMR.ServerModel
         public int? DisplaySequence { get; set; }
     }
 
+
+    public class SPFlatReportVM
+    {
+        public string PatientName { get; set; }
+        public string PatientCode { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string Gender { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public int? SampleCode { get; set; } // used to show the sample code on the pending labresults
+        public DateTime? SampleDate { get; set; }
+        public string VisitType { get; set; }
+        public string SampleCodeFormatted { get; set; }
+        public int PatientId { get; set; }
+        public string RunNumType { get; set; }
+        public bool IsPrinted { get; set; }
+        public int? ReportId { get; set; }
+        public string BillingStatus { get; set; }
+        public int? BarCodeNumber { get; set; }
+        public string WardName { get; set; }
+        public string ReportGeneratedBy { get; set; }
+        public Int64 RequisitionId { get; set; }
+        public string LabTestName { get; set; }
+        public Int64 LabTestId { get; set; }
+        public string RunNumberType { get; set; }
+        public int? SampleCollectedBy { get; set; }
+        public int? VerifiedBy { get; set; }
+        public int? ResultAddedBy { get; set; }
+        public int? PrintedBy { get; set; }
+        public int? PrintCount { get; set; }
+        public int? LabCategoryId { get; set; }
+        public int? LabReportId { get; set; }
+        public int ReportGeneratedById { get; set; }
+        public bool? HasInsurance { get; set; }
+        public bool AllowOutpatientWithProvisional { get; set; }
+
+    }
 
     //start: sud: 12Sept'18 -- for Lab-Result and Reports formatting
     public class LabResult_Denormalized_VM
@@ -203,6 +265,8 @@ namespace DanpheEMR.ServerModel
         public int? SampleCode { get; set; }
         public string SampleCodeFormatted { get; set; }
         public string RunNumberType { get; set; }
+        public string CountrySubDivisionName { get; set; }
+        public string MunicipalityName { get; set; }
 
         //Lab Report
         public int? LabReportId { get; set; }
@@ -250,6 +314,8 @@ namespace DanpheEMR.ServerModel
         public string ReportingName { get; set; }
         public string Interpretation { get; set; }
         public int? VerifiedBy { get; set; }
+        public DateTime? VerifiedOn { get; set; }
+        public string CovidFileUrl { get; set; }
 
         //Test Component Result
         public Int64? TestComponentResultId { get; set; }
@@ -281,9 +347,12 @@ namespace DanpheEMR.ServerModel
 
         public string VisitType { get; set; }
 
-        public bool? HasInsurance { get; set; }
+        public bool HasInsurance { get; set; }
         public string AbnormalType { get; set; }
+        public string LabTypeName { get; set; }
 
+        public string Email { get; set; }
+        public bool? IsFileUploadedToTeleMedicine { get; set; }
     }
 
     public class LabTest_Temp_VM
@@ -311,10 +380,49 @@ namespace DanpheEMR.ServerModel
         public bool? HasInsurance { get; set; }
         public string BillingStatus{ get; set; }
         public int? VerifiedBy { get; set; }
+        public DateTime? VerifiedOn { get; set; }
         public int ResultingVendorId { get; set; }
         public int? MaxResultGroup { get; set; }
     }
 
     //end: sud: 12Sept'18 -- for Lab-Result and Reports formatting
+
+    //Anjana: models required for autogeneration of Lab Run number
+    public class UpdatedSampleCodeReturnData
+    {
+        public string FormattedSampleCode { get; set; }
+        public Int64? BarCodeNumber { get; set; }
+        public DateTime? SampleCollectedOnDateTime { get; set; }
+    }
+    public class LatestLabSampleCodeDetailVM
+    {
+        public string SampleCode { get; set; }
+        public int? SampleNumber { get; set; }
+        public Int64 BarCodeNumber { get; set; }
+        public string SampleLetter { get; set; }
+        public object ExistingBarCodeNumbersOfPatient { get; set; }
+
+    }
+
+    public class LabStickerParam
+    {
+        public string Name { get; set; }
+        public string FolderPath { get; set; }
+    }
+
+
+    public class SPLatestSampleCode
+    {
+        public int LatestSampleCode { get; set; }
+    }
+
+    public class SPExistingSampleCodeDetail
+    {
+        public int SampleNumber { get; set; }
+        public Int64 BarCodeNumber { get; set; }
+        public DateTime SampleDate { get; set; }
+        public string SampleCodeFormatted { get; set; }
+        public bool IsSelected { get; set; }
+    }
 
 }

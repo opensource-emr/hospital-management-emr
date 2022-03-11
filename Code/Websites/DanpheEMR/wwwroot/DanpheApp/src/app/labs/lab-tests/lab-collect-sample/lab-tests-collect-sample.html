@@ -1,7 +1,9 @@
 <div class="wrapper">
-  <div class="cpt-top-row lb-caption"> 
-    <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> --> 
-    <span class="caption-subject">Collect Sample</span> <span class="animate-message">Please verify the RUN Number and Tests Carefully before Collecting Sample</span> </div>
+  <div class="cpt-top-row lb-caption">
+    <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+    <span class="caption-subject">Collect Sample</span> <span class="animate-message">Please verify the RUN Number and
+      Tests Carefully before Collecting Sample</span>
+  </div>
   <div class="row">
     <div class="col-lg-12 col-sm-12">
       <div class="table-responsive">
@@ -10,25 +12,34 @@
             <tr>
               <td [attr.colspan]="showInsuranceFlag ? 4:3">Ward: <b>{{patientService.globalPatient.WardName}}</b></td>
               <td colspan="3" class="text-right">Phone Number: <b>{{patientService.globalPatient.PhoneNumber}}</b></td>
-              
+
               <!--<td  *ngIf="showInsuranceFlag" colspan="4">Phone Number: <b>{{patientService.globalPatient.PhoneNumber}}</b></td>
-            <td  *ngIf="showInsuranceFlag" colspan="3">Phone Number: <b>{{patientService.globalPatient.PhoneNumber}}</b></td>--> 
+            <td  *ngIf="showInsuranceFlag" colspan="3">Phone Number: <b>{{patientService.globalPatient.PhoneNumber}}</b></td>-->
             </tr>
           </thead>
           <thead class="sample-main-head">
             <tr>
-              <th>Requested On</th>
+              <th>Requested On <b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b>
+                <div class="tooltip ng-star-inserted" style="color: #0069FF;z-index: inherit;">
+                  <span style="display: inline-block;background: #D8DEF1;cursor: pointer;">
+                    <i class="fa fa-refresh" (click)="ChangeDateFormat()"></i>
+                  </span>
+                  <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
+                </div>
+              </th>
               <th>Requested by</th>
               <!--below th is for insurance flag-->
               <th *ngIf="showInsuranceFlag"></th>
-              <th> <div class="form-horizontal">
+              <th>
+                <div class="form-horizontal">
                   <div class="checkbox maintain-min-ht">
                     <label class="mt-checkbox mt-checkbox-outline">
-                      <input type="checkbox" name="selectAllTest" [(ngModel)]="isAllTestSelected" (ngModelChange)="AlterSelectAllTest()">
+                      <input type="checkbox" name="selectAllTest" [(ngModel)]="isAllTestSelected"
+                        (ngModelChange)="AlterSelectAllTest()">
                       <span></span><strong>Select Test</strong> </label>
                     <!-- <label>
                     <input type="checkbox" name="selectAllTest" [(ngModel)]="isAllTestSelected" (ngModelChange)="AlterSelectAllTest()"><strong>Select Test</strong>
-                  </label> --> 
+                  </label> -->
                   </div>
                 </div>
               </th>
@@ -39,68 +50,78 @@
           </thead>
           <tbody>
             <tr class="align-vertical-middle" *ngFor="let requ of patientTestCSVs;let i = index">
-              <td>{{requ.OrderDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td *ngIf="!IsLocalDate">{{requ.OrderDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td *ngIf="IsLocalDate">{{requ.OrderDateTime | nepaliDate:'format':'YYYY-MM-DD hh:mm A'}}</td>
               <td>{{requ.ProviderName}}</td>
               <!--below td is for insurance flag-->
-              <td *ngIf="showInsuranceFlag"><span class="bold green" title="Government Insurance"> {{ requ && requ.HasInsurance ? '(INS)':''  }} </span></td>
-              <td><div class="form-horizontal">
+              <td *ngIf="showInsuranceFlag"><span class="bold green" title="Government Insurance"> {{ requ &&
+                  requ.HasInsurance ? '(INS)':'' }} </span></td>
+              <td>
+                <div class="form-horizontal">
                   <div class="checkbox">
                     <label class="mt-checkbox mt-checkbox-outline cstm-ellipsis" title="{{requ.TestName}}">
-                      <input type="checkbox" name="requ.RequisitionId" [(ngModel)]="requ.IsSelected" (ngModelChange)="CheckIfAllSelected()">
+                      <input type="checkbox" name="requ.RequisitionId" [(ngModel)]="requ.IsSelected"
+                        (ngModelChange)="CheckIfAllSelected()">
                       <span></span>{{requ.TestName}} </label>
                     <!-- <label class="cstm-ellipsis" title="{{requ.TestName}}">
                     <input type="checkbox" name="requ.RequisitionId" [(ngModel)]="requ.IsSelected" (ngModelChange)="CheckIfAllSelected()"> {{requ.TestName}}
-                  </label> --> 
+                  </label> -->
                   </div>
-                </div></td>
-              <td><div class="select">
+                </div>
+              </td>
+              <td>
+                <div class="select">
                   <select id="specimen" class="form-control" [(ngModel)]="requ.Specimen" [disabled]="!requ.IsSelected">
                     <option *ngFor="let spec of requ.SpecimenList" value="{{spec}}">{{spec}}</option>
                   </select>
-                </div></td>
+                </div>
+              </td>
               <td> {{requ.RunNumberType}} </td>
-              <td><a (click)="changeTest(i)"> <i class="fa fa-pencil"></i> Change Test </a></td>
+              <td><a *ngIf="showTestChangeParam" (click)="changeTest(i)"> <i class="fa fa-pencil"></i> Change Test </a>
+                <a class="margin-7-hr" *ngIf="showTransfer" (click)="transferToLab(i)"><i
+                    class="fa fa-exchange"></i>Transfer </a>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div *ngIf="!LastSampleCodeOfPat || !LastSampleCodeOfPat.BarCodeNumber || !LastSampleCodeOfPat.IsSelected " class="col-lg-12 col-sm-12">
+    <div
+      *ngIf="(!isRunNumberAutoGenerate) && (!LastSampleCodeOfPat || !LastSampleCodeOfPat.BarCodeNumber || !LastSampleCodeOfPat.IsSelected) "
+      class="col-lg-12 col-sm-12">
       <div class="row">
         <div class="col-md-4">
-          <p class="bg-info margin-0-vr padding-15-vr text-capitalize padding-5-lft"><strong>{{visitType}} ({{RunNumberType}}) Run Number: </strong></p>
+          <p class="bg-info margin-0-vr padding-15-vr text-capitalize padding-5-lft"><strong>{{visitType}}
+              ({{RunNumberType}}) Run Number: </strong></p>
         </div>
         <div class="col-md-4">
           <div class="form-inline form-inline-center">
             <div *ngIf="LatestSampleCode.SampleLetter" class="form-group">
-              <input [(ngModel)]="LatestSampleCode.SampleLetter"
-                   disabled
-                   min="0"
-                   class="form-control sampleletter"
-                   name="Sample Code"
-                   type="text">
+              <input [(ngModel)]="LatestSampleCode.SampleLetter" disabled min="0" class="form-control sampleletter"
+                name="Sample Code" type="text">
             </div>
             <div class="form-group">
-              <input [(ngModel)]="LatestSampleCode.SampleNumber"
-                   min="1"
-                   class="form-control cstm-code-input smpl-num"
-                   name="Sample number"
-                   type="number">
+              <input [(ngModel)]="LatestSampleCode.SampleNumber" [disabled]="!allowRunNoChange" min="1"
+                class="form-control cstm-code-input smpl-num" name="Sample number" type="number">
             </div>
             <div class="form-group"> <span> &nbsp;/&nbsp; </span> </div>
             <div class="form-group">
-              <input [(ngModel)]="LatestSampleCode.SampleCode"
-                   disabled
-                   min="0"
-                   class="form-control cstm-code-input "
-                   name="Sample Code"
-                   type="text">
+              <input [(ngModel)]="LatestSampleCode.SampleCode" disabled min="0" class="form-control cstm-code-input "
+                name="Sample Code" type="text">
+            </div>
+            <div class="tooltip ng-star-inserted"
+              style="color: #0069FF;z-index: inherit;display: flex;align-items: center;">
+              <span style="display: inline-block;background: transparent;cursor: pointer;">
+                <i class="fa fa-refresh" (click)="ChangeRunNumber()"></i>
+              </span>
+              <p class="tooltiptext ttptextdown no-print">Get Latest Run Number</p>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <p class="bg-info margin-0-vr padding-15-all"> <a (click)="ConfirmChangeSampleCreatedOn()"> <i class="fa fa-edit edit-ic"></i> Change Sample Collection Date </a> 
-            <!--<p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to Change Sample Collection Date.</p>--> 
+        <div class="col-md-4" *ngIf="showSampleDateChange">
+          <p class="bg-info margin-0-vr padding-15-all"> <a (click)="ConfirmChangeSampleCreatedOn()"> <i
+                class="fa fa-edit edit-ic"></i> Change Sample Collection Date </a>
+            <!--<p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to Change Sample Collection Date.</p>-->
           </p>
         </div>
       </div>
@@ -108,28 +129,37 @@
     <div class="col-lg-12 col-sm-12">
       <div class="row">
         <div class="col-md-4">
-          <button [disabled]="loading || !LatestSampleCode.SampleNumber" (click)="loading=true;CheckIfSampleCodeExist();" class="btn primary-btn mt15"> <i class="fa fa-align-right"></i>Collect Sample </button>
+          <button *ngIf="!isRunNumberAutoGenerate" [disabled]="loading || !LatestSampleCode.SampleNumber"
+            (click)="loading=true;CheckIfSampleCodeExist();" class="btn green btn-success mt15"> <i
+              class="fa fa-align-right"></i>Collect Sample </button>
+          <button *ngIf="isRunNumberAutoGenerate" [disabled]="loading" (click)="loading=true;AutoGenerateRunNumber();"
+            class="btn green btn-success mt15"> <i class="fa fa-align-right"></i>Collect Sample </button>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="checkbox margin-15-tp" *ngIf="LastSampleCodeOfPat && LastSampleCodeOfPat.BarCodeNumber">
             <label for="includeLatSample">
-              <input type="checkbox" id="includeLatSample" name="includelastsample"  [(ngModel)]="LastSampleCodeOfPat.IsSelected"/>
-              Use Last Barcode No. (
-              <ng-container><b>{{LastSampleCodeOfPat.BarCodeNumber}}</b></ng-container>
-              ) </label>
+              <input type="checkbox" id="includeLatSample" name="includelastsample"
+                [(ngModel)]="LastSampleCodeOfPat.IsSelected" />
+              Use Earlier Sample ?[
+              <ng-container>RunNumber:&nbsp;
+                {{LastSampleCodeOfPat.SampleCodeFormatted}},&nbsp;BarCodeNumber:&nbsp;{{LastSampleCodeOfPat.BarCodeNumber}}
+              </ng-container>
+              ]
+            </label>
           </div>
         </div>
-        <div class="col-md-5"></div>
+        <div class="col-md-4"></div>
       </div>
     </div>
   </div>
-  
+
   <!--@*Lab Test Change Box*@-->
-  <lab-test-change *ngIf="showChangeTest" [requisitionId]="reqId" [showChangeTest]="showChangeTest" [selectedLabTest]="labTestToChange" (callBack)="GetChangedLabtest($event)"> </lab-test-change>
-  
+  <lab-test-change *ngIf="showChangeTest" [requisitionId]="reqId" [showChangeTest]="showChangeTest"
+    [selectedLabTest]="labTestToChange" (callBack)="GetChangedLabtest($event)"> </lab-test-change>
+
   <!--@* Confirmation box added --yub 1st Sept 2018 *@-->
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
-    <div class="portlet-body form"> 
+    <div class="portlet-body form">
       <!--Model Box Body Start-->
       <div class="col-md-6 col-md-offset-3">
         <div class="modelbox-div">
@@ -139,9 +169,15 @@
           <div class="modelbox-body">
             <div *ngIf="patientId != sampleCodeExistingDetail.PatientId">
               <div>
-                <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}} / {{LatestSampleCode.SampleCode}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
-                <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">Run Number <b>{{LatestSampleCode.SampleCode}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
-                <p> Please select another run number.</p>
+                <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">Run Number
+                  <b>{{LatestSampleCode.SampleNumber}} / {{LatestSampleCode.SampleCode}}</b> is already used for patient
+                  <b>{{sampleCodeExistingDetail.PatientName}}</b>
+                </p>
+                <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">Run Number
+                  <b>{{LatestSampleCode.SampleCode}}</b> is already used for patient
+                  <b>{{sampleCodeExistingDetail.PatientName}}</b>
+                </p>
+                <p> Please change the run number.</p>
               </div>
               <div class="modelbox-footer">
                 <div class="all-buttons text-right">
@@ -151,14 +187,19 @@
             </div>
             <div *ngIf="patientId == sampleCodeExistingDetail.PatientId">
               <div>
-                <p *ngIf="visitType=='outpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}} / {{LatestSampleCode.SampleCode}}</b> is already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
-                <p *ngIf="visitType=='inpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}}</b> is already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
+                <p *ngIf="visitType=='outpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}} /
+                    {{LatestSampleCode.SampleCode}}</b> is already used for another test for the same
+                  patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
+                <p *ngIf="visitType=='inpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}}</b> is already used
+                  for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
                 <p>Do you want to continue with the same run number?</p>
               </div>
               <div class="modelbox-footer">
                 <div class="all-buttons text-right">
-                  <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;AddSampleCode()">Continue</button>
-                  <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false">Cancel</button>
+                  <button type="button" class="btn btn-primary btn-sm margin-7-hr"
+                    (click)="loading=true;AddSampleCode()">Continue</button>
+                  <button type="button" class="btn btn-cancel btn-sm margin-7-hr"
+                    (click)="showConfirmationBox=false">Cancel</button>
                 </div>
               </div>
             </div>
@@ -166,24 +207,24 @@
           <div class="close-modelbox">
             <button class="btn btn-danger" (click)="showConfirmationBox=false">X</button>
           </div>
-          
+
           <!--<div class="sample-model-holder text-center">
         <div class="row">
-          <h4 class="text-center text-danger"><strong></strong></h4>--> 
+          <h4 class="text-center text-danger"><strong></strong></h4>-->
           <!--<table border="0" align="center">
           <tr>
             <td><img src="~/themes/theme-default/images/alert.png" height="30" width="30" />&nbsp;&nbsp;&nbsp;</td>
             <td></td>
           </tr>
-        </table>--> 
+        </table>-->
           <!--</div>
-        </div>--> 
+        </div>-->
         </div>
       </div>
     </div>
   </div>
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showModalBox">
-    <div class="portlet-body form"> 
+    <div class="portlet-body form">
       <!--Model Box Body Start-->
       <div class="col-md-8 col-md-offset-2">
         <div class="modelbox-div">
@@ -191,7 +232,7 @@
             <h4 class="margin-0-vr"><strong>Sample Code generated successfully</strong></h4>
           </div>
           <div class="modelbox-body">
-            <div class="row"> 
+            <div class="row">
               <!--<div class="col-md-8">
               <div class="scroll-vertical table-responsive alltest-table">
                 <table class="table table-striped table-hover">
@@ -215,14 +256,17 @@
               </div>
             </div>-->
               <div class="col-md-12">
-                <lab-sticker *ngIf="showlabsticker" (callback-Add)="CloseAfterPrint($event)" [showlabsticker]="showlabsticker"
-                        [isFromLabRequisition]="fromLabRequisition"   [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionlist"> </lab-sticker>
+                <lab-sticker *ngIf="showlabsticker" (callback-Add)="CloseAfterPrint($event)"
+                  [showlabsticker]="showlabsticker" [isFromLabRequisition]="fromLabRequisition"
+                  [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionlist"> </lab-sticker>
               </div>
             </div>
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button *ngIf="showPrintEmptySheet" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="PrintEmptySheet()"> Print Empty Sheet </button>
+              <button *ngIf="showPrintEmptySheet" type="button" class="btn green btn-success btn-sm margin-7-hr"
+                rbac-permission='{"name":"btn-collect-sample-empty-print","actionOnInvalid":"remove"}'
+                (click)="PrintEmptySheet()"> Print Empty Sheet </button>
               <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseModalBox()"> Close </button>
             </div>
           </div>
@@ -231,7 +275,7 @@
           </div>
         </div>
       </div>
-      <!--Model Box Body End--> 
+      <!--Model Box Body End-->
     </div>
   </div>
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showChangeSampleCreatedOn">
@@ -243,13 +287,16 @@
           </div>
           <div class="modelbox-body">
             <div class="datepicker-holder">
-              <danphe-date-picker [(ngModel)]="sampleCreatedOn" ngDefaultControl [CalendarTypes]="'np'"> </danphe-date-picker>
+              <danphe-date-picker [(ngModel)]="sampleCreatedOn" ngDefaultControl [CalendarTypes]="'np'">
+              </danphe-date-picker>
             </div>
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="CheckSampleCollectionDate()"> Change </button>
-              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CancelDateChange()"> Cancel </button>
+              <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="CheckSampleCollectionDate()">
+                Change </button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CancelDateChange()"> Cancel
+              </button>
             </div>
           </div>
           <div class="close-modelbox">
@@ -267,7 +314,8 @@
             <h4 class="margin-0-vr"><strong>Print Empty Sheet</strong></h4>
           </div>
           <div class="modelbox-body">
-            <empty-add-report (closeEmptyReport)="CloseEmptyReportSheetPopUp($event)" [allReqIdListForPrint]="allReqIdListForPrint"></empty-add-report>
+            <empty-add-report (closeEmptyReport)="CloseEmptyReportSheetPopUp($event)"
+              [allReqIdListForPrint]="allReqIdListForPrint"></empty-add-report>
           </div>
           <div class="close-modelbox">
             <button class="btn btn-danger" (click)="CloseEmptySheet()">X</button>

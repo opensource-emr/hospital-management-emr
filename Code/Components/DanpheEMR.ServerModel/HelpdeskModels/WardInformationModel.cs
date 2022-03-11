@@ -10,10 +10,12 @@ namespace DanpheEMR.ServerModel.HelpdeskModels
    public class WardInformationModel
     {
         [Key]
-        public string WardName { get; set; }
-        public int TotalBeds { get; set; }
-        public int Available { get; set; }
-        public int Occupied  { get; set; }
 
+        public int WardId { get; set; }
+        public string WardName { get; set; }
+        public int Total { get; set; }
+        public int Vacant { get; set; }
+        public int Occupied  { get; set; }
+        public int Reserved { get; set; }
     }
 }

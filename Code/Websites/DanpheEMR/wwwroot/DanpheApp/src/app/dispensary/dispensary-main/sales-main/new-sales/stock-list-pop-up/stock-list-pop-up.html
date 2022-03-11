@@ -1,0 +1,13 @@
+<!-- Zero Qty Filter -->
+<div class="input-group" style="float: right; padding-right: 200px;">
+  <div style="display: flex;align-items: flex-end;">
+    <div style="margin-right: 1rem;"><input type="checkbox" (change)="FilterStockList()" [(ngModel)]="showStockWithZeroQty" name="showStockWithZeroQty" id="showStockWithZeroQty" style="zoom: 1.4;" /></div>
+    <label for="showStockWithZeroQty">Show Zero Quantity </label>
+  </div>
+</div>
+<div class="row" *ngIf="showStockList">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="stockDetailsGridColumns" [grid-data]="stockDetailsList" (grid-actions)="StockDetailsGridAction($event)">
+    </danphe-grid>
+  </div>
+</div>

@@ -12,7 +12,7 @@ export class Allergy {
     public AllergenAdvRecId: number = null;
     public AllergenAdvRecName: string = null;
     //public Others: string = null;
-    public AllergyType: string = "Allergy";
+    public AllergyType: string = null;
     public Severity: string = null;
     public Verified: boolean = false;
     public Reaction: string = null;

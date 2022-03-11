@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { RouterOutlet, RouterModule } from '@angular/router'
+import { RouterOutlet, RouterModule, Router } from '@angular/router'
 //Security Service for Loading Child Route from Security Service
 import { SecurityService } from "../security/shared/security.service"
 import { QrService } from '../shared/qr-code/qr-service';
@@ -7,6 +7,7 @@ import { BillingBLService } from './shared/billing.bl.service';
 import { DanpheHTTPResponse } from '../shared/common-models';
 import { BillingService } from './shared/billing.service';
 import { CoreService } from '../core/shared/core.service';
+import { CallbackService } from '../shared/callback.service';
 
 
 
@@ -20,6 +21,7 @@ import { CoreService } from '../core/shared/core.service';
 export class BillingMainComponent {
 
   public showdenomination: boolean = false;
+  public currentCounter: number = null;
 
   validRoutes: any;
 
@@ -27,7 +29,8 @@ export class BillingMainComponent {
   public secondaryNavItems: Array<any> = null;
 
   constructor(public securityService: SecurityService, public qrService: QrService,
-    public billingBlService: BillingBLService, public billingService: BillingService, public coreService: CoreService) {
+    public billingBlService: BillingBLService, public billingService: BillingService, public coreService: CoreService,
+    public callbackService: CallbackService,public router: Router) {
     //get the chld routes of billing from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Billing");
     this.primaryNavItems = this.validRoutes.filter(a => a.IsSecondaryNavInDropdown == null || a.IsSecondaryNavInDropdown == 0);
@@ -37,6 +40,11 @@ export class BillingMainComponent {
     this.LoadAllDoctorsList();//sud:30Apr'20--for reusability.
     this.LoadAllEmployeeList();//sud:30Apr'20--for reusability.-- note that doctors list and employeelist can be different..
     this.GetOrganizationList(); //sud: 07May '20--for reusability    
+    this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
+    if(this.currentCounter <1){
+      //this.callbackService.CallbackRoute = '/Billing/SearchPatient'
+      this.router.navigate(['/Billing/CounterActivate']);
+    }
   }
 
 

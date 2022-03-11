@@ -42,6 +42,12 @@ import { DesignationService } from "./fraction/shared/Designation.service";
 import { LoaderComponent } from "./shared/danphe-loader-intercepter/danphe-loader";
 import { DanpheLoadingInterceptor } from "./shared/danphe-loader-intercepter/danphe-loading.services";
 import { EmployeeService } from "./employee/shared/employee.service";
+import { ActivateInventoryGuardService } from "./shared/activate-inventory/activate-inventory-guard.service";
+import { ActivateInventoryEndpoint } from "./shared/activate-inventory/activate-inventory.endpoint";
+import { ActivateInventoryService } from "./shared/activate-inventory/activate-inventory.service";
+import { ActivateInventoryComponent } from "./shared/activate-inventory/activate-inventory.component";
+import { DispensaryService } from "./dispensary/shared/dispensary.service";
+import { DispensaryEndpoint } from "./dispensary/shared/dispensary.endpoint";
 
 @NgModule({
   providers: [
@@ -63,6 +69,11 @@ import { EmployeeService } from "./employee/shared/employee.service";
     BillingService, //added for Quick-Appointment. //review it and correct it later: sudarshan.
     UnicodeService,
     EmployeeService,
+    ActivateInventoryGuardService,
+    ActivateInventoryService,
+    ActivateInventoryEndpoint,
+    DispensaryService,
+    DispensaryEndpoint
   ],
   imports: [
     BrowserModule,
@@ -82,8 +93,10 @@ import { EmployeeService } from "./employee/shared/employee.service";
     MessageBoxComponent,
     DashboardHomeComponent,
     UnAuthorizedAccessComponent,
-    LoaderComponent
+    LoaderComponent,
+    ActivateInventoryComponent,
+
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

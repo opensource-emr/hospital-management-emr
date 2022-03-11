@@ -7,8 +7,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import * as moment from 'moment/moment';
 @Component({
     selector: "employee-role-add",
-    templateUrl: "./employee-role-add.html"
-
+    templateUrl: "./employee-role-add.html",
+    host: { '(window:keyup)': 'hotkeys($event)' }
 })
 export class EmployeeRoleAddComponent {
 
@@ -20,6 +20,7 @@ export class EmployeeRoleAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading : boolean = false;
 
     constructor(
         public settingsBLService: SettingsBLService,
@@ -43,45 +44,62 @@ export class EmployeeRoleAddComponent {
             this.CurrentEmployeeRole.CreatedOn = moment().format('YYYY-MM-DD HH:mm');
             this.update = false;
         }
+        this.FocusElementById('Role');
     }
     
     Add() {
-        for (var i in this.CurrentEmployeeRole.EmployeeRoleValidator.controls) {
-            this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].markAsDirty();
-            this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].updateValueAndValidity();
-        }
-        if (this.CurrentEmployeeRole.IsValidCheck(undefined, undefined)) {
-            this.settingsBLService.AddEmployeeRole(this.CurrentEmployeeRole)
-                .subscribe(
-                res => {
-                    this.showMessageBox("Success", "Employee Role Added.");
-                    this.CallBackAddUpdate(res)
-                    this.CurrentEmployeeRole = new EmployeeRole();
-                },
-                err => {
-                    this.logError(err);
-
-                });
+        if(this.loading){
+            for (var i in this.CurrentEmployeeRole.EmployeeRoleValidator.controls) {
+                this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].markAsDirty();
+                this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].updateValueAndValidity();
+            }
+            if (this.CurrentEmployeeRole.IsValidCheck(undefined, undefined)) {
+                this.settingsBLService.AddEmployeeRole(this.CurrentEmployeeRole)
+                    .subscribe(
+                    res => {
+                        this.showMessageBox("Success", "Employee Role Added.");
+                        this.CallBackAddUpdate(res)
+                        this.CurrentEmployeeRole = new EmployeeRole();
+                    },
+                    err => {
+                        this.logError(err);
+    
+                    },
+                    ()=>{
+                        this.loading = false;
+                    });
+            }
+            else{
+                this.loading = false;
+            }
         }
     }
 
     Update() {
-        for (var i in this.CurrentEmployeeRole.EmployeeRoleValidator.controls) {
-            this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].markAsDirty();
-            this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].updateValueAndValidity();
-        }
-        if (this.CurrentEmployeeRole.IsValidCheck(undefined, undefined)) {
-            this.settingsBLService.UpdateEmployeeRole(this.CurrentEmployeeRole)
-                .subscribe(
-                res => {
-                    this.showMessageBox("Success", "Employee Role Updated.");
-                    this.CallBackAddUpdate(res)
-                    this.CurrentEmployeeRole = new EmployeeRole();
-                },
-                err => {
-                    this.logError(err);
-
-                });
+        if(this.loading){
+            for (var i in this.CurrentEmployeeRole.EmployeeRoleValidator.controls) {
+                this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].markAsDirty();
+                this.CurrentEmployeeRole.EmployeeRoleValidator.controls[i].updateValueAndValidity();
+            }
+            if (this.CurrentEmployeeRole.IsValidCheck(undefined, undefined)) {
+                this.settingsBLService.UpdateEmployeeRole(this.CurrentEmployeeRole)
+                    .subscribe(
+                    res => {
+                        this.showMessageBox("Success", "Employee Role Updated.");
+                        this.CallBackAddUpdate(res)
+                        this.CurrentEmployeeRole = new EmployeeRole();
+                    },
+                    err => {
+                        this.logError(err);
+    
+                    },
+                    ()=>{
+                        this.loading = false;
+                    });
+            }
+            else{
+                this.loading = false;
+            }
         }
     }
     CallBackAddUpdate(res) {
@@ -103,6 +121,19 @@ export class EmployeeRoleAddComponent {
     }
     showMessageBox(status: string, message: string) {
         this.msgBoxServ.showMessage(status, [message]);
+    }
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
     }
 
 }

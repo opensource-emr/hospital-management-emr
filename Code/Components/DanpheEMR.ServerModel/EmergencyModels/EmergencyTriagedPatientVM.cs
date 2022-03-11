@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,5 +48,8 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public string TriagedByName { get; set; }
         public string ProviderName { get; set; }
         public int? ProviderId { get; set; }
+
+        [NotMapped]
+        public EmergencyPatientCases PatientCases { get; set; }
     }
 }

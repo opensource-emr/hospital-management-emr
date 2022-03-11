@@ -28,26 +28,24 @@ import { CurrentVisitContextVM } from '../../appointments/shared/current-visit-c
 import { BillingPackage } from '../shared/billing-package.model';
 import { CreditOrganization } from '../../settings-new/shared/creditOrganization.model';
 import { MembershipType } from '../../patients/shared/membership-type.model';
-import { ENUM_BillingStatus, ENUM_VisitType, ENUM_PriceCategory, ENUM_ValidatorTypes } from '../../shared/shared-enums';
+import { ENUM_BillingStatus, ENUM_VisitType, ENUM_PriceCategory, ENUM_ValidatorTypes, ENUM_InvoiceType, ENUM_OrderStatus } from '../../shared/shared-enums';
 import { Employee } from '../../employee/shared/employee.model';
 import { ExternalReferralModel } from '../../settings-new/shared/external-referral.model';
 import { SettingsBLService } from '../../settings-new/shared/settings.bl.service';
 import { CommonValidators } from '../../shared/common-validator';
+import { PatientLatestVisitContext } from '../../patients/shared/patient-lastvisit-context';
 
 @Component({
-  templateUrl: "./billing-transaction.html" //"/BillingView/BillingTransaction"
+  templateUrl: "./billing-transaction.html", //"/BillingView/BillingTransaction"
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class BillingTransactionComponent {
 
-  //public onMouseWheel(evt) {
-  //  evt.preventDefault();
-  //}
-
   public model: BillingTransaction = new BillingTransaction();
-  //public this.model.BillingTransactionItems: Array<BillingTransactionItem> = null;  //initialize the array of object to add the row 
+  //public this.model.BillingTransactionItems: Array<BillingTransactionItem> = null;  //initialize the array of object to add the row
   //public currentBilTxnItem: BillingTransactionItem = null;
-  public currencyUnit: string = null;
+  //public currencyUnit: string = null;
   public itemList: Array<any> = [];
   public isItemLoaded: boolean = false;
   public disableTextBox: boolean = false;
@@ -76,16 +74,15 @@ export class BillingTransactionComponent {
   public disablePrevTxnSelection: boolean = false;
   public patientId: number;
   public billingType: string = "";//to separate inpatient billing, outpatient billing, etc..
-
+  public isEHS: boolean = false;
   public showDepositPopUp: boolean = false;
   public showIpBillingWarningBox: boolean = false;
-  public isInitialWarning: boolean = true;
-
   public searchByItemCode: boolean = true;
+  public BillingRequestDisplaySettings: any = null;
 
-  public currBillingContext: PatientBillingContextVM = new PatientBillingContextVM;
-  public currPatVisitContext: CurrentVisitContextVM;
-  public currentVisitType: string = "outpatient";
+  public currBillingContext: PatientBillingContextVM = new PatientBillingContextVM();
+  public currPatVisitContext: CurrentVisitContextVM = new CurrentVisitContextVM();
+  public currentVisitType: string = "";
   public earlierInvoiceItems: Array<BillingTransactionItem>;
   public isProvisionalBilling: boolean = false;
   public isCopyFromInvoice: boolean = false;
@@ -113,7 +110,7 @@ export class BillingTransactionComponent {
 
   public param_allowAdditionalDiscOnProvisional: boolean = false;//sud:12Mar'19
   public showInsBalanceUpdate: boolean = false;
-  public ShowDuplicateItemComfirmation: boolean = false;
+  //public ShowDuplicateItemComfirmation: boolean = false;
   public DuplicateItem: any = { IsDuplicate: false, Item: [] };
   public IsDublicateItem: boolean = false;
 
@@ -132,6 +129,22 @@ export class BillingTransactionComponent {
 
   public Invoice_Label: string = "INVOICE";//sud:19Nov'19--we're getting this value from Parameter since different hospital needed it differently.
   public allPriceCategories: Array<any> = []; // Vikas: 27th Dec 2019
+
+  //public LabType: Array<any> = [{ Name: 'OP-Lab', Value: 'op-lab' }, { Name: 'ER-Lab', Value: 'er-lab' }];
+  public LabTypeName: string = 'op-lab';
+  public bedNo: string = null;
+  public wardName: string = null;
+  public timerId: any = null;
+
+  public showInvoicePrintPage: boolean = false;//sud:16May'21--to print from same page.
+  public hasMultipleLabType: boolean = false;
+
+  //sud:9Sep'21--- renewed implementation to get visit context of a patient.. 
+  public patLastVisitContext: PatientLatestVisitContext = new PatientLatestVisitContext();
+  public ShowItemLevelDiscount: boolean = false;
+  public provReceiptInputs = { PatientId: 0, ProvFiscalYrId: 0, ProvReceiptNo: 0, visitType: null };
+
+
   constructor(
     public patientService: PatientService,
     public billingService: BillingService,
@@ -156,15 +169,24 @@ export class BillingTransactionComponent {
       this.router.navigate(['/Billing/CounterActivate']);
     }
     else {
+      //assign last visitcontext to local variable and use that in the whole page..
+      this.patLastVisitContext = this.billingService.PatLastVisitContext;
+
       this.searchByItemCode = this.coreService.UseItemCodeItemSearch();
+      //this.BillingRequestDisplaySettings = this.coreService.GetBillingRequestDisplaySettings();
+      this.GetBillingRequestDisplaySettings();
 
       this.SetInvoiceLabelNameFromParam();
       this.billingType = this.billingService.BillingType;
+      this.currentVisitType = this.patientService.getGlobal().LatestVisitType;
+      //this.currPatVisitContext.VisitType = this.patientService.getGlobal().LatestVisitType;
+      //this.currPatVisitContext.Current_WardBed = this.patientService.getGlobal().WardName;
+      this.bedNo = this.patientService.getGlobal().BedCode;
+      this.wardName = this.patientService.getGlobal().WardName;
       this.LoadMembershipSettings();
 
       this.Initialize();
       this.LoadParameterForProvisional();//sud:12Mar'19
-
       this.LoadPatientPastBillSummary(this.patientService.getGlobal().PatientId);
       //new way: get servicedepts list from core-service-- sud/17Dec'17'
       this.allServiceDepts = this.coreService.Masters.ServiceDepartments;
@@ -180,28 +202,29 @@ export class BillingTransactionComponent {
 
       this.LoadReferrerSettings();
 
-      this.CreditOrganizationMandatory = this.coreService.LoadCreditOrganizationMandatory();//pratik: 26feb'20 --Credit Organization compulsoryor not while Payment Mode is credit 
+      this.CreditOrganizationMandatory = this.coreService.LoadCreditOrganizationMandatory();//pratik: 26feb'20 --Credit Organization compulsoryor not while Payment Mode is credit
 
       this.BillRequestDoubleEntryWarningTimeHrs = this.coreService.LoadOPBillRequestDoubleEntryWarningTimeHrs();
+
+      if (this.coreService.labTypes.length > 1) {
+        this.hasMultipleLabType = true;
+      } else {
+        this.hasMultipleLabType = false;
+        this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+      }
     }
   }
 
 
   ngOnInit() {
     this.ItemsListFormatter = this.ItemsListFormatter.bind(this);//to use global variable in list formatter auto-complete
-
-    //if (this.CreditOrganizationMandatory) {
-    //  CommonValidators.ComposeValidators(this.model.BillingTransactionValidator, "CreditOrganization", [ENUM_ValidatorTypes.required]);
-    //}
-    //else {
-    //  CommonValidators.ComposeValidators(this.model.BillingTransactionValidator, "CreditOrganization", []);
-    //}
+    this.SetLabTypeNameInLocalStorage();
   }
 
 
 
   //sud: 20Nov'19--need to get label name from parameter.
-  //it'll use: INVOICE if not found. 
+  //it'll use: INVOICE if not found.
   public SetInvoiceLabelNameFromParam() {
     var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "BillingInvoiceDisplayLabel");
     if (currParam && currParam.ParameterValue) {
@@ -224,6 +247,7 @@ export class BillingTransactionComponent {
     this.model = this.billingService.getGlobalBillingTransaction();
 
     //assign current counterid to the model..
+    this.model.LabTypeName = this.LabTypeName;
     this.model.CounterId = this.currentCounter;
     this.model.PatientId = this.patientService.getGlobal().PatientId;
     this.memTypeSchemeId = this.patientService.getGlobal().MembershipTypeId;
@@ -263,14 +287,13 @@ export class BillingTransactionComponent {
 
   //in some cases we don't want to showw item dropdown on new item added. so made it conditional.
   AddNewBillTxnItemRow(index = null, showItemDdlOnLoad: boolean = true) {    //method to add the row
+    console.log("index=", index);
     if (!this.isPackageBilling) {
-      //let srvDptId = this.BillingTransactionItems[index].ServiceDepartmentId;
       let item = this.NewBillingTransactionItem();
-
-
-
-      //item.ItemList = this.itemList;
       item.ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD");//sud:13-Oct'19
+      if (this.LabTypeName == 'er-lab') {
+        item.ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
       this.model.BillingTransactionItems.push(item);
 
       item.AssignedDoctorList = this.doctorsList;
@@ -282,15 +305,22 @@ export class BillingTransactionComponent {
         this.AssignRequestedByDoctor(new_index);
       }
 
-      if (index != null && showItemDdlOnLoad) {
-
-        let new_index = index + 1
-        window.setTimeout(function () {
-          let itmNameBox = document.getElementById('items-box' + new_index);
-          if (itmNameBox) {
-            itmNameBox.focus();
-          }
-        }, 500);
+      if (showItemDdlOnLoad) {
+        let new_index;
+        if (index == null) {
+          new_index = this.model.BillingTransactionItems.length - 1;
+          //we need to set a delay of 500ms for first time since items are not yet loaded that time.
+          // if (this.BillingRequestDisplaySettings.AssignedToDr) {
+          //   this.coreService.FocusInputById('srchbx_Assigned_To_Dr_' + new_index, 500);
+          // } else {
+            this.coreService.FocusInputById('srchbx_ItemName_' + new_index, 500);
+          // }
+        }
+        else {
+          new_index = index + 1
+          this.coreService.FocusInputById('srchbx_ItemName_' + new_index);
+        }
+        //console.log(document.getElementById('srchbx_ItemName_' + new_index));
       }
     }
   }
@@ -355,18 +385,14 @@ export class BillingTransactionComponent {
             this.visitList = res.Results;
             //Default Value for RequestedBy: Assign provider from latest visit
             if (this.model.BillingTransactionItems.length) {
-              //ashim: 24Sep2018 : Do not assign Duty Doctor by default to Requested By Dr.
-              //this.selectedRequestedByDr[0] = this.visitList[0].ProviderName == "Duty Doctor" ? "SELF" : this.visitList[0].ProviderName;
-
-              //sud:26Feb'19-- to use one doctor for RequestedBy Doctor field..
-              // this.currentRequestedByDoctor = this.visitList[0].ProviderName == "Duty Doctor" ? "SELF" : this.visitList[0].ProviderName;
-
 
               this.selectedRefId = this.visitList[0].ProviderName == "Duty Doctor" ? 0 : this.visitList[0].ProviderId;
 
               this.AssignRequestedByDoctor(0);
             }
-            this.GetVisitContext(patientId, this.visitList[0].PatientVisitId);
+            //sud:9Sep'21---Check if below is needed or not..
+            //we may need to refactor this whole page soon.. 
+            this.GetVisitContext(patientId, this.patLastVisitContext.PatientVisitId);
           }
         }
         else {
@@ -433,7 +459,8 @@ export class BillingTransactionComponent {
       if (this.model.BillingTransactionItems && this.model.BillingTransactionItems.length) {
         this.currentVisitType = this.model.BillingTransactionItems[0].VisitType;
         this.currBillingContext = new PatientBillingContextVM();
-        this.currBillingContext.PatientVisitId = this.model.PatientVisitId;
+        //sud:9Sep'21---Check if below is needed or not..
+        this.currBillingContext.PatientVisitId = this.patLastVisitContext.PatientVisitId;
         this.currBillingContext.BillingType = this.billingType;
       }
       for (let i = 0; i < this.model.BillingTransactionItems.length; i++) {
@@ -449,11 +476,6 @@ export class BillingTransactionComponent {
         if (assignedToDr)
           this.selectedAssignedToDr[i] = assignedToDr.FullName;
 
-        //Requested By Doctor was not displayed so this code was added to get the list.-- 22nd August--Yubraj.
-        //let requestedByDr = this.reqDoctorsList.find(d => d.EmployeeId == billItem.RequestedBy);
-        //if (requestedByDr)
-        //    this.selectedRequestedByDr[i] = requestedByDr.FullName;
-
         billItem.RequestedBy = billItem.RequestedBy ? billItem.RequestedBy : 0;
         billItem.VisitType = this.currentVisitType;
         this.selectedItems[i] = billItem.ItemName;
@@ -466,99 +488,23 @@ export class BillingTransactionComponent {
     }
   }
 
-  ////On MembershipType change
-  //OnDiscountSchemeChange() {
-  //  let discSchemeType = null;
-
-  //  if (this.DiscountScheme == "") {
-  //    this.DiscountPercentSchemeValid = false;
-  //    return;
-  //  }
-  //  if (this.DiscountScheme) {
-  //    if (typeof (this.DiscountScheme) == 'string') {
-  //      discSchemeType = this.MembershipTypeList.find(a => a.MembershipTypeName == this.DiscountScheme);
-  //    }
-  //    else if (typeof (this.DiscountScheme) == 'object') {
-  //      discSchemeType = this.DiscountScheme;
-  //    }
-  //    if (discSchemeType) {
-  //      this.DiscountPercentSchemeValid = true;
-  //      this.currMemDiscountPercent = discSchemeType.DiscountPercent;
-
-  //      //sud:29Aug'19-we've to set remarks as that of discount percent
-  //      if (this.currMemDiscountPercent && this.currMemDiscountPercent != 0) {
-  //        this.model.Remarks = discSchemeType.MembershipTypeName;
-  //      }
-  //      else {
-  //        this.model.Remarks = null;
-  //      }
-
-  //    } else {
-  //      this.model.Remarks = null;//sud:29Aug'19-we've to set remarks as that of discount percent
-  //      this.DiscountPercentSchemeValid = false;
-  //      return;
-  //    }
-
-
-  //    let billItem = this.model.BillingTransactionItems;
-
-  //    billItem.forEach(a => {
-  //      a.DiscountPercent = this.currMemDiscountPercent;
-  //    })
-  //    //Check for Null, if ItemName is null give selected discount-schema from dropdown
-  //    if (billItem[0].ItemName == null) {
-  //      billItem[0].DiscountPercent = this.currMemDiscountPercent;
-  //    } else {
-  //      billItem.forEach(a => {
-  //        var ItemDetails = this.itemList.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
-  //        this.discountApplicable = ItemDetails.DiscountApplicable;
-  //        if (!this.discountApplicable) {
-  //          a.DiscountPercent = 0;
-  //        }
-  //        else {
-  //          a.DiscountPercent = this.currMemDiscountPercent;
-  //        }
-  //      });
-  //    }
-  //  }
-  //}
-
-  //public visitList: Array<any> = [];
-  //public DiscountApplicableItems: Array<any> = []  
-  //GetDiscountApplicableItems() {
-  //  let itemlist = this.itemList;
-  //  this.DiscountApplicableItems;
-  //}
-
-
 
   CheckItemProviderValidation(index: number) {
-    //let srvDeptId = this.model.BillingTransactionItems[index].ServiceDepartmentId;
-    //let servDeptName = this.GetServiceDeptNameById(srvDeptId);
-    //if (this.IsDoctorMandatory(servDeptName, this.model.BillingTransactionItems[index].ItemName)) {
-    // checking directly from list of database yubraj-- 8th Oct 2018
-
     let currItm = this.model.BillingTransactionItems[index];
+    if (!this.isEHS) {
 
-    if (this.selectedItems[index] && this.selectedItems[index].IsDoctorMandatory) {
-      currItm.UpdateValidator("on", "ProviderId", "required");
-    }
-    else {
-      currItm.UpdateValidator("off", "ProviderId", null);
+      if (!this.BillingRequestDisplaySettings.AssignedToDr) {
+        currItm.UpdateValidator("off", "ProviderId", null);
+      }
+
     }
 
-    //sud:18Feb'20-- using common pattern for creating/removing validators. 
+    // if(this.isEHS){
+    //   currItm.UpdateValidator("on","ProviderId","required");
+    // }
+
+    //sud:18Feb'20-- using common pattern for creating/removing validators.
     CommonValidators.ComposeValidators(currItm.BillingTransactionItemValidator, "Quantity", [ENUM_ValidatorTypes.required, ENUM_ValidatorTypes.positiveNumber]);
-
-
-    //if (this.selectedItems[index] && this.selectedItems[index].AllowMultipleQty) {
-    //  this.model.BillingTransactionItems[index].ComposeValidators("Quantity", ["required", "positiveNumber"]);
-    //}
-    //else {
-    //  this.model.BillingTransactionItems[index].ComposeValidators("Quantity", ["required", "positiveNumber", "multipleQty"]);
-    //}
-
-
   }
 
   CheckForDuplication(): boolean {
@@ -604,89 +550,150 @@ export class BillingTransactionComponent {
       }
     });
 
-
   }
 
-  CheckAndSubmitBillingTransaction(billingFlow: string = null) {
-
+  PostProvisionalBilling() {
     this.DeleteEmptyRows();
-
-    // at the time of submission, this is not initial warning.
-    this.isInitialWarning = false;
-
-    if (billingFlow == "provisional") {
-      if (this.model.BillingTransactionItems) {
-        this.model.BillingTransactionItems.forEach(txnItm => {
-          txnItm.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
-          txnItm.PaidDate = null;
-          txnItm.Remarks = this.model.Remarks; //narayan: since billing txn is not posted in database, we put remark in billtxnitm. 11-13-19
-        });
-      }
-    }
-    else {
-      this.OnPaymentModeChange();
+    if (this.model.BillingTransactionItems) {
+      this.model.BillingTransactionItems.forEach(txnItm => {
+        txnItm.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
+        txnItm.PaidDate = null;
+        txnItm.Remarks = this.model.Remarks; //narayan: since billing txn is not posted in database, we put remark in billtxnitm. 11-13-19
+      });
     }
 
+    //Checking from parameter, allow/restrict Additional Discount for Provisional bills
+    if ((!this.param_allowAdditionalDiscOnProvisional) && this.model.DiscountPercent && this.model.DiscountPercent > 0) {
+      this.msgBoxServ.showMessage("failed", ["Additional Discount is not applicable for Provisional Bills"]);
+      this.loading = false;
+      return;
+    }
+
+    //this can move to common validation function
     if (this.model.DiscountPercent < 0 || this.model.DiscountPercent > 100) {
       this.msgBoxServ.showMessage("failed", ["Additional Discount Percent is invalid. It must be between 0 and 100."]);
       this.loading = false;
       return;
     }
+
+    this.SetLabTypeName();
+    this.isProvisionalBilling = true;
+    this.CheckAndSubmitBillingTransaction();//find a way to avoid confusions..
+
+  }
+
+
+  PostInvoice() {
+    this.DeleteEmptyRows();
+    this.OnPaymentModeChange();
+    this.isProvisionalBilling = false;
+
     //check tender amount is >= total amount not application if payment mode is credit
-    if (!this.deductDeposit && this.model.Tender < this.model.TotalAmount && this.model.PaymentMode != "credit" && billingFlow != "provisional") {
+    if (!this.deductDeposit && this.model.Tender < this.model.TotalAmount && this.model.PaymentMode != "credit") {
       this.msgBoxServ.showMessage("failed", ["Tender  must be greater or equal to Paid Amount"]);
       this.loading = false;
       return;
     }
 
-    //Checking from parameter, allow/restrict Additional Discount for Provisional bills 
-    if (billingFlow == "provisional" && (!this.param_allowAdditionalDiscOnProvisional) && this.model.DiscountPercent && this.model.DiscountPercent > 0) {
-
-      this.msgBoxServ.showMessage("failed", ["Additional Discount is not applicable for Provisional Bills"]);
+    //this can move to common validation function
+    if (this.model.DiscountPercent < 0 || this.model.DiscountPercent > 100) {
+      this.msgBoxServ.showMessage("failed", ["Additional Discount Percent is invalid. It must be between 0 and 100."]);
       this.loading = false;
       return;
     }
-    //If discount is applied for Final Bill (not provisional) then remarks is mandatory
-    if (billingFlow != "provisional" && this.model.DiscountAmount && this.model.DiscountAmount > 0 && !this.model.Remarks) {
 
+    //If discount is applied for Final Bill (not provisional) then remarks is mandatory
+    if (this.model.DiscountAmount && this.model.DiscountAmount > 0 && !this.model.Remarks) {
       this.msgBoxServ.showMessage("failed", ["Remarks is mandatory for Discounts."]);
       this.loading = false;
       return;
     }
 
-    //Asigning DiscountSchemeID while post...memTypeSchemaId
-    this.model.BillingTransactionItems.forEach(a => {
-      a.DiscountSchemeId = this.memTypeSchemeId;// this.DiscountScheme.MembershipTypeId != null ? this.DiscountScheme.MembershipTypeId : this.memTypeSchemeId
-    });
+    this.SetLabTypeName();
+    //sud:9Sep'21---to set PatientVisitId in the billing..
+    this.SetVisitContextBeforeBillSubmit();
 
-    if (this.CheckSelectionFromAutoComplete() && this.CheckBillingValidations() && this.CheckForDuplication()) {
-      this.isProvisionalBilling = billingFlow == "provisional";
-      if (!this.isPackageBilling && this.DuplicateItem.IsDuplicate) {//this is only used while showing Confirmation Pop Up for dublicate item.
-        this.loading = false;
-        this.ShowDuplicateItemComfirmation = true; //In case of Dublicate item entry POP Up is shown to re-check the item entered.
+    this.CheckAndSubmitBillingTransaction();
+
+  }
+
+
+  SetLabTypeName() {
+    this.model.BillingTransactionItems.forEach(a => {
+      //Asigning DiscountSchemeID while post...memTypeSchemaId
+      a.DiscountSchemeId = this.memTypeSchemeId;// this.DiscountScheme.MembershipTypeId != null ? this.DiscountScheme.MembershipTypeId : this.memTypeSchemeId
+
+      //Asigning LabTypeName while posting lab items
+      let integrationName = this.coreService.GetServiceIntegrationName(a.ServiceDepartmentName);
+      a.SrvDeptIntegrationName = integrationName;
+      if (integrationName == "LAB") {
+        a.LabTypeName = this.LabTypeName;
+        a.OrderStatus = ENUM_OrderStatus.Active;
       }
       else {
-        this.SubmitBillingTransaction();
+        a.LabTypeName = null;
       }
-      //this.ShowDuplicateItemComfirmation = false;
+    });
+  }
+
+
+  CheckAndSubmitBillingTransaction() {
+
+    if (this.CheckSelectionFromAutoComplete() && this.CheckBillingValidations()) {
+
+      this.SubmitBillingTransaction();
+
+      // if (!this.isPackageBilling && this.DuplicateItem.IsDuplicate) {//this is only used while showing Confirmation Pop Up for dublicate item.
+      //   this.loading = false;
+      //   this.ShowDuplicateItemComfirmation = true; //In case of Dublicate item entry POP Up is shown to re-check the item entered.
+      // }
+      // else {
+      //   this.SubmitBillingTransaction();
+      // }
     }
     else {
       this.loading = false;
     }
-    //this.loading = false;
+  }
+
+  SubmitBillingTransaction() {
+    if (this.model.BillingTransactionItems.some(a => a.SrvDeptIntegrationName != "LAB")) {
+      this.model.LabTypeName = null;
+    }
+    if (this.loading) {
+      this.AssignBillTxnItemsValuesForSubmit();
+      //this.PostToDepartmentRequisition(this.model.BillingTransactionItems);
+      //PostToDepartmentRequisition() changed to BillingTransactions();
+      this.BillingTransactions(this.model.BillingTransactionItems);
+    }
   }
 
   CheckBillingValidations(): boolean {
     let isFormValid = true;
     for (var j = 0; j < this.model.BillingTransactionItems.length; j++) {
-      if (!this.model.BillingTransactionItems[j] || this.model.BillingTransactionItems[j].Price <= 0) {
-        this.msgBoxServ.showMessage("error", ["The price of some items is zero "]);
+      var itm = this.itemList.find(b => this.model.BillingTransactionItems[j].ItemId == b.ItemId && this.model.BillingTransactionItems[j].ServiceDepartmentId == b.ServiceDepartmentId);
+      if (itm) {
+        this.model.BillingTransactionItems[j].IsZeroPriceAllowed = itm.IsZeroPriceAllowed;
+        if (itm.IsZeroPriceAllowed) {
+          this.model.BillingTransactionItems[j].UpdateValidator("off", "Price", "positiveNumberValdiator");
+        }
+      }
+      if (!this.model.BillingTransactionItems[j] || this.model.BillingTransactionItems[j].Price == null || this.model.BillingTransactionItems[j].Price <0 || (this.model.BillingTransactionItems[j].Price == 0 && !this.model.BillingTransactionItems[j].IsZeroPriceAllowed)) {
+        this.msgBoxServ.showMessage("error", ["Price of Some items are invalid.!"]);
         this.loading = false;
+        isFormValid = false;
         break;
       }
-      if (this.model.BillingTransactionItems) {
+      if (!this.model.BillingTransactionItems[j] || (this.model.BillingTransactionItems[j].Quantity <= 0 )) {
+        this.msgBoxServ.showMessage("error", ["Quantity of Some items are invalid.!"]);
+        this.loading = false;
+        isFormValid = false;
+        break;
+      }
+        if (this.model.BillingTransactionItems) {
         for (var i = 0; i < this.model.BillingTransactionItems.length; i++) {
           let currTxnItm = this.model.BillingTransactionItems[i];
+
           for (var valCtrls in currTxnItm.BillingTransactionItemValidator.controls) {
             currTxnItm.BillingTransactionItemValidator.controls[valCtrls].markAsDirty();
             currTxnItm.BillingTransactionItemValidator.controls[valCtrls].updateValueAndValidity();
@@ -712,14 +719,6 @@ export class BillingTransactionComponent {
     }
 
 
-    //In case of Credit Organization selected Remarks should not be mamdatory. 
-    //if (!this.model.OrganizationId) {
-    //  if (this.model.PaymentMode == "credit" && !this.model.Remarks) {
-    //    isFormValid = false;
-    //    this.msgBoxServ.showMessage("failed", ["Remarks is mandatory for credit bill"]);
-    //  }
-    //}
-
     if (this.model.PaymentMode == "credit") {
       if (this.CreditOrganizationMandatory && !this.model.OrganizationId) {
         isFormValid = false;
@@ -737,9 +736,11 @@ export class BillingTransactionComponent {
     for (var j = 0; j < this.model.BillingTransactionItems.length; j++) {
       this.model.BillingTransactionItems[j].CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
       this.model.BillingTransactionItems[j].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      this.model.BillingTransactionItems[j].PatientVisitId = this.patLastVisitContext.PatientVisitId;
+
 
       this.model.BillingTransactionItems[j].CounterId = this.securityService.getLoggedInCounter().CounterId;
-      //Move counterday to server once CounterFeature is added change--sudarshan:25July 
+      //Move counterday to server once CounterFeature is added change--sudarshan:25July
       this.model.BillingTransactionItems[j].CounterDay = moment().format("YYYY-MM-DD");
 
       //ashim: 24Sep2018 : assign Duty Doctor as default doctor if doctor is not selected in case of emergency registration
@@ -750,18 +751,17 @@ export class BillingTransactionComponent {
           this.model.BillingTransactionItems[j].ProviderName = doc.FirstName + " " + doc.LastName;
         }
       }
-      //incase of emergency do not assign other visit details by default.
-      else {
-        let visit = this.visitList.find(a => a.ProviderId == this.model.BillingTransactionItems[j].RequestedBy)
-        if (visit)
-          this.model.BillingTransactionItems[j].PatientVisitId = visit.PatientVisitId;
-      }
+
+      // //incase of emergency do not assign other visit details by default.
+      // else {
+      //   let visit = this.visitList.find(a => a.ProviderId == this.model.BillingTransactionItems[j].RequestedBy)
+      //   if (visit)
+      //     this.model.BillingTransactionItems[j].PatientVisitId = visit.PatientVisitId;
+      // }
 
       if (!this.model.BillingTransactionItems[j].AllowMultipleQty && this.model.BillingTransactionItems[j].Quantity > 1) {
         this.AddMultipleQtyItems(this.model.BillingTransactionItems[j], j);
       }
-
-
     }
     this.model.TaxId = this.taxId;
     this.AssignReqDeptNBillingType(this.model.BillingTransactionItems);
@@ -778,77 +778,68 @@ export class BillingTransactionComponent {
     this.model.NonTaxableAmount = totNonTaxableAmt;
 
     this.model.DepositBalance = this.newDepositBalance;
-    this.model.DepositReturnAmount = this.depositDeductAmount;
-    this.model.PatientVisitId = this.currBillingContext.PatientVisitId;
+    this.model.DepositReturnAmount = 0;
+    this.model.PatientVisitId = this.patLastVisitContext.PatientVisitId;
     this.model.TransactionType = this.billingType;
     this.OnPaymentModeChange();
   }
 
-  SubmitBillingTransaction(): void {
-    if (this.loading) {
-      this.loading = true;
-      let isFormValid = true;
-      //this.UpdatePriceValidty();
-      if (isFormValid) {
-        this.AssignBillTxnItemsValuesForSubmit();
-        //doesn't post to Departments Requisition Table in case billing is done for doctor's order
-        //since in Doctor's order case, it already posts to department.
-        if (this.currentBillingFlow == "Orders") {
-          this.PostBilling(this.model.BillingTransactionItems);
-        }
-        ///below function will first post the transactionitems to departments, then only to the billingtransactionitems.
-        else {
-          //ashim: 29Sep2018;
-          //if emergencyvisitItem exist then first post to visit and then update VisitId and VisitType of remaining item and then post to Dept/BillTxn respectively.
-          let emergencyItem = this.model.BillingTransactionItems.find(item => item.ItemName.toLowerCase() == "emergency registration");
-          if (emergencyItem) {
-            this.PostEmergencyVisitItem(emergencyItem);
-          }
-          else {
-            this.PostToDepartmentRequisition(this.model.BillingTransactionItems);
-          }
-        }
-      }
-      else {
-        this.loading = false;
-      }
-    }
-
-  }
 
 
 
   //posts to Departments Requisition Table
-  PostToDepartmentRequisition(billTxnItems: Array<BillingTransactionItem>, emergencyItem = null) {
+  BillingTransactions(billTxnItems: Array<BillingTransactionItem>, emergencyItem = null) {
+    if(this.isProvisionalBilling == true){
+      this.BillingBLService.ProceedToBillingTransaction(this.model,billTxnItems,"active", "provisional", this.insuranceApplicableFlag, this.currPatVisitContext).subscribe(res =>{
+        if (res.Status == "OK") {
+          let result = res.Results;
+          this.provReceiptInputs.PatientId = this.model.PatientId;
+          this.provReceiptInputs.ProvFiscalYrId = result[0].ProvisionalFiscalYearId;
+          this.provReceiptInputs.ProvReceiptNo = result[0].ProvisionalReceiptNo;
+          this.provReceiptInputs.visitType = null;//sending null from here for now.. Check this later..
 
-    //check if user has deleted and added the same item in copy from earlier invoice flow
-    if (this.currentBillingFlow == "BillReturn") {
-      billTxnItems.forEach(item => {
-        let earlierItem = this.earlierInvoiceItems.find(a => a.RequisitionId == null
-          && a.ServiceDepartmentId == item.ServiceDepartmentId
-          && a.ItemId == item.ItemId
-          && a.RequisitionId != null);
-        if (earlierItem) {
-          item.RequisitionId = earlierItem.RequisitionId;
-          item.RequisitionDate = earlierItem.RequisitionDate;
+          this.showInvoicePrintPage = true;
+        }
+        else {
+          this.msgBoxServ.showMessage("failed", ["Unable to complete transaction."]);
+          console.log(res.ErrorMessage)
+          this.loading = false;
+        }
+      });
+    }else{
+      this.AssignValuesToBillTxn();
+      if (this.model.BillingTransactionItems.some(a => a.SrvDeptIntegrationName == "LAB")) {
+        this.model.LabTypeName = this.LabTypeName;
+      }
+      //invoice type could be different depending on the current tranactiontype (eg: op-normal or ip-partial)
+      if (this.model.TransactionType == "inpatient") {
+        this.model.InvoiceType = ENUM_InvoiceType.inpatientPartial;
+      }
+      else {
+        this.model.InvoiceType = ENUM_InvoiceType.outpatient;
+      }
+      this.BillingBLService.ProceedToBillingTransaction(this.model,billTxnItems,"active", "provisional", this.insuranceApplicableFlag, this.currPatVisitContext).subscribe(res =>{
+        if (res.Status == "OK") {
+          ////this.loading = false;//we redirect to some other page on both InvoicePrintedCase or ESC/Close case, so no need to enable the print button for this invoice again.
+            this.bil_FiscalYrId = res.Results.FiscalYearId;
+            this.bil_BilTxnId = res.Results.BillingTransactionId;
+            this.bil_InvoiceNo = res.Results.InvoiceNo;
+            this.showInvoicePrintPage = true;
+  
+        }
+        else {
+          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+          this.loading = false;
         }
       });
     }
+
+    
     //orderstatus="active" and billingStatus="provisional" when sent from billingpage.
-    this.BillingBLService.PostDepartmentOrders(billTxnItems, "active", "provisional", this.insuranceApplicableFlag, this.currPatVisitContext)
+   /*  this.BillingBLService.PostDepartmentOrders(billTxnItems, "active", "provisional", this.insuranceApplicableFlag, this.currPatVisitContext)
       .subscribe(res => {
         if (res.Status == "OK" && res.Results.length && res.Results) {
-
-          //here this.loading should still be true, otherwise it'll post multiple time to the PostToBillingTransaction'
-          //if (this.isPackageBilling && !this.isProvisionalBilling)
-          //    this.PostPackageBillingTransaction();
-          //else {
-          //ashim: 29Sep2018
-          if (emergencyItem) {
-            res.Results.push(emergencyItem);
-          }
           this.PostBilling(res.Results);
-          //}
 
         }
 
@@ -860,8 +851,10 @@ export class BillingTransactionComponent {
         }
       }, err => {
         this.loading = false;
-      });
+      }); */
+
   }
+
   //posts to BillingTransactionItems table
   PostBilling(billTxnItems: Array<BillingTransactionItem>) {
     //added: ashim: 20Aug2018
@@ -872,6 +865,12 @@ export class BillingTransactionComponent {
     }
   }
 
+
+  //sud:19May'21--needed to print invoice.
+  public bil_InvoiceNo: number = 0;
+  public bil_FiscalYrId: number = 0;
+  public bil_BilTxnId: number = null;
+
   //posts to BillingTransactionItems table
   PostBillingTransaction(billTxnItems: Array<BillingTransactionItem>) {
     //added: ashim: 20Aug2018
@@ -881,130 +880,43 @@ export class BillingTransactionComponent {
       this.model.BillingTransactionItems[i] = Object.assign(this.model.BillingTransactionItems[i], billTxnItems[i]);
     }
     this.AssignValuesToBillTxn();
-    //this.BillingBLService.PostBillingTransactionItems(billTxnItems)
 
 
-    //Hom 7th Dec '18
-    if (this.currentBillingFlow == "BillReturn" && this.model.TransactionType == "inpatient") {
-      this.PostIpBillingTransaction();
+    if (this.model.BillingTransactionItems.some(a => a.SrvDeptIntegrationName == "LAB")) {
+      this.model.LabTypeName = this.LabTypeName;
+    }
+    //invoice type could be different depending on the current tranactiontype (eg: op-normal or ip-partial)
+    if (this.model.TransactionType == "inpatient") {
+      this.model.InvoiceType = ENUM_InvoiceType.inpatientPartial;
     }
     else {
-      this.PostOpBillingTransaction();
-    }
-  }
-
-  //Hom 7th Dec '18
-  PostIpBillingTransaction() {
-
-    if (this.patBillHistory.DepositBalance && this.model.TotalAmount > this.patBillHistory.DepositBalance && this.deductDeposit) {
-      this.model.ReturnedAmount = this.model.DepositBalance;
-      this.model.DepositBalance = 0;
-    }
-    else if (this.patBillHistory.DepositBalance && this.model.TotalAmount < this.patBillHistory.DepositBalance && this.deductDeposit) {
-      this.model.Tender = this.model.TotalAmount;
-      this.model.DepositBalance = this.patBillHistory.DepositBalance - this.model.TotalAmount;
+      this.model.InvoiceType = ENUM_InvoiceType.outpatient;
     }
 
-    this.BillingBLService.PostIpBillingTransaction(this.model)
-      .subscribe(
-        res => {
-          if (res.Status == "OK" && res.Results) {
-            this.CallBackPostBilling(res.Results);
-          }
-          else {
-            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-            this.loading = false;
-          }
-        });
-    //}
-  }
-  PostOpBillingTransaction() {
     this.BillingBLService.PostBillingTransaction(this.model)
       .subscribe(
         res => {
           if (res.Status == "OK") {
-            this.CallBackPostBilling(res.Results);
+            console.log(this.model);
+            ////this.loading = false;//we redirect to some other page on both InvoicePrintedCase or ESC/Close case, so no need to enable the print button for this invoice again.
+            this.bil_FiscalYrId = res.Results.FiscalYearId;
+            this.bil_BilTxnId = res.Results.BillingTransactionId;
+            this.bil_InvoiceNo = res.Results.InvoiceNo;
+            this.showInvoicePrintPage = true;//sud:16May'21--to print invoice from same page.
           }
           else {
-            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+            if(res.ErrorMessage.match(/Unique constraint error/g)){
+              this.msgBoxServ.showMessage("Notice", ["Something went wrong, Please submit again."]);
+            }else{
+              this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+            }
+            //this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
             this.loading = false;
           }
         });
   }
 
 
-  CallBackPostBilling(result: any) {
-    //  this.UpdateRequisitionBillStatus(result.BillingTransactionItems);
-    this.RouteToReceipt(result);
-    this.loading = false;
-  }
-  //ashim: 10Sep2018: Package Billing
-
-
-  PostPackageBillingTransaction() {
-    this.AssignValuesToBillTxn();
-
-    this.BillingBLService.PostPackageBillingTransaction(this.model)
-      .subscribe(
-        res => {
-          if (res.Status == "OK") {
-            this.RouteToReceipt(res.Results);
-            this.loading = false;
-          }
-          else {
-            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-            this.loading = false;
-          }
-        });
-  }
-  //ashim: 10Sep2018 : for package billing
-
-  //ashim: 29Sep2018 
-  PostEmergencyVisitItem(emergencyItem: BillingTransactionItem) {
-    let items = Array<BillingTransactionItem>();
-
-    //getting emergency name from the parameterized data
-    let erdeptnameparam = this.coreService.Parameters.find(p => p.ParameterGroupName.toLowerCase() == "common" && p.ParameterName.toLowerCase() == "erdepartmentname");
-    if (erdeptnameparam) {
-      let erdeptname = erdeptnameparam.ParameterValue.toLowerCase();
-      //Get DepartmentId of ER using Parameters and Coreservice.Masters..
-      let dep = this.coreService.Masters.Departments.find(a => a.DepartmentName.toLowerCase() == erdeptname);
-      emergencyItem.RequestingDeptId = dep.DepartmentId;
-    }
-    items.push(emergencyItem);
-    // 4th Dec '18: YUbraj :: now send "provisional" instead of paid"
-    this.BillingBLService.PostDepartmentOrders(items, "active", "provisional", this.insuranceApplicableFlag)
-      .subscribe(res => {
-        if (res.Status == "OK" && res.Results.length) {
-          let erItem = res.Results[0];
-          let otherItems = this.model.BillingTransactionItems.filter(item => item.ItemName.toLowerCase() != "emergency registration");
-          erItem.VisitType = "emergency";
-          erItem.PatientVisitId = erItem.PatientVisitId;
-          erItem.RequisitionId = erItem.PatientVisitId;
-          items[0] = erItem;
-          otherItems.forEach(item => {
-            item.VisitType = ENUM_VisitType.emergency;// "emergency";
-            item.PatientVisitId = erItem.PatientVisitId;
-          });
-          this.routeFromService.RouteFrom = "ER-Sticker";
-          if (otherItems.length) {
-            this.PostToDepartmentRequisition(otherItems, erItem);
-          }
-          else {
-            this.PostBilling(items);
-          }
-          this.loading = false;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ["Unable to add emergency visit"]);
-          console.log(res.ErrorMessage);
-          this.isProvisionalBilling = false;
-          this.loading = false;
-        }
-      }, err => {
-        this.loading = false;
-      });
-  }
 
 
 
@@ -1013,16 +925,13 @@ export class BillingTransactionComponent {
       .subscribe(
         res => {
           if (res.Status == "OK") {
-            // this.UpdateRequisitionBillStatus(res.Results);
-            //this.RouteToReceipt(this.model);
-            var result = res.Results;
-            console.log("Provisional Result:", result);
-            console.log("Model Result:", this.model);
-            this.model.FiscalYear = result[0].ProvFiscalYear;
-            this.model.InvoiceNo = result[0].ProvisionalReceiptNo;
-            this.model.singleReceiptBool = true;//YUbraj: this flag is used in provisional slip to hide date and receipt no from the item list invoice
-            this.model.BillingTransactionItems = result;
-            this.RouteToReceipt(this.model);
+            let result = res.Results;
+            this.provReceiptInputs.PatientId = this.model.PatientId;
+            this.provReceiptInputs.ProvFiscalYrId = result[0].ProvisionalFiscalYearId;
+            this.provReceiptInputs.ProvReceiptNo = result[0].ProvisionalReceiptNo;
+            this.provReceiptInputs.visitType = null;//sending null from here for now.. Check this later..
+
+            this.showInvoicePrintPage = true;
           }
           else {
             this.msgBoxServ.showMessage("failed", ["Unable to complete transaction."]);
@@ -1032,58 +941,6 @@ export class BillingTransactionComponent {
         });
   }
 
-  UpdateRequisitionBillStatus(billTxnItems: Array<BillingTransactionItem>) {
-    if (this.currentBillingFlow && (this.currentBillingFlow == "Orders" || this.currentBillingFlow == "BillReturn")) {///for multiple servicedepartments
-      let deptsDistinct = new Array<string>();
-      billTxnItems.forEach(a => {
-        //add only if current servdeptname isn't present in servdept's list.
-        if (deptsDistinct.indexOf(a.ServiceDepartmentName) < 0) {
-          deptsDistinct.push(a.ServiceDepartmentName);
-        }
-      });
-
-      deptsDistinct.forEach(srvdptname => {
-        //get only billtxnitems those are in current service department. 
-        let srvDeptItems = billTxnItems.filter(b => {
-          //b.ServiceDepartmentName == srvdptname;
-
-          if (b.ServiceDepartmentName == srvdptname) {
-            return b;
-          }
-        });
-        this.BillingBLService.UpdateRequisitionsBillingStatus(srvDeptItems, srvdptname)
-          .subscribe(res => {
-            console.log("updated requisition billing status sucessfully");
-          });
-      });
-    }
-  }
-
-  RouteToReceipt(billTxn: BillingTransaction) {
-    let txnReceipt = BillingReceiptModel.GetReceiptForTransaction(billTxn);
-    txnReceipt.IsInsuranceBilling = false;
-    txnReceipt.Patient = Object.create(this.patientService.globalPatient);
-    txnReceipt.IsValid = true;
-    let ProvBillingUser = this.securityService.GetLoggedInUser().UserName; //Yubraj 28th June '19
-    txnReceipt.BillingUser = this.isProvisionalBilling ? ProvBillingUser : billTxn.BillingUserName;
-    txnReceipt.Remarks = this.model.Remarks;
-    txnReceipt.OrganizationId = this.model.OrganizationId;
-    if (this.model.OrganizationId) {
-      let org = this.creditOrganizationsList.find(a => a.OrganizationId == this.model.OrganizationId);
-      txnReceipt.OrganizationName = org.OrganizationName
-    }
-    txnReceipt.BillingDate = txnReceipt.BillingDate ? txnReceipt.BillingDate : moment().format("YYYY-MM-DD HH:mm:ss");
-    txnReceipt.ReceiptType = this.isProvisionalBilling ? "provisional" : txnReceipt.ReceiptType;
-    txnReceipt.singleReceiptBool = this.model.singleReceiptBool;
-    txnReceipt.DepositBalance = this.isProvisionalBilling ? CommonFunctions.parseAmount(this.patBillHistory.DepositBalance) : txnReceipt.DepositBalance;
-
-    if (billTxn.TransactionType && billTxn.TransactionType.toLowerCase() == "inpatient") {
-      txnReceipt.ReceiptType = "ip-receipt";
-    }
-    this.billingService.globalBillingReceipt = txnReceipt;
-    this.loading = false;//enables the submit button once all the calls are completed
-    this.router.navigate(['Billing/ReceiptPrint']);
-  }
 
 
   GetServiceDeptNameById(servDeptId: number): string {
@@ -1102,10 +959,11 @@ export class BillingTransactionComponent {
         // and was assigning ItemId=null.So avoiding assignment null value to ItemId during inital assign.
         if (this.model.BillingTransactionItems[index].ItemId == null)
           this.ClearSelectedItem(index);
-        this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.ServiceDepartmentId == srvDeptId);
 
-        //let servDeptName = this.GetServiceDeptNameById(srvDeptId);
-        //if (this.IsDoctorMandatory(servDeptName, null)) 
+        this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.ServiceDepartmentId == srvDeptId);
+        if (this.LabTypeName == 'er-lab') {
+          this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+        }
 
         // checking directly from list of database yubraj-- 8th Oct 2018
         if (this.selectedItems[index] && this.selectedItems[index].IsDoctorMandatory) {
@@ -1117,12 +975,16 @@ export class BillingTransactionComponent {
       }
     }
     else {
-      //create a new array (using filter) and assign to bill items. 
-      // comparison with same id will always give true, hence all items will be returned. 
+      //create a new array (using filter) and assign to bill items.
+      // comparison with same id will always give true, hence all items will be returned.
       //let billItems = this.itemList.slice();//.filter(a => a.ServiceDepartmentId == a.ServiceDepartmentId);;
       let billItems = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD");
       this.model.BillingTransactionItems[index].ItemList = billItems;
+      if (this.LabTypeName == 'er-lab') {
+        this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
     }
+
   }
 
   ShowPackage() {
@@ -1142,7 +1004,6 @@ export class BillingTransactionComponent {
 
   SelectFromPackage($event) {
     this.currentBillingFlow = "packageBilling";//needed this so that it'll reset ReturnFlow of billing which was causing issue.
-
     this.disableTextBox = true;
     this.model = this.billingService.CreateNewGlobalBillingTransaction();
     this.model.CounterId = this.currentCounter;
@@ -1155,7 +1016,7 @@ export class BillingTransactionComponent {
     this.selectedAssignedToDr = [];
     var items = $event.pkg.BillingItemsXML.Items;
 
-    //sud: 10sept'18-- for 
+    //sud: 10sept'18-- for
 
     this.ActivePackageInfo.BillingPackageId = $event.pkg.BillingPackageId;
     this.ActivePackageInfo.BillingPackageName = $event.pkg.BillingPackageName;
@@ -1165,21 +1026,30 @@ export class BillingTransactionComponent {
     this.model.PackageId = this.ActivePackageInfo.BillingPackageId;
     this.model.PackageName = this.ActivePackageInfo.BillingPackageName;
     this.model.Remarks = this.ActivePackageInfo.BillingPackageName;
+    //this.model.DiscountPercent = CommonFunctions.parseAmount($event.pkg.DiscountPercent, 3);
     this.model.DiscountPercent = $event.pkg.DiscountPercent;
+
     for (var i = 0; i < items.length; i++) {
       let item = this.itemList.find(a => a.ItemId == items[i].ItemId && a.ServiceDepartmentId == items[i].ServiceDeptId);
+      console.log(item);
       if (item) {
         let billItem = this.NewBillingTransactionItem();
         this.model.BillingTransactionItems.push(billItem);
         this.model.BillingTransactionItems[i].ItemId = items[i].ItemId;
         this.model.BillingTransactionItems[i].ItemName = item.ItemName;
+        // this.model.BillingTransactionItems[i].DiscountPercent = $event.pkg.DiscountPercent;
         this.selectedItems[i] = item;
         this.model.BillingTransactionItems[i].ServiceDepartmentId = items[i].ServiceDeptId;
         this.model.BillingTransactionItems[i].ServiceDepartmentName = this.GetServiceDeptNameById(items[i].ServiceDeptId);
         this.selectedServDepts[i] = this.model.BillingTransactionItems[i].ServiceDepartmentName;
         this.model.BillingTransactionItems[i].Quantity = items[i].Quantity;
-        this.model.BillingTransactionItems[i].IsTaxApplicable = items[i].TaxApplicable;//added: sud: 29May'18--chcek for the field name. 
+        this.model.BillingTransactionItems[i].IsTaxApplicable = items[i].TaxApplicable;//added: sud: 29May'18--chcek for the field name.
         this.model.BillingTransactionItems[i].BillingPackageId = $event.pkg.BillingPackageId;
+
+        this.model.BillingTransactionItems[i].SubTotal = item.Price;
+        this.model.BillingTransactionItems[i].DiscountPercent = this.model.DiscountPercent;
+        this.model.BillingTransactionItems[i].DiscountAmount = (this.model.DiscountPercent * this.model.BillingTransactionItems[i].SubTotal) / 100;
+        this.model.BillingTransactionItems[i].TotalAmount = this.model.BillingTransactionItems[i].SubTotal - this.model.BillingTransactionItems[i].DiscountAmount;
 
         //sud:1oct'19--we've to put conditional validator for OPD items.
         if (this.model.BillingTransactionItems[i].ServiceDepartmentName == "OPD") {
@@ -1197,6 +1067,7 @@ export class BillingTransactionComponent {
           }
         }
         else {
+
           this.model.BillingTransactionItems[i].EnableControl("ItemName", false);
         }
         this.model.BillingTransactionItems[i].EnableControl("RequestedBy", false);
@@ -1219,7 +1090,7 @@ export class BillingTransactionComponent {
     }
   }
 
-  //Modified: Ashim 15July2017: After implementing ng autocomplete. 
+  //Modified: Ashim 15July2017: After implementing ng autocomplete.
   //Changes made since ng autocomplete binds the selected object instead of a single selected property.
   public AssignSelectedItem(index) {
     let item = null;
@@ -1228,7 +1099,7 @@ export class BillingTransactionComponent {
     if (this.selectedItems[index]) {
       if (typeof (this.selectedItems[index]) == 'string' && this.model.BillingTransactionItems[index].ItemList.length) {
         item = this.model.BillingTransactionItems[index].ItemList.find(a => a.ItemName.toLowerCase() == this.selectedItems[index].toLowerCase());
-        //item = this.itemList.filter(a => a.ItemName.toLowerCase() == this.selectedItems[index].toLowerCase())[0];   //for billing order.                
+        //item = this.itemList.filter(a => a.ItemName.toLowerCase() == this.selectedItems[index].toLowerCase())[0];   //for billing order.
       }
       else if (typeof (this.selectedItems[index]) == 'object')
         item = this.selectedItems[index];
@@ -1245,17 +1116,19 @@ export class BillingTransactionComponent {
           }
 
           //Check for allowing duplicate inserting or not from the Parameterized value.
-          let paramDupItm = this.coreService.AllowDuplicateItem();
-          if (!paramDupItm) {
-            if (extItem && index != extItemIndex) {
-              this.msgBoxServ.showMessage("failed", [item.ItemName + " is already entered."]);
-              this.changeDetectorRef.detectChanges();
-              this.model.BillingTransactionItems[index].IsDuplicateItem = true;
-            }
-            else {
-              this.model.BillingTransactionItems[index].IsDuplicateItem = false;
-            }
+          //let paramDupItm = this.coreService.AllowDuplicateItem();
+          // if (!paramDupItm) {
+          if (extItem && index != extItemIndex) {
+
+            //sud:15Apr'21--Removing the warning, it's coming multiple times. We're anyway showing this as error if DuplicateItems are restricted from Parameter.
+            //this.msgBoxServ.showMessage("warning", [item.ItemName + " is already entered."]);
+            this.changeDetectorRef.detectChanges();
+            this.model.BillingTransactionItems[index].IsDuplicateItem = true;
           }
+          else {
+            this.model.BillingTransactionItems[index].IsDuplicateItem = false;
+          }
+          //}
           if (extItem && index != extItemIndex) {
             // {ItemName: null,Quantity: null, Price: null}
             var itmeDetail = { ItemName: extItem.ItemName, Quantity: extItem.Quantity, Price: extItem.Price };
@@ -1273,19 +1146,30 @@ export class BillingTransactionComponent {
         if (!this.DiscountApplicable) {
           this.model.BillingTransactionItems[index].DiscountPercent = 0;
         }
-        else {
-          this.model.BillingTransactionItems[index].DiscountPercent = this.currMemDiscountPercent;
-        }
+        // else {
+        //    if(this.model.BillingTransactionItems[index].AllowMultipleQty)
+        //   this.model.BillingTransactionItems[index].DiscountPercent = this.model.DiscountPercent;
+        // }
+        this.model.BillingTransactionItems[index].DiscountSchemeId = this.memTypeSchemeId;
         this.model.BillingTransactionItems[index].PriceCategory = this.priceCategory;//Sud:25Feb'19--For EHS, Foreigner etc..
         this.model.BillingTransactionItems[index].ProcedureCode = item.ProcedureCode;
+        this.model.BillingTransactionItems[index].IsZeroPriceAllowed = item.IsZeroPriceAllowed;
         //add also the servicedepartmentname property of the item; needed since most of the filtering happens on this value
 
-        this.model.BillingTransactionItems[index].ServiceDepartmentName = this.GetServiceDeptNameById(item.ServiceDepartmentId);
+        //this.model.BillingTransactionItems[index].ServiceDepartmentName = this.GetServiceDeptNameById(item.ServiceDepartmentId);
+        this.model.BillingTransactionItems[index].ServiceDepartmentName = item.ServiceDepartmentName;
         this.model.BillingTransactionItems[index].ServiceDepartmentId = item.ServiceDepartmentId;
         this.AssignRequestedByDoctor(index);
         this.selectedServDepts[index] = this.model.BillingTransactionItems[index].ServiceDepartmentName;
         this.model.BillingTransactionItems[index].IsValidSelDepartment = true;
         this.model.BillingTransactionItems[index].IsValidSelItemName = true;
+        if (!item.IsZeroPriceAllowed && item.Price <= 0) {
+          this.model.BillingTransactionItems[index].IsPriceValid = false;
+        }
+        else {
+          this.model.BillingTransactionItems[index].IsPriceValid = true;
+        }
+
 
         this.FilterBillItems(index);
         this.CheckItemProviderValidation(index);
@@ -1300,11 +1184,11 @@ export class BillingTransactionComponent {
             this.AssignSelectedDoctor(index);
           }
         }
-        
-        if(this.selectedAssignedToDr == null){
+
+        if (!this.selectedAssignedToDr[index]) {
           this.ResetDoctorListOnItemChange(item, index);//sundeep: to reset assigned doctor array.
         }
-       
+
       }
       else {
         if (this.currentBillingFlow != "Orders")
@@ -1313,6 +1197,9 @@ export class BillingTransactionComponent {
 
       if (!item && !this.selectedServDepts[index]) {
         this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD");
+        if (this.LabTypeName == 'er-lab') {
+          this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+        }
       }
       this.CheckForDoubleEntry();
     }
@@ -1328,12 +1215,14 @@ export class BillingTransactionComponent {
       this.model.BillingTransactionItems[index].PriceCategory = "";
       this.model.BillingTransactionItems[index].ProcedureCode = "";
       this.model.BillingTransactionItems[index].ServiceDepartmentId = 0;
-      this.selectedServDepts[index] = "";
+      // this.selectedServDepts[index] = "";
       this.model.BillingTransactionItems[index].IsValidSelDepartment = true;
       this.model.BillingTransactionItems[index].IsValidSelItemName = true;
       this.selectedAssignedToDr[index] = null;
       this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD");
-
+      if (this.LabTypeName == 'er-lab') {
+        this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
       this.model.BillingTransactionItems[index].IsDoubleEntry_Now = false;
       this.model.BillingTransactionItems[index].IsDoubleEntry_Past = false;
 
@@ -1383,26 +1272,38 @@ export class BillingTransactionComponent {
 
   public CheckSelectionFromAutoComplete(): boolean {
     if (this.model.BillingTransactionItems.length) {
-      for (let itm of this.model.BillingTransactionItems) {
-        if (!itm.IsValidSelDepartment) {
+      //for (let itm of this.model.BillingTransactionItems) {
+      for (let i = 0; i < this.model.BillingTransactionItems.length; i++) {
+        if (!this.model.BillingTransactionItems[i].IsValidSelDepartment) {
           this.msgBoxServ.showMessage("failed", ["Invalid Department. Please select Department from the list."]);
           this.loading = false;
           return false;
         }
-        if (!itm.IsValidSelAssignedToDr) {
+        if (!this.model.BillingTransactionItems[i].IsValidSelAssignedToDr) {
           this.msgBoxServ.showMessage("failed", ["Invalid Assigned To Dr. Name. Please select doctor from the list."]);
           this.loading = false;
           return false;
         }
-        if (!itm.IsValidSelItemName) {
+        if (!this.model.BillingTransactionItems[i].IsValidSelItemName) {
           this.msgBoxServ.showMessage("failed", ["Invalid Item Name. Please select Item from the list."]);
           this.loading = false;
           return false;
         }
-        if (itm.IsDuplicateItem) {
-          this.msgBoxServ.showMessage("failed", ["Duplicate Item now allowed." + itm.ItemName + " is entered more than once"]);
-          this.loading = false;
-          return false;
+        // if (this.model.BillingTransactionItems[i].IsDuplicateItem) {
+        //   this.msgBoxServ.showMessage("failed", ["Duplicate Item now allowed." + this.model.BillingTransactionItems[i].ItemName + " is entered more than once"]);
+        //   this.loading = false;
+        //   return false;
+        // }
+
+
+        let integrationName = this.coreService.GetServiceIntegrationName(this.model.BillingTransactionItems[i].ServiceDepartmentName);
+        if (integrationName == "LAB" && this.LabTypeName == 'er-lab') {
+          var aaa = this.model.BillingTransactionItems[i].ItemList.find(a => a.ItemId == this.selectedItems[i].ItemId && a.ServiceDepartmentId == this.selectedItems[i].ServiceDepartmentId)
+          if (!aaa || !aaa.IsErLabApplicable) {
+            this.msgBoxServ.showMessage("failed", ["Some items are not found in " + this.LabTypeName + ". "]);
+            this.loading = false;
+            return false;
+          }
         }
       }
       return true;
@@ -1430,43 +1331,21 @@ export class BillingTransactionComponent {
   }
 
 
-  //ItemsListFormatter(data: any): string {
-
-  //  let html: string = "";
-  //  if (data.SrvDeptIntegrationName != "OPD") {
-  //    html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
-  //    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b>";
-  //  }
-  //  else {
-  //    let docName = data.Doctor ? data.Doctor.DoctorName : "";
-  //    html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-  //    html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
-  //  }
-  //  //else {
-  //  //    html = data["ItemName"]+
-  //  //}
-
-
-  //  return html;
-  //}
-
-  //public searchByItemCode: boolean = false;
-
   ItemsListFormatter(data: any): string {
     let html: string = "";
     if (data.SrvDeptIntegrationName != "OPD") {
       if (this.searchByItemCode) {
-        html = data["ServiceDepartmentShortName"] + "-" + data["ItemCode"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+        html = data["ServiceDepartmentShortName"] + "-" + data["ItemCode"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
       }
       else {
-        html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+        html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
       }
-      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b>";
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + "<b>" + data["Price"] + "</b>";
     }
     else {
       let docName = data.Doctor ? data.Doctor.DoctorName : "";
-      html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"].toUpperCase() + "&nbsp;&nbsp;";
+      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + data["Price"];
     }
     return html;
   }
@@ -1483,7 +1362,7 @@ export class BillingTransactionComponent {
   //assigns service department id and filters item list
   ServiceDeptOnChange(index) {
     let srvDeptObj = null;
-    // check if user has given proper input string for department name 
+    // check if user has given proper input string for department name
     //or has selected object properly from the dropdown list.
     if (typeof (this.selectedServDepts[index]) == 'string') {
       if (this.serviceDeptList.length && this.selectedServDepts[index])
@@ -1504,6 +1383,9 @@ export class BillingTransactionComponent {
     //else raise an invalid flag
     else {
       this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.ServiceDepartmentName != "OPD");
+      if (this.LabTypeName == 'er-lab') {
+        this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
       this.model.BillingTransactionItems[index].IsValidSelDepartment = false;
     }
   }
@@ -1513,7 +1395,10 @@ export class BillingTransactionComponent {
     this.selectedAssignedToDr[index] = null;
     this.model.BillingTransactionItems[index] = this.NewBillingTransactionItem();
     this.model.BillingTransactionItems[index].RequestedBy = this.model.BillingTransactionItems[index].RequestedBy;
-    this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.ServiceDepartmentName != "OPD");;
+    this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.ServiceDepartmentName != "OPD");
+    if (this.LabTypeName == 'er-lab') {
+      this.model.BillingTransactionItems[index].ItemList = this.itemList.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+    }
     this.model.BillingTransactionItems[index].RequestedBy = index > 0 ? this.model.BillingTransactionItems[index - 1].RequestedBy : (this.visitList[0].ProviderName == "Duty Doctor" ? null : this.visitList[0].ProviderId);
     this.ReCalculateInvoiceAmounts();//sud:10Mar'19
     //this.Calculationforall();//sud:10Mar'19--this method is replaced by above.
@@ -1530,26 +1415,21 @@ export class BillingTransactionComponent {
   }
 
   //sud: 13May'18--to display patient's bill history
-  //LoadPatientPastBillSummary(patientId: number) 
+  //LoadPatientPastBillSummary(patientId: number)
   LoadPatientPastBillSummary(patientId: number) {
     this.BillingBLService.GetPatientPastBillSummary(patientId)
       .subscribe(res => {
         if (res.Status == "OK") {
 
           this.patBillHistory = res.Results;
-          this.patBillHistory.ProvisionalAmt = CommonFunctions.parseAmount(this.patBillHistory.ProvisionalAmt);
-          this.patBillHistory.BalanceAmount = CommonFunctions.parseAmount(this.patBillHistory.BalanceAmount);
-          this.patBillHistory.DepositBalance = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance);
-          this.patBillHistory.CreditAmount = CommonFunctions.parseAmount(this.patBillHistory.CreditAmount);
-          this.patBillHistory.TotalDue = CommonFunctions.parseAmount(this.patBillHistory.TotalDue);
+          this.patBillHistory.ProvisionalAmt = CommonFunctions.parseAmount(this.patBillHistory.ProvisionalAmt, 3);
+          this.patBillHistory.BalanceAmount = CommonFunctions.parseAmount(this.patBillHistory.BalanceAmount, 3);
+          this.patBillHistory.DepositBalance = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance, 3);
+          this.patBillHistory.CreditAmount = CommonFunctions.parseAmount(this.patBillHistory.CreditAmount, 3);
+          this.patBillHistory.TotalDue = CommonFunctions.parseAmount(this.patBillHistory.TotalDue, 3);
           this.patBillHistory.IsLoaded = true;
           this.CalculateDepositBalance();
-          // at the time of submission, this is not initial warning.
-          this.isInitialWarning = true;
-          //this.CheckIsValidIpBilling();
           this.MarkDepositFromDeduct();
-
-
         }
         else {
           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -1574,7 +1454,7 @@ export class BillingTransactionComponent {
   CloseDepositPopUp($event = null) {
     if ($event) {
       this.patBillHistory.DepositBalance = $event.depositBalance;
-      this.patBillHistory.BalanceAmount = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance - this.patBillHistory.TotalDue);
+      this.patBillHistory.BalanceAmount = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance - this.patBillHistory.TotalDue, 3);
     }
     this.showDepositPopUp = false;
     this.loading = false;
@@ -1590,19 +1470,22 @@ export class BillingTransactionComponent {
   //sud: 20Jun'18
   LoadPatientBillingContext() {
     //we get billing context from earlier invoice incase of copy from earlier invoice.
-    if (this.currentBillingFlow != "BillReturn" && this.currentVisitType != "inpatient") {
+    if (this.currentBillingFlow != "BillReturn") {//&& this.currentVisitType != "inpatient"
       this.BillingBLService.GetPatientBillingContext(this.patientService.globalPatient.PatientId)
         .subscribe((res: DanpheHTTPResponse) => {
           if (res.Status == "OK") {
-            if (res.Results.BillingType != "inpatient") {
+            // if (res.Results.BillingType != "inpatient") {
+            if (res.Results) {
               this.currBillingContext = res.Results;
+              this.currentVisitType = this.currBillingContext.BillingType;
               this.billingService.BillingType = this.currBillingContext.BillingType;
               this.billingType = this.currBillingContext.BillingType;
+              this.GetVisitContext(this.currBillingContext.PatientId, this.patLastVisitContext.PatientVisitId);
             }
-            else {
-              this.msgBoxServ.showMessage("notice", ["This patient is already admitted.Please use Inpatient billing for admitted patient."]);
-              this.router.navigate(['/Billing/SearchPatient']);
-            }
+            //else {
+            //  this.msgBoxServ.showMessage("notice", ["This patient is already admitted.Please use Inpatient billing for admitted patient."]);
+            //  this.router.navigate(['/Billing/SearchPatient']);
+            //}
 
           }
         });
@@ -1646,7 +1529,7 @@ export class BillingTransactionComponent {
   //ashim: 24Dec2018
   //modifications to remove billingTransactionItem page.
 
-  //we need to set certain properties acc. to current payment mode. 
+  //we need to set certain properties acc. to current payment mode.
   OnPaymentModeChange() {
     if (this.model.PaymentMode == "credit") {
       this.model.PaidAmount = 0;
@@ -1680,14 +1563,14 @@ export class BillingTransactionComponent {
   }
   ChangeTenderAmount() {
     if (this.deductDeposit) {
-      this.model.Change = CommonFunctions.parseAmount(this.model.Tender + this.depositDeductAmount - this.model.TotalAmount);
+      this.model.Change = CommonFunctions.parseAmount(this.model.Tender + this.depositDeductAmount - this.model.TotalAmount, 3);
     }
     else {
-      this.model.Change = CommonFunctions.parseAmount(this.model.Tender - (this.model.TotalAmount));
+      this.model.Change = CommonFunctions.parseAmount(this.model.Tender - (this.model.TotalAmount), 3);
     }
   }
 
-  //Change the Checkbox value and call Calculation logic from here. 
+  //Change the Checkbox value and call Calculation logic from here.
   DepositDeductCheckBoxChanged() {
     //toggle Checked-Unchecked of 'Deduct From Deposit Checkbox'
     this.deductDeposit = !this.deductDeposit;
@@ -1699,25 +1582,34 @@ export class BillingTransactionComponent {
       if (currentDepositBalance > 0) {
         let patientId = this.model.PatientId;
         this.newDepositBalance = currentDepositBalance - this.model.TotalAmount;
-        this.newDepositBalance = CommonFunctions.parseAmount(this.newDepositBalance);
+        this.newDepositBalance = CommonFunctions.parseAmount(this.newDepositBalance, 3);
+        this.model.DepositAvailable = currentDepositBalance;
         if (this.newDepositBalance >= 0) {
           this.depositDeductAmount = this.model.TotalAmount;
           this.model.Tender = null;
           this.changeDetectorRef.detectChanges();
           this.model.Tender = 0;
           this.model.Change = 0;
+          this.model.DepositReturnAmount = 0;
+          this.model.DepositUsed = this.model.TotalAmount;
         }
         //newDepositBalance will be in negative if it comes to else.
         else {
           //Tender is set to positive value of newDepositBalance. //checke resetTender param: sud-6Feb 2020
           this.model.Tender = -(this.newDepositBalance);
           this.depositDeductAmount = currentDepositBalance;//all deposit has been returned.
-          this.newDepositBalance = 0;//reset newDepositBalance since it's all Used NOW. 
+          this.newDepositBalance = 0;//reset newDepositBalance since it's all Used NOW.
           this.model.Change = 0;//Reset Change since we've reset Tender above.
+          this.model.DepositReturnAmount = 0
+          this.model.DepositUsed = currentDepositBalance;
         }
         //this.routeFromService.RouteFrom = "DepositDeductpart";        //ramavtar: 24Oct'18
       }
       else {
+        this.model.DepositReturnAmount = 0
+        this.model.DepositUsed = 0;
+        this.model.DepositAvailable = 0;
+        this.model.DepositBalance = 0;
         this.msgBoxServ.showMessage("failed", ["Deposit balance is zero, Please add deposit to use this feature."]);
         this.deductDeposit = !this.deductDeposit;
       }
@@ -1725,11 +1617,11 @@ export class BillingTransactionComponent {
     else {
       //reset all required properties..
       this.model.Tender = this.model.TotalAmount;//sud:6Feb'20--for CMH
-      this.newDepositBalance = currentDepositBalance;
+      this.newDepositBalance = 0;
       this.depositDeductAmount = 0;
       this.model.DepositReturnAmount = 0;
       this.model.Change = 0;
-      this.routeFromService.RouteFrom = ""; // while clicking the checkbox route from "DepositDeductpart" is assigning which must be initialize again to control the data to inserrt on the deposit table 
+      this.routeFromService.RouteFrom = ""; // while clicking the checkbox route from "DepositDeductpart" is assigning which must be initialize again to control the data to inserrt on the deposit table
     }
   }
 
@@ -1764,17 +1656,31 @@ export class BillingTransactionComponent {
     this.priceCategory = $event.categoryName;
     let billingPropertyName = $event.propertyName;
     if (this.itemList != null && this.itemList.length > 0) {
-      this.itemList.forEach(itm => {
-        //show item price as Zero if that propertyname is not found in item object.
-        itm.Price = itm[billingPropertyName] ? itm[billingPropertyName] : 0;
-      });
+      if (billingPropertyName == "EHSPrice") {
+        this.isEHS = true;
+        let item = this.itemList.filter(a => a.IsEHSPriceApplicable == true);
+        if (item) {
+          item.forEach(a => {
+            a.Price = a["EHSPrice"] ? a["EHSPrice"] : 0;
+          });
+        }
+      }
+      else {
+        this.isEHS = false;
+        this.GetBillingItems();
+      }
     }
-
     if (this.model.BillingTransactionItems && this.model.BillingTransactionItems.length > 0) {
       this.model.BillingTransactionItems.forEach(txnItm => {
         let currBillItem = this.itemList.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
         if (currBillItem) {
-          txnItm.Price = currBillItem[billingPropertyName] ? currBillItem[billingPropertyName] : 0;
+          if (currBillItem.IsEHSPriceApplicable && billingPropertyName == 'EHSPrice') {
+            txnItm.Price = currBillItem["EHSPrice"] ? currBillItem["EHSPrice"] : 0;
+          }
+          else {
+            txnItm.Price = currBillItem["NormalPrice"] ? currBillItem["NormalPrice"] : 0;
+          }
+
           txnItm.PriceCategory = this.priceCategory;
         }
       });
@@ -1857,32 +1763,79 @@ export class BillingTransactionComponent {
     currItem.SubTotal = currItem.Price * currItem.Quantity;
     this.CalculateAggregateDiscountsOfItems(currItem);
     //We need to calculate Bill's total amount (subtotal, discount, total..) whenever any one of the item is changed..
-    this.ReCalculateInvoiceAmounts();    
+    this.ReCalculateInvoiceAmounts();
     this.CalculateDepositBalance();
+    if(currItem.Price != null){
+      if (currItem.ItemId != 0 && (!currItem.IsZeroPriceAllowed && currItem.Price == 0) || currItem.Price <0) {
+        this.model.BillingTransactionItems[index].IsPriceValid = false;
+      }
+      else {
+        this.model.BillingTransactionItems[index].IsPriceValid = true;
+      }
+    }
+    else{
+      this.model.BillingTransactionItems[index].IsPriceValid = false;
+    }
+
   }
 
-  //sud:11Mar'19--to calculate Subtotal, DiscountAmount, totalAmount of Invoice Level.
   ReCalculateInvoiceAmounts() {
-    //reduce function usage: acc -> accumulator, initial value=0, itm -> loop variable (BillingTransactionItem in below case).
-    let overallSubTot = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
-    let overallDiscAmt = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.DiscountAmount; }, 0);
+    if (!this.isPackageBilling) {
+      //sud:11Mar'19--to calculate Subtotal, DiscountAmount, totalAmount of Invoice Level.
+      //reduce function usage: acc -> accumulator, initial value=0, itm -> loop variable (BillingTransactionItem in below case).
+      let overallSubTot = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
+      let overallDiscAmt = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.DiscountAmount; }, 0);
 
-    this.model.SubTotal = CommonFunctions.parseAmount(overallSubTot);
-    this.model.DiscountAmount = CommonFunctions.parseAmount(overallDiscAmt);
+      this.model.SubTotal = CommonFunctions.parseAmount(overallSubTot, 3);
+      this.model.DiscountAmount = CommonFunctions.parseAmount(overallDiscAmt, 3);
+      this.model.TotalAmount = CommonFunctions.parseAmount(overallSubTot - overallDiscAmt, 3);
+      if (overallSubTot > this.model.TotalAmount) {
+        this.model.DiscountPercent = Number((((overallSubTot - this.model.TotalAmount) / overallSubTot) * 100).toFixed(4));
+      }
+      else if (overallSubTot == this.model.TotalAmount) {
+        this.model.DiscountPercent = 0;
+      }
+      this.model.Tender = this.model.TotalAmount;
+    }
+    else {
+      let overallSubTot = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
 
-    this.model.TotalAmount = CommonFunctions.parseAmount(overallSubTot - overallDiscAmt);
-    this.model.Tender = this.model.TotalAmount;
+      this.model.SubTotal = CommonFunctions.parseAmount(overallSubTot);
+      this.model.DiscountAmount = CommonFunctions.parseAmount((Number(this.model.SubTotal) * Number(this.model.DiscountPercent)) / 100);
+      this.model.TotalAmount = CommonFunctions.parseAmount(overallSubTot - this.model.DiscountAmount);
+      this.model.Tender = this.model.TotalAmount;
+    }
     this.ChangeTenderAmount();
   }
 
 
 
+  //Pratik:2Feb'21--This logic was changed for LPH, Please make it parameterized and handle if required for other hospitals after merging.
   InvoiceDiscountOnChange() {
     //Need to re-calculate aggregatediscounts of each item and Invoice amounts when Invoice Discount is changed.
     this.model.BillingTransactionItems.forEach(itm => {
-      this.CalculateAggregateDiscountsOfItems(itm);
+      //itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountPercentAgg = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountAmount = itm.SubTotal * itm.DiscountPercentAgg / 100;
+      itm.TotalAmount = itm.SubTotal - itm.DiscountAmount;
+      //this.CalculateAggregateDiscountsOfItems(itm);
     });
 
+    this.ReCalculateInvoiceAmounts();
+  }
+
+
+  ItemLevelDiscountChange(index) {
+
+    this.model.BillingTransactionItems[index].DiscountAmount = this.model.BillingTransactionItems[index].SubTotal * this.model.BillingTransactionItems[index].DiscountPercent / 100;
+    this.model.BillingTransactionItems[index].TotalAmount = this.model.BillingTransactionItems[index].SubTotal - this.model.BillingTransactionItems[index].DiscountAmount;
+
+    //reduce function usage: acc -> accumulator, initial value=0, itm -> loop variable (BillingTransactionItem in below case).
+    let overallSubTot = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
+    let overallTotal = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.TotalAmount; }, 0);
+    if (overallSubTot > overallTotal)
+      this.model.DiscountPercent = ((overallSubTot - overallTotal) / overallSubTot) * 100;
     this.ReCalculateInvoiceAmounts();
   }
 
@@ -1896,16 +1849,17 @@ export class BillingTransactionComponent {
     //Important: Tax is not applied below.. revise it soon.. sud:11Mar'19
     let itmDiscAmount = itm.SubTotal * itm.DiscountPercent / 100;
     let itmTotAmt = itm.SubTotal - (itmDiscAmount != 0 ? itmDiscAmount : 0);
-    let additionalDiscountAmt = itmTotAmt * invoiceDiscPercent / 100;
-    let totalDiscountAmount = itmDiscAmount + additionalDiscountAmt;
+    let additionalDiscountAmt = 0;// itmTotAmt * invoiceDiscPercent / 100;
+    let totalDiscountAmount = itmDiscAmount;// + additionalDiscountAmt;
 
     //below formula also work's fine.. but didn't use it because of it's complexity in understanding..
     //let totalDiscountAmount = itm.SubTotal - ((100 - itmDiscPercent) / 100 * (100 - invoiceDiscPercent) / 100 * itm.SubTotal);
 
     let aggDiscPercent = (totalDiscountAmount) / itm.SubTotal * 100;
-    itm.DiscountPercentAgg = CommonFunctions.parseAmount(aggDiscPercent);
-    itm.DiscountAmount = CommonFunctions.parseAmount(totalDiscountAmount);
-    itm.TotalAmount = CommonFunctions.parseAmount(itm.SubTotal - totalDiscountAmount);
+    itm.DiscountPercentAgg = CommonFunctions.parseAmount(aggDiscPercent, 3);
+    itm.DiscountPercent = CommonFunctions.parseAmount(itm.DiscountPercent, 3);
+    itm.DiscountAmount = CommonFunctions.parseAmount(totalDiscountAmount, 3);
+    itm.TotalAmount = CommonFunctions.parseAmount(itm.SubTotal - totalDiscountAmount, 3);
 
   }
 
@@ -2020,16 +1974,13 @@ export class BillingTransactionComponent {
 
 
   AddMultipleQtyItems(itmRow: BillingTransactionItem, itmIndex: number) {
-
     if (itmRow && itmRow.Quantity > 1) {
 
       let itmQty = itmRow.Quantity;
 
       itmRow.Quantity = 1;
 
-      this.ReCalculateBillItemAmounts(itmIndex);
-
-
+      //this.ReCalculateBillItemAmounts(itmIndex);
       let extraRowsToCreate = itmQty - 1;
 
       for (var i = 0; i < extraRowsToCreate; i++) {
@@ -2043,9 +1994,13 @@ export class BillingTransactionComponent {
         this.model.BillingTransactionItems[newIndex].ProviderId = itmRow.ProviderId;
         this.model.BillingTransactionItems[newIndex].ProviderName = itmRow.ProviderName;
         this.model.BillingTransactionItems[newIndex].DiscountSchemeId = itmRow.DiscountSchemeId;
+        this.model.BillingTransactionItems[newIndex].DiscountAmount = itmRow.DiscountAmount;
+        this.model.BillingTransactionItems[newIndex].DiscountPercentAgg = itmRow.DiscountPercentAgg;
+        this.model.BillingTransactionItems[newIndex].DiscountPercent = itmRow.DiscountPercent;
+        this.model.BillingTransactionItems[newIndex].TotalAmount = itmRow.TotalAmount;
 
       }
-
+      this.ReCalculateBillItemAmounts(itmIndex);
     }
   }
 
@@ -2053,7 +2008,6 @@ export class BillingTransactionComponent {
 
 
   //start: sundeep:14NOv'19--for membership scheme/community
-
 
   public membershipSchemeParam = { ShowCommunity: false, IsMandatory: true };
 
@@ -2063,7 +2017,7 @@ export class BillingTransactionComponent {
       this.membershipSchemeParam = JSON.parse(currParam.ParameterValue);
     }
   }
-
+  public MembershipTypeName: string = null;
   //On MembershipType change
   OnMembershipTypeChanged($event: MembershipType) {
 
@@ -2078,39 +2032,45 @@ export class BillingTransactionComponent {
       this.memTypeSchemeId = $event.MembershipTypeId;
       this.DiscountPercentSchemeValid = true;
       this.currMemDiscountPercent = $event.DiscountPercent;
+      this.MembershipTypeName = $event.MembershipTypeName;
+      this.model.DiscountPercent = this.currMemDiscountPercent;
+      this.model.BillingTransactionItems.forEach(a => {
+        a.DiscountSchemeId = this.memTypeSchemeId;
+      });
     }
 
 
     //sud:29Aug'19-we've to set remarks as that of discount percent
     if (this.currMemDiscountPercent && this.currMemDiscountPercent != 0) {
       this.model.Remarks = $event ? $event.MembershipTypeName : null;
+      // this.model.DiscountPercent = this.currMemDiscountPercent;
     }
     else {
       this.model.Remarks = null;
     }
+    this.InvoiceDiscountOnChange();
 
-    let billItem = this.model.BillingTransactionItems;
+    //let billItem = this.model.BillingTransactionItems;
+    //billItem.forEach(a => {
+    //  a.DiscountPercent = this.currMemDiscountPercent;
+    //});
 
-    billItem.forEach(a => {
-      a.DiscountPercent = this.currMemDiscountPercent;
-    });
-
-    //Check for Null, if ItemName is null give selected discount-schema from dropdown
-    if (billItem[0].ItemName == null) {
-      billItem[0].DiscountPercent = this.currMemDiscountPercent;
-    }
-    else {
-      billItem.forEach(a => {
-        var ItemDetails = this.itemList.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
-        this.discountApplicable = ItemDetails.DiscountApplicable;
-        if (!this.discountApplicable) {
-          a.DiscountPercent = 0;
-        }
-        else {
-          a.DiscountPercent = this.currMemDiscountPercent;
-        }
-      });
-    }
+    ////Check for Null, if ItemName is null give selected discount-schema from dropdown
+    //if (billItem[0].ItemName == null) {
+    //  billItem[0].DiscountPercent = this.currMemDiscountPercent;
+    //}
+    //else {
+    //  billItem.forEach(a => {
+    //    var ItemDetails = this.itemList.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
+    //    this.discountApplicable = ItemDetails.DiscountApplicable;
+    //    if (!this.discountApplicable) {
+    //      a.DiscountPercent = 0;
+    //    }
+    //    else {
+    //      a.DiscountPercent = this.currMemDiscountPercent;
+    //    }
+    //  });
+    //}
 
   }
   //end: sundeep:14NOv'19--for membership scheme/community
@@ -2118,7 +2078,6 @@ export class BillingTransactionComponent {
   //start: sundeep: for doctor list filter on item change--
 
   ResetDoctorListOnItemChange(item, index) {
-
     if (item) {
       let docArray = null;
       let currItemPriceCFG = this.itemList.find(a => a.ItemId == item.ItemId && a.ServiceDepartmentId == item.ServiceDepartmentId);
@@ -2129,7 +2088,6 @@ export class BillingTransactionComponent {
         }
 
       }
-
       if (docArray && docArray.length > 1) {
         this.model.BillingTransactionItems[index].AssignedDoctorList = [];
 
@@ -2183,8 +2141,6 @@ export class BillingTransactionComponent {
           }
         });
       }
-
-
     }
   }
 
@@ -2211,12 +2167,6 @@ export class BillingTransactionComponent {
   }
 
   public DateDifference(currDate, startDate): number {
-    //const diffInMs = Date.parse(currDate) - Date.parse(startDate);
-    //const diffInHours = diffInMs / 1000 / 60 / 60;
-
-    //return diffInHours;
-
-
     var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(moment(startDate, "YYYY/MM/DD HH:mm:ss"), 'hours');
     return diffHrs;
   }
@@ -2231,4 +2181,183 @@ export class BillingTransactionComponent {
     this.model.OrganizationId = $event.OrganizationId;
     this.model.OrganizationName = $event.OrganizationName;
   }
+
+
+  //this function is hotkeys when pressed by user
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.CloseInvoicePrint();
+    }
+
+    if (event.altKey) {
+      switch (event.keyCode) {
+        case 13: {//=> ALT+enter comes here
+          if (!this.MembershipTypeName || this.MembershipTypeName == 'General') {
+            this.coreService.FocusInputById('tenderAmount');
+          }
+          else {
+            this.coreService.FocusInputById('discountPercentage');
+          }
+          break;
+        }
+        case 80: {// => ALT+P comes here
+          if (!this.loading) {
+            this.loading = true;
+            this.PostInvoice();
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+
+  public OnLabTypeChange() {
+    this.model.LabTypeName = this.LabTypeName;
+    this.FilterBillItems(0);
+
+    if (this.LabTypeName) {
+      if (localStorage.getItem('BillingSelectedLabTypeName')) {
+        localStorage.removeItem('BillingSelectedLabTypeName');
+      }
+      localStorage.setItem('BillingSelectedLabTypeName', this.LabTypeName);
+      let ptr = this.coreService.labTypes.find(p => p.LabTypeName == this.LabTypeName);
+
+    } else {
+      this.msgBoxServ.showMessage('error', ["Please select Lab Type Name."]);
+    }
+  }
+
+  public AddTxnItemRowOnClick(index) {
+    if (index != -1) {
+      if (this.model.BillingTransactionItems[index].ItemId == 0) {
+        if (!this.MembershipTypeName || this.MembershipTypeName == 'General') {
+          this.coreService.FocusInputById("tenderAmount");
+        }
+        else {
+          this.coreService.FocusInputById("discountPercentage");
+        }
+      } else {
+        this.coreService.FocusInputById("txtQuantity_" + index);
+      }
+    }
+  }
+
+  SetLabTypeNameInLocalStorage() {
+    let labtypeInStorage = localStorage.getItem('BillingSelectedLabTypeName');
+    if (this.coreService.labTypes.length == 1) {
+      localStorage.setItem("BillingSelectedLabTypeName", this.coreService.labTypes[0].LabTypeName);
+      return;
+    } else if (this.coreService.labTypes.length == 0) {
+      localStorage.setItem("NursingSelectedLabTypeName", 'op-lab');
+      return;
+    }
+    if (labtypeInStorage) {
+      let selectedLabType = this.coreService.labTypes.find(
+        (val) => val.LabTypeName == labtypeInStorage
+      );
+      if (selectedLabType) {
+        this.LabTypeName = labtypeInStorage;
+      } else {
+        localStorage.removeItem("BillingSelectedLabTypeName");
+        let defaultLabType = this.coreService.labTypes.find(
+          (type) => type.IsDefault == true
+        );
+        if (!defaultLabType) {
+          this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+        } else {
+          this.LabTypeName = defaultLabType.LabTypeName;
+        }
+        localStorage.setItem("BillingSelectedLabTypeName", this.LabTypeName);
+      }
+    } else {
+      let defaultLabType = this.coreService.labTypes.find(
+        (type) => type.IsDefault == true
+      );
+      if (!defaultLabType && this.coreService.singleLabType) {
+        this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+      } else {
+        this.LabTypeName = defaultLabType ? defaultLabType.LabTypeName : this.coreService.labTypes[0].LabTypeName;
+      }
+    }
+  }
+
+  //sud:16May'21--Moving Invoice Printing as Popup
+  public CloseInvoicePrint() {
+    this.showInvoicePrintPage = false;
+    this.model = this.billingService.getGlobalBillingTransaction();
+    this.router.navigate(["/Billing/SearchPatient"]);
+  }
+
+  public MoveToItemName(indx: number) {
+    this.coreService.FocusInputById("srchbx_ItemName_" + indx);
+  }
+
+  //sud:23May'21--If price is valid then add new row, else focus on price field.
+  public EnterPressed_Quantity(indx: number) {
+    if (this.model.BillingTransactionItems[indx].IsPriceValid) {
+      this.AddNewBillTxnItemRow(indx);
+    }
+    else {
+      this.coreService.FocusInputById("txtPrice_" + indx);
+    }
+  }
+
+  //sud:23May'21--If price is valid then add new row, else stay on the same place.
+  public EnterPressed_Price(indx: number) {
+    if (this.model.BillingTransactionItems[indx].IsPriceValid) {
+      this.AddNewBillTxnItemRow(indx);
+    }
+    else {
+      return;
+    }
+  }
+
+  OnProvisionalAmountClick() {
+    this.routeFromService.RouteFrom = "BillingTransactionProvisional";
+    this.router.navigate(['/Billing/UnpaidBills']);
+  }
+
+  public GetBillingRequestDisplaySettings() {
+    var StrParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "OPBillingRequestDisplaySettings");
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      this.BillingRequestDisplaySettings = currParam;
+    }
+  }
+
+  //sud:9Sep'21-- set patient's visitid as per last visit context of patient..
+  //we need to change emergency popup based on same logic.. 
+  public SetVisitContextBeforeBillSubmit() {
+    this.model.PatientVisitId = this.patLastVisitContext.PatientVisitId;
+    this.model.BillingTransactionItems.forEach(itm => {
+      itm.PatientVisitId = this.patLastVisitContext.PatientVisitId;
+    });
+  }
+  public ItemLevelDiscountChkBoxOnChange() {
+    if (!this.ShowItemLevelDiscount) {
+      this.memTypeSchemeId = this.patientService.getGlobal().MembershipTypeId;
+      let membership = new MembershipType();
+      membership.MembershipTypeId = this.memTypeSchemeId;
+      membership.MembershipTypeName = "General";
+      membership.DiscountPercent = 0;
+      this.OnMembershipTypeChanged(membership);
+    }
+    //if (!this.ShowItemLevelDiscount) {
+    this.model.DiscountPercent = this.currMemDiscountPercent;
+    this.model.BillingTransactionItems.forEach(a => {
+      a.DiscountPercent = this.currMemDiscountPercent;
+    });
+    // this.ReCalculateInvoiceAmounts();
+    //}
+    // else{
+
+    //   //ItemLevelDiscountChange(index)
+
+    // }
+    // this.ReCalculateInvoiceAmounts();
+    this.InvoiceDiscountOnChange();
+  }
+
 }

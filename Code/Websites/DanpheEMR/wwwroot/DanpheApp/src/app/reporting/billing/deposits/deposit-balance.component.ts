@@ -5,6 +5,8 @@ import { DLService } from "../../../shared/dl.service";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import * as moment from 'moment/moment';
+import { NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./deposit-balance.html"
@@ -17,6 +19,8 @@ export class RPT_BIL_DepositBalanceComponent {
   public currentdepositbalance: RPT_BIL_DepositBalanceModel = new RPT_BIL_DepositBalanceModel();
   dlService: DLService = null;
 
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  
   constructor(
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
@@ -26,6 +30,7 @@ export class RPT_BIL_DepositBalanceComponent {
     this.Load();
     //this.currentdepartmentsales.fromDate = moment().format('YYYY-MM-DD');
     //this.currentdepartmentsales.toDate = moment().format('YYYY-MM-DD');
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("DepositDate", false));
   }
 
   gridExportOptions = {

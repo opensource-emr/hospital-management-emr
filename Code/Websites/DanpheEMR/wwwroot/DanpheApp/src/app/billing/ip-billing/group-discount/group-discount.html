@@ -1,20 +1,24 @@
 <style>
-.padding-0-hr {
-	padding-left: 0px;
-	padding-right: 0px;
-}
-.member-select .padding-0-hr .col-md-5 .control-label {
-	display: block;
-	width: 100%;
-}
-.custom_table td, .custom_table th {
-	border: 1px solid #ccc !important;
-}
-.custom_table th {
-	position: sticky;
-	top: 0;
-	left: 0;
-}
+  .padding-0-hr {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .member-select .padding-0-hr .col-md-5 .control-label {
+    display: block;
+    width: 100%;
+  }
+
+  .custom_table td,
+  .custom_table th {
+    border: 1px solid #ccc !important;
+  }
+
+  .custom_table th {
+    position: sticky;
+    top: 0;
+    left: 0;
+  }
 </style>
 
 <div class="popup-static portlet box portlet-fullscreen inv_modal">
@@ -24,18 +28,23 @@
         <div class="modelbox-div clearfix">
           <div style="width: 100%;">
             <div class="caption lb-caption">
-              <h3><span>Group Discount For</span></h3>
-              <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()" style="padding: 0 !important; display: block;">X</a> </div>
+              <h3><span>Item Discount For</span></h3>
+              <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()"
+                style="padding: 0 !important; display: block;">X</a>
+            </div>
             <div class="p1">
               <div class="row no-gutters">
                 <div class="col-md-12" *ngIf="admissionInfo">
                   <div class="tbl-primary">
                     <div class="row mb10 no-gutters">
                       <div class="col-md-6">
-                        <h1 class="header inner-header"><i class="fa fa-user"></i>{{admissionInfo.PatientName}}({{admissionInfo.PatientNo}})</h1>
+                        <h1 class="header inner-header"><i
+                            class="fa fa-user"></i>{{admissionInfo.PatientName}}({{admissionInfo.PatientNo}})</h1>
                       </div>
                       <div class="col-md-6 text-right">
-                        <p class="text-muted"><span><i class="fa fa-male"></i>{{admissionInfo.DateOfBirth | DanpheDateTime:'age'}} / {{admissionInfo.Gender}}</span> | <i class="fa fa-phone"></i>{{admissionInfo.PhoneNumber}}</p>
+                        <p class="text-muted"><span><i class="fa fa-male"></i>{{admissionInfo.DateOfBirth |
+                            DanpheDateTime:'age'}} / {{admissionInfo.Gender}}</span> | <i
+                            class="fa fa-phone"></i>{{admissionInfo.PhoneNumber}}</p>
                       </div>
                     </div>
                   </div>
@@ -44,79 +53,116 @@
                   <table class="table doc-tbl table-bordered custom_table padLess_table" style="width:100%;" border="0">
                     <thead style="background-color: #d0d9d0;">
                       <tr>
-                        <th align="right" width="20"> <label class="mt-checkbox mt-checkbox-outline">
-                            <input type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected" (change)="OnChangeSelectAll()" />
+                        <!-- <th align="right" width="20"> <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected"
+                              (change)="OnChangeSelectAll()" />
                             <span></span> </label>
-                        </th>
+                        </th> -->
                         <th align="center"> SNo. </th>
                         <th> ItemName </th>
                         <th> Quantity </th>
                         <th> Sub Total </th>
                         <th> Discount % </th>
+                        <th>Discount Amount</th>
                         <th> Total Amount </th>
                       </tr>
                     </thead>
                     <tbody *ngIf="groupDiscountItems">
                       <tr *ngFor="let itm of groupDiscountItems;let i=index;">
-                        <td><i *ngIf="!itm.DiscountApplicable && discTypeToUse=='scheme'" style="color: yellowgreen;" class="fa fa-warning" title="Discount Scheme Not Applicable for this item."></i>
+                        <!-- <td><i *ngIf="!itm.DiscountApplicable && discTypeToUse=='scheme'" style="color: yellowgreen;"
+                            class="fa fa-warning" title="Discount Scheme Not Applicable for this item."></i>
                           <label class="mt-checkbox mt-checkbox-outline">
-                            <input type="checkbox" name="selectItems"
-                         [(ngModel)]="itm.IsSelected" (change)="OnChangeItemSelect(itm)" [disabled]="!itm.DiscountApplicable && discTypeToUse=='scheme'" />
-                            <span></span> </label></td>
+                            <input type="checkbox" name="selectItems" [(ngModel)]="itm.IsSelected"
+                              (change)="OnChangeItemSelect(itm,true)"
+                              [disabled]="!itm.DiscountApplicable && discTypeToUse=='scheme'" />
+                            <span></span> </label>
+                        </td> -->
                         <td> {{i+1}} </td>
                         <td align="left"> {{itm.ItemName}}
-                          <div *ngIf="itm.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{itm.ProviderName}}) </span> </div></td>
+                          <div *ngIf="itm.ProviderId"> <span style="font-size: 12px;font-weight: bold;">
+                              ({{itm.ProviderName}}) </span> </div>
+                        </td>
                         <td> {{itm.Quantity}} </td>
                         <td> {{itm.SubTotal}} </td>
-                        <td><span> {{itm.DiscountPercent}} </span></td>
+                        <!-- <td><span> {{itm.DiscountPercent}} </span></td> -->
+                        <td>
+                          <input type="number" [(ngModel)]="itm.DiscountPercent" id="id_discPercent_{{i}}"
+                            (wheel)="coreService.PreventNumberChangeOnScroll($event)" onClick="this.select();"
+                            (ngModelChange)="DiscountPercentChanged(i)" min="0" (keyup.enter)="FocusNextItemRow(i)"
+                            [attr.disabled]="itm.DiscountApplicable ? null : true">
+                            <div><span class="color-red font-sm" *ngIf = "!itm.IsValidIPItemLevelDisocunt">Enter valid Discount.</span></div>
+                        </td>
+                        <td>{{itm.DiscountAmount}}</td>
                         <td> {{itm.TotalAmount}} </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <div class="col-md-12 margin-20-tp">
-                  <div class="action-bar" style="box-shadow: none;">
-                    <div class="col-md-4 padding-0-hr" *ngIf="enableGroupDiscount">
-                      <div class="row no-gutters">
-                        <div class="col-md-7">
-                          <label>Group Discount (%) :</label>
-                        </div>
-                        <div class="col-md-4">
-                          <input type="number"
-                       [disabled]="discTypeToUse!='group'"
-                       [(ngModel)]="groupDiscountPercent"
-                       min="0"
-                       max="100"
-                       (ngModelChange)="GroupDiscountOnChange()"
-                       class="form-control"
-                       name="DiscountPercent">
-                          <label class="color-red font-sm" *ngIf="showMessage"> Enter Valid number. </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div *ngIf="enableDiscScheme" class="col-md-3 padding-0-hr member-select">
-                      <membership-select *ngIf="isMembershipInfoLoaded" [selected-id]="DiscountSchemaId" (on-membership-change)="OnDiscountSchemeChange($event)"
-                                 [show-community]="membershipSchemeParam.ShowCommunity" [is-mandatory]="membershipSchemeParam.IsMandatory"
-                                 [disabled]="discTypeToUse !='scheme'"
-                                 [labels-info]="{ CommunityLabel: 'Community', SchemeLabel: 'Scheme'}"> </membership-select>
-                    </div>
-                  </div>
-                  <div class="col-md-3" *ngIf="enableGroupDiscount">
-                    <label for="discType_group" class="mt-radio mt-radio-outline">
-                      <input type="radio" id="discType_group" [(ngModel)]="discTypeToUse" name="disc-type" value="group" (ngModelChange)="OnDiscTypeChanged()" />
-                      <span></span>Use Group Discount</label>
-                  </div>
-                  <div class="col-md-3" *ngIf="enableDiscScheme">
-                    <label for="discType_scheme" class="mt-radio mt-radio-outline">
-                      <input type="radio" id="discType_scheme" [(ngModel)]="discTypeToUse" name="disc-type" value="scheme" (ngModelChange)="OnDiscTypeChanged()" />
-                      <span></span>Use Discount Scheme</label>
+                <div class="col-md-12" style="margin-top: 10px;">
+                  <div class="col-md-9"></div>
+                  <div class="col-md-3">
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td colspan="2">Subtotal: </td>
+                          <td colspan="2"> <span><label
+                                style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.Subtotal}}</label></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">Discount Amount:</td>
+                          <td colspan="2"><span><label
+                                style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.DiscountAmount}}</label></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">Total Amount: </td>
+                          <td colspan="2"><span><label
+                                style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.TotalAmount}}</label></span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
+                <!-- <div class="col-md-12 margin-20-tp">
+                  <div class="col-md-12" *ngIf="enableDiscScheme">
+                    <div class="col-md-4">
+                      <label for="discType_scheme" class="mt-radio mt-radio-outline">
+                        <input type="radio" id="discType_scheme" [(ngModel)]="discTypeToUse" name="disc-type"
+                          value="scheme" (ngModelChange)="OnDiscTypeChanged()" />
+                        <span></span>Use Discount Scheme</label>
+                    </div>
+                    <div class="col-md-7">
+                      <membership-select *ngIf="isMembershipInfoLoaded" [selected-id]="DiscountSchemaId"
+                        (on-membership-change)="OnDiscountSchemeChange($event)"
+                        [show-community]="membershipSchemeParam.ShowCommunity"
+                        [is-mandatory]="membershipSchemeParam.IsMandatory" [disabled]="discTypeToUse !='scheme'">
+                      </membership-select>
+                    </div>
+                  </div>
+                  <div class="col-md-12" style="margin-top: 10px;">
+                    <div class="col-md-4">
+                      <label for="discType_group" class="mt-radio mt-radio-outline">
+                        <input type="radio" id="discType_group" [(ngModel)]="discTypeToUse" name="disc-type"
+                          value="group" (ngModelChange)="OnDiscTypeChanged()" />
+                        <span></span>Use Group Discount</label>
+                    </div>
+                    <div class="col-md-4">
+                      Group Discount %:
+                      <input type="number" [disabled]="discTypeToUse!='group'" [(ngModel)]="groupDiscountPercent"
+                        min="0" max="100" (ngModelChange)="GroupDiscountOnChange()" style="width: 100px;"
+                        name="DiscountPercent">
+                      <label class="color-red font-sm" *ngIf="showMessage"> Enter Valid number. </label>
+                    </div>
+                  </div>
+                </div> -->
               </div>
             </div>
             <div class="panel-footer">
               <div>
-                <input type="button" class="btn btn-sm blue" value="Save Items" (click)="SubmitGroupDiscount()" [disabled]="showMessage" />
+                <input type="button" class="btn green btn-success" id="id_saveItems" value="Save Items"
+                  (click)="SubmitGroupDiscount()" [disabled]="showMessage || loading" />
               </div>
             </div>
           </div>

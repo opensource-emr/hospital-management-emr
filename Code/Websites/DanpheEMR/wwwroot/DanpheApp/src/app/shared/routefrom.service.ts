@@ -12,7 +12,4 @@ export class RouteFromService {
     set RouteFrom(route: string) {
         this._routefrom = route;
     }
-
-
-
 }

@@ -66,6 +66,7 @@ export class DischargeSummaryAddComponent {
   public drIncharge: any = null;
   public labtest: any = null;
   public diagnosis: any = null;
+  public provisonalDiagnosis: any = null;
   public anasthetists: any = null;
   public residenceDr: any = null;
   public icdsID: Array<number> = new Array<number>();
@@ -84,6 +85,7 @@ export class DischargeSummaryAddComponent {
   public deathTypeList: Array<any> = new Array<any>();
   public Isdeath: boolean = false;
   public NoOfBabies: number = 1;
+  public emptyMed: boolean = true;
   //public CurrentBabyBirthDeails: BabyBirthDetails = new BabyBirthDetails();
   public showBabyDetails: boolean = false;
   today: string;
@@ -91,7 +93,7 @@ export class DischargeSummaryAddComponent {
   public deathType: any = null;
   //public selectedBaby: BabyBirthDetails = new BabyBirthDetails();
   //public showBirthCertificate: boolean = false;
-  //public showDeathCertificate: boolean = false;
+  public selectUnselectAllLabTests: boolean = false;
   public CurrentFiscalYear: string = null;
   public NewMedications: Array<DischargeSummaryMedication> = new Array<DischargeSummaryMedication>();
   public OldMedications: Array<DischargeSummaryMedication> = new Array<DischargeSummaryMedication>();
@@ -100,7 +102,9 @@ export class DischargeSummaryAddComponent {
   public dischargeSummaryClassObj = { col9: "col-md-9 col-xs-12", col12: "col-md-12" }
   //public sendableData: any;
   @Output("sendData") sendData: EventEmitter<any> = new EventEmitter<any>();
+  @Output("CallBackFromAdd") callback: EventEmitter<any> = new EventEmitter<any>();
   public selectedDiagnosisList: Array<any> = new Array<any>();
+  public selectedProviDiagnosisList: Array<any> = new Array<any>();
   public IsReportWithResult: boolean = false;
   public showChooseTestResultPopup: boolean = false;
   imagingItems: any[];
@@ -539,6 +543,7 @@ export class DischargeSummaryAddComponent {
         alert(`${this.labtest.TestName} Already Added !`);
         this.labtest = undefined;
       }
+      this.labtest = '';
     }
   }
   //discharge summary
@@ -674,6 +679,9 @@ export class DischargeSummaryAddComponent {
         if (this.CurrentDischargeSummary && this.CurrentDischargeSummary.Diagnosis) {
           this.selectedDiagnosisList = JSON.parse(this.CurrentDischargeSummary.Diagnosis);
         }
+        if (this.CurrentDischargeSummary && this.CurrentDischargeSummary.ProvisionalDiagnosis) {
+          this.selectedProviDiagnosisList = JSON.parse(this.CurrentDischargeSummary.ProvisionalDiagnosis);
+        }
         //if (res.Results.BabyBirthDetails.length) {
         //  this.CurrentDischargeSummary.BabyBirthDetails = new Array<BabyBirthDetails>();
         //  res.Results.BabyBirthDetails.forEach(a => {
@@ -787,19 +795,25 @@ export class DischargeSummaryAddComponent {
       this.CurrentDischargeSummary.Diagnosis = tempString;
     }
 
+    // for multiple provisional diagnosis
+    if (this.selectedProviDiagnosisList.length > 0) {
+      let tempString = JSON.stringify(this.selectedProviDiagnosisList);
+      this.CurrentDischargeSummary.ProvisionalDiagnosis = tempString;
+    }
+
     // Generating selected Imaging items
     this.CurrentDischargeSummary.SelectedImagingItems = JSON.stringify(this.AddedImgTests);
   }
 
   GenerateInvestigationData() {
     this.labTests = new Array<any>();
+    this.CurrentDischargeSummary.LabTests = '';
     if (this.AddedTests.length > 0) {
       this.AddedTests.forEach(a => {
         this.labTests.push(a);
       });
-
-      this.CurrentDischargeSummary.LabTests = JSON.stringify(this.labTests);
     }
+    this.CurrentDischargeSummary.LabTests = JSON.stringify(this.labTests);
   }
 
   GenerateMedicationData() {
@@ -895,13 +909,12 @@ export class DischargeSummaryAddComponent {
         res => {
           if (res.Status == "OK") {
             this.msgBoxServ.showMessage("success", ["Discharge Summary Saved"]);
-            //this.showDischargeSummary = false;
-            //this.showSummaryView = true;
-
+            this.showDischargeSummary = false;
+            this.showSummaryView = true;
             this.update = true;
-            this.CallBackAddUpdate(res);
             this.CurrentDischargeSummary.DischargeSummaryId = res.Results.DischargeSummaryId;
             this.sendData.emit({ Status: "Ok" });
+            this.CallBackAddUpdate(res);
 
           }
           else {
@@ -923,13 +936,10 @@ export class DischargeSummaryAddComponent {
         res => {
           if (res.Status == "OK") {
             this.msgBoxServ.showMessage("success", ["Discharge Summary Updated"]);
-            this.CallBackAddUpdate(res);
 
-            if (res.Results.IsSubmitted == true) {
-              this.showDischargeSummary = false;
-              this.showSummaryView = true;
-            }
-            this.sendData.emit({ Status: "Ok" });
+            this.showDischargeSummary = false;
+            this.CallBackAddUpdate(res);
+            this.sendData.emit({data:"res", Status: "Ok" });
           }
           else {
             this.msgBoxServ.showMessage("failed", ["Check log for errors"]);
@@ -975,7 +985,8 @@ export class DischargeSummaryAddComponent {
 
   CallBackAddUpdate(dischargeSummary: DischargeSummary) {
     this.CurrentDischargeSummary = Object.assign(this.CurrentDischargeSummary, dischargeSummary);
-    //this.showSummaryView = true;
+    this.callback.emit(this.CurrentDischargeSummary);
+    
   }
 
   SubmitAndViewSummary() {
@@ -1035,6 +1046,7 @@ export class DischargeSummaryAddComponent {
           this.AddedTests.forEach((v, i) => {
             if (v.TestId == selectedTestId) {
               this.AddedTests.splice(i, 1);
+              this.selectUnselectAllLabTests = false;
             }
           });
 
@@ -1063,7 +1075,7 @@ export class DischargeSummaryAddComponent {
             c.IsCmptSelected = true;
           });
         }
-
+        this.selectUnselectAllLabTests = true;
       }
       else {
         let selectedTestId = this.labRequests[index].TestId;
@@ -1071,6 +1083,7 @@ export class DischargeSummaryAddComponent {
         this.AddedTests.forEach((v, i) => {
           if (v.TestId == selectedTestId) {
             this.AddedTests.splice(i, 1);
+            this.selectUnselectAllLabTests = false;
           }
         });
 
@@ -1079,7 +1092,7 @@ export class DischargeSummaryAddComponent {
             c.IsCmptSelected = false;
           });
         }
-
+        this.selectUnselectAllLabTests = false;
       }
     } catch (ex) {
       // this.ShowCatchErrMessage(ex);
@@ -1095,17 +1108,31 @@ export class DischargeSummaryAddComponent {
     })
 
     this.AddedTests.splice(index, 1);
+    this.selectUnselectAllLabTests = false;
 
   }
 
 
   AddMedicine(val) {
     try {
+
       var newMedicine = new DischargeSummaryMedication();
       newMedicine.FrequencyId = 0;
       if (val == 0) {
         newMedicine.OldNewMedicineType = 0;
-        this.NewMedications.push(newMedicine);
+
+        if (this.NewMedications.length == 0) {
+          this.NewMedications.push(newMedicine);
+        } else {
+          if (this.NewMedications[this.NewMedications.length - 1].Medicine) {
+            this.NewMedications.push(newMedicine);
+            // Focus to newly created medication input field
+            let latestId = this.NewMedications.length - 1;
+            this.FocusOnInputField(latestId);
+          } else {
+            alert("First Enter the medication in exising field!");
+          }
+        }
       }
       else if (val == 1) {
         newMedicine.OldNewMedicineType = 1;
@@ -1115,6 +1142,7 @@ export class DischargeSummaryAddComponent {
         newMedicine.OldNewMedicineType = 2;
         this.StoppedOldMedications.push(newMedicine);
       }
+
     } catch (ex) {
       //this.ShowCatchErrMessage(ex);
     }
@@ -1146,23 +1174,11 @@ export class DischargeSummaryAddComponent {
   public CheckValidation() {
     if (this.CurrentDischargeSummary) {
       this.CurrentDischargeSummary.UpdateValidator("off", "DischargeConditionId", "required");
-      this.CurrentDischargeSummary.UpdateValidator("off", "DeliveryTypeId", "required");
-      //this.CurrentDischargeSummary.UpdateValidator("off", "BabyBirthConditionId", "required");
-      //this.CurrentDischargeSummary.UpdateValidator("off", "DeathTypeId", "required");
-      //this.CurrentDischargeSummary.UpdateValidator("off", "BabysFathersName", "required");
       if (this.DischargeConditionType) {
         //set validator on
         this.CurrentDischargeSummary.UpdateValidator("on", "DischargeConditionId", "required");
-        //if (this.DeliveryType) {
-        //  this.CurrentDischargeSummary.UpdateValidator("on", "DeliveryTypeId", "required");
-        //  this.CurrentDischargeSummary.UpdateValidator("on", "BabyBirthConditionId", "required");
-        //  this.CurrentDischargeSummary.UpdateValidator("on", "BabysFathersName", "required")
-        //}
+
       }
-      //else if (this.Isdeath) {
-      //  //set validator off
-      //  this.CurrentDischargeSummary.UpdateValidator("on", "DeathTypeId", "required");
-      //}
     }
   }
 
@@ -1254,6 +1270,40 @@ export class DischargeSummaryAddComponent {
     this.selectedDiagnosisList = temp.filter((d, index) => index != i)
   }
 
+  public MakeProvisonalDiagnosisList() {
+    // console.log(this.diagnosis);
+    if (this.provisonalDiagnosis != undefined && typeof (this.provisonalDiagnosis) != "string") {
+      if (this.selectedProviDiagnosisList.length > 0) {
+        let temp: Array<any> = this.selectedProviDiagnosisList;
+        let isICDDuplicate: boolean = false;
+
+
+        if (temp.some(d => d.ICD10Id == this.provisonalDiagnosis.ICD10Id)) {
+          isICDDuplicate = true;
+          alert(`${this.provisonalDiagnosis.icd10Description} Already Added !`);
+          this.provisonalDiagnosis = undefined;
+
+        }
+        if (isICDDuplicate == false) {
+          {
+            this.selectedProviDiagnosisList.push(this.provisonalDiagnosis);
+            this.provisonalDiagnosis = undefined;
+          }
+        }
+      } else {
+        this.selectedProviDiagnosisList.push(this.provisonalDiagnosis);
+        this.provisonalDiagnosis = undefined;
+      }
+    } else if (typeof (this.provisonalDiagnosis) == 'string') {
+      alert("Enter Valid ICD10 !");
+    }
+  }
+  RemoveProvisonalDiagnosis(i) {
+    let temp: Array<any> = this.selectedProviDiagnosisList;
+    this.selectedProviDiagnosisList = [];
+    this.selectedProviDiagnosisList = temp.filter((d, index) => index != i)
+  }
+
   LabTestComponentSelection(index: number, ci: number, cName: string) {
     try {
       let selectedTest = this.labRequests[index];
@@ -1283,6 +1333,7 @@ export class DischargeSummaryAddComponent {
             let checkComp = v.labComponents.some(c => c.ComponentName == cName);
             if (checkComp) {
               v.labComponents.splice(ci, 1);
+              this.selectUnselectAllLabTests = false;
             }
           }
         });
@@ -1300,8 +1351,11 @@ export class DischargeSummaryAddComponent {
 
       if (selectedComponentCount == selectedTest.labComponents.length) {
         this.labRequests[index].IsSelectTest = true;
+        this.selectUnselectAllLabTests = true;
       } else {
         this.labRequests[index].IsSelectTest = false;
+        this.selectUnselectAllLabTests = false;
+
       }
 
     } catch (ex) {
@@ -1324,6 +1378,7 @@ export class DischargeSummaryAddComponent {
         this.AddedImgTests.forEach((v, i) => {
           if (v == this.imagingResults[index].ImagingItemId) {
             this.AddedImgTests.splice(i, 1);
+            this.selectUnselectAllLabTests = false;
           }
         });
       }
@@ -1340,6 +1395,64 @@ export class DischargeSummaryAddComponent {
       });
     }
   }
+
+
+  AllLabTestSelection() {
+    try {
+
+
+    }
+    catch (ex) {
+      // this.ShowCatchErrMessage(ex);
+    }
+  }
+
+  LabTestsSelectUnselectALL() {
+
+
+
+    if (this.selectUnselectAllLabTests && this.labRequests && this.labRequests.length > 0) { // Select all
+
+      this.labRequests.forEach((lr, index) => {
+
+        // lr.labConponents.forEach(lc=>{
+
+        //   lc.IsCmpSelected = true;          
+
+
+        // });
+        lr.IsSelectTest = true;
+        this.LabTestSelection(index);
+
+      });
+
+    }
+
+    else if (this.selectUnselectAllLabTests == false && this.labRequests && this.labRequests.length > 0) {
+
+      this.labRequests.forEach((lr, index) => {
+
+        lr.IsSelectTest = false;
+        this.LabTestSelection(index);
+
+      });
+    }
+
+  }
+
+  OnMedicineEnterKeyClick() {
+    this.AddMedicine(0);
+  }
+
+  public FocusOnInputField(i: number) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById("MedicineInput" + i);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+
 
   //CloseEditReport() {
   //  this.showDeathCertificate = false;

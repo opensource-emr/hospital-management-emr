@@ -7,6 +7,7 @@ import {
     FormBuilder,
     ReactiveFormsModule
 } from '@angular/forms'
+import { BillInvoiceReturnItemsModel } from './bill-invoice-return-items.model';
 import { BillingTransactionItem } from './billing-transaction-item.model';
 
 export class BillInvoiceReturnModel {
@@ -31,5 +32,14 @@ export class BillInvoiceReturnModel {
     public TaxId: number = null;
     public InvoiceCode: string = null;
     public Tender: number = null;
-    public ReturnedItems: Array<BillingTransactionItem> = [];//Rajesh:7Aug19
+    public ReturnedItems: Array<BillingTransactionItem> = [];//Rajesh:7Aug19 -- this can be removed after removing partial return 
+    public ReturnInvoiceItems: Array<BillInvoiceReturnItemsModel> = [];//Sud-1May'21 for Credit Note
+
+    public PaymentMode: string = null;
+    public IsInsuranceBilling: boolean = false;
+    public InsuranceProviderId: number = null;
+    public BillStatus: string = null;
+    public DiscountReturnAmount:number = 0;
+    public DiscountFromSettlement:number = 0;
+
 }

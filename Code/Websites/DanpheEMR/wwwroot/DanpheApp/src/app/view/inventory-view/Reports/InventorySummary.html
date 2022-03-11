@@ -17,9 +17,11 @@
       </danphe-multiselect>
     </div>
     <div class="col-md-2" style="margin-top: 5px !important;">
-      <button class="btn blue" type="button" (click)="ShowInventorySummary()">
-        <i class="fa fa-search"></i>
-        Load
+      <button class="btn blue" type="button" (click)="ShowInventorySummary()" [disabled]="loading">
+        <i class="fa fa-search"></i>&nbsp;
+        <span *ngIf="!loading">Load</span>
+        <span *ngIf="loading">Loading...</span>
+        
       </button>
     </div>
 

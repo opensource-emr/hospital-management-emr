@@ -1,6 +1,8 @@
-
-<div class="wrapper">
-  <div>
+<div class="wrapper" style="margin-top: -38px;">
+  <div style="height: 38px; text-align: right;"><button *ngIf="showPreviewButton" [disabled]="loading"
+      class="btn btn-primary btn-dispatch-preview" (click)="PreviewSelectedReport();">Preview
+      <i class="fa fa-eye"></i></button></div>
+  <div class="final-reports-holer">
     <table class="table test-list-table">
       <thead>
         <tr>
@@ -10,23 +12,254 @@
           <th>Result By</th>
           <th *ngIf="showVerifiedByColumn">Verified By</th>
           <th>Printed By</th>
-          <th><input class="slct-checkbox" type="checkbox" name="selectAllTests" value="selectAll" [(ngModel)]="selectAll" (change)="SelectDeselectAll()" /></th>
+          <th><input class="slct-checkbox" type="checkbox" name="selectAllReportsAndTests"
+              value="selectAllReportsAndTest" [(ngModel)]="selectAllReportsAndTest"
+              (change)="SelectDeselectAllReportsAndTests()" /></th>
         </tr>
       </thead>
-      <tbody>
-        <ng-container *ngFor="let test of reportSelected.Tests; let i=index;">
-          <tr (click)="CheckForSelectAll(test)" [ngClass]="test.PrintCount > 0 ? 'bg-green':''">
-            <td>{{reportSelected.SampleCodeFormatted}}</td>
+      <tbody *ngFor="let rep of reportSelected; let j=index;">
+
+        <ng-container *ngIf="j>0">
+          <tr style="background: #f3f2f6;">
+            <td colspan="7" style="text-align: center;height: 15px"></td>
+          </tr>
+        </ng-container>
+
+        <tr style="background: #f3f2f6;font-size: 14px;">
+          <td colspan="6" style="text-align: center; padding: 10px;" *ngIf="showVerifiedByColumn">{{j+1}}. Lab Report of
+            {{rep.PatientName}}</td>
+          <td colspan="5" style="text-align: center; padding: 10px;" *ngIf="!showVerifiedByColumn">{{j+1}}. Lab Report
+            of
+            {{rep.PatientName}}</td>
+          <td><input class="slct-checkbox" type="checkbox" name="selectAllTests" value="selectAll"
+              [(ngModel)]="rep.SelectAll" (change)="SelectDeselectAll(j)" /></td>
+        </tr>
+        <ng-container *ngFor="let test of rep.Tests; let i=index;">
+          <tr (click)="CheckForSelectAll(j,i)" [ngClass]="test.PrintCount > 0 ? 'bg-green':''">
+            <td>{{rep.SampleCodeFormatted}}</td>
             <td [ngClass]="test.ValidTestToPrint ? '':'txt-red'">{{test.TestName}}</td>
             <td>{{test.SampleCollectedByName}}</td>
             <td>{{test.ResultAddedByName}}</td>
             <td *ngIf="showVerifiedByColumn">{{test.ResultVerifiedByName}}</td>
             <td>{{test.PrintedByName}}</td>
-            <td *ngIf="test.ValidTestToPrint"><input class="slct-checkbox" type="checkbox" name="allTests" [(ngModel)]="test.CheckedForPrint" /></td>
+            <td *ngIf="test.ValidTestToPrint"><input class="slct-checkbox" type="checkbox" name="allTests"
+                [(ngModel)]="test.CheckedForPrint" /></td>
             <td class="txt-red" *ngIf="!test.ValidTestToPrint"> Not Paid </td>
           </tr>
         </ng-container>
+
       </tbody>
     </table>
   </div>
+
+  <div *ngIf="reportSelected && reportSelected[0] && reportSelected[0].PatientId" class="other">
+    <div>
+
+      <label for="showAllTestSumm"><input id="showAllTestSumm" type="checkbox" [(ngModel)]="showPendingTests"
+          [disabled]="loading" (change)="ShowPendingTestList()" />Show Pending Tests of this Patient ?</label>
+    </div>
+    <div *ngIf="showPendingTests">
+      <div class="all-requisitions" *ngIf="requisitions && requisitions.length">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">Lab Requisitions</th>
+            </tr>
+            <tr>
+              <th>S.No.</th>
+              <th>Test Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of requisitions; let i=index;">
+              <td>{{i+1}}</td>
+              <td>{{d.LabTestName}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="results-to-add" *ngIf="resultsToAdd && resultsToAdd.length">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">Results To Add</th>
+            </tr>
+            <tr>
+              <th>S.No.</th>
+              <th>Sample No.</th>
+              <th>Test Name</th>
+              <th>Sample Collected By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of resultsToAdd; let i=index;">
+              <td>{{i+1}}</td>
+              <td>{{d.SampleCodeFormatted}}</td>
+              <td>{{d.LabTestName}}</td>
+              <td>{{d.SampleCollectedBy}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="results-added" *ngIf="resultsAdded && resultsAdded.length">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">Results Added</th>
+            </tr>
+            <tr>
+              <th>S.No.</th>
+              <th>Sample No.</th>
+              <th>Test Name</th>
+              <th>Sample Collected By</th>
+              <th>Result Added By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of resultsAdded; let i=index;">
+              <td>{{i+1}}</td>
+              <td>{{d.SampleCodeFormatted}}</td>
+              <td>{{d.LabTestName}}</td>
+              <td>{{d.SampleCollectedBy}}</td>
+              <td>{{d.ResultEnteredBy}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+    </div>
+  </div>
 </div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showReport">
+  <div class="portlet-body form">
+    <div class="col-md-offset-1 col-md-10">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-warning"> <strong>Lab Report of
+              {{patientService.globalPatient.ShortName}}</strong> </h4>
+        </div>
+        <div class="modelbox-body">
+          <div class="text-right" style="margin-bottom: 5px;">
+              <a class="text-left" *ngIf="emailSettings.EnableSendEmail" class="btn btn-cancel hidden-print btn-sm" title="Send Report as Email" (click)="showEmailDataBox=true;ProcessSendingData()"> <i class="fa fa-envelope"></i> Send Email </a>
+            <button [disabled]="loading" class="btn btn-primary margin-7-hr" (click)="loading=true;printLabReport()">
+              Print <i class="fa fa-print"></i>
+            </button>
+          </div>
+          <div class="lab-all-reports" id="all-lab-reports">
+            <div *ngFor="let singleReport of templateReport" class="lab-single-report">
+              <danphe-lab-view-report *ngIf="showReport && labReportFormat == 'format1'" [templateReport]="singleReport"
+                [showReport]="showReport" [showHeader]="showHeader" [showSignatories]="showSignatories"
+                [hidePrintButton]="true" [enableEdit]="enableEdit" [printReportFromGrid]="false"
+                (callBackToReportDispatch)="CallBackToReportDispatchAfterPrint($event)">
+              </danphe-lab-view-report>
+              <danphe-lab-view-report-format2 *ngIf="showReport && labReportFormat == 'format2'"
+                [hidePrintButton]="true" [templateReport]="singleReport" [showReport]="showReport"
+                [showHeader]="showHeader" [showSignatories]="showSignatories" [enableEdit]="enableEdit"
+                [printReportFromGrid]="false" (callBackToReportDispatch)="CallBackToReportDispatchAfterPrint($event)">
+              </danphe-lab-view-report-format2>
+            </div>
+          </div>
+          <div>
+            <div class="margin-20-tp text-center">
+              <button [disabled]="loading" class="btn btn-primary margin-7-hr" (click)="loading=true;printLabReport()">
+                Print <i class="fa fa-print"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <!--<button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="SaveResult();showWarningConfirmBox=false">
+                Proceed
+              </button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="ReviewValues()">
+                Review Values
+              </button>-->
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="Close()">X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal"  *ngIf="showEmailDataBox">
+    <div class="portlet-body form">
+      <div class="row"><div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div">       
+        <div class="caption custom-caption">
+              <h3> <span>Enter the email informations</span></h3>
+              <a class="btn btn-danger" (click)="CloseSendEmailPopUp()" title="Cancel">X</a> </div>
+          <div class="modelbox-body">
+            <div class="row margin-15-vr">
+              <div class="col-md-12">
+                <form [formGroup]="labEmail.LabEmailValidator" class="form-horizontal">
+                  <div class="form-group">
+                    <label for="inputEmail" class="col-sm-2 control-label">To</label>
+                    <div class="col-sm-10">
+                      <input formControlName="EmailAddress" [(ngModel)]="labEmail.EmailAddress" type="email" class="form-control" id="inputEmail" placeholder="Email">
+                      <div class="color-red font-sm" *ngIf="labEmail.IsDirty('EmailAddress')"
+                           [hidden]="labEmail.IsValidCheck('EmailAddress','required')"> Email Address is required </div>
+                      <p style="font-size: small;"><i>Note: separate multiple email by semicolon (;)</i></p>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="subject" class="col-sm-2 control-label">Subject</label>
+                    <div class="col-sm-10">
+                      <input formControlName="Subject" [(ngModel)]="labEmail.Subject" type="text" class="form-control" id="subject" placeholder="Subject">
+                      <div class="color-red font-sm" *ngIf="labEmail.IsDirty('Subject')"
+                           [hidden]="labEmail.IsValidCheck('Subject','required')"> Subject is required </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-10">                         
+                      <textarea formControlName="PlainContent"  maxlength="500" id="remark" cols="50" rows="5" 
+                      placeholder="Enter text" name="text" 
+                      [(ngModel)]="labEmail.PlainContent"></textarea> 
+                      <div class="color-red font-sm" [hidden]="labEmail.IsValidCheck('PlainContent','required')" *ngIf="labEmail.IsDirty('PlainContent')">
+                        Remark is required
+                      </div>           
+                  </div>
+                </div>
+                  <div class="form-group" *ngIf="labEmail.ImageAttachments_Preview">
+                    <div class="col-md-8">
+                      <div *ngIf="labEmail.ImageAttachments_Preview.length>0">
+                        <div *ngFor="let pdf of labEmail.ImageAttachments_Preview; let i = index;">
+                          <input type="checkbox" [(ngModel)]="pdf.IsSelected" id="{{pdf.ImageName}}" [ngModelOptions]="{standalone: true}"
+                                 (change)="PdfPreviewChkOnChange()" />
+                          <label class="lbl-email-img-preview" for="{{pdf.ImageName}}" 
+                                 style="cursor:pointer;"> {{i+1}}. {{pdf.ImageName}}.pdf </label>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- <div class="col-md-4">
+                      <div id="dv_img_email_preview" style="min-height:200px;width:100%;"> <img class="img-responsive" *ngIf="email_showpdfPreview" [src]="email_previewpdf_Src" /> </div>
+                    </div> -->
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!--<order-select (sendBackOrders)="GetOrders($event)" [showSelectOrder]="openOrderBox" [selectedOrders]="ordersSelected"></order-select>--> 
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button [disabled]="loading" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;SendEmail()"> Send </button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseSendEmailPopUp()"> Cancel </button>
+            </div>
+          </div>
+  <!--
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="CloseSendEmailPopUp()">X</button>
+          </div>
+  -->
+        </div>
+      </div></div>
+    </div>
+  </div>

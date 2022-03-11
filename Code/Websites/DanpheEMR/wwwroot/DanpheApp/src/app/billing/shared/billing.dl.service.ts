@@ -4,7 +4,6 @@ import { BillItemRequisition } from './bill-item-requisition.model';
 import { BillingTransaction } from './billing-transaction.model';
 import { BillingTransactionItem } from './billing-transaction-item.model';
 import { BillingDeposit } from './billing-deposit.model';
-import { BillReturnRequest } from './bill-return-request.model';
 import { CommonFunctions } from "../../shared/common.functions";
 import * as _ from 'lodash';
 import { BillInvoiceReturnModel } from './bill-invoice-return.model';
@@ -12,13 +11,16 @@ import { BedDurationTxnDetailsVM } from '../ip-billing/shared/discharge-bill.vie
 import { HandOverModel } from './hand-over.model';
 import { DenominationModel } from './denomination.model';
 import { CoreService } from '../../core/shared/core.service';
+import { SecurityService } from '../../security/shared/security.service';
+import { HandOverTransactionModel } from './hand-over-transaction.model';
+import { IpBillingDiscountModel } from './ip-bill-discount.model';
 
 @Injectable()
 export class BillingDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
-  constructor(public http: HttpClient, public coreService: CoreService) {
+  constructor(public http: HttpClient, public coreService: CoreService, public securityService: SecurityService) {
   }
 
   public GetServiceDepartments() {
@@ -40,7 +42,9 @@ export class BillingDLService {
   public GetBillItemList() {
     return this.http.get<any>('/api/billing?reqType=billItemList', this.options);
   }
-
+  public GetDoctorList() {
+    return this.http.get<any>('/api/Billing?reqType=doctor-list', this.options);
+  }
   public GetInsuranceBillingItems() {
     return this.http.get<any>('/api/billInsurance?reqType=insurance-billing-items', this.options);
   }
@@ -78,7 +82,7 @@ export class BillingDLService {
     return this.http.get<any>("/api/Billing?reqType=listpatientunpaidtotal", this.options);
   }
 
-  public LoadAllProvisionalBills(fromDate,toDate) {
+  public LoadAllProvisionalBills(fromDate, toDate) {
     return this.http.get<any>("/api/Billing?reqType=allProvisionalItems" + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
   }
 
@@ -87,11 +91,15 @@ export class BillingDLService {
   }
 
   public GetInvoiceDetailsForDuplicatebill(from, to) {
-    return this.http.get<any>("/api/Billing?reqType=listinvoicewisebill&FromDate=" +from + "&ToDate=" +to, this.options);
+    return this.http.get<any>("/api/Billing?reqType=listinvoicewisebill&FromDate=" + from + "&ToDate=" + to, this.options);
+  }
+
+  public GetInvoiceReturnDetailsForDuplicatebill(from, to) {
+    return this.http.get<any>("/api/Billing?reqType=credit-note-list&FromDate=" + from + "&ToDate=" + to, this.options);
   }
 
   public GetProvisionalReceiptDetailsForDuplicatebill(searchTxt) {
-    return this.http.get<any>("/api/Billing?reqType=listprovisionalwisebill&search="+searchTxt);
+    return this.http.get<any>("/api/Billing?reqType=listprovisionalwisebill&search=" + searchTxt);
   }
 
   public GetProvisionalItemsByPatientId(patientId: number) {
@@ -107,8 +115,8 @@ export class BillingDLService {
     return this.http.get<any>("/api/Billing?reqType=inPatProvItemsByPatIdAndVisitId" + "&InputId=" + patientId + "&patVisitId=" + patientVisitId, this.options);
   }
 
-  public GetInPatientProvisionalItemList(patientId, patientVisitId, module){
-    return this.http.get<any>("/api/Billing?reqType=inPatientProvisionalItemList&patientId=" + patientId + "&visitId=" + patientVisitId + "&module=" +module, this.options);
+  public GetInPatientProvisionalItemList(patientId, patientVisitId, module) {
+    return this.http.get<any>("/api/Billing?reqType=inPatientProvisionalItemList&patientId=" + patientId + "&visitId=" + patientVisitId + "&module=" + module, this.options);
   }
 
   public GetCreditBalanceByPatientId(patientVisitId: number) {
@@ -117,6 +125,10 @@ export class BillingDLService {
 
   public GetInvoiceByReceiptNo(receiptNo: number, fiscalYrId: number, getVisitInfo: boolean, isInsuranceReceipt: boolean) {
     return this.http.get<any>("/api/Billing?reqType=duplicateBillsByReceiptId" + "&inputId=" + receiptNo + "&fiscalYrId=" + fiscalYrId + "&getVisitInfo=" + getVisitInfo + "&isInsuranceReceipt=" + isInsuranceReceipt, this.options);
+  }
+
+  public GetCreditNoteByCreditNoteNo(CreditNoteNo: number, fiscalYrId: number) {
+    return this.http.get<any>("/api/BillReturn?reqType=CreditNoteByCreditNoteNo" + "&CreditNoteNo=" + CreditNoteNo + "&fiscalYrId=" + fiscalYrId, this.options);
   }
 
   public GetInPatientDetailForPartialBilling(patId: number, patVisitId: number) {
@@ -146,7 +158,7 @@ export class BillingDLService {
 
   // Get Details txn Item
   public GetTxnItemsForEditDoctor(searchTxt) {
-    return this.http.get<any>("/api/Billing?reqType=GetTxnItemsForEditDoctor&search="+searchTxt);
+    return this.http.get<any>("/api/Billing?reqType=GetTxnItemsForEditDoctor&search=" + searchTxt);
   }
 
   public GetTxnItemsForEditDoctorRad(searchTxt) {
@@ -204,13 +216,38 @@ export class BillingDLService {
     return this.http.get<any>("/api/Billing?reqType=returned-patient-invoices&patientId=" + patientId);
   }
 
+  public GetHandoverTransactionDetails() {
+    return this.http.get<any>("/api/Billing?reqType=get-all-handover-transaction");
+  }
+  public GetHandoverReceivedReport(fromDate, toDate) {
+    return this.http.get<any>("/api/Billing?reqType=get-handover-recive-report" + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+  }
+
+  public GetDailyCollectionVsHandoverReport(fromDate, toDate) {
+    return this.http.get<any>("/api/Billing?reqType=get-dailyCollection-vs-handover-report" + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+  }
+
+  public GetHandoverDetailReport(fromDate, toDate, employeeId) {
+    return this.http.get<any>("/api/Billing?reqType=get-handover-detail-report" + "&FromDate=" + fromDate + "&ToDate=" + toDate + "&EmployeeId=" + employeeId, this.options);
+  }
+  public GetHandoverSummaryReport(fiscalYrId: number) {
+    return this.http.get<any>("/api/Billing?reqType=get-handover-summary-report" + "&fiscalYrId=" + fiscalYrId, this.options);
+  }
+
   public UpdateInsuranceBalance(patientId: number, insuranceProviderId: number, updatedInsBalance: number) {
     return this.http.put<any>("/api/BillInsurance?reqType=update-insurance-balance&patientId=" + patientId + "&insuranceProviderId=" + insuranceProviderId + "&updatedInsBalance=" + updatedInsBalance, this.options);
   }
 
   public GetLabBillingItems() {
     var qryStr = this.coreService.GetQryStrToGetLabItems();
-    return this.http.get<any>("/api/Billing?reqType=department-items&departmentName=" + qryStr, this.options);
+    var type = this.securityService.getActiveLab().LabTypeName;
+    var labType;
+    if (type == "ERLab") {
+      labType = "er-lab";
+    } else {
+      labType = "op-lab";
+    }
+    return this.http.get<any>("/api/Billing?reqType=department-items&departmentName=" + qryStr + "&labType=" + labType, this.options);
   }
 
   //ClaimInsurance
@@ -243,6 +280,16 @@ export class BillingDLService {
     return this.http.post<any>("/api/Billing?reqType=post-billingTransaction", data, this.options);
 
   }
+  public PostInvoice(billTxnModel) {
+     //let data = JSON.stringify(billTxnModel);
+    return this.http.post<any>("/api/Billing/billing-transaction", billTxnModel, this.options);
+
+  }
+  //Posts to the 'provisional-billing' api..
+  public ProceedToProvisionalBilling(billTxnModel) {
+   return this.http.post<any>("/api/Billing/provisional-billing", billTxnModel, this.options);
+
+ }
   //ashim: 10Sep2018 : Added for package billing
   public PostPackageBillingTransaction(billTxnModel) {
     let data = JSON.stringify(billTxnModel);
@@ -313,12 +360,12 @@ export class BillingDLService {
     return this.http.put<any>("/api/Billing?reqType=UpdateDoctorafterDoctorEdit&ReferrerObj=" + strReferrer + '&ProviderObj=' + strProvider, data, this.options);
   }
 
-  public PutAssignedToDoctorRad(BillTxnItemId: number, RequisitionId:number, providerObj, referrerObj) {
+  public PutAssignedToDoctorRad(BillTxnItemId: number, RequisitionId: number, providerObj, referrerObj) {
     let data = JSON.stringify(BillTxnItemId);
     let reqId = JSON.stringify(RequisitionId);
     let strProvider = JSON.stringify(providerObj);
     let strReferrer = JSON.stringify(referrerObj);
-    return this.http.put<any>("/api/Billing?reqType=UpdateDoctorafterDoctorEditRadiology&ReferrerObj=" + strReferrer + '&ProviderObj=' + strProvider +'&RequisitionId=' +reqId, data, this.options);
+    return this.http.put<any>("/api/Billing?reqType=UpdateDoctorafterDoctorEditRadiology&ReferrerObj=" + strReferrer + '&ProviderObj=' + strProvider + '&RequisitionId=' + reqId, data, this.options);
   }
 
   public CloseInsurancePackage(patientInsurancePkgId: number) {
@@ -339,7 +386,7 @@ export class BillingDLService {
     let data = JSON.stringify(billTransactionItems);
     return this.http.put<any>("/api/Billing?reqType=cancelBillTxnItems", data, this.options);
   }
-  public GetCancelItemsForGenReceipt(PatientId){
+  public GetCancelItemsForGenReceipt(PatientId) {
     return this.http.get<any>("/api/Billing?reqType=getCancelItems" + "&inputId=" + PatientId, this.options);
   }
 
@@ -356,6 +403,9 @@ export class BillingDLService {
   //Start: REGION: FOR BillSettlements APIS
   public PutSettlementPrintCount(settlmntId: number) {
     return this.http.put<any>("/api/BillSettlement?reqType=updateSettlementPrintCount&settlementId=" + settlmntId, this.options);
+  }
+  public GetPatientPastBillSummaryForBillSettlements(patientId: number, IsPatientAdmitted: boolean) {
+    return this.http.get<any>("/api/Billing?reqType=patientPastBillSummaryForBillSettlements" + "&inputId=" + patientId + "&IsPatientAdmitted=" + IsPatientAdmitted, this.options);
   }
   //for unclaimed insurance
   public GetUnclaimedInvoices(fromDate: any, toDate: any) {
@@ -374,6 +424,13 @@ export class BillingDLService {
   //used only in bill-settlements
   public GetCreditInvoicesByPatient(patientId: number) {
     return this.http.get<any>("/api/BillSettlement?reqType=unpaidInvoiceByPatientId" + "&patientId=" + patientId, this.options);
+  }
+  //to get all billing info of patient for settlement.
+  public GetBillingInfoOfPatientForSettlement(patientId: number) {
+    return this.http.get<any>("/api/BillSettlement?reqType=getAllBillingInfoOfPatientForSettlement" + "&patientId=" + patientId, this.options);
+  }
+  public GetSettlementSingleInvoicePreview(billingTransactionId: number) {
+    return this.http.get<any>("/api/BillSettlement?reqType=get-settlement-single-invoice-preview" + "&billingTransactionId=" + billingTransactionId, this.options);
   }
 
   public PostBillSettlement(settlementInfo) {
@@ -410,6 +467,16 @@ export class BillingDLService {
     //data = CommonFunctions.EncodeRequestDataString(data);
     return this.http.post<any>("/api/Billing?reqType=post-handover-denomination-detail", data, this.options);
   }
+  public PostHandoverTransactionDetails(handoverTransaction: HandOverTransactionModel) {
+    let data = JSON.stringify(handoverTransaction);
+    //data = CommonFunctions.EncodeRequestDataString(data);
+    return this.http.post<any>("/api/Billing?reqType=post-handover-transaction-detail", data, this.options);
+  }
+
+  public UpdateHandoverTransactionDetails(handoverTransaction: HandOverTransactionModel) {
+    let data = JSON.stringify(handoverTransaction);
+    return this.http.put<any>("/api/Billing?reqType=update-handover-transaction-detail", data, this.options);
+  }
 
   public GetPreviousAmount() {
     return this.http.get<any>("/api/Billing?reqType=get-previous-amount", this.options);
@@ -440,21 +507,51 @@ export class BillingDLService {
   public GetAdditionalInfoForDischarge(patientvisitId: number, billingTxnId: number) {
     return this.http.get<any>("/api/IpBilling?reqType=additional-info-discharge-receipt&ipVisitId=" + patientvisitId + "&billingTxnId=" + billingTxnId, this.options);
   }
+
+  public GetEstimateBillDetails(patientId: number, patientvisitId: number) {
+    return this.http.get<any>("/api/IpBilling?reqType=bill-items-for-estimateBill&patientId=" + patientId + "&ipVisitId=" + patientvisitId, this.options);
+  }
+
   //Hom: 18 Dec'18
   public GetBillItemsForIPReceipt(patientId: number, billingTxnId: number, billStatus) {
-    return this.http.get<any>("/api/IpBilling?reqType=pat-bill-items-for-receipt&&patientId="
+    return this.http.get<any>("/api/IpBilling?reqType=pat-bill-items-for-receipt&patientId="
       + patientId
       + '&billingTxnId=' + billingTxnId
       + '&billStatus=' + billStatus
       , this.options);
   }
+
+  public GetProvisionalItemsInfoForPrint(patientId: number, provFiscalYrId: number, provReceiptNo: number, visitType: string) {
+    //don't send visittype in query string to server if it's null or empty from client side. 
+    if (visitType) {
+      return this.http.get<any>("/api/Billing?reqType=ProvisionalItemsInfoForPrint&patientId="
+        + patientId + '&fiscalYrId=' + provFiscalYrId + '&provReceiptNo=' + provReceiptNo + '&visitType=' + visitType, this.options);
+    }
+    else {
+      return this.http.get<any>("/api/Billing?reqType=ProvisionalItemsInfoForPrint&patientId="
+        + patientId + '&fiscalYrId=' + provFiscalYrId + '&provReceiptNo=' + provReceiptNo, this.options);
+    }
+  }
+
+  public GetInsuranceProvisionalInfoForPrint(patientId: number, provFiscalYrId: number, provReceiptNo: number, visitType: string) {
+    //don't send visittype in query string to server if it's null or empty from client side. 
+    if (visitType) {
+      return this.http.get<any>("/api/Billing?reqType=InsuranceProvisionalItemsInfoForPrint&patientId="
+        + patientId + '&fiscalYrId=' + provFiscalYrId + '&provReceiptNo=' + provReceiptNo + '&visitType=' + visitType, this.options);
+    }
+    else {
+      return this.http.get<any>("/api/Billing?reqType=InsuranceProvisionalItemsInfoForPrint&patientId="
+        + patientId + '&fiscalYrId=' + provFiscalYrId + '&provReceiptNo=' + provReceiptNo, this.options);
+    }
+  }
+
   public GetHealthCardBillItem() {
     return this.http.get<any>("/api/Billing?reqType=GetHealthCardBillItem", this.options);
   }
   //ashim: 17Aug 2018
   public PostReturnReceipt(formData: any) {
-   // let data = JSON.stringify(returnReceipt);
-    return this.http.post<any>("/api/BillReturn?reqType=returnInvoice",formData);
+    // let data = JSON.stringify(returnReceipt);
+    return this.http.post<any>("/api/BillReturn?reqType=returnInvoice", formData);
   }
 
   //ashim: 17Aug2018 : to get bill transaction in case of transfer visit
@@ -469,15 +566,26 @@ export class BillingDLService {
     let data = JSON.stringify(billTxnItem);
     return this.http.put<any>("/api/Billing?reqType=EditItemPrice_Qty_Disc_Provider", data, this.options);
   }
-  public PutBedDurationBillTxn(bedDurationDetail: Array<BedDurationTxnDetailsVM>) {
-    let data = JSON.stringify(bedDurationDetail);
-    return this.http.put<any>("/api/IpBilling?reqType=update-adtItems-duration", data, this.options);
+
+  //older code
+  // public PutBedDurationBillTxn(bedDurationDetail: Array<BedDurationTxnDetailsVM>) {
+  //   let data = JSON.stringify(bedDurationDetail);
+  //   return this.http.put<any>("/api/IpBilling?reqType=update-adtItems-duration", data, this.options);
+  // }
+
+  public PutBedDurationBillTxn(visitId: number) {
+    return this.http.put<any>("/api/IpBilling?reqType=update-adtItems-duration&patientVisitId=" + visitId, this.options);
   }
   //User List
   public GetUserList() {
     return this.http.get<any>("/api/Billing?reqType=get-users-list", this.options);
   }
-
+  public GetEmpDueAmount() {
+    return this.http.get<any>("/api/Billing?reqType=get-DueAmount", this.options);
+  }
+  public GetBankList() {
+    return this.http.get<any>("/api/Billing?reqType=get-bank-list", this.options);
+  }
   //start: Yubaraj: 18Jul'19--For Insurance Billing
   public GetInsurancePatients() {
     return this.http.get<any>("/api/BillInsurance?reqType=insurance-patients-list", this.options);
@@ -495,19 +603,40 @@ export class BillingDLService {
     return this.http.get<any>("/api/Employee?reqType=get-active-employees-info", this.options);
   }
 
-//Anjana: 19Aug-2020: cancel bill items
-public CancelItemRequest(data: string){
-  return this.http.put<any>("/api/Billing?reqType=cancelInpatientItemFromWard", data, this.options);
-}
+  //Anjana: 19Aug-2020: cancel bill items
+  public CancelItemRequest(data: string) {
+    return this.http.put<any>("/api/Billing?reqType=cancelInpatientItemFromWard", data, this.options);
+  }
 
-  public CancelBillRequest(data: string){
+  public CancelBillRequest(data: string) {
     return this.http.put<any>(
       "/api/Billing?reqType=cancelInpatientBillRequest",
       data,
       this.options
     );
   }
-  
+
+
+  //Sud:1May'21--For Credit Note
+  public GetInvoiceDetailsForCreditNote(invoiceNumber: number, fiscalYrId: number, getVisitInfo: boolean, isInsuranceReceipt: boolean) {
+    return this.http.get<any>("/api/BillReturn?reqType=getInvoiceDetailsForCreditNote" + "&invoiceNumber=" + invoiceNumber + "&fiscalYrId=" + fiscalYrId + "&getVisitInfo=" + getVisitInfo + "&isInsuranceReceipt=" + isInsuranceReceipt, this.options);
+  }
+
+
+  //sud:1May'21--For Credit Note.
+  public PostCreditNote(retInvObject) {
+    let data = JSON.stringify(retInvObject);
+    return this.http.post<any>("/api/BillReturn?reqType=post-creditnote", data, this.options);
+  }
+
+  //Sud:18May'21--For Credit Note
+  public GetInvoiceDetailsForDuplicatePrint(invoiceNumber: number, fiscalYrId: number, billingTxnId: number) {
+    return this.http.get<any>("/api/Billing?reqType=get-invoiceinfo-forprint" + "&invoiceNumber=" + invoiceNumber + "&fiscalYrId=" + fiscalYrId + "&billingTransactionId=" + billingTxnId, this.options);
+  }
+  //Krishna, 19th'JAN'22, This updates the Discount Scheme and Discount percent on the Admission table..
+  public UpdateDiscount(ipBillingDiscountModel:IpBillingDiscountModel) {
+    return this.http.put<any>("/api/IpBilling/UpdateDiscounts", ipBillingDiscountModel, this.options);
+  }
 }
 
 

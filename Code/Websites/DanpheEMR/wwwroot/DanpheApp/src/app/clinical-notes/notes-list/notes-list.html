@@ -1,186 +1,174 @@
-<div style="margin-top:20px;" class="row">
+
+
+<div style="margin-top:20px;" class="row"> 
   <!--Add Note Button-->
-  <div class="col-md-12" style="margin-bottom: 10px;">
+  <!-- <div class="col-md-12" style="margin-bottom: 10px;">
     <a feature="button" class="btn blue bordered" (click)="RouteToAddNotes()"><i class="fa fa-plus"></i>Add Notes</a>
+  </div> -->
+  <div class="col-md-12" style="margin-bottom: 10px;">
+    <a feature="button" class="btn blue bordered" (click)="RouteToAddOpdExamination()"><i class="fa fa-plus"></i>Add Examination</a>
   </div>
   <div class="tabbable-custom">
     <div class="tab-content">
-      <danphe-grid [grid-colDefaults]="ViewTemplateGridColumn" (grid-actions)="ViewNoteTemplateListGridAction($event)"
-        [grid-data]="patientClinicalNotes" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="ViewTemplateGridColumn"
+                   (grid-actions)="ViewNoteTemplateListGridAction($event)"
+                   [grid-data]="patientClinicalNotes"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
   </div>
 </div>
 
 <!-- Start: Free-text view page pop-up window-->
-<div *ngIf="showViewNoteList" class="popup-static portlet box portlet-fullscreen custom_modal"
-  style="margin-bottom:25px">
+<div *ngIf="showViewNoteList" class="popup-static portlet box portlet-fullscreen custom_modal" style="margin-bottom:25px">
   <div class="portlet-body">
     <div class="row">
-      <!--      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>-->
+<!--      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>-->
       <div class="col-md-8 col-sm-12 col-xs-12 col-md-offset-2">
-        <div class="modelbox-div clearfix">
-          <div class="caption custom-caption">
-            <h3> <span>{{templatedata.NoteType}}</span></h3>
-            <a class="btn btn-danger" (click)="Close()">X</a>
-          </div>
-
-          <div class="panel panel-default" style="border: none; padding: 015px;">
-            <div id="print-template" class="printStyle print-border">
-              <!--            <div class="panel-heading"> Free Text Template </div>-->
-              <div class="" style="margin-bottom: 10px;">
-                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img
-                    class="img-responsive" style="max-height:70px;"
-                    src="../../../themes/theme-default/images/hams-logo.PNG" /> </div>
-                <div style="width: 64%;float: left;padding-bottom:  0px;">
-                  <div class="text-center bill-head"
-                    style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
-                      style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-                    <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
-                      headerDetail.tel}}</span><br />
-                    <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
-                  </div>
+        <div class="modelbox-div clearfix"> 
+			<div class="caption custom-caption">
+            <h3> <span>Free Text Template</span></h3>
+            <a class="btn btn-danger" (click)="Close()">X</a> 
+			</div>
+			
+        <div class="panel panel-default" style="border: none; padding: 015px;">
+          <div id="print-template" class="printStyle print-border">
+<!--            <div class="panel-heading"> Free Text Template </div>-->
+            <div class="" style="margin-bottom: 10px;">
+              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+              <div style="width: 64%;float: left;padding-bottom:  0px;">
+                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                  <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                  <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                  <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
                 </div>
-                <div style="float: left;">
-                  <div class="qr-code" style="margin-left:20px; top:35px;">
-                    <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
-                  </div>
+              </div>
+              <div style="float: left;">
+                <div class="qr-code" style="margin-left:20px; top:35px;">
+                  <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
                 </div>
-                <!-- Billing Header  -->
-                <div style="clear:left"></div>
               </div>
-              <div class="panel-body row" style="text-align:left;">
-                <p class="col-md-4">Patient Name:<b>{{freeNotesTempData[0].PatientName}} </b></p>
-                <p class="col-md-4">Primary Doctor:<b>{{freeNotesTempData[0].PrimaryDoctor}}</b></p>
-                <p class="col-md-4">Secondary Doctor:<b>{{freeNotesTempData[0].SecondaryDoctor}}</b></p>
-                <p class="col-md-4">Age/ Sex:<b>{{freeNotesTempData[0].Age}}/{{freeNotesTempData[0].Sex}} </b></p>
-                <p class="col-md-4">Written By:<b>{{freeNotesTempData[0].WrittenBy}}</b></p>
-                <p class="col-md-4">Date:<b> </b>{{freeNotesTempData[0].CreatedOn | date:'yyyy-MM-dd'}}</p>
-                <p class="col-md-4">Note Type:<b>{{freeNotesTempData[0].NoteType}}</b></p>
-                <p class="col-md-4">Start Time :<b>{{freeNotesTempData[0].CreatedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b>
-                </p>
-                <p class="col-md-4">Finish Time:<b>{{freeNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b>
-                </p>
-              </div>
-              <div class="col-md-7 col-xs-12">
-                <div class="row">
-                  <div class="portlet cstm-portlet portlet-with-collapse">
-                    <div class="cstm-portlet-body">
-                      <div class="table-responsive">
-                        <table *ngIf="vitalsList.length>0" class="table doc-tbl" style="margin-bottom: 0px;">
-                          <tbody>
-                            <tr>
-                              <td>Recorded On</td>
-                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn |
-                                  DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
-                            </tr>
-                            <tr>
-                              <td>Height</td>
-                              <td *ngFor="let vitals of vitalsList">
-                                <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}
-                                </div>
-                                <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>Weight</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
-                            </tr>
-                            <tr>
-                              <td>BMI</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
-                            </tr>
-                            <tr>
-                              <td>Temperature</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue:
-                                vitals.TemperatureUnit}}</td>
-                            </tr>
-                            <tr>
-                              <td>Pulse</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
-                            </tr>
-                            <tr>
-                              <td>Blood Pressure</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic |
-                                HasValue:'/'}}{{vitals.BPDiastolic}}</td>
-                            </tr>
-                            <tr>
-                              <td>Respiratory Rate</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>SpO2</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.SpO2}} %</td>
-                            </tr>
-                            <tr>
-                              <td>O<sub>2</sub> Deliver Method</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+              <!-- Billing Header  -->
+              <div style="clear:left"></div>
+            </div>
+            <div class="panel-body row" style="text-align:left;">
+              <p class="col-md-4">Patient Name:<b>{{freeNotesTempData[0].PatientName}} </b></p>
+              <p class="col-md-4">Primary Doctor:<b>{{freeNotesTempData[0].PrimaryDoctor}}</b></p>
+              <p class="col-md-4">Secondary Doctor:<b>{{freeNotesTempData[0].SecondaryDoctor}}</b></p>
+              <p class="col-md-4">Age/ Sex:<b>{{freeNotesTempData[0].Age}}/{{freeNotesTempData[0].Sex}} </b></p>
+              <p class="col-md-4">Written By:<b>{{freeNotesTempData[0].WrittenBy}}</b></p>
+              <p class="col-md-4">Date:<b> </b>{{freeNotesTempData[0].CreatedOn | date:'yyyy-MM-dd'}}</p>
+              <p class="col-md-4">Note Type:<b>{{freeNotesTempData[0].NoteType}}</b></p>
+              <p class="col-md-4">Start Time :<b>{{freeNotesTempData[0].CreatedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+              <p class="col-md-4">Finish Time:<b>{{freeNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+            </div>
+            <div class="col-md-7 col-xs-12">
+              <div class="row">
+                <div class="portlet cstm-portlet portlet-with-collapse">
+                  <div class="cstm-portlet-body">
+                    <div class="table-responsive">
+                      <table *ngIf="vitalsList.length>0" class="table doc-tbl" style="margin-bottom: 0px;">
+                        <tbody>
+                          <tr>
+                            <td>Recorded On</td>
+                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                          </tr>
+                          <tr>
+                            <td>Height</td>
+                            <td *ngFor="let vitals of vitalsList"><div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                              <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div></td>
+                          </tr>
+                          <tr>
+                            <td>Weight</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
+                          </tr>
+                          <tr>
+                            <td>BMI</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
+                          </tr>
+                          <tr>
+                            <td>Temperature</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
+                          </tr>
+                          <tr>
+                            <td>Pulse</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
+                          </tr>
+                          <tr>
+                            <td>Blood Pressure</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                          </tr>
+                          <tr>
+                            <td>Respiratory Rate</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
+                          </tr>
+                          <tr>
+                            <td>SpO2</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.SpO2}} %</td>
+                          </tr>
+                          <tr>
+                            <td>O<sub>2</sub> Deliver Method</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
               </div>
-              <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content" style="margin-bottom: 0px;">
-                <thead>
-                  <tr>
-                    <th>Recorded On</th>
-                    <th>Allergen</th>
-                    <th>Severity</th>
-                    <th>Reaction</th>
-                    <th>Verified</th>
-                    <th>Comments</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let alrg of allergieLists;let i=index">
-                    <td>{{alrg.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                    <td>{{alrg.AllergenAdvRecName}}</td>
-                    <td>{{alrg.Severity}}</td>
-                    <td>{{alrg.Reaction}}</td>
-                    <td>{{alrg.Verified}}</td>
-                    <td>{{alrg.Comments}}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="row panel-body">
-                <div class="col-md-12 col-xs-12 col-sm-12">
-                  <p *ngIf="allergieLists.length==0">Patient has no allergy details</p>
-                  <p *ngIf="vitalsList.length==0">Patient has no vitals till date</p>
-                  <table class="table table-striped table-hover"
-                    style="background-color:initial; margin:0px;margin-bottom: 5px;">
-                    <thead>
-                      <tr class="tbl-td-padding">
-                        <th>Free Text </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <div [innerHtml]="freeNotesTempData[0].FreeText"></div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+            </div>
+            <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content" style="margin-bottom: 0px;">
+              <thead>
+                <tr>
+                  <th>Recorded On</th>
+                  <th>Allergen</th>
+                  <th>Severity</th>
+                  <th>Reaction</th>
+                  <th>Verified</th>
+                  <th>Comments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let alrg of allergieLists;let i=index">
+                  <td>{{alrg.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+                  <td>{{alrg.AllergenAdvRecName}}</td>
+                  <td>{{alrg.Severity}}</td>
+                  <td>{{alrg.Reaction}}</td>
+                  <td>{{alrg.Verified}}</td>
+                  <td>{{alrg.Comments}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row panel-body">
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <p *ngIf="allergieLists.length==0">Patient has no allergy details</p>
+                <p *ngIf="vitalsList.length==0">Patient has no vitals till date</p>
+                <table class="table table-striped table-hover" style="background-color:initial; margin:0px;margin-bottom: 5px;">
+                  <thead>
+                    <tr class="tbl-td-padding">
+                      <th>Free Text </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div [innerHtml]="freeNotesTempData[0].FreeText"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-          <div class="panel-footer">
-            <div *ngIf="!freeNotesTempData[0].IsPending" class="center-style">
-              <div class=""> <a (click)="printTemplate()" class="btn btn-primary"> Print <i
-                    class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
-            </div>
-          </div>
         </div>
+        <div class="panel-footer">           <div *ngIf="!freeNotesTempData[0].IsPending" class="center-style">
+          <div class=""> <a (click)="printTemplate()" class="btn btn-primary"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+        </div></div>
+			</div>
       </div>
     </div>
   </div>
 </div>
-<!-- End: Free-text view page pop-up window-->
+<!-- End: Free-text view page pop-up window--> 
 <!-- Start: Procedure Note View page pop window-->
 
 <div *ngIf="showViewProcedureNoteList" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
@@ -188,17 +176,14 @@
     <div class="col-md-12">
       <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
       <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
-        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;"
-            (click)="Close()">X</i> </div>
+        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
         <div class="panel panel-default">
           <div id="print-template" class="row printStyle print-border">
             <div class="panel-heading"> Procedure Notes Template </div>
             <div class="row" style="margin-bottom: 10px;">
-              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive"
-                  style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" /> </div>
+              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
               <div style="width: 64%;float: left;padding-bottom:  0px;">
-                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
-                  <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                   <span style="font-size:15px;">{{headerDetail.address}}</span><br />
                   <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                   <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
@@ -216,15 +201,12 @@
               <p class="col-md-4">Patient Name:<b>{{procedureNotesTempData[0].PatientName}} </b></p>
               <p class="col-md-4">Primary Doctor:<b>{{procedureNotesTempData[0].PrimaryDoctor}}</b></p>
               <p class="col-md-4">Secondary Doctor:<b>{{procedureNotesTempData[0].SecondaryDoctor}}</b></p>
-              <p class="col-md-4">Age/ Sex:<b>{{procedureNotesTempData[0].Age}}/{{procedureNotesTempData[0].Sex}} </b>
-              </p>
+              <p class="col-md-4">Age/ Sex:<b>{{procedureNotesTempData[0].Age}}/{{procedureNotesTempData[0].Sex}} </b></p>
               <p class="col-md-4">Written By:<b>{{procedureNotesTempData[0].WrittenBy}}</b></p>
               <p class="col-md-4">Date:<b> </b>{{procedureNotesTempData[0].CreatedOn | date:'yyyy-MM-dd'}}</p>
               <p class="col-md-4">Note Type:<b>{{procedureNotesTempData[0].NoteType}}</b></p>
-              <p class="col-md-4">Start Time :<b>{{procedureNotesTempData[0].CreatedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b>
-              </p>
-              <p class="col-md-4">Finish Time:<b>{{procedureNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy
-                  h:mm:ss'}}</b></p>
+              <p class="col-md-4">Start Time :<b>{{procedureNotesTempData[0].CreatedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+              <p class="col-md-4">Finish Time:<b>{{procedureNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
             </div>
             <div class="col-md-7 col-xs-12">
               <div class="row">
@@ -235,16 +217,12 @@
                         <tbody>
                           <tr>
                             <td>Recorded On</td>
-                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn |
-                                DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
                           </tr>
                           <tr>
                             <td>Height</td>
-                            <td *ngFor="let vitals of vitalsList">
-                              <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}
-                              </div>
-                              <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
-                            </td>
+                            <td *ngFor="let vitals of vitalsList"><div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                              <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div></td>
                           </tr>
                           <tr>
                             <td>Weight</td>
@@ -256,8 +234,7 @@
                           </tr>
                           <tr>
                             <td>Temperature</td>
-                            <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue:
-                              vitals.TemperatureUnit}}</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
                           </tr>
                           <tr>
                             <td>Pulse</td>
@@ -265,13 +242,11 @@
                           </tr>
                           <tr>
                             <td>Blood Pressure</td>
-                            <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic |
-                              HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
                           </tr>
                           <tr>
                             <td>Respiratory Rate</td>
-                            <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}
-                            </td>
+                            <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
                           </tr>
                           <tr>
                             <td>SpO2</td>
@@ -283,8 +258,7 @@
                           </tr>
                         </tbody>
                       </table>
-                      <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content"
-                        style="margin-bottom: 0px;">
+                      <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content" style="margin-bottom: 0px;">
                         <thead>
                           <tr>
                             <th>Recorded On</th>
@@ -332,8 +306,7 @@
                       <td> {{procedureNotesTempData[0].Remarks}}</td>
                     </tr>
                     <tr rowspan="4">
-                      <td colspan="4"><textarea disabled style="height: 100px;width:100%"
-                          placeholder="Free Text">{{procedureNotesTempData[0].FreeText}}</textarea></td>
+                      <td colspan="4"><textarea disabled style="height: 100px;width:100%" placeholder="Free Text">{{procedureNotesTempData[0].FreeText}}</textarea></td>
                     </tr>
                   </tbody>
                 </table>
@@ -341,39 +314,31 @@
             </div>
           </div>
           <div *ngIf="!procedureNotesTempData[0].IsPending" class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i
-                  class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-<!-- End: Procedure Note View page pop window-->
+<!-- End: Procedure Note View page pop window--> 
 <!-- Start: Progress Note View page pop window-->
 
-<div *ngIf="showProgressViewNoteList" class="popup-static portlet box portlet-fullscreen inv_modal"
-  style="margin-bottom:25px">
+<div *ngIf="showProgressViewNoteList" class="popup-static portlet box portlet-fullscreen inv_modal" style="margin-bottom:25px">
   <div class="portlet-body">
-    <div class="row">
+    <div class="row"> 
       <!--      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>-->
       <div class="col-md-10 col-md-offset-1">
-        <div class="modelbox-div clearfix"> <a class="btn btn-danger no-wrap-div" (click)="Close()"><i
-              class="fa fa-times"></i></a>
+        <div class="modelbox-div clearfix"> <a class="btn btn-danger no-wrap-div" (click)="Close()"><i class="fa fa-times"></i></a>
           <div class="panel panel-default">
             <div id="print-template" class="printStyle print-border">
               <div class="panel-heading mb10"> Progress Note </div>
               <div>
-                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img
-                    class="img-responsive" style="max-height:70px;"
-                    src="../../../themes/theme-default/images/hams-logo.PNG" /> </div>
+                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
                 <div style="width: 64%;float: left;padding-bottom:  0px;">
-                  <div class="text-center bill-head"
-                    style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
-                      style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
-                      headerDetail.tel}}</span><br />
+                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
                   </div>
                 </div>
@@ -389,15 +354,12 @@
                 <p class="col-md-4">Patient Name:<b>{{progressNotesTempData[0].PatientName}} </b></p>
                 <p class="col-md-4">Primary Doctor:<b>{{progressNotesTempData[0].PrimaryDoctor}}</b></p>
                 <p class="col-md-4">Secondary Doctor:<b>{{progressNotesTempData[0].SecondaryDoctor}}</b></p>
-                <p class="col-md-4">Age/ Sex:<b>{{progressNotesTempData[0].Age}}/{{progressNotesTempData[0].Sex}} </b>
-                </p>
+                <p class="col-md-4">Age/ Sex:<b>{{progressNotesTempData[0].Age}}/{{progressNotesTempData[0].Sex}} </b></p>
                 <p class="col-md-4">Written By:<b>{{progressNotesTempData[0].WrittenBy}}</b></p>
                 <p class="col-md-4">Date:<b> </b>{{progressNotesTempData[0].CreatedOn | date:'yyyy-MM-dd'}}</p>
                 <p class="col-md-4">Note Type:<b>{{progressNotesTempData[0].NoteType}}</b></p>
-                <p class="col-md-4">Start Time :<b>{{progressNotesTempData[0].CreatedOn | date: 'dd-MM-yyyy
-                    h:mm:ss'}}</b></p>
-                <p class="col-md-4">Finish Time:<b>{{progressNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy
-                    h:mm:ss'}}</b></p>
+                <p class="col-md-4">Start Time :<b>{{progressNotesTempData[0].CreatedOn | date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+                <p class="col-md-4">Finish Time:<b>{{progressNotesTempData[0].ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
               </div>
               <div class="col-md-7 col-xs-12">
                 <div>
@@ -408,16 +370,12 @@
                           <tbody>
                             <tr>
                               <td>Recorded On</td>
-                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn |
-                                  DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
                             </tr>
                             <tr>
                               <td>Height</td>
-                              <td *ngFor="let vitals of vitalsList">
-                                <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}
-                                </div>
-                                <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
-                              </td>
+                              <td *ngFor="let vitals of vitalsList"><div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                                <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div></td>
                             </tr>
                             <tr>
                               <td>Weight</td>
@@ -429,8 +387,7 @@
                             </tr>
                             <tr>
                               <td>Temperature</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue:
-                                vitals.TemperatureUnit}}</td>
+                              <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
                             </tr>
                             <tr>
                               <td>Pulse</td>
@@ -438,13 +395,11 @@
                             </tr>
                             <tr>
                               <td>Blood Pressure</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic |
-                                HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                              <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
                             </tr>
                             <tr>
                               <td>Respiratory Rate</td>
-                              <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}
-                              </td>
+                              <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
                             </tr>
                             <tr>
                               <td>SpO2</td>
@@ -456,8 +411,7 @@
                             </tr>
                           </tbody>
                         </table>
-                        <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content"
-                          style="margin-bottom: 0px;">
+                        <table *ngIf="allergieLists.length>0" class="table doc-tbl flip-content" style="margin-bottom: 0px;">
                           <thead>
                             <tr>
                               <th>Recorded On</th>
@@ -516,8 +470,7 @@
               </div>
             </div>
             <div *ngIf="!progressNotesTempData[0].IsPending" class="row center-style">
-              <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i
-                    class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+              <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
             </div>
           </div>
         </div>
@@ -525,73 +478,67 @@
     </div>
   </div>
 </div>
-<!-- End: Progress Note View page pop window-->
+<!-- End: Progress Note View page pop window--> 
 <!-- Start: Discharge Note View page pop window-->
 <div *ngIf="showDischargeSummaryView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
   <div class="portlet-body" style="background-color: white">
     <div class="col-md-12">
       <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
-      <div class="col-md-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+      <div class="col-md-12 col-xs-12 modelbox-div" style="margin-right: 24px;"> 
         <!--col-sm-12-->
-        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;"
-            (click)="Close()">X</i> </div>
+        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
         <div class="panel panel-default">
           <div id="print-template" class="row printStyle print-border">
             <div class="panel-heading"> Discharge Note </div>
-            <discharge-summary-view [selectedADT]="selectedPatient" [showSummaryView]="showDischargeSummaryView">
-            </discharge-summary-view>
+            <discharge-summary-view [selectedADT]="selectedPatient"
+                                    [showSummaryView]="showDischargeSummaryView"></discharge-summary-view>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i
-                  class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-<!-- End: Discharge Note View page pop window-->
+<!-- End: Discharge Note View page pop window--> 
 <!-- Start: History and Physical Note View page pop window-->
 <div *ngIf="showHPView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
   <div class="portlet-body" style="background-color: white">
     <div class="col-md-12">
       <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
-      <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;">
+      <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;"> 
         <!--col-sm-12-->
-        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;"
-            (click)="Close()">X</i> </div>
+        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
         <div class="panel panel-default">
           <div id="print-template" class="row printStyle print-border">
-            <div class="panel-heading"> {{templatedata.NoteType}} </div>
+            <div class="panel-heading"> History and Physical Note </div>
             <view-history-and-physical-note> </view-history-and-physical-note>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i
-                  class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-<!-- End: History and Physical Note View page pop window-->
+<!-- End: History and Physical Note View page pop window--> 
 <!-- Start: Emergency Note View page pop window-->
 <div *ngIf="showEmergrncyNoteView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
   <div class="portlet-body" style="background-color: white">
     <div class="col-md-12">
       <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
-      <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;">
+      <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;"> 
         <!--col-sm-12-->
-        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;"
-            (click)="Close()">X</i> </div>
+        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
         <div class="panel panel-default">
           <div id="print-template" class="row printStyle print-border">
             <div class="panel-heading"> Emergency Note </div>
             <view-emergency-note> </view-emergency-note>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i
-                  class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
@@ -602,8 +549,7 @@
 
 
 <!-- Start: Clinical Prescripiton Note View page pop window-->
-<div *ngIf="showClinicalPrescriptionNoteView" class="popup-static portlet box portlet-fullscreen"
-  style="margin-bottom:25px">
+<div *ngIf="showClinicalPrescriptionNoteView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
   <div class="portlet-body form" style="background-color: white">
     <div class="col-md-10 col-md-offset-1">
 
@@ -616,7 +562,7 @@
 
         <div class="modelbox-body" id="print-cln-prescription">
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12">              
               <view-clinical-prescription-note>
               </view-clinical-prescription-note>
             </div>
@@ -626,8 +572,7 @@
         <div class="modelbox-footer">
           <div class="row">
             <div class="col-md-12">
-              <a (click)="printTemplate('print-cln-prescription')" class="btn btn-default"> Print <i
-                  class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp;
+              <a (click)="printTemplate('print-cln-prescription')" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp;
             </div>
           </div>
         </div>
@@ -637,7 +582,7 @@
             X
           </button>
         </div>
-      </div>
+      </div>        
 
     </div>
   </div>
@@ -645,3 +590,29 @@
 
 
 <!-- End: Clinical Prescrription Note View page pop window-->
+
+<!--Start: clinical opd examination note view page pop window-->
+
+<div *ngIf="showClinicalOPDExaminationNotesView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
+  <div class="portlet-body" style="background-color: white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+      <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;"> 
+        <!--col-sm-12-->
+        <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
+        <div class="panel panel-default">
+          <div id="print-template" class="row printStyle print-border">
+            <!-- <div class="panel-heading"> OPD Examination </div> -->
+            <opd-examination-view [patientVisitId]="patientVisitId"
+            (callback-view)="CallBackView($event)">  </opd-examination-view>
+          </div>
+          <div class="row center-style">
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--End: clinical opd examination note view page pop window-->

@@ -1,0 +1,15 @@
+<div class="page-bar fixed-top-bar">
+  <ul class="nav nav-tabs" *ngIf="settlementRoutes != undefined">
+    <!--Start: Settlement Primary Menu Items -->
+    <li *ngFor="let route of settlementPrimaryNavItems">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1">
+        {{route.DisplayName}}
+        <i class="{{route.Css}}"></i>
+      </a>
+    </li>
+    <!--End:Settlement Primary Menu Items -->
+    </ul>
+</div>
+<div class="wrapper">
+  <router-outlet></router-outlet>
+</div>

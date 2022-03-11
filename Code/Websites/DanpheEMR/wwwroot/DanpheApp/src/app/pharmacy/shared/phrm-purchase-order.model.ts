@@ -30,6 +30,7 @@ export class PHRMPurchaseOrder {
     public PurchaseOrderValidator: FormGroup = null;
     public Item: PHRMItemMasterModel = null;
     public Supplier: PHRMSupplierModel = null;
+    public UOMName:string;//for UI view of unit of measurement of Item
     constructor() {
 
         var _formBuilder = new FormBuilder();
@@ -47,7 +48,8 @@ export class PHRMPurchaseOrder {
     }
 
 
-    public IsValid():boolean{if(this.PurchaseOrderValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid():boolean{if(this.PurchaseOrderValidator.valid){return true;}else{return false;}}
+     public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.PurchaseOrderValidator.valid;
         }

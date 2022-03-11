@@ -10,7 +10,7 @@ import { WardInternalConsumption } from './shared/ward-internal-consumption.mode
 import { SecurityService } from '../security/shared/security.service';
 import { WardInternalConsumptionItems } from './shared/ward-internal-consumption-items.model';
 import { PharmacyService } from '../pharmacy/shared/pharmacy.service';
-
+import { CoreService } from "../core/shared/core.service";
 
 @Component({
   templateUrl: "./internal-consumption.html"
@@ -42,7 +42,8 @@ export class InternalConsumptionComponent {
     public router: Router,
     public wardBLService: WardSupplyBLService,
     public messageBoxService: MessageboxService,
-    public securityService: SecurityService
+    public securityService: SecurityService,
+    public coreService: CoreService
   ) {
     try {
       this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
@@ -91,7 +92,7 @@ export class InternalConsumptionComponent {
 
   //used to format display of item in ng-autocomplete
   ItemListFormatter(data: any): string {
-    let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>(" + data["GenericName"] + ") B-<b>" + data["BatchNo"] + "</b> RS.<b>" + data["MRP"] + "</b> <font color='red'>Qty " + data["AvailableQuantity"] + "</font>";
+    let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>(" + data["GenericName"] + ") B-<b>" + data["BatchNo"] + "</b>"+this.coreService.currencyUnit+"<b>" + data["MRP"] + "</b> <font color='red'>Qty " + data["AvailableQuantity"] + "</font>";
     return html;
   }
 

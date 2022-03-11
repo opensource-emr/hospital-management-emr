@@ -18,11 +18,17 @@ import { Patient } from '../../../patients/shared/patient.model';
 import { CreditOrganization } from '../../../settings-new/shared/creditOrganization.model';
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
-import { ENUM_OrderStatusNumber } from '../../../shared/shared-enums';
+import { ENUM_InvoiceType, ENUM_OrderStatusNumber } from '../../../shared/shared-enums';
 import { ENUM_OrderStatus } from '../../../shared/shared-enums';
+import { Membership } from '../../../settings-new/shared/membership.model';
+import { BillingDeposit } from '../../shared/billing-deposit.model';
+import { Router } from '@angular/router';
+import { RouteFromService } from '../../../shared/routefrom.service';
+import { IpBillingDiscountModel } from '../../shared/ip-bill-discount.model';
 @Component({
   selector: 'pat-ip-bill-summary',
-  templateUrl: "./patient-ip-summary.html"
+  templateUrl: "./patient-ip-summary.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PatientIpSummaryComponent {
 
@@ -43,11 +49,13 @@ export class PatientIpSummaryComponent {
   public billingTransaction: BillingTransaction;
   public showIpBillRequest: boolean = false;
   public showDischargeBill: boolean = false;
+  public showEstimationBill: boolean = false;
+
   public showUpdatePricePopup: boolean = false;
   public billType: string;
   public dischargeDetail: DischargeDetailBillingVM = new DischargeDetailBillingVM();
   //Is updated once the billing transaction is post during discharge patient.
-  public billingTxnId: number;
+  //public billingTxnId: number;
   public billStatus: string;
   public adtItems: BillingTransactionItem;
   public hasPreviousCredit: boolean = false;
@@ -56,14 +64,14 @@ export class PatientIpSummaryComponent {
   public validDischargeDate: boolean = true;
   public checkouttimeparameter: string;
   public exchangeRate: number = 0;
-  public LastBedItem: number = 0;
-  public LastBedQty: number = 0;
+
   public IsCheckoutParameter: boolean = false;
   //create a new model to assign global variables and bind to html
   public model = {
     PharmacyProvisionalAmount: 0,
     SubTotal: 0,
-    TotalDiscount: 0,
+    DiscountAmount: 0,
+    DiscountPercent: 0,
     TaxAmount: 0,
     NetTotal: 0,
     DepositAdded: 0,
@@ -78,13 +86,14 @@ export class PatientIpSummaryComponent {
     Change: 0,
     PaymentDetails: null,
     Remarks: null,
-    OrganizationId: null
+    OrganizationId: null,
+    IsItemDiscountEnabled:  false
   };
   public patientInfo: Patient;
   public showDischargePopUpBox: boolean = false;
   public showEditItemsPopup: boolean = false;
   public doctorsList: Array<any> = [];
-  // public UsersList: Array<any> = [];//to view who has added that particular item.//sud: 30Apr'20-- not needed anymore. Use EmpList if required.. 
+  // public UsersList: Array<any> = [];//to view who has added that particular item.//sud: 30Apr'20-- not needed anymore. Use EmpList if required..
   public selItemForEdit: BillingTransactionItem = new BillingTransactionItem();
 
   public showDepositPopUp: boolean = false;
@@ -128,6 +137,21 @@ export class PatientIpSummaryComponent {
 
   public cancellationNumber: number = 0;
 
+  public MembershipTypeId: number = 0;
+  public MembershipTypeName: string = null;
+  public membershipSchemeParam = { ShowCommunity: false, IsMandatory: true };
+  public deposit: BillingDeposit = new BillingDeposit();
+  public showDepositReceipt: boolean = false;
+  public ShowMembershipSelect: boolean = false;
+  public InvalidDiscount:boolean = false;
+  public CreditTotal: number = 0;
+  public intervalId:any;
+  public currMembershipDiscountPercent : number = 0;
+  public isGroupDiscountApplied : boolean = false;
+  public ipBillingDiscountModel: IpBillingDiscountModel = new IpBillingDiscountModel();
+  public ItemLevelDiscountSettings = {"ItemLevelDiscount" : false};
+  public enableItemLevelDiscount : boolean = false;
+
   constructor(public dlService: DLService,
     public patService: PatientService,
     public changeDetector: ChangeDetectorRef,
@@ -137,16 +161,21 @@ export class PatientIpSummaryComponent {
     public npCalendarService: NepaliCalendarService,
     public CoreService: CoreService,
     public patientBLServie: PatientsBLService,
-    public securityService: SecurityService) {
+    public router: Router,
+    public securityService: SecurityService,
+    public routeFromService:RouteFromService) {
+
+    this.SetAutoBedAndAutoBillItemParameters();//sud:07Oct'20--to make common place for this param.
 
     this.allItemslist = this.billingService.allBillItemsPriceList;//sud:30Apr'20--code optimization
     this.allEmployeeList = this.billingService.AllEmpListForBilling; //sud:30Apr'20--code optimization
     this.creditOrganizationsList = this.billingService.AllCreditOrganizationsList;//sud:30Apr'20--code optimization
 
     this.SetDoctorsList();//sud:2May'20--code optimization
-    this.setCheckOutParameter();
+    //this.setCheckOutParameter();
+    this.LoadMembershipSettings();
 
-    this.CreditOrganizationMandatory = this.CoreService.LoadCreditOrganizationMandatory();//pratik: 26feb'20 --Credit Organization compulsoryor not while Payment Mode is credit 
+    this.CreditOrganizationMandatory = this.CoreService.LoadCreditOrganizationMandatory();//pratik: 26feb'20 --Credit Organization compulsoryor not while Payment Mode is credit
 
     this.IPBillItemGridCol = GridColumnSettings.IPBillItemGridCol;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreatedOn', true));
@@ -157,12 +186,12 @@ export class PatientIpSummaryComponent {
       this.billingCancellationRule.labStatus = this.overallCancellationRule.LabItemsInBilling;
       this.billingCancellationRule.radiologyStatus = this.overallCancellationRule.ImagingItemsInBilling;
     }
+    this.LoadItemLevelSettngs();
 
-    this.SetAutoBedAndAutoBillItemParameters();//sud:07Oct'20--to make common place for this param.
   }
 
 
-  //this is the expected format of the autobed parameter.. 
+  //this is the expected format of the autobed parameter..
   public autoBedBillParam = { DoAutoAddBillingItems: false, DoAutoAddBedItem: false, ItemList: [] };
 
   SetAutoBedAndAutoBillItemParameters() {
@@ -173,22 +202,104 @@ export class PatientIpSummaryComponent {
   }
 
 
-  setCheckOutParameter() {
-    var param = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime");
-    if (param) {
-      this.checkouttimeparameter = param.ParameterValue;
+  // setCheckOutParameter() {
+  //   var param = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime");
+  //   if (param) {
+  //     this.checkouttimeparameter = param.ParameterValue;
+  //   }
+  // }
+
+  public LoadMembershipSettings() {
+    var currParam = this.CoreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "MembershipSchemeSettings");
+    if (currParam && currParam.ParameterValue) {
+      this.membershipSchemeParam = JSON.parse(currParam.ParameterValue);
     }
   }
 
+  //This is to get the ItemLevelDiscount settings //Krishna,20JAN'22..
+  public LoadItemLevelSettngs(){
+    let currParam = this.CoreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "IPBillingDiscountSettings");
+    if(currParam && currParam.ParameterValue){
+      this.ItemLevelDiscountSettings = JSON.parse(currParam.ParameterValue);
+    }
+  }
+ 
+  public ItemLevelCheckBoxChanged($event:any){
+    $event ? this.enableItemLevelDiscount = true : this.enableItemLevelDiscount = false;
+    // if(this.enableItemLevelDiscount){
+    //   this.CalculationForAll();
+    // }
+    this.model.DiscountPercent = this.currMembershipDiscountPercent;
+  }
+  //Krishna, 19thJAN'22, This saves the Discount Scheme and Discount percent When Scheme is changed
+  public SaveDiscountState(){
+    this.ipBillingDiscountModel.PatientVisitId = this.ipVisitId;
+    this.ipBillingDiscountModel.ProvisionalDiscPercent = this.model.DiscountPercent;
+    this.billingBLService.UpdateDiscount(this.ipBillingDiscountModel).subscribe(
+      res =>{
+        if (res.Status == "OK" && res.Results) {
+          this.getPatientDetails();
+          console.log(res.Results);
+        }else{
+          console.log(res.ErrorMessage);
+          
+        }
+      }
+    );
+
+  }
+
+  OnMembershipChanged($event: Membership) {
+    if ($event) {
+      this.MembershipTypeId = $event.MembershipTypeId;
+      this.isGroupDiscountApplied = false;
+      this.currMembershipDiscountPercent = $event.DiscountPercent;
+      this.model.DiscountPercent = $event.DiscountPercent;
+      this.model.DiscountAmount = (this.model.DiscountPercent * this.model.SubTotal) / 100;
+      this.model.TotalAmount = this.model.SubTotal - this.model.DiscountAmount;
+
+      this.MembershipTypeName = $event.MembershipTypeName;
+      if (this.MembershipTypeName && this.MembershipTypeName != 'General') {
+        this.model.Remarks = $event.MembershipTypeName;
+      }
+      else {
+        this.model.Remarks = null;
+      }
+      this.ipBillingDiscountModel.DiscountSchemeId = $event.MembershipTypeId;
+
+      this.SaveDiscountState();
+      //this.InvoiceDiscountOnChange();
+      if(this.patientInfo.Admissions[0].IsItemDiscountEnabled && this.patientInfo.Admissions[0].DiscountSchemeId == $event.MembershipTypeId){
+        this.CalculationForAll();
+      }else{
+        this.InvoiceDiscountOnChange();
+      }
+    }
+    else {
+      // this.model.MembershipTypeId = null;
+      this.model.DiscountPercent = 0;
+      this.model.Remarks = null;
+    }
+  }
 
   ngOnInit() {
     if (this.patientId && this.ipVisitId) {
       this.bedDurationDetails = [];
       this.getPatientDetails();
-      this.LoadPatientBillingSummary(this.patientId, this.ipVisitId);
+
+      this.CoreService.loading = true;
+      if (this.autoBedBillParam.DoAutoAddBedItem) {
+        this.UpdateBedDuration();
+      }
+      else {
+        this.LoadPatientBillingSummary(this.patientId, this.ipVisitId);
+      }
+
       this.CheckCreditBill(this.patientId);
       this.GetPharmacyProvisionalBalance();
-      this.dischargeDetail.DischargeDate = moment().format('YYYY-MM-DDTHH:mm:ss');
+      this.intervalId = setInterval(()=>{
+        this.dischargeDetail.DischargeDate =  moment().format('YYYY-MM-DDTHH:mm:ss');
+      },1000)
 
       this.OrderStatusSettingB4Discharge = this.CoreService.GetIpBillOrderStatusSettingB4Discharge();
       if (this.OrderStatusSettingB4Discharge) {
@@ -198,15 +309,31 @@ export class PatientIpSummaryComponent {
     }
   }
 
+  ngOnDestroy(){
+    if(this.intervalId){
+      clearInterval(this.intervalId);
+    }
+  }
+  
   getPatientDetails() {
     this.patientBLServie.GetPatientById(this.patientId)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.patientInfo = res.Results;
           this.patService.globalPatient = res.Results;
+          this.MembershipTypeId = res.Results.Admissions[0].DiscountSchemeId;
+          
+          if(this.patientInfo.Admissions[0].IsItemDiscountEnabled){
+            this.enableItemLevelDiscount = true;
+            this.ipBillingDiscountModel.IsItemDiscountEnabled = true;
+          }else{
+            this.enableItemLevelDiscount = false;
+            this.ipBillingDiscountModel.IsItemDiscountEnabled = false;
+          }
         }
       });
   }
+
   LoadPatientBillingSummary(patientId: number, patientVisitId: number) {
     this.dlService.Read("/api/IpBilling?reqType=pat-pending-items&patientId=" + this.patientId + "&ipVisitId=" + this.ipVisitId)
       .map(res => res)
@@ -218,38 +345,54 @@ export class PatientIpSummaryComponent {
           this.admissionInfo.DischargedOn = moment(this.admissionInfo.DischargedOn).format('YYYY-MM-DDTHH:mm:ss');
           this.patAllPendingItems = res.Results.PendingBillItems;
 
-          // //add CreatedByObj and ModifiedByObj for grid. These property are created right here and will be used only in this page. 
+          // //add CreatedByObj and ModifiedByObj for grid. These property are created right here and will be used only in this page.
           this.UpdateEmployeeObjects_OfBilTxnItems_ForGrid(this.patAllPendingItems);
 
 
           this.bedDetails = res.Results.AdmissionInfo.BedDetails;
-          this.calculateAdmittedDays();
+
+          //sud: 11May'21--to recalculate deposit amounts
+          if (this.admissionInfo) {
+            this.model.DepositBalance = ((this.admissionInfo.DepositAdded || 0) - (this.admissionInfo.DepositReturned || 0));
+            //this.model.DepositAdded = CommonFunctions.parseAmount(admInfo.DepositAdded);
+            //this.model.DepositReturned = CommonFunctions.parseAmount(admInfo.DepositReturned);
+            this.MembershipTypeId = this.admissionInfo.MembershipTypeId;
+          }
+          //this.model.DepositBalance = CommonFunctions.parseAmount((this.model.DepositAdded || 0) - (this.model.DepositReturned || 0));
+
+
+
+          //this.calculateAdmittedDays();
           this.CalculationForAll();
           this.HasZeroPriceItems();
 
-          //this.CalculateTotalDays();
+          this.CalculateTotalDays();
+          this.ShowMembershipSelect = true;
+          this.CoreService.loading = false;
         }
         else {
           this.msgBoxServ.showMessage("failed", [" Unable to get bill summary."]);
           console.log(res.ErrorMessage);
+          this.CoreService.loading = false;
         }
       });
   }
   //Hom 17 Jan'19
   HasZeroPriceItems(): boolean {
     this.patAllPendingItems.forEach(a => {
-      var pendingItems = this.allItemslist.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
+      var pendingItems = this.allItemslist.find(b => a.ItemId == b.ItemId && a.ServiceDepartmentId == b.ServiceDepartmentId);
       if (pendingItems) {
         a.IsDoctorMandatory = pendingItems.IsDoctorMandatory;
+        a.IsZeroPriceAllowed = pendingItems.IsZeroPriceAllowed;
       }
     });
 
-    var items = this.patAllPendingItems.filter(a => a.Price == 0 || (a.IsDoctorMandatory == true && !a.ProviderId));
+    var items = this.patAllPendingItems.filter(a => (a.Price == 0 && !a.IsZeroPriceAllowed) || (a.IsDoctorMandatory == true && !a.ProviderId));
     if (items && items.length) {
       this.UpdateItems(items);
       //this.msgBoxServ.showMessage("Warning!", ["Some of the items has price 0. Please update."]);
       let messArr = [];
-      if (items.find(a => a.Price == 0)) {
+      if (items.find(a => a.Price == 0 && !a.IsZeroPriceAllowed)) {
         messArr.push("Some of the items has price 0. Please update.");
       }
       if (items.find(a => a.IsDoctorMandatory == true && !a.ProviderId)) {
@@ -269,6 +412,19 @@ export class PatientIpSummaryComponent {
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
           this.hasPreviousCredit = res.Results;
+          if(this.hasPreviousCredit){
+            this.LoadCreditInformationOfPatient(patientId);
+          }
+        }
+      });
+  }
+
+  LoadCreditInformationOfPatient(patientId: number){
+    this.dlService.Read("/api/Billing/LoadCreditInfo?patientId=" + this.patientId)
+      .map(res => res)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK") {
+         this.CreditTotal = res.Results;
         }
       });
   }
@@ -282,6 +438,7 @@ export class PatientIpSummaryComponent {
         }
       });
   }
+
 
   BackToPatientListGrid() {
     this.onClose.emit();
@@ -301,13 +458,15 @@ export class PatientIpSummaryComponent {
     }
 
   }
+
   CloseGroupDiscountPopup($event) {
     this.showGroupDiscountPopUp = false;
-    //all the items gets return in above event from groupdiscount component. 
-    //so reassign to pending items, and then do calculation for all.. 
+    //all the items gets return in above event from groupdiscount component.
+    //so reassign to pending items, and then do calculation for all..
     if ($event) {
       this.patAllPendingItems = $event;
-      //reassign createdby and updated by objects.. 
+      this.isGroupDiscountApplied = true;
+      //reassign createdby and updated by objects..
       this.UpdateEmployeeObjects_OfBilTxnItems_ForGrid(this.patAllPendingItems);
       this.CalculationForAll();
       this.patAllPendingItems = this.patAllPendingItems.slice();//to refresh the array. needed for grid.
@@ -316,18 +475,22 @@ export class PatientIpSummaryComponent {
   }
 
   ConfirmDischarge() {
-
-
     if (this.model.Tender < this.model.ToBePaid && this.model.PayType != "credit") {
       this.msgBoxServ.showMessage("failed", ["Tender  must be greater or equal to Total amount"]);
       return;
     }
 
-    var currDate = moment().format('YYYY-MM-DD');
-    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD');
-    if ((moment(currDate) < moment(disDate))) {
+    var currDate = moment().format('YYYY-MM-DD HH:mm');
+    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD HH:mm');
+    var AdmissionDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
+    if ((moment(currDate).isBefore(disDate))) {
       this.validDischargeDate = false;
       this.msgBoxServ.showMessage("notice", ["Invalid can't enter future date"]);
+      return;
+    }
+    if ((moment(disDate).isBefore(AdmissionDate))) {
+      this.validDischargeDate = false;
+      this.msgBoxServ.showMessage("Notice", ["Invalid can't discharge patient before admission date."]);
       return;
     }
 
@@ -347,7 +510,7 @@ export class PatientIpSummaryComponent {
       if (this.model.PayType == "credit" && this.CreditOrganizationMandatory && !this.model.OrganizationId) {
         this.msgBoxServ.showMessage("failed", ["Credit Organization is mandatory for credit bill"]);
       }
-      else if ((this.model.PayType == "credit" || this.estimatedDiscountPercent) && !this.model.Remarks) {
+      else if ((this.model.PayType == "credit" || this.model.DiscountPercent > 0) && !this.model.Remarks) {
         this.msgBoxServ.showMessage("failed", [" Remarks is mandatory."]);
       }
       else {
@@ -377,7 +540,7 @@ export class PatientIpSummaryComponent {
 
     if (this.model.PharmacyProvisionalAmount > 0) {
       let discharge: boolean = true;
-      let discharge_msg = "NOTE !!! Pharmacy charge of Rs. " + this.model.PharmacyProvisionalAmount + " Remaining. Are you sure to discharge?";
+      let discharge_msg = "NOTE !!! Pharmacy charge of " + this.CoreService.currencyUnit + this.model.PharmacyProvisionalAmount + " Remaining. Are you sure to discharge?";
       discharge = window.confirm(discharge_msg);
       if (discharge) {
         this.PostBillAndDischargePatient();
@@ -391,29 +554,92 @@ export class PatientIpSummaryComponent {
     if (this.HasZeroPriceItems()) {
       return;
     }
-    var currDate = moment().format('YYYY-MM-DD');
-    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD');
+    var currDate = moment().format('YYYY-MM-DD HH:mm');
+    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD HH:mm');
+    var AdmissionDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
+    if ((moment(currDate).isBefore(disDate))) {
+      this.validDischargeDate = false;
+      this.msgBoxServ.showMessage("notice", ["Invalid can't enter future date"]);
+      return;
+    }
+    if ((moment(disDate).isBefore(AdmissionDate))) {
+      this.validDischargeDate = false;
+      this.msgBoxServ.showMessage("notice", ["Invalid can't discharge patient before admission date."]);
+      return;
+    }
+
+    this.loading = true;
+    this.dischargeDetail.PatientVisitId = this.ipVisitId;
+    this.showDischargePopUpBox = false;
+    this.billType = "invoice";
+    this.billStatus = "";
+    this.PostBillingTransaction();
+
+  }
+
+
+  ProceedDischargeWithZeroItems() {
+    let currDate = moment().format('YYYY-MM-DD');
+    let disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD');
     if ((moment(currDate) < moment(disDate))) {
       this.msgBoxServ.showMessage("notice", ["Invalid can't enter future date"]);
       return;
     }
-    if (this.dischargeDetail.Remarks) {
+
+    if (this.dischargeDetail && this.dischargeDetail.Remarks) {
       this.loading = true;
-      this.dischargeDetail.PatientVisitId = this.ipVisitId;
-      this.showDischargePopUpBox = false;
-      this.billType = "invoice";
-      this.billStatus = "";
-      this.PostBillingTransaction();
-    }
-    else {
+      let data = {
+        "PatientVisitId": this.ipVisitId,
+        "PatientId": this.patientId,
+        "DischargeDate": this.dischargeDetail.DischargeDate,
+        "CounterId": this.securityService.getLoggedInCounter().CounterId,
+        "DepositBalance": this.model.DepositBalance,
+        "DischargeRemarks": this.dischargeDetail.Remarks,
+        "DiscountSchemeId": this.MembershipTypeId,
+        "DischargeFrom": "billing"
+      };
+      this.billingBLService.DischargePatientWithZeroItem(data)
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status == "OK") {
+            this.showCancelAdmissionAlert = false;
+            if ((res.Results.DepositId > 0)) {
+              this.deposit = res.Results;
+              this.deposit.PatientName = this.patService.getGlobal().ShortName;
+              this.deposit.PatientCode = this.patService.getGlobal().PatientCode;
+              this.deposit.Address = this.patService.getGlobal().Address;
+              this.deposit.PhoneNumber = this.patService.getGlobal().PhoneNumber;
+              this.showDepositReceipt = true;
+            } else {
+              this.BackToPatientListGrid();
+            }
+            this.loading = false;
+            this.msgBoxServ.showMessage("success", ["Patient discharge successfully."]);
+          }
+          else {
+            this.msgBoxServ.showMessage("failed", ["Patient discharge failed."]);
+            console.log(res.ErrorMessage);
+            this.loading = false;
+          }
+        });
+    } else {
       this.msgBoxServ.showMessage("failed", ["Discharge Remarks is mandatory."]);
+      this.loading = false;
     }
+  }
 
+  CloseDepositReceipt($event?: any) {
+    this.BackToPatientListGrid();
+  }
 
+  CloseZeroItemBillingPopUp() {
+    this.showCancelAdmissionAlert = false;
+    this.loading = false;
+    this.dischargeDetail.Remarks = null;
   }
 
   CloseRecieptView() {
     this.showDischargeBill = false;
+    this.showEstimationBill = false;
     if (this.billType == "invoice") {
       this.ClosePatientSummary(false);
     }
@@ -437,7 +663,16 @@ export class PatientIpSummaryComponent {
 
       this.patAllPendingItems = this.patAllPendingItems.slice();
     }
+    this.patAllPendingItems.forEach(itm => {
+      if(itm.DiscountPercent == 0){
+        itm.DiscountPercent = this.currMembershipDiscountPercent;
+        //itm.DiscountPercentAgg = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+        itm.DiscountAmount = (itm.SubTotal * itm.DiscountPercent) / 100;
+        itm.DiscountSchemeId = this.MembershipTypeId;
+      }
+    });
     this.CalculationForAll();
+    // this.InvoiceDiscountOnChange();
     this.showIpBillRequest = false;
   }
 
@@ -473,51 +708,66 @@ export class PatientIpSummaryComponent {
 
     let admInfo = this.admissionInfo;
     let itemsInfo = this.patAllPendingItems;
+    let discountPercent = this.patAllPendingItems[0] ? this.patAllPendingItems[0].DiscountPercent : 0;
     let subTotal: number = 0;
     let totAmount: number = 0;
     let discAmt: number = 0;
     if (itemsInfo && itemsInfo.length > 0) {
       itemsInfo.forEach(itm => {
-        let itemDiscount = itm.SubTotal * (itm.DiscountPercent / 100);
-        itm.TotalAmount = itm.SubTotal - itemDiscount;
-        let invoiceDiscount = itm.TotalAmount * (this.estimatedDiscountPercent / 100);
-        itm.TotalAmount = itm.TotalAmount - (invoiceDiscount ? invoiceDiscount : 0);
-        itm.DiscountAmount = itemDiscount + (invoiceDiscount ? invoiceDiscount : 0);
+        itm.DiscountAmount = itm.SubTotal * (itm.DiscountPercent / 100);
+        itm.TotalAmount = itm.SubTotal - itm.DiscountAmount;
+        //let invoiceDiscount = itm.TotalAmount * (this.estimatedDiscountPercent / 100);
+        // let invoiceDiscount = itm.SubTotal * (itm.DiscountPercent / 100);
+        // itm.TotalAmount = itm.SubTotal - (invoiceDiscount ? invoiceDiscount : 0);
+        // itm.DiscountAmount = itemDiscount + (invoiceDiscount ? invoiceDiscount : 0);
+
+        // subTotal += (itm.SubTotal ? itm.SubTotal : 0);
+        // totAmount += (itm.TotalAmount ? itm.TotalAmount : 0);
+
+        // discAmt += (itm.DiscountAmount ? itm.DiscountAmount : 0);
+
+        // itm.DiscountPercentAgg = (itm.DiscountAmount / itm.SubTotal) * 100;
 
         subTotal += (itm.SubTotal ? itm.SubTotal : 0);
         totAmount += (itm.TotalAmount ? itm.TotalAmount : 0);
-
         discAmt += (itm.DiscountAmount ? itm.DiscountAmount : 0);
 
-        itm.DiscountPercentAgg = (itm.DiscountAmount / itm.SubTotal) * 100;
 
         itm.TaxableAmount = itm.IsTaxApplicable ? (itm.SubTotal - itm.DiscountAmount) : 0;
         itm.NonTaxableAmount = itm.IsTaxApplicable ? 0 : (itm.SubTotal - itm.DiscountAmount);
-      });
-
-      this.model.SubTotal = CommonFunctions.parseAmount(subTotal);
-      this.model.TotalAmount = CommonFunctions.parseAmount(totAmount);
-      this.model.TotalDiscount = CommonFunctions.parseAmount(discAmt);
+      })
+      let overallSubTot = itemsInfo.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
+      let overallDiscAmt = itemsInfo.reduce(function (acc, itm) { return acc + itm.DiscountAmount; }, 0);
+      discountPercent = CommonFunctions.parseAmount(overallDiscAmt*100/overallSubTot,3);
+      this.model.DiscountPercent = discountPercent;
+      this.estimatedDiscountPercent = this.model.DiscountPercent;
+      this.model.SubTotal = subTotal; //CommonFunctions.parseAmount();
+      this.model.TotalAmount = totAmount; //CommonFunctions.parseAmount();
+      this.model.DiscountAmount = discAmt; //CommonFunctions.parseAmount();
 
     }
     else {
+      this.model.DiscountPercent = 0;
       this.model.SubTotal = 0;
       this.model.TotalAmount = 0;
-      this.model.TotalDiscount = 0;
+      this.model.DiscountAmount = 0;
     }
-
-    this.model.DepositAdded = CommonFunctions.parseAmount(admInfo.DepositAdded);
-    this.model.DepositReturned = CommonFunctions.parseAmount(admInfo.DepositReturned);
-    this.model.DepositBalance = CommonFunctions.parseAmount((this.model.DepositAdded || 0) - (this.model.DepositReturned || 0));
+    //sud:11May'21: To recalcualte Deposit amounts..
+    // if (admInfo) {
+    //   this.model.DepositAdded = CommonFunctions.parseAmount(admInfo.DepositAdded);
+    //   this.model.DepositReturned = CommonFunctions.parseAmount(admInfo.DepositReturned);
+    // }
+    //this.model.DepositBalance = CommonFunctions.parseAmount((this.model.DepositAdded || 0) - (this.model.DepositReturned || 0));
 
     if (this.model.DepositBalance >= this.model.TotalAmount) {
-      this.model.ToBeRefund = CommonFunctions.parseAmount(this.model.DepositBalance - this.model.TotalAmount);
+      this.model.ToBeRefund = this.model.DepositBalance - this.model.TotalAmount; //CommonFunctions.parseAmount();
       this.model.ToBePaid = 0;
       this.model.PayType = "cash";
       this.model.Tender = this.model.ToBePaid
+
     }
     else {
-      this.model.ToBePaid = CommonFunctions.parseAmount(this.model.TotalAmount - this.model.DepositBalance);
+      this.model.ToBePaid = this.model.TotalAmount - this.model.DepositBalance;// CommonFunctions.parseAmount();
       this.model.ToBeRefund = 0;
       if (this.model.ToBePaid) {
         this.model.Tender = this.model.ToBePaid;
@@ -545,7 +795,8 @@ export class PatientIpSummaryComponent {
 
   CallBackDepositAdd($event = null) {
     if ($event && $event.depositBalance) {
-      this.admissionInfo.DepositAdded = $event.depositBalance;
+      this.model.DepositBalance = $event.depositBalance;
+      //this.admissionInfo.DepositAdded = $event.depositBalance;
       this.CalculationForAll();
     }
   }
@@ -578,7 +829,7 @@ export class PatientIpSummaryComponent {
       else if ($event.EventName == "cancelled") {
         this.showEditItemsPopup = false; // for close edit popup window
         this.patAllPendingItems.splice(index, 1);
-        this.allowDischarge = this.CheckDischargeRule();//sud:15Oct'20-EMR-2638 
+        this.allowDischarge = this.CheckDischargeRule();//sud:15Oct'20-EMR-2638
       }
 
       this.patAllPendingItems = this.patAllPendingItems.slice();
@@ -628,8 +879,12 @@ export class PatientIpSummaryComponent {
 
     this.billType = "estimation";
     this.billStatus = "provisional";
-    this.showDischargeBill = true;
+    this.showEstimationBill = true;
   }
+
+
+
+
 
   //if autoAddBedItems is true then only we should update the bedquantity. else don't call the api (blservice)
   UpdateBedDuration() {
@@ -638,14 +893,17 @@ export class PatientIpSummaryComponent {
     // let AutoAddBedItems = JSON.parse(AutoAddBedItemsStr);
 
     if (this.autoBedBillParam.DoAutoAddBedItem) {
-      this.billingBLService.UpdateBedDurationBillTxn(this.bedDurationDetails)
+      // this.billingBLService.UpdateBedDurationBillTxn(this.bedDurationDetails)
+      this.billingBLService.UpdateBedDurationBillTxn(this.ipVisitId)
         .subscribe((res: DanpheHTTPResponse) => {
           if (res.Status == "OK") {
             console.log("ADT Bill Items Quantity updated.");
+            this.LoadPatientBillingSummary(this.patientId, this.ipVisitId);
           }
           else {
             console.log("Failed to update bed transaction detail.");
             console.log(res.ErrorMessage);
+            this.CoreService.loading = false;
           }
         });
     }
@@ -656,8 +914,9 @@ export class PatientIpSummaryComponent {
     this.billingBLService.PostIpBillingTransaction(this.billingTransaction)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
-          this.billingTxnId = this.billingTransaction.BillingTransactionId = res.Results.BillingTransactionId;
-          this.DischargePatient();
+          //sud:15Sept'21--using similar variable in all pages..
+          this.bil_BilTxnId = this.billingTransaction.BillingTransactionId = res.Results.BillingTransactionId;
+          this.DischargePatient(res.Results.InvoiceNo, res.Results.FiscalYearId);
         }
         else {
           this.msgBoxServ.showMessage("failed", ["Unable to complete billing transaction."]);
@@ -673,14 +932,23 @@ export class PatientIpSummaryComponent {
     this.loading = false;
   }
 
-  DischargePatient() {
+
+  //sud:18May'21--To display Invoice from here
+  public bil_InvoiceNo: number = 0;
+  public bil_FiscalYrId: number = 0;
+  public bil_BilTxnId: number = null;
+
+  DischargePatient(invoiceNo: number, fiscYrId: number) {
     this.dischargeDetail.BillStatus = this.billingTransaction.BillStatus;
-    this.dischargeDetail.BillingTransactionId = this.billingTxnId;
+    this.dischargeDetail.BillingTransactionId = this.bil_BilTxnId;//sud:15Sept'21--replaced old variable with new to keep similarity with other pages
+    this.dischargeDetail.DiscountSchemeId = this.MembershipTypeId;
     this.dischargeDetail.PatientId = this.patientId;
     this.dischargeDetail.ProcedureType = this.admissionInfo.ProcedureType;
     this.billingBLService.DischargePatient(this.dischargeDetail)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
+          this.bil_InvoiceNo = invoiceNo;
+          this.bil_FiscalYrId = fiscYrId;
           this.showDischargeBill = true;
           this.loading = false;
         }
@@ -694,6 +962,12 @@ export class PatientIpSummaryComponent {
 
 
   MapBillingTransaction() {
+    this.patAllPendingItems.forEach(a => {
+      // a.DiscountPercent = this.model.DiscountPercent;
+      // a.DiscountAmount = (a.SubTotal * a.DiscountPercent) / 100;
+      // a.TotalAmount = a.SubTotal - a.DiscountAmount;
+      a.DiscountSchemeId = this.MembershipTypeId;
+    });
     this.billingTransaction = new BillingTransaction;
     this.billingTransaction.BillingTransactionItems = this.patAllPendingItems;
     this.billingTransaction.PatientId = this.patientId;
@@ -710,7 +984,7 @@ export class PatientIpSummaryComponent {
       this.billingTransaction.ExchangeRate = this.exchangeRate;
     }
 
-    this.billingTransaction.DiscountAmount = this.model.TotalDiscount;
+    this.billingTransaction.DiscountAmount = this.model.DiscountAmount;
     this.billingTransaction.TotalAmount = this.model.TotalAmount;
     this.billingTransaction.OrganizationId = this.model.OrganizationId;
     if (this.model.OrganizationId) {
@@ -718,22 +992,28 @@ export class PatientIpSummaryComponent {
       this.billingTransaction.OrganizationName = org.OrganizationName
     }
 
-    if (this.estimatedDiscountPercent)
-      this.billingTransaction.DiscountPercent = this.estimatedDiscountPercent;
+    if (this.model.DiscountPercent)
+      this.billingTransaction.DiscountPercent = this.model.DiscountPercent;
     else
-      this.billingTransaction.DiscountPercent = CommonFunctions.parseAmount(this.billingTransaction.DiscountAmount * 100 / (this.model.SubTotal));
+      this.billingTransaction.DiscountPercent = this.billingTransaction.DiscountAmount * 100 / (this.model.SubTotal);// CommonFunctions.parseAmount();
 
     this.billingTransaction.TaxId = this.billingService.taxId;
     this.billingTransaction.PaidAmount = this.billingTransaction.BillStatus == "paid" ? this.model.ToBePaid : 0;
     this.billingTransaction.Tender = this.model.Tender;
     this.billingTransaction.Change = this.model.Change;
 
-    if (this.billingTransaction.PaymentMode != "credit") {
-      this.billingTransaction.DepositReturnAmount = (this.model.ToBePaid > 0) ? this.model.DepositBalance : this.model.TotalAmount; //this is deposit deduction amount. It will be deducted against the transaction.
-      this.billingTransaction.DepositBalance = this.model.ToBeRefund > 0 ? this.model.ToBeRefund : 0; // this is deposit return amount.
+    //sud:11May'21--To Recalculate Deposit amounts..
+    this.billingTransaction.DepositAvailable = this.model.DepositBalance;
 
+    if (this.billingTransaction.PaymentMode != "credit") {
+      //if tobepaid is more than zero that means all deposit available will be used, else only totalamount will be deducted from deposit.
+      this.billingTransaction.DepositUsed = (this.model.ToBePaid > 0) ? this.billingTransaction.DepositAvailable : this.model.TotalAmount;
+      //if to be paid is more than zero, than all deposit will already be used, so DepositReturnAmount will be Zero. Else calculate the amount (Avaliable-Used)
+      this.billingTransaction.DepositReturnAmount = (this.model.ToBePaid > 0) ? 0 : (this.billingTransaction.DepositAvailable - this.billingTransaction.DepositUsed);
+      this.billingTransaction.DepositBalance = 0;//From IpBilling we settle all amounts using ReturnDeposit.
     }
     else {
+      this.billingTransaction.DepositUsed = 0;
       this.billingTransaction.DepositReturnAmount = 0;
       this.billingTransaction.DepositBalance = this.model.DepositBalance;
     }
@@ -748,211 +1028,41 @@ export class PatientIpSummaryComponent {
       else {
         this.billingTransaction.NonTaxableAmount += item.NonTaxableAmount;
       }
+      item.DiscountSchemeId = this.MembershipTypeId;
       item.PaidCounterId = this.billingTransaction.PaidCounterId;
       this.billingTransaction.TotalQuantity += item.Quantity;
       this.billingTransaction.BillStatus = this.billingTransaction.BillStatus;
     });
 
     this.billingTransaction.TransactionType = "inpatient";
-    this.estimatedDiscountPercent = 0;
+    this.billingTransaction.InvoiceType = ENUM_InvoiceType.inpatientDischarge;
+    this.model.DiscountPercent = 0;
   }
 
 
 
   //start: Sud-7Oct'20--For AutoAdd bed items cases
-  public totalDays: number = 0;//this is used just to show the total days in frontend. 
+  public totalDays: number = 0;//this is used just to show the total days in frontend.
 
   public CalculateTotalDays() {
     this.totalDays = moment(this.dischargeDetail.DischargeDate).diff(this.admissionInfo.AdmittedOn, "day");
+    //this.totalDays = moment(this.dischargeDetail.DischargeDate).date() -   moment(this.admissionInfo.AdmittedOn).date();
+    var currDate = moment().format('YYYY-MM-DD HH:mm');
+    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD  HH:mm');
+    var AdmissionDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD  HH:mm');
+   
+    if ((moment(currDate).isBefore(disDate)) || (moment(disDate).isBefore(AdmissionDate))) {
+      this.validDischargeDate = false;
+    }
+    else {
+      this.validDischargeDate = true;
+    }
   }
 
   //end: Sud-7Oct'20--For AutoAdd bed items cases
 
 
-  public calculateAdmittedDays() {
 
-    if (this.autoBedBillParam.DoAutoAddBedItem) {
-      this.bedDurationDetails = [];
-      this.estimatedDischargeDate = this.dischargeDetail.DischargeDate;
-      if (moment(this.admissionInfo.AdmittedOn).diff(this.dischargeDetail.DischargeDate) > 0) {
-        this.validDischargeDate = false;
-      }
-      else {
-        this.validDischargeDate = true;
-      }
-      //let checkouttimeparameter = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;
-      this.checkouttimeparameter = moment(this.admissionInfo.AdmittedOn).format("HH:mm");
-      let onedayformatparameter = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "OneDayFormat").ParameterValue;
-
-      if (onedayformatparameter === "00:00") {
-        var duration = CommonFunctions.calculateADTBedDuration(moment(this.admissionInfo.AdmittedOn).format("YYYY-MM-DD HH:mm"), moment(this.dischargeDetail.DischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
-      }
-      if (onedayformatparameter === "24:00") {
-        var duration = this.calculateADTBedDurations(moment(this.admissionInfo.AdmittedOn).format("YYYY-MM-DD HH:mm"), moment(this.dischargeDetail.DischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
-      }
-      if (onedayformatparameter === "skip") {
-        var duration = this.calculateADTBedDurationSkip(moment(this.admissionInfo.AdmittedOn).format("YYYY-MM-DD HH:mm"), moment(this.dischargeDetail.DischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
-      }
-      if (duration.days > 0 && duration.hours)
-        this.dischargeDetail.AdmittedDays = duration.days + ' + ' + duration.hours + ' hour';
-      else if (duration.days && !duration.hours)
-        this.dischargeDetail.AdmittedDays = duration.days.toString();
-      else if (!duration.days && duration.hours)
-        this.dischargeDetail.AdmittedDays = duration.hours + ' hour';
-      else
-        this.dischargeDetail.AdmittedDays = String(0);
-      this.totalAdmittedDays = CommonFunctions.parseAmount(duration.days);
-
-      this.UpdateAdtItemQuantity(this.totalAdmittedDays);
-      this.calculateAndUpdateBedQuantity();
-      this.UpdateBedDuration();
-      this.CalculationForAll();
-      this.ChangeTenderAmount();
-    }
-  }
-
-  public calculateAndUpdateBedQuantity() {
-
-    if (this.bedDetails) {
-      this.bedDetails.forEach(bed => {
-        bed.IsQuantityUpdated = false;
-      })
-      this.bedDetails.forEach(bed => {
-        //group and update quantity of similar bed details
-        if (!bed.IsQuantityUpdated) {
-          let totalBedDuration: number = 0;
-          let allSimilarBeds = this.bedDetails.filter(a => a.BedFeatureId == bed.BedFeatureId);
-          if (allSimilarBeds) {
-            allSimilarBeds.forEach(sBed => {
-              let bedEndDate = sBed.EndDate ? sBed.EndDate : this.dischargeDetail.DischargeDate;
-              let duration = this.calculateBedDurations(sBed.StartDate, bedEndDate, this.checkouttimeparameter);
-              if (duration.days > 0 && duration.hours)
-                sBed.Days = duration.days + ' + ' + duration.hours + ' hour';
-              else if (duration.days && !duration.hours)
-                sBed.Days = duration.days.toString();
-              else if (!duration.days && duration.hours)
-                sBed.Days = duration.hours + ' hour';
-              totalBedDuration += CommonFunctions.parseAmount(duration.days);
-              sBed.IsQuantityUpdated = true;
-            });
-          }
-          this.UpdateBedQuantity(totalBedDuration, bed.BedFeatureId);
-        }
-      });
-    }
-  }
-
-
-  public UpdateAdtItemQuantity(quantity: number) {
-
-    let adtItem = this.patAllPendingItems.find(a => a.ItemIntegrationName == "Medical and Resident officer/Nursing Charges");
-    if (adtItem) {
-      let checkouttime = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;
-      let checkouttimeincrement = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTimeIncremental").ParameterValue;
-      let checkouttimeincremental = parseFloat(checkouttimeincrement);
-      let bedEndDate = moment(adtItem.EndDate).format('HH:mm') ? moment(adtItem.EndDate).format('HH:mm') : moment(this.dischargeDetail.DischargeDate).format('HH:mm');
-      let startDate = moment(adtItem.StartDate).format('YYYY-MM-DD HH:mm');
-      let chkOutTimeValues: Array<string> = checkouttime.split(":");
-      let chkOutHour = parseInt(chkOutTimeValues[0]);
-      //let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-      let bedEndTimeValues: Array<string> = bedEndDate.split(":");
-      let bedEndHour = parseInt(bedEndTimeValues[0]);
-      //let bedEndMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-      let StartEndDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
-      //let StartEndDateYear = moment(StartEndDate).year();
-      //let StartEndDateMonth = parseInt(moment(StartEndDate).format('M'));
-      let StartEndDateDay = parseInt(moment(this.admissionInfo.AdmittedOn).format('D'));
-      let date = new Date();
-      let newdate = moment(date).format('YYYY-MM-DD HH:mm');
-      let day = parseInt(moment(newdate).format('D'));
-
-      if (adtItem.ModifiedBy == null) {
-        if (bedEndHour >= chkOutHour && StartEndDateDay != day) {
-          adtItem.Quantity = (quantity + checkouttimeincremental);
-          this.dischargeDetail.AdmittedDays = (quantity + checkouttimeincremental).toString();
-          this.IsCheckoutParameter = true;
-        }
-        else {
-          adtItem.Quantity = quantity;
-          this.dischargeDetail.AdmittedDays = (quantity).toString();
-        }
-        //adtItem.Quantity = quantity > 1 ? quantity : 1;
-        adtItem.Quantity = adtItem.Quantity > 1 ? adtItem.Quantity : 1;
-        adtItem.SubTotal = adtItem.Quantity * adtItem.Price;
-        adtItem.TotalAmount = adtItem.SubTotal - adtItem.DiscountAmount;
-      }
-
-    }
-
-    this.patAllPendingItems = this.patAllPendingItems.slice();
-  }
-
-
-  public UpdateBedQuantity(quantity: number, bedFeatureId: number) {
-
-    let bedItem = this.patAllPendingItems.find(a => a.SrvDeptIntegrationName == "Bed Charges" && a.ItemId == bedFeatureId);
-
-    if (bedItem) {
-      bedItem.Quantity = quantity;
-      let bed = new BedDurationTxnDetailsVM();
-      bed.TotalDays = this.totalAdmittedDays;
-      bed.BedFeatureId = bedFeatureId;
-      bed.PatientVisitId = this.ipVisitId;
-      if (bedItem.IsLastBed) {
-        this.LastBedItem = bedItem.ItemId;
-        bed.Days = bedItem.Quantity = quantity > 1 ? quantity : 1;
-        this.LastBedQty = bedItem.Quantity;
-        this.patAllPendingItems.forEach(a => {
-          if (a.ItemId == bedItem.ItemId && a.ServiceDepartmentId == bedItem.ServiceDepartmentId) {
-            let checkouttime = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;
-            let checkouttimeincrement = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTimeIncremental").ParameterValue;
-            let checkouttimeincremental = parseFloat(checkouttimeincrement);
-            let bedEndDate = moment(a.EndDate).format('HH:mm') ? moment(a.EndDate).format('HH:mm') : moment(this.dischargeDetail.DischargeDate).format('HH:mm');
-            let startDate = moment(a.StartDate).format('YYYY-MM-DD HH:mm');
-            let chkOutTimeValues: Array<string> = checkouttime.split(":");
-            let chkOutHour = parseInt(chkOutTimeValues[0]);
-            //let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-            let bedEndTimeValues: Array<string> = bedEndDate.split(":");
-            let bedEndHour = parseInt(bedEndTimeValues[0]);
-            //let bedEndMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-            let StartEndDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
-            //let StartEndDateYear = moment(StartEndDate).year();
-            //let StartEndDateMonth = parseInt(moment(StartEndDate).format('M'));
-            let StartEndDateDay = parseInt(moment(this.admissionInfo.AdmittedOn).format('D'));
-            let date = new Date();
-
-            let newdate = moment(date).format('YYYY-MM-DD HH:mm');
-            let day = parseInt(moment(newdate).format('D'));
-
-            if (a.ModifiedBy == null) {
-              if (bedEndHour >= chkOutHour && StartEndDateDay != day) {
-                a.Quantity = this.LastBedQty = bedItem.Quantity = (bedItem.Quantity - 1 + checkouttimeincremental);
-                this.dischargeDetail.AdmittedDays = (quantity - 1 + checkouttimeincremental).toString();
-
-              }
-              else {
-                a.Quantity = bedItem.Quantity;
-                this.dischargeDetail.AdmittedDays = (quantity).toString();
-              }
-              //a.Quantity = bedItem.Quantity;
-              a.SubTotal = a.Price * a.Quantity;
-              a.TotalAmount = a.Price * a.Quantity;
-            }
-          }
-        });
-      }
-      bed.Days = bedItem.Quantity = bedItem.Quantity > 1 ? bedItem.Quantity : 1;
-      bed.SubTotal = bedItem.SubTotal = bedItem.Quantity * bedItem.Price;
-      if (bedItem.IsTaxApplicable) {
-        bed.TaxableAmount = bed.SubTotal;
-      }
-      else {
-        bed.NonTaxableAmount = bed.SubTotal;
-      }
-      bedItem.TotalAmount = bedItem.SubTotal - bedItem.DiscountAmount;
-      this.bedDurationDetails.push(bed);
-    }
-  }
   //Hom 17 Jan '19
   CloseUpdatePricePopup($event) {
     if ($event && $event.modifiedItems) {
@@ -961,8 +1071,8 @@ export class PatientIpSummaryComponent {
 
       if (updatedItems && updatedItems.length > 0) {
 
-        //if bed charge is modified then we need to call the server again.. else we can update the items locally.. 
-        //below hardcode of bedcharge should be removed... 
+        //if bed charge is modified then we need to call the server again.. else we can update the items locally..
+        //below hardcode of bedcharge should be removed...
         let isBedChargeUpdated = updatedItems.find(itm => itm.ServiceDepartmentName == "Bed Charges" || itm.ServiceDepartmentName == "Bed Charge") != null;
 
         if (isBedChargeUpdated) {
@@ -990,192 +1100,10 @@ export class PatientIpSummaryComponent {
   ChangeTenderAmount() {
 
     if (this.model.ToBePaid) {
-      this.model.Change = CommonFunctions.parseAmount(this.model.Tender - this.model.ToBePaid);
+      this.model.Change = this.model.Tender - this.model.ToBePaid;// CommonFunctions.parseAmount();
     }
     else
       this.model.Tender = 0;
-  }
-  public calculateADTBedDurations(inDate, ipCheckoutDate, checkouttimeparameter): { days: number, hours: number, checkouttimeparameter: string } {
-
-    //let checkoutDate = ipCheckoutDate;
-    let chkOutTimeValues: Array<string> = checkouttimeparameter.split(":");
-    let chkOutHour = parseInt(chkOutTimeValues[0]);
-    let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-    var totalDays = 1;
-    if (!ipCheckoutDate) {
-      ipCheckoutDate = moment(new Date);
-      totalDays = 1;
-    }
-    let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
-    let InDateYear = moment(inDate).year();
-    let InDateMonth = parseInt(moment(inDate).format('M'));
-    let InDateDay = parseInt(moment(inDate).format('D'));
-    let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-    let CheckoutYear = moment(CheckoutDate).year();
-    let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
-    let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
-    if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
-      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-    }
-    else {
-      //CheckoutDate = moment(ipCheckoutDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-      InDate = moment(inDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-    }
-
-    for (let indate = moment(inDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
-      let admittedDate = moment(indate).format("HH:mm");
-      let admittedDateValues: Array<string> = admittedDate.split(":");
-      let admittedHour = parseInt(admittedDateValues[0]);
-      for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
-        if (24 - hr == 0) {
-          totalDays += 1;
-        }
-      }
-
-    }
-    return { days: totalDays, hours: 0, checkouttimeparameter };
-  }
-  public calculateADTBedDurationSkip(inDate, ipCheckoutDate, checkouttimeparameter): { days: number, hours: number, checkouttimeparameter: string } {
-
-    // let checkoutDate = ipCheckoutDate;
-    let chkOutTimeValues: Array<string> = checkouttimeparameter.split(":");
-    let chkOutHour = parseInt(chkOutTimeValues[0]);
-    let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
-    var totalDays = 1;
-    if (!ipCheckoutDate) {
-      ipCheckoutDate = moment(new Date);
-      totalDays = 1;
-    }
-    let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
-    let InDateYear = moment(InDate).year();
-    let InDateMonth = parseInt(moment(InDate).format('M'));
-    let InDateDay = parseInt(moment(InDate).format('D'));
-    let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-    let CheckoutYear = moment(CheckoutDate).year();
-    let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
-    let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
-    if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
-      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-    }
-    else {
-
-      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      InDate = moment(InDate).add(1, 'days').set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-    }
-    for (let indate = moment(InDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
-      let admittedDate = moment(indate).format("HH:mm");
-      let admittedDateValues: Array<string> = admittedDate.split(":");
-      let admittedHour = parseInt(admittedDateValues[0]);
-      for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
-        if (24 - hr == 0) {
-          totalDays += 1;
-        }
-      }
-
-    }
-    return { days: totalDays, hours: 0, checkouttimeparameter };
-  }
-  public calculateBedDurations(inDate, ipCheckoutDate, checkouttimeparameter): { days: number, hours: number, checkouttimeparameter: string } { //checkouttimeparameter = "00:00"
-
-    let checkoutDate = ipCheckoutDate;
-    let chkOutTimeValues: Array<string> = checkouttimeparameter.split(":");//checkouttime paramter comes in HH:mm string format. eg: 13:00
-    //expected format of chkOutTimeValues = ["13","00"] -- 0th index is hours and 1st index minutes.
-    let chkOutHour = parseInt(chkOutTimeValues[0]);//hour value comes in 0th index.
-    let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;//minute value  comes in 2nd position if not default 0 minute.
-    let onedayformatparameter = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "OneDayFormat").ParameterValue;
-    if (onedayformatparameter === "24:00") {
-      var totalDays = 1;
-      if (!ipCheckoutDate) {
-        ipCheckoutDate = moment(new Date);
-        totalDays = 1;
-      }
-
-      let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
-      let InDateYear = moment(inDate).year();
-      let InDateMonth = parseInt(moment(inDate).format('M'));
-      let InDateDay = parseInt(moment(inDate).format('D'));
-      let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      let CheckoutYear = moment(CheckoutDate).year();
-      let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
-      let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
-      if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
-        CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      }
-      else {
-        //CheckoutDate = moment(ipCheckoutDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        InDate = moment(inDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      }
-
-      for (let indate = moment(inDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
-        let admittedDate = moment(indate).format("HH:mm");
-        let admittedDateValues: Array<string> = admittedDate.split(":");
-        let admittedHour = parseInt(admittedDateValues[0]);
-        for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
-          if (24 - hr == 0) {
-            totalDays += 1;
-          }
-        }
-
-      }
-    }
-    else if (onedayformatparameter === "skip") {
-      var totalDays = 1;
-      if (!ipCheckoutDate) {
-        ipCheckoutDate = moment(new Date);
-        totalDays = 1;
-      }
-
-      let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
-      let InDateYear = moment(InDate).year();
-      let InDateMonth = parseInt(moment(InDate).format('M'));
-      let InDateDay = parseInt(moment(InDate).format('D'));
-      let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      let CheckoutYear = moment(CheckoutDate).year();
-      let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
-      let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
-      if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
-        CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      }
-      else {
-
-        InDate = moment(InDate).add(1, 'days').set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
-      }
-      for (let indate = moment(inDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
-        let admittedDate = moment(indate).format("HH:mm");
-        let admittedDateValues: Array<string> = admittedDate.split(":");
-        let admittedHour = parseInt(admittedDateValues[0]);
-        for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
-          if (24 - hr == 0) {
-            totalDays += 1;
-          }
-        }
-
-      }
-    }
-    else {
-      if (!checkoutDate) {
-        checkoutDate = this.dischargeDetail.DischargeDate;
-        checkoutDate = moment(checkoutDate).set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        if (moment(checkoutDate).format("YYYY-MM-DD HH:mm") < moment(this.dischargeDetail.DischargeDate).format("YYYY-MM-DD HH:mm")) {
-          checkoutDate = moment(checkoutDate).add(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        }
-        else if ((moment(inDate).hour() < chkOutHour) || (moment(inDate).hour() == chkOutHour && moment(inDate).minute() < chkOutMinute)) {
-          inDate = moment(inDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-        }
-      }
-      else if ((moment(checkoutDate).hour() > chkOutHour) || (moment(checkoutDate).hour() == chkOutHour && moment(checkoutDate).minute() > chkOutMinute)) {
-        checkoutDate = moment(checkoutDate).set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-      }
-      else {
-        checkoutDate = moment(checkoutDate).set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-      }
-      var checkinDate = moment(inDate).set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
-      var totalDays = moment(checkoutDate).diff(moment(checkinDate), 'days');
-    }
-    return { days: totalDays, hours: 0, checkouttimeparameter };
   }
 
 
@@ -1290,5 +1218,46 @@ export class PatientIpSummaryComponent {
 
   CloseOrderStatusInfoPopup() {
     this.ShowOrderStatusInfo = false;
+  }
+
+  CloseDischargePopUp($event) {
+    this.CloseRecieptView();
+  }
+
+  //Pratik:18April'21--This logic was changed for LPH, Please make it parameterized and handle if required for other hospitals after merging.
+  InvoiceDiscountOnChange() {
+    if(this.model.DiscountPercent <= 100 && this.model.DiscountPercent >= 0){
+      this.estimatedDiscountPercent = this.model.DiscountPercent;//sud:11May'21--to be passed into estimated bill
+
+      //Need to re-calculate aggregatediscounts of each item and Invoice amounts when Invoice Discount is changed.
+      this.patAllPendingItems.forEach(itm => {
+        //if(itm.DiscountApplicable){
+          itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+          //itm.DiscountPercentAgg = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+          itm.DiscountAmount = (itm.SubTotal * itm.DiscountPercent) / 100;
+          itm.DiscountSchemeId = this.MembershipTypeId;
+        //}
+      });
+      this.loading = false;
+      this.InvalidDiscount = false;
+      this.CalculationForAll();
+    }else{
+      this.InvalidDiscount = true;
+      this.loading = true;
+    }
+    
+  }
+
+  //Anjana: 17 June, 2021: Close deposit button on click of escape key
+  hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.CloseDepositPopUp();
+    }
+  }
+
+  AfterDischargePrint(data) {
+    if (data.Close == "close") {
+      this.showDischargeBill = false;
+    }
   }
 }

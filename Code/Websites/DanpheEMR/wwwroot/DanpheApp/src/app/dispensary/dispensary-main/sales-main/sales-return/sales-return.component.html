@@ -1,0 +1,290 @@
+<!--@*Start:- Return from customer*@-->
+<div class="row">
+  <form>
+    <div class="col-md-8 col-xs-12">
+      <div class="form-group">
+        <div class="col-md-12">
+          <div class="col-md-3">
+            <b>Fiscal Year: </b>
+            <select [(ngModel)]="selFiscYrId" [ngModelOptions]="{standalone: true}" style="height: 28px;">
+              <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">{{fisc.FiscalYearFormatted}}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="number" name="invoiceId" id="invoiceId" placeholder="Enter invoice id" value="" [(ngModel)]="invoiceId" [ngModelOptions]="{standalone:true}" (keyup.enter)="SetFocusById('ReturnedQty0')" min="1" class="form-control" style="height: 30px;" />
+          </div>
+          <div class="col-md-3">
+            <button value="Search Invoice" title="Press ENTER" (click)="SearchInvoice(selFiscYrId)" class="form-control btn btn-success" style="margin-left: 15px;height: 30px;" [disabled]="disableSearchBtn">
+              <span class="glyphicon glyphicon-search"></span> Search
+              <span style="margin-left:80px;" *ngIf="IsReturn">
+              </span>
+            </button>
+          </div>
+          <div class="col-md-3">
+            <button rbac-permission='{"name":"phrm-manual-sales-return-btn","actionOnInvalid":"remove"}' value="Manual Return" title="Manual Return" (click)="performManualReturn()" class="btn btn-danger" style="margin-left: 15px;height: 30px;">
+              <span class="glyphicon glyphicon-plus"></span> Manual Return
+              <span style="margin-left:80px;" *ngIf="IsReturn">
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pull-right col-md-6">
+      <div class="pull-right" *ngIf="showReturnInvoicePage">
+        <div class="shortcut-key shortkey-right " title="Shortcut Keys">
+          <a href="#"><img src="../../../themes/theme-default/images/Keyboard-icon.svg" alt=""></a>
+          <div class="keydropdown">
+            <ul>
+              <li><kbd>ALT</kbd> + <kbd>P</kbd> = <samp>Print Return Receipt</samp> </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="row" *ngIf="showReturnInvoicePage">
+  <div class="col-md-10 col-xs-12 table-responsive">
+    <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px">
+      <tr>
+        <td> Patient Name:</td>
+        <td><b>{{invoiceHeader.PatientName}}</b></td>
+
+        <td>Patient Type:</td>
+        <td><b>{{invoiceHeader.PatientType}}</b></td>
+
+        <td>Date:</td>
+        <td><b>{{invoiceHeader.InvoiceDate}}</b></td>
+
+      </tr>
+      <tr *ngIf="invoiceHeader.ClaimCode">
+        <td>NSHI Number:</td>
+        <td><b>{{invoiceHeader.NSHINo}}</b></td>
+        <td>Claim Code:</td>
+        <td><b>{{invoiceHeader.ClaimCode}}</b></td>
+        <td>Insurance Balance:</td>
+        <td><b>{{invoiceHeader.InsuranceBalance}}</b></td>
+      </tr>
+      <tr>
+        <td>Invoice No:</td>
+        <td><b>{{invoiceHeader.FiscalYear}}-PH{{invoiceHeader.InvoiceId}}</b></td>
+      </tr>
+      <tr>
+        <td>Bill Amount: </td>
+        <td><b>{{invoiceHeader.InvoiceTotalMoney}}</b></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row" *ngIf="showReturnInvoicePage">
+  <div class="col-md-12">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px;">
+        <thead>
+          <tr>
+            <th><input type="checkbox" name="allItem" (change)="allItems($event)" /></th>
+            <th><b>Drug/Medicine Name</b></th>
+            <th><b>Batch No</b></th>
+            <th><b>Sold Qty</b></th>
+            <th><b>Prev Ret Qty</b></th>
+            <th><b>Return Qty</b></th>
+            <th><b>Available Qty</b></th>
+            <th><b>S.Price</b></th>
+            <th *ngIf="IsitemlevlDis"><b>Dis%</b></th>
+            <th *ngIf="IsitemlevlDis"><b>Dis.Amount</b></th>
+            <!-- <th *ngIf="isItemLevelVATApplicable"><b>VAT%</b></th>
+            <th *ngIf="isItemLevelVATApplicable"><b>VAT Amount</b></th> -->
+            <th><b>SubTotal</b></th>
+            <th><b>Total</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of salesReturn.InvoiceReturnItems; let i = index">
+            <td>
+              <!-- [attr.disabled]="!row.checked ? true: null"  -->
+              <input type="checkbox" name="checkItem" [checked]="row.ReturnedQty ? true : false" [(ngModel)]="row.checked" (ngModelChange)="changelistByItem(i,$event)" />
+            </td>
+            <td>
+
+              <input style="width:200px ; " [(ngModel)]="row.ItemName" disabled type="text" value="" />
+            </td>
+            <td>
+              <input style="width:100px ; " [(ngModel)]="row.BatchNo" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td>
+            <td>
+              <input style="width:80px ; " [(ngModel)]="row.SoldQty" disabled [ngModelOptions]="{standalone: true}" min="0" type="number" />
+            </td>
+            <td>
+              <input style="width:80px ; " [(ngModel)]="row.PreviouslyReturnedQty" disabled [ngModelOptions]="{standalone: true}" min="0" type="number" />
+            </td>
+            <td>
+              <form [formGroup]="row.InvoiceItemsReturnValidator">
+                <input style="width:80px ; " id="ReturnedQty{{i}}" [(ngModel)]="row.ReturnedQty" (ngModelChange)="CalculationForPHRMReturnfromCustomerItem(row,i);ValueChage(i)" formControlName="ReturnedQty" (keyup.enter)="FindNextFocusElementByIndex(i)" onClick="this.select();" onfocus="this.select();" onmousewheel="this.blur()" min="0" type="number" value="0" />
+              </form>
+              <span class="error-msg" *ngIf="(row.Quantity<row.ReturnedQty)">Return Qty Should be less than Available Qty</span>
+              <span class="color-red font-sm" *ngIf="row.IsDirty('ReturnedQty')" [hidden]="row.checked == false || row.IsValidCheck('ReturnedQty','invalidNumber')">Valid quantity required</span>
+            </td>
+            <td>
+              <input style="width:80px ; " [(ngModel)]="row.AvailableQty" disabled [ngModelOptions]="{standalone: true}" min="0" type="number" />
+
+            </td>
+            <td>
+              <input style="width:100px ; " [(ngModel)]="row.MRP" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td>
+            <td *ngIf="IsitemlevlDis">
+              <input style="width:80px ; " [(ngModel)]="row.DiscountPercentage" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td>
+            <td *ngIf="IsitemlevlDis">
+              <input style="width:80px ; " [(ngModel)]="row.DiscountAmount" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td>
+            <!-- <td *ngIf="isItemLevelVATApplicable">
+              <input style="width:80px ; " [(ngModel)]="row.VATPercentage" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td>
+            <td *ngIf="isItemLevelVATApplicable">
+              <input style="width:80px ; " [(ngModel)]="row.VATAmount" disabled [ngModelOptions]="{standalone: true}" type="text" value="" />
+            </td> -->
+            <td>
+              <input style="width:120px ; " [(ngModel)]="row.SubTotal" disabled [ngModelOptions]="{standalone: true}" type="number" value="" />
+            </td>
+            <td>
+              <input style="width:120px ; " [(ngModel)]="row.TotalAmount" disabled [ngModelOptions]="{standalone: true}" type="number" value="" />
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+      <div col-md-7>
+        <table class="col-sm-offset-2 col-sm-5 ">
+          <tr>
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Sub-Total</td>
+            <td>
+              <input [(ngModel)]="salesReturn.SubTotal" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="SubTotal" type="number">
+            </td>
+          </tr>
+          <tr *ngIf="isMainDiscountAvailable && IsCurrentDispensaryInsurace == false">
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Dis%</td>
+            <td>
+              <input [(ngModel)]="salesReturn.DiscountPercentage" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="DiscountPercentage" type="number">
+            </td>
+          </tr>
+          <tr *ngIf="isMainDiscountAvailable && IsCurrentDispensaryInsurace == false">
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Dis. Amount</td>
+            <td>
+              <input [(ngModel)]="salesReturn.DiscountAmount" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="DiscountAmount" type="number">
+            </td>
+          </tr>
+          <tr *ngIf="isMainVATApplicable">
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>VAT Amount</td>
+            <td>
+              <input disabled [(ngModel)]="salesReturn.VATAmount" style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="VATAmount" type="number">
+            </td>
+          </tr>
+          <tr *ngIf="IsCurrentDispensaryInsurace == false">
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Adjustment</td>
+            <td>
+              <input [(ngModel)]="salesReturn.Adjustment" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="Adjusment" type="number">
+            </td>
+          </tr>
+          <tr>
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Total Amount</td>
+            <td>
+              <input [(ngModel)]="salesReturn.TotalAmount" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="TotalAmount" type="number">
+            </td>
+          </tr>
+          <tr>
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+
+            <td>Return Amount</td>
+            <td>
+              <input [(ngModel)]="returnAmount" disabled style="width: 200px;" [ngModelOptions]="{standalone: true}" class="form-control" name="returnAmount" type="number">
+            </td>
+          </tr>
+          <tr>
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td>Remarks <span style="color:red; text-align:right;">*</span></td>
+            <td>
+              <form [formGroup]="salesReturn.InvoiceReturnValidator">
+                <textarea [(ngModel)]="salesReturn.Remarks" formControlName="Remark" id="Remark" (keyup.enter)="SetFocusById('return')" style="width:200px" name="Remark" type="text"></textarea>
+                <div style="color:red" *ngIf="salesReturn.IsDirty('Remark')" [hidden]="salesReturn.IsValidCheck('Remark','required')">Remark is required</div>
+              </form>
+            </td>
+          </tr>
+          <tr class="dot">
+            <td colspan="3" class="text-capitalize" style="text-align: center;">In Words : <b>{{returnAmount |
+                NumberInWords}} </b>Only. <br /><br /></td>
+          </tr>
+          <tr>
+            <td class="col-sm-offset-8 col-sm-2"> </td>
+            <td></td>
+            <td>
+              <button *ngIf="!IsReturn" id="return" class="btn btn-success" title="ALT + P" [disabled]="loading" (click)="SaveReturnFromCustomer()" style="margin-bottom: 30px;"><u>P</u>rint Return Receipt</button>
+              &nbsp;
+              <button type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" style="margin-bottom: 30px;">Discard</button>
+              &nbsp;
+              <button class="btn purple" *ngIf="IsReturn" [disabled]="loading" (click)="CreateCopyForResale()" style="margin-bottom: 30px;">
+                <i class="fa fa-copy"></i>
+                Copy Items for Resale
+              </button>
+              <span class="color-red font-sm blink" style="padding-right:2px;">{{textMessage}}</span>
+              <span></span>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-5" *ngIf="invoiceHeader.CashDiscount">
+
+        <div style="background-color: #d6edef; border-radius: 5px !important; padding: 10px; height: 100%; margin-bottom: 20px;">
+          <p>Note: There was additional <span style="color: green; font-size: 20px;">{{invoiceHeader.CashDiscount}}</span> cash discount given on this
+            invoice during settlement.</p>
+
+          <input id="rtChkBox" type="checkbox" (change)="EnterReturnAmountChange($event)"><label for="rtChkBox">Enter Return Discount?</label> <br>
+          <input *ngIf="enableEnterReturnDiscount" type="number" [(ngModel)]="DiscountReturnAmount" (ngModelChange)="CalculationForPHRMReturnFromCustomer()" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+          <br>
+          <span *ngIf="discountMorethanReturnAmount" class="color-red font-sm">Discount cannot exceed Total Return Amount and Cash Discount.</span>
+          <br>
+          <span *ngIf="NetReturnedAmount">Net Return Amount : <label style="font-size: 20px; color: green; width:120px;padding: 5px;">{{NetReturnedAmount}}</label></span><br>
+          <span class="control-label" style="font-weight:bold; color: blue;" *ngIf="NetReturnedAmount">(In Words:
+            {{NetReturnedAmount | NumberInWords}} only /-)</span>
+        </div>
+
+
+      </div>
+
+    </div>
+  </div>
+</div>
+<!--@*End:- Return from customer*@-->
+<!--START:  Popup for show selected Invoice items details show -->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSaleItemsPopup">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="form-body">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <div class="row printStyle print-border">
+            <div style="text-align:center;">
+              <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt">
+              </pharmacy-receipt>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Manual Return Section START-->
+<app-manual-sales-return *ngIf="showManualReturnForm" (call-back-close)="closeManualReturn()"></app-manual-sales-return>
+<!-- Manual Return Section END-->

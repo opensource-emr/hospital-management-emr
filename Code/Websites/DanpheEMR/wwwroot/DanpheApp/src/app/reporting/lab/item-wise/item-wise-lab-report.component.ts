@@ -17,6 +17,7 @@ export class RPT_LAB_ItemWiseLabReportComponent {
   public currentitemwise: RPT_LAB_ItemWiseFromLabModel = new RPT_LAB_ItemWiseFromLabModel();
     dlService: DLService = null;
     http: HttpClient = null;
+    public dateRange:string="";	
 
     constructor(
         _dlService: DLService,
@@ -64,6 +65,6 @@ export class RPT_LAB_ItemWiseLabReportComponent {
   OnFromToDateChange($event) {
     this.currentitemwise.fromDate = $event.fromDate;
     this.currentitemwise.toDate = $event.toDate;
-
+    this.dateRange="<b>Date:</b>&nbsp;"+this.currentitemwise.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.currentitemwise.toDate;
   }
 }

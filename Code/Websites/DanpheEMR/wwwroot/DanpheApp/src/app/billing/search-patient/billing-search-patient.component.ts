@@ -54,10 +54,10 @@ export class BillingSearchPatientComponent {
     // this.patGirdDataApi = APIsByType.BillingPatient;
     this.showPatRegistration = this.coreService.AllowPatientRegistrationFromBilling();
     this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
-    if(this.currentCounter <1){
-      this.callbackService.CallbackRoute = '/Billing/SearchPatient'
-      this.router.navigate(['/Billing/CounterActivate']);
-    }
+    // if(this.currentCounter <1){
+    //   this.callbackService.CallbackRoute = '/Billing/SearchPatient'
+    //   this.router.navigate(['/Billing/CounterActivate']);
+    // }
   }
 
   ngAfterViewInit() {

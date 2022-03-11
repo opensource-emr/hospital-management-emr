@@ -1,0 +1,51 @@
+<div class="wrapper">
+    <div class="row">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption custom-caption" style="float: left;"> <i
+                            class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Appointment Details
+                            Report</span>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <from-to-date-select (on-change)="OnFromToDateChange($event)"
+                                [date-settings-name]="'billing-reports'">
+                            </from-to-date-select>
+                        </div>
+                        <div class="col-md-4">
+                            Appointment Type : <select [(ngModel)]="AppointmentType"
+                                [ngModelOptions]="{standalone: true}" style="width:100px;height:30px;">
+                                <option value="all">All</option>
+                                <option value="new">New</option>
+                                <option value="followup">Followup</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn green btn-success" type="button"
+                                (click)="GetAppointmentDetailsReport();this.loading=true;" [disabled]="loading"> <i
+                                    class="fa fa-search"></i> Show Report
+                            </button>
+                            <span *ngIf="loading">Loading... Please wait.</span>
+                        </div>
+
+                    </div>
+                    <div class="col-md-6 col-xs-12">
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf="DailyAppointmentReportData.length>0">
+            <danphe-grid [grid-colDefaults]="DailyAppointmentReportGridColumns" [grid-data]="DailyAppointmentReportData"
+                [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true"
+                (grid-onExport)="OnGridExport($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+            </danphe-grid>
+        </div>
+    </div>
+</div>

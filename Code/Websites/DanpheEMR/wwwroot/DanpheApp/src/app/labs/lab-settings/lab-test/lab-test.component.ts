@@ -6,6 +6,7 @@ import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { LabTest } from "../../shared/lab-test.model";
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { LabReportTemplateModel } from '../../shared/lab-report-template.model';
+import { SecurityService } from '../../../security/shared/security.service';
 
 @Component({
     templateUrl: './labtest.html'
@@ -19,14 +20,16 @@ export class LabTestComponent {
     public showAddLabTest: boolean = false;
     public index: number = 0;
     public update: boolean = false;
+    public labGridCols: LabGridColumnSettings = null;
 
     public itmIsActiveValue: string = "Active";//default type is Active.-- sud: 19Sept'18
 
     public rptTemplatesList: Array<any> = new Array<any>();
     public selRptTemplateId = 0;// 0 is for --All--
 
-    constructor(public labSettingBlServ: LabSettingsBLService, public msgBoxServ: MessageboxService, public changeDetector: ChangeDetectorRef) {
-        this.labTestGridCol = LabGridColumnSettings.LabTestList;
+    constructor(public labSettingBlServ: LabSettingsBLService, public msgBoxServ: MessageboxService, public changeDetector: ChangeDetectorRef, public securityService: SecurityService) {
+        this.labGridCols = new LabGridColumnSettings(this.securityService);
+        this.labTestGridCol = this.labGridCols.LabTestList;
         this.GetLabTestList();
         this.LoadReportTemplateList();
     }
@@ -51,7 +54,7 @@ export class LabTestComponent {
 
     }
 
-    CallBackNewAdded($event) {       
+    CallBackNewAdded($event) {
         // if (this.update) {
         //     let itmIndex = this.labTestList.findIndex(tst => tst.LabTestId == $event.labtest.LabTestId);
         //     let itmRptTmplateId = $event.labtest.ReportTemplateId;
@@ -80,6 +83,8 @@ export class LabTestComponent {
         this.update = false;
     }
 
+    public selectedActivateDeactivate: LabTest = null;
+    public selectedItem: LabTest = null;
     EditAction(event: GridEmitModel) {
         switch (event.Action) {
             case "edit": {
@@ -90,6 +95,17 @@ export class LabTestComponent {
                 this.selectedLabTest = Object.assign(this.selectedLabTest, event.Data);
                 this.update = true;
                 this.showAddLabTest = true;
+                break;
+            }
+            case "activateDeactivateLabTest": {
+                if (event.Data != null) {
+                    this.selectedActivateDeactivate = null;
+                    this.selectedActivateDeactivate = event.Data;
+                    this.ActivateDeactivateLabTestStatus(this.selectedActivateDeactivate);
+                    this.selectedItem = null;
+                }
+                break;
+
             }
             default:
                 break;
@@ -146,6 +162,47 @@ export class LabTestComponent {
                 err => {
                     this.msgBoxServ.showMessage("error", ["Failed to Load ReportTemplate List"]);
                 });
+    }
+
+
+    //Anjana: 15 Feb:2021; Update IsActive status of LabTest- Activate or Deactivate
+    ActivateDeactivateLabTestStatus(currTest: LabTest) {
+        if (currTest != null) {
+            let status = currTest.IsActive == true ? false : true;
+
+            if (status == true) {
+                currTest.IsActive = status;
+                this.ChangeActiveStatus(currTest);
+            } else {
+                if (confirm("Are you Sure want to Deactivate " + currTest.LabTestName + ' ?')) {
+
+                    currTest.IsActive = status;
+                    //we want to update the ISActive property in table there for this call is necessry
+                    this.ChangeActiveStatus(currTest);
+                }
+            }
+        }
+
+    }
+
+    ChangeActiveStatus(currTest) {
+        this.labSettingBlServ.DeactivateLab(currTest)
+            .subscribe(
+                res => {
+                    if (res.Status == "OK") {
+                        let responseMessage = res.Results.IsActive ? "LabTest is now activated." : "LabTest is now deactivated.";
+                        this.msgBoxServ.showMessage("success", [responseMessage]);
+                        //This for send to callbackadd function to update data in list
+                        this.GetLabTestList();
+                    }
+                    else {
+                        this.msgBoxServ.showMessage("error", ['Something went wrong' + res.ErrorMessage]);
+                    }
+                },
+                err => {
+                    this.msgBoxServ.showMessage("success", [err]);
+                });
+
     }
 
 

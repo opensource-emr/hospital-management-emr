@@ -1,0 +1,176 @@
+<div class="">
+  <div class="col-md-12" *ngIf="showReceipt" style="padding-top: 10px;">
+    <div id="printpage" style="text-align:center;">
+      <div class="receipt">
+        <div *ngIf="deposit.PrintCount > 0">
+          <br />
+          <p class="no-margin" style="text-align:right;font-style:italic;font-size:13px">COPY({{deposit.PrintCount}}) OF
+            ORIGINAL</p>
+        </div>
+        <br />
+        <billing-header></billing-header>
+        <div style="display:inline-block" class="right"> </div>
+        <div class="clear"></div>
+        <div class="text-center">
+          <p class="no-margin" style="text-align:center;text-decoration:underline;margin-top:15px"> <span>
+              <b>{{depositType}} Receipt</b> </span> </p>
+        </div>
+        <div class="clear"></div>
+        <hr style="border-top: dotted 1px;" />
+        <div class="col-md-12" style="margin-left:0px;margin-right:10px">
+          <div class="left">
+            <p class="no-margin" style="text-align:left">Receipt No: {{deposit.FiscalYear}} - {{ deposit.ReceiptNo}}
+            </p>
+          </div>
+          <div class="right">
+            <p class="no-margin" style="text-align:right">
+              Date: {{deposit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              ({{localDate}})
+            </p>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="margin-left:0px;margin-right:10px">
+          <div class="left">
+            <p class="no-margin" style="text-align:left">Hospital No: <b>{{deposit.PatientCode}} </b>
+            </p>
+          </div>
+          <div class="right">
+            <p class="no-margin" style="text-align:right">
+              DOA: <b>{{deposit.AdmissionDate}} ({{doaLocalDate}})</b>
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-12" style="margin-left:0px;margin-right:10px">
+          <div class="left" *ngIf="deposit.InpatientpNumber">
+            <p class="no-margin" style="text-align:left">IP No: <b>{{deposit.InpatientpNumber}} </b>
+            </p>
+          </div>
+          <div class="right" *ngIf="deposit.AdmissionCase" >
+            <p class="no-margin" style="text-align:right">
+              Case: <b>{{deposit.AdmissionCase}} </b>
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align:center" class="col-md-12">
+          <table class="pat-data-tbl">
+            <tr>
+              <td align="left">Patient Name: <b>{{deposit.PatientName}} </b></td>
+            </tr>
+            <tr *ngIf="deposit.Address">
+              <td align="left">Address: {{deposit.Address}}</td>
+            </tr>
+            <tr *ngIf="deposit.PhoneNumber">
+              <td align="left">Phone No: {{deposit.PhoneNumber}} </td>
+            </tr>
+            <tr *ngIf="depositFlag">
+              <td align="left">Refund Amount: <b>{{coreService.currencyUnit}} {{deposit.Amount | number : "1.2-2"}}</b></td>
+            </tr>
+            <tr *ngIf="!depositFlag">
+              <td align="left">Deposited Amount: <b>{{coreService.currencyUnit}} {{deposit.Amount | number : "1.2-2"}}</b></td>
+            </tr>
+          </table>
+          <hr />
+          <div class="col-md-12" style="padding-left:0px;text-align:center;" *ngIf="deposit">
+            <div class="col-md-12" style="padding-left:0px;text-align:center;" *ngIf="deposit">
+              <div *ngIf="deposit.CareOf">
+                <p *ngIf="!depositFlag" style="text-align:left;">Deposit of <b>{{coreService.currencyUnit}} {{deposit.Amount |
+                    number : "1.2-2"}}</b> received from <b>{{deposit.CareOf}}</b> for <b>{{deposit.PatientName}}</b>.
+                </p>
+              </div>
+              <div *ngIf="!deposit.CareOf">
+                <p *ngIf="!depositFlag" style="text-align:left;">Deposit of <b>{{coreService.currencyUnit}} {{deposit.Amount |
+                    number : "1.2-2"}}</b> received from <b>{{deposit.PatientName}}</b>.</p>
+                <p *ngIf="depositFlag" style="text-align:left;">Refund Deposit of <b>{{coreService.currencyUnit}} {{deposit.Amount |
+                    number : "1.2-2"}}</b> to <b>{{deposit.PatientName}} </b>.</p>
+              </div>
+              <p>In Words: <b>{{deposit.Amount | NumberInWords}} /-</b> Only </p>
+            </div>
+            <hr />
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12 left" style="text-align:left;padding:0px;">
+            <p> <b> Deposit Balance: {{deposit.DepositBalance | number : "1.2-2"}} </b> </p>
+            <p *ngIf="deposit.Remarks"> <b>Remarks:</b> {{deposit.Remarks}} </p>
+            <p> Payment Mode: {{deposit.PaymentMode}} </p>
+            <p *ngIf="deposit.PaymentDetails"> Payment Details: {{deposit.PaymentDetails}} </p>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;" *ngIf="!deposit.IsDuplicatePrint">
+            <hr style="border-top: dotted 1px;" />
+            <div class="left">
+              <br />
+              <br />
+              <br />
+              <br />
+              <p class="no-margin" style="text-align:center">{{deposit.DepositType=='Deposit' ? 'Deposited By':'Received
+                By'}}</p>
+              <p class="no-margin" style="text-align:center"> Signature</p>
+            </div>
+            <div class="right">
+              <br />
+              <br />
+              <br />
+              <br />
+              <p class="no-margin" style="text-align:center">{{deposit.DepositType=='Deposit' ? 'Received By':'Returned
+                By'}}</p>
+              <p class="no-margin" style="text-align:center">{{deposit.BillingUser}}</p>
+              <p class="no-margin" style="text-align:center"> Signature</p>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div>
+            <hr style="border-top: dotted 1px;" />
+            <div class="left" *ngIf="deposit.IsDuplicatePrint">
+              <p *ngIf="deposit.DepositType=='Deposit'" style="text-align:left">Received By {{deposit.BillingUser}} on
+                {{deposit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
+              <p *ngIf="deposit.DepositType=='ReturnDeposit'" style="text-align:left">Returned By
+                {{deposit.BillingUser}} on {{deposit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
+              <p *ngIf="deposit.DepositType=='depositdeduct'" style="text-align:left">Refunded By
+                {{deposit.BillingUser}} on {{deposit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
+            </div>
+            <div class="right" *ngIf="!deposit.IsDuplicatePrint">
+              <p style="text-align:left">Time: {{deposit.CreatedOn | DanpheDateTime:'format':'HH:mm'}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;"
+      *ngIf="Enable_Dotmatrix_Printer">
+      <div class="padding-15-bt padding-15-tp"
+        *ngIf="showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+        <label style="display: block; padding-left: 7px;"><b>Select Bill Printer</b></label>
+        <select class="margin-7-hr" [(ngModel)]="printerNameSelected" id="printerStkr">
+          <option *ngFor="let location of billingDotMatrixPrinters" [value]="location.DisplayName">
+            {{location.DisplayName}}</option>
+        </select>
+        <div class="padding-15-tp margin-7-hr">
+          <button class="btn btn-small btn-cancel" (click)="ChangePrinterLocationName()">Select</button>
+        </div>
+      </div>
+      <div class="padding-15-bt padding-15-tp padding-7-hr"
+        *ngIf="!showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+        <div><label>Selected Printer: <b>{{printerName}}</b></label></div>
+        <div><a (click)="ShowPrinterLocationChange()">Change Printer</a></div>
+      </div>
+    </div> -->
+
+
+    <p style="text-align:center;" class="m1">
+      <button class="btn green btn-success" id="btn_PrintReceipt" (click)="print()">Print Receipt
+        <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </p>
+
+    <select-printer [group-name]="'bill-receipt'" [storage-key]="'billing-deposit-slip'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="printDetaiils" (print-sucess)="callBackBillPrint()">
+</app-print-page>

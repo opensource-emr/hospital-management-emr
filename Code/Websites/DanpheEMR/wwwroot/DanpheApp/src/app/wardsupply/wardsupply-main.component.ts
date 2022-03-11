@@ -4,6 +4,7 @@ import { PHRMStoreModel } from '../pharmacy/shared/phrm-store.model';
 import { WardSupplyBLService } from './shared/wardsupply.bl.service';
 import { Router } from '@angular/router';
 import { RouteFromService } from '../shared/routefrom.service';
+import { wardsupplyService } from './shared/wardsupply.service';
 @Component({
   templateUrl: "../../app/view/ward-supply-view/WardSupplyMain.html"  //"/WardSupplyView/WardSupplyMain"
 })
@@ -21,12 +22,13 @@ export class WardSupplyMainComponent {
   constructor(public securityService: SecurityService,
     public wardBLService: WardSupplyBLService,
     public router: Router,
-    public routerfromService: RouteFromService) {
+    public routerfromService: RouteFromService, public wardsupplyService:wardsupplyService) {
     //get the child routes of WardSupply from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("WardSupply");
     this.primaryNavItems = this.validRoutes.filter(a => a.IsSecondaryNavInDropdown == null || a.IsSecondaryNavInDropdown == 0);
     this.secondaryNavItems = this.validRoutes.filter(a => a.IsSecondaryNavInDropdown == 1);
     this.GetActiveSubStoreList();
+    this.getInventoryList();
   }
 
   GetActiveSubStoreList() {
@@ -64,5 +66,16 @@ export class WardSupplyMainComponent {
   }
   CloseInfo() {
     this.showInfo = false;
+  }
+  getInventoryList() {   
+    this.wardBLService.GetInventoryList()
+    .subscribe(res =>{
+      if(res.Status == "OK"){                  
+          this.wardsupplyService.inventoryList=res.Results;          
+      }
+      else{
+        console.log("failed");
+      }
+    })
   }
 }

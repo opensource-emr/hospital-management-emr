@@ -1,118 +1,90 @@
 <div class="wrapper">
   <div class="row">
-    <div class="col-md-4">
-      <danphe-multiselect [ddl-data]="allCategories"
-                        [placeholder-text]="'---Select Item---'"
-                        [value-property-name]="'TestCategoryId'"
-                        (selected-items-list)="CategoryOnChange($event)"
-                        [display-property-name]="'TestCategoryName'"
-                        [single-selection]="false"> </danphe-multiselect>
+    <div class="col-lg-8 col-sm-8">
+      <div class="caption lb-caption">
+        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+        <span class="caption-subject">Report Dispatch</span>
+      </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-md-2 col-xs-12">
-      <select class="form-control" [(ngModel)]="rangeType" (change)="RangeTypeOnChange()" style="width:auto;">
-        <option *ngIf="dateRangeOptions.week1" value="last1Week">Last 1 Week</option>
-        <option *ngIf="dateRangeOptions.month1" value="None">Last 1 Month</option>
-        <option *ngIf="dateRangeOptions.month3" value="last3Months">Last 3 Months</option>
-        <option *ngIf="dateRangeOptions.month6" value="last6Months">Last 6 Month</option>
-        <option value="custom">Custom Date</option>
-      </select>
-    </div>
-    <div *ngIf="showLabel" class="col-md-10 col-xs-12">
-      <label *ngIf="!isOutOfFiscalYearDate" class="control-label col-md-3" style="margin:7px"><b>From : {{fromDate}}</b></label>
-      <label *ngIf="isOutOfFiscalYearDate" class="control-label col-md-6" style="margin:7px"><b>Fiscal Yeart Start Date (From Date): {{fromDate}}</b></label>
-      <label class="control-label col-md-3" style="margin:7px"><b>To : {{toDate}}</b></label>
-    </div>
-    <div *ngIf="showSelector" class="col-md-10 col-xs-12" style="margin-top: -10px;">
-      <div class="col-md-5">
-        <label style="margin:7px">From Date<b>:</b></label>
-        <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl > </danphe-date-picker>
+    <div class="col-md-7 col-xs-12">
+      <label style="vertical-align: top;margin-top: 10px; margin-right: 10px;">Request Date: </label>
+      <div style="display: inline-block;">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
       </div>
-      <div class="col-md-5">
-        <label style="margin:7px">To Date<b>:</b></label>
-        <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl > </danphe-date-picker>
-      </div>
-      <div class="col-md-2" style="padding-top:20px;">
-        <input style="width:100px;height:30px;font-weight:bold;" type="button" class="blue btn" value="Load" (click)="GetPendingReportList()" />
+    </div>
+    <div class="col-md-5 col-xs-12">
+      <div class="row">
+        <label class="col-md-3 text-right" style="line-height: 3;">Category:</label>
+        <div class="col-md-6">
+          <div class="row">
+            <div style="display: inline-block; width: 100%;">
+              <lab-category-select (selected-category-list)="CategoryOnChange($event)"></lab-category-select>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="col-md-3">
+          <button [disabled]="loading" class="btn green btn-success pull-right" (click)="GetPendingReportList();">Load
+            <i class="fa fa-refresh"></i></button>
+        </div>
+
       </div>
     </div>
   </div>
+
   <div class="row">
     <div class="col-md-12">
       <div class="row">
         <div class="col-md-5">
-          <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+          <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();"
+            placeholder="Search by Hospital No. Or Patient Name">
         </div>
         <div class="col-md-7">
-          <button *ngIf="showPreviewButton" class="btn btn-primary pull-right" (click)="PreviewSelectedReport()">Preview <i class="fa fa-eye"></i></button>
         </div>
       </div>
     </div>
     <div class="col-md-5">
-      <table class="table table-responsive vert-scrollable fixed-header">
+      <table class="table table-responsive dispatch-report-table">
         <thead class="table-header-bg">
           <tr>
             <th scope="col" style="width: 50px;">S.N.</th>
             <th scope="col" class="wd-130"> Hospital No. </th>
             <th scope="col" class="wd-270"> Patient Name </th>
-            <th scope="col" class="wd-120"> Ward </th>
+            <th scope="col" class="wd-80"> Age/Sex </th>
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let report of reportListFiltered | searchFilter: searchString | async ; let i = index;">
-            <tr [ngClass]="report.IsSelected ? 'highlightbg':'donthighlight'" (click)="SelectUnselectRow(report)">
-              <td class="wd-60"> {{i+1}} </td>
+          <ng-container
+            *ngFor="let report of reportListFiltered | searchFilter: searchString | async| paginate: {id: 'listing_pagination', itemsPerPage: 20, currentPage: page } ; let i = index;">
+            <tr class="hover-effect" [ngClass]="report.IsSelected ? 'highlightbg':'donthighlight'"
+              (click)="SelectUnselectRow(report)">
+              <td class="wd-60"> {{((page-1) * 20) + i+1}} </td>
               <td class="wd-130"> {{report.PatientCode}} </td>
               <td class="wd-270"> {{report.PatientName}} </td>
-              <td class="wd-120"> {{report.WardName}} </td>
+              <td class="wd-80"> {{GetFormattedAgeSex(report.DateOfBirth,report.Gender)}} </td>
             </tr>
           </ng-container>
+
+
         </tbody>
       </table>
+
+      <!--pagination div start-->
+      <div>
+        <pagination-controls id="listing_pagination" (pageChange)="page = $event" style="display: flex; float:right;">
+        </pagination-controls>
+      </div>
+      <!--End of pagination div-->
+
     </div>
     <div class="col-md-7">
-      <lab-report-dispatch-detail *ngIf="showSelectedPatTestDetail" [reportSelected]="selectedReport"> </lab-report-dispatch-detail>
+      <lab-report-dispatch-detail *ngIf="showSelectedPatTestDetail" [patientId]="patientId" [fromDate]="fromDate"
+        [toDate]="toDate" [catagoryList]="catIdList"> </lab-report-dispatch-detail>
     </div>
   </div>
-  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showReport">
-    <div class="portlet-body form">
-      <div class="col-md-offset-1 col-md-10">
-        <div class="modelbox-div">
-          <div class="modelbox-header">
-            <h4 class="margin-0-vr text-warning"> <strong>Lab Report of {{patientService.globalPatient.ShortName}}</strong> </h4>
-          </div>
-          <div class="modelbox-body">
-            <danphe-lab-view-report *ngIf="showReport && labReportFormat == 'format1'" [templateReport]="templateReport"
-                                  [showReport]="showReport"
-                                  [showHeader]="showHeader"
-                                  [showSignatories]="showSignatories"
-                                  [enableEdit]="enableEdit"
-                                  [printReportFromGrid]="printReportFromGrid"
-                                  (callBackToReportDispatch)="CallBackToReportDispatchAfterPrint($event)"></danphe-lab-view-report>
-            <danphe-lab-view-report-format2 *ngIf="showReport && labReportFormat == 'format2'" [templateReport]="templateReport"
-                                          [showReport]="showReport"
-                                          [showHeader]="showHeader"
-                                          [showSignatories]="showSignatories"
-                                          [enableEdit]="enableEdit"
-                                          [printReportFromGrid]="printReportFromGrid"
-                                          (callBackToReportDispatch)="CallBackToReportDispatchAfterPrint($event)"></danphe-lab-view-report-format2>
-          </div>
-          <div class="modelbox-footer">
-            <div class="all-buttons text-right"> 
-              <!--<button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="SaveResult();showWarningConfirmBox=false">
-              Proceed
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="ReviewValues()">
-              Review Values
-            </button>--> 
-            </div>
-          </div>
-          <div class="close-modelbox">
-            <button class="btn btn-danger" (click)="Close()">X</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>

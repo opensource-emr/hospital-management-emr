@@ -1,9 +1,7 @@
 import { Component } from "@angular/core";
 import { Router } from '@angular/router';
-
 import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
-
 import { Requisition } from "../shared/requisition.model"
 import { RequisitionItems } from "../shared/requisition-items.model";
 import { InventoryBLService } from "../shared/inventory.bl.service"
@@ -14,10 +12,10 @@ import * as moment from 'moment/moment';
 import { DispatchItems } from "../shared/dispatch-items.model";
 import { CoreService } from "../../core/shared/core.service";
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
+import { PHRMStoreModel } from "../../pharmacy/shared/phrm-store.model";
+import { ActivateInventoryService } from "../../shared/activate-inventory/activate-inventory.service";
 
-@Component({
-  templateUrl: "../../view/inventory-view/RequisitionList.html" // "/InventoryView/RequisitionList"
-})
+@Component({ templateUrl: "./requisition-list.component.html" })
 export class RequisitionListComponent {
   public RequisitionGridData: Array<Requisition> = null;
   public RequisitionGridDataFiltered: Array<Requisition> = null;
@@ -60,13 +58,9 @@ export class RequisitionListComponent {
   public toDate: string = null;
   public dateRange: string = null;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  currentActiveInventory: PHRMStoreModel;
 
-  constructor(public coreService: CoreService,
-    public InventoryBLService: InventoryBLService,
-    public inventoryService: InventoryService,
-    public router: Router,
-    public routeFrom: RouteFromService,
-    public messageBoxService: MessageboxService) {
+  constructor(public coreService: CoreService, private _activeInvService: ActivateInventoryService, public InventoryBLService: InventoryBLService, public inventoryService: InventoryService, public router: Router, public routeFrom: RouteFromService, public messageBoxService: MessageboxService) {
     this.deptwiseGridColumns = GridColumnSettings.DepartmentwiseRequisitionList;
     this.itemwiseGridColumns = GridColumnSettings.ItemwiseRequisitionList;
     this.DispatchListGridColumns = GridColumnSettings.DispatchList;
@@ -74,37 +68,8 @@ export class RequisitionListComponent {
     this.dateRange = 'None';
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
     this.GetInventoryBillingHeaderParameter();
+    this.currentActiveInventory = _activeInvService.activeInventory;
   }
-  //sanjit: 17 apr'20: This part is not used anywhere, so I have commented it.
-  // //loading item wise requisition list
-  // LoadItemwiseList(): void {
-  //   this.showItemwise = true;
-  //   this.InventoryBLService.GetItemwiseRequistionList().
-  //     subscribe(res => {
-  //       if (res.Status == 'OK') {
-  //         this.itemRequisitionList = res.Results;
-  //       }
-  //       else {
-  //         this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
-  //       }
-  //     },
-  //       err => {
-  //         this.messageBoxService.showMessage("failed", ['failed to get Requisitions.....please check log for details.']);
-  //       });
-  // }
-  // //grid actions for item-wise requisition list
-  // ItemGridActions($event: GridEmitModel) {
-  //   switch ($event.Action) {
-  //     case "itemDispatch":
-  //       {
-  //         this.ItemDispatch($event.Data);
-  //         break;
-  //       }
-  //     default:
-  //       break;
-  //   }
-  // }
-
   BackToGrid() {
     this.showItemwise = false;
     this.LoadDeptwiseList("pending");
@@ -115,11 +80,9 @@ export class RequisitionListComponent {
     this.InventoryBLService.GetAllSubstoreRequistionList(this.fromDate, this.toDate)
       .subscribe(res => {
         if (res.Status == "OK") {
-          this.RequisitionGridData = res.Results
+          this.RequisitionGridData = res.Results;
           if (this.RequisitionGridData.length == 0) {
-            this.messageBoxService.showMessage("Notice", [
-              "No Requisition Found. Please check the date."
-            ]);
+            this.messageBoxService.showMessage("Notice", ["No Requisition Found. Please check the date."]);
           }
           else {
             this.RequisitionGridData.forEach(i => {
@@ -135,7 +98,7 @@ export class RequisitionListComponent {
         }
       });
   }
-  
+
   LoadRequisitionListByStatus() {
     switch (this.RequisitionStatusFilter) {
       case "pending": {
@@ -307,7 +270,6 @@ export class RequisitionListComponent {
   RouteToViewDetail(data) {
     //pass the Requisition Id to RequisitionView page for List of Details about requisition
     this.inventoryService.RequisitionId = data.RequisitionId;
-    this.inventoryService.RequestedOn = data.RequisitionDate;
     this.inventoryService.StoreName = data.StoreName;
     this.inventoryService.StoreId = data.StoreId;
     this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionDetails']);
@@ -354,11 +316,11 @@ export class RequisitionListComponent {
     popupWinindow.document.close();
   }
 
-  public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName, address, email, PANno, tel, DDA };
 
   //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory Receipt Header').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     else

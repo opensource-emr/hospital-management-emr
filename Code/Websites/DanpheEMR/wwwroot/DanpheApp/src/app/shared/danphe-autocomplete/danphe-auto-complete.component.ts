@@ -49,7 +49,7 @@ import { DanpheAutoComplete } from "./danphe-auto-complete";
     </ul>
 
   </div>`
-  ,
+    ,
     providers: [DanpheAutoComplete],
     styles: [`
   @keyframes slideDown {
@@ -125,11 +125,15 @@ export class DanpheAutoCompleteComponent implements OnInit {
     @Input("show-dropdown-on-init") showDropdownOnInit: boolean = false;
     @Input("tab-to-select") tabToSelect: boolean = true;
     @Input("match-formatted") matchFormatted: boolean = false;
-
+    //sud:23May'21--Precondition: matchFormatted should be true.
+    //if propertyNameToMatch is given, then the matching function checks only for the given property name's value.
+    //Check in its implementation for details.
+    @Input("match-property-csv") propertyNamesToMatchCSV: string;
+ 
     @Output() valueSelected = new EventEmitter();
     @ViewChild('autoCompleteInput') autoCompleteInput: ElementRef;
 
-    el: HTMLElement;           
+    el: HTMLElement;
 
     dropdownVisible: boolean = false;
     isLoading: boolean = false;
@@ -160,7 +164,7 @@ export class DanpheAutoCompleteComponent implements OnInit {
         this.autoComplete.source = this.source;
         this.autoComplete.pathToData = this.pathToData;
         this.autoComplete.listFormatter = this.listFormatter;
-        
+
         setTimeout(() => {
             if (this.autoCompleteInput) {
                 this.autoCompleteInput.nativeElement.focus()
@@ -203,138 +207,17 @@ export class DanpheAutoCompleteComponent implements OnInit {
             return;
         } else {
             this.minCharsEntered = true;
-           
-            
+
+
         }
 
         if (this.isSrcArr()) {    // local source
             this.isLoading = false;
-            this.filteredList = this.autoComplete.filter(this.source, keyword, this.matchFormatted);
-            
-            // sort has 9 combinations 
-            // first of a/b , middle of a/b and last of a/b
-            // using permutation and bubble sort logic
-            if(this.gridsort)
-            {
-                if (this.gridsort.length != 0) {
-                    if(this.gridsort.toLowerCase() != 'sortonbasicdatatype'){
-                        this.filteredList.sort((a, b) => {
-                            var stra: string = a[this.gridsort];
-                            var strb: string = b[this.gridsort];
-                            stra = stra.toLowerCase();
-                            strb = strb.toLowerCase();
-                            keyword = keyword.toLowerCase();
-                            // if equal with the first
-                            if (stra == keyword) {
-                                return -1;
-                            }
-                            if (strb == keyword) {
-                                return 1;
-                            }
-                            // covers 2 combinations
-                            if ((stra == keyword) || stra.startsWith(keyword)) {
-                                if (strb.startsWith(keyword)) {
-                                    return 0;
-                                }
-                                else {
-                                    return -1;
-                                }
-                            }
-                            // covers 1 combination
-                            if (stra.endsWith(keyword)) {
-                                if (strb.endsWith(keyword)) {
-                                    return 0;
-                                }
-                                else {
-                                    return 1;
-                                }
-                            }
-                            // covers 1 combination
-                            var newKeyword = "";
-                            if (keyword.includes("(")) {
-                                newKeyword = keyword.replace(/\(/gi, "\\\(");
-                            } else if (keyword.includes(")")) {
-                                newKeyword = keyword.replace(/\)/gi, "\\\)");
-                            } else if (keyword.includes("+")) {
-                                newKeyword = keyword.replace(/\+/gi, "\\\+");
-                            } else if (keyword.includes("*")) {
-                                newKeyword = keyword.replace(/\*/gi, "\\\*");
-                            }
-                            else {
-                                newKeyword = keyword;
-                            }
-                            var regcheckbetween = new RegExp(".*" + newKeyword + ".*");
-                            if (regcheckbetween.test(stra)) {
-                                if (strb.startsWith(keyword)) {
-                                    return 1;
-                                }
-                                if (strb.endsWith(keyword)) {
-                                    return -1;
-                                }
-                            }
-                            // all rest 3 combinations
-                            return 0;
-                        });
-                    } else {
-                        this.filteredList.sort((a, b) => {
-                            var stra: string = a;
-                            var strb: string = b;
-                            stra = stra.toLowerCase();
-                            strb = strb.toLowerCase();
-                            keyword = keyword.toLowerCase();
-                            // if equal with the first
-                            if (stra == keyword) {
-                                return -1;
-                            }
-                            if (strb == keyword) {
-                                return 1;
-                            }
-                            // covers 2 combinations
-                            if ((stra == keyword) || stra.startsWith(keyword)) {
-                                if (strb.startsWith(keyword)) {
-                                    return 0;
-                                }
-                                else {
-                                    return -1;
-                                }
-                            }
-                            // covers 1 combination
-                            if (stra.endsWith(keyword)) {
-                                if (strb.endsWith(keyword)) {
-                                    return 0;
-                                }
-                                else {
-                                    return 1;
-                                }
-                            }
-                            // covers 1 combination
-                            var newKeyword = "";
-                            if (keyword.includes("(")) {
-                                newKeyword = keyword.replace(/\(/gi, "\\\(");
-                            } else if (keyword.includes(")")) {
-                                newKeyword = keyword.replace(/\)/gi, "\\\)");
-                            } else if (keyword.includes("+")) {
-                                newKeyword = keyword.replace(/\+/gi, "\\\+");
-                            } else if (keyword.includes("*")) {
-                                newKeyword = keyword.replace(/\*/gi, "\\\*");
-                            }
-                            else {
-                                newKeyword = keyword;
-                            }
-                            var regcheckbetween = new RegExp(".*" + newKeyword + ".*");
-                            if (regcheckbetween.test(stra)) {
-                                if (strb.startsWith(keyword)) {
-                                    return 1;
-                                }
-                                if (strb.endsWith(keyword)) {
-                                    return -1;
-                                }
-                            }
-                            // all rest 3 combinations
-                            return 0;
-                        });
-                    }   
-                }
+            this.filteredList = this.autoComplete.filter(this.source, keyword, this.matchFormatted, this.propertyNamesToMatchCSV);
+
+            //sort the filtered data if it's it's enabled.
+            if (this.gridsort && this.gridsort.length != 0) {
+                this.SortFilteredList(keyword);
             }
 
             if (this.maxNumList) {
@@ -355,9 +238,17 @@ export class DanpheAutoCompleteComponent implements OnInit {
                         }
 
                         this.filteredList = resp;
+
+                        //sud:23May'21: sort the filtered data if it's it's enabled.
+                        if (this.gridsort && this.gridsort.length != 0) {
+                            this.SortFilteredList(keyword);
+                        }
+
                         if (this.maxNumList) {
                             this.filteredList = this.filteredList.slice(0, this.maxNumList);
                         }
+
+
                     },
                     error => null,
                     () => this.isLoading = false // complete
@@ -365,16 +256,22 @@ export class DanpheAutoCompleteComponent implements OnInit {
             } else {
                 // remote source
 
-              this.autoComplete.getRemoteData(keyword)
-                .subscribe(resp => {
-                    this.filteredList = (<any>resp);
-                    if (this.maxNumList) {
-                        this.filteredList = this.filteredList.slice(0, this.maxNumList);
-                    }
-                },
-                    error => null,
-                    () => this.isLoading = false // complete
-                );
+                this.autoComplete.getRemoteData(keyword)
+                    .subscribe(resp => {
+                        this.filteredList = (<any>resp);
+
+                        //sud:23May'21: sort the filtered data if it's it's enabled.
+                        if (this.gridsort && this.gridsort.length != 0) {
+                            this.SortFilteredList(keyword);
+                        }
+
+                        if (this.maxNumList) {
+                            this.filteredList = this.filteredList.slice(0, this.maxNumList);
+                        }
+                    },
+                        error => null,
+                        () => this.isLoading = false // complete
+                    );
             }
         }
     }
@@ -414,7 +311,7 @@ export class DanpheAutoCompleteComponent implements OnInit {
                     ulElement2.scrollTo(0, scrollToHeight2);  //   el.scrollTo(scrollToHeight + 'px');
                 }
                 //end:sud:1oct'18--to scroll to current element.
-              
+
 
                 break;
 
@@ -442,11 +339,136 @@ export class DanpheAutoCompleteComponent implements OnInit {
     }
 
     public delay = (function () {
-      let timer: number;
+        let timer: number;
         return function (callback: any, ms: number) {
-           clearTimeout(timer);
-           timer = window.setTimeout(callback, ms);                    
+            clearTimeout(timer);
+            timer = window.setTimeout(callback, ms);
         };
     })();
+
+
+    // sort has 9 combinations 
+    // first of a/b , middle of a/b and last of a/b
+    // using permutation and bubble sort logic
+    public SortFilteredList(keyword: string) {
+        if (this.gridsort.toLowerCase() != 'sortonbasicdatatype') {
+            this.filteredList.sort((a, b) => {
+                var stra: string = a[this.gridsort];
+                var strb: string = b[this.gridsort];
+                stra = stra && stra.toLowerCase();
+                strb = strb && strb.toLowerCase();
+                keyword = keyword.toLowerCase();
+                // if equal with the first
+                if (stra == keyword) {
+                    return -1;
+                }
+                if (strb == keyword) {
+                    return 1;
+                }
+                // covers 2 combinations
+                if ((stra == keyword) || ( stra && stra.startsWith(keyword))) {
+                    if (strb.startsWith(keyword)) {
+                        return 0;
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+                // covers 1 combination
+                if ( stra && stra.endsWith(keyword)) {
+                    if ( strb.endsWith(keyword)) {
+                        return 0;
+                    }
+                    else {
+                        return 1;
+                    }
+                }
+                // covers 1 combination
+                var newKeyword = "";
+                if (keyword.includes("(")) {
+                    newKeyword = keyword.replace(/\(/gi, "\\\(");
+                } else if (keyword.includes(")")) {
+                    newKeyword = keyword.replace(/\)/gi, "\\\)");
+                } else if (keyword.includes("+")) {
+                    newKeyword = keyword.replace(/\+/gi, "\\\+");
+                } else if (keyword.includes("*")) {
+                    newKeyword = keyword.replace(/\*/gi, "\\\*");
+                }
+                else {
+                    newKeyword = keyword;
+                }
+                var regcheckbetween = new RegExp(".*" + newKeyword + ".*");
+                if (regcheckbetween.test(stra)) {
+                    if ( strb && strb.startsWith(keyword)) {
+                        return 1;
+                    }
+                    if ( strb && strb.endsWith(keyword)) {
+                        return -1;
+                    }
+                }
+                // all rest 3 combinations
+                return 0;
+            });
+        } else {
+            this.filteredList.sort((a, b) => {
+                var stra: string = a;
+                var strb: string = b;
+                stra = stra.toLowerCase();
+                strb = strb.toLowerCase();
+                keyword = keyword.toLowerCase();
+                // if equal with the first
+                if (stra == keyword) {
+                    return -1;
+                }
+                if (strb == keyword) {
+                    return 1;
+                }
+                // covers 2 combinations
+                if ((stra == keyword) || stra.startsWith(keyword)) {
+                    if (strb.startsWith(keyword)) {
+                        return 0;
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+                // covers 1 combination
+                if (stra.endsWith(keyword)) {
+                    if (strb.endsWith(keyword)) {
+                        return 0;
+                    }
+                    else {
+                        return 1;
+                    }
+                }
+                // covers 1 combination
+                var newKeyword = "";
+                if (keyword.includes("(")) {
+                    newKeyword = keyword.replace(/\(/gi, "\\\(");
+                } else if (keyword.includes(")")) {
+                    newKeyword = keyword.replace(/\)/gi, "\\\)");
+                } else if (keyword.includes("+")) {
+                    newKeyword = keyword.replace(/\+/gi, "\\\+");
+                } else if (keyword.includes("*")) {
+                    newKeyword = keyword.replace(/\*/gi, "\\\*");
+                }
+                else {
+                    newKeyword = keyword;
+                }
+                var regcheckbetween = new RegExp(".*" + newKeyword + ".*");
+                if (regcheckbetween.test(stra)) {
+                    if (strb.startsWith(keyword)) {
+                        return 1;
+                    }
+                    if (strb.endsWith(keyword)) {
+                        return -1;
+                    }
+                }
+                // all rest 3 combinations
+                return 0;
+            });
+        }
+    }
+
 
 }

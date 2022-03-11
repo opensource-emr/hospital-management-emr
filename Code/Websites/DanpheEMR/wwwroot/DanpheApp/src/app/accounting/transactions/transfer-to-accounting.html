@@ -221,16 +221,16 @@
                   <td> {{txnItm.LedgerName}}</td>
                   <td></td>
                   <td>
-                    <p *ngIf="txnItm.DrCr"> {{txnItm.LedgerDr - txnItm.LedgerCr | ParseAmount | Currency}} </p>
+                    <p *ngIf="txnItm.DrCr"> {{txnItm.LedgerDr - txnItm.LedgerCr | ParseAmount | Currency:'4'}} </p>
                   </td>
                   <td>
-                    <p *ngIf="!txnItm.DrCr"> {{txnItm.LedgerCr - txnItm.LedgerDr| ParseAmount | Currency}} </p>
+                    <p *ngIf="!txnItm.DrCr"> {{txnItm.LedgerCr - txnItm.LedgerDr| ParseAmount | Currency:'4'}} </p>
                   </td>
                 </tr>
                 <tr>
                   <th colspan="3"> <b> Total &nbsp;&nbsp; </b> </th>
-                  <th> {{drTotal | ParseAmount | Currency}} </th>
-                  <th> {{crTotal | ParseAmount | Currency}} </th>
+                  <th> {{drTotal | ParseAmount | Currency:'4'}} </th>
+                  <th> {{crTotal | ParseAmount | Currency:'4'}} </th>
                 </tr>
               </table>
             </div>

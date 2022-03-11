@@ -39,7 +39,7 @@
           <td style="width: 46px;"><a class="" (click)="DeleteRow(i)"><i class="btn btn-xs btn-danger fa fa-times"></i></a></td>
           <td style="width: auto;" class="autocomplete-item">
             <form [formGroup]="row.ConsumptionValidator" autocomplete="off">
-              <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem" [source]="ItemTypeListWithItems" [list-formatter]="ItemListFormatter" placeholder="--Select Item--" display-property-name="ItemName" value-property-name=null onClick="this.select();" (valueChanged)="onChangeItem($event,i)" max-num-list="20" min-chars="0" [grid-sort]="'ItemName'" match-formatted="true" [ngModelOptions]="{standalone:true}" (keyup.enter)="GoToNextInput('qtyip'+i)" (keyup.esc)="DeleteRow(i)" />
+              <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem" [source]="ItemTypeListWithItems" [list-formatter]="ItemListFormatter" placeholder="--Select Item--" display-property-name="ItemName" value-property-name=null onClick="this.select();" (valueChanged)="onChangeItem($event,i)" max-num-list="20" min-chars="1" [grid-sort]="'ItemName'" match-formatted="true" [ngModelOptions]="{standalone:true}" (keyup.enter)="OnPressedEnterKeyInItemField(i)" (keyup.esc)="DeleteRow(i)"/>
               <!--<span class="color-red font-sm" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValid('ItemName','required')">Select Item..</span>-->
             </form>
           </td>
@@ -78,7 +78,7 @@
         </tr>
       </table>
       <div class="panel-footer text-right">
-        <input type="button" class="btn btn-success" value="Save" (click)="Save()" [disabled]="loading" />
+        <input type="button" id="save" class="btn green btn-success margin-7-hr" value="Save" (click)="Save()" [disabled]="loading" />
         <span></span>
         <input type="button" class="btn btn-danger" [disabled]="loading" (click)="DiscardChanges()" value="Discard">
         <span></span> </div>

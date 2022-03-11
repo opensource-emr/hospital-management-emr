@@ -13,19 +13,33 @@
     <div class="col-md-12" *ngIf="showReport">
       <button class="blue btn non-printable" type="button" (click)="CallBackDepts()"> <i class="fa fa-arrow-left"></i>
         Back </button>
-      <button class="blue btn right non-printable" type="button" (click)="ExportToExcel('printPage')"> <i
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcel('doc-dept-item')"> <i
           class="fa fa-file-excel-o"></i> Excel </button>
       <div id="printPage">
         <div class="col-md-12" style="padding:0px"> <span class="col-md-2 left" style="padding:0px">From Date:
           <date-lbl [value]="FromDate"></date-lbl><br />
             ToDate:  <date-lbl [value]="ToDate"></date-lbl><br />
-          </span> <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Doctor:
-            <b>{{reportData[0].DoctorName}}</b><br />
-            <span *ngIf="ServDeptName != ''"> Service Department: <b>{{ServDeptName}}</b></span> </span> <span
-            class="col-md-2 right" style="padding:0px">Print Date: <date-lbl [value]="currentDate"></date-lbl></span> </div>
+          </span>
+          <span class="col-md-2 right" style="padding:0px">Print Date: <date-lbl [value]="currentDate"></date-lbl></span> 
+        </div>
+        <div id ="doc-dept-item">
+         <!-- <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Doctor:
+            <b>{{reportData[0].DoctorName}}</b><br /></span>
+       
+        
+            <span *ngIf="ServDeptName != ''"> Service Department: <b>{{ServDeptName}}</b> </span>  -->
         <table *ngIf="ServDeptName != ''" class="table-striped table-hover table-bordered"
           style="background-color:initial;width:100%">
           <thead style="background-color:whitesmoke">
+            <tr>
+              <td colspan="13">
+                <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Doctor:
+                  <b>{{reportData[0].DoctorName}}</b><br /></span>
+             
+              
+                  <span *ngIf="ServDeptName != ''"> Service Department: <b>{{ServDeptName}}</b> </span> 
+              </td>
+            </tr>
             <tr>
               <td style="text-align:center"><b>Sr No.</b></td>
               <td style="width: 7%;"><b>Date</b></td>
@@ -60,7 +74,8 @@
             </tr>
           </tbody>
         </table>
-      </div>
+    
+     
       <table *ngIf="ServDeptName == ''" class="table-striped table-hover table-bordered"
         style="background-color:initial;width:100%">
         <thead style="background-color:whitesmoke">
@@ -148,5 +163,7 @@
         </tr>
       </table>
     </div>
+    </div>
+  </div>
   </div>
 </div>

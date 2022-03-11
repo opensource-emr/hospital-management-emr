@@ -78,17 +78,29 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "adt-bed")
                 {
                     var bedList = (from i in adtDbContext.Beds.Include("Ward")
-                                   select new
+                                   join bedMap in adtDbContext.BedFeaturesMaps on i.BedId equals bedMap.BedId
+                                   join bedFeature in adtDbContext.BedFeatures on bedMap.BedFeatureId equals bedFeature.BedFeatureId
+                                   group new { bedFeature } by new
                                    {
-                                       WardName = i.Ward.WardName,
-                                       WardId = i.WardId,
-                                       BedCode = i.BedCode,
-                                       BedId = i.BedId,
-                                       BedNumber = i.BedNumber,
-                                       IsActive = i.IsActive,
-                                       IsOccupied = i.IsOccupied,
-                                       CreatedOn = i.CreatedOn,
-                                       CreatedBy = i.CreatedBy
+                                       i
+                                   } into g
+                                   select new BedDisplayModel
+                                   {
+                                       WardName = g.Key.i.Ward.WardName,
+                                       WardId = g.Key.i.Ward.WardId,
+                                       BedCode = g.Key.i.BedCode,
+                                       BedId = g.Key.i.BedId,
+                                       BedNumber = g.Key.i.BedNumber,
+                                       IsActive = g.Key.i.IsActive,
+                                       IsOccupied = g.Key.i.IsOccupied,
+                                       CreatedOn = g.Key.i.CreatedOn,
+                                       CreatedBy = g.Key.i.CreatedBy,
+                                       BedFeature = g.Select(a =>
+                                          new BedFeatureModel()
+                                          {
+                                              BedFeatureId = a.bedFeature.BedFeatureId,
+                                              BedFeatureName = a.bedFeature.BedFeatureName
+                                          }).ToList()
                                    }).OrderBy(i => i.WardId).ThenBy(i => i.BedNumber).ToList();
                     responseData.Status = "OK";
                     responseData.Results = bedList;

@@ -17,7 +17,6 @@ namespace DanpheEMR.ServerModel
         public int DischargeTypeId { get; set; }
         public int? DischargeConditionId { get; set; }
         public int? DeliveryTypeId { get; set; }
-        public int? BabyBirthConditionId { get; set; }
         public int? DeathPeriodTypeId { get; set; }
         public int? OperationTypeId { get; set; }
         public int? OperatedByDoctor { get; set; }
@@ -30,10 +29,21 @@ namespace DanpheEMR.ServerModel
         public string ICDCode { get; set; }
         public int? GravitaId { get; set; }
         public int? GestationalWeek { get; set; }
+
+        public int? GestationalDay { get; set; }
         public int? CreatedBy { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
+
+        // Start: 12th-July'21, Bikash Aryal, New fields added in MR Summary
+        public DateTime? ReferredDate { get; set; }
+        public TimeSpan? ReferredTime { get; set; }
+        public int? NumberOfBabies { get; set; }
+        public int? BloodLost { get; set; }
+        public string BloodLostUnit { get; set; }
+        public string GestationalUnit { get; set; }
+        // End: 12th-July'21, Bikash Aryal, New fields added in MR Summary
 
         [NotMapped]
         public List<BabyBirthDetailsModel> BabyBirthDetails { get; set; }
@@ -47,5 +57,6 @@ namespace DanpheEMR.ServerModel
         public bool ShowBirthCertDetail { get; set; }
         [NotMapped]
         public bool ShowDeathCertDetail { get; set; }
+        
     }
 }

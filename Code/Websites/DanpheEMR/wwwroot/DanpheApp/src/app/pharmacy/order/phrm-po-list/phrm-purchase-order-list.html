@@ -1,33 +1,40 @@
-
 <style>
-.printStyle {
-/*border: dotted 1px;
+  .printStyle {
+    /*border: dotted 1px;
         margin: 10px 100px;*/
-}
-.print-border-top {
-/*border-top: dotted 1px;*/
-}
-.print-border-bottom {
-/*border-bottom: dotted 1px;*/
-}
-.print-border {
-/*border: dotted 1px;*/
-}
-.center-style {
-	text-align: center;
-}
-.border-up-down {
-/*border-top: dotted 1px;
+  }
+
+  .print-border-top {
+    /*border-top: dotted 1px;*/
+  }
+
+  .print-border-bottom {
+    /*border-bottom: dotted 1px;*/
+  }
+
+  .print-border {
+    /*border: dotted 1px;*/
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    /*border-top: dotted 1px;
     border-bottom: dotted 1px;*/
-}
-.printStyle {
-	font-size: 11px;
-	font-weight: 600;
-}
-table tr td, table tr th {
-	border: 1px solid #333;
-	font-weight: 600;
-}
+  }
+
+  .printStyle {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  table tr td,
+  table tr th {
+    border: 1px solid #333;
+    font-weight: 600;
+  }
 </style>
 
 <div class="row">
@@ -49,16 +56,14 @@ table tr td, table tr th {
         </div>
       </div>
     </div>
-    <danphe-grid [grid-colDefaults]="PHRMpurchaseOrdersGridColumns"
-                     [grid-data]="PHRMPurchaseOrderList"
-                     (grid-actions)="PHRMPurchaseOrderGridAction($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="PHRMpurchaseOrdersGridColumns" [grid-data]="PHRMPurchaseOrderList" [rangeType]="dateRange" [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" (onDateChange)="onDateChange($event)" (grid-actions)="PHRMPurchaseOrderGridAction($event)"> </danphe-grid>
   </div>
 </div>
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPHRMPOItemsbyPOId">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-10 col-md-offset-1">
-        <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> 
+        <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
           <!--Model Box Body Start-->
           <div class="form-body">
             <div class="col-md-12">
@@ -74,37 +79,44 @@ table tr td, table tr th {
                     </div>
                     <div class="right" style="text-align:right;">
                       <p>Phone :{{currentSupplier.ContactNo}}</p>
-                      <p>Address :{{currentSupplier.ContactAddress}},{{currentSupplier.City}}  {{currentSupplier.Pin}}</p>
+                      <p>Address :{{currentSupplier.ContactAddress}},{{currentSupplier.City}} {{currentSupplier.Pin}}
+                      </p>
                       <p>Email-ID :{{currentSupplier.Email}}</p>
                     </div>
                     <div class="table-responsive" style="width:100%;">
                       <table class="table table-bordered table-hover" style="background-color:initial;margin-top:10px;">
                         <thead>
                           <tr>
-                            <th style="font-size: 11px;text-align: center; border:1px solid #333 !important;"><b>S.No.</b> 
-                            <th style="font-size: 11px; text-align:left; border:1px solid #333 !important"><b>Item Name</b> 
+                            <th style="font-size: 11px;text-align: center; border:1px solid #333 !important;">
+                              <b>S.No.</b>
+                            <th style="font-size: 11px; text-align:left; border:1px solid #333 !important"><b>Item
+                                Name</b>
                             <th style="font-size: 11px; border:1px solid #333 !important"><b>Quantity</b></th>
-                            <!--<th style="font-size: 11px; border:1px solid #333 !important"><b>Pending Quantity</b></th>-->
                             <th style="font-size: 11px; border:1px solid #333 !important"><b>Unit Price</b></th>
-                            <!--<th style="font-size: 11px;border:1px solid"><b>SubTotal</b></th>
-          <th style="font-size: 11px;"><b>VATAmount</b></th>-->
                             <th style="font-size: 11px; border:1px solid #333 !important"><b>TotalAmount</b></th>
-                            <!--<th style="font-size: 11px;border:1px solid"><b>POItemStatus</b></th>-->
-                            <th style="font-size: 11px;text-align: center; border:1px solid #333 !important"><b>Remark</b></th>
+                            <th style="font-size: 11px;text-align: center; border:1px solid #333 !important">
+                              <b>Remark</b>
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr *ngFor="let row of PHRMPOItemsList; let i=index">
-                            <td style="width:5%; font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{i+1}}</td>
-                            <td style="width:55%; font-size:11px;text-align: left; border:1px solid #333 !important"><b>{{row.ItemName}}</b></td>
-                            <td style="width:5%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{row.Quantity}}</td>
-                            <!--<td style="width:10%; text-align: right;font-size: 11px; font-weight: 600;">{{row.PendingQuantity}}</td>-->
-                            <td style="width:10%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{row.StandaredPrice | number : "1.2-2"}}</td>
-                            <!--<td style="width:7%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{row.SubTotal}}</td>
-          <td style="width:7%; text-align: right;font-size: 11px; font-weight: 600;">{{row.VATAmount}}</td>-->
-                            <td style="width:10%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{row.TotalAmount | number : "1.2-2"}}</td>
-                            <!--<td style="width:10%;text-align: left;font-size: 11px; font-weight: 600;">{{row.POItemStatus}}</td>-->
-                            <td style="width:15%;text-align: left;font-size: 11px; font-weight: 600; border:1px solid #333 !important">{{row.Remarks}}</td>
+                            <td style="width:5%; font-size: 11px; font-weight: 600; border:1px solid #333 !important">
+                              {{i+1}}</td>
+                            <td style="width:55%; font-size:11px;text-align: left; border:1px solid #333 !important">
+                              <b>{{row.ItemName}}</b>
+                            </td>
+                            <td style="width:5%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">
+                              {{row.Quantity}}
+                            </td>
+                            <td style="width:10%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">
+                              {{row.StandaredPrice | number : "1.2-2"}}
+                            </td>
+                            <td style="width:10%; text-align: right;font-size: 11px; font-weight: 600; border:1px solid #333 !important">
+                              {{row.TotalAmount | number : "1.2-2"}}
+                            </td>
+                            <td style="width:15%;text-align: left;font-size: 11px; font-weight: 600; border:1px solid #333 !important">
+                              {{row.Remarks}}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -113,50 +125,31 @@ table tr td, table tr th {
                       <table style="text-align: right;">
                         <tr>
                           <td style="padding: 4px 5px; border: none; font-size: 13px;"><b>Total Amount:</b></td>
-                          <td style="padding-left:45px; padding: 4px 5px; border: none; font-size: 13px;"><b>{{currentSupplier.SubTotal | number : "1.2-2"}}</b></td>
+                          <td style="padding-left:45px; padding: 4px 5px; border: none; font-size: 13px;">
+                            <b>{{currentSupplier.SubTotal | number : "1.2-2"}}</b>
+                          </td>
                         </tr>
-                        <!--<tr>
-                      <td style="padding: 4px 5px; border: none; font-size: 13px;">
-                        <b>Discount:</b>
-                      </td>
-                      <td style="padding-left:45px; padding: 4px 5px; border: none; font-size: 13px;">
-                        <b>0</b>
-                      </td>
-                    </tr>-->
                         <tr>
                           <td style="padding: 4px 5px; border: none; font-size: 13px;"><b>VAT:</b></td>
-                          <td style="padding-left:45px; padding: 4px 5px; border: none; font-size: 13px;"><b>{{currentSupplier.VATAmount | number : "1.2-2"}}</b></td>
+                          <td style="padding-left:45px; padding: 4px 5px; border: none; font-size: 13px;">
+                            <b>{{currentSupplier.VATAmount | number : "1.2-2"}}</b>
+                          </td>
                         </tr>
                         <tr>
                           <td style="padding: 4px 5px; border: none; font-size: 13px;"><b>Grand Total:</b></td>
-                          <td style="padding-left:45px; padding: 7px 5px; border: none; font-size: 13px;"><b>{{currentSupplier.TotalAmount | number : "1.2-2" }}</b></td>
+                          <td style="padding-left:45px; padding: 7px 5px; border: none; font-size: 13px;">
+                            <b>{{currentSupplier.TotalAmount | number : "1.2-2" }}</b>
+                          </td>
                         </tr>
                       </table>
                     </div>
                     <div class="col-md-8 text-left">
-                      <b *ngIf="!!currentSupplier.TermText"> Terms & Conditions:  </b>
+                      <b *ngIf="!!currentSupplier.TermText"> Terms & Conditions: </b>
                       <br />
                       <p style="font-style: italic">{{currentSupplier.TermText}}</p>
                     </div>
                     <div class="clearfix"></div>
                     <div class="">
-                      <!-- <table>   ***this is hardcoded so commented out. needs to  make this dynamic.***
-                        <tr>
-                          <td style="border: none;text-align: left; font-size: 14px;"><b style="text-decoration: underline;">Terms & Condition</b></td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px; text-align:left; "><b style="padding-left: 15px;">1. Time of Deivery of Goods:</b></td>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px;"><b></b></td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px; text-align:left; "><b style="padding-left: 15px;">2. Payment Mode:</b></td>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px;"><b></b></td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px; text-align:left; "><b style="padding-left: 15px;">3. Delivery for HAMS, FOC:</b></td>
-                          <td style="padding: 4px 5px; border: none; font-size: 13px;"><b></b></td>
-                        </tr>
-                      </table> -->
                     </div>
                     <div class="" style="margin-top: 40px;">
                       <table style="width: 100%;">
@@ -171,18 +164,28 @@ table tr td, table tr th {
                 </div>
               </div>
               <div class="row center-style p2">
-                <div class="col-md-12 col-xs-12 "> <a (click)="print()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+                <div class="col-md-12 col-xs-12 ">
+                  <button type="button" id = "edit" class="btn btn-primary" (click)="EditPO()">Edit <i class="glyphicon glyphicon-edit"></i></button> 
+
+                  <button id="printButton" (click)="print()" class="btn btn-default"> Print
+                    <i class="glyphicon glyphicon-print"></i>
+                  </button> &nbsp;
+                </div>
               </div>
-              
-              <!--
-        <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
-        </div>
---> 
-              
             </div>
           </div>
-          <!--Model Box Body End--></div>
+          <!--Model Box Body End-->
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+
+<!-- Nepali PO View  START-->
+<div *ngIf="showPopUp">
+  <app-phrm-po-view-np [showPopUp]="showPopUp" [purchaseOrderId]="currentPO.PurchaseOrderId" (call-back-close)="OnPOViewPopUpClose()"></app-phrm-po-view-np>
+</div>
+<!-- Nepali PO View  END-->
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

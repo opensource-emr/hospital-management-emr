@@ -299,7 +299,10 @@ export class NursingBLService {
         HasInsurance: false,
         SampleCollectedOnDateTime: null,
         BillCancelledBy: null,
-        BillCancelledOn: null
+        BillCancelledOn: null,
+        LabTypeName: bill.LabTypeName,
+        IsSmsSend: null,
+        IsSelected: false
       });
     });
     let labTestReqtemp = labItems.map(function (item) {

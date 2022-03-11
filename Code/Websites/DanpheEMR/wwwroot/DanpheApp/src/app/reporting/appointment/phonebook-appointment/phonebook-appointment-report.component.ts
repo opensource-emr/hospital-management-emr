@@ -22,6 +22,7 @@ export class RPT_APPT_PhoneBookAppointmentReportComponent {
   public currentphonebookappointment: RPT_APPT_PhoneBookAppointmentReportModel = new RPT_APPT_PhoneBookAppointmentReportModel();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   dlService: DLService = null;
+  public dateRange:string="";	
 
   gridExportOptions = {
     fileName: 'PhoneBookAppointmentList' + moment().format('YYYY-MM-DD') + '.xls',
@@ -117,5 +118,7 @@ export class RPT_APPT_PhoneBookAppointmentReportComponent {
 
     this.currentphonebookappointment.fromDate = this.fromDate;
     this.currentphonebookappointment.toDate = this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
+
   }
 }

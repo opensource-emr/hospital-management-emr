@@ -32,6 +32,11 @@ export class PatientsBLService {
     return this.patientDLService.GetPatients(searcgTxt)
       .map(res => { return res })
   }
+  //  get registered patients
+  public GetPatientsList(searcgTxt) {
+    return this.patientDLService.GetPatientsList(searcgTxt)
+      .map(res => { return res })
+  }
 
   public GetPatientById(patientId: number) {
     return this.patientDLService.GetPatientById(patientId)
@@ -198,6 +203,13 @@ export class PatientsBLService {
     }
   }
 
-
-
+  public GetMunicipality(id: number) {
+    return this.patientDLService.GetMunicipality(id)
+      .map(res => { return res })
+  }
+  public GetFileFromServer(id: number) {
+    return this.patientDLService.GetFileFromServer(id).map((res) => {
+      return res;
+    });
+  }
 }

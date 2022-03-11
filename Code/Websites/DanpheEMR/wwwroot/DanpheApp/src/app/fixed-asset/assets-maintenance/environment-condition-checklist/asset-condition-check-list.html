@@ -1,0 +1,243 @@
+<style>
+  .checklist table {
+    margin: 15px 0;
+  }
+
+  .checklist table th,
+  .checklist table td {
+    padding: 4px 15px;
+    font-size: 18px;
+  }
+
+  .checklist table th {
+    font-weight: 500;
+  }
+
+  .checklist table p,
+  .checklist table span,
+  .checklist table form {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 5px;
+    position: relative;
+  }
+
+  .checklist table span {
+    margin-top: 4px;
+  }
+
+  .checklist [type="radio"]:checked,
+  .checklist [type="radio"]:not(:checked) {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .checklist [type="radio"]:checked+label,
+  .checklist [type="radio"]:not(:checked)+label {
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: #666;
+    margin: 0;
+    vertical-align: middle;
+    font-size: 18px;
+  }
+
+  .checklist [type="radio"]:checked+label:before,
+  .checklist [type="radio"]:not(:checked)+label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #fff;
+  }
+
+  .checklist [type="radio"]:checked+label:after,
+  .checklist [type="radio"]:not(:checked)+label:after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 4px;
+    background: black;
+    width: 2px;
+    height: 2px;
+    box-shadow: 2px 0 0 black, 4px 0 0 black, 4px -2px 0 black, 4px -4px 0 black, 4px -6px 0 black, 4px -8px 0 black;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+  }
+
+  .checklist [type="radio"]:not(:checked)+label:after {
+    opacity: 0;
+    /*
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    */
+  }
+
+  .checklist [type="radio"]:checked+label:after {
+    opacity: 1;
+    /*
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    */
+  }
+
+  .checklist table .btn {
+    padding: 3px 15px;
+    font-size: 18px;
+  }
+
+  .checklist table .btn i {
+    font-size: 13px;
+    margin-right: 3px;
+  }
+</style>
+
+
+
+
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" >
+<div class="portlet-body form">
+  <div class="row clearfix">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div clearfix">
+        <div class="caption custom-caption">
+          <h3> <span>Check List</span></h3>
+          <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+        </div>
+        <form class="form-horizontal hm-form">
+          <div class="main" style="padding: 0 15px;">            
+              <div class="row">
+                  <div class="col-md-12"><div class="checklist">
+                    <table class="table table-bordered">
+                      <tbody>
+                        <tr>
+                          <th>Proper air flow:</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input name="ProperAirFlow" type="radio" id="airflow_y" [value]="true"   [(ngModel)]="ProperAirFlow" 
+                                   />
+                                <label for="airflow_y">Yes</label>
+                              </p>
+                              <p>
+                                <input name="ProperAirFlow" type="radio" id="airflow_n" [value]="false"   [(ngModel)]="ProperAirFlow"
+                                  />
+                                <label for="airflow_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Maintenance of moisture and temperature:</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input name="MoistureAndTemperature" type="radio" id="maintenance_y" [value]="true"  [(ngModel)]="MoistureAndTemperature"
+                                   />
+                                <label for="maintenance_y">Yes</label>
+                              </p>
+                              <p>
+                                <input name="MoistureAndTemperature" type="radio" id="maintenance_n" [value]="false"  [(ngModel)]="MoistureAndTemperature"
+                                  />
+                                <label for="maintenance_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Inter department movement:</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input type="radio" id="department_movement_y" [value]="true" 
+                                  [(ngModel)]="InterDepartmentMovement" name="InterDepartmentMovement"/>
+                                <label for="department_movement_y">Yes</label>
+                              </p>
+                              <p>
+                                <input type="radio" id="department_movement_n" [value]="false"
+                                  [(ngModel)]="InterDepartmentMovement" name="InterDepartmentMovement"/>
+                                <label for="department_movement_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Maintenance of pressure:</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input type="radio" id="maintenance_pressure_y" [value]="true" 
+                                  [(ngModel)]="MaintenanceOfPressure" name="MaintenanceOfPressure"/>
+                                <label for="maintenance_pressure_y">Yes</label>
+                              </p>
+                              <p>
+                                <input type="radio" id="maintenance_pressure_n" [value]="false"
+                                  [(ngModel)]="MaintenanceOfPressure" name="MaintenanceOfPressure"/>
+                                <label for="maintenance_pressure_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Use of trained professionals:</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input type="radio" id="trained_prof_y" [(ngModel)]="UseOfTrainedProfessionals" [value]="true" 
+                                  name="UseOfTrainedProfessionals" />
+                                <label for="trained_prof_y">Yes</label>
+                              </p>
+                              <p>
+                                <input type="radio" id="trained_prof_n" [value]="false" [(ngModel)]="UseOfTrainedProfessionals"
+                                  name="UseOfTrainedProfessionals"/>
+                                <label for="trained_prof_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Knowledge of assets (for example: MRI machine):</th>
+                          <td>
+                            <form action="#">
+                              <p>
+                                <input type="radio" id="assets_y" [(ngModel)]="KnowledgeOfAssets" [value]="true" 
+                                  name="KnowledgeOfAssets" />
+                                <label for="assets_y">Yes</label>
+                              </p>
+                              <p>
+                                <input type="radio" id="assets_n" [value]="false" [(ngModel)]="KnowledgeOfAssets" name="KnowledgeOfAssets"/>
+                                <label for="assets_n">No</label>
+                              </p>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" class="text-right">
+                            <button type="button" class="btn btn-primary" (click)="Save()"  ><i class="fa fa-edit"></i> Add</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div></div>
+                </div>
+           
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

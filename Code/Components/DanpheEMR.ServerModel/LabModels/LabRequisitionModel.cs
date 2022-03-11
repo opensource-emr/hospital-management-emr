@@ -26,7 +26,7 @@ namespace DanpheEMR.ServerModel
         public string PatientName { get; set; }
         public string Diagnosis { get; set; }
         public string Urgency { get; set; }
-        public DateTime? OrderDateTime { get; set; }
+        public DateTime OrderDateTime { get; set; }
         public string ProviderName { get; set; }
         public string BillingStatus { get; set; }
         public string OrderStatus { get; set; }
@@ -36,8 +36,8 @@ namespace DanpheEMR.ServerModel
         public DateTime? SampleCollectedOnDateTime { get; set; }
         public int? SampleCreatedBy { get; set; }
         public string Comments { get; set; }
-        public string RunNumberType { get; set; }   
-
+        public string RunNumberType { get; set; }  
+        public bool? IsSmsSend { get; set; }
         public List<LabTestComponentResult> LabTestComponentResults { get; set; }
 
         //required for billing for listing the imaging items <dinesh:19Jan'17>
@@ -49,7 +49,7 @@ namespace DanpheEMR.ServerModel
 
         public int? DiagnosisId { get; set; }
 
-        public DateTime? CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
@@ -59,7 +59,7 @@ namespace DanpheEMR.ServerModel
         //added: ashim : 18Sep2018
         public string VisitType { get; set; }
         public int? LabReportId { get; set; }
-        public int? BarCodeNumber { get; set; }
+        public Int64? BarCodeNumber { get; set; }
         public string WardName { get; set; }
 
         public bool? IsVerified { get; set; }
@@ -67,7 +67,7 @@ namespace DanpheEMR.ServerModel
         public int? VerifiedBy { get; set; }
 
         public int ResultingVendorId { get; set; }//sud:16May'19--for lab external vendors.
-        public bool? HasInsurance { get; set; }
+        public bool HasInsurance { get; set; }
         public int? ResultAddedBy { get; set; }
         public DateTime? ResultAddedOn { get; set; }
         public int? PrintedBy { get; set; }
@@ -76,6 +76,15 @@ namespace DanpheEMR.ServerModel
 
         public int? BillCancelledBy { get; set; }
         public DateTime? BillCancelledOn { get; set; }
+        public string LabTypeName { get; set; }//pratik:9Feb2021
+        public string GoogleFileIdForCovid { get; set; }
+        public string CovidFileName { get; set; }
+        public bool? IsFileUploaded { get; set; }
+        public int? UploadedBy { get; set; }
+        public DateTime? UploadedOn { get; set; }
+        public bool? IsFileUploadedToTeleMedicine { get; set; }
+        public int? UploadedByToTeleMedicine { get; set; }
+        public DateTime? UploadedOnToTeleMedicine { get; set; }
     }
 
     public class LabTestTransactionItemVM

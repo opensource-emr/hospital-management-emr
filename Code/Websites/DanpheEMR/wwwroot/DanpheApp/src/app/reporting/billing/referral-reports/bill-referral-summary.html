@@ -1,12 +1,13 @@
 <div class="wrapper">
   <div class="row">
     <div class="col-md-10 " *ngIf="showBillRefSummary">
-      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelRefSummary()"> <i class="fa fa-file-excel-o"></i> Excel </button>
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelRefSummary('referral-summary')"> <i class="fa fa-file-excel-o"></i> Excel </button>
     </div>
     <div class="col-md-12" *ngIf="showBillRefSummary" style="border: 0.5px solid;padding-top: 10px;">
       <div class="col-md-12" style="padding:0px"> <span class="col-md-3 left" style="padding:0px">From Date: {{FromDate}}<br />
         ToDate: {{ToDate}}<br />
         </span> <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px"> <b>Referral Summary Report</b> </span> <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span> </div>
+        <div id="referral-summary">
       <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
         <thead>
           <tr>
@@ -62,6 +63,7 @@
         </tr>
       </table>
     </div>
+  </div>
     <div class="col-md-12">
       <referral-item-summary *ngIf="showItemSummary"
                                   [showReferralItemSummary]="showItemSummary"
@@ -69,6 +71,7 @@
                                   [toDate]="ToDate"
                                   [referrerId]="selReferrerId"
                                   (callback)="CallBackRefDept()"> </referral-item-summary>
+
     </div>
   </div>
 </div>

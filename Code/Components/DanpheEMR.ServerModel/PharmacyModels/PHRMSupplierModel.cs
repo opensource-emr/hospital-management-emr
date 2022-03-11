@@ -16,13 +16,16 @@ namespace DanpheEMR.ServerModel
         public string ContactNo { get; set; }
         public string Description { get; set; }
         public string City { get; set; }
-        public string  Pin  { get; set; }
+        public string  PANNumber  { get; set; }
+        public string  DDA  { get; set; }
         public string ContactAddress { get; set; }
+        public string AdditionalContactInformation { get; set; }
         public string Email { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public bool IsActive { get; set; }
         public int? CreditPeriod { get; set; }
+        public bool IsLedgerRequired { get; set; }
 
         [NotMapped]
         public int LedgerId { get; set; }

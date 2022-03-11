@@ -169,6 +169,18 @@ namespace DanpheEMR.Controllers
                     responseData.Results = actCounterId;
                     responseData.Status = "OK";
                 }
+                else if(reqType == "activeLab")
+                {
+                    string activeLabId = HttpContext.Session.Get<string>("activeLabId");
+                    int actLabId;
+                    int.TryParse(activeLabId, out actLabId);
+                    string activeLabName = HttpContext.Session.Get<string>("activeLabName");
+                    LabSelectionVM activelab = new LabSelectionVM();
+                    activelab.LabTypeId = actLabId;
+                    activelab.LabTypeName = activeLabName;
+                    responseData.Results = activelab;
+                    responseData.Status = "OK";
+                }
                 else if (reqType == "activePharmacyCounter")
                 {
                     string activeCounterId = HttpContext.Session.Get<string>("activePharmacyCounter");
@@ -249,7 +261,7 @@ namespace DanpheEMR.Controllers
         //counterid and countername are used for Billing/Pharmacy. 
         //hospitalid used for accounting
         [HttpPut]
-        public string Put(string reqType, int counterId, string counterName, int hospitalId)
+        public string Put(string reqType, int counterId, string counterName, int hospitalId, int labId, string labName)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
 
@@ -259,7 +271,6 @@ namespace DanpheEMR.Controllers
                 responseData.Status = "OK";
                 responseData.Results = counterId;
             }
-
             else if (reqType == "activatePharmacyCounter" && counterId != 0)
             {
                 HttpContext.Session.Set<string>("activePharmacyCounter", counterId.ToString());
@@ -271,6 +282,16 @@ namespace DanpheEMR.Controllers
                 responseData.Status = "OK";
                 responseData.Results = counter;
             }
+            else if(reqType == "activateLab" && labId != 0)
+            {
+                HttpContext.Session.Set<string>("activeLabId", labId.ToString());
+                HttpContext.Session.Set<string>("activeLabName", labName.ToString());
+                LabSelectionVM activelab = new LabSelectionVM();
+                activelab.LabTypeId = labId;
+                activelab.LabTypeName = labName;
+                responseData.Status = "OK";
+                responseData.Results = activelab;
+            }
             else if (reqType == "deActivateBillingCounter")
             {
                 HttpContext.Session.Remove("activeBillingCounter");
@@ -280,6 +301,12 @@ namespace DanpheEMR.Controllers
             else if (reqType == "deActivatePharmacyCounter")
             {
                 HttpContext.Session.Remove("activePharmacyCounter");
+                responseData.Status = "OK";
+            }
+            else if(reqType == "deactivateLab")
+            {
+                HttpContext.Session.Remove("activeLabId");
+                HttpContext.Session.Remove("activeLabName");
                 responseData.Status = "OK";
             }
             else if (reqType == "activateAccountingHospital" && hospitalId != 0)

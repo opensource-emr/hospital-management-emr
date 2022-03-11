@@ -83,12 +83,14 @@ export class SubstoreAddComponent {
             }
           })
       }
+      this.setFocusById("StoreName");
 
     }
     else {
       this.CurrentStore = new PHRMStoreModel();
       this.CurrentStore.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.update = false;
+      this.setFocusById("StoreName");
     }
   }
   public AssignRoleToStoreVerifiers(StoreVerificationMapList: StoreVerificationMapModel[]) {
@@ -269,5 +271,28 @@ export class SubstoreAddComponent {
   myRoleListFormatter(data: any): string {
     let html = data["RoleName"];
     return html;
+  }
+
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    if(targetId === "verifier0"){
+      if(this.StoreVerificationMapList.length==0){
+        targetId = 'AddDepartment'
+      }
+    }
+    if(targetId === "verifier" + this.StoreVerificationMapList.length){
+      targetId = 'AddDepartment'
+    }
+    if(targetId === 'AddDepartment'){
+      if(this.update){
+        targetId = 'UpdateDepartment'
+      }
+    }
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
   }
 }

@@ -44,5 +44,29 @@ namespace DanpheEMR.ServerModel
         public bool isVerificationAllowed { get; set; }
         [NotMapped]
         public string VerificationStatus { get; set; }
+        [NotMapped]
+        public DateTime? PODate { get; set; }
+
+        [NotMapped]
+        public int? PONumber { get; set; }
+
+        [NotMapped]
+        public string SupplierInvoice { get; set; }
+
+        [NotMapped]
+        public DateTime? SupplierInvoiceDate { get; set; }
+        [NotMapped]
+        public string POCategory { get; set; }
+        public string PRCategory { get; set; }
+        public int StoreId { get; set; }
+        [NotMapped]
+        public string RequestFromStoreName { get; set; }
+
+        /// <summary>
+        /// Maintains sequence for PRNumber
+        /// </summary>
+        public int? PRGroupId { get; set; }
+
+        public int? FiscalYearId { get; set; }
     }
 }

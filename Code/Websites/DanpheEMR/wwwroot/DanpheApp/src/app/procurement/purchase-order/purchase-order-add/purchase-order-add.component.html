@@ -1,0 +1,466 @@
+<style>
+  /* .fa-question {
+    top: 10px;
+  } */
+
+  .verification-card {
+    background-color: #e7e7e7;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 15px !important;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .verification-check {
+    background: #fff;
+    color: #2185cc;
+    padding: 10px;
+    display: flex;
+    margin-bottom: auto;
+    border-radius: 5px !important;
+    box-shadow: 0px 0px 10px #eee
+  }
+
+  .verification-check .custom-control-label {
+    margin-bottom: 0;
+    margin-left: 7px;
+    margin-top: 1px;
+    font-weight: 500;
+  }
+
+  .verification-form-control {
+    display: inline-block;
+    margin: 10px -15px;
+    width: 100%;
+  }
+
+  .verification-form-control .btn.btn-sm {
+    display: inline-flex;
+    height: 20px;
+    width: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100% !important;
+    font-size: 12px !important;
+    padding: 10px !important;
+    margin: 4px 3px;
+  }
+
+  .verification-form-control .verifier {
+    padding: 7px 15px;
+    background: #4158d3;
+    border-radius: 20px !important;
+    color: #fff;
+    margin-left: 15px;
+    font-weight: 500;
+    margin-bottom: 0px;
+    font-size: 12px;
+  }
+
+  .verification-form-control .form-control {
+    border: none;
+    box-shadow: 0px 4px 10px #eee;
+    font-size: 13px;
+  }
+
+  .verification-form-control .verifier i {
+    margin-right: 5px
+  }
+
+  .terms-card {
+    background-color: #e7e7e7;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 15px !important;
+    text-align: left;
+    width: 100%;
+  }
+
+  .po-form--head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .po-form--control {
+    display: flex;
+    align-items: center;
+  }
+
+  .po-form--control-with-validation {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .invalid-input {
+    background-color: yellow;
+  }
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption lb-caption col-md-4">
+      <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+      <span class="caption-subject"> {{EditPO ? 'Edit':'Add'}} Purchase Order</span>
+    </div>
+    <div class="col-md-2" *ngIf="EditPO">
+      <label class="control-label col-md-12 col-sm-12" style="font-size: 15px !important;color: darkblue; text-decoration: underline;">PO-No:{{currentPO.PurchaseOrderNo}}</label>
+    </div>
+  </div>
+</div>
+<div class="wrapper row" style="margin-bottom: 10px;">
+  <form [formGroup]="currentPO.PurchaseOrderValidator" class="form-horizontal hm-form">
+    <section class="po-form--head">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="po-form--control-with-validation col-md-3">
+            <div class="po-form--control">
+              <label class=" control-label">Vendor<b>:</b></label>
+              <div class="div-relative autocomplete-item">
+                <input id="VendorName" danphe-auto-complete class="form-control" [(ngModel)]="selectedVndr" [source]="VendorList" [list-formatter]="myVendorListFormatter" placeholder="Vendor Name" display-property-name="VendorName" value-property-name=null (valueChanged)="GetVendorDetails()" formControlName="VendorId" (focusout)="GetVendorDetails()" onclick="this.select();" no-match-found-text="click ? to add new item" (keyup.enter)="GoToNextInput('poItemName0')" />
+                <div style="color:red" *ngIf="currentPO.IsDirty('VendorId')" [hidden]="currentPO.IsValidCheck('VendorId','required')">
+                  Vendor is required.
+                </div>
+                <div style="color:red" *ngIf="currentPO.IsDirty('VendorId') && currentPO.IsValidCheck('VendorId','required')" [hidden]="currentPO.IsValidCheck('VendorId','notRegisteredVendor')">
+                  Vendor is not registered.
+                </div>
+                <a *ngIf="!currentPO.VendorId" class="fa fa-question col-md-1" (click)="AddSupplierPopUp()" title="Unable to find Supplier? Click to add to Master"></a>
+              </div>
+            </div>
+            <div *ngIf="!!selectedVndr">
+              <p>Vendor ContactNo: <b>{{selectedVndr.ContactNo ? selectedVndr.ContactNo :'--'}}</b></p>
+              <p>Vendor Address: <b>{{selectedVndr.ContactAddress ? selectedVndr.ContactAddress : '--'}}</b></p>
+            </div>
+          </div>
+          <div class="form-group po-form--control col-md-3">
+            <label class="control-label">PO Date<b>: </b></label>
+            <danphe-date-picker name="PoDate" [(ngModel)]="currentPO.PoDate" [ngModelOptions]="{standalone: true}" [CalendarTypes]="'np,en'">
+            </danphe-date-picker>
+          </div>
+          <div class="form-group po-form--control col-md-3">
+            <label class="control-label">Delivery Date<b>:</b></label>
+            <danphe-date-picker name="DeliveryDate" [(ngModel)]="currentPO.DeliveryDate" [ngModelOptions]="{standalone: true}" [CalendarTypes]="'np,en'" [allow-future-date]="true">
+            </danphe-date-picker>
+          </div>
+          <div class="po-form--control-with-validation col-md-3">
+            <div class="form-group po-form--control">
+              <label class="control-label">Currency Code<sup class="color-red">*</sup><b>: </b></label>
+              <input danphe-auto-complete class="form-control" placeholder="Currency Code" placeholder="Currency Code" [list-formatter]="myCurrencyCodeListFormatter" display-property-name="CurrencyCode" [source]="currencyCodeList" [(ngModel)]="selectedCurrencyCode" formControlName="CurrencyCode" (focusout)="SelectCurrencyCodeFromSearchBox()" />
+            </div>
+            <div style="color:red" *ngIf="currentPO.IsDirty('CurrencyCode')" [hidden]="currentPO.IsValidCheck('CurrencyCode','required')">
+              currency code is required
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" style="margin-top: 30px;">
+          <div class="form-group" class="po-form--control col-md-2">
+            <label class="control-label col-md-6">Reference No.<b>:</b></label>
+            <textarea class="col-md-6 form-control" type="text" id="ReferenceNo" name="ReferenceNo" [(ngModel)]="currentPO.ReferenceNo" [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15" rows="3"></textarea>
+          </div>
+          <div class="form-group po-form--control col-md-3">
+            <label class="control-label col-md-3">Invoicing Address<b>:</b></label>
+            <textarea class="col-md-9 form-control" type="text" id="InvolvingAddress" name="InvolvingAddress" [(ngModel)]="currentPO.InvoicingAddress" [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15" rows="3"></textarea>
+          </div>
+
+          <div class="form-group po-form--control col-md-3">
+            <label class="control-label col-md-4">Delivery Address<b>:</b></label>
+            <textarea class="col-md-8 form-control" type="text" id="DeliveryAddress" name="DeliveryAddress" [(ngModel)]="currentPO.DeliveryAddress" [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15" rows="3"></textarea>
+          </div>
+          <div class="form-group po-form--control col-md-2">
+            <label class="control-label col-md-5">Contact Person<b>:</b></label>
+            <textarea class="col-md-7 form-control" type="text" id="ContactPerson" name="ContactPerson" [(ngModel)]="currentPO.ContactPersonName" [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15" rows="3"></textarea>
+          </div>
+          <div class="form-group po-form--control col-md-2">
+            <label class="control-label col-md-4">Contact Email<b>:</b></label>
+            <textarea class="col-md-8 form-control" type="text" id="ContactEmail" name="ContactEmail" [(ngModel)]="currentPO.ContactPersonEmail" [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15" rows="3"></textarea>
+          </div>
+        </div>
+        <!-- <div class="col-md-12" style="margin-top: 30px;">
+          <div class="form-group po-form--control col-md-6">
+            <label class="control-label col-md-2">MSS No:</label>
+            <input class="col-md-5" [(ngModel)]="currentPO.MSSNO" [ngModelOptions]="{standalone: true}" name="mssno" type="text">
+          </div>
+        </div> -->
+      </div>
+
+    </section>
+    <!-- Sud/Sanjit:20Sep'21--These are not required for LPH, make them parameterized soon.. -->
+    <section class="po-form--head" style="display:none;">
+      <div class="form-group" class="po-form--control">
+        <label class="control-label">Proforma&nbsp;Invoice&nbsp;No:</label>
+        <input class="form-control" [(ngModel)]="currentPO.PerformanceInvoiceNo" [ngModelOptions]="{standalone: true}" name="performanceinvoiceno" type="text">
+      </div>
+      <div class="form-group">
+        <!-- Sud:26Sep'21--Not required for LPH, Please Make this parameterized -->
+        <div style="display: none;">
+          <button type="button" class="btn btn-primary" (click)="LoadRequisitionOrder()">
+            Load Requisition Order
+          </button>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+
+
+<div class="row">
+  <div class="col-md-12">
+    <div>
+      <table class="table table-striped table-hover inv_table table-bordered">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th><b>ItemName</b></th>
+            <th *ngIf="poFormParameterValue.showVendorItemCode"><b>Code</b></th>
+            <th *ngIf="poFormParameterValue.showMSSNO"><b>MSS No.</b></th>
+            <th *ngIf="poFormParameterValue.showHSNCODE"><b>HSN Code</b></th>
+            <th><b>Specification</b></th>
+            <th><b>Item Code</b></th>
+            <th><b>Unit</b></th>
+            <th><b>Quantity</b></th>
+            <th><b>Standard Rate</b></th>
+            <th><b>VAT %</b></th>
+            <th><b>TotalAmount </b></th>
+            <th><b>Delivery Days</b></th>
+            <th><b>Remarks</b></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let row of currentPO.PurchaseOrderItems; let i = index">
+            <tr [formGroup]="row.PurchaseOrderItemValidator">
+              <td>
+                <select [(ngModel)]="row.ItemCategory" [ngModelOptions]="{standalone: true}" (ngModelChange)="OnItemCategoryChanged(i)">
+                  <option *ngFor="let poCategory of POCategories | keyvalue" [value]="poCategory.value">
+                    {{poCategory.value}}
+                  </option>
+                </select>
+              </td>
+              <td [ngClass]="{'alert alert-warning':row.isItemDuplicate}">
+                <div class="div-relative">
+                  <input danphe-auto-complete class="form-control " autocomplete="off" id="poItemName{{i}}" [grid-sort]="'ItemName'" style="width: 300px;" [(ngModel)]="row.SelectedItem" [source]="row.filteredItemList" match-formatted="true" [list-formatter]="myListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null (focusout)="SelectItemFromSearchBox(row.SelectedItem,i)" min-chars="1" max-num-list="20" formControlName="ItemId" onclick="this.select();" (keyup.enter)="SelectItemFromSearchBox(row.SelectedItem,i);onPressedEnterKeyInItemField(i)" no-match-found-text="click ? to add new item" />
+                  <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')">
+                    Item is required
+                  </div>
+                  <div style="color:red" *ngIf="row.IsDirty('ItemId')  && row.IsValidCheck('ItemId','required')" [hidden]="row.IsValidCheck('ItemId','notRegisteredItem')">
+                    Item is not registered
+                  </div>
+                  <div class="color-yellow font-sm" *ngIf="row.isItemDuplicate">
+                    <i class="fa fa-warning"></i>Alert: Duplicate Item
+                  </div>
+                  <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a>
+                </div>
+              </td>
+              <td *ngIf="poFormParameterValue.showVendorItemCode">
+                <input [(ngModel)]="row.VendorItemCode" [ngModelOptions]="{standalone: true}" class="form-control" min="0" name="mssno" type="text" id="vendorCode{{i}}" (keyup.enter)="GoToNextInput('ipqty'+i)">
+              </td>
+              <td *ngIf="poFormParameterValue.showMSSNO">
+                <input [(ngModel)]="row.MSSNO" [ngModelOptions]="{standalone: true}" class="form-control" min="0" disabled name="mssno" type="text" id="mssno{{i}}" (keyup.enter)="GoToNextInput('ipqty'+i)">
+              </td>
+              <td *ngIf="poFormParameterValue.showHSNCODE">
+                <input [(ngModel)]="row.HSNCODE" [ngModelOptions]="{standalone: true}" class="form-control" min="0" disabled name="hsncode" type="text">
+              </td>
+              <td>
+                <textarea [(ngModel)]="row.POItemSpecification" [ngModelOptions]="{standalone: true}" class="form-control" name="POItemSpecification" id="POItemSpecification{{i}}" cols="15" rows="1"></textarea>
+              </td>
+              <td>
+                <input [(ngModel)]="row.Code" [ngModelOptions]="{standalone: true}" class="form-control" min="0" disabled name="code" type="text">
+              </td>
+              <td>
+                <input [(ngModel)]="row.UOMName" [ngModelOptions]="{standalone: true}" class="form-control" min="0" disabled name="unit" type="text">
+              </td>
+              <td>
+                <input id="ipqty{{i}}" (keyup.enter)="GoToNextInput('ipstdrate'+i)" [(ngModel)]="row.Quantity" class="form-control" min="0" [disabled]="disableTextBox" formControlName="Quantity" (ngModelChange)="currentPO.calculateAndUpdateAmounts()" name="quantity" type="number" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','positivenum')">
+                  invalid quantity
+                </div>
+              </td>
+              <td style="width:120px;">
+                <input id="ipstdrate{{i}}" (keyup.enter)="onPressedEnterKeyInRateField(i)" [(ngModel)]="row.StandardRate" style="width:75px;float: left;" class="form-control" (ngModelChange)="currentPO.calculateAndUpdateAmounts()" formControlName="StandardRate" name="price" type="number" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <div *ngIf="!!row.ItemId" id="itemPriceHistoryTooltip" class="tooltip list-tooltip ">
+                  <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                  </span>
+                  <p class="tooltiptext tooltip-list-type ttptextdown no-print" *ngIf="row.itemPriceHistory.length;else noPriceHistoryMessage">
+                    <span class="tooltip-header">Rate History</span>
+                    <span *ngFor="let itemPrice of row.itemPriceHistory">
+                      {{coreService.currencyUnit}}
+                      {{itemPrice.ItemRate}}-{{itemPrice.VendorName}}-{{itemPrice.GoodsReceiptDate | date:
+                      'yyyy-M-d'}}
+                    </span>
+                  </p>
+                  <ng-template #noPriceHistoryMessage>
+                    <p class="tooltiptext ttptextdown no-print">
+                      No price available.
+                    </p>
+                  </ng-template>
+                </div>
+                <div style="color:red" *ngIf="row.IsDirty('StandardRate')" [hidden]="row.IsValidCheck('StandardRate','required') && row.IsValidCheck('StandardRate','positivenum')">
+                  Invalid
+                </div>
+              </td>
+              <td style="width:100px;">
+                <input [(ngModel)]="row.VatPercentage" formControlName="VatPercentage" class="form-control" min="0" style="width:75px;float: left;" (keyup.enter)="(i == (currentPO.PurchaseOrderItems.length -1))? AddRowRequest():GoToNextInput('poItemName'+(i+1))" (ngModelChange)="currentPO.calculateAndUpdateAmounts()" max="100" name="vatpercent" type="number" onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+              </td>
+              <td>
+                <div style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                  {{row.TotalAmount | number :'1.0-2'}}
+                </div>
+              </td>
+              <td><input [(ngModel)]="row.DeliveryDays" [ngModelOptions]="{standalone: true}" class="form-control" type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)" onclick="this.select();" (keyup.enter)="(i == (currentPO.PurchaseOrderItems.length -1))? AddRowRequest():GoToNextInput('poItemName'+(i+1))">
+              </td>
+              <td>
+                <textarea name="Remarks" id="Remarsk{{i}}" class="form-control" cols="15" rows="1" [(ngModel)]="row.Remark" [ngModelOptions]="{standalone: true}"></textarea>
+              </td>
+              <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+            </tr>
+          </ng-container>
+          <tr>
+            <td>
+              <!-- <a (click)="AddRowRequest()">
+                <i class="fa fa-plus btn primary-btn"></i>
+              </a> -->
+              <button style="margin-top: 20px;" class="btn green btn-success margin-7-hr" (click)="AddRowRequest()">
+                <i class="fa fa-plus blue"></i>
+                Add New Row
+              </button>
+
+            </td>
+            <td colspan="2" style="vertical-align: bottom;">
+              <span *ngIf="currentPO.PurchaseOrderItems" style="font-weight: bold;color: blue;font-size: 14px;">
+                Items Count: <span>{{getValidItemCount}}</span>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <div>
+            <div class="verification-card" *ngIf="IsVerificationActivated">
+              <div>
+                <div class="custom-control  custom-checkbox verification-check">
+                  <input type="checkbox" class="custom-control-input" id="defaultUnchecked" [(ngModel)]="currentPO.IsVerificationEnabled" (ngModelChange)="ShowVerifiers()">
+                  <label title="Check If Verification Needed" class="custom-control-label" for="defaultUnchecked">Need
+                    Verification</label>
+                </div>
+                <div class="verification-form-control">
+                  <div class="left t-wrap col-md-12" *ngFor="let verifier of currentPO.VerifierList; let i = index;let c= count;">
+                    <div class="row">
+                      <div class="col-md-5">
+                        <button title="Delete this Verifier" class="btn btn-sm btn-danger" (click)="DeleteVerifier(i)" [disabled]="CheckIfDeleteVerifierAllowed()"><i class="glyphicon glyphicon-minus"></i>
+                        </button>
+                        <label class="verifier" for="inputIconEx{{i}}">
+                          <!-- <i class="fa fa-user"></i>Verifier {{i+1}} -->
+                          <i class="fa fa-user"></i>{{i == 0? 'Checked By': 'Approved By'}}
+                        </label>
+                      </div>
+                      <div class="col-md-6">
+                        <input danphe-auto-complete class="form-control " autocomplete="off" [source]="VerifierList" [(ngModel)]="verifier" [list-formatter]="VerifierListFormatter" placeholder="Select Verifier" display-property-name="Name" max-num-list="10" (valueChanged)="AssignVerifier($event,i)" />
+                      </div>
+                      <div class="col-md-1">
+                        <button title="Add Verifier" class="btn btn-sm btn-primary" (click)="AddVerifier()" [disabled]="CheckIfAddVerifierAllowed()"><i class="glyphicon glyphicon-plus"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="terms-card">
+            <div class="row clearfix">
+              <div class="col-md-6"><b>Select Terms & Conditions:</b></div>
+              <div class="col-md-6">
+                <div class="form-group div-relative">
+                  <select [(ngModel)]="currentPO.TermsConditions" class="form-control">
+                    <option value="null">-- Select Terms --</option>
+                    <option *ngFor="let terms of TermsList" title="{{ terms.Text }}" value="{{ terms.Text }}">
+                      {{ terms.ShortName }}</option>
+                  </select>
+                  <a class="fa fa-question" (click)="AddTermsPopUp()" title="Unable to find Terms? Click to add to Terms and Conditions">
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div>
+              <danphe-ckeditor [readonly]="false" (get-html-content)="onChangeEditorData($event)" [set-html-content]="currentPO.TermsConditions" panel-height="240px"></danphe-ckeditor>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mt20 t-wrap">
+            <table class="inv_table">
+              <tr>
+                <td class="text-right"><b>SubTotal:</b></td>
+                <td>
+                  <div class="form-group">
+                    <div style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                      {{currentPO.SubTotal | number :'1.0-2'}}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right"><b>VAT:</b></td>
+                <td>
+                  <div class="form-group">
+                    <div style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                      {{currentPO.VAT | number :'1.0-2'}}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right"><b>Total Amount:</b></td>
+                <td>
+                  <div class="form-group">
+                    <div style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                      {{currentPO.TotalAmount | number :'1.0-2'}}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-right"><b>Remarks:</b></td>
+                <td>
+                  <div class="form-group">
+                    <input [(ngModel)]="currentPO.PORemark" class="form-control" name="Remarks" type="text">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" *ngIf="(!EditPO)||(EditPO && currentPO?.InvoiceHeaderId)">
+                  <select-invoice-header [Module]="'Inventory'" [SelectedHeaderId]="currentPO.InvoiceHeaderId" (call-back)="CallBackInvoiceHeader($event)">
+                  </select-invoice-header>
+                </td>
+              </tr>
+              <tr class="dot">
+                <td class="text-capitalize text-right" colspan="2">
+                  <b>In Words :</b>{{currentPO.TotalAmount | number :'1.0-2' | NumberInWords}} Only.
+                </td>
+              </tr>
+            </table>
+            <div class="text-right mt20 ">
+              <input id="PurchaseOrderbtn" *ngIf="EditPO" type="button" class="btn btn-warning" (click)="UpdatePurchaseOrder()" [disabled]="loading" value="Update Purchase Order" />
+              <input id="PurchaseOrderbtn" *ngIf="!EditPO" type="button" class="btn green btn-success margin-7-hr" (click)="AddPurchaseOrder()" [disabled]="loading" value="ADD Purchase Order" />
+              <input type="button" class="btn btn-danger" (click)="Cancel()" value="Discard Changes">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp" (callback-add)="OnNewItemAdded($event)"></item-add>
+
+<!-- NBB- :20 Apr : Temp- Fixing prod build error
+Code added into Changeset 3717
+showAddVendorPopUp, showAddTermsPopUp variable used but not in respective component
+so, please fix this and then remove this commment as soon as possible
+now commenting code for fixing
+-->
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)">
+</vendor-add>
+<terms-add *ngIf="showAddTermsPopUp" [showAddPage]="showAddTermsPopUp" (callback-add)="OnNewTermsAdded($event)">
+</terms-add>

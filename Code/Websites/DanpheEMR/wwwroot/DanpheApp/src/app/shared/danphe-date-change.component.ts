@@ -8,7 +8,7 @@ import { NepaliCalendarService } from "./calendar/np/nepali-calendar.service";
 import * as moment from 'moment/moment';
 @Component({
     selector: 'danphe-date-change',
-    template: `<button class="no-print hidden-print" (click)="ChangeDate()" title="Click to change Date Format." 
+    template: `<button *ngIf="showAdBsButton" class="no-print hidden-print" (click)="ChangeDate()" title="Click to change Date Format." 
     style="cursor: pointer;
     background: #9fdf7e;
     color: white;
@@ -44,7 +44,9 @@ export class DanpheDateChangeComponent {
     public currentDateFormatValue: string = "en";//en,np
     public currDateFormatLabel: string = "AD";
     public actionValue:string = "YYYY-MM-DD";
+    public showAdBsButton:boolean =true;
     constructor(private coreService : CoreService,public nepaliCalendarServ: NepaliCalendarService) {
+        this.showAdBsButton=this.coreService.showCalendarADBSButton;
     }
 
     ngOnInit() {

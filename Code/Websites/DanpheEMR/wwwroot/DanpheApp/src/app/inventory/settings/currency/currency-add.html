@@ -22,7 +22,8 @@
                                                [(ngModel)]="CurrentCurrency.CurrencyCode"
                                                formControlName="CurrencyCode"
                                                id="CurrencyCode"
-                                               placeholder="CurrencyCode" />
+                                               placeholder="CurrencyCode"
+                                               (keyup.enter)="FocusElementById('AddCurrency')"  />
                                         <span class="color-red font-sm" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','required') || !(CurrentCurrency.IsDirty('CurrencyCode'))">CurrencyCode is required</span>
                                         <span class="color-red font-sm" *ngIf="CurrentCurrency.IsDirty('CurrencyCode')" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','maxlength')"> Length is not proper</span>
                                     </div>
@@ -54,8 +55,8 @@
                                     </div>
                                 </div>
                                 <div class="form-actions">
-                                    <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddCurrency()" value="Add Currency" [disabled]="loading" />
-                                    <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" />
+                                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddCurrency()" value="Add Currency" [disabled]="loading" id="AddCurrency" />
+                                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" id="AddCurrency" />
                                 </div>
                         </div>
                     </form>

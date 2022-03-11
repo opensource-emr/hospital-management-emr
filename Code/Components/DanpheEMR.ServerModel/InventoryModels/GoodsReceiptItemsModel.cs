@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DanpheEMR.ServerModel
 {
-   public class GoodsReceiptItemsModel
+    public class GoodsReceiptItemsModel
     {
         [Key]
         public int GoodsReceiptItemId { get; set; }
@@ -17,6 +17,7 @@ namespace DanpheEMR.ServerModel
         public int ItemId { get; set; }
         public string BatchNO { get; set; }
         public DateTime? ExpiryDate { get; set; }
+        public double ArrivalQuantity { get; set; }
         public double ReceivedQuantity { get; set; }
         public double FreeQuantity { get; set; }
         public double RejectedQuantity { get; set; }
@@ -35,10 +36,10 @@ namespace DanpheEMR.ServerModel
         public int CounterId { get; set; }
         public decimal? OtherCharge { get; set; }
         public virtual ItemMasterModel Item { get; set; }
-        public  GoodsReceiptModel GoodsReceipt { get; set; }
+        public GoodsReceiptModel GoodsReceipt { get; set; }
         public bool? IsTransferredToACC { get; set; }
         public int? ModifiedBy { get; set; }
-        public DateTime? ModifiedOn {get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public DateTime? GRItemDate { get; set; }
         [NotMapped]
         public string ItemName { get; set; }
@@ -51,5 +52,29 @@ namespace DanpheEMR.ServerModel
         public bool IsActive { get; set; }
         public int? CancelledBy { get; set; }
         public DateTime? CancelledOn { get; set; }
+
+        [NotMapped]
+        public int? DonationId { get; set; }
+
+
+        [NotMapped]
+        public string MSSNO { get; set; }
+
+        ///  Tilaganga Hospital 
+        public DateTime? ManufactureDate { get; set; }
+        public DateTime? SamplingDate { get; set; }
+
+        public int NoOfBoxes { get; set; }
+        public int SamplingQuantity { get; set; }
+        public string IdentificationLabel { get; set; }
+        public string IsSamplingLabel { get; set; }
+
+        public string SamplingBoxes { get; set; }
+        public int SampleRemoved { get; set; }
+        public string MaterialNO { get; set; }
+        public int? StockId { get; set; }
+        public string GRItemSpecification { get; set; }
+        public string Remarks { get; set; }
+        public string ItemCategory { get; set; }//sud:17Sept'21: For Capital/Consumable GR Merging
     }
 }

@@ -28,7 +28,7 @@ export class DailyItemDispatchComponent {
     public msgBoxServ: MessageboxService,
     public reportServ: ReportingService
   ) {
-    this.LoadStoreList();
+    this.LoadInventoryStores();
     this.CurrentItemDispatch.FromDate = moment().format('YYYY-MM-DD');
     this.CurrentItemDispatch.ToDate = moment().format('YYYY-MM-DD');
     this.DailyItemDispatchReportColumns = this.reportServ.reportGridCols.DailyItemDispatchReport;
@@ -42,21 +42,19 @@ export class DailyItemDispatchComponent {
     return html;
   }
 
-  LoadStoreList() {
-    this.inventoryBLService.ShowVendorList()
+  LoadInventoryStores() {
+    this.StoreList = [];
+    this.inventoryBLService.LoadInventoryStores()
       .subscribe(res =>
         this.CallBackGetStoreList(res));
   }
 
   CallBackGetStoreList(res) {
     if (res.Status == 'OK') {
-      this.StoreList = [];
       if (res && res.Results) {
-        res.Results.forEach(a => {
-          this.StoreList.push({
-            "StoreId": a.StoreId, "StoreName": a.Name
-          });
-        });
+        var storeList: any[] = [];
+        storeList = res.Results;
+        this.StoreList = storeList.map(s => { return { StoreId: s.StoreId, StoreName: s.Name } });
       }
     }
     else {

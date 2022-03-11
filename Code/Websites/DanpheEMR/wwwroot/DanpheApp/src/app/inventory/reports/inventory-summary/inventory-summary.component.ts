@@ -31,6 +31,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         OpeningValue: 0, OpeningQuantity: 0, PurchaseValue: 0, PurchaseQuantity: 0, StockManageInValue: 0, StockManageInQuantity: 0, StockManageOutValue: 0,
         StockManageOutQuantity: 0, DispatchValue: 0, DispatchQuantity: 0, ClosingValue: 0, ClosingQuantity: 0, ConsumptionValue: 0, ConsumptionQuantity: 0,
     };
+    public loading: boolean = false;
     constructor(public inventoryBLService: InventoryReportsBLService,
         public inventoryDLService: InventoryReportsDLService,
         public msgBoxServ: MessageboxService, public coreService: CoreService,
@@ -116,16 +117,18 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         }
     }
     ShowInventorySummary() {
-
+        this.loading = true;
         this.inventoryBLService.ShowInventorySummary(this.FromDate, this.ToDate, this.fiscalYearId)
             .map(res => res)
             .subscribe(
                 res => this.Success(res),
                 res => this.Error(res)
             );
+        // this.loading = false;
     }
     Error(err) {
         this.msgBoxServ.showMessage("error", [err]);
+        this.loading = false;
     }
     Success(res) {
         if (res.Status == "OK" && res.Results.length > 0) {
@@ -155,6 +158,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         else {
             this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
         }
+        this.loading = false;
 
     }
 
@@ -177,7 +181,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
         var closeValue = 0;
         var closeQty = 0;
-       if (this.ConsumptionOrDispatch == "consumption") {
+        if (this.ConsumptionOrDispatch == "consumption") {
             closeValue = grandTotal[0].ConsumptionValue
             closeQty = grandTotal[0].ConsumptionQty
         }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,36 +7,49 @@ namespace DanpheEMR.ServerModel
     public class PHRMStoreStockModel
     {
         [Key]
-        public int StoreStockId { get; set; }
-        public int StoreId { get; set; }
-        public String StoreName { get; set; }
-        public int? ItemId { get; set; }
-        public string ItemName { get; set; }
-        public string BatchNo { get; set; }
-        public DateTime? ExpiryDate { get; set; }
-        public double Quantity { get; set; }
-        public double? FreeQuantity { get; set; }
-        public decimal? Price { get; set; }
-        public double DiscountPercentage { get; set; }
-        public double VATPercentage { get; set; }
-        public double? CCCharge { get; set; }
-        public decimal SubTotal { get; set; }
-        public decimal TotalAmount { get; set; }
-        public string InOut { get; set; }
-        public int? ReferenceNo { get; set; }
-        public DateTime? ReferenceItemCreatedOn { get; set; }
-        public string TransactionType { get; set; }
-        public int CreatedBy { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public int? ModifiedBy { get; set; }
-        public DateTime? ModifiedOn { get; set; }
-        public decimal? MRP { get; set; }
-        public int? GoodsReceiptItemId { get; set; }
-        public string Remark { get; set; }
-        public Boolean? IsActive { get; set; }
-        [NotMapped]
-        public double? UpdatedQty { get; set; }
-        [NotMapped]
-        public int DispensaryId { get; set; }
+        public int? StoreStockId { get; set; }
+        public int StoreId { get; private set; }
+        public int StockId { get; private set; }
+        public int ItemId { get; private set; }
+        public double AvailableQuantity { get; private set; }
+        public double UnConfirmedQty_In { get; private set; }
+        public double UnConfirmedQty_Out { get; private set; }
+        public bool IsActive { get; private set; }
+        public PHRMStockMaster StockMaster { get; set; }
+        public PHRMStoreStockModel() { } // required for LINQ operations
+        private PHRMStoreStockModel(int? stockId, int storeId, int? itemId, double? quantity)
+        {
+            // if-guards
+            if (quantity == null) throw new InvalidOperationException("Cannot insert null value in Quantity field for StoreStock.");
+
+            StockId = stockId.Value;
+            StoreId = storeId;
+            ItemId = itemId.Value;
+            AvailableQuantity = quantity.Value;
+            IsActive = true;
+        }
+        public PHRMStoreStockModel(PHRMStockMaster stockMaster, int storeId, double? quantity) : this(stockMaster.StockId, storeId, stockMaster.ItemId, quantity)
+        {
+            // if-guards
+            if (stockMaster.StockId == null || stockMaster.ItemId == null) throw new InvalidOperationException("Cannot insert null value in StockId or ItemId field for StoreStock.");
+            StockMaster = stockMaster;
+        }
+
+        public void UpdateAvailableQuantity(double newQty)
+        {
+            AvailableQuantity = newQty;
+        }
+        public void IncreaseUnconfirmedQty(double inQty, double outQty)
+        {
+            if (inQty < 0 || outQty < 0) throw new InvalidOperationException("Can not insert negative value");
+            UnConfirmedQty_In += inQty;
+            UnConfirmedQty_Out += outQty;
+        }
+        public void DecreaseUnconfirmedQty(double inQty, double outQty)
+        {
+            if (inQty < 0 || outQty < 0) throw new InvalidOperationException("Can not insert negative value");
+            UnConfirmedQty_In -= inQty;
+            UnConfirmedQty_Out -= outQty;
+        }
     }
 }

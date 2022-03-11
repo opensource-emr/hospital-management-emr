@@ -167,7 +167,7 @@ export class phrmitemaddComponent {
                 this.CurrentItem.ReOrderQuantity = this.selectedItem.ReOrderQuantity;
                 this.CurrentItem.MinStockQuantity = this.selectedItem.MinStockQuantity;
                 this.CurrentItem.BudgetedQuantity = this.selectedItem.BudgetedQuantity;
-                this.CurrentItem.VATPercentage = this.selectedItem.VATPercentage;
+                this.CurrentItem.PurchaseVATPercentage = this.selectedItem.PurchaseVATPercentage;
                 this.CurrentItem.IsVATApplicable = this.selectedItem.IsVATApplicable;
                 this.CurrentItem.IsActive = this.selectedItem.IsActive;
                 this.CurrentItem.GenericId = this.selectedItem.GenericId;

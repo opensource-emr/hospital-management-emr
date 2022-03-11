@@ -10,8 +10,7 @@ import { VerificationActor } from '../requisition-details/inventory-requisition-
 import { GoodsReceipt } from '../../../inventory/shared/goods-receipt.model';
 import { GoodsReceiptItems } from '../../../inventory/shared/goods-receipt-item.model';
 import { CommonFunctions } from '../../../shared/common.functions';
-import { VendorMaster } from '../../../inventory/shared/vendor-master.model';
-import * as moment from 'moment';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   templateUrl: './goods-receipt-verify.html',
@@ -24,9 +23,14 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
   public VerificationRemarks: string = "";
   public isVerificationAllowed: boolean = false;
   public loading: boolean = false;
-  public headerDetail: { hospitalName; address; email; PANno; tel; DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public nextVerifiersPermission: string = "";
   public CopyOfReceivedItemsQuantity: Array<{ ReceivedItemId; ReceivedQuantity; RejectedQuantity; }> = [];
+  verificationForm = new FormGroup({ VerificationRemarks: new FormControl('', Validators.required) });
+  showFreeQty: boolean = false;
+  showCCCharge: boolean = false;
+  showDiscount: boolean = false;
+
   constructor(
     public verificationService: VerificationService,
     public verificationBLService: VerificationBLService,
@@ -35,8 +39,10 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
     public messageBoxService: MessageboxService,
     public router: Router,
     public routeFromService: RouteFromService,
-    public changeDetector: ChangeDetectorRef
-  ) { this.GetInventoryBillingHeaderParameter(); }
+    public changeDetector: ChangeDetectorRef) {
+    this.GetInventoryBillingHeaderParameter();
+    this.checkGRCustomization();
+  }
 
   ngOnDestroy(): void {
     this.verificationService.GoodsReceipt = new GoodsReceipt();
@@ -135,9 +141,7 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
     }
   }
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(
-      a => a.ParameterName == "Inventory BillingHeader"
-    ).ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == "Inventory Receipt Header").ParameterValue;
     if (paramValue) this.headerDetail = JSON.parse(paramValue);
     else
       this.messageBoxService.showMessage("error", [
@@ -150,26 +154,36 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
   }
   ApproveGoodsReceipt() {
     if (this.CheckForValidItemQuantity()) {
-      this.loading = true;
-      this.GoodsReceipt.GoodsReceiptItem = this.GoodsReceiptVM.ReceivedItemList;
-      this.GoodsReceipt.GoodsReceiptItem.forEach(gritem => { gritem.RejectedQuantity = this.CopyOfReceivedItemsQuantity.find(a => a.ReceivedItemId == gritem.GoodsReceiptItemId).ReceivedQuantity - gritem.ReceivedQuantity });
-      this.GoodsReceipt.CurrentVerificationLevelCount++;
-      this.verificationBLService.ApproveGR(this.GoodsReceipt, this.VerificationRemarks)
-        .subscribe(res => {
-          if (res.Status == "OK") {
-            this.messageBoxService.showMessage("Success", [`Goods Receipt ${this.GoodsReceipt.GoodsReceiptNo} is approved successfully.`])
-            if (this.GoodsReceipt.CurrentVerificationLevelCount == this.GoodsReceipt.MaxVerificationLevel)
-              this.messageBoxService.showMessage("Notice-Message", ["Stock added in Inventory."]);
-            this.RouteBack();
-          }
-          else {
-            this.messageBoxService.showMessage("Failed", ["Something went wrong..."]);
-          }
-          this.loading = false;
-        }, err => {
-          this.messageBoxService.showMessage("Error", ["Something went wrong..."]);
-          this.loading = false;
-        })
+      for (var b in this.verificationForm.controls) {
+        this.verificationForm.controls[b].markAsDirty();
+        this.verificationForm.controls[b].updateValueAndValidity();
+      }
+      if (this.verificationForm.invalid) {
+        this.messageBoxService.showMessage("Failed", ["Check all *mandatory fields."])
+      }
+      else {
+        this.loading = true;
+        this.GoodsReceipt.GoodsReceiptItem = this.GoodsReceiptVM.ReceivedItemList;
+        this.GoodsReceipt.GoodsReceiptItem.forEach(gritem => { gritem.RejectedQuantity = this.CopyOfReceivedItemsQuantity.find(a => a.ReceivedItemId == gritem.GoodsReceiptItemId).ReceivedQuantity - gritem.ReceivedQuantity });
+        this.GoodsReceipt.CurrentVerificationLevelCount++;
+        this.VerificationRemarks = this.verificationForm.get("VerificationRemarks").value;
+        this.verificationBLService.ApproveGR(this.GoodsReceipt, this.VerificationRemarks)
+          .subscribe(res => {
+            if (res.Status == "OK") {
+              this.messageBoxService.showMessage("Success", [`Goods Receipt ${this.GoodsReceipt.GoodsReceiptNo} is approved successfully.`])
+              if (this.GoodsReceipt.CurrentVerificationLevelCount == this.GoodsReceipt.MaxVerificationLevel)
+                this.messageBoxService.showMessage("Notice-Message", ["Stock added in Inventory."]);
+              this.RouteBack();
+            }
+            else {
+              this.messageBoxService.showMessage("Failed", ["Something went wrong..."]);
+            }
+            this.loading = false;
+          }, err => {
+            this.messageBoxService.showMessage("Error", ["Something went wrong..."]);
+            this.loading = false;
+          })
+      }
     }
   }
   private CheckForValidItemQuantity(): boolean {
@@ -181,10 +195,16 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
   }
 
   RejectGoodsReceipt() {
-    if (!this.VerificationRemarks || this.VerificationRemarks.trim() == '') {
-      this.messageBoxService.showMessage("failed", ["Remarks is Compulsory for Cancellation"]);
-    } else {
+    for (var b in this.verificationForm.controls) {
+      this.verificationForm.controls[b].markAsDirty();
+      this.verificationForm.controls[b].updateValueAndValidity();
+    }
+    if (this.verificationForm.invalid) {
+      this.messageBoxService.showMessage("Failed", ["Check all *mandatory fields."])
+    }
+    else {
       this.loading = true;
+      this.VerificationRemarks = this.verificationForm.get("VerificationRemarks").value;
       this.verificationBLService.RejectGR(this.GoodsReceipt.GoodsReceiptID, this.GoodsReceipt.CurrentVerificationLevel, this.GoodsReceipt.CurrentVerificationLevelCount + 1, this.GoodsReceipt.MaxVerificationLevel, this.VerificationRemarks)
         .subscribe(res => {
           if (res.Status == "OK") {
@@ -300,6 +320,21 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
     });
     this.GoodsReceipt.OtherCharges = this.GoodsReceipt.InsuranceCharge + this.GoodsReceipt.CarriageFreightCharge + this.GoodsReceipt.PackingCharge + this.GoodsReceipt.TransportCourierCharge + this.GoodsReceipt.OtherCharge;
     this.GoodsReceipt.TotalAmount += this.GoodsReceipt.OtherCharges;
+  }
+  checkGRCustomization() {
+    let GRParameterStr = this.coreService.Parameters.find(p => p.ParameterName == "GRFormCustomization" && p.ParameterGroupName == "Procurement");
+    if (GRParameterStr != null) {
+      let GRParameter = JSON.parse(GRParameterStr.ParameterValue);
+      if (GRParameter.showFreeQuantity == true) {
+        this.showFreeQty = true;
+      }
+      if (GRParameter.showCCCharge == true) {
+        this.showCCCharge = true;
+      }
+      if (GRParameter.showDiscount == true) {
+        this.showDiscount = true;
+      }
+    }
   }
 }
 export class InventoryGoodsReceiptVM {

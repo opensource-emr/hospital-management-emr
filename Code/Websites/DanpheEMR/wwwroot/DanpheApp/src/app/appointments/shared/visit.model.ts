@@ -27,7 +27,6 @@ export class Visit {
   public VisitStatus: string = null;
   public VisitTime: string = moment().add(5, 'minutes').format('HH:mm');
   public VisitDuration: number = 0;
-  // public Patient: Patient = new Patient();
   public Patient: Patient = null;
   public AppointmentId: number = null;
   public BillingStatus: string = null;
@@ -50,13 +49,18 @@ export class Visit {
   public IsValidSelDepartment: boolean = true;
   public IsSignedVisitSummary: boolean = false;
   public TransferredProviderId: number = null;
-  public ClaimCode: string = null;
+  public ClaimCode: number = null;//sud:1-oct'21: Changed datatype from String to Number in all places
   //used to create billingTransaction during transfer/refer
   public CurrentCounterId: number = null;
   //used for conclude visit
   public ConcludeDate: string = null;
   public ERTabName: string = null;
 
+  public DeptRoomNumber: string = null;
+  public Ins_HasInsurance: boolean = null;
+  public IsLastClaimCodeUsed: boolean = false;//sud:1-Oct'21-- Needed to 
+  public ShortName:string = null;
+  public PatientCode:string = null;
   public IsDirty(fieldname): boolean {
     if (fieldname == undefined) {
       return this.VisitValidator.dirty;
@@ -98,10 +102,10 @@ export class Visit {
       { validator: this.DateTimeValueValidator('VisitDate', 'VisitTime') } //Hom 19 April 2019
     );
     //to increment the time as the system time passes
-    setInterval(() => {
-      if (!this.IsDirty("VisitTime"))
-        this.VisitTime = moment().add(5, 'minutes').format('HH:mm');
-    }, 1000)
+    // setInterval(() => {
+    //   if (!this.IsDirty("VisitTime"))
+    //   this.VisitTime = moment().add(5, 'minutes').format('HH:mm');
+    // },1000)
   }
   public DateValidator(control: FormControl): { [key: string]: boolean } {
     if (control) {
@@ -158,6 +162,17 @@ export class Visit {
   }
   ngOnDestroy() {
     clearInterval();
+  }
+  public EnableControl(formControlName: string, enabled: boolean) {
+    let currCtrol = this.VisitValidator.controls[formControlName];
+    if (currCtrol) {
+      if (enabled) {
+        currCtrol.enable();
+      }
+      else {
+        currCtrol.disable();
+      }
+    }
   }
 }
 

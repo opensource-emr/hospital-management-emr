@@ -17,40 +17,61 @@ export class DanpheAutoComplete {
     // ...
   }
 
-  filter(list: any[], keyword: string, matchFormatted: boolean) {
-     var data =   list.filter(
-          el => {
-              let objStr = matchFormatted ? this.getFormattedListItem(el).toLowerCase() : JSON.stringify(el).toLowerCase();
-              keyword = keyword.toLowerCase();
-              //console.log(objStr, keyword, objStr.indexOf(keyword) !== -1);
-              return objStr.indexOf(keyword) !== -1;
+  filter(list: any[], keyword: string, matchFormatted: boolean, propertyNameCsvToMatch: string) {
+    var data = list.filter(
+      el => {
+
+        let objStr = "";
+        //sud:23'May'21--modified to accomodate propertyname matching case.
+        //if both matchformatted is true and propertyname to match has some value, then split the csv and match with values(concatenated) of property names .
+        //else if only matchFormatted is provided, then match with the formatted value of given element.
+        //else do general match with JSON-Stringified-Object.
+        if (matchFormatted && propertyNameCsvToMatch) {
+          let propArr = propertyNameCsvToMatch.split(",");
+          //we can assume that correct propertynames are provided from the page which uses this.
+          //to exclude unwanted values from filtering.
+          for (var i = 0; i < propArr.length; i++) {
+            objStr += propArr[i] ? (el[propArr[i]] ? el[propArr[i]].toLowerCase() : "") : "";
           }
-      )
-      return data;
-      //sort((a: string, b: string) => {
-          
-      //        if ((a == keyword) || (a.startsWith(keyword))) {
-      //            return -1;
-      //        }
-      //          if (b.endsWith(keyword)) {
-      //            return 1;
-      //          }
-      //          var regmiddle = new RegExp(".*" + keyword + ".*");
-      //          var ismiddlea = regmiddle.test(a);
-      //          var ismiddleb = regmiddle.test(b);
-      //          if (ismiddlea && !ismiddleb) {
-      //              return -1;
-      //          }
-      //          if (!ismiddlea && ismiddleb) {
-      //              return 1;
-      //          }
-      //          if (ismiddlea && ismiddleb) {
-      //              return 0;
-      //          }         
-              
-      //        return 0; 
-          
-      //    });
+        }
+        else if (matchFormatted) {
+          objStr = this.getFormattedListItem(el).toLowerCase();
+        }
+        else {
+          objStr = JSON.stringify(el).toLowerCase();
+        }
+
+        //let objStr = matchFormatted ? this.getFormattedListItem(el).toLowerCase() : ;
+        keyword = keyword.toLowerCase();
+        //console.log(objStr, keyword, objStr.indexOf(keyword) !== -1);
+        return objStr.indexOf(keyword) !== -1;
+      }
+    )
+    return data;
+    //sort((a: string, b: string) => {
+
+    //        if ((a == keyword) || (a.startsWith(keyword))) {
+    //            return -1;
+    //        }
+    //          if (b.endsWith(keyword)) {
+    //            return 1;
+    //          }
+    //          var regmiddle = new RegExp(".*" + keyword + ".*");
+    //          var ismiddlea = regmiddle.test(a);
+    //          var ismiddleb = regmiddle.test(b);
+    //          if (ismiddlea && !ismiddleb) {
+    //              return -1;
+    //          }
+    //          if (!ismiddlea && ismiddleb) {
+    //              return 1;
+    //          }
+    //          if (ismiddlea && ismiddleb) {
+    //              return 0;
+    //          }         
+
+    //        return 0; 
+
+    //    });
   }
 
   getFormattedListItem(data: any) {

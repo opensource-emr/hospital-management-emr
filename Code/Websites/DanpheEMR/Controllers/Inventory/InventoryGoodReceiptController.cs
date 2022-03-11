@@ -70,7 +70,7 @@ namespace DanpheEMR.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]GoodsReceiptModel value)
+        public IActionResult Post([FromBody] GoodsReceiptModel value)
         {
             try
             {
@@ -81,17 +81,17 @@ namespace DanpheEMR.Controllers
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 value.CreatedBy = currentUser.EmployeeId;
                 value.IsCancel = false;
-                if (value !=null)
+                if (value != null)
                 {
                     //Nagesh: we are creating gr without po directly , if we need functionality like first create po and then gr 
                     //po from background
                     //var poResponse = _inventoryGoodReceiptService.AddPOAndPOItemsByGRId(value);
                     //value.PurchaseOrderId = poResponse.PurchaseOrderId;
-                    var grResponse = _inventoryGoodReceiptService.AddGoodsReceipt(value);
+                    var grResponse = _inventoryGoodReceiptService.AddGoodsArrival(value);
                     //add po with po items when we directly create goods receipt 
                     responseData.Results = grResponse.GoodsReceiptID;
                     responseData.Status = "OK";
-                }              
+                }
             }
             catch (Exception ex)
             {
@@ -100,12 +100,13 @@ namespace DanpheEMR.Controllers
             }
             return Ok(responseData);
         }
-        [HttpPost("~/api/UpdateGoodReceipt")]
-        public IActionResult UpdateGoodReceipt([FromBody]GoodsReceiptModel value)
+        [HttpPut]
+        public IActionResult UpdateGoodReceipt([FromBody] GoodsReceiptModel value)
         {
             try
             {
-                responseData.Results = _inventoryGoodReceiptService.UpdateGoodsReceipt(value);
+                RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                responseData.Results = _inventoryGoodReceiptService.UpdateGoodsReceipt(value, currentUser);
                 responseData.Status = "OK";
             }
             catch (Exception ex)
@@ -116,5 +117,25 @@ namespace DanpheEMR.Controllers
             return Ok(responseData);
         }
 
+        // POST: Post the verified GR to INV Stock table ie Received GR.
+        [HttpPost]
+        [Route("~/api/InventoryGoodReceipt/ReceiveGoodsReceipt/{GoodsReceiptId}")]
+        public IActionResult ReceiveGoodsReceipt([FromRoute] int GoodsReceiptId, string ReceivedRemarks)
+        {
+            var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            try
+            {
+                _inventoryGoodReceiptService.ReceiveGoodsReceipt(GoodsReceiptId, currentUser, ReceivedRemarks);
+                responseData.Status = "OK";
+                responseData.Results = GoodsReceiptId;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message.ToString();
+            }
+
+            return Ok(responseData);
+        }
     }
 }

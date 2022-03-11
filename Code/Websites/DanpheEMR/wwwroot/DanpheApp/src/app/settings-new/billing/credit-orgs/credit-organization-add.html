@@ -11,10 +11,10 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Organization Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input type="text" name="" required value="" class="form-control" maxlength="40"
+                  <input type="text"  name="" required value="" class="form-control" maxlength="40"
                                                [(ngModel)]="CurrentCreditOrganization.OrganizationName"
                                                formControlName="OrganizationName"
-                                               id="OrganizationName" placeholder="Organization Name" />
+                                               id="OrganizationName" (keyup.enter)="GoToNextInput('savebtn')" placeholder="Organization Name" />
                   <span Class="color-red font-sm" [hidden]="CurrentCreditOrganization.IsValidCheck('OrganizationName','required') || !(CurrentCreditOrganization.IsDirty('OrganizationName'))">Enter Organization Name</span> </div>
               </div>
               <div class="form-group">
@@ -33,8 +33,8 @@
               </div>
             </div>
             <div class="panel-footer">
-              <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
-              <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              <input id="savebtn"  type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+              <input id="savebtn"  type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
             </div>
           </form>
         </div>

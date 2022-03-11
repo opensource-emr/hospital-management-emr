@@ -20,6 +20,7 @@ import { LabReportVM } from "../reports/lab-report-vm";
 import { PatientsDLService } from "../../patients/shared/patients.dl.service";
 import { VisitDLService } from "../../appointments/shared/visit.dl.service";
 import { InPatientLabTest } from "./InpatientLabTest";
+import { LabEmailModel } from "./lab-email.model";
 //Note: mapping is done here by blservice, component will only do the .subscribe().
 @Injectable()
 export class LabsBLService {
@@ -30,7 +31,7 @@ export class LabsBLService {
     public securityService: SecurityService,
     public visitDLService: VisitDLService,
     public coreDlService: CoreDLService
-  ) {}
+  ) { }
   //getting the labtest, labgroup and labcategory
   public GetAllLabTests() {
     return this.labDLService.GetAllLabTests().map((res) => {
@@ -45,8 +46,8 @@ export class LabsBLService {
   }
 
   //getting the requsitions...(used in requsition.component)
-  public GetLabRequisition() {
-    return this.labDLService.GetLabRequisition().map((res) => {
+  public GetLabRequisition(frmdate, todate) {
+    return this.labDLService.GetLabRequisition(frmdate, todate).map((res) => {
       return res;
     });
   }
@@ -62,7 +63,8 @@ export class LabsBLService {
     visitType: string,
     runNumberType: string,
     requisitionId: number,
-    wardName: string
+    wardName: string,
+    isUnderInsurance: boolean
   ) {
     return this.labDLService
       .GetLabSamplesWithCodeByPatientId(
@@ -70,17 +72,8 @@ export class LabsBLService {
         visitType,
         runNumberType,
         requisitionId,
-        wardName
+        wardName, isUnderInsurance
       )
-      .map((res) => {
-        return res;
-      });
-  }
-
-  // getting the test of selected patient on basis of patientId....(used in collect-sample.component)
-  GetLabSamplesByPatientId(patientId: number, visitType: string) {
-    return this.labDLService
-      .GetLabSamplesByPatientId(patientId, visitType)
       .map((res) => {
         return res;
       });
@@ -91,21 +84,30 @@ export class LabsBLService {
     visitType: string,
     sampleDate: string,
     runNumberType: string,
-    patId: number
+    patId: number, underInsurance: boolean
   ) {
     return this.labDLService
-      .GetLatestSampleCode(visitType, sampleDate, runNumberType, patId)
+      .GetLatestSampleCode(visitType, sampleDate, runNumberType, patId, underInsurance)
       .map((res) => {
         return res;
       });
   }
 
   //getting Pending Lab results  whose labOrder is not final and sample code is not null..(used in lab-tests-pending-lab-results.component)
-  public GetPendingLabResults() {
-    return this.labDLService.GetPendingLabResults().map((res) => {
+  public GetPendingLabResults(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService.GetPendingLabResults(frmdate, todate, catListStr).map((res) => {
       return res;
     });
   }
+
+  public GetPendingLabResultsForWorkList(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService.GetPendingLabResultsForWorkList(frmdate, todate, catListStr).map((res) => {
+      return res;
+    });
+  }
+
   //getting multiple template under single parent where orderstatus is final and isprint is false..(used in patient-template-list.component)
   GetPatientTemplateList(patientId: number) {
     return this.labDLService.GetPatientTemplateList(patientId).map((res) => {
@@ -113,27 +115,65 @@ export class LabsBLService {
     });
   }
 
-  GetLabTestPendingReports(frmdate, todate) {
+  GetLabTestPendingReports(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
     return this.labDLService
-      .GetLabTestPendingReports(frmdate, todate)
+      .GetLabTestPendingReports(frmdate, todate, catListStr)
       .map((res) => {
         return res;
       });
   }
-  GetLabTestFinalReports(frmdate, todate, searchtxt = "") {
+
+  GetLabTestFinalReports(frmdate, todate, searchtxt = "", catIdList: Array<number> = [], isForLabMaster = false) {
+    var catListStr = JSON.stringify(catIdList);
     return this.labDLService
-      .GetLabTestFinalReports(frmdate, todate, searchtxt)
+      .GetLabTestFinalReports(frmdate, todate, searchtxt, catListStr, isForLabMaster)
       .map((res) => {
         return res;
       });
   }
+  GetPatientListInLabFinalReports(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService
+      .GetPatientListInLabFinalReports(frmdate, todate, catListStr)
+      .map((res) => {
+        return res;
+      });
+  }
+  GetPatientListForReportDispatch(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService
+      .GetPatientListForReportDispatch(frmdate, todate, catListStr)
+      .map((res) => {
+        return res;
+      });
+  }
+
+  GetFinalReportsInReportDispatchByPatId(patientId, frmdate, todate, catIdList) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService
+      .GetFinalReportsInReportDispatchByPatId(patientId, frmdate, todate, catListStr)
+      .map((res) => {
+        return res;
+      });
+  }
+
+  GetPatientList(frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService
+      .GetPatientList(frmdate, todate, catListStr)
+      .map((res) => {
+        return res;
+      });
+  }
+
   GetAllLabCategory() {
     return this.labDLService.GetAllLabCategory().map((res) => {
       return res;
     });
   }
 
-  GetTestListOfSelectedInPatient(patId: number, patVisitId: number, module: string) {    
+  GetTestListOfSelectedInPatient(patId: number, patVisitId: number, module: string) {
     return this.billingDLService.GetInPatientProvisionalItemList(patId, patVisitId, module).map((responseData) => {
       return responseData;
     })
@@ -177,6 +217,15 @@ export class LabsBLService {
       });
   }
 
+  GetTestListSummaryByPatientId(patientId: number, frmdate, todate, catIdList: Array<number> = []) {
+    var catListStr = JSON.stringify(catIdList);
+    return this.labDLService
+      .GetTestListSummaryByPatientId(patientId, frmdate, todate, catListStr)
+      .map((res) => {
+        return res;
+      });
+  }
+
   //getting report for patient view..(used in view-report.component)
   GetReportByTemplateId(templateId: number, patientId: number) {
     return this.labDLService
@@ -211,26 +260,21 @@ export class LabsBLService {
       return res;
     });
   }
-  public GetLastSampleCode(labTestSpecimen: string, requisitionId: number) {
-    return this.labDLService
-      .GetLastSampleCode(labTestSpecimen, requisitionId)
-      .map((res) => {
-        return res;
-      });
-  }
 
   public GetSampleCodeCompared(
     SampleNumber: number,
     visitType: string,
     sampleCreatedOn: string,
-    RunNumberType: string
+    RunNumberType: string,
+    isUnderIns: boolean
   ) {
     return this.labDLService
       .GetSampleCodeCompared(
         SampleNumber,
         visitType,
         sampleCreatedOn,
-        RunNumberType
+        RunNumberType,
+        isUnderIns
       )
       .map((res) => {
         return res;
@@ -243,6 +287,15 @@ export class LabsBLService {
         return res;
       });
   }
+
+  public GetReportFromListOfReqIdList(requisitionIdList: any) {
+    return this.labDLService
+      .GetReportFromListOfReqIdList(JSON.stringify(requisitionIdList))
+      .map((res) => {
+        return res;
+      });
+  }
+
   public GetDoctorsList() {
     return this.billingDLService.GetDoctorsList().map((res) => res);
   }
@@ -527,7 +580,7 @@ export class LabsBLService {
     });
   }
 
-  CancelLabItem(currentInpatientLabTest){
+  CancelLabItem(currentInpatientLabTest) {
     let data = JSON.stringify(currentInpatientLabTest);
     return this.labDLService.CancelLabItem(data).map((res) => {
       return res;
@@ -536,14 +589,14 @@ export class LabsBLService {
 
   SaveLabStickersHTML(
     printerName: string,
-    fileName: string,
+    filePath: string,
     stickerHtmlContent: string,
     numOfCopies: number
   ) {
     return this.labDLService
       .PostLabStickerHTML(
         printerName,
-        fileName,
+        filePath,
         stickerHtmlContent,
         numOfCopies
       )
@@ -641,4 +694,89 @@ export class LabsBLService {
     return this.labDLService.GetLabVendors();
   }
   //end: sud:16May'19--for lab-external vendors.
+
+  //activate lab
+  public ActivateLab(labId: number, labName: string) {
+    return this.labDLService.ActivateLab(labId, labName).map(res => {
+      return res;
+    });
+  }
+
+  public DeactivateLab() {
+    return this.labDLService.DeactivateLab().map(res => {
+      return res;
+    });
+  }
+
+  public TransfertToLab(reqId: number, labTypeName: string) {
+    return this.labDLService.TransfertToLab(reqId, labTypeName).map(res => {
+      return res;
+    });
+  }
+
+  public GetSamplesCollectedData(fromDate, toDate) {
+    return this.labDLService.GetSamplesCollectedData(fromDate, toDate).map(res => {
+      return res;
+    });
+  }
+
+  //for SMS
+  public GetSMSApplicableTest(fromDate, toDate) {
+    return this.labDLService.GetSMSApplicableTest(fromDate, toDate).map(res => {
+      return res;
+    });
+  }
+
+  public PostSMS(reqIdList: string) {
+    return this.labDLService.PostSMS(reqIdList).map(res => {
+      return res;
+    });
+  }
+
+  public GetSMSToBeSendMsg(reqId: string) {
+    let reqIdNum = +reqId;
+    return this.labDLService.GetSMSToBeSendMsg(reqIdNum).map(res => {
+      return res;
+    });
+  }
+
+  public GenerateSampleRunNumber(patLabSample: Array<PatientLabSample>, currentUser) {
+    return this.labDLService.GenerateSampleRunNumber(patLabSample, currentUser).map(res => {
+      return res;
+    })
+  }
+
+  public SendPdf(doc, reqId: number) {
+    //var data = JSON.stringify(doc);
+    return this.labDLService.SendPdf(doc, reqId).map(res => {
+      return res;
+    })
+  }
+  public sendEmail(email: LabEmailModel) {
+    let data: LabEmailModel = new LabEmailModel();
+    data = Object.assign(data, email);
+    var omited = _.omit(data, ['LabEmailValidator']);
+    return this.labDLService.SendEmail(omited)
+      .map(res => res);
+  }
+
+  uploadFile(url,patient,formData:FormData) {
+    return this.labDLService
+      .uploadFile(url,patient, formData)
+      .map((res) => {
+        return res;
+      });
+  }
+
+  TeleMedLogin(url,login){
+    return this.labDLService.TeleMedicineLogin(url,login).map((res)=>{
+      return res;
+    });
+  }
+
+  UpdateFileUploadStatus(requisitionIdList: Array<number>){
+    return this.labDLService.UpdateFileUploadStatus(JSON.stringify(requisitionIdList)).map((res) =>{
+      return res;
+    });
+  }
 }

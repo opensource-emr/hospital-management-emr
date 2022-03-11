@@ -96,6 +96,7 @@ namespace DanpheEMR.Controllers
                                         ServiceDepartmentId = srv.ServiceDepartmentId,
                                         ServiceDepartmentName = srv.ServiceDepartmentName,
                                         ServiceDepartmentShortName = srv.ServiceDepartmentShortName,
+                                        SrvDeptIntegrationName = srv.IntegrationName,
                                         ItemId = item.ItemId,
                                         ItemName = item.ItemName,
                                         ProcedureCode = item.ProcedureCode,
@@ -104,7 +105,8 @@ namespace DanpheEMR.Controllers
                                         DiscountApplicable = item.DiscountApplicable,
                                         Description = item.Description,
                                         IsDoctorMandatory = item.IsDoctorMandatory,
-                                        item.IsInsurancePackage
+                                        item.IsInsurancePackage,
+                                        IsErLabApplicable = item.IsErLabApplicable,//pratik:21Feb'21--For LPH
                                     }).ToList().OrderBy(a => a.ServiceDepartmentId).ThenBy(a => a.ItemId);
                     responseData.Status = "OK";
                     responseData.Results = itemList;
@@ -271,17 +273,19 @@ namespace DanpheEMR.Controllers
                 BillingDbContext billingDbContext = new BillingDbContext(connString);
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
 
-                if (reqType == "update-insurance-balance")
-                {
-                    BillingBL.UpdateInsuranceCurrentBalance(connString,
-                        patientId,
-                        insuranceProviderId,
-                        currentUser.EmployeeId,
-                        updatedInsBalance);
-                    responseData.Status = "OK";
-                }
+                //if (reqType == "update-insurance-balance")
+                //{
+                //    BillingBL.UpdateInsuranceCurrentBalance(connString,
+                //        patientId,
+                //        insuranceProviderId,
+                //        currentUser.EmployeeId,
+                //        updatedInsBalance);
+                //    responseData.Status = "OK";
+                //}
 
-                else if (reqType == "close-insurance-package")
+                //else 
+                
+                if (reqType == "close-insurance-package")
                 {
                     PatientInsurancePackageTransactionModel insPkg = billingDbContext.PatientInsurancePackageTransactions
                         .Where(ins => ins.PatientInsurancePackageId == patientInsurancePkgId).FirstOrDefault();

@@ -15,7 +15,8 @@
 										   [(ngModel)]="CurrentBedFeature.BedFeatureName"
 										   formControlName="BedFeatureName"
 										   [attr.disabled]="update ? '' : null"
-										   value="" placeholder="Enter Bed Feature Name" />
+                       value="" placeholder="Enter Bed Feature Name" 
+                       (keyup.enter)="SetFocusById('BedFeatureFullName')"/>
                   <span class="color-red font-sm" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureName','required') || !(CurrentBedFeature.IsDirty('BedFeatureName'))">Bed Feature Name is required</span>
                   <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedFeatureName')" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureName','maxlength')"> Length is not proper</div>
                 </div>
@@ -26,7 +27,8 @@
                   <input class="form-control" maxlength="100" type="text" id="BedFeatureFullName"
 														   [(ngModel)]="CurrentBedFeature.BedFeatureFullName"
 														   formControlName="BedFeatureFullName"
-														   value="" placeholder="Enter Bed Feature Full Name" />
+                               value="" placeholder="Enter Bed Feature Full Name"
+                               (keyup.enter)="SetFocusById('Price')" />
                   <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedFeatureFullName')" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureFullName','maxlength')"> Length is not proper</div>
                 </div>
               </div>
@@ -35,7 +37,8 @@
                 <div class="col-md-8">
                   <input type="number" name="" class="form-control" maxlength="30"
 														   [(ngModel)]="CurrentBedFeature.BedPrice" id="Price"
-														   placeholder="Enter Bed Price" formControlName="BedPrice" />
+                               placeholder="Enter Bed Price" formControlName="BedPrice"
+                               (keyup.enter)="SetFocusById('add')" />
                   <br />
                   <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedPrice')" [hidden]="CurrentBedFeature.IsValidCheck('BedPrice','required')"> Enter Price</div>
                 </div>
@@ -71,8 +74,10 @@
               
             </div>
 			  <div class="panel-footer">
-                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
-                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                <input type="button" id="add" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+               
+                <input type="button" id="add" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
+                
               </div>
           </form>
         </div>

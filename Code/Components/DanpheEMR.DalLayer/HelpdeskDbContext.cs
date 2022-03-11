@@ -97,15 +97,15 @@ namespace DanpheEMR.DalLayer
         }
         public List<WardInformationModel> GetWardInformation()
         {
-            var Data = Database.SqlQuery<WardInformationModel>("sp_WardInformation");
+            var Data = Database.SqlQuery<WardInformationModel>("SP_ADT_GetBedOccupanciesOfAllWards");
             return Data.ToList<WardInformationModel>();
         }
 
         #region Bed feature Report
-        public DataTable BedFeatureReprot()
+        public DataTable GetBedOccupancyOfWards()
         {
            
-            DataTable bedfeature = DALFunctions.GetDataTableFromStoredProc("ADT_BedFeature", this);
+            DataTable bedfeature = DALFunctions.GetDataTableFromStoredProc("SP_ADT_GetBedOccupanciesOfAllWards", this);
             return bedfeature;
         }
         #endregion

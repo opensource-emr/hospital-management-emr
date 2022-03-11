@@ -1,237 +1,204 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { SecurityService } from '../../security/shared/security.service';
 import { InventoryBLService } from "../shared/inventory.bl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-
-import { Requisition } from "../shared/requisition.model";
-import { RequisitionItems } from "../shared/requisition-items.model";
-import { ItemMaster } from "../shared/item-master.model";
 import { InventoryService } from '../shared/inventory.service';
-//import { VendorMaster } from "../shared/vendor-master.model";
-import { CoreBLService } from "../../core/shared/core.bl.service";
 import { WardSupplyBLService } from '../../wardsupply/shared/wardsupply.bl.service';
-import { RequisitionStockVMModel } from '../shared/requisition-stock-vm.model';
 import { DispatchItems } from '../shared/dispatch-items.model';
-import { StockModel } from '../shared/stock.model';
-import { StockTransaction } from '../shared/stock-transaction.model';
+import { ActivateInventoryService } from '../../shared/activate-inventory/activate-inventory.service';
+import { PHRMStoreModel } from '../../pharmacy/shared/phrm-store.model';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import * as moment from 'moment';
 @Component({
-
-  templateUrl: "../../view/inventory-view/DirectDispatch.html"  // "/InventoryView/RequisitionItems"
-
+  templateUrl: "./direct-dispatch.component.html"  // "/InventoryView/RequisitionItems"
 })
 export class DirectDispatchComponent {
-
-  ////binding logic
-  public currentRequItem: RequisitionItems = new RequisitionItems();
-  public requisition: Requisition = new Requisition();
-  public requisitionStockVM: RequisitionStockVMModel = new RequisitionStockVMModel();
-  public stockList: Array<any> = new Array<any>();
-  ////this Item is used for search button(means auto complete button)...
-  public ItemList: any;
-  ////this is to add or delete the number of row in ui
-  public rowCount: number = 0;
-  public checkIsItemPresent: boolean = false;
-  public StoreList: any;
-  public selectedStore: any;
-  //For Add Item --Yubraj 2nd April 2019
-  public index: number = 0;
-  public showAddItemPopUp: boolean = false;
-  //for double click issues.
-  public loading: boolean = false;
+  dispatchDate: string = moment().format('YYYY-MM-DD');
+  dispatchForm: FormGroup = new FormGroup({
+    dispatchDate: new FormControl(this.dispatchDate),
+    targetStore: new FormControl('', Validators.required),
+    remarks: new FormControl('', Validators.required),
+    receivedBy: new FormControl(''),
+    issueNo: new FormControl('')
+  });
+  dispatchItems: DispatchItems[] = [];
+  stockList: any[] = [];
+  substores: PHRMStoreModel[] = [];
+  showAddItemPopUp: boolean = false;
+  selectedStore: any = null;
+  loading: boolean = false;
+  selectedItemIndex: number = null;
+  canUserEnterDate: boolean = false;
 
   constructor(
-    public changeDetectorRef: ChangeDetectorRef,
-    public inventoryBLService: InventoryBLService,
-    public inventoryService: InventoryService,
-    public securityService: SecurityService,
-    public router: Router,
-    public messageBoxService: MessageboxService,
-    public coreBLService: CoreBLService, public wardBLService: WardSupplyBLService) {
-    this.GetStockDetailsList();
-    ////pushing currentPOItem for the first Row in UI 
-    this.AddRowRequest();
-    this.GetItemList();
-    this.GetActiveStoreList();
+    public changeDetectorRef: ChangeDetectorRef, public activeInventoryService: ActivateInventoryService,
+    public inventoryBLService: InventoryBLService, public inventoryService: InventoryService, public securityService: SecurityService,
+    public router: Router, public messageBoxService: MessageboxService, public wardBLService: WardSupplyBLService
+  ) {
+    this.canUserEnterDate = this.securityService.HasPermission('inventory-dispatch-backdate-entry-button');
+    this.getActiveStoreList();
+    this.getStockList();
+    this.addNewRow();
   }
+
+
   ////to load the item in the start
-  GetItemList() {
+  getStockList() {
     try {
-      this.ItemList = this.inventoryService.allItemList;
-      this.ItemList = this.ItemList.filter(item => item.IsActive == true);
-      if (this.ItemList.length == 0) {
-        this.messageBoxService.showMessage("failed", [
-          "failed to get Item.. please check log for details."
-        ]);
-      }
+      this.inventoryBLService.GetStockListForDirectDispatch(this.activeInventoryService.activeInventory.StoreId)
+        .subscribe(res => {
+          if (res.Status == "OK") {
+            this.stockList = res.Results;
+          }
+          else {
+            this.messageBoxService.showMessage("Failed", ["Failed to load the stock. Please check console."])
+            console.log(res.ErrorMessage);
+          }
+        })
     } catch (ex) {
       this.messageBoxService.showMessage("Failed", ["Something went wrong while loading the items"]);
     }
   }
 
-  GetActiveStoreList() {
+  getActiveStoreList() {
     this.wardBLService.GetActiveSubStoreList()
       .subscribe(res => {
         if (res.Status == "OK") {
-          this.StoreList = res.Results;
+          this.substores = res.Results;
+          this.setFocusById('store');
         }
       })
   }
-  //load stock list
-  public GetStockDetailsList() {
-    this.inventoryBLService.GetStockList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.stockList = res.Results;
+  addNewRow(index: number = null) {
+    var errorMessages: string[] = [];
+    var isAddNewItemAllowed = true;
+    for (var i = 0; i < this.dispatchItems.length; i++) {
+      for (var x in this.dispatchItems[i].DispatchItemValidator.controls) {
+        this.dispatchItems[i].DispatchItemValidator.controls[x].markAsTouched();
+        this.dispatchItems[i].DispatchItemValidator.controls[x].updateValueAndValidity();
+        if (this.dispatchItems[i].DispatchItemValidator.controls[x].invalid) {
+          errorMessages.push(`${x} is invalid for item no. ${i + 1}.`);
+          isAddNewItemAllowed = false;
         }
-        else {
-          this.messageBoxService.showMessage("error", ["Failed to get StockDetailsList. " + res.ErrorMessage]);
-        }
-      },
-        err => {
-          this.messageBoxService.showMessage("error", ["Failed to get StockDetailsList. " + err.ErrorMessage]);
-        });
-  }
-  ////add a new row 
-  AddRowRequest() {
-    for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
-      // for loop is used to show RequisitionItemValidator message ..if required  field is not filled
-      for (var a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
-        this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].markAsDirty();
-        this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].updateValueAndValidity();
       }
     }
-    //row can be added if only if the item is selected is last row
-    //if (this.currentRequItem.ItemId != 0 && this.currentRequItem.ItemId != null) {
-    this.rowCount++;
-    this.currentRequItem = new RequisitionItems();
-    this.currentRequItem.Quantity = 1;
-    this.requisition.RequisitionItems.push(this.currentRequItem);
-
-    let nextInputIndex = this.requisition.RequisitionItems.length - 1;
-    this.SetFocusOnItemName(nextInputIndex);
-  }
-  private SetFocusOnItemName(index: number) {
-    window.setTimeout(function () {
-      let itmNameBox = document.getElementById("itemName" + index);
-      if (itmNameBox) {
-        itmNameBox.focus();
-      }
-    }, 600);
-  }
-  ////to delete the row
-  DeleteRow(index) {
-    try {
-      this.requisition.RequisitionItems.splice(index, 1);
-      if (this.requisition.RequisitionItems.length == 0) {
-        this.AddRowRequest();
-      }
+    if (isAddNewItemAllowed == false) {
+      this.messageBoxService.showMessage("Failed", errorMessages);
     }
-    catch (exception) {
-      this.messageBoxService.showMessage("Error", [exception]);
+    else {
+      let newRow = new DispatchItems();
+      newRow.SourceStoreId = this.activeInventoryService.activeInventory.StoreId;
+      newRow.TargetStoreId = null;
+      newRow.AvailableQuantity = 0;
+      newRow.ItemId = null;
+      newRow.DispatchedQuantity = 1;
+      newRow.DispatchItemValidator.addControl('Item', new FormControl('', Validators.required));
+      if (index == null) {
+        index = this.dispatchItems.length;
+      }
+      this.dispatchItems.splice(index, 0, newRow);
+      this.SetFocusOnItemName(index, 20);
     }
+  }
+  deleteRow(index) {
+    this.dispatchItems.splice(index, 1);
+    if (this.dispatchItems.length == 0) {
+      this.addNewRow();
+    }
+    this.SetFocusOnItemName(index - 1);
   }
 
-  SelectItemFromSearchBox(Item: ItemMaster, index) {
-    //if proper item is selected then the below code runs ..othewise it goes out side the function
-    if (typeof Item === "object" && !Array.isArray(Item) && Item !== null) {
-      //this for loop with if conditon is to check whether the  item is already present in the array or not 
+  onItemNameChanged(index: number) {
+    let selectedDispItem = this.dispatchItems[index];
+    if (selectedDispItem.selectedItem != null && selectedDispItem.ItemId == selectedDispItem.selectedItem.ItemId) return;
+    if (selectedDispItem.selectedItem == null) return;
+    if (typeof (selectedDispItem.selectedItem) == "string") {
+      selectedDispItem.selectedItem = this.stockList.find(a => a.ItemName == selectedDispItem.selectedItem && a.BatchNo == selectedDispItem.BatchNo);
+    }
+    if (typeof (selectedDispItem.selectedItem) == "object") {
+      let checkIsItemPresent = false;
       //means to avoid duplication of item
-      for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
-        if (this.requisition.RequisitionItems[i].ItemId == Item.ItemId) {
-          this.checkIsItemPresent = true;
+      for (var i = 0; i < this.dispatchItems.length; i++) {
+        if (this.dispatchItems[i].ItemId == selectedDispItem.ItemId && index != i) {
+          checkIsItemPresent = true;
         }
       }
-      //id item is present the it show alert otherwise it assign the value
-      if (this.checkIsItemPresent == true) {
-        this.messageBoxService.showMessage("notice-message", [Item.ItemName + " is already add..Please Check!!!"]);
-        this.checkIsItemPresent = false;
-        this.changeDetectorRef.detectChanges();
-        this.requisition.RequisitionItems.splice(index, 1);
-        this.currentRequItem = new RequisitionItems();
-        this.currentRequItem.Quantity = 1;
-        this.requisition.RequisitionItems.push(this.currentRequItem);
+      if (checkIsItemPresent == true) {
+        this.messageBoxService.showMessage("notice-message", [selectedDispItem.ItemName + " is already added. Please Check!"]);
+        this.dispatchItems.splice(index, 1);
+        this.addNewRow(index);
       }
       else {
-        for (var a = 0; a < this.requisition.RequisitionItems.length; a++) {
-          // Assiging the value StandardRate,VatPercentage and ItemId in the particular index ..
-          //it helps for changing item after adding the item and also in adding in new item
-          if (a == index) {
-            this.requisition.RequisitionItems[index].ItemId = Item.ItemId;
-            this.requisition.RequisitionItems[index].Code = Item.Code;
-            this.requisition.RequisitionItems[index].UOMName = Item.UOMName;
-          }
+        selectedDispItem.ItemId = selectedDispItem.selectedItem.ItemId;
+        selectedDispItem.ItemName = selectedDispItem.selectedItem.ItemName;
+        selectedDispItem.ItemCode = selectedDispItem.selectedItem.ItemCode;
+        selectedDispItem.ItemUOM = selectedDispItem.selectedItem.ItemUOM;
+        selectedDispItem.BatchNo = selectedDispItem.selectedItem.BatchNo;
+        selectedDispItem.AvailableQuantity = selectedDispItem.selectedItem.AvailableQuantity;
+        selectedDispItem.DispatchItemValidator.get('AvailableQty').setValue(selectedDispItem.selectedItem.AvailableQuantity);
+        selectedDispItem.DispatchItemValidator.get('Item').setValue(selectedDispItem.selectedItem.ItemName);
+      }
+    }
+    else {
+      selectedDispItem.ItemId = null;
+      selectedDispItem.ItemName = '';
+      selectedDispItem.ItemCode = '';
+      selectedDispItem.ItemUOM = '';
+    }
+  }
+  onStoreChange() {
+    let store = null;
+    if (typeof (this.selectedStore) == 'string') {
+      store = this.substores.find(a => a.Name.toLowerCase() == this.selectedStore.toLowerCase());
+    }
+    else if (typeof (this.selectedStore) == "object") {
+      store = this.selectedStore;
+    }
+  }
+  postDirectDispatch() {
+    if (this.loading == true) return;
+    this.loading = true;
+    var errorMessages: string[] = [];
+    var formValidity: boolean = true;
+    for (var x in this.dispatchForm.controls) {
+      this.dispatchForm.controls[x].markAsTouched();
+      this.dispatchForm.controls[x].updateValueAndValidity();
+      if (this.dispatchForm.controls[x].invalid) {
+        errorMessages.push(`${x} is invalid.`);
+        formValidity = false;
+      }
+    }
+    for (var i = 0; i < this.dispatchItems.length; i++) {
+      for (var x in this.dispatchItems[i].DispatchItemValidator.controls) {
+        this.dispatchItems[i].DispatchItemValidator.controls[x].markAsTouched();
+        this.dispatchItems[i].DispatchItemValidator.controls[x].updateValueAndValidity();
+        if (this.dispatchItems[i].DispatchItemValidator.controls[x].invalid) {
+          errorMessages.push(`${x} is invalid for item no. ${i + 1}.`);
+          formValidity = false;
         }
       }
     }
-  }
 
-  DirectDispatch() {
-    this.loading = true;
-    // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
-    //if the CheckIsValid == true the validation is proper else no
-    var CheckIsValid = true;
-    if (this.requisition.IsValidCheck(undefined, undefined) == false) {
-      // for loop is used to show RequisitionValidator message ..if required  field is not filled
-      for (var a in this.requisition.RequisitionValidator.controls) {
-        this.requisition.RequisitionValidator.controls[a].markAsDirty();
-        this.requisition.RequisitionValidator.controls[a].updateValueAndValidity();
-      }
-      CheckIsValid = false;
-    }
-    for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
-      // for loop is used to show RequisitionItemValidator message ..if required  field is not filled
-      for (var a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
-        this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].markAsDirty();
-        this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].updateValueAndValidity();
-      }
-      if (this.requisition.RequisitionItems[i].IsValidCheck(undefined, undefined) == false) {
-        CheckIsValid = false;
-      }
-      if (this.requisition.RequisitionItems[i].Quantity > this.AvalablbleQty(this.requisition.RequisitionItems[i].ItemId)) {
-        CheckIsValid = false;
-      }
-    }
-    if (!this.requisition.Remarks || this.requisition.Remarks.trim() == "") {
-      CheckIsValid = false;
-      this.messageBoxService.showMessage("Failed", ["Remarks is mandatory. Please fill remarks."]);
-    }
-
-    if (CheckIsValid == true && this.requisition.RequisitionItems != null) {
-      //Updating the Status
-      this.requisition.RequisitionStatus = "active";
-      //Comment by Nagesh on 11-Jun-17 Employee Id not getting so, now passing static id
-      this.requisition.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
-        this.requisition.RequisitionItems[i].RequisitionItemStatus = "active";
-        this.requisition.RequisitionItems[i].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        this.requisition.RequisitionItems[i].AuthorizedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        //Comment on 02-July'17 By-Nagesh-No need to send Item Object with requisitionItems only Need ItemId
-        this.requisition.RequisitionItems[i].ItemId = this.requisition.RequisitionItems[i].ItemId;
-        this.requisition.RequisitionItems[i].Item = null;
-        //setting the dispatch item
-        var currDispatchItem = new DispatchItems();
-        currDispatchItem.ItemId = this.requisition.RequisitionItems[i].ItemId;
-        currDispatchItem.RequisitionItemId = this.requisition.RequisitionItems[i].RequisitionItemId;
-        currDispatchItem.RequiredQuantity = this.requisition.RequisitionItems[i].Quantity - this.requisition.RequisitionItems[i].ReceivedQuantity;
-        currDispatchItem.AvailableQuantity = this.AvalablbleQty(this.requisition.RequisitionItems[i].ItemId);
-        currDispatchItem.ItemName = this.requisition.RequisitionItems[i].ItemName;
-        currDispatchItem.DispatchedQuantity = currDispatchItem.RequiredQuantity;
-        currDispatchItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        currDispatchItem.StoreId = this.requisition.StoreId;
-        currDispatchItem.RequisitionId = this.inventoryService.RequisitionId;
-        this.requisitionStockVM.dispatchItems.push(currDispatchItem);
-      }
-      this.requisitionStockVM.requisition = this.requisition;
-      this.inventoryBLService.PostDirectDispatch(this.requisitionStockVM).
+    if (formValidity == true && this.dispatchItems != null) {
+      this.dispatchItems.forEach(item => {
+        item.DispatchedDate = `${moment(this.dispatchDate).format("YYYY-MM-DD")} ${moment().format("HH:mm:ss.SSS")}`;
+        item.SourceStoreId = this.activeInventoryService.activeInventory.StoreId;
+        item.TargetStoreId = this.selectedStore.StoreId;
+        item.Remarks = this.dispatchForm.get('remarks').value;
+        item.ReceivedBy = this.dispatchForm.get('receivedBy').value;
+        item.IssueNo = this.dispatchForm.get('issueNo').value;
+        item.ReqDisGroupId = this.selectedStore.ReqDisGroupId;
+      })
+      this.inventoryBLService.PostDirectDispatch(this.dispatchItems).
         subscribe(res => {
           if (res.Status == 'OK') {
+            var dispatchId = res.Results;
             this.messageBoxService.showMessage("success", ["Requisition is Generated and Saved"]);
             this.changeDetectorRef.detectChanges();
             //route to dispatch
-            var requisitionId = res.Results;
-            this.RouteToViewDetail(requisitionId, this.requisition.StoreName);
+
+            this.RouteToViewDetail(dispatchId, this.activeInventoryService.activeInventory.Name);
             this.loading = false;
           }
           else {
@@ -253,100 +220,54 @@ export class DirectDispatchComponent {
       this.loading = false;
     }
   }
-
-  CheckAvailableQuantity(dispatchItem: DispatchItems, index) {
-    if (dispatchItem.DispatchedQuantity > dispatchItem.AvailableQuantity) {
-      dispatchItem.IsDisQtyValid = false;
-    }
-    else if (dispatchItem.DispatchedQuantity > dispatchItem.RequiredQuantity) {
-      dispatchItem.IsDisQtyValid = false;
-
-    } else { dispatchItem.IsDisQtyValid = true; }
-
-  }
-  AvalablbleQty(itemId: number): number {
-    let availableQty = 0;
-    for (var i = 0; i < this.stockList.length; i++) {
-      if (this.stockList[i].ItemId == itemId) {
-        availableQty = availableQty + this.stockList[i].AvailQuantity;
-      }
-    }
-    return availableQty;
-  }
-  //used to select store in autocomplete
-  OnStoreChange() {
-    let store = null;
-    if (!this.selectedStore) {
-      this.requisition.StoreId = null;
-    }
-    else if (typeof (this.selectedStore) == 'string') {
-      store = this.StoreList.find(a => a.ServiceDepartmentName.toLowerCase() == this.selectedStore.toLowerCase());
-    }
-    else if (typeof (this.selectedStore) == "object") {
-      store = this.selectedStore;
-    }
-    if (store) {
-      this.requisition.StoreId = store.StoreId;
-      this.requisition.StoreName = store.Name;
-    }
-    else {
-      this.requisition.StoreId = null;
-      this.requisition.StoreName = "";
-    }
-  }
-  StoreListFormatter(data: any): string {
-    return data["Name"];
-  }
-  ////used to format display item in ng-autocomplete
-  ItemListFormatter(data: any): string {
-    let html = data["ItemName"];
-    return html;
-  }
-  ////this is to cancel the whole PO at one go and adding new PO
-  Cancel() {
-    this.requisition.RequisitionItems = new Array<RequisitionItems>();
-    this.requisition = new Requisition();
-    this.currentRequItem = new RequisitionItems()
-    this.currentRequItem.Quantity = 1;
-    this.requisition.RequisitionItems.push(this.currentRequItem);
+  discardChanges() {
+    this.dispatchItems = new Array<DispatchItems>();
+    this.dispatchForm.reset();
     //route back to requisition list
     this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
   }
-  logError(err: any) {
-    console.log(err);
+  storeListFormatter(data: any): string {
+    return data["Name"];
+  }
+  ////used to format display item in ng-autocomplete
+  stockListFormatter(data: any): string {
+    let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>";
+    html += (data["BatchNo"] == null || data["BatchNo"] == "") ? "" : (" | B: " + data["BatchNo"]);
+    return html;
   }
 
-  RouteToViewDetail(requisitionId: number, storeName: string) {//sud:3Mar'20
+  RouteToViewDetail(dispatchId: number, storeName: string) {//sud:3Mar'20
     //pass the Requisition Id to RequisitionView page for List of Details about requisition
-    this.inventoryService.RequisitionId = requisitionId;
+    this.inventoryService.DispatchId = dispatchId;
     this.inventoryService.StoreName = storeName;
-    this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionDetails']);
+    this.router.navigate(['/Inventory/InternalMain/Requisition/DispatchReceiptDetails']);
   }
-  //for item add popup
-  AddItemPopUp(i) {
-    this.showAddItemPopUp = false;
-    this.index = i;
-    this.changeDetectorRef.detectChanges();
-    this.showAddItemPopUp = true;
+  onPressedEnterKeyInItemField(index: number) {
+    if (this.dispatchItems[index].ItemId == null) {
+      this.deleteRow(index);
+      this.setFocusById('remarks');
+    }
+    else {
+      this.setFocusById('qtyip' + index);
+    }
   }
 
-  //post item add function
-  OnNewItemAdded($event) {
-    this.showAddItemPopUp = false;
-    var item = $event.item;
-    this.ItemList.push({
-      "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT
-    });
-    this.currentRequItem = new RequisitionItems();
-    this.currentRequItem.Quantity = 1;
-    this.requisition.RequisitionItems.splice(this.index, 1, this.currentRequItem);
-    this.requisition.RequisitionItems[this.index].SelectedItem = item;
+
+  private SetFocusOnItemName(index: number, waitingTimeinms = 0) {
+    this.setFocusById("itemName" + index, waitingTimeinms);
   }
-  GoToNextInput(idToSelect: string) {
-    if (document.getElementById(idToSelect)) {
-      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
-      nextEl.focus();
-      nextEl.select();
-    }
+  setFocusById(targetId: string, waitingTimeinMS: number = 0) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
+
+
+  public get isDispatchedDateValid() {
+    return this.inventoryService.allFiscalYearList.some(fy => (fy.IsClosed == null || fy.IsClosed == false) && moment(this.dispatchForm.get('dispatchDate').value).isBetween(fy.StartDate, fy.EndDate)) as Boolean;
   }
 }

@@ -25,7 +25,7 @@ import { forEach } from '@angular/router/src/utils/collection';
 import { PharmacyReceiptModel } from '../../shared/pharmacy-receipt.model';
 import { PharmacyService } from '../../shared/pharmacy.service';
 import { PHRMPatient } from '../../shared/phrm-patient.model';
-import { PHRMDepositModel } from '../../shared/phrm-deposit.model';
+import { PHRMDepositModel } from '../../../dispensary/dispensary-main/patient-main/patient-deposit-add/phrm-deposit.model';
 import { BillingFiscalYear } from "../../../billing/shared/billing-fiscalyear.model";
 import { CoreService } from "../../../core/shared/core.service";
 
@@ -61,11 +61,11 @@ export class PHRMCreditBillsComponent implements OnInit {
     public selectedSaleCreditData: PHRMPatient = new PHRMPatient();
     //sud: 31May'18--to display patient bill summary
     public showPatBillHistory: boolean = false;
-    public userName:any;
+    public userName: any;
     public isPrint: boolean = false;
     public showSaleItemsPopup: boolean = false;
-      //for show and hide item level discount features
-      IsitemlevlDis: boolean = false;
+    //for show and hide item level discount features
+    IsitemlevlDis: boolean = false;
     public allFiscalYrs: Array<BillingFiscalYear> = new Array<BillingFiscalYear>();
     public pharmacyReceipt: PharmacyReceiptModel = new PharmacyReceiptModel();
     public patBillHistory = {
@@ -82,6 +82,7 @@ export class PHRMCreditBillsComponent implements OnInit {
     public total: number = 0;
     public today = new Date();
     public isSubStoreCall: boolean = false;
+    storeId: number = null;
 
     constructor(
         public routeFromService: RouteFromService,
@@ -94,21 +95,10 @@ export class PHRMCreditBillsComponent implements OnInit {
         public pharmacyBLService: PharmacyBLService,
         public coreService: CoreService) {
         this.currentCounter = this.securityService.getPHRMLoggedInCounter().CounterId;
-        if (this.currentCounter < 1) {
-            if (this.routeFromService.RouteFrom != "") {
-                this.currentCounter = 1;
-            } else {
-                this.callbackservice.CallbackRoute = 'Pharmacy/Sale/CreditBills'
-                this.router.navigate(['/Pharmacy/ActivateCounter']);
-            }
-        }
-        else {
-            this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
-            this.GetUnpaidTotalBills();
-            this.GetAllFiscalYrs();
-            //this.LoadPatientInvoiceSummary(this.patientService.getGlobal().PatientId);
-            this.showitemlvldiscount();
-        }
+        this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
+        this.GetUnpaidTotalBills();
+        this.GetAllFiscalYrs();
+        this.showitemlvldiscount();
 
     }
 
@@ -139,11 +129,11 @@ export class PHRMCreditBillsComponent implements OnInit {
 
     //gets summary of all patients
     GetUnpaidTotalBills() {
-        this.pharmacyBLService.GetAllCreditSummary()
-            .subscribe((res: DanpheHTTPResponse) => {
-                this.patientService
-                this.provisionalBillsSummary = res.Results;
-            });
+        // this.pharmacyBLService.GetAllCreditSummary()
+        //     .subscribe((res: DanpheHTTPResponse) => {
+        //         this.patientService
+        //         this.provisionalBillsSummary = res.Results;
+        //     });
 
 
     }
@@ -152,7 +142,7 @@ export class PHRMCreditBillsComponent implements OnInit {
     //gets credit items of single patient. 
     GetPatientProvisionalItems(patientId: number) {
 
-        this.pharmacyBLService.GetPatientCreditItems(patientId)
+        this.pharmacyBLService.GetPatientCreditItems(patientId, this.storeId)
             .subscribe((res: DanpheHTTPResponse) => {
                 if (res.Status == "OK") {
                     this.allCreditItems = res.Results;
@@ -252,13 +242,13 @@ export class PHRMCreditBillsComponent implements OnInit {
     }
 
     SelectAllChkOnChange() {
-        
+
         if (this.allCreditItems && this.allCreditItems.length) {
             if (this.selectAllItems) {
 
-                this.allCreditItems.forEach((itm,index) => {
+                this.allCreditItems.forEach((itm, index) => {
                     itm.IsSelected = true;
-                    itm.ReturnQty =  0;
+                    itm.ReturnQty = 0;
                     itm.Quantity = itm.DispatchQty;
                     //this.ValueChanged(index);
                 });
@@ -269,7 +259,7 @@ export class PHRMCreditBillsComponent implements OnInit {
                 this.showActionPanel = true;
             }
             else {
-                this.allCreditItems.forEach((itm,index) => {
+                this.allCreditItems.forEach((itm, index) => {
                     itm.IsSelected = false;
                     itm.ReturnQty = itm.DispatchQty;
                     itm.Quantity = itm.DispatchQty - itm.ReturnQty;
@@ -286,7 +276,7 @@ export class PHRMCreditBillsComponent implements OnInit {
     }
 
     //Sets the component's check-unchecked properties on click of Component-Level Checkbox.
-    SelectItemChkOnChange(item,index) {
+    SelectItemChkOnChange(item, index) {
 
         //show action panel if any one of item is checked.
         //this.showActionPanel = this.allCreditItems.some( item => item.IsSelected == true);
@@ -394,10 +384,10 @@ export class PHRMCreditBillsComponent implements OnInit {
                 //this.currSaleItems[index].InvoiceItemsValidator.controls["Quantity"].setErrors({ 'incorrect': true });
             }
             this.currSaleItems[index].Quantity = this.currSaleItems[index].DispatchQty - this.currSaleItems[index].ReturnQty;
-            let subtotal = (this.currSaleItems[index].Quantity - this.currSaleItems[index].FreeQuantity) * this.currSaleItems[index].MRP; 
+            let subtotal = (this.currSaleItems[index].Quantity - this.currSaleItems[index].FreeQuantity) * this.currSaleItems[index].MRP;
             this.currSaleItems[index].SubTotal = CommonFunctions.parseAmount(subtotal);
             this.currSaleItems[index].TotalDisAmt = CommonFunctions.parsePhrmAmount(this.currSaleItems[index].SubTotal * (this.currSaleItems[index].DiscountPercentage) / 100)
-            this.currSaleItems[index].TotalAmount = CommonFunctions.parseAmount( subtotal + (this.currSaleItems[index].SubTotal * this.currSaleItems[index].VATPercentage) - this.currSaleItems[index].TotalDisAmt);
+            this.currSaleItems[index].TotalAmount = CommonFunctions.parseAmount(subtotal + (this.currSaleItems[index].SubTotal * this.currSaleItems[index].VATPercentage) - this.currSaleItems[index].TotalDisAmt);
             this.currSale.Tender = CommonFunctions.parseAmount(this.currSale.TotalAmount);
             this.AllCalculation();
         }
@@ -415,7 +405,7 @@ export class PHRMCreditBillsComponent implements OnInit {
                 this.currSale.VATAmount = 0;
                 this.currSale.DiscountAmount = 0;
                 let TotalitemlevDisAmt: number = 0;
-                let Subtotalofitm : number = 0;  
+                let Subtotalofitm: number = 0;
                 for (var i = 0; i < this.currSaleItems.length; i++) {
                     // calculate per item  total discount amount
                     let itmdisAmt = CommonFunctions.parsePhrmAmount(this.currSaleItems[i].SubTotal * (this.currSaleItems[i].DiscountPercentage) / 100);
@@ -432,46 +422,46 @@ export class PHRMCreditBillsComponent implements OnInit {
                 this.currSale.VATAmount = CommonFunctions.parseAmount(this.currSale.TotalAmount - this.currSale.SubTotal);
 
                 //for bulk discount calculation and conversion of percentage into amount and vice versa
-                if(this.IsitemlevlDis == false){
-                if (discPer == 0 && discAmt > 0) {
-                    this.currSale.TotalAmount = this.currSale.TotalAmount - discAmt;
-                    this.currSale.DiscountAmount = discAmt;
-                    discPer = (discAmt / this.currSale.SubTotal) * 100;
-                    this.currSale.DiscountPer = CommonFunctions.parsePhrmAmount(discPer);
+                if (this.IsitemlevlDis == false) {
+                    if (discPer == 0 && discAmt > 0) {
+                        this.currSale.TotalAmount = this.currSale.TotalAmount - discAmt;
+                        this.currSale.DiscountAmount = discAmt;
+                        discPer = (discAmt / this.currSale.SubTotal) * 100;
+                        this.currSale.DiscountPer = CommonFunctions.parsePhrmAmount(discPer);
+                    }
+                    if (discPer > 0 && discAmt == 0) {
+                        discAmt = CommonFunctions.parsePhrmAmount(this.currSale.TotalAmount * (discPer) / 100)
+                        this.currSale.TotalAmount = this.currSale.SubTotal - discAmt;
+                        this.currSale.DiscountAmount = discAmt;
+                        this.currSale.DiscountPer = discPer;
+                    }
+                    if (discPer == 0 && discAmt == 0) {
+                        this.currSale.SubTotal = this.currSale.SubTotal;
+                        this.currSale.TotalAmount = this.currSale.TotalAmount;
+                        //this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parseAmount(DAmount);
+                        //this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parseAmount(VAmount);
+                        this.currSale.DiscountAmount = discAmt;
+                        this.currSale.DiscountPer = discPer;
+                    }
+
+                    this.currSale.DiscountAmount = CommonFunctions.parsePhrmAmount(this.currSale.SubTotal * (this.currSale.DiscountPer) / 100);
+                    this.currSale.TotalAmount = CommonFunctions.parseAmount(this.currSale.SubTotal - this.currSale.DiscountAmount);
+
+
                 }
-                if (discPer > 0 && discAmt == 0) {
-                    discAmt = CommonFunctions.parsePhrmAmount(this.currSale.TotalAmount * (discPer) / 100)
-                    this.currSale.TotalAmount = this.currSale.SubTotal - discAmt;
-                    this.currSale.DiscountAmount = discAmt;
-                    this.currSale.DiscountPer = discPer;
+                else {                                      //this cal for total item level discount
+                    this.currSale.SubTotal = CommonFunctions.parsePhrmAmount(
+                        Subtotalofitm
+                    );
+                    this.currSale.DiscountAmount = CommonFunctions.parsePhrmAmount(
+                        TotalitemlevDisAmt
+                    );
+                    let totaldisper = (this.currSale.DiscountAmount / this.currSale.SubTotal) * 100;
+                    this.currSale.DiscountPer = CommonFunctions.parseAmount(
+                        totaldisper
+                    );
                 }
-                if (discPer == 0 && discAmt == 0) {
-                    this.currSale.SubTotal = this.currSale.SubTotal;
-                    this.currSale.TotalAmount = this.currSale.TotalAmount;
-                    //this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parseAmount(DAmount);
-                    //this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parseAmount(VAmount);
-                    this.currSale.DiscountAmount = discAmt;
-                    this.currSale.DiscountPer = discPer;
-                }
-              
-                this.currSale.DiscountAmount = CommonFunctions.parsePhrmAmount(this.currSale.SubTotal * (this.currSale.DiscountPer) / 100);
-                this.currSale.TotalAmount = CommonFunctions.parseAmount(this.currSale.SubTotal - this.currSale.DiscountAmount);
-                
-              
-              }
-              else {                                      //this cal for total item level discount
-                this.currSale.SubTotal = CommonFunctions.parsePhrmAmount(
-                    Subtotalofitm
-                  );   
-                this.currSale.DiscountAmount = CommonFunctions.parsePhrmAmount(
-                    TotalitemlevDisAmt
-                  );
-                      let totaldisper = (this.currSale.DiscountAmount / this.currSale.SubTotal ) * 100;
-                      this.currSale.DiscountPer = CommonFunctions.parseAmount(
-                    totaldisper
-                );  
-               }
-               this.currSale.Change = CommonFunctions.parseAmount(this.currSale.Tender - this.currSale.TotalAmount);
+                this.currSale.Change = CommonFunctions.parseAmount(this.currSale.Tender - this.currSale.TotalAmount);
                 this.currSale.PaidAmount = CommonFunctions.parseFinalAmount(this.currSale.SubTotal - this.currSale.DiscountAmount);
                 this.currSale.Adjustment = CommonFunctions.parseAmount(this.currSale.PaidAmount - this.currSale.TotalAmount);
                 this.currSale.Tender = CommonFunctions.parseAmount(this.currSale.TotalAmount);
@@ -526,7 +516,7 @@ export class PHRMCreditBillsComponent implements OnInit {
                 this.router.navigate(['/Pharmacy/Sale/ReceiptPrint']);
                 this.currSale = new PHRMInvoiceModel();
                 this.currSaleItems = new Array<PHRMInvoiceItemsModel>();
-               this.messageboxService.showMessage("success", ["Succesfully. "]);
+                this.messageboxService.showMessage("success", ["Succesfully. "]);
                 this.loading = false;
             }
             else {
@@ -555,7 +545,7 @@ export class PHRMCreditBillsComponent implements OnInit {
                 txnReceipt.BillingUser = this.userName;
                 txnReceipt.Patient = this.currentPatient;
                 this.pharmacyService.globalPharmacyReceipt = txnReceipt;
-                this.router.navigate(['/Pharmacy/Sale/ReceiptPrint']);
+                this.router.navigate(['/Dispensary/Sale/ReceiptPrint']);
                 this.currSale = new PHRMInvoiceModel();
                 this.currSaleItems = new Array<PHRMInvoiceItemsModel>();
                 //this.messageboxService.showMessage("success", ["Succesfully. "]);
@@ -623,7 +613,7 @@ export class PHRMCreditBillsComponent implements OnInit {
                             for (var i = 0; i < this.currSaleItems.length; i++) {
                                 if (this.currSaleItems[i].ReturnQty != 0) {
                                     let subtotal = this.currSaleItems[i].ReturnQty * this.currSaleItems[i].MRP; //cal. return item subtotal
-                                    this.currSaleItems[i].TotalDisAmt = ( subtotal * this.currSaleItems[i].DiscountPercentage / 100 ) //cal. return item dis amt
+                                    this.currSaleItems[i].TotalDisAmt = (subtotal * this.currSaleItems[i].DiscountPercentage / 100) //cal. return item dis amt
                                     this.currSaleItems[i].TotalAmount = subtotal - this.currSaleItems[i].TotalDisAmt;  //cal. return item total amt
                                     this.currSaleItemsRetOnly.push(this.currSaleItems[i]);
                                 }
@@ -790,20 +780,13 @@ export class PHRMCreditBillsComponent implements OnInit {
             });
     }
 
-     //show or hide  item level discount
-     showitemlvldiscount() {
+    //show or hide  item level discount
+    showitemlvldiscount() {
         this.IsitemlevlDis = true;
-        let itmdis = this.coreService.Parameters.find(
-          (p) =>
-            p.ParameterName == "PharmacyItemlvlDiscount" &&
-            p.ParameterGroupName == "Pharmacy"
-        ).ParameterValue;
-        if (itmdis == "true") {
-          this.IsitemlevlDis = true;
-        } else {
-          this.IsitemlevlDis = false;
-        }
-      }
+        let discountParameter = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyDiscountCustomization" && p.ParameterGroupName == "Pharmacy").ParameterValue;
+        discountParameter = JSON.parse(discountParameter);
+        this.IsitemlevlDis = (discountParameter.EnableItemLevelDiscount == true);
+    }
 
     CalculateDepositBalance() {
         if (this.deductDeposit) {

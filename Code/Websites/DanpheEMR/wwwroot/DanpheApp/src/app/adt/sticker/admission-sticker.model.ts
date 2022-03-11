@@ -1,4 +1,4 @@
-﻿  
+﻿
 export class AdmissionStickerViewModel {
     public PatientCode: string = null;
     public District: string = null;
@@ -7,7 +7,7 @@ export class AdmissionStickerViewModel {
     public Gender: string = null;
     public Address: string = null;
     public PhoneNumber: string = null;
-    public User: string = null; 
+    public User: string = null;
     //public DateOfBrith: string = null;
 
     public AdmittingDoctor: string = null;
@@ -19,6 +19,11 @@ export class AdmissionStickerViewModel {
     public CareOfPersonName: string = null;
     public CareOfPersonPhoneNo: string = null;
     public CareOfPersonRelation: string = null;
+    public DeptRoomNumber: string = null;
+    public Ins_HasInsurance: boolean = false;
+    public ClaimCode: number = null;//sud:1-oct'21: Changed datatype from String to Number in all places
+    public Ins_NshiNumber: string = null;
+    public RequestingDepartmentName: string = null;
 }
 
 

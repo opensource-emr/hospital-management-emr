@@ -874,10 +874,14 @@ namespace DanpheEMR.Controllers
                         {
                             if (item.InctvTxnItemId == 0)
                             {
+                                item.CreatedBy = currentUser.EmployeeId;
+                                item.CreatedOn = DateTime.Now;
                                 incentiveDb.IncentiveFractionItems.Add(item);
                             }
                             else
                             {
+                                item.ModifiedBy = currentUser.EmployeeId;
+                                item.ModifiedOn = DateTime.Now;
                                 incentiveDb.IncentiveFractionItems.Attach(item);
                                 incentiveDb.Entry(item).Property(x => x.IncentiveReceiverId).IsModified = true;
                                 incentiveDb.Entry(item).Property(x => x.IncentiveReceiverName).IsModified = true;
@@ -886,6 +890,8 @@ namespace DanpheEMR.Controllers
                                 incentiveDb.Entry(item).Property(x => x.IncentiveType).IsModified = true;
                                 incentiveDb.Entry(item).Property(x => x.TDSPercentage).IsModified = true;
                                 incentiveDb.Entry(item).Property(x => x.TDSAmount).IsModified = true;
+                                incentiveDb.Entry(item).Property(x => x.ModifiedBy).IsModified = true;
+                                incentiveDb.Entry(item).Property(x => x.ModifiedOn).IsModified = true;
                                 incentiveDb.Entry(item).Property(x => x.IsActive).IsModified = true;
                             }
                         }

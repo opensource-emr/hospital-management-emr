@@ -10,6 +10,8 @@ import * as moment from 'moment/moment';
 
 import { selectedbed } from './shared/selectedbed.model';
 import { Vitals } from "../clinical/shared/vitals.model";
+import { ADT_BLService } from './shared/adt.bl.service';
+import { DanpheHTTPResponse } from '../shared/common-models';
 
 @Component({
     templateUrl: "./adt-home.html"
@@ -17,7 +19,7 @@ import { Vitals } from "../clinical/shared/vitals.model";
 
 // App Component class
 export class AdtHomeComponent {
-    public bedStats:any=""; // = new Object();
+    public bedStats: any = ""; // = new Object();
     public bedFeature: Array<any> = new Array<any>();
     public totaloccupid: any;
     public bedPatientFeature: Array<any> = new Array<any>();
@@ -28,28 +30,31 @@ export class AdtHomeComponent {
     public painData: Array<{ BodyPart: "", PainScale: 0 }> = [];
     public painDataList: Array<any> = new Array<any>();
 
-    public requestedBed : any;
+    public requestedBed: any;
     public showBed: boolean = false;
     public showBedDetails: boolean = false;
     public showVitalList: boolean = false;
     public showVitalAddBox: boolean = false;
     public showTransferPage: boolean = false;
     public selectedBedInfo: selectedbed = new selectedbed();
-    
 
-    constructor(public http: HttpClient, public msgBoxServ: MessageboxService,
-        public ioAllergyVitalsBLService: IOAllergyVitalsBLService, ) {
 
-		this.painData.push({ BodyPart: "", PainScale: null });
+    constructor(public http: HttpClient,
+         public msgBoxServ: MessageboxService,
+        public ioAllergyVitalsBLService: IOAllergyVitalsBLService,
+        public admissionBLService: ADT_BLService,) {
+
+        this.painData.push({ BodyPart: "", PainScale: null });
 
         this.LoadBedInfo();
         this.LoadBedFeature();
         this.LoadBedPatientFeature();
     }
-    public options =  {
-            headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
+    public options = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
+    };
 
-        LoadBedInfo(): void {    
+    LoadBedInfo(): void {
         this.http.get<any>("/api/Helpdesk?&reqType=getBedinfo"
             + "&status=" + status, this.options).map(res => res)
             .subscribe(res => {
@@ -64,19 +69,19 @@ export class AdtHomeComponent {
     }
     // get bed feature summary
     LoadBedFeature(): void {
-        this.http.get<any>("/api/Helpdesk?&reqType=getBedFeature").map(res => res).subscribe(res => {
-                if (res.Status == "OK") {
-                    
-                    this.bedFeature = res.Results;
-                    this.totaloccupid = CommonFunctions.getGrandTotalData(this.bedFeature);
-                }
-                else {
-                    this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-                }
+        this.http.get<any>("/api/Helpdesk?&reqType=get-bedoccupancy-of-wards").map(res => res).subscribe(res => {
+            if (res.Status == "OK") {
+
+                this.bedFeature = res.Results;
+                this.totaloccupid = CommonFunctions.getGrandTotalData(this.bedFeature);
+            }
+            else {
+                this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+            }
         });
     }
     LoadBedPatientFeature(): void {
-       
+
         this.http.get<any>("/api/Helpdesk?&reqType=getBedPatientInfo").map(res => res).subscribe(res => {
             if (res.Status == "OK") {
 
@@ -111,7 +116,7 @@ export class AdtHomeComponent {
             let Heading = 'Bed Feature Summary';
             let filename = 'Bed Feature Summary';
             let date = moment().format('YYYY-MM-DD');
-            CommonFunctions.ConvertHTMLTableToExcel(tableId,'',date, workSheetName,Heading, filename);
+            CommonFunctions.ConvertHTMLTableToExcel(tableId, '', date, workSheetName, Heading, filename);
         }
     }
     ShowBed(wardName: string): void {
@@ -127,7 +132,7 @@ export class AdtHomeComponent {
         }
         this.showBed = true; this.showBedDetails = false;
         //window.location.hash = "scrollhere";
-        }
+    }
     showBedDetail(reqCode: string): void {
         for (let i = 0; i < this.bedPatientFeature.length; i++) {
             if (this.bedPatientFeature[i].BedCode === reqCode) {
@@ -178,7 +183,7 @@ export class AdtHomeComponent {
         this.vitalsList = _vitalsList;
     }
 
-    showVitals():void {
+    showVitals(): void {
         this.showVitalList = true;
     }
 
@@ -210,7 +215,15 @@ export class AdtHomeComponent {
         this.selectedBedInfo.BedInformation.BedFeatureId = this.requestedBed['BedFeatureId'];
         this.selectedBedInfo.BedInformation.AdmittedDate = this.requestedBed['AdmittedDate'];
         this.selectedBedInfo.BedInformation.StartedOn = this.requestedBed['StartedOn'];
-        
+
         this.showTransferPage = true;
+    }
+
+    public allDepartments: Array<any> = [];
+    public LoadDepartments() {
+        this.admissionBLService.GetDepartments()
+            .subscribe((res: DanpheHTTPResponse) => {
+                this.allDepartments = res.Results;
+            });
     }
 }

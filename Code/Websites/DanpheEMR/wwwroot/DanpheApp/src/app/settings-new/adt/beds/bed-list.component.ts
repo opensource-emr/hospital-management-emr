@@ -11,7 +11,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
     templateUrl: './bed-list.html',
 })
 export class BedListComponent {
-    public bedList: Array<Bed> = new Array<Bed>();
+    public bedList: Array<any> = new Array<any>();
     public showGrid: boolean = false;
     public bedGridColumns: Array<any> = null;
 
@@ -32,6 +32,16 @@ export class BedListComponent {
                 if (res.Status == "OK") {
                     this.bedList = res.Results;
                     this.showGrid = true;
+                    this.bedList.forEach(result => {
+                        let bedFeatureList: string;
+                        result.BedFeature.forEach(bed => {
+                          if (!bedFeatureList)
+                            bedFeatureList = bed.BedFeatureName;
+                          else
+                            bedFeatureList = bedFeatureList + " , " + bed.BedFeatureName;
+                           });
+                        result.BedFeatures = bedFeatureList;
+                      });
                 }
                 else {
                     this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -70,18 +80,18 @@ export class BedListComponent {
 
     CallBackAdd($event) {
        
-        if (this.selectedID != null) {
+        // if (this.selectedID != null) {
            // let i = this.bedList.findIndex(a => a.BedId == this.selectedID);
           //  this.bedList.splice(i, 1);
           //  this.bedList.splice(i, 0, $event.bed);
             this.getBedList();
-        }
+        // }
      
-        else {
+        // else {
           
-            this.bedList.push($event.bed);
-        }
-        this.bedList = this.bedList.slice();
+        //     this.bedList.push($event.bed);
+        // }
+        // this.bedList = this.bedList.slice();
     //    this.getBedList();
         this.changeDetector.detectChanges();
         this.showAddPage = false;

@@ -47,6 +47,7 @@ export class PackagingTypeListComponent {
                 this.changeDetector.detectChanges();
                 this.selectedPackagingType = $event.Data;
                 this.showAddPage = true;
+                this.FocusElementById('PackagingTypeName');
             }
             default:
                 break;
@@ -54,6 +55,7 @@ export class PackagingTypeListComponent {
     }
     AddPackagingType() {
         this.showAddPage = false;
+        this.FocusElementById('PackagingTypeName');
         this.changeDetector.detectChanges();
         this.showAddPage = true;
     }
@@ -76,4 +78,12 @@ export class PackagingTypeListComponent {
         this.selectedPackagingType = null;
         this.index = null;
     }
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 }

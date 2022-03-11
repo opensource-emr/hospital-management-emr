@@ -195,9 +195,11 @@ export class RPT_ADT_InpatientCensusComponent {
       console.log(ex);
     }
   }
+  public dateRange : string = '';
   //Anjana:11June'20--reusable From-ToDate-In Reports..
   OnFromToDateChange($event) {
     this.fromDate = $event ? $event.fromDate : this.fromDate;
     this.toDate = $event ? $event.toDate : this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 }

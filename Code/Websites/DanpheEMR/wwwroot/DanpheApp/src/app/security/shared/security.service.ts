@@ -13,6 +13,7 @@ import * as moment from 'moment/moment';
 import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
 import { MonthModel } from "../../accounting/settings/shared/fiscalyear.model";
 import { NepaliMonth } from "../../shared/calendar/np/nepali-dates";
+import { LabTypesModel } from "../../labs/lab-selection/lab-type-selection.component";
 @Injectable()
 export class SecurityService {
   constructor(private coreService: CoreService, public _router: Router,private nepaliCalendarService:NepaliCalendarService) { }
@@ -49,6 +50,16 @@ export class SecurityService {
   }
   public setActiveWard(currWard: Ward) {
     this._activeWard = currWard;
+  }
+
+  //Anjana: 8 Feb,2021: to implement authorization in Lab for LPH changes
+  private _activeLab: LabTypesModel;
+  public getActiveLab():LabTypesModel {
+    return this._activeLab;
+  }
+
+  public setActiveLab(currLab: LabTypesModel){
+    this._activeLab = currLab;
   }
 
 
@@ -272,4 +283,5 @@ export class SecurityService {
       return false;
     }
   }
+
 }

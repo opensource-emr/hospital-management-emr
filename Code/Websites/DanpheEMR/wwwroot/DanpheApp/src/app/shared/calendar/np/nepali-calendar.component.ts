@@ -33,6 +33,13 @@ export class NepaliCalendarComponent {
   public minutesList: Array<NepaliMinutes> = [];
   public amPMList: Array<NepaliAMPM> = [];  
 
+  @Input("input-focus") //coming from parent form
+  public inputFocus:boolean=null;
+
+  public outputToDatePicker:boolean = null;
+
+  @Output('output-focus') outputFocus:EventEmitter<boolean> = new EventEmitter<boolean>();
+
   @Input("showTime")
   public showTime: boolean = false;
 
@@ -138,6 +145,17 @@ export class NepaliCalendarComponent {
     this.max_calYear_Np = this.npCalendarService.maxNepYear;
     this.showCalendar = true;
       
+  }
+
+  ngOnChanges(){
+     if(this.inputFocus){
+       if(!this.showmonthCalendar && this.showCalendar){
+        this.setFocusById('inputYear');
+       }
+       else if(this.showmonthCalendar){
+        this.setFocusById('FiscalYearName');
+       }
+     }
   }
 
   ngOnInitialization() {
@@ -656,4 +674,25 @@ export class NepaliCalendarComponent {
     }
   }
  // END:Vikas: 06th Aug 20: Added for month calendar chnages.
+
+ FocusOut(){
+  if(this.inputFocus){
+    this.inputFocus = false;
+    this.outputFocus.emit(this.outputToDatePicker=true); 
+  }
+  else{
+    return;
+  }
+ }
+
+   //common function to set focus on  given Element. 
+   setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
 }

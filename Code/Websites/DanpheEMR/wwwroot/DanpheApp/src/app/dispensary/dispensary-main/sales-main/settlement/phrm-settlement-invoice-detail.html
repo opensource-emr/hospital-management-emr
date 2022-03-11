@@ -1,0 +1,130 @@
+<div class="wrapper" *ngIf="showInvoiceDetail">
+    <div class="popup-static portlet box portlet-fullscreen popup-fixed inv_modal">
+        <div class="portlet-body form">
+            <div class="col-md-12">
+                <div class="modelbox-div">
+                    <div class="caption lb-caption">
+                        <h3><span>Invoice Details</span></h3>
+                        <button class="btn btn-danger" (click)="CloseInvoiceDetail()">X</button>
+                    </div>
+                    <div class="modelbox-body p2">
+
+                        <table class="table table-responsive" style="background-color: lightblue;">
+                            <tr>
+                                <td>
+                                    Patient Name: {{ PatientInfo.ShortName}}
+                                </td>
+                                <td>
+                                    Patient Code: {{ PatientInfo.PatientCode}}
+                                </td>
+                                <td>
+                                    Age/Sex: {{ Age }}/{{PatientInfo.Gender}}
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="text-align: center;">
+                            <span style="font-size: medium;"><b>Sales</b></span>
+                        </div>
+
+                        <table class="table table-responsive" style="background-color: lightblue;">
+                            <tr>
+                                <td>
+                                    Invoice No: PH{{ InvoiceDetail.InvoiceNo}}
+                                </td>
+                                <td>
+                                    <!-- Invoice Date: {{ InvoiceDetail.InvoiceDate | DanpheDateTime:'format':'YYYY-MM-DD'}} ({{InvoiceDetail.InvoiceDate | nepaliDate}}) -->
+                                    Invoice Date: <date-lbl *ngIf="InvoiceDetail && InvoiceDetail.InvoiceDate" [value]="InvoiceDetail.InvoiceDate" [show-time]="false"></date-lbl>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table doc-tbl table-bordered" style="background-color: #e7ecf1;">
+                            <thead>
+                                <th>SN</th>
+                                <th>ItemName</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Subtotal</th>
+                                <th>Discount</th>
+                                <th>Total Amount</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of InvoiceItems; let j=index;">
+                                    <td>{{j+1}}</td>
+                                    <td>{{row.ItemName}}</td>
+                                    <td>{{row.Quantity}}</td>
+                                    <td>{{row.MRP}}</td>
+                                    <td>{{row.SubTotal}}</td>
+                                    <td>{{row.DiscountAmount}}</td>
+                                    <td>{{row.TotalAmount}}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td style="text-align: left;">Total:</td>
+                                    <td style="text-align: left;">{{salesTotalAmount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="text-align: center;">
+                            <span *ngIf="CreditNotes.length" style="font-size: medium;"><b>Sales Return</b></span>
+                        </div>
+
+                        <div *ngFor="let row of CreditNotes">
+
+
+                            <table class="table table-responsive" style="background-color: lightblue;">
+                                <tr>
+                                    <td>
+                                        Credit Note No: CRN-{{row.CreditNoteID}}
+                                    </td>
+                                    <td>
+                                        <!-- Return Date: {{row.ReturnDate}} ({{row.ReturnDate | nepaliDate}}) -->
+                                        Return Date: <date-lbl [value]="row.ReturnDate" [show-time]="false"></date-lbl>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table class=" table doc-tbl table-bordered" style="background-color: #e7ecf1;">
+                                <thead>
+                                  <tr>
+                                    <th>SN</th>
+                                    <th>ItemName</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Return Subtotal</th>
+                                    <th>Return Discount</th>
+                                    <th>Total Return Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let creditItems of row.CreditNotesInfo; let i = index;">
+                                        <td>{{i+1}}</td>
+                                        <td>{{creditItems.ItemName}}</td>
+                                        <td>{{creditItems.ReturnedQty}}</td>
+                                        <td>{{creditItems.MRP}}</td>
+                                        <td>{{creditItems.SubTotal}}</td>
+                                        <td>{{creditItems.DiscountAmount}}</td>
+                                        <td>{{creditItems.TotalAmount}}</td>
+                                    </tr>
+                                    <tr style="text-align: left;">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>Total:</td>
+                                        <td>{{creditNoteTotal}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modelbox-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

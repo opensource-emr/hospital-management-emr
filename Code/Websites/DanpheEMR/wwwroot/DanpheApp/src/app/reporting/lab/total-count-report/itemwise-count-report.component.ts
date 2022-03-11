@@ -16,7 +16,8 @@ export class RPT_LAB_ItemCountComponent {
 
   @Input("categoryId") public categoryId: any = null;
   @Input("category") public category: any = null;
-
+  @Input("orderStatus")
+  orderStatus:string='';
   reportData: Array<any> = [];
   showExcelExport: boolean = true;
 
@@ -62,7 +63,9 @@ export class RPT_LAB_ItemCountComponent {
           "&ToDate=" +
           this.toDate +
           "&categoryId=" +
-          this.categoryId
+          this.categoryId+
+          "&orderStatus="+
+          this.orderStatus
       )
       .map((res) => res)
       .subscribe(

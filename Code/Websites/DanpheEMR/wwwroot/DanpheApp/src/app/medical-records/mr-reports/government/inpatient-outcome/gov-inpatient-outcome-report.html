@@ -1,0 +1,357 @@
+<style type="text/css">
+  .Selected {
+    border-collapse: collapse;
+    border-spacing: 5px;
+  }
+
+  .Selected {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  .blank_row {
+    height: 20px !important;
+    /* overwrites any other rules */
+    background-color: #FFFFFF;
+  }
+
+  /* .rotate90 {
+    -webkit-transform: rotate(-90.0deg)
+  }
+  .float-left{
+    float:left !important;
+    margin-right: 10px;
+  } */
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <div class="row table-responsive">
+        <form [formGroup]="currentInpatientOutcome.DyanamicValidator" class="form-horizontal">
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                  class="caption-subject">Inpatient Service Report</span> </div>
+              <div class="row">
+                <div class="col-md-6 col-xs-12">
+                  <from-to-date-select (on-change)="OnFromToDateChange($event)">
+                  </from-to-date-select>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                  <div class="form-group">
+                    <button class="btn blue" type="button" (click)="Load()" [disabled]=""> <i class="fa fa-search"></i>
+                      Show Report </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <br />
+        <br />
+        <div *ngIf="displayReport">
+          <table id="wholeTable">
+          <div id="PrintPage">
+
+            <!-- Inpatient Outcome -->
+            <section class="inpat-service_only-print_mb-50rem">
+              <!--Start: Inpatient Outcome -->
+              <table style="width:100%; margin-bottom: 20px!important;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+                      <tr>
+                        <td class="Selected report-title" align="center" colspan="17"><b>1. Summary of Indoor
+                            Services</b>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center" colspan="17"><b>A. Inpatient Outcome</b></td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center" rowspan="2">Age Group</td>
+                        <!-- <td class="Selected" align="center" colspan="2">Admitted</td> -->
+                        <td class="Selected" align="center" colspan="2">Cured/Recovered</td>
+                        <td class="Selected" align="center" colspan="2">Not Cured</td>
+                        <td class="Selected" align="center" colspan="2">Referred Out</td>
+                        <td class="Selected" align="center" colspan="2">DOR/LAMA/DAMA</td>
+                        <td class="Selected" align="center" colspan="2">Absconded</td>
+                        <!-- <td class="Selected" align="center" colspan="2">Deaths </td> -->
+                        <td class="Selected" align="center" colspan="2">Death &lt;= 48 Hours</td>
+                        <td class="Selected" align="center" colspan="2">Death &gt;= 48 Hours</td>
+                      </tr>
+                      <tr>
+                        <!-- <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td> -->
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                        <td class="Selected" align="center">Female</td>
+                        <td class="Selected" align="center">Male</td>
+                      </tr>
+                      <tr *ngFor="let o of InpatientServiceSummary.InpatientOutcome">
+                        <td class="Selected" align="center">{{o.AgeRange}}</td>
+                        <td class="Selected" align="center">{{o.Recovered_Female}}</td>
+                        <td class="Selected" align="center">{{o.Recovered_Male}}</td>
+                        <td class="Selected" align="center">{{o.Not_Improved_Female}}</td>
+                        <td class="Selected" align="center">{{o.Not_Improved_Male}}</td>
+                        <td class="Selected" align="center">{{o.Referred_Female}}</td>
+                        <td class="Selected" align="center">{{o.Referred_Male}}</td>
+                        <td class="Selected" align="center">{{o.LAMA_Female}}</td>
+                        <td class="Selected" align="center">{{o.LAMA_Male}}</td>
+                        <td class="Selected" align="center">{{o.Absconded_Female}}</td>
+                        <td class="Selected" align="center">{{o.Absconded_Male}}</td>
+                        <td class="Selected" align="center">{{o.Death_Lt48_Female}}</td>
+                        <td class="Selected" align="center">{{o.Death_Lt48_Male}}</td>
+                        <td class="Selected" align="center">{{o.Death_Gt48_Female}}</td>
+                        <td class="Selected" align="center">{{o.Death_Gt48_Male}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--End: Inpatient Outcome -->
+            </section>
+
+            <!-- Gestation, Surgery, Death Table Row -->
+            <section class="inpat-service_only-print_mb-50rem" style="display: flex;justify-content: space-around; align-items: flex-start;">
+
+              <!--Start: Gestation Table -->
+              <table style="width: 100%; margin:1rem;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+
+                      <tr>
+                        <td rowspan="5"></td>
+                        <td class="Selected" align="center" rowspan="2"><b>Neonate Form</b></td>
+                        <td class="Selected" align="center" colspan="4"><b>Gestational Weeks</b></td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center">22-27</td>
+                        <td class="Selected" align="center">28-36</td>
+                        <td class="Selected" align="center">37-41</td>
+                        <td class="Selected" align="center">>=42</td>
+                      </tr>
+                      <tr *ngFor="let o of InpatientServiceSummary.GestationalWeek_Gravda">
+                        <td class="Selected" align="center">{{o.GravidaName}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek1}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek2}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek3}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek4}}</td>
+                      </tr>
+                      <tr>
+                        <td rowspan="4" class="Selected" align="center" class="rotate90"
+                          style="width: 77px; -webkit-transform: rotate(-90.0deg);">Maternal Age (Yrs)</td>
+                        <td colspan="5" class="blank_row"></td>
+                      </tr>
+                      <tr *ngFor="let o of InpatientServiceSummary.GestationalWeek_MaternalAge">
+                        <td class="Selected" align="center">{{o.AgeRange}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek1}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek2}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek3}}</td>
+                        <td class="Selected" align="center">{{o.GestWeek4}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--End: Gestation Table -->
+
+              <!--Start: Surgery Table -->
+              <table style="width: 100%; margin:1rem;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+
+                      <tr>
+                        <td class="Selected" align="center" rowspan="2" colspan="2"><b> Type of Surgeries</b></td>
+                        <td class="Selected" align="center" colspan="2"><b> Number of Surgeries</b></td>
+                        <td class="Selected" align="center" colspan="5"><b> Post Operative Infections</b></td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center"><b>Female</b></td>
+                        <td class="Selected" align="center"><b>Male</b></td>
+                        <td class="Selected" align="center"><b></b></td>
+                      </tr>
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[0]">
+
+                        <td class="Selected" colspan="2" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[0].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[0].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[0].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[1]">
+
+                        <td class="Selected" colspan="2" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[1].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[1].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[1].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[2]">
+                        <td rowspan="3"> Minor </td>
+                        <td class="Selected" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[2].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[2].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[2].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[3]">
+
+                        <td class="Selected" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[3].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[3].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[3].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[4]">
+
+                        <td class="Selected" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[4].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[4].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[4].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                      <tr *ngIf="InpatientServiceSummary.SurgerySummary && InpatientServiceSummary.SurgerySummary[5]">
+
+                        <td class="Selected" colspan="2" align="center">
+                          {{InpatientServiceSummary.SurgerySummary[5].SurgeryDisplayName}}</td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[5].FemaleCount}}
+                        </td>
+                        <td class="Selected" align="center">{{InpatientServiceSummary.SurgerySummary[5].MaleCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--End: Surgery Table -->
+
+              <!--Start: Death Information Table -->
+              <table style="width: 100%; margin:1rem;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+                      <tr>
+                        <td colspan="2" align="center"><b>Death Information</b></td>
+                        <!-- <td class="blank_row"></td> -->
+                        <td align="center" class="Selected"> Female</td>
+                        <td align="center" class="Selected"> Male</td>
+                      </tr>
+                      <tr>
+                        <td class="rotate90" rowspan="6"
+                          style="width: 25px; height:100px; -webkit-transform: rotate(-90.0deg);">Hospital Death
+                        </td>
+
+                        <!-- <tr>
+                            <td rowspan="4" class="rotate90" style="width: 77px;">  Hospital Death </td>
+                          </tr> -->
+                      <tr *ngFor="let o of InpatientServiceSummary.DeathSummary">
+                        <td align="center" class="Selected">{{o.Condition}} </td>
+                        <td align="center" class="Selected">{{o.FemaleCount}} </td>
+                        <td align="center" class="Selected">{{o.MaleCount}} </td>
+
+                      </tr>
+                      <tr>
+                        <td colspan="2" align="center">Brought Dead</td>
+                        <td align="center" class="Selected">0</td>
+                        <td align="center" class="Selected">0</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" align="center">Postmortem Done</td>
+                        <td align="center" class="Selected">0</td>
+                        <td align="center" class="Selected">0</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--END: Death Information Table -->
+
+            </section>
+
+            <!-- Free Health Service Summary and Free Health Service And Social Security Programme -->
+            <section style="display: flex;justify-content: space-around;margin: 1rem 0rem;align-items: flex-start;">
+
+              <!--Start: Free Health Service Summary -->
+              <table style="width: 100%; margin:1rem;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+                      <tr>
+                        <td class="Selected" align="center" colspan="3"><b>Free Health Service Summary</b></td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center"><b>Cost Exemption</b></td>
+                        <td class="Selected" align="center"><b>No. of Patients</b></td>
+                        <td class="Selected" align="center"><b>Total Exempted Cost (NRS)</b></td>
+                      </tr>
+                      <tr *ngFor="let o of InpatientServiceSummary.FreeHealthServiceSummary">
+                        <td class="Selected" align="center">{{o.CostExemption }}</td>
+                        <td class="Selected" align="center">{{o.NoOfPatient}}</td>
+                        <td class="Selected" align="center">{{o.ExemptedAmount | number : '1.2-2'}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--End: Free Health Service Summary -->
+
+              <!--Start: Free Health Service And Social Security Programme -->
+              <table style="width: 100%; margin:1rem;">
+                <tr>
+                  <td>
+                    <table border="1" class="Selected" style="width:100%" align="center">
+                      <tr>
+                        <td class="Selected" align="center" colspan="5"><b>Free Health Service And Social Security
+                            Programme</b></td>
+                      </tr>
+                      <tr>
+                        <td class="Selected" align="center"><b>Social Security Programme</b></td>
+                        <td class="Selected" align="center"><b>Outpatients</b></td>
+                        <td class="Selected" align="center"><b>Inpatients</b></td>
+                        <td class="Selected" align="center"><b>Emergency</b></td>
+                        <td class="Selected" align="center"><b>Referred Out</b></td>
+                      </tr>
+                      <tr *ngFor="let o of InpatientServiceSummary.FreeHealthServiceSummary_SSP">
+                        <td class="Selected" align="center">{{o.MembershipTypeName}}</td>
+                        <td class="Selected" align="center">{{o.OutpatientsCount}}</td>
+                        <td class="Selected" align="center">{{o.InpatientsCount}}</td>
+                        <td class="Selected" align="center">{{o.ErPatientsCount}}</td>
+                        <td class="Selected" align="center">0</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--End: Free Health Service And Social Security Programme -->
+
+            </section>
+          </div>
+        </table>
+          <p style="text-align:center;">
+            <button class="btn blue" (click)="Print()"> Print Report <i class="glyphicon glyphicon-print"></i> </button>
+            <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('wholeTable')"> <i class="fa fa-file-excel-o"></i> Export </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

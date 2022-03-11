@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnChanges } from '@angular/core';
 import { Input, Output, EventEmitter, OnInit } from "@angular/core";
 import { NepaliCalendarService } from '../np/nepali-calendar.service';
 import * as moment from 'moment/moment';
@@ -42,7 +42,7 @@ input {
 `]
 })
 
-export class EnglishCalendarComponent {
+export class EnglishCalendarComponent implements OnChanges {
 
   public minimumDate: string;
   @Input("minimum-date")
@@ -52,6 +52,12 @@ export class EnglishCalendarComponent {
   get setMinDate(): string {
     return this.minimumDate;
   }
+
+  @Input("input-focus") //coming from parent form
+  public inputFocus:boolean=null;
+  public outputToDatePicker:boolean = null;
+
+  @Output('output-focus') outputFocus:EventEmitter<boolean> = new EventEmitter<boolean>();
 
   public maximumDate: string;
   @Input("maximum-date")
@@ -112,8 +118,18 @@ export class EnglishCalendarComponent {
   {   
   }
 
-  ngOnInit() {
-     
+  ngOnChanges(){
+     if(this.inputFocus){
+       if(this.showmonthCalendar){
+        this.setFocusById('FiscalYearName');
+       }
+       else if(!this.showmonthCalendar){
+        this.setFocusById('date');
+       }   
+     }
+  }
+
+  ngOnInit() {   
   }
 
   public EngCalendarOnDateChange() {
@@ -244,4 +260,25 @@ export class EnglishCalendarComponent {
     }
   }
   // END:Vikas: 06th Aug 20: Added for month calendar chnages.
+  
+  FocusOut(){
+    if(this.inputFocus){
+      this.inputFocus = false;
+      this.outputFocus.emit(this.outputToDatePicker=true);
+    }
+    else{
+      return;
+    } 
+   }
+
+  //common function to set focus on  given Element. 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
 }

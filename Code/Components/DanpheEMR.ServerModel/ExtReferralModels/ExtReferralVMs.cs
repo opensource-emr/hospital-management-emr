@@ -18,6 +18,7 @@ namespace DanpheEMR.ServerModel
         public double? TDSPercent { get; set; }//pratik:14April'2020
         public bool? IsIncentiveApplicable { get; set; }//pratik:14April'2020
         public string PANNumber { get; set; }//pratik:14April'2020
+        public string NMCNumber { get; set; }//pratik:14April'2020
     }
 
 

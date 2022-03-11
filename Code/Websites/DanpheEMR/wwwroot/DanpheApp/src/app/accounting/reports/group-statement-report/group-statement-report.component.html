@@ -1,0 +1,221 @@
+<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+
+    .childStyle {
+        margin-left: 20px !important;
+        color: green !important;
+        font-weight: normal !important;
+    }
+
+    .custom_table a {
+        font-family: 'Quicksand', 'Open Sans', sans-serif;
+        text-align: left;
+    }
+
+    .padLess_table th {
+        padding: 10px !important;
+    }
+
+    .padLess_table th b {
+        font-size: 13px;
+    }
+
+    .table-wrapper table {
+        background-color: #ffffff;
+    }
+
+    .table-wrapper table th {
+        position: sticky;
+        top: -1px;
+        background-color: #599be0 !important;
+        color: white;
+        z-index: 9;
+
+    }
+
+    .table-wrapper table tr+tr th {
+        top: 30px;
+        background-color: #f9f9f9 !important;
+        color: #555;
+
+    }
+
+    .trialbal-footer {
+        background-color: #dddddd !important;
+        position: sticky;
+        bottom: 0;
+    }
+
+    .control-label {
+        margin: 11px 0 0 0;
+    }
+
+    .control-label b {
+        font-weight: 600;
+    }
+
+    .row {
+        margin: 0 -5px;
+    }
+
+    div[class*="col-"] {
+        padding: 0 5px;
+    }
+
+    @media only screen and (max-width: 1080px) {
+        .label-frm-to {
+            margin-left: 5px;
+        }
+    }
+</style>
+
+<div>
+    <div class="caption custom-caption top-report-section">
+        <h3><i class="fa fa-book"></i>
+            <span class="caption-subject">Group Statement Report</span>
+        </h3>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+
+            <div class="col-md-7 col-xs-12" style="margin-right: -45px;">
+                <div class="form-group">
+                    <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red">
+                            *</b><b style="float:right;">:</b></label>
+                    <div>
+                        <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
+                            (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12" style="margin-right: -15px; padding: 5px 5px !important;margin-top:8px">
+                <label class="control-label no-padding">Select Group<b class="color-red"> *</b><b
+                        style="float:right;">:</b></label><br>
+                <div>
+                    <div class="div-relative">
+                        <input danphe-auto-complete class="col-md-11" [(ngModel)]="selectedLedgerGroup"
+                            [source]="ledgergroupList" placeholder="select ledger group"
+                            display-property-name="LedgerGroupName" value-property-name="LedgerGroupName"
+                            (valueChanged)="AssignSelectedLedgerGroup()" [list-formatter]="LedgerGroupListFormatter"
+                            max-num-list="20" onclick="this.select()" style="background-color: azure;"
+                            [ngModelOptions]="{standalone: true}" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1 col-xs-12" style=" padding:10px 5px !important; margin-top: 9px;">
+                <div class="form-group">
+                    <br>
+                    <button class="btn blue" type="button" (click)="GetGroupStatementRpt()" [disabled]="btndisabled">
+                        <i class="fa fa-refresh"></i>
+                        Load
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <customer-header style="display:none;padding:0px" id="headerForPrint"
+                [header-title]="'Group Statement Report'">
+            </customer-header>
+        </div>
+        <div class="row">
+            <div id="printpage" *ngIf="IsShowReport">
+                <div class="table-responsive table-wrapper" id="print_groupstatement">
+                    <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
+                        border="1" id="exportTable_groupstatement">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;width: 40%;"><b>Particulars</b></th>
+                                <th style="text-align: right;"><b>Opening</b></th>
+                                <th><b></b></th>
+                                <th style="text-align: right;"><b>Debit</b></th>
+                                <th style="text-align: right;"><b>Credit</b></th>
+                                <th style="text-align: right;"><b>Closing</b></th>
+                                <th><b></b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let row of reportData">
+                                <tr>
+                                    <td style="padding-left:20px !important;">                                        
+                                        <a (click)="SwitchViews(row)"
+                                            matTooltip="{{row.Particular}} {{row.Code}}">({{row.Code}})
+                                            &nbsp;{{row.Particular}}</a>
+                                    </td>
+                                    <td style="text-align:right;">                                        
+                                            {{row.OpeningTotal | Currency:'4'}}                                        
+                                    </td>
+                                    <td style="text-align:right;">                                        
+                                            {{row.OpeningType}}                                        
+                                    </td>
+
+                                    <td style="text-align:right;">                                        
+                                            {{row.TransactionDr | Currency:'4'}}                                        
+                                    </td>
+                                    <td style="text-align:right;">                                        
+                                            {{row.TransactionCr | Currency:'4'}}                                        
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span>
+                                            {{row.ClosingTotal | Currency:'4'}}
+                                        </span>
+                                    </td>
+                                    <td style="text-align:right;">                                        
+                                            {{row.ClosingType }}                                        
+                                    </td>
+                                </tr>
+
+                            </ng-container>
+
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="trialbal-footer"><b>Grand Total</b></td>
+                               
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.OpeningTotal | Currency:'4'}}
+                                </td>
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.OpeningType}}
+                                </td>
+
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.TransactionDr | Currency:'4'}}
+                                </td>
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.TransactionCr | Currency:'4'}}
+                                     </td>
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.ClosingTotal | Currency:'4'}}
+                                </td>
+                                <td class="trialbal-footer" style="font-weight:bold; text-align:right;">
+                                    {{reportDataGrandTotal.ClosingType }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="padding-bottom: 18px; margin-top: 15px;">
+                    <div class="form-actions">
+                        <button class="btn btn-primary hidden-print" (click)="Print('print_groupstatement')" value="Print"
+                            title="print page">Print<i class="glyphicon glyphicon-print"
+                                style="margin-left:10px;"></i></button>
+                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print"
+                            (click)="ExportToExcel('print_groupstatement')" value=""
+                            title="export to excel">Export<i class="fa fa-file-excel-o"
+                                style="margin-left:10px;"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<ledger-report-reusable *ngIf="showLedgerDetail" [showLedgerDetail]="showLedgerDetail" [FiscalYearId]="fiscalYearId"
+    [fromDate]="fromDate" [toDate]="toDate" [ledgerId]="ledgerId" [ledgerCode]="ledgerCode" [ledgerName]="ledgerName"
+    (callback-add)="ShowReport($event)"></ledger-report-reusable>
+<app-print-page *ngIf="showPrint" [print-data-header]="printDetaiils"></app-print-page>

@@ -50,6 +50,14 @@
     </div>
   </div>
   <div class="row">
+    <div class="col-md-5" *ngIf="!coreService.singleLabType">
+      Lab Type:
+      <select [(ngModel)]="LabTypeName" name="lab_type" id="lab_type" (change)="OnLabTypeChange()">
+        <option *ngFor="let labtype of coreService.labTypes" value="{{labtype.LabTypeName}}">{{labtype.DisplayName}}</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-12">
       <table class="table billing-table" style="background-color: initial; margin-top: 10px;">
         <thead>
@@ -61,7 +69,7 @@
             <th></th>
             <th sortable-header col="itemnames"><b>ItemName</b></th>
             <th sortable-header col="quantity"><b>Qty</b></th>
-            <!--<th sortable-header col="price"><b>Price</b></th>-->
+            <th *ngIf = "ShowHidePrice" sortable-header col="price"><b>Price</b></th>
           </tr>
         </thead>
         <tbody>
@@ -154,7 +162,7 @@
             <td>
               <form [formGroup]="row.BillingTransactionItemValidator">
                 <input [(ngModel)]="row.Quantity" style="width: 70px;" min="0" class="form-control cstm-form-control"
-                  name="quantity" type="number" onClick="this.select();" onwheel="this.blur();"
+                  name="quantity" type="number" onClick="this.select();" onwheel="this.blur();" (ngModelChange)="calculateTotalAmount()"
                   formControlName="Quantity" />
                 <div class="color-red font-sm" *ngIf="row.IsDirty('Quantity')"
                   [hidden]="row.IsValid('Quantity','invalidNumber')">
@@ -163,7 +171,7 @@
               </form>
             </td>
 
-            <!--<td>
+            <td *ngIf = "ShowHidePrice">
               <form [formGroup]="row.BillingTransactionItemValidator">
                 <input [(ngModel)]="row.Price"
                        style="width:90px"
@@ -177,11 +185,19 @@
                        value="row.Price">
                 <div class="color-red font-sm" *ngIf="row.IsDirty('Price')" [hidden]="row.IsValid('Price','invalidNumber')">Enter valid number.</div>
               </form>
-            </td>-->
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+   <div *ngIf ='ShowHidePrice' class="col-md-3" style="float:right">
+      <div class="col-md-5">
+         Total Amount :
+      </div>
+      <div class="col-md-6">
+         <label class="form-control pd-managed" style="background-color:#eef1f5;">{{totalAmount}}</label>
+      </div>
+   </div>
   </div>
   <!--end: billing row-->
   <!--form ends here-->

@@ -1,0 +1,95 @@
+<div class="row">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption"> <i class="fa fa-shopping-cart"></i> <span class="caption-subject">Purchase Order Report</span> </div>
+        <div class="row">
+          <div class="col-md-5">
+            <from-to-date-select (on-change)="OnDateRangeChange($event)">
+            </from-to-date-select>
+          </div> 
+          <div class="col-md-3">
+            <div class="form-group row">
+              <label class="control-label col-md-5">Vendor Name<b style="float:right;">:</b></label>
+                <div class="col-md-6 autocomplete-item">
+                    <input danphe-auto-complete class="form-control" (valueChanged)="onVendorChange()"
+                    placeholder="Select Vendor Name" [(ngModel)]="selectedVndr" [list-formatter]="VendorListFormatter" 
+                    [ngModelOptions]="{standalone: true}" display-property-name="VendorName" value-property-name=null [source]="VendorList"
+                     [match-formatted]="true" onclick="this.select();" />
+                </div>  
+            </div>
+          </div> 
+          <div class="col-md-3">
+            <div class="form-group row">
+              <label class="control-label col-md-5">Item Name<b style="float:right;">:</b></label>
+              <div class="col-md-6 autocomplete-item">
+                  <input danphe-auto-complete class="form-control" (valueChanged)="onItemChange()"
+                   placeholder="Select Item Name" [(ngModel)]="selecteditem" [list-formatter]="ItemListFormatter" 
+                   [ngModelOptions]="{standalone: true}" display-property-name="ItemName" value-property-name=null [source]="itemList"
+                    [match-formatted]="true" onclick="this.select();" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <button class="btn blue" type="button" (click)="ShowPurchaseOrderSummery()"> 
+              <i class="fa fa-search"></i> Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="form-group row">
+      <label class="control-label col-md-4">Item Code<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <input type="text" [(ngModel)]="selectedItemCode" [ngModelOptions]="{standalone: true}" placeholder="Enter Item Code"
+          style="width:100%!important;">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="form-group row">
+      <label class="control-label col-md-4">Sub-Category<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <input type="text" [(ngModel)]="selectedItemSubCategory" [ngModelOptions]="{standalone: true}"
+          placeholder="Enter Sub-Category" style="width:100%!important;">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2" *ngIf="showClearFilterButton()">
+    <button style="padding-top: 1rem !important;" class="btn btn-sm"  (click)="clearAllFilters()">
+      <span>
+        <i class="fa fa-times"></i>
+        <i class="fa fa-filter fa-2x"></i>
+      </span>Clear Filter
+    </button>
+  </div>
+</div>
+  
+<div class="row">
+  <div class="col-md-6">
+    <div class="input-group pull-left">
+        <div class="icheck-inline">
+          <label class="mt-radio mt-radio-outline"> 
+            <input name="selectedItemTypeFilter" type="radio" checked="checked" [(ngModel)]="selectedItemTypeFilter" value="All" (change)="filterPODataInClientSide()" style="width:15px;height:15px" />
+              <span></span>All </label>
+              <label class="mt-radio mt-radio-outline">
+            <input name="selectedItemTypeFilter" type="radio" value="Consumables" [(ngModel)]="selectedItemTypeFilter" (change)="filterPODataInClientSide()">
+                <span></span>Consumables </label>
+              <label class="mt-radio mt-radio-outline">
+            <input name="selectedItemTypeFilter" type="radio" value="CapitalGoods" [(ngModel)]="selectedItemTypeFilter" (change)="filterPODataInClientSide()" >
+              <span></span>Capital Goods </label>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PurchaseOrderReportColumns"
+                     [grid-data]="filteredPurchaseOrderReportData"
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"  [NepaliDateInGridParams]="NepaliDateInGridSettings"> 
+    </danphe-grid>
+  </div>
+</div>

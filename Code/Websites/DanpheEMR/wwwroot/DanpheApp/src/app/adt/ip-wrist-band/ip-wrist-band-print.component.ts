@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { Router } from '@angular/router';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CommonFunctions } from "../../shared/common.functions";
 import { CoreService } from "../../core/shared/core.service";
@@ -11,9 +11,11 @@ import { IPWristBandViewModel } from "./ip-wrist-band-info.model";
 import { ADT_BLService } from "../shared/adt.bl.service";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import html2canvas from 'html2canvas';
+import { PrinterSettingsModel, ENUM_PrintingType } from "../../settings-new/printers/printer-settings.model";
 @Component({
     selector: 'ip-wrist-band',
-    templateUrl: "./ip-wrist-band.html"
+    templateUrl: "./ip-wrist-band.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class IPWristBandPrintComponent {
@@ -21,19 +23,26 @@ export class IPWristBandPrintComponent {
     public wristBandInfo: IPWristBandViewModel = null;
     public showWristBand: boolean = false;
     loading = false;
-    public options =  {
-        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
+    public options = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
+    };
     public showLoading: boolean = false;
     //for QR-specific purpose only--sud.
     public showQrCode: boolean = false;
+    public defaultFocus: string = null;
     public patientQRCodeInfo: string = "";
+
+
+    public closePopUpAfterWristBandPrint: boolean = true;
+
     constructor(
         public http: HttpClient,
         public msgBoxServ: MessageboxService,
         public router: Router,
         public nepaliCalendarServ: NepaliCalendarService,
-      public admissionBlService: ADT_BLService,
-        public coreService: CoreService) {
+        public admissionBlService: ADT_BLService,
+        public coreService: CoreService,
+        public changeDetector: ChangeDetectorRef) {
         this.showHidePrintButton();
     }
 
@@ -55,12 +64,30 @@ export class IPWristBandPrintComponent {
         }
     }
 
+    ngOnInit() {
+
+        let val = this.coreService.Parameters.find(p => p.ParameterGroupName == 'ADT' && p.ParameterName == 'AdmissionPrintSettings');
+        let param = JSON.parse(val && val.ParameterValue);
+        if (param) {
+            this.defaultFocus = param.DefaultFocus;
+            this.closePopUpAfterWristBandPrint = param.closePopUpAfterWristBandPrint;
+        }
+    }
+
+    focusOnPrint() {
+        let btnObj = document.getElementById('btnPrintWristBand');
+        if (btnObj && this.defaultFocus.toLowerCase() == "wristband") {
+            btnObj.focus();
+        }
+    }
+
     GetWristBandInfo() {
         this.http.get<any>('/api/Admission?reqType=wrist-band-info' + '&patientVisitId=' + this.patientVisitId, this.options)
             .map(res => res)
             .subscribe(res => {
                 if (res.Status = "OK" && res.Results) {
                     this.CallBackGetWristbandInfo(res);
+                    this.focusOnPrint();
                 }
                 else {
                     this.showWristBand = false;
@@ -82,6 +109,8 @@ export class IPWristBandPrintComponent {
         Age/Sex: `+ ageSex;
         //set this to true only after all values are set.
         this.showQrCode = true;
+
+        //this.focusOnPrint();
 
     }
 
@@ -106,11 +135,6 @@ export class IPWristBandPrintComponent {
     CloseWindow() {
         this.closePopup.emit(true);
     }
-
-
-
-
-
 
     ////For server side printing: sud--20Sept'18
 
@@ -196,7 +220,7 @@ export class IPWristBandPrintComponent {
         printableHTML += '<body style="margin:8px 0px 0px 280px !important;">' + printContents + '</body></html>';
         let printerName = this.LoadPrinterSetting();
         printerName += this.wristBandInfo.PatientCode;
-        var folderPath = this.LoadFileStoragePath();
+        var folderPath = this.coreService.AllPrinterSettings.find(a => a.PrintingType == 'server' && a.GroupName == 'reg-sticker').ServerFolderPath;
 
         if (!folderPath) {
             alert("Couldn't find storage location for WristBand. Please check Parameter values.");
@@ -223,5 +247,36 @@ export class IPWristBandPrintComponent {
 
     }
 
+    public hotkeys(event) {
+        if (event.keyCode == 27) {
+            this.CloseWindow();
+        }
+    }
+
+    public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
+    public openBrowserPrintWindow: boolean = false;
+    public browserPrintContentObj: any;
+    OnPrinterChanged($event) {
+        this.selectedPrinter = $event;
+    }
+
+    public print() {
+        if (!this.selectedPrinter || this.selectedPrinter.PrintingType == ENUM_PrintingType.browser) {
+            this.browserPrintContentObj = document.getElementById("wristband-print-page");
+            this.openBrowserPrintWindow = false;
+            this.changeDetector.detectChanges();
+            this.openBrowserPrintWindow = true;
+            if (this.closePopUpAfterWristBandPrint) {
+                this.router.navigate(['ADTMain/AdmittedList']);
+            }
+
+        } else if (this.selectedPrinter.PrintingType == ENUM_PrintingType.server) {
+            this.PrintWristBand_Server();
+        }
+        else {
+            this.msgBoxServ.showMessage('error', ["Printer Not Supported."]);
+            return;
+        }
+    }
 
 }

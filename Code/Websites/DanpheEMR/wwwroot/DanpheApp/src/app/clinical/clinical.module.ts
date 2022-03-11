@@ -87,7 +87,7 @@ import { ClinicalSharedModule } from "./clinical-shared-module";
     ClinicalComponent,
     //AllergyListComponent,
     HomeMedicationListComponent,
-    HomeMedicationAddComponent,
+    //HomeMedicationAddComponent,
     InputOutputListComponent,
     EyeMainComponent,
     EyeExaminationComponent,

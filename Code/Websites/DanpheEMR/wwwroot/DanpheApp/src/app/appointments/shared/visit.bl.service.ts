@@ -36,7 +36,7 @@ export class VisitBLService {
   }
 
   public GetPatientVisits_Today(patientId: number) {
-    return this.visitDLService.GetPatientVisitList_Today(patientId )
+    return this.visitDLService.GetPatientVisitList_Today(patientId)
       .map(res => res);
   }
 
@@ -45,8 +45,8 @@ export class VisitBLService {
       .map(res => res);
   }
 
-  public GetVisitList(claimCode: string) {
-    return this.visitDLService.GetVisitList(claimCode)
+  public GetVisitList(claimCode: number, patId: number) {
+    return this.visitDLService.GetVisitList(claimCode, patId)
       .map(res => res);
   }
 
@@ -66,9 +66,16 @@ export class VisitBLService {
       .map(res => res);
   }
   //get visit list according to status
-  public GetVisitsByStatus(status: string, maxlimitdays: number,searchTxt) {
+  public GetVisitsByStatus(status: string, maxlimitdays: number, searchTxt) {
     //var status = "initiated";
-    return this.visitDLService.GetVisitsByStatus(status, maxlimitdays,searchTxt)
+    return this.visitDLService.GetVisitsByStatus(status, maxlimitdays, searchTxt)
+      .map(res => res);
+  }
+
+  //get visit list
+  public GetVisits(maxlimitdays: number, searchTxt) {
+    //var status = "initiated";
+    return this.visitDLService.GetVisits(maxlimitdays, searchTxt)
       .map(res => res);
   }
 
@@ -106,7 +113,7 @@ export class VisitBLService {
   }
 
   //once visit is created updating the appointment status
-  public UpdateAppointmentStatus(appointmentId: number, status: string, providerId:number, providerName:string) {
+  public UpdateAppointmentStatus(appointmentId: number, status: string, providerId: number, providerName: string) {
     return this.appointmentDLService.PutAppointmentStatus(appointmentId, status, providerId, providerName)
       .map((responseData) => {
         return responseData;
@@ -235,14 +242,20 @@ export class VisitBLService {
 
   //Get Matching Patient Details by FirstName,LastName,PhoneNumber for showing registered matching patient on Visit Creation time
   public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance = false, IMISCode = null) {
-    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance,IMISCode)
+    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance, IMISCode)
       .map(res => { return res });
   }
+
+  public GetApptForDeptOnSelectedDate(deptId, selectedDate, patientId) {
+    return this.visitDLService.GetApptForDeptOnSelectedDate(deptId, selectedDate, patientId)
+      .map(res => { return res });
+  }
+
   //ashim: 17Aug'2018
   //this function is used in return visit billing during transfer visit case.
   public PostReturnTransaction(billingTransaction: BillingTransaction, returnRemarks: string) {
     let input = new FormData();
-   
+
     let returnReceipt = new BillInvoiceReturnModel();
     returnReceipt.RefInvoiceNum = billingTransaction.InvoiceNo;
     returnReceipt.PatientId = billingTransaction.PatientId;
@@ -335,9 +348,13 @@ export class VisitBLService {
   public GetDepartmentOldPatientPrices() {
     return this.visitDLService.GetDepartmentOldPatientPrices();
   }
-   
+
   public GetVisitDoctors() {
     return this.visitDLService.GetVisitDoctors();
+  }
+
+  public GetRequestingDepartmentByVisitId(visitId: number) {
+    return this.visitDLService.GetRequestingDepartmentByVisitId(visitId);
   }
 
   public GetBillItemList() {
@@ -405,7 +422,10 @@ export class VisitBLService {
 
   }
 
-
+  public GetMunicipality(id: number) {
+    return this.patientDLService.GetMunicipality(id)
+      .map(res => { return res })
+  }
 
 
 }

@@ -43,10 +43,18 @@ import { LabReportDispatchComponent } from './lab-tests/lab-master/lab-report-di
 import { LabReportDispatchDetailComponent } from './lab-tests/lab-master/lab-report-dispatch-detail';
 import { BillingSharedModule } from '../billing/billing-shared.module';
 import { LabTestsEmptyAddReportComponent } from './lab-tests/lab-collect-sample/lab-empty-report-template';
+import { LabTypeSelectionComponent } from './lab-selection/lab-type-selection.component';
+import { LabSelectionGuardService } from './shared/lab-selection-guard.service';
+import { LabCategorySelectComponent } from './shared/lab-select-category/lab-select-category.component';
+import { LabWorkListReportComponent } from './lab-tests/lab-pending-results/lab-worklist-report';
+import { LabSendSmsComponent } from './notification/sms/send-sms.component';
+import { LabNotificationComponent } from './notification/notification-main.component';
+import { SettingsSharedModule } from '../settings-new/settings-shared.module';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
   providers: [
-    LabService,
     LabsBLService,
     LabsDLService,
     LabTestResultService,
@@ -56,7 +64,8 @@ import { LabTestsEmptyAddReportComponent } from './lab-tests/lab-collect-sample/
     VisitDLService,
     AppointmentDLService,
     ADT_BLService,
-    ADT_DLService],
+    ADT_DLService,
+    LabSelectionGuardService],
   imports: [LabsRoutingModule,
     ReactiveFormsModule,
     FormsModule,
@@ -65,7 +74,10 @@ import { LabTestsEmptyAddReportComponent } from './lab-tests/lab-collect-sample/
     AngularMultiSelectModule,
     SharedModule,
     DanpheAutoCompleteModule,
-    BillingSharedModule
+    BillingSharedModule,
+    SettingsSharedModule,
+    NgxPaginationModule,
+    ScrollingModule
   ],
   declarations: [LabsMainComponent,
     LabListRequisitionComponent,
@@ -87,7 +99,12 @@ import { LabTestsEmptyAddReportComponent } from './lab-tests/lab-collect-sample/
     VendorSelectComponent,
     LabReportDispatchComponent,
     LabReportDispatchDetailComponent,
-    LabTestsEmptyAddReportComponent
+    LabTestsEmptyAddReportComponent,
+    LabTypeSelectionComponent,
+    LabCategorySelectComponent,
+    LabWorkListReportComponent,
+    LabSendSmsComponent,
+    LabNotificationComponent
   ],
   bootstrap: []
 

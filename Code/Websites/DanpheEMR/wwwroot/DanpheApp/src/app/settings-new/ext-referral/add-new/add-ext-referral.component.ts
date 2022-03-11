@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, Renderer2 } from "@angular/core";
 import { ExternalReferralModel } from "../../shared/external-referral.model";
 import { SettingsService } from "../../shared/settings-service";
 import { SettingsBLService } from "../../shared/settings.bl.service";
@@ -22,16 +22,19 @@ export class AddExternalReferralComponent {
   public completeExternalRefList: Array<ExternalReferralModel> = new Array<ExternalReferralModel>();
   public externalRefList: Array<ExternalReferralModel> = new Array<ExternalReferralModel>();
   public externalRef: ExternalReferralModel = new ExternalReferralModel();
-
+  public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
 
   constructor(public settingsServ: SettingsService, public settingsBlService: SettingsBLService,
-    public msgBoxServ: MessageboxService) {
+    public msgBoxServ: MessageboxService, public renderer: Renderer2) {
     let abc = 0;
+    this.SetFocusById('referrerName');
+    this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
+      if (e.keyCode == this.ESCAPE_KEYCODE) {
+        this.close();
+      }
+    });
   }
-
-
-
-
+  globalListenFunc: Function;
   public isAddNewRef: boolean = true;
 
   ngOnInit() {
@@ -67,6 +70,7 @@ export class AddExternalReferralComponent {
           }
           else {
             this.msgBoxServ.showMessage("failed", ["failed get DialysisCode. please check log for details."]);
+            this.SetFocusById('referrerName');
           }
 
 
@@ -97,6 +101,7 @@ export class AddExternalReferralComponent {
           }
           else {
             this.msgBoxServ.showMessage("failed", ["failed get DialysisCode. please check log for details."]);
+            this.SetFocusById('referrerName');
           }
 
 
@@ -115,6 +120,13 @@ export class AddExternalReferralComponent {
     this.externalRef = new ExternalReferralModel();
     this.callbackAdd.emit({ action: "close", data: null });
   }
-
+  public SetFocusById(id: string) {
+    window.setTimeout(function () {
+      let elementToBeFocused = document.getElementById(id);
+      if (elementToBeFocused) {
+        elementToBeFocused.focus();
+      }
+    }, 100);
+  }
 
 }

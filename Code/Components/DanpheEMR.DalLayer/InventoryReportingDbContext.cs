@@ -3,14 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DanpheEMR.ServerModel.ReportingModels;
 using System.Data.SqlClient;
 using System.Data;
-using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using DanpheEMR.ServerModel.InventoryModels.InventoryReportModel;
 
 namespace DanpheEMR.DalLayer
@@ -59,47 +54,6 @@ namespace DanpheEMR.DalLayer
             }
             DataTable purchaseItems = DALFunctions.GetDataTableFromStoredProc("SP_Report_INV_CurrentStockLevel", paramList, this);
             return purchaseItems;
-        }
-        #endregion
-        #region Substore Dispatch and Consumption Report Details 
-        public DataTable SubStoreDispatchAndConsumptionReport(string storeIds, DateTime FromDate, DateTime ToDate)
-        {
-            List<SqlParameter> paramList = new List<SqlParameter>()
-            {
-                new SqlParameter("@StoreIds", storeIds),
-                new SqlParameter("@FromDate", FromDate),
-                new SqlParameter("@ToDate", ToDate)
-            };
-            foreach(SqlParameter parameter in paramList)
-            {
-                if(parameter.Value == null)
-                {
-                    parameter.Value = "";
-                }
-            }
-            DataTable disconItems = DALFunctions.GetDataTableFromStoredProc("SP_INV_RPT_GetSubstoreDispConsumption_Summary", paramList, this);
-            return disconItems;
-        }
-        #endregion
-        #region Item level details of Substore Dispatch and Consumption Report
-        public DataTable ItemDetailsForDispatchAndConsumptionReport(string storeIds, int ItemId, string fromdate, string todate)
-        {
-            List<SqlParameter> paramList = new List<SqlParameter>()
-            {
-                new SqlParameter("@StoreIds", storeIds),
-                new SqlParameter("@ItemId", ItemId),
-                new SqlParameter("@FromDate", fromdate),
-                new SqlParameter("@ToDate", todate)
-            };
-            foreach (SqlParameter parameter in paramList)
-            {
-                if (parameter.Value == null)
-                {
-                    parameter.Value = "";
-                }
-            }
-            DataTable itemDetails = DALFunctions.GetDataTableFromStoredProc("SP_INV_RPT_GetSubstoreDispConsumption_Items", paramList, this);
-            return itemDetails;
         }
         #endregion
         #region Current Stock Level Item Details with item id and store id
@@ -162,12 +116,13 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region INV Purchase Items Report
-        public DataTable INVPurchaseItemsReport(DateTime FromDate, DateTime ToDate, int FiscalYearId)
+        public DataTable INVPurchaseItemsReport(DateTime FromDate, DateTime ToDate, int FiscalYearId, string ItemIds)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                                                                 new SqlParameter("@FromDate", FromDate),
                                                                 new SqlParameter("@ToDate", ToDate),
-                                                                new SqlParameter("@FiscalYearId",FiscalYearId)
+                                                                new SqlParameter("@FiscalYearId",FiscalYearId),
+                                                                new SqlParameter("@ItemIds", ItemIds),
                                                                     };
             foreach (SqlParameter parameter in paramList)
             {
@@ -181,26 +136,26 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
         #region Purchase Order report
-        public List<PurchaseOrderModel> PurchaseOrderReport(DateTime FromDate, DateTime ToDate, int OrderNumber)
+        public List<PurchaseOrderModel> PurchaseOrderReport(DateTime FromDate, DateTime ToDate, object StoreId)
         {
-            if (OrderNumber == 0)
-            {
-                var Data = Database.SqlQuery<PurchaseOrderModel>("exec SP_Report_Inventory_PurchaseOrderSummeryReport @FromDate,@ToDate",
+            //if (OrderNumber == 0)
+            //{
+                var Data = Database.SqlQuery<PurchaseOrderModel>("exec SP_Report_Inventory_PurchaseOrderSummeryReport @FromDate,@ToDate,@StoreId",
             new SqlParameter("@FromDate", FromDate),
-            new SqlParameter("@ToDate", ToDate)
-
+            new SqlParameter("@ToDate", ToDate),
+            new SqlParameter("@StoreId", (StoreId != null ? StoreId : DBNull.Value))
             ).ToList();
                 return Data.ToList<PurchaseOrderModel>();
-            }
-            else
-            {
-                var Data = Database.SqlQuery<PurchaseOrderModel>("exec SP_Report_Inventory_PurchaseOrderSummeryReport @FromDate,@ToDate,@OrderNumber",
-                new SqlParameter("@FromDate", FromDate),
-                new SqlParameter("@ToDate", ToDate),
-                new SqlParameter("@OrderNumber", OrderNumber)
-                ).ToList();
-                return Data.ToList<PurchaseOrderModel>();
-            }
+            //}
+            //else
+            //{
+            //    var Data = Database.SqlQuery<PurchaseOrderModel>("exec SP_Report_Inventory_PurchaseOrderSummeryReport @FromDate,@ToDate,@OrderNumber",
+            //    new SqlParameter("@FromDate", FromDate),
+            //    new SqlParameter("@ToDate", ToDate),
+            //    new SqlParameter("@OrderNumber", OrderNumber)
+            //    ).ToList();
+            //    return Data.ToList<PurchaseOrderModel>();
+            //}
 
         }
         #endregion
@@ -298,6 +253,66 @@ namespace DanpheEMR.DalLayer
 
         }
         #endregion
+
+        #region Fixed Assets  Movement report
+        public List<FixedAssetsMovementModel> FixedAssetsMovementReport(DateTime FromDate, DateTime ToDate, object EmployeeId, object DepartmentId, object ItemId, object ReferenceNumber)
+        {
+            var Data = Database.SqlQuery<FixedAssetsMovementModel>("exec SP_Report_Inventory_FixedAssetsMovement @FromDate,@ToDate,@EmployeeId,@DepartmentId,@ItemId,@ReferenceNumber",
+            new SqlParameter("@FromDate", FromDate),
+            new SqlParameter("@ToDate", ToDate),
+            new SqlParameter("@EmployeeId", (EmployeeId != null ? EmployeeId : DBNull.Value)),
+            new SqlParameter("@DepartmentId", (DepartmentId != null ? DepartmentId : DBNull.Value)),
+            new SqlParameter("@ItemId", (ItemId != null ? ItemId : DBNull.Value)),
+            new SqlParameter("@ReferenceNumber", (ReferenceNumber != null ? ReferenceNumber : DBNull.Value))
+            ).ToList();
+            return Data.ToList<FixedAssetsMovementModel>();
+
+
+        }
+        #endregion
+
+        #region Depatment Detail Stock Ledger Report
+        public List<DetailStockLedgerModel> DepartmentDetailStockLedgerReport(DateTime FromDate, DateTime ToDate, int? ItemId, int selectedStoreId)
+        {
+            //var uptoDateTimeStr = UpToDate.ToString("yyyy-MM-dd");
+            var Data = Database.SqlQuery<DetailStockLedgerModel>("exec SP_Report_Inventory_DetailedStockLedger @FromDate,@ToDate,@ItemId,@StoreId",
+            new SqlParameter("@FromDate", FromDate),
+            new SqlParameter("@ToDate", ToDate),
+            new SqlParameter("@ItemId", (Object)ItemId ?? DBNull.Value),
+            new SqlParameter("@StoreId", selectedStoreId)
+            ).ToList();
+
+            return Data.ToList<DetailStockLedgerModel>();
+
+
+        }
+        #endregion
+        #region Quotion Rates report
+        public DataTable QuotationRatesReport(int PurchaseOrderId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@PurchaseOrderId", PurchaseOrderId)
+            };
+            foreach (SqlParameter parameter in paramList)
+            {
+                if (parameter.Value == null)
+                {
+                    parameter.Value = "";
+                }
+            }
+            var Data = DALFunctions.GetDataTableFromStoredProc("SP_Report_Quotation_Rates", paramList, this);
+            return Data;
+        }
+        #endregion
+
+        public List<ApprovedMaterialStockRegisterModel> ApprovedMaterialStockRegisterReport(DateTime FromDate, DateTime ToDate)
+        {
+            var Data = Database.SqlQuery<ApprovedMaterialStockRegisterModel>("exec SP_Report_Inventory_FixedAssets @FromDate,@ToDate",
+            new SqlParameter("@FromDate", FromDate),
+            new SqlParameter("@ToDate", ToDate)
+            ).ToList();
+            return Data.ToList<ApprovedMaterialStockRegisterModel>();
+        }
         #region DispatchDetail
         public List<DispatchDetailModel> DispatchDetail(int dispatchId)
         {
@@ -374,11 +389,12 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
         #region inventory purchase summary report 
-        public DataTable InvPurchaseSummaryReport(DateTime FromDate, DateTime ToDate)
+        public DataTable InvPurchaseSummaryReport(DateTime FromDate, DateTime ToDate,int VendorId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                                                                 new SqlParameter("@FromDate", FromDate),
-                                                                new SqlParameter("@ToDate", ToDate)
+                                                                new SqlParameter("@ToDate", ToDate),
+                                                                new SqlParameter("@VendorId",VendorId)
                                                                    };
             foreach (SqlParameter parameter in paramList)
             {
@@ -390,6 +406,60 @@ namespace DanpheEMR.DalLayer
             DataTable purchaseSummaryTbl = DALFunctions.GetDataTableFromStoredProc("SP_Report_Inventory_PurchaseSummary", paramList, this);
             return purchaseSummaryTbl;
 
+        }
+        #endregion
+
+        #region inventory purchase return to supplier report 
+        public List<ReturnToVendorItems> ReturnToSupplierReport(DateTime FromDate, DateTime ToDate, object VendorId, object ItemId, object batchNumber, object goodReceiptNumber,object creditNoteNumber)
+        {
+            var Data = Database.SqlQuery<ReturnToVendorItems>("exec SP_Report_Inventory_ReturnToSupplierReport @FromDate,@ToDate,@VendorId,@ItemId,@batchNumber,@goodReceiptNumber,@creditNoteNumber",
+            new SqlParameter("@FromDate", FromDate),
+            new SqlParameter("@ToDate", ToDate),
+            new SqlParameter("@VendorId", (VendorId != null ? VendorId : DBNull.Value)),
+            new SqlParameter("@ItemId", (ItemId != null ? ItemId : DBNull.Value)),
+            new SqlParameter("@batchNumber", (batchNumber != null ? batchNumber : DBNull.Value)),
+            new SqlParameter("@goodReceiptNumber", (goodReceiptNumber != null ? goodReceiptNumber : DBNull.Value)),
+            new SqlParameter("@creditNoteNumber", (creditNoteNumber != null ? creditNoteNumber : DBNull.Value))
+            ).ToList();
+            return Data.ToList<ReturnToVendorItems>();
+        }
+        #endregion
+
+        #region Supplier Wise Stock
+        public List<SupplierWiseStockModel> SupplierWiseStockReport(DateTime FromDate, DateTime ToDate, object VendorId, object StoreId, object ItemId)
+        {
+            var Data = Database.SqlQuery<SupplierWiseStockModel>("exec SP_Report_Inventory_SupplierWiseStock @FromDate,@ToDate,@VendorId,@StoreId,@ItemId",
+            new SqlParameter("@FromDate", FromDate),
+            new SqlParameter("@ToDate", ToDate),
+            new SqlParameter("@VendorId", (VendorId!= null ? VendorId : DBNull.Value)),
+            new SqlParameter("@StoreId", (StoreId != null ? StoreId : DBNull.Value)),
+            new SqlParameter("@ItemId", (ItemId != null ? ItemId : DBNull.Value))
+            ).ToList();
+            return Data.ToList<SupplierWiseStockModel>();
+        }
+        #endregion
+        #region Expiry Item Report        
+        public DataTable ExpiryItemReport(int? ItemId, int? StoreId, DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@ItemId", ItemId),
+                 new SqlParameter("@StoreId", StoreId),
+                  new SqlParameter("@FromDate", FromDate),
+                   new SqlParameter("@ToDate", ToDate)
+            };
+
+            DataTable expiryItem = DALFunctions.GetDataTableFromStoredProc("SP_Report_Inventory_ExpiryItemReport", paramList, this);
+
+            return expiryItem;
+        }
+        #endregion
+
+        #region Supplier Information Report 
+        public DataTable INVSupplierInformationReport()
+        {
+            DataTable doctorRevenue = DALFunctions.GetDataTableFromStoredProc("SP_INVReport_SupplierInfoReport", this);
+            return doctorRevenue;
         }
         #endregion
     }

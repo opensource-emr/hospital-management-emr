@@ -21,7 +21,8 @@ import { ENUM_BillingStatus, ENUM_VisitType, ENUM_BillingType } from "../../../s
 
 @Component({
   selector: 'insurance-bill-item-request',
-  templateUrl: './insurance-bill-item-request.html'
+  templateUrl: './insurance-bill-item-request.html',
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class InsuranceBillItemRequest {
 
@@ -229,7 +230,7 @@ export class InsuranceBillItemRequest {
 
   ItemsListFormatter(data: any): string {
     let html: string = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + data["Price"];
     return html;
   }
 
@@ -689,7 +690,6 @@ export class InsuranceBillItemRequest {
 
     this.InsuranceBillRequestDetails = txnReceipt;
     this.loading = false;//enables the submit button once all the calls are completed
-    //this.router.navigate(['Billing/ReceiptPrint']);
 
 
     this.showInsuranceBillRequestSlip = false;
@@ -716,5 +716,11 @@ export class InsuranceBillItemRequest {
         err => {
           this.msgBoxServ.showMessage("error", ['Failed to get Organization List.' + err.ErrorMessage]);
         });
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.CloseInsuranceRequestsPage();
+    }
   }
 }

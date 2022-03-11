@@ -46,5 +46,10 @@ namespace DanpheEMR.ServerModel
         public PatientModel Patient { get; set; }
         [NotMapped]
         public string BillingUser { get; set; }
+        public double? CollectionFromReceivable { get; set; }//added: Krishna: 16th Nov, 21
+        public double? DiscountReturnAmount { get; set; }//added: Krishna: 16th Nov, 21
+
+        [NotMapped]
+        public List<int> BillReturnIdsCSV { get; set; }// added: Krishna: 22nd Nov'21
     }
 }

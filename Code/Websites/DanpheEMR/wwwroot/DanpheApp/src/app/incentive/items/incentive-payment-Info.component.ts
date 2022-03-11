@@ -64,10 +64,12 @@ export class INCTV_BIL_IncentivePaymentInfoComponent {
     tot_RefBilAmt: 0, tot_RefInctvAmt: 0, tot_RefTDSAmt: 0, tot_RefNetPayable: 0,
     tot_AssignBilAmt: 0, tot_AssignInctvAmt: 0, tot_AssignTDSAmt: 0, tot_AssignNetPayable: 0,
     tot_AdjBilAmt: 0, tot_AdjInctvAmt: 0, tot_AdjTDSAmt: 0, tot_AdjNetPayable: 0,
-    tot_InctvAmt: 0, tot_NetPayable: 0, tot_TDSAmt: 0
+    tot_InctvAmt: 0, tot_NetPayable: 0, tot_TDSAmt: 0, tot_PreviousAdjAmt:0
   };
 
   public DocObj: any = { EmployeeId: null, FullName: '' };
+  public adjustedAmount:number = 0;
+  public totalVoucherAmount:number = 0;
 
   constructor(
     public msgBoxServ: MessageboxService,
@@ -176,10 +178,14 @@ export class INCTV_BIL_IncentivePaymentInfoComponent {
 
   public CalculateSummaryAmounts(data) {
     //initailize to zero
+    this.adjustedAmount = this.totalVoucherAmount = 0;
     this.summary.tot_RefBilAmt = this.summary.tot_RefInctvAmt = this.summary.tot_RefTDSAmt = this.summary.tot_RefNetPayable = 0;
     this.summary.tot_AssignBilAmt = this.summary.tot_AssignInctvAmt = this.summary.tot_AssignTDSAmt = this.summary.tot_AssignNetPayable = 0;
     this.summary.tot_AdjBilAmt = this.summary.tot_AdjInctvAmt = this.summary.tot_AdjTDSAmt = this.summary.tot_AdjNetPayable = 0;
-
+    //previous Adjusted Amount
+    if(!!data && data.length>0){
+      this.summary.tot_PreviousAdjAmt = data[0].PreviousAdjustedAmount;
+    }
     data.forEach(a => {
       this.allInctvFracIdToUpdate.push(a.InctvTxnItemId);
       if (a.IncomeType == 'assigned') {
@@ -216,11 +222,18 @@ export class INCTV_BIL_IncentivePaymentInfoComponent {
     this.summary.tot_AdjInctvAmt = CommonFunctions.parseAmount(this.summary.tot_AdjInctvAmt);
     this.summary.tot_AdjTDSAmt = CommonFunctions.parseAmount(this.summary.tot_AdjTDSAmt);
     this.summary.tot_AdjNetPayable = CommonFunctions.parseAmount(this.summary.tot_AdjNetPayable);
+    this.summary.tot_PreviousAdjAmt = CommonFunctions.parseAmount(this.summary.tot_PreviousAdjAmt);
 
     this.summary.tot_InctvAmt = this.summary.tot_AssignInctvAmt + this.summary.tot_RefInctvAmt + this.summary.tot_AdjInctvAmt;
-    this.summary.tot_NetPayable = this.totalAmt = this.summary.tot_AssignNetPayable + this.summary.tot_RefNetPayable + this.summary.tot_AdjNetPayable;
+    this.summary.tot_NetPayable =  this.summary.tot_AssignNetPayable + this.summary.tot_RefNetPayable + this.summary.tot_AdjNetPayable;
+    this.totalVoucherAmount = this.summary.tot_NetPayable - this.summary.tot_PreviousAdjAmt;//previous adjusted Amount
+    this.totalAmt = this.totalVoucherAmount;
     this.summary.tot_TDSAmt = this.summary.tot_AssignTDSAmt + this.summary.tot_RefTDSAmt + this.summary.tot_AdjTDSAmt;
 
+  }
+
+  OnVoucherAmountChange(){
+    this.adjustedAmount = this.totalAmt - this.totalVoucherAmount;
   }
 
   LoadCalenderTypes() {
@@ -318,13 +331,17 @@ export class INCTV_BIL_IncentivePaymentInfoComponent {
       this.msgBoxServ.showMessage("notice-message", ["Ledger of this employee is not created. Please create this employee Ledger."]);
       return;
     }
+    // if (this.totalAmt < 1) {
+    //   this.msgBoxServ.showMessage("failed", ["Voucher Amount is zer or less then zero. Please enter valid voucher amount."]);
+    //   return;
+    // }
     this.PaymentInfoDetail = new INCTV_TXN_PaymentInfoModel();
     this.PaymentInfoDetail.PaymentDate = this.currentDate;
     this.PaymentInfoDetail.ReceiverId = this.employeeId;
     this.PaymentInfoDetail.TotalAmount = CommonFunctions.parseAmount(this.totalAmt);
     this.PaymentInfoDetail.TDSAmount = CommonFunctions.parseAmount(this.summary.tot_RefTDSAmt + this.summary.tot_AssignTDSAmt);
     this.PaymentInfoDetail.NetPayAmount = CommonFunctions.parseAmount(this.summary.tot_AssignNetPayable + this.summary.tot_RefNetPayable);
-    this.PaymentInfoDetail.AdjustedAmount = CommonFunctions.parseAmount(this.PaymentInfoDetail.TotalAmount - this.PaymentInfoDetail.NetPayAmount);
+    this.PaymentInfoDetail.AdjustedAmount = CommonFunctions.parseAmount(this.adjustedAmount);
 
     this.PaymentInfoDetail.FromDate = this.selectedFromDate;
     this.PaymentInfoDetail.ToDate = this.selectedToDate;

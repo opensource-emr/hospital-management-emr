@@ -86,6 +86,38 @@
     </div>
   </div>
 </div>
+<div class="form-body" *ngIf="showPayeeAndCheque">
+  <div class="col-md-12">
+    <form [formGroup]="transaction.TransactionValidator">
+      <div class="col-md-6 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-3" style="font-size: 15px;top: 2px;"><b>Payee Name:</b></label>
+          <div class="col-md-6">
+            <input id="PayeeName" class="form-control" type="text" value="" placeholder="Payee Name"
+              formControlName="PayeeName" [(ngModel)]="transaction.PayeeName" />
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('PayeeName')"
+              [hidden]="transaction.IsValidCheck('PayeeName','required')">Please Enter Payee Name.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-3" style="font-size: 15px;top: 2px;"><b>Cheque No:</b></label>
+          <div class="col-md-6">
+            <input id="ChequeNo" class="form-control" type="text" value="" placeholder="Cheque No"
+              [(ngModel)]="transaction.ChequeNumber" formControlName="ChequeNumber" />
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('ChequeNumber')"
+              [hidden]="transaction.IsValidCheck('ChequeNumber','required')">Please Enter Cheque Number.</div>
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('ChequeNumber')"
+              [hidden]="transaction.IsValidCheck('ChequeNumber','pattern')">Please Enter Valid Number.</div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<br>
+<br>
 <table class="table table-striped table-hover inv_table table-bordered tbPadding">
   <thead>
     <tr>
@@ -186,8 +218,8 @@
   </div>
   <div class="sum_table pull-right">
     <ul>
-      <li style="font-weight:bold;color:green;"><b>Total Debit:</b>{{totalDebit | ParseAmount  | Currency}}</li>
-      <li style="font-weight:bold;color:red;"><b>Total Credit:</b>{{totalCredit | ParseAmount  | Currency}}</li>
+      <li style="font-weight:bold;color:green;"><b>Total Debit:</b>{{totalDebit   | Currency:'4'}}</li>
+      <li style="font-weight:bold;color:red;"><b>Total Credit:</b>{{totalCredit  | Currency:'4'}}</li>
       <li><b>In Words :</b>{{totalAmount | NumberInWords | CapitalFirstLetter}} Only</li>
     </ul>
   </div>

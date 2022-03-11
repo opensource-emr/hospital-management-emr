@@ -431,6 +431,9 @@ export class NepaliCalendarService {
     else if (format == 'YYYY-MM-DD hh:mm') {
       return yearString + "-" + mthString + "-" + dayString + " " + hourString + ":" + minuteString;
     }
+    else if (format == 'YYYY-MM-DD HH:mm') {
+      return yearString + "-" + mthString + "-" + dayString + " " + hourString + ":" + minuteString;
+    }
     else {//this is default format: YYYY-MM-DD
       return yearString + "-" + mthString + "-" + dayString;
     }

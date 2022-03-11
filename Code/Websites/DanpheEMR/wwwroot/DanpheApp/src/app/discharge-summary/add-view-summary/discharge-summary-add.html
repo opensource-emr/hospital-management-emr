@@ -128,10 +128,10 @@
   }
 </style>
 <!--Show SummaryView Start-->
-<div *ngIf="showSummaryView">
-  <discharge-summary-view [selectedADT]="selectedDischarge" [showSummaryView]="showSummaryView">
-  </discharge-summary-view>
-</div>
+<!-- <div *ngIf="showSummaryView">
+  <discharge-summary-view [selectedADT]="selectedDischarge" [showSummaryView]="showSummaryView"  (EditRecordEvent)='IsEditMode($event)'>
+  </discharge-summary-view> 
+</div>-->
 <!--Show SummaryView End-->
 <!--Show DischargeSummaryAdd Start-->
 <div *ngIf="showDischargeSummary" tabindex="1" [@enterAnimation]>
@@ -165,12 +165,12 @@
             <div class="row">
               <div class="col-md-4">
                 <p class="patient-hdr-label">
-                  <b>Hospital No</b>&nbsp;: {{selectedDischarge?.VisitCode}}
+                  <b>Hospital No</b>&nbsp;: {{selectedDischarge?.PatientCode}}
                 </p>
               </div>
               <div class="col-md-4">
                 <p class="patient-hdr-label">
-                  <b>InPatient No</b>&nbsp;: {{selectedDischarge?.PatientCode}}
+                  <b>InPatient No</b>&nbsp;: {{selectedDischarge?.VisitCode}}
                 </p>
               </div>
               <div class="col-md-4">
@@ -387,7 +387,7 @@
       </div>-->
 
                 <div class="form-group">
-                  <label class="control-label col-md-5">Anasthetists<b style="float: right">:</b></label>
+                  <label class="control-label col-md-5">Anesthetists<b style="float: right">:</b></label>
                   <div class="col-md-7">
                     <input danphe-auto-complete class="form-control" [(ngModel)]="anasthetists"
                       [source]="AnasthetistsList" [list-formatter]="ListFormatter" placeholder="Anasthetists name"
@@ -396,7 +396,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-5">Residence Dr<b style="float: right">:</b></label>
+                  <label class="control-label col-md-5">Resident Dr<b style="float: right">:</b></label>
                   <div class="col-md-7">
                     <input danphe-auto-complete class="form-control" [(ngModel)]="residenceDr" [source]="providerList"
                       [list-formatter]="myListFormatter" placeholder="Residence Dr name"
@@ -433,8 +433,50 @@
                 </div>
                 <!-- End: Selected Diagnosis List  -->
 
+                
                 <div class="form-group">
-                  <label class="control-label col-md-12">Case Summary<b class="color-red"> *</b>
+                  <label class="control-label col-md-5">
+                    Provisonal Diagnosis<b style="float: right">:</b>
+                  </label>
+                  <div class="col-md-7">
+                    <!-- <div class="form-group" style="padding:10px;"> -->
+                    <input danphe-auto-complete autocomplete="off" class="form-control" [(ngModel)]="provisonalDiagnosis"
+                      [source]="icd10List" [list-formatter]="DignosisFormatter"
+                      (focusout)="focusOut();MakeProvisonalDiagnosisList();" placeholder="Select ICD10(s) for provisonal diagnosis"
+                      display-property-name="icd10Description" value-property-name="ICD10Id"
+                      (valueChanged)="loadICDs();" min-chars="0" max-num-list="10"
+                      [ngModelOptions]="{standalone: true}" />
+                  </div>
+                </div>
+                <!-- Start: Selected Diagnosis List  -->
+                <div class="form-group">
+                  <ul class="select-list">
+                    <!-- <i class="fa fa-circle" aria-hidden="true"> </i> -->
+                    <li class="fa fa-circle" *ngFor="let diagnosis of selectedProviDiagnosisList; let i=  index;">
+                      &nbsp; {{diagnosis?.icd10Description}} &nbsp;
+                      <i class="fa fa-times" style="color: #000 !important" (click)="RemoveProvisonalDiagnosis(i)"></i> <br>
+                    </li>
+                  </ul>
+                </div>
+                <!-- End: Selected Diagnosis List  -->
+
+                <div class="form-group">
+                  <label class="control-label col-md-12">Other Diagnosis
+                    <!-- <b style="float: right">:</b> -->
+                  </label>
+                  <div class="col-md-12">
+                    <textarea class="form-control" formControlName="DiagnosisFreeText"
+                      [(ngModel)]="CurrentDischargeSummary.DiagnosisFreeText" (focusout)="focusOut()"
+                      placeholder="Enter Other Diagnosis"></textarea>
+                    <br />
+                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('DiagnosisFreeText')"
+                      [hidden]="CurrentDischargeSummary.IsValidCheck('DiagnosisFreeText','maxlength')">Other Diagnosis must
+                      be less than or equals 1000 characters</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-md-12">Chief Complain
                     <!-- <b style="float: right">:</b> -->
                   </label>
                   <div class="col-md-12">
@@ -442,50 +484,45 @@
                     [(ngModel)]="CurrentDischargeSummary.CaseSummary" placeholder="CaseSummary"
                     (focusout)="focusOut()">
                     </span><br> -->
-                    <textarea class="form-control" id="textarea" rows="10" maxlength="1000"
-                      formControlName="CaseSummary" [(ngModel)]="CurrentDischargeSummary.CaseSummary"
-                      placeholder="CaseSummary" (focusout)="focusOut()"></textarea>
+                    <textarea class="form-control" maxlength="1000" formControlName="ChiefComplaint"
+                      [(ngModel)]="CurrentDischargeSummary.ChiefComplaint" (focusout)="focusOut()"
+                      placeholder="Chief Complaint"></textarea>
                     <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('CaseSummary')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('CaseSummary','maxlength')">Case Summary must be
-                      less
-                      than 1000 characters</span>
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('CaseSummary')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('CaseSummary','required')">Case Summary is
-                      mandatory.</span>
+                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('ChiefComplaint')"
+                      [hidden]="CurrentDischargeSummary.IsValidCheck('ChiefComplaint','maxlength')">Chief Complaint must
+                      be less than 1000 characters</span>
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-12">Condition On Discharge<b class="color-red"> *</b>
+                  <label class="control-label col-md-12">History of Presenting Illness
                     <!-- <b style="float: right">:</b> -->
                   </label>
                   <div class="col-md-12">
-                    <textarea class="form-control" maxlength="100" formControlName="Condition"
-                      [(ngModel)]="CurrentDischargeSummary.Condition" placeholder="Condition"
-                      (focusout)="focusOut()"></textarea>
+                    <textarea class="form-control" maxlength="1000" formControlName="PresentingIllness"
+                      [(ngModel)]="CurrentDischargeSummary.PresentingIllness" (focusout)="focusOut()"
+                      placeholder="Presenting Illness"></textarea>
                     <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Condition')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('Condition','maxlength')">Condition must be less
-                      than
-                      1000 characters</span>
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Condition')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('Condition','required')">Condition is
-                      mandatory.</span>
+                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('PresentingIllness')"
+                      [hidden]="CurrentDischargeSummary.IsValidCheck('PresentingIllness','maxlength')">History of
+                      Presenting Illness must be less than 1000
+                      characters</span>
+                    
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-12">Treatment During (Hospital Stay)
+                  <label class="control-label col-md-12">Case Summary
                     <!-- <b style="float: right">:</b>                    -->
                   </label>
                   <div class="col-md-12">
-                    <textarea class="form-control" maxlength="1000" formControlName="Treatment"
-                      [(ngModel)]="CurrentDischargeSummary.Treatment" placeholder="Treatment during hospital stay"
-                      (focusout)="focusOut()"></textarea>
-                    <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Treatment')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('Treatment','maxlength')">Treatment must be less
-                      than
-                      1000 characters</span>
+                    <textarea class="form-control" id="textarea" rows="10" maxlength="1000"
+                    formControlName="CaseSummary" [(ngModel)]="CurrentDischargeSummary.CaseSummary"
+                    placeholder="CaseSummary" (focusout)="focusOut()"></textarea>
+                  <br />
+                  <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('CaseSummary')"
+                    [hidden]="CurrentDischargeSummary.IsValidCheck('CaseSummary','maxlength')">Case Summary must be
+                    less
+                    than 1000 characters</span>
+                 
                     <!--<span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Treatment')" [hidden]="CurrentDischargeSummary.IsValidCheck('Treatment','required')">Treatment is mandatory.</span>-->
                   </div>
                 </div>
@@ -519,7 +556,24 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-12">Hospital Course
+                  <label class="control-label col-md-12">Hospital Report
+                    <!-- <b style="float: right">:</b> -->
+                  </label>
+                  <div class="col-md-12">
+                    
+                    <textarea class="form-control" maxlength="1000" formControlName="HistologyReport"
+                    [(ngModel)]="CurrentDischargeSummary.HistologyReport" (focusout)="focusOut()"
+                    placeholder="HistologyReport"></textarea>
+                  <br />
+                  <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('HistologyReport')"
+                    [hidden]="CurrentDischargeSummary.IsValidCheck('HistologyReport','maxlength')">Histology Report
+                    must
+                    be less than 1000 characters</span>
+                   
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-12">Hospital Course 
                     <!-- <b style="float: right">:</b> -->
                   </label>
                   <div class="col-md-12">
@@ -529,21 +583,6 @@
                     <br />
                     <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('HospitalCourse')"
                       [hidden]="CurrentDischargeSummary.IsValidCheck('HospitalCourse','maxlength')">Hospital Course must
-                      be less than 1000 characters</span>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-md-12">Histology Report
-                    <!-- <b style="float: right">:</b> -->
-                  </label>
-                  <div class="col-md-12">
-                    <textarea class="form-control" maxlength="1000" formControlName="HistologyReport"
-                      [(ngModel)]="CurrentDischargeSummary.HistologyReport" (focusout)="focusOut()"
-                      placeholder="HistologyReport"></textarea>
-                    <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('HistologyReport')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('HistologyReport','maxlength')">Histology Report
-                      must
                       be less than 1000 characters</span>
                   </div>
                 </div>
@@ -566,41 +605,46 @@
                   </div>
                 </div> -->
                 <div class="form-group">
-                  <label class="control-label col-md-5">Chief Complaint<b style="float: right">:</b></label>
+                  <label class="control-label col-md-5">Treatment During Hospital Stay<b style="float: right">:</b></label>
                   <div class="col-md-7">
-                    <textarea class="form-control" maxlength="1000" formControlName="ChiefComplaint"
-                      [(ngModel)]="CurrentDischargeSummary.ChiefComplaint" (focusout)="focusOut()"
-                      placeholder="Chief Complaint"></textarea>
+                
+                    <textarea class="form-control" maxlength="1000" formControlName="Treatment"
+                      [(ngModel)]="CurrentDischargeSummary.Treatment" placeholder="Treatment during hospital stay"
+                      (focusout)="focusOut()"></textarea>
                     <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('ChiefComplaint')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('ChiefComplaint','maxlength')">Chief Complaint must
-                      be less than 1000 characters</span>
+                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Treatment')"
+                      [hidden]="CurrentDischargeSummary.IsValidCheck('Treatment','maxlength')">Treatment must be less
+                      than
+                      1000 characters</span>
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-5">Pending Reports<b style="float: right">:</b></label>
+                  <label class="control-label col-md-5">Condition On Discharge<b style="float: right">:</b></label>
                   <div class="col-md-7">
-                    <textarea class="form-control" maxlength="1000" formControlName="PendingReports"
-                      [(ngModel)]="CurrentDischargeSummary.PendingReports" (focusout)="focusOut()"
-                      placeholder="Pending Reports"></textarea>
-                    <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('PendingReports')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('PendingReports','maxlength')">Pending Reports must
-                      be less than 1000 characters</span>
+                    <textarea class="form-control" maxlength="100" formControlName="Condition"
+                    [(ngModel)]="CurrentDischargeSummary.Condition" placeholder="Condition"
+                    (focusout)="focusOut()"></textarea>
+                  <br />
+                  <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Condition')"
+                    [hidden]="CurrentDischargeSummary.IsValidCheck('Condition','maxlength')">Condition Of Discharge must be less
+                    than
+                    1000 characters</span>
+                  <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('Condition')"
+                    [hidden]="CurrentDischargeSummary.IsValidCheck('Condition','required')">Condition is
+                    mandatory.</span>
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-5">History of Presenting Illness<b
+                  <label class="control-label col-md-5">Pending Reports<b
                       style="float: right">:</b></label>
                   <div class="col-md-7">
-                    <textarea class="form-control" maxlength="1000" formControlName="PresentingIllness"
-                      [(ngModel)]="CurrentDischargeSummary.PresentingIllness" (focusout)="focusOut()"
-                      placeholder="Presenting Illness"></textarea>
-                    <br />
-                    <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('PresentingIllness')"
-                      [hidden]="CurrentDischargeSummary.IsValidCheck('PresentingIllness','maxlength')">History of
-                      Presenting Illness must be less than 1000
-                      characters</span>
+                    <textarea class="form-control" maxlength="1000" formControlName="PendingReports"
+                    [(ngModel)]="CurrentDischargeSummary.PendingReports" (focusout)="focusOut()"
+                    placeholder="Pending Reports"></textarea>
+                  <br />
+                  <span class="color-red" *ngIf="CurrentDischargeSummary.IsDirty('PendingReports')"
+                    [hidden]="CurrentDischargeSummary.IsValidCheck('PendingReports','maxlength')">Pending Reports must
+                    be less than 1000 characters</span>
                   </div>
                 </div>
                 <div class="form-group">
@@ -869,8 +913,8 @@
                           <tr *ngFor="let med of NewMedications;let i=index">
                             <td class="form-group" style="width: 78%;">
                               <!-- <form [formGroup]="med.DischargeSummaryMedicationValidator"> -->
-                              <input type="test" style="width: 100%" title="Enter Medicine" [(ngModel)]="med.Medicine"
-                                max="100" [ngModelOptions]="{standalone: true}" (focusout)="focusOut()"
+                              <input type="test" style="width: 100%" title="Enter Medicine" [(ngModel)]="med.Medicine" [id]="'MedicineInput'+i"
+                                max="100" [ngModelOptions]="{standalone: true}" (focusout)="focusOut()" (keyup.enter)="OnMedicineEnterKeyClick()"
                                 placeholder="Enter Medicines" name="Medicine" />
                               <br />
                               <!-- <span class="color-red" *ngIf="med.IsDirty('Medicine')"
@@ -1180,6 +1224,12 @@
               (click)="showChooseTestResultPopup=false;">X</a>
             <div class="form-body">
               <p>Click the Components to show the results on report</p>
+              <ul class="list-group">
+                <li class="list-group-item" style="text-align: right;">
+                  <input type="checkbox" (change)="LabTestsSelectUnselectALL()" [(ngModel)]="selectUnselectAllLabTests"
+                    name="list_name" value="true" /> <strong>Select All</strong>
+                </li>
+              </ul>
               <ul>
                 <li *ngFor="let tst of labRequests;let i=index;">
                   <label [attr.for]="i+'lbtest'"

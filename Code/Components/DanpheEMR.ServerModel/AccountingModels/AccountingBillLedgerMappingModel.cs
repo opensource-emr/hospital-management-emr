@@ -15,6 +15,11 @@ namespace DanpheEMR.ServerModel
         public int LedgerId { get; set; }
         public int ServiceDepartmentId { get; set; }
         public int? ItemId { get ; set;}
+        public int? HospitalId { get; set; }
+
+        [NotMapped]
+        public string LedgerName { get; set; }
+        
 
     }
 }

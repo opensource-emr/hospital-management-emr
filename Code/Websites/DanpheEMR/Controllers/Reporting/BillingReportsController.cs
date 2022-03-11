@@ -13,6 +13,9 @@ using DanpheEMR.Security;
 using System.Data;
 using DanpheEMR.ServerModel;
 using DanpheEMR.Enums;
+using System.Data.SqlClient;
+using DanpheEMR.ServerModel.BillingModels;
+using DanpheEMR.ServerModel.BillingReports;
 
 namespace DanpheEMR.Controllers.Reporting
 {
@@ -43,6 +46,79 @@ namespace DanpheEMR.Controllers.Reporting
                 DataTable billCancel = reportingDbContext.BIL_BillCancelSummary(FromDate, ToDate);
                 responseData.Status = "OK";
                 responseData.Results = billCancel;
+
+
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+        #endregion
+
+        #region CreditSettlementReport
+        public string CreditSettlementReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable dtCreditSettlementReport = reportingDbContext.BIL_CreditSettlementReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = dtCreditSettlementReport;
+
+
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+        #endregion
+
+        #region Credit SettlementReport View Detail
+        public string CreditSettlementViewDetail(DateTime FromDate, DateTime ToDate, int PatientId)
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate)
+               , new SqlParameter("@ToDate", ToDate)
+               , new SqlParameter("@PatientId", PatientId)
+            };
+
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataSet dsCreditSettlementViewDetail = DALFunctions.GetDatasetFromStoredProc("SP_BIL_GetSettlementDetailReportOfPatient", paramList, reportingDbContext);
+                DataTable dtPatientInfo = dsCreditSettlementViewDetail.Tables[0];
+                DataTable dtSettlement = dsCreditSettlementViewDetail.Tables[1];
+                DataTable dtReturnedSettlement = dsCreditSettlementViewDetail.Tables[2];
+                DataTable dtCashDiscount = dsCreditSettlementViewDetail.Tables[3];
+                //DataTable dtDiscountReceived = dsCreditSettlementViewDetail.Tables[4];
+                var settlementDetail = new
+                {
+                    PatientInfo = Settlement_PatientInfoVM.MapDataTableToSingleObject(dtPatientInfo),
+                    Settlements = dtSettlement,
+                    ReturnedSettlement = dtReturnedSettlement,
+                    CashDiscount = dtCashDiscount,
+                    //DiscountReceived = dtDiscountReceived
+
+                };
+                responseData.Status = "OK";
+                responseData.Results = settlementDetail;
 
 
             }
@@ -196,6 +272,39 @@ namespace DanpheEMR.Controllers.Reporting
 
         #endregion
 
+        #region Department Summary Report
+        public string DepartmentSummaryReport(DateTime FromDate, DateTime ToDate, string billingType)
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate), new SqlParameter("@billingType", billingType)};
+
+                DataSet dts = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_DepartmentSummaryReport", paramList, reportingDbContext);
+                var departmentSummaryRptData = dts.Tables[0];
+                var depositInfo = dts.Tables[1];
+                var settlementInfo = dts.Tables[2];
+
+                var RptData = new { DepartmentSummary = departmentSummaryRptData, DepositInfo = depositInfo, SettlementInfo = settlementInfo };
+                responseData.Status = "OK";
+                responseData.Results = RptData;
+
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+        #endregion
+
         #region Department Item Summary report
         public string BillDeptItemSummary(DateTime FromDate, DateTime ToDate, string SrvDeptName)
         {
@@ -297,19 +406,37 @@ namespace DanpheEMR.Controllers.Reporting
 
         #region Daily Sales Report
         //Daily Sales Report
-        public string DailySalesReport(DateTime FromDate, DateTime ToDate, string CounterId, string CreatedBy, bool IsInsurance = false)
+        public string DailySalesReport(DateTime FromDate, DateTime ToDate, int? CounterId, int? CreatedBy, bool IsInsurance = false)
         {
-            DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             try
             {
+
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                if (CounterId == "0")
-                {
-                    CounterId = "";
-                }
-                DynamicReport dailysalesreport = reportingDbContext.DailySalesReport(FromDate, ToDate, CounterId, CreatedBy, IsInsurance);
+
+                List<SqlParameter> paramList = new List<SqlParameter>() {  new SqlParameter("@FromDate", FromDate),
+                            new SqlParameter("@ToDate", ToDate),
+                            new SqlParameter("@CounterId", CounterId),
+                            new SqlParameter("@CreatedBy", CreatedBy == null ? null: CreatedBy),
+                             new SqlParameter("@IsInsurance", IsInsurance) };
+                //we receive 3 tables in this dataset.
+                //Table-1: Invoice/Receipt level details of Sales, Return and Deposits
+                //Table-2: SettlementSummary for CashDiscount, CollectionFromReceivable, etc.. 
+                //Table-3: Summary view of User's All collection components for given date range. 
+                //Table-4: Summary of Other Payments (eg: Maternity for LPH)
+                DataSet dsUsrCollnDetail = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_DailySales", paramList, reportingDbContext);
                 responseData.Status = "OK";
-                responseData.Results = dailysalesreport;
+
+                //The return column name must be fixed in order for this to work. 
+                var otherPayments = dsUsrCollnDetail.Tables[3].Rows.Count > 0 ? dsUsrCollnDetail.Tables[3].Rows[0]["OtherPaymentsGiven"] : 0;
+
+                responseData.Results = new
+                {
+                    UserCollectionDetails = dsUsrCollnDetail.Tables[0],
+                    SettlementSummary = BilRPT_UserColln_SettlementSummaryVM.MapDataTableToSingleObject(dsUsrCollnDetail.Tables[1]),
+                    UserCollectionSummary = dsUsrCollnDetail.Tables[2],
+                    Total_OtherPaymentsGiven = otherPayments
+                };
             }
             catch (Exception ex)
             {
@@ -347,7 +474,7 @@ namespace DanpheEMR.Controllers.Reporting
 
         #region Total Items Bill Report
         //Daily Sales Report
-        public string TotalItemsBill(DateTime FromDate, DateTime ToDate, string BillStatus, string ServiceDepartmentName, string ItemName, bool IsInsurance = false)
+        public string TotalItemsBill(DateTime FromDate, DateTime ToDate, string billingType, string ServiceDepartmentName, string ItemName)
         {
             // DanpheHTTPResponse<List<TotalItemsBill>> responseData = new DanpheHTTPResponse<List<TotalItemsBill>>();
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
@@ -355,7 +482,7 @@ namespace DanpheEMR.Controllers.Reporting
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
                 // DoctorReport doctorReport = reportingDbContext.DoctorReport(FromDate, ToDate, ProviderName);
-                DataTable totalitembill = reportingDbContext.TotalItemsBill(FromDate, ToDate, BillStatus, ServiceDepartmentName, ItemName, IsInsurance);
+                DataTable totalitembill = reportingDbContext.TotalItemsBill(FromDate, ToDate, billingType, ServiceDepartmentName, ItemName);
                 responseData.Status = "OK";
                 responseData.Results = totalitembill;
             }
@@ -578,13 +705,13 @@ namespace DanpheEMR.Controllers.Reporting
 
         #region Income Segregation In Reporting  
 
-        public string IncomeSegregationStaticReport(DateTime FromDate, DateTime ToDate, bool IsInsurance = false)
+        public string IncomeSegregationStaticReport(DateTime FromDate, DateTime ToDate, string billingType)
         {
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable incomesegregation = reportingDbContext.Get_Bill_IncomeSegregationStaticReport(FromDate, ToDate, IsInsurance);
+                DataTable incomesegregation = reportingDbContext.Get_Bill_IncomeSegregationStaticReport(FromDate, ToDate, billingType);
                 responseData.Status = "OK";
                 responseData.Results = incomesegregation;
             }
@@ -857,13 +984,13 @@ namespace DanpheEMR.Controllers.Reporting
         #endregion
         #region DepartmentWise Patient Report 
         //DistrictWise Report
-        public string DepartmentWiseAppointmentReport(DateTime FromDate, DateTime ToDate, string DepartmentName)
+        public string DepartmentWiseAppointmentReport(DateTime FromDate, DateTime ToDate, int DepartmentId)
         {
             DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DynamicReport departmentwiseappointmentReport = reportingDbContext.DepartmentWiseAppointmentReport(FromDate, ToDate, DepartmentName);
+                DynamicReport departmentwiseappointmentReport = reportingDbContext.DepartmentWiseAppointmentReport(FromDate, ToDate, DepartmentId);
                 responseData.Status = "OK";
                 responseData.Results = departmentwiseappointmentReport;
             }
@@ -1395,6 +1522,27 @@ namespace DanpheEMR.Controllers.Reporting
         }
         #endregion
 
+        #region ReturnBillReportViewDetail
+        public string ReturnBillReportViewDetail(int BillReturnId)
+        {
+
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable returnBillDetail = reportingDbContext.BIL_ReturnReportDetail(BillReturnId);
+                responseData.Status = "OK";
+                responseData.Results = returnBillDetail;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
 
         #region Referral Summary
         public string Bill_ReferralSummary(DateTime FromDate, DateTime ToDate, bool? isExternal)
@@ -1555,5 +1703,174 @@ namespace DanpheEMR.Controllers.Reporting
             return DanpheJSONConvert.SerializeObject(responseData);
         }
         #endregion
+
+        #region EHS Bill Report
+        //Daily Sales Report
+        public string EHSBillReport(DateTime FromDate, DateTime ToDate, string billingType, string ServiceDepartmentName, string ItemName, int? AssignedToDoctorId, int? ReferredByDoctorId, int? UserId)
+        {
+            // DanpheHTTPResponse<List<TotalItemsBill>> responseData = new DanpheHTTPResponse<List<TotalItemsBill>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                // DoctorReport doctorReport = reportingDbContext.DoctorReport(FromDate, ToDate, ProviderName);
+                DataTable EHSbill = reportingDbContext.EHSBillReport(FromDate, ToDate, ServiceDepartmentName, ItemName, AssignedToDoctorId, ReferredByDoctorId, UserId);
+                responseData.Status = "OK";
+                responseData.Results = EHSbill;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        #endregion
+
+        #region DEPOSIT Transactions Report 
+
+        //Sud:10Sept'21--To get Deposit Transactions
+        public string Billing_DepositTransationsReport(DateTime FromDate, DateTime ToDate, string patSearchText, int employeeId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                List<SqlParameter> paramList = new List<SqlParameter>() {
+                    new SqlParameter("@FromDate", FromDate),
+                    new SqlParameter("@ToDate", ToDate),
+                    new SqlParameter("@PatSearchText",patSearchText),
+                    new SqlParameter("@employeeId",employeeId)
+                };
+
+                DataTable dtDepositTxnsData = DALFunctions.GetDataTableFromStoredProc("SP_BIL_RPT_GetDepositTransations", paramList, reportingDbContext);
+
+                responseData.Status = "OK";
+                responseData.Results = dtDepositTxnsData;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+        #endregion
+        public string Billing_SchemeWiseDiscountReport(DateTime FromDate, DateTime ToDate, int MembershipTypeId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                DataTable schemeWiseDiscountReport = reportingDbContext.SchemeWiseDiscountReport(FromDate, ToDate, MembershipTypeId);
+                responseData.Status = "OK";
+                responseData.Results = schemeWiseDiscountReport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+
+        public string Billing_DepartmentWiseDiscountSchemeReport(DateTime FromDate, DateTime ToDate, int? MembershipTypeId, int? ServiceDepartmentId, string PaymentMode)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                DataTable schemeWiseDiscountReport = reportingDbContext.DepartmentWiseDiscountSchemeReport(FromDate, ToDate, MembershipTypeId, ServiceDepartmentId, PaymentMode);
+                responseData.Status = "OK";
+                responseData.Results = schemeWiseDiscountReport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+
+        public string Billing_ItemLevelDepartmentWiseDiscountSchemeReport(int? BillingTransactionId, int? MembershipTypeId, int? ServiceDepartmentId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                DataTable itemLevelSchemeWiseDiscountReport = reportingDbContext.ItemLevelDepartmentWiseDiscountSchemeReport(BillingTransactionId, MembershipTypeId, ServiceDepartmentId);
+                responseData.Status = "OK";
+                responseData.Results = itemLevelSchemeWiseDiscountReport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
+
+
+        public string GetAllDepartmentList()
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                BillingDbContext billingDbContext = new BillingDbContext(connString);
+                var result = (from dep in billingDbContext.ServiceDepartment
+                              select new
+                              {
+                                  ServiceDepartmentId = dep.ServiceDepartmentId,
+                                  ServiceDepartmentName = dep.ServiceDepartmentName
+                              }).ToList();
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        #region UserWiseCashCollectionReport
+        public string UserWiseCashCollectionReport(DateTime FromDate, DateTime ToDate, int? UserId)
+        {
+            DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
+            try
+            {
+                ReportingDbContext repDbContext = new ReportingDbContext(connString);
+                DynamicReport reportData = repDbContext.UserWiseCashCollectionReport(FromDate, ToDate, UserId);
+                responseData.Status = "OK";
+                responseData.Results = reportData;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        #endregion
+
+
     }
 }

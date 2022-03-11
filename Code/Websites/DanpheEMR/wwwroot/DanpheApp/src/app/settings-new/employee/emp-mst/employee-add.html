@@ -1,514 +1,506 @@
 <style></style>
 <!--Model Box Starting Here-->
 <div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom custom_modal">
-    <div class="portlet-body form">
-        <!--Model Box Body Start-->
-        <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="modelbox-div clearfix">
-                    <div class="caption custom-caption">
-                        <h3><span *ngIf="!update">Add Employee</span> <span *ngIf="update">Update Employee</span></h3>
-                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
-                    </div>
-                    <form [formGroup]="CurrentEmployee.EmployeeValidator" class="form-horizontal hm-form">
-                        <div class="form-body clearfix">
-                            <!--<div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3><span *ngIf="!update">Add Employee</span> <span *ngIf="update">Update Employee</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form [formGroup]="CurrentEmployee.EmployeeValidator" class="form-horizontal hm-form">
+            <div class="form-body clearfix">
+              <!--<div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
           </div>-->
-
-                            <div class="row">
-                              <div class="col-md-4">
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Salutation<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <div class="input-group">
-                                      <div class="icheck-inline">
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input name="salutation" type="radio" value="Mr" [(ngModel)]="CurrentEmployee.Salutation" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>Mr
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input name="salutation" type="radio" value="Ms" [(ngModel)]="CurrentEmployee.Salutation" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>Ms
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input name="salutation" type="radio" value="Mrs" [(ngModel)]="CurrentEmployee.Salutation" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>Mrs
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input name="salutation" type="radio" value="Dr" [(ngModel)]="CurrentEmployee.Salutation" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>Dr
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input name="salutation" type="radio" value="Prof. Dr" [(ngModel)]="CurrentEmployee.Salutation" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>Prof. Dr.
-                                        </label>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">First Name<sup>*</sup><b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="30" formControlName="FirstName" [(ngModel)]="CurrentEmployee.FirstName" required value="" placeholder="First Name" />
-                                    <span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('FirstName','required') || !(CurrentEmployee.IsDirty('FirstName'))">First Name is required</span>
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('FirstName')" [hidden]="CurrentEmployee.IsValidCheck('FirstName','maxlength')"> Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Middle Name<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="30" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentEmployee.MiddleName" value="" id="MiddleName" placeholder="Middle Name" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Last Name<sup>*</sup><b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="30" [(ngModel)]="CurrentEmployee.LastName" formControlName="LastName" id="LastName" value="" placeholder="Last Name" />
-                                    <span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('LastName','required') || !(CurrentEmployee.IsDirty('LastName'))">Last Name is required</span>
-                                    <span style="color: red;" *ngIf="CurrentEmployee.IsDirty('LastName')" [hidden]="CurrentEmployee.IsValidCheck('LastName','maxlength')"> Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Date Of Birth<sup>*</sup> <b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" [(ngModel)]="CurrentEmployee.DateOfBirth" formControlName="DateOfBirth" type="date" id="EmployeeDOB" value="" placeholder="Employee DOB" />
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DateOfBirth')" [hidden]="CurrentEmployee.IsValidCheck('DateOfBirth','required')"> Date Of Birth is required</span>
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DateOfBirth')" [hidden]="CurrentEmployee.IsValidCheck('DateOfBirth','wrongDate')"> Enter Valid Date</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Gender<sup>*</sup><b>:</b></label>
-                                  <div class="col-md-8">
-                                    <div class="input-group">
-                                      <div class="icheck-inline">
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input type="radio" value="Male" [(ngModel)]="CurrentEmployee.Gender" formControlName="Gender" />
-                                          <span></span>Male
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input type="radio" value="Female" [(ngModel)]="CurrentEmployee.Gender" formControlName="Gender" />
-                                          <span></span>Female
-                                        </label>
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input type="radio" value="Others" [(ngModel)]="CurrentEmployee.Gender" formControlName="Gender" />
-                                          <span></span>Other
-                                        </label>
-                                      </div>
-                                    </div>
-                                    <span class="color-red" *ngIf="CurrentEmployee.IsDirty('Gender')" [hidden]="CurrentEmployee.IsValidCheck('Gender','required')"> Gender is required</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">NMC No<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="20" formControlName="MedCertificationNo" [(ngModel)]="CurrentEmployee.MedCertificationNo" placeholder="NMC Number" />
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('MedCertificationNo')" [hidden]="CurrentEmployee.IsValidCheck('MedCertificationNo','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">NNC No<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="20" formControlName="NursingCertificationNo" [(ngModel)]="CurrentEmployee.NursingCertificationNo" placeholder="NNC Number" />
-                                     <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('NursingCertificationNo')" [hidden]="CurrentEmployee.IsValidCheck('NursingCertificationNo','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">NHPC No<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="20" formControlName="HealthProfessionalCertificationNo" [(ngModel)]="CurrentEmployee.HealthProfessionalCertificationNo" placeholder="NHPC Number" />
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('HealthProfessionalCertificationNo')" [hidden]="CurrentEmployee.IsValidCheck('HealthProfessionalCertificationNo','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Contact Number<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control"
-                                           maxlength="10"
-                                           [ngModelOptions]="{standalone: true}"
-                                           [(ngModel)]="CurrentEmployee.ContactNumber"
-                                           type="tel"
-                                           id="EmployeeContactNumber"
-                                           value=""
-                                           placeholder="Employee Contact Number" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Email Id<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" maxlength="30" [(ngModel)]="CurrentEmployee.Email" formControlName="Email" type="email" id="EmployeeEmailId" value="" placeholder="Employee Email Id" />
-                                    <span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('Email','pattern') || !(CurrentEmployee.IsDirty('Email'))">Email Id is Not Proper </span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Signature(Short)<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <textarea class="form-control" [(ngModel)]="CurrentEmployee.Signature" formControlName="Signature"></textarea>
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('Signature')" [hidden]="CurrentEmployee.IsValidCheck('Signature','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Signature(Long)<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <textarea class="form-control" [(ngModel)]="CurrentEmployee.LongSignature" formControlName="LongSignature"></textarea>
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('LongSignature')" [hidden]="CurrentEmployee.IsValidCheck('LongSignature','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-4 vertical-line-right">
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Employee Department<sup>*</sup><b>:</b></label>
-                                  <div class="col-md-8">
-                                    <select class="form-control" [(ngModel)]="CurrentEmployee.DepartmentId" formControlName="EmployeeDepartment" (ngModelChange)="DepartmentOnChange()">
-                                      <option *ngFor="let dept of deptList" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
-                                    </select>
-                                    <span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('EmployeeDepartment','required') || !(CurrentEmployee.IsDirty('EmployeeDepartment'))">
-                                      Employee Department is required
-                                    </span>
-                                  </div>
-                                </div>
-                                <div class="form-group" *ngIf="showLabSignature">
-                                  <label class="control-label col-md-4">Lab Signature<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <textarea class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentEmployee.LabSignature"></textarea>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">
-                                    Employee Role<!--<sup>*</sup>-->
-                                    <b>:</b>
-                                  </label>
-                                  <div class="col-md-8">
-                                    <select class="form-control" [(ngModel)]="CurrentEmployee.EmployeeRoleId" [ngModelOptions]="{standalone: true}">
-                                      <option *ngFor="let eRole of empRoleList" value="{{eRole.EmployeeRoleId}}">{{eRole.EmployeeRoleName}}</option>
-                                    </select>
-                                    <!--<span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('EmployeeRoleId','required') || !(CurrentEmployee.IsDirty('EmployeeRoleId'))">Select Employee Role</span>-->
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">
-                                    Employee Type<!--<sup>*</sup>-->
-                                    <b>:</b>
-                                  </label>
-                                  <div class="col-md-8">
-                                    <select class="form-control" [(ngModel)]="CurrentEmployee.EmployeeTypeId" [ngModelOptions]="{standalone: true}">
-                                      <option *ngFor="let eType of empTypeList" value="{{eType.EmployeeTypeId}}"> {{eType.EmployeeTypeName}} </option>
-                                    </select>
-                                    <!--<span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('EmployeeTypeId','required') || !(CurrentEmployee.IsDirty('EmployeeTypeId'))">Select Employee Type</span>-->
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Date Of Joining<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control"
-                                           [(ngModel)]="CurrentEmployee.DateOfJoining"
-                                           [ngModelOptions]="{standalone: true}"
-                                           type="date"
-                                           id="EmployeeDateOfJoining"
-                                           value=""
-                                           placeholder="Employee Date Of Joining" />
-                                    <!--<span class="color-red font-sm" style="" *ngIf="CurrentEmployee.IsDirty('DateOfJoining')" [hidden]="CurrentEmployee.IsValidCheck('DateOfJoining','wrongDate')"> Enter Valid Date</span>-->
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Contact Address<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <textarea class="form-control" [(ngModel)]="CurrentEmployee.ContactAddress" [ngModelOptions]="{standalone: true}"></textarea>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">PAN Number<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" onClick="this.select();" [(ngModel)]="CurrentEmployee.PANNumber" [ngModelOptions]="{standalone: true}" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">TDS Percent<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="number" onClick="this.select();" [(ngModel)]="CurrentEmployee.TDSPercent" [ngModelOptions]="{standalone: true}" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Is Incentive Applicable <b>:</b> </label>
-                                  <div class="col-md-8">
-                                    <div class="input-group">
-                                      <div class="icheck-inline">
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input id="IsIncentiveApplicable" name="IsIncentiveApplicable" type="checkbox" value="" [(ngModel)]="CurrentEmployee.IsIncentiveApplicable" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>
-                                        </label>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Extension<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" min="0" [(ngModel)]="CurrentEmployee.Extension" [ngModelOptions]="{standalone: true}" type="number" placeholder="this is landline-extension" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">SpeedDial<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" min="0" [(ngModel)]="CurrentEmployee.SpeedDial" [ngModelOptions]="{standalone: true}" type="number" placeholder="this is speed-dial" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Office Hour<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <textarea class="form-control" [(ngModel)]="CurrentEmployee.OfficeHour" [ngModelOptions]="{standalone: true}"></textarea>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Room No.<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" maxlength="20" [(ngModel)]="CurrentEmployee.RoomNo" [ngModelOptions]="{standalone: true}" type="text" id="EmployeeRoomNo" value="" placeholder="Employee Room No" />
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Blood Group<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <select class="form-control" [(ngModel)]="CurrentEmployee.BloodGroup" [ngModelOptions]="{standalone: true}">
-                                      <option value="A positive">A+</option>
-                                      <option value="A negative">A-</option>
-                                      <option value="B positive">B+</option>
-                                      <option value="B negative">B-</option>
-                                      <option value="O positive">O+</option>
-                                      <option value="O negative">O-</option>
-                                      <option value="AB positive">AB+</option>
-                                      <option value="AB negative">AB-</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Driving License No<b>:</b></label>
-                                  <div class="col-md-8">
-                                    <input class="form-control" type="text" maxlength="20" formControlName="DriverLicenseNo" [(ngModel)]="CurrentEmployee.DriverLicenseNo" placeholder="License Number" />
-                                    <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DriverLicenseNo')" [hidden]="CurrentEmployee.IsValidCheck('DriverLicenseNo','maxlength')">Length is not proper</span>
-                                  </div>
-                                </div>
-                                <div class="form-group">
-                                  <label class="control-label col-md-4">Is Active <b>:</b> </label>
-                                  <div class="col-md-8">
-                                    <div class="input-group">
-                                      <div class="icheck-inline">
-                                        <label class="mt-checkbox mt-checkbox-outline">
-                                          <input id="isActive" name="isActive" type="checkbox" value="" [(ngModel)]="CurrentEmployee.IsActive" [ngModelOptions]="{standalone: true}" />
-                                          <span></span>
-                                        </label>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                                <!--Start OPD and other services section-->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="control-label col-md-4">Radiology Signature<b>:</b> </label>
-                                        <div class="col-md-8">
-                                            <textarea class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentEmployee.RadiologySignature"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="control-label col-md-4">Display Sequence <b>:</b> </label>
-                                        <div class="col-md-8">
-                                            <div class="input-group">
-                                                <div class="icheck-inline">
-                                                    <input class="form-control" maxlength="20" [(ngModel)]="CurrentEmployee.DisplaySequence" [ngModelOptions]="{standalone: true}" type="number" min="0" id="DisplaySequence" value="" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="control-label col-md-4">Signature Image <b>:</b> </label>
-                                        <div class="col-md-8">
-                                            <div class="profile">
-                                                <div class="photo" style="width: 100%;">
-                                                    <button *ngIf="!CurrentEmployee.SignatoryImageBase64" (click)="OpenCropper()" style="padding: 3px 6px; background: #bab8c3; cursor: pointer; margin-right: 8px;">Choose File</button>
-                                                    <button *ngIf="CurrentEmployee.SignatoryImageBase64" (click)="RemoveSignatoryImage()" style="padding: 3px 6px; background: #bab8c3; cursor: pointer; margin-right: 8px;">Remove</button>
-                                                </div>
-                                            </div>
-                                            <div class="img-responsive">
-                                                <img (click)="OpenCropper()" class="img-responsive" *ngIf="CurrentEmployee.SignatoryImageBase64" [src]="'data:image/jpeg;base64,'+CurrentEmployee.SignatoryImageBase64" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--End OPD and other services section-->
-                            </div>
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="form-group">
-                                        <label class="control-label col-md-2">Appointment Applicable? <b>:</b> </label>
-                                        <div class="col-md-1">
-                                            <div class="input-group">
-                                                <div class="icheck-inline">
-                                                    <label class="mt-checkbox mt-checkbox-outline">
-                                                        <input
-                                                            id="isApptApplicable"
-                                                            name="isApptApplicable"
-                                                            type="checkbox"
-                                                            value=""
-                                                            [(ngModel)]="CurrentEmployee.IsAppointmentApplicable"
-                                                            [ngModelOptions]="{standalone: true}"
-                                                            (change)="ApptApplicableChkOnChange()"
-                                                        />
-                                                        <span></span>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-12 row" *ngIf="CurrentEmployee.IsAppointmentApplicable">
-                                <table class="table table-responsive custom_table padLess_table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <!--<td class="col-md-1">Select</td>-->
-                                            <td class="control-label col-md-2">Service Name</td>
-                                            <td class="control-label col-md-3">Service Item Name</td>
-                                            <td class="control-label col-md-1">Normal Price</td>
-                                            <td class="control-label col-md-1">EHS Price</td>
-                                            <td class="control-label col-md-1">SAARC Citizen Price</td>
-                                            <td class="control-label col-md-1">Foreigner Price</td>
-                                            <td class="control-label col-md-1">Foreigner(Insurance) Price</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="margin-15-tp" *ngFor="let srv of opdServicesDetails">
-                                            <!--<td class="col-md-1"></td>-->
-                                            <td class="col-md-2">
-                                                <label for="{{srv.ServiceDisplayName}}" class="mt-checkbox mt-checkbox-outline">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="{{srv.ServiceDisplayName}}"
-                                                        [disabled]="srv.IsMandatory"
-                                                        [(ngModel)]="srv.IsServiceEnabled"
-                                                        (click)="ServiceSelectChange(srv)"
-                                                        [ngModelOptions]="{standalone: true}"
-                                                    />
-                                                    <span></span>{{srv.ServiceDisplayName}}
-                                                </label>
-                                                <b *ngIf="srv.IsMandatory" class="color-red">*</b>
-                                            </td>
-                                            <td class="col-md-3">
-                                                <input
-                                                    class="form-control"
-                                                    danphe-auto-complete
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.ItemObj"
-                                                    onClick="this.select();"
-                                                    [list-formatter]="myItemListFormatter"
-                                                    [source]="srv.BillItemPriceList"
-                                                    placeholder="enter text"
-                                                    display-property-name="ItemName"
-                                                    value-property-name="null"
-                                                    (focusout)="ItemSelectionChanged(srv)"
-                                                    max-num-list="10"
-                                                />
-                                                <span class="color-red font-sm" [hidden]="!srv.IsServiceEnabled || srv.isItemNameValid"> Item Name required </span>
-                                            </td>
-                                            <td class="col-md-1">
-                                                <input
-                                                    class="form-control"
-                                                    type="number"
-                                                    maxlength="30"
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.Price"
-                                                    onClick="this.select();"
-                                                    required
-                                                    value=""
-                                                    placeholder="Price"
-                                                    (focusout)="CheckIfNormalPriceValid(srv)"
-                                                    min="0"
-                                                />
-                                                <span class="color-red font-sm" [hidden]="!srv.IsServiceEnabled  || srv.isNormalPriceValid"> price required </span>
-                                            </td>
-                                            <td class="col-md-1">
-                                                <input
-                                                    class="form-control"
-                                                    type="number"
-                                                    maxlength="30"
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.EHSPrice"
-                                                    required
-                                                    value=""
-                                                    onClick="this.select();"
-                                                    placeholder="Price"
-                                                    min="0"
-                                                />
-                                            </td>
-                                            <td class="col-md-1">
-                                                <input
-                                                    class="form-control"
-                                                    type="number"
-                                                    maxlength="30"
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.SAARCCitizenPrice"
-                                                    required
-                                                    value=""
-                                                    onClick="this.select();"
-                                                    placeholder="Price"
-                                                    min="0"
-                                                />
-                                            </td>
-                                            <td class="col-md-1">
-                                                <input
-                                                    class="form-control"
-                                                    type="number"
-                                                    maxlength="30"
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.ForeignerPrice"
-                                                    required
-                                                    value=""
-                                                    onClick="this.select();"
-                                                    placeholder="Price"
-                                                    min="0"
-                                                />
-                                            </td>
-                                            <td class="col-md-1">
-                                                <input
-                                                    class="form-control"
-                                                    type="number"
-                                                    maxlength="30"
-                                                    [disabled]="!srv.IsServiceEnabled"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="srv.InsForeignerPrice"
-                                                    required
-                                                    value=""
-                                                    onClick="this.select();"
-                                                    placeholder="Price"
-                                                    min="0"
-                                                />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Salutation<b>:</b></label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <select id="Salutation" class="form-control" [(ngModel)]="CurrentEmployee.Salutation"
+                          [ngModelOptions]="{standalone: true}" (change)="FocusElementById('FirstName')"
+                          *ngIf="!update">
+                          <option [ngValue]="null">--select--</option>
+                          <option value="Mr">Mr</option>
+                          <option value="Ms">Ms</option>
+                          <option value="Mrs">Mrs</option>
+                          <option value="Dr">Dr</option>
+                          <option value="Prof. Dr">Prof. Dr</option>
+                        </select>
+                        <select id="Salutation" class="form-control" [(ngModel)]="CurrentEmployee.Salutation"
+                          [ngModelOptions]="{standalone: true}" (change)="FocusElementById('FirstName')" *ngIf="update">
+                          <option [ngValue]="null">--select--</option>
+                          <option value="Mr">Mr</option>
+                          <option value="Ms">Ms</option>
+                          <option value="Mrs">Mrs</option>
+                          <option value="Dr">Dr</option>
+                          <option value="Prof. Dr">Prof. Dr</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">First Name<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="30" formControlName="FirstName"
+                        [(ngModel)]="CurrentEmployee.FirstName" required value="" placeholder="First Name"
+                        id="FirstName" (keyup.enter)="FocusElementById('MiddleName')" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentEmployee.IsValidCheck('FirstName','required') || !(CurrentEmployee.IsDirty('FirstName'))">First
+                        Name is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('FirstName')"
+                        [hidden]="CurrentEmployee.IsValidCheck('FirstName','maxlength')"> Length is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Middle Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="30" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="CurrentEmployee.MiddleName" value="" id="MiddleName" placeholder="Middle Name"
+                        (keyup.enter)="FocusElementById('LastName')" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Last Name<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="30" [(ngModel)]="CurrentEmployee.LastName"
+                        formControlName="LastName" id="LastName" value="" placeholder="Last Name"
+                        (keyup.enter)="FocusElementById('EmployeeDOB')" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentEmployee.IsValidCheck('LastName','required') || !(CurrentEmployee.IsDirty('LastName'))">Last
+                        Name is required</span>
+                      <span style="color: red;" *ngIf="CurrentEmployee.IsDirty('LastName')"
+                        [hidden]="CurrentEmployee.IsValidCheck('LastName','maxlength')"> Length is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Date Of Birth<sup>*</sup> <b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" [(ngModel)]="CurrentEmployee.DateOfBirth"
+                        formControlName="DateOfBirth" type="date" id="EmployeeDOB" value="" placeholder="Employee DOB"
+                        (keyup.enter)="FocusElementById('Gender')" />
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DateOfBirth')"
+                        [hidden]="CurrentEmployee.IsValidCheck('DateOfBirth','required')"> Date Of Birth is
+                        required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DateOfBirth')"
+                        [hidden]="CurrentEmployee.IsValidCheck('DateOfBirth','wrongDate')"> Enter Valid Date</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Gender<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <select id="Gender" class="form-control" [(ngModel)]="CurrentEmployee.Gender"
+                            (change)="FocusElementById('EmployeeDepartment')" formControlName="Gender" *ngIf="!update">
+                            <option [ngValue]="null">--select--</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Others">Other</option>
+                          </select>
+                          <select id="Gender" class="form-control" [(ngModel)]="CurrentEmployee.Gender"
+                            (change)="FocusElementById('EmployeeDepartment')" formControlName="Gender" *ngIf="update">
+                            <option [ngValue]="null">--select--</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Others">Other</option>
+                          </select>
                         </div>
-                        <div class="panel-footer">
-                            <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddEmployee()" [disabled]="loading" value="Add" />
-                            <input type="button" class="btn btn-primary" *ngIf="update" (click)="UpdateEmployee()" [disabled]="loading" value="Update" />
-                        </div>
-                    </form>
-                    <danphe-photo-cropper
-                        *ngIf="openPhotoCropper"
-                        [ipImage]="currImageBase64"
-                        [action-type]="actionType"
-                        [useWebCam]="useWebCam"
-                        [maintainAspectRation]="maintainAspectRatio"
-                        (onCropSuccess)="OnCropSuccess($event)"
-                        (onCropperClose)="OnCropperClosed($event)"
-                    ></danphe-photo-cropper>
+                      </div>
+                      <span class="color-red" *ngIf="CurrentEmployee.IsDirty('Gender')"
+                        [hidden]="CurrentEmployee.IsValidCheck('Gender','required')"> Gender is required</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">NMC No<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="20" formControlName="MedCertificationNo"
+                        [(ngModel)]="CurrentEmployee.MedCertificationNo" placeholder="NMC Number" />
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('MedCertificationNo')"
+                        [hidden]="CurrentEmployee.IsValidCheck('MedCertificationNo','maxlength')">Length is not
+                        proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">NNC No<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="20" formControlName="NursingCertificationNo"
+                        [(ngModel)]="CurrentEmployee.NursingCertificationNo" placeholder="NNC Number" />
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('NursingCertificationNo')"
+                        [hidden]="CurrentEmployee.IsValidCheck('NursingCertificationNo','maxlength')">Length is not
+                        proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">NHPC No<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="20"
+                        formControlName="HealthProfessionalCertificationNo"
+                        [(ngModel)]="CurrentEmployee.HealthProfessionalCertificationNo" placeholder="NHPC Number" />
+                      <span class="color-red font-sm"
+                        *ngIf="CurrentEmployee.IsDirty('HealthProfessionalCertificationNo')"
+                        [hidden]="CurrentEmployee.IsValidCheck('HealthProfessionalCertificationNo','maxlength')">Length
+                        is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Contact Number<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" maxlength="10" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="CurrentEmployee.ContactNumber" type="tel" id="EmployeeContactNumber" value=""
+                        placeholder="Employee Contact Number" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Email Id<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" maxlength="30" [(ngModel)]="CurrentEmployee.Email"
+                        formControlName="Email" type="email" id="EmployeeEmailId" value=""
+                        placeholder="Employee Email Id" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentEmployee.IsValidCheck('Email','pattern') || !(CurrentEmployee.IsDirty('Email'))">Email
+                        Id is Not Proper </span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Signature(Short)<b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [(ngModel)]="CurrentEmployee.Signature"
+                        formControlName="Signature"></textarea>
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('Signature')"
+                        [hidden]="CurrentEmployee.IsValidCheck('Signature','maxlength')">Length is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Signature(Long)<b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [(ngModel)]="CurrentEmployee.LongSignature"
+                        formControlName="LongSignature"></textarea>
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('LongSignature')"
+                        [hidden]="CurrentEmployee.IsValidCheck('LongSignature','maxlength')">Length is not proper</span>
+                    </div>
+                  </div>
                 </div>
+                <div class="col-md-4 vertical-line-right">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Employee Department<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="CurrentEmployee.DepartmentId"
+                        formControlName="EmployeeDepartment" (ngModelChange)="DepartmentOnChange()"
+                        id="EmployeeDepartment" (change)="FocusElementById('Add')" *ngIf="!update">
+                        <option *ngFor="let dept of deptList" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}
+                        </option>
+                      </select>
+                      <select class="form-control" [(ngModel)]="CurrentEmployee.DepartmentId"
+                        formControlName="EmployeeDepartment" (ngModelChange)="DepartmentOnChange()"
+                        id="EmployeeDepartment" (change)="FocusElementById('Add')" *ngIf="update">
+                        <option *ngFor="let dept of deptList" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}
+                        </option>
+                      </select>
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentEmployee.IsValidCheck('EmployeeDepartment','required') || !(CurrentEmployee.IsDirty('EmployeeDepartment'))">
+                        Employee Department is required
+                      </span>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="showLabSignature">
+                    <label class="control-label col-md-4">Lab Signature<b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="CurrentEmployee.LabSignature"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">
+                      Employee Role
+                      <!--<sup>*</sup>-->
+                      <b>:</b>
+                    </label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="CurrentEmployee.EmployeeRoleId"
+                        [ngModelOptions]="{standalone: true}">
+                        <option *ngFor="let eRole of empRoleList" value="{{eRole.EmployeeRoleId}}">
+                          {{eRole.EmployeeRoleName}}</option>
+                      </select>
+                      <!--<span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('EmployeeRoleId','required') || !(CurrentEmployee.IsDirty('EmployeeRoleId'))">Select Employee Role</span>-->
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">
+                      Employee Type
+                      <!--<sup>*</sup>-->
+                      <b>:</b>
+                    </label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="CurrentEmployee.EmployeeTypeId"
+                        [ngModelOptions]="{standalone: true}">
+                        <option *ngFor="let eType of empTypeList" value="{{eType.EmployeeTypeId}}">
+                          {{eType.EmployeeTypeName}} </option>
+                      </select>
+                      <!--<span class="color-red font-sm" [hidden]="CurrentEmployee.IsValidCheck('EmployeeTypeId','required') || !(CurrentEmployee.IsDirty('EmployeeTypeId'))">Select Employee Type</span>-->
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Date Of Joining<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" [(ngModel)]="CurrentEmployee.DateOfJoining"
+                        [ngModelOptions]="{standalone: true}" type="date" id="EmployeeDateOfJoining" value=""
+                        placeholder="Employee Date Of Joining" />
+                      <!--<span class="color-red font-sm" style="" *ngIf="CurrentEmployee.IsDirty('DateOfJoining')" [hidden]="CurrentEmployee.IsValidCheck('DateOfJoining','wrongDate')"> Enter Valid Date</span>-->
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Contact Address<b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [(ngModel)]="CurrentEmployee.ContactAddress"
+                        [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">PAN Number<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" onClick="this.select();"
+                        [(ngModel)]="CurrentEmployee.PANNumber" [ngModelOptions]="{standalone: true}" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">TDS Percent<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="number" onClick="this.select();"
+                        [(ngModel)]="CurrentEmployee.TDSPercent" [ngModelOptions]="{standalone: true}" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Is Incentive Applicable <b>:</b> </label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="IsIncentiveApplicable" name="IsIncentiveApplicable" type="checkbox" value=""
+                              [(ngModel)]="CurrentEmployee.IsIncentiveApplicable"
+                              [ngModelOptions]="{standalone: true}" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Extension<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" min="0" [(ngModel)]="CurrentEmployee.Extension"
+                        [ngModelOptions]="{standalone: true}" type="number" placeholder="this is landline-extension" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">SpeedDial<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" min="0" [(ngModel)]="CurrentEmployee.SpeedDial"
+                        [ngModelOptions]="{standalone: true}" type="number" placeholder="this is speed-dial" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Office Hour<b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [(ngModel)]="CurrentEmployee.OfficeHour"
+                        [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Room No.<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" maxlength="20" [(ngModel)]="CurrentEmployee.RoomNo"
+                        [ngModelOptions]="{standalone: true}" type="text" id="EmployeeRoomNo" value=""
+                        placeholder="Employee Room No" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Blood Group<b>:</b></label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="CurrentEmployee.BloodGroup"
+                        [ngModelOptions]="{standalone: true}">
+                        <option value="A positive">A+</option>
+                        <option value="A negative">A-</option>
+                        <option value="B positive">B+</option>
+                        <option value="B negative">B-</option>
+                        <option value="O positive">O+</option>
+                        <option value="O negative">O-</option>
+                        <option value="AB positive">AB+</option>
+                        <option value="AB negative">AB-</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Driving License No<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="20" formControlName="DriverLicenseNo"
+                        [(ngModel)]="CurrentEmployee.DriverLicenseNo" placeholder="License Number" />
+                      <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('DriverLicenseNo')"
+                        [hidden]="CurrentEmployee.IsValidCheck('DriverLicenseNo','maxlength')">Length is not
+                        proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" name="isActive" type="checkbox" value=""
+                              [(ngModel)]="CurrentEmployee.IsActive" [ngModelOptions]="{standalone: true}" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--Start OPD and other services section-->
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Radiology Signature<b>:</b> </label>
+                    <div class="col-md-8">
+                      <textarea class="form-control" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="CurrentEmployee.RadiologySignature"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Display Sequence <b>:</b> </label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <input class="form-control" maxlength="20" [(ngModel)]="CurrentEmployee.DisplaySequence"
+                            [ngModelOptions]="{standalone: true}" type="number" min="0" id="DisplaySequence" value="" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Signature Image <b>:</b> </label>
+                    <div class="col-md-8">
+                      <div class="profile">
+                        <div class="photo" style="width: 100%;">
+                          <a class="btn btn-primary" *ngIf="!CurrentEmployee.SignatoryImageBase64"
+                            (click)="OpenCropper()"
+                            style="padding: 3px 6px; background: #bab8c3; cursor: pointer; margin-right: 8px;">Choose
+                            File</a>
+                          <a class="btn btn-primary" *ngIf="CurrentEmployee.SignatoryImageBase64"
+                            (click)="RemoveSignatoryImage()"
+                            style="padding: 3px 6px; background: #bab8c3; cursor: pointer; margin-right: 8px;">Remove</a>
+                        </div>
+                      </div>
+                      <div class="img-responsive">
+                        <img (click)="OpenCropper()" class="img-responsive" *ngIf="CurrentEmployee.SignatoryImageBase64"
+                          [src]="'data:image/jpeg;base64,'+CurrentEmployee.SignatoryImageBase64" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--End OPD and other services section-->
+              </div>
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label class="control-label col-md-2">Appointment Applicable? <b>:</b> </label>
+                    <div class="col-md-1">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isApptApplicable" name="isApptApplicable" type="checkbox" value=""
+                              [(ngModel)]="CurrentEmployee.IsAppointmentApplicable"
+                              [ngModelOptions]="{standalone: true}" (change)="ApptApplicableChkOnChange()" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 row" *ngIf="CurrentEmployee.IsAppointmentApplicable">
+                <table class="table table-responsive custom_table padLess_table table-bordered">
+                  <thead>
+                    <tr>
+                      <!--<td class="col-md-1">Select</td>-->
+                      <td class="control-label col-md-2">Service Name</td>
+                      <td class="control-label col-md-3">Service Item Name</td>
+                      <td class="control-label col-md-1">Normal Price</td>
+                      <td class="control-label col-md-1">EHS Price</td>
+                      <td class="control-label col-md-1">SAARC Citizen Price</td>
+                      <td class="control-label col-md-1">Foreigner Price</td>
+                      <td class="control-label col-md-1">Foreigner(Insurance) Price</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="margin-15-tp" *ngFor="let srv of opdServicesDetails">
+                      <!--<td class="col-md-1"></td>-->
+                      <td class="col-md-2">
+                        <label for="{{srv.ServiceDisplayName}}" class="mt-checkbox mt-checkbox-outline">
+                          <input type="checkbox" id="{{srv.ServiceDisplayName}}" [disabled]="srv.IsMandatory"
+                            [(ngModel)]="srv.IsServiceEnabled" (click)="ServiceSelectChange(srv)"
+                            [ngModelOptions]="{standalone: true}" />
+                          <span></span>{{srv.ServiceDisplayName}}
+                        </label>
+                        <b *ngIf="srv.IsMandatory" class="color-red">*</b>
+                      </td>
+                      <td class="col-md-3">
+                        <input class="form-control" danphe-auto-complete [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.ItemObj" onClick="this.select();"
+                          [list-formatter]="myItemListFormatter" [source]="srv.BillItemPriceList"
+                          placeholder="enter text" display-property-name="ItemName" value-property-name="null"
+                          (focusout)="ItemSelectionChanged(srv)" max-num-list="10" />
+                        <span class="color-red font-sm" [hidden]="!srv.IsServiceEnabled || srv.isItemNameValid"> Item
+                          Name required </span>
+                      </td>
+                      <td class="col-md-1">
+                        <input class="form-control" type="number" maxlength="30" [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.Price" onClick="this.select();"
+                          required value="" placeholder="Price" (focusout)="CheckIfNormalPriceValid(srv)" min="0" />
+                        <span class="color-red font-sm" [hidden]="!srv.IsServiceEnabled  || srv.isNormalPriceValid">
+                          price required </span>
+                      </td>
+                      <td class="col-md-1">
+                        <input class="form-control" type="number" maxlength="30" [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.EHSPrice" required value=""
+                          onClick="this.select();" placeholder="Price" min="0" />
+                      </td>
+                      <td class="col-md-1">
+                        <input class="form-control" type="number" maxlength="30" [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.SAARCCitizenPrice" required value=""
+                          onClick="this.select();" placeholder="Price" min="0" />
+                      </td>
+                      <td class="col-md-1">
+                        <input class="form-control" type="number" maxlength="30" [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.ForeignerPrice" required value=""
+                          onClick="this.select();" placeholder="Price" min="0" />
+                      </td>
+                      <td class="col-md-1">
+                        <input class="form-control" type="number" maxlength="30" [disabled]="!srv.IsServiceEnabled"
+                          [ngModelOptions]="{standalone: true}" [(ngModel)]="srv.InsForeignerPrice" required value=""
+                          onClick="this.select();" placeholder="Price" min="0" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
+            <div class="panel-footer">
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddEmployee()"
+                [disabled]="loading" value="Add" id="Add" />
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateEmployee()"
+                [disabled]="loading" value="Update" id="Add" />
+            </div>
+          </form>
+          <danphe-photo-cropper *ngIf="openPhotoCropper" [ipImage]="currImageBase64" [action-type]="actionType"
+            [useWebCam]="useWebCam" [maintainAspectRation]="maintainAspectRatio" (onCropSuccess)="OnCropSuccess($event)"
+            (onCropperClose)="OnCropperClosed($event)"></danphe-photo-cropper>
         </div>
-        <!--Model Box Body End-->
+      </div>
     </div>
+    <!--Model Box Body End-->
+  </div>
 </div>
 <!--Model Box Starting Here-->

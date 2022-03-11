@@ -18,5 +18,8 @@ export class ItemMaster {
   public IsActive: boolean = false;
   public UnitQuantity: string = null;
   public Code:string=null;
-  public UOMName:string=null;
+  public UOMName: string = null;
+  public MSSNO: string = null;
+  public HSNCODE: string = null;
+  public AvailableQuantity: number;
 }

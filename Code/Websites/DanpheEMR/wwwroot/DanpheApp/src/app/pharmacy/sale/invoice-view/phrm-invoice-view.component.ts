@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { PharmacyReceiptModel } from '../../shared/pharmacy-receipt.model';
 import { PharmacyBLService } from '../../shared/pharmacy.bl.service';
@@ -6,7 +7,8 @@ import { PharmacyBLService } from '../../shared/pharmacy.bl.service';
 @Component({
   selector: 'app-phrm-invoice-view',
   templateUrl: './phrm-invoice-view.html',
-  styleUrls: ['./phrm-invoice-view.css']
+  styleUrls: ['./phrm-invoice-view.css'],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PhrmInvoiceViewComponent implements OnInit {
   @Input("showPopUp") showPopUp: boolean;
@@ -15,7 +17,7 @@ export class PhrmInvoiceViewComponent implements OnInit {
 
   public pharmacyReceipt: PharmacyReceiptModel;
 
-  constructor(public pharmacyBLService: PharmacyBLService, public msgBox: MessageboxService) { }
+  constructor(public pharmacyBLService: PharmacyBLService, public msgBox: MessageboxService, public nepaliCalendarServ: NepaliCalendarService) { }
 
   ngOnInit() {
     this.GetInvoiceReceiptByInvoiceId();
@@ -26,6 +28,8 @@ export class PhrmInvoiceViewComponent implements OnInit {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.pharmacyReceipt = res.Results.pharmacyReceipt;
+          this.pharmacyReceipt.localReceiptdate = this.nepaliCalendarServ.ConvertEngToNepDateString(this.pharmacyReceipt.ReceiptDate);
+          this.pharmacyReceipt.localReceiptdate += " BS";
         }
         else {
           this.msgBox.showMessage("Failed", ["Failed to load data."]);
@@ -40,7 +44,10 @@ export class PhrmInvoiceViewComponent implements OnInit {
     this.showPopUp = false;
     this.CallBackClose.emit();
   }
-  OnInvoicePrint(){
-    this.Close();
+  public hotkeys(event) {
+    //For ESC key => close the pop up
+    if (event.keyCode == 27) {
+      this.Close();
+    }
   }
 }

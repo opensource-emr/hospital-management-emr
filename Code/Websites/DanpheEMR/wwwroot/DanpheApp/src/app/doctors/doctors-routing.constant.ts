@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { DoctorsMainComponent } from "../doctors/doctors-main.component";
+import { DoctorDashboardComponent } from "./dashboard/doctor-dashboard.component";
 import { PatientOverviewMainComponent } from "../doctors/patient/patient-overview-main.component";
 import { PatientOverviewComponent } from "../doctors/patient/patient-overview.component";
 import { SelectVisitCanActivateGuard } from "../shared/select-visit-canactivate-guard";
@@ -27,9 +28,6 @@ import { ReferralSourceListComponent } from "./referral-source/referral-source-l
 import { PageNotFound } from "../404-error/404-not-found.component";
 import { QuestionComponent } from "../core/dyn-templates/controls/question.component";
 import { InPatientDischargeSummaryComponent } from "./patient/in-patient-discharge-summary.component";
-import { OutPatientMainComponent } from "./opd/outpatient-main.component";
-import { OPNewPatientComponent } from "./opd/op-new-patient/op-new-patient.component";
-import { OPDRecordComponent } from "./opd/opd-record/opd-record.component";
 export const DoctorsRoutingConstant = [
   {
     path: "",
@@ -40,23 +38,8 @@ export const DoctorsRoutingConstant = [
       { path: "", redirectTo: "OutPatientDoctor", pathMatch: "full" },
       {
         path: "OutPatientDoctor",
-        component: OutPatientMainComponent,
+        component: DoctorDashboardComponent,
         canActivate: [AuthGuardService],
-        children: [
-          { path: "", redirectTo: "NewPatient", pathMatch: "full" },
-          {
-            path: "NewPatient",
-            component: OPNewPatientComponent,
-            canActivate: [AuthGuardService],
-
-          },
-          {
-            path: "OPDRecord",
-            component: OPDRecordComponent,
-            canActivate: [AuthGuardService],
-
-          }
-        ]
       },
       {
         path: "InPatientDepartment",
@@ -69,7 +52,7 @@ export const DoctorsRoutingConstant = [
         canDeactivate: [ResetDoctorcontextGuard],
         canActivate: [AuthGuardService, ResetDoctorcontextGuard],
         children: [
-          { path: "", redirectTo: "PatientOverview", pathMatch: "full" },
+          { path: "", redirectTo: "NotesSummary", pathMatch: "full" },
           {
             path: "PatientOverview",
             component: PatientOverviewComponent,

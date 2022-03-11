@@ -18,13 +18,18 @@ export class Currency {
     }
 
     transform(value: number | string, fractionSize: number = 2): string {
-        value = CommonFunctions.parseAmount(value);
+        //value = CommonFunctions.parseAmount(value);
         let [integer, fraction = ""] = (value || "").toString()
             .split(this.DECIMAL_SEPARATOR);
 
-        fraction = fractionSize > 0
-            ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
-            : "";
+            let newFractionSize=(fraction.length < fractionSize)? fraction.length:fractionSize;
+
+            // fraction = fractionSize > 0
+            //     ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+            //     : "";
+            fraction = newFractionSize > 0
+                ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, newFractionSize)
+                : "";
 
         var result = integer.toString().split('.');
 

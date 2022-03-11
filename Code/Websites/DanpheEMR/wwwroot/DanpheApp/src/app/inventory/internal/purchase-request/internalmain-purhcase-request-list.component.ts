@@ -92,11 +92,11 @@ export class InternalmainPurhcaseRequestListComponent {
     this.isShowRequisitionDetail = false;
     this.currentPurchaseRequest = new PurchaseRequestModel();
   }
-  public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName, address, email, PANno, tel, DDA };
 
   //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory Receipt Header').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     else

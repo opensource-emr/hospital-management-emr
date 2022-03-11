@@ -1,4 +1,4 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Directive, ViewChild } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
@@ -13,7 +13,7 @@ import { AccountingService } from "../../shared/accounting.service";
   templateUrl: "./profit-loss-report.html"
 })
 
-export class ProfitLossReportComponent {
+export class ProfitLossReportComponent { 
 
   public fromDate: string = null;
   public toDate: string = null;
@@ -36,10 +36,15 @@ export class ProfitLossReportComponent {
   public fiscalYearList: Array<FiscalYearModel> = new Array<FiscalYearModel>();
   public fiscalYearId:number= 0;
   public ledgerCode:any;
+  btndisabled=false;
+  public IsZeroAmountRecords: boolean = false;
+  public showPrint: boolean = false;
+  public printDetaiils: any;
   constructor(
     public msgBoxServ: MessageboxService,
     public coreservice : CoreService,
-      public accReportBLServ: AccountingReportsBLService, public accountingService: AccountingService) {
+      public accReportBLServ: AccountingReportsBLService, public accountingService: AccountingService,
+      private changeDetector: ChangeDetectorRef) {
    
     this.dateRange = "today";
     this.showExport();
@@ -51,6 +56,7 @@ export class ProfitLossReportComponent {
       this.toDate = event.toDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate = true;
+      this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
     } 
     else {
       this.validDate =false;
@@ -58,22 +64,27 @@ export class ProfitLossReportComponent {
   }
  
   loadData() {
-    if (this.checkDateValidation()) { 
+    this.btndisabled=true;
+    if (this.checkDateValidation() ) {      
       this.accReportBLServ.GetProfitLossReport(this.fromDate, this.toDate,this.fiscalYearId).subscribe(res => {
         if (res.Status == "OK") {
+          this.btndisabled=false;
           let data = res.Results;
           this.RevenueData = data.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("001"));  //  "Revenue"
           this.ExpenseData = data.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("002")); // "Expenses"
           this.CalculateTotalAmounts();
           this.formatDataforDisplay();
           this.showReportData = true;
+         
         }
         else {
+          this.btndisabled=false;
           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
         }
       });
     }
     else {
+      this.btndisabled=false;
       this.showReportData = false;
     }
   }
@@ -174,7 +185,7 @@ export class ProfitLossReportComponent {
     temp = RevData.find(a => a.Name == this.accountingService.getnamebyCode("006")); //"Indirect Income"
     TotalAmt += temp ? temp.Amount : 0;
     //inserting Total in List
-    //RevData = this.pushToList(RevData, "Total", TotalAmt, "BoldCategory");
+    //RevData = this.pushToList(RevData, "Total", TotalAmt, "BoldCategory",0,0);
 
 
 
@@ -191,55 +202,55 @@ export class ProfitLossReportComponent {
 
     ////inserting other Types in List (except Direct Income)
 
-    //this.RevenueData.COAList.forEach(a => {
+    // this.RevenueData.COAList.forEach(a => {
     //    if (a.COA != "Direct Income") {
     //        nonDirectIncome = nonDirectIncome + a.COA != "Direct Income" ? a.TotalAmount : 0;
-    //        RevData = this.pushToList(RevData, a.COA, a.TotalAmount, "BoldCategory");
+    //        RevData = this.pushToList(RevData, a.COA, a.TotalAmount, "BoldCategory",0,0);
     //        a.LedgerGroupList.forEach(b => {
-    //            RevData = this.pushToList(RevData, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel");
+    //            RevData = this.pushToList(RevData, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel",0,0);
     //            b.LedgerList.forEach(c => {
-    //                RevData = this.pushToList(RevData, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel");
+    //                RevData = this.pushToList(RevData, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel",0,0);
     //            });
     //        });
     //    }
-    //});
+    // });
 
     ////inserting other Types in List (except Cost of Goods Sold and Direct Expense)
-    //this.ExpenseData.COAList.forEach(a => {
+    // this.ExpenseData.COAList.forEach(a => {
     //    if (a.COA != "Direct Expense" && a.COA != "Cost of Goods Sold") {
     //        nonDirectExpense = nonDirectExpense + a.COA != "Direct Expense" ? a.TotalAmount : 0;
-    //        ExpData = this.pushToList(ExpData, a.COA, a.TotalAmount, "BoldCategory");
+    //        ExpData = this.pushToList(ExpData, a.COA, a.TotalAmount, "BoldCategory",0,0);
     //        a.LedgerGroupList.forEach(b => {
-    //            ExpData = this.pushToList(ExpData, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel");
+    //            ExpData = this.pushToList(ExpData, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel",0,0);
     //            b.LedgerList.forEach(c => {
-    //                ExpData = this.pushToList(ExpData, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel");
+    //                ExpData = this.pushToList(ExpData, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel",0,0);
     //            });
     //        });
     //    }
     //});
     ////calculating Net Amount and inserting in ExpData
-    //this.NetProfit = GrossAmt + nonDirectIncome - nonDirectExpense;
-    //if (this.NetProfit >= 0) {
-    //    ExpData = this.pushToList(ExpData, "Net Profit", this.NetProfit, "BoldCategory");
-    //}
-    //else {
+    // this.NetProfit = GrossAmt + nonDirectIncome - nonDirectExpense;
+    // if (this.NetProfit >= 0) {
+    //    ExpData = this.pushToList(ExpData, "Net Profit", this.NetProfit, "BoldCategory",0,0);
+    // }
+    // else {
     //    this.NetProfit = -this.NetProfit;
-    //    RevData = this.pushToList(RevData, "Net Loss", this.NetProfit, "BoldCategory");
+    //    RevData = this.pushToList(RevData, "Net Loss", this.NetProfit, "BoldCategory",0,0);
     //    this.NetProfit = -this.NetProfit;
-    //}
+    // }
 
 
     ////inserting blank Entry to make total in same line
-    //RevLength = RevData.length;
-    //ExpLength = ExpData.length;
-    //if (RevLength > ExpLength)
+    // RevLength = RevData.length;
+    // ExpLength = ExpData.length;
+    // if (RevLength > ExpLength)
     //    for (let i = 0; i < RevLength - ExpLength; i++)
-    //        ExpData = this.pushToList(ExpData, "", 0, "BlankEntry");
-    //else if (RevLength < ExpLength)
+    //        ExpData = this.pushToList(ExpData, "", 0, "BlankEntry",0,0);
+    // else if (RevLength < ExpLength)
     //    for (let i = 0; i < ExpLength - RevLength; i++)
-    //        RevData = this.pushToList(RevData, "", 0, "BlankEntry");
-    //RevData = this.pushToList(RevData, "Total", GrossAmt + nonDirectIncome, "BoldTotal");
-    //ExpData = this.pushToList(ExpData, "Total", this.NetProfit + nonDirectExpense, "BoldTotal");
+    //        RevData = this.pushToList(RevData, "", 0, "BlankEntry",0,0);
+    // RevData = this.pushToList(RevData, "Total", GrossAmt + nonDirectIncome, "BoldTotal",0,0);
+    // ExpData = this.pushToList(ExpData, "Total", this.NetProfit + nonDirectExpense, "BoldTotal",0,0);
 
     this.RevenueData = RevData;
     this.ExpenseData = ExpData;
@@ -290,35 +301,32 @@ export class ProfitLossReportComponent {
     return list;
   }
 
-  Print() {
-    let popupWinindow;
-    var headerContent = document.getElementById("headerForPrint").innerHTML;
-    var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
-    printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    let documentContent = "<html><head>";
-   // documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    // documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/PrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-    documentContent += '</head>';
-    documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>'
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
+  Print(tableId) {
+    // let popupWinindow;
+    // var headerContent = document.getElementById("headerForPrint").innerHTML;
+    // var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+    // printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
+    // printContents += document.getElementById("printpage").innerHTML; 
+    // this.showPrint = false;
+    // this.printDetaiils = null;
+    // this.changeDetector.detectChanges();
+    // this.showPrint = true;
+    // this.printDetaiils = headerContent + printContents ; //document.getElementById("printpage");
+    this.accountingService.Print(tableId,this.dateRange);
+
   }
   ExportToExcel(tableId) {
-    if (tableId) {
-      let workSheetName = 'Profit & Loss Report';
-      let Heading = 'Profit & LossReport';
-      let filename = 'ProfitAndLossReport';
-      //NBB-send all parameters for now 
-      //need enhancement in this function 
-      //here from date and todate for show date range for excel sheet data
-      CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
-        Heading, filename);
-    }
+    // if (tableId) {
+    //   let workSheetName = 'Profit & Loss Report';
+    //   let Heading = 'Profit & LossReport';
+    //   let filename = 'ProfitAndLossReport';
+    //   //NBB-send all parameters for now 
+    //   //need enhancement in this function 
+    //   //here from date and todate for show date range for excel sheet data
+    //   CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+    //     Heading, filename);
+    // }
+    this.accountingService.ExportToExcel(tableId,this.dateRange);
   }
   SwitchViews(row) {
     this.ledgerId = row.LedgerId;

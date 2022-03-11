@@ -11,9 +11,12 @@ using DanpheEMR.Utilities;
 using DanpheEMR.CommonTypes;
 using DanpheEMR.ServerModel;
 using System.Data;
-using DanpheEMR.ServerModel.PharmacyModels;
-using DanpheEMR.ServerModel.ReportingModels;
+
 using System.Data.SqlClient;
+using DanpheEMR.ServerModel.ReportingModels;
+using DanpheEMR.ServerModel.PharmacyModels;
+using System.Transactions;
+using System.Data.Entity;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers
@@ -21,11 +24,63 @@ namespace DanpheEMR.Controllers
     public class PharmacyReportController : Controller
     {
         private readonly string connString = null;
+        private PharmacyDbContext db;
+        public DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
         public PharmacyReportController(IOptions<MyConfiguration> _config)
         {
-
             connString = _config.Value.Connectionstring;
+            db = new PharmacyDbContext(connString);
         }
+        #region Get Active Stores list
+
+        [HttpGet("GetActiveStores")]
+        [Route("~/api/PharmacyReport/GetActiveStores")]
+        public IActionResult GetActiveStores()
+        {
+            var dispensaryCategory = Enums.ENUM_StoreCategory.Dispensary;
+            var storeCategory = Enums.ENUM_StoreCategory.Store;
+            var storeList = db.PHRMStore.Where(d => d.Category == dispensaryCategory || (d.Category == storeCategory && d.SubCategory != "inventory")).ToList();
+            responseData.Status = "OK";
+            responseData.Results = storeList;
+            return Ok(responseData);
+        }
+        #endregion
+
+        #region Get User Details
+        [HttpGet("getPharmacyUsersForReturnFromCustomerReport")]
+        [Route("~/api/PharmacyReport/GetPharmacyUsersForReturnFromCustomerReport")]
+        public IActionResult GetPharmacyUsersForReturnFromCustomerReport()
+        {
+            var userList = (from user in db.Users
+                            join invretitems in db.PHRMInvoiceReturnItemsModel on user.EmployeeId equals invretitems.CreatedBy
+                            select new
+                            {
+                                userId = user.EmployeeId,
+                                userName = user.UserName
+                            }).Distinct().ToList();
+            responseData.Status = "OK";
+            responseData.Results = userList;
+            return Ok(responseData);
+        }
+        #endregion
+        #region Get Only ItemName and Id 
+
+        [HttpGet("GetOnlyItemNameList")]
+        [Route("~/api/PharmacyReport/GetOnlyItemNameList")]
+        public IActionResult GetOnlyItemName()
+        {
+            var itemList = (from item in db.PHRMItemMaster
+                            select new
+                            {
+                                ItemId = item.ItemId,
+                                ItemName = item.ItemName
+                            }).ToList();
+            responseData.Status = "OK";
+            responseData.Results = itemList;
+            return Ok(responseData);
+        }
+        #endregion
+
 
         #region Pharmacy Main View
         public IActionResult ReportMain()
@@ -109,24 +164,9 @@ namespace DanpheEMR.Controllers
 
 
         #region PHRM User Collection ReportFunction
-        public string PHRMUserwiseCollectionReport(DateTime FromDate, DateTime ToDate, string CounterId, string CreatedBy)
+        public string PHRMUserwiseCollectionReport(DateTime FromDate, DateTime ToDate, string CounterId, string CreatedBy, int? StoreId)
         {
-            //DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
-            //try
-            //{
-            //    PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-            //    DataTable dtResult = phrmreportingDbContext.PHRMUserwiseCollectionReport(FromDate, ToDate);
-            //    responseData.Status = "OK";
-            //    responseData.Results = dtResult;
-            //}
-            //catch (Exception ex)
-            //{
-            //    //Insert exception details into database table.
-            //    responseData.Status = "Failed";
-            //    responseData.ErrorMessage = ex.Message;
-            //}
-            //return DanpheJSONConvert.SerializeObject(responseData);
-            DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
@@ -134,9 +174,23 @@ namespace DanpheEMR.Controllers
                 {
                     CounterId = "";
                 }
-                DynamicReport dailysalesreport = phrmreportingDbContext.PHRMUserwiseCollectionReport(FromDate, ToDate, CounterId, CreatedBy);
+                List<SqlParameter> paramList = new List<SqlParameter>() {  new SqlParameter("@FromDate", FromDate),
+                            new SqlParameter("@ToDate", ToDate),
+                            new SqlParameter("@CounterId", CounterId),
+                            new SqlParameter("@CreatedBy", CreatedBy == null ? string.Empty : CreatedBy),
+                            new SqlParameter("@StoreId", StoreId)
+                };
+
+                DataSet dsUsrCollnDetail = DALFunctions.GetDatasetFromStoredProc("SP_PHRM_UserwiseCollectionReport", paramList, phrmreportingDbContext);
                 responseData.Status = "OK";
-                responseData.Results = dailysalesreport;
+
+                responseData.Results = new
+                {
+                    UserCollectionDetails = dsUsrCollnDetail.Tables[0],
+                    SettlementSummary = PHRM_UserColln_SettlementSummaryVM.MapDataTableToSingleObject(dsUsrCollnDetail.Tables[1]),
+                    UserCollectionSummary = dsUsrCollnDetail.Tables[2]
+                };
+
             }
             catch (Exception ex)
             {
@@ -148,13 +202,13 @@ namespace DanpheEMR.Controllers
         #endregion
 
         #region PHRM Cash Collection Summary ReportFunction
-        public string PHRMCashCollectionSummaryReport(DateTime FromDate, DateTime ToDate)
+        public string PHRMCashCollectionSummaryReport(DateTime FromDate, DateTime ToDate, int? StoreId)
         {
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable dtResult = phrmreportingDbContext.PHRMCashCollectionSummaryReport(FromDate, ToDate);
+                DataTable dtResult = phrmreportingDbContext.PHRMCashCollectionSummaryReport(FromDate, ToDate, StoreId);
                 responseData.Status = "OK";
                 responseData.Results = dtResult;
             }
@@ -190,6 +244,7 @@ namespace DanpheEMR.Controllers
 
         }
         #endregion
+
         #region PHRM Counter Collection ReportFunction
         public string PHRMCounterwiseCollectionReport(DateTime FromDate, DateTime ToDate)
         {
@@ -211,41 +266,56 @@ namespace DanpheEMR.Controllers
 
         }
 
-        public string PHRMDailySalesReport(DateTime FromDate, DateTime ToDate, int itemId)
+        public string PHRMDailySalesReport(DateTime FromDate, DateTime ToDate, int itemId, int? storeId, int? CounterId, int? UserId)
         {
+            //ramesh:19Jan'22--Adding Isolation level to read uncommitted so that this query doesn't wait for other transaction to complete.
+            //changed this method to async
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
+            
+            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
+            {
+                var ToDateOnly = ToDate.AddDays(1);
+                var dailysales = phrmdbcontext.PHRMInvoiceTransactionItems
+                    .Join(phrmdbcontext.PHRMInvoiceTransaction.Where(a => a.IsReturn == null), a => a.InvoiceId, b => b.InvoiceId, (invI, inv) => new { invI, inv })
+                    .Join(phrmdbcontext.PHRMItemMaster, i => i.invI.ItemId, item => item.ItemId, (invI, itm) => new { invI.invI, invI.inv, itm.GenericId })
+                    .Join(phrmdbcontext.PHRMGenericModel, i => i.GenericId, gen => gen.GenericId, (i, gen) => new { i.invI, i.inv, gen.GenericName })
+                    .Join(phrmdbcontext.PHRMPatient, i => i.invI.PatientId, p => p.PatientId, (i, patient) => new { i.invI, i.inv, i.GenericName, patient })
+                    .Join(phrmdbcontext.PHRMStore, i => i.invI.StoreId, s => s.StoreId, (i, store) => new { i.invI, i.inv, i.GenericName, i.patient, StoreName = store.Name })
+                    .Join(phrmdbcontext.PHRMCounters, i => i.invI.CounterId, c => c.CounterId, (i, counter) => new { i.invI, i.inv, i.GenericName, i.patient, i.StoreName, counter.CounterName })
+                    .Join(phrmdbcontext.Employees, i => i.invI.CreatedBy, e => e.EmployeeId, (i, employee) => new { i.invI, i.inv, i.GenericName, i.patient, i.StoreName, i.CounterName, CreatedByName = employee.FullName })
+                    .Where(a => a.invI.CreatedOn > FromDate && a.invI.CreatedOn < ToDateOnly && (a.invI.ItemId == itemId || itemId == 0) && a.invI.Quantity > 0 && (a.invI.StoreId == storeId || storeId == null) && (a.invI.CounterId == CounterId || CounterId == null) && (a.invI.CreatedBy == UserId || UserId == null))
+                    .ToList()
+                    .Select(a => new PHRMDailySalesReportDto
+                    {
+                        InvoicePrintId = a.inv.InvoicePrintId,
+                        InvoiceId = a.invI.InvoiceId,
+                        PatientName = a.patient.FirstName + " " + (string.IsNullOrEmpty(a.patient.MiddleName) ? "" : a.patient.MiddleName + " ") + a.patient.LastName,
+                        GenericName = a.GenericName,
+                        ItemName = a.invI.ItemName,
+                        BatchNo = a.invI.BatchNo,
+                        ExpiryDate = a.invI.ExpiryDate,
+                        Quantity = a.invI.Quantity,
+                        Price = a.invI.Price,
+                        MRP = a.invI.MRP,
+                        StockValue = Convert.ToDouble(a.invI.Price) * a.invI.Quantity,
+                        TotalAmount = a.invI.TotalAmount,
+                        CreatedOn = a.invI.CreatedOn,
+                        PaymentMode = a.inv.PaymentMode,
+                        StoreName = a.StoreName,
+                        CounterName = a.CounterName,
+                        CreatedByName = a.CreatedByName
+                    }).ToList();
 
-            //var FromDateonly = FromDate.AddDays(-1);
-            var ToDateOnly = ToDate.AddDays(1);
-            var dailysales = phrmdbcontext.PHRMInvoiceTransactionItems.
-                Where(a => a.CreatedOn > FromDate && a.CreatedOn < ToDateOnly && (a.ItemId == itemId || itemId == 0) && a.Quantity > 0).ToList().
-
-                Join(phrmdbcontext.PHRMInvoiceTransaction.Where(a => a.IsReturn == null).ToList(), a => a.InvoiceId, b => b.InvoiceId, (a, b) => new PHRMInvoiceTransactionItemsModel
-                {
-                    InvoicePrintId = b.InvoicePrintId,
-                    InvoiceId = a.InvoiceId,
-                    ItemName = a.ItemName,
-                    BatchNo = a.BatchNo,
-                    Quantity = a.Quantity,
-                    Price = a.Price,
-                    TotalAmount = a.TotalAmount,
-                    CreatedOn = a.CreatedOn,
-                    PatientName = (from pat in phrmdbcontext.PHRMPatient
-                                   where pat.PatientId == b.PatientId
-                                   select pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName).FirstOrDefault(),
-                    CreatedOnNp = DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Year.ToString() + "-" + DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Month.ToString() + "-" +
-                                     DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Day.ToString()
-                });
-
-            responseData.Status = "OK";
-            responseData.Results = dailysales;
+                responseData.Status = "OK";
+                responseData.Results = dailysales;
+            }
 
             return DanpheJSONConvert.SerializeObject(responseData);
 
         }
 
-        public string PHRMNarcoticsDailySalesReport(DateTime FromDate, DateTime ToDate, int itemId)
+        public string PHRMNarcoticsDailySalesReport(DateTime FromDate, DateTime ToDate, int itemId, int? storeId)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
@@ -261,9 +331,11 @@ namespace DanpheEMR.Controllers
                                  invitem.InvoiceId,
                                  invitem.ItemName,
                                  invitem.ItemId,
+                                 invitem.StoreId,
                                  invitem.BatchNo,
                                  invitem.Quantity,
                                  invitem.Price,
+                                 invitem.MRP,
                                  invitem.TotalAmount,
                                  invitem.CreatedOn,
 
@@ -272,7 +344,7 @@ namespace DanpheEMR.Controllers
 
             var dailysales = dailysale.
 
-                Where(a => a.CreatedOn > FromDate && a.CreatedOn < ToDateOnly && (a.ItemId == itemId || itemId == 0) && a.Quantity > 0).ToList().
+                Where(a => a.CreatedOn > FromDate && a.CreatedOn < ToDateOnly && (a.ItemId == itemId || itemId == 0) && a.Quantity > 0 && (a.StoreId == storeId || storeId == null)).ToList().
 
                 Join(phrmdbcontext.PHRMInvoiceTransaction.Where(a => a.IsReturn == null).ToList(), a => a.InvoiceId, b => b.InvoiceId, (a, b) => new PHRMInvoiceTransactionItemsModel
                 {
@@ -283,15 +355,22 @@ namespace DanpheEMR.Controllers
                     BatchNo = a.BatchNo,
                     Quantity = a.Quantity,
                     Price = a.Price,
+                    MRP = a.MRP,
                     TotalAmount = a.TotalAmount,
                     CreatedOn = a.CreatedOn,
                     PatientName = (from pat in phrmdbcontext.PHRMPatient
                                    where pat.PatientId == b.PatientId
-                                   select pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName).FirstOrDefault(),
+                                   select pat.ShortName).FirstOrDefault(),
+                    DoctorName = (from doc in phrmdbcontext.Employees
+                                  where doc.EmployeeId == b.ProviderId
+                                  select doc.FullName).FirstOrDefault(),
+                    NMCNumber = (from doc in phrmdbcontext.Employees
+                                 where doc.EmployeeId == b.ProviderId
+                                 select doc.MedCertificationNo).FirstOrDefault(),
                     CreatedOnNp = DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Year.ToString() + "-" + DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Month.ToString() + "-" +
                                      DanpheDateConvertor.ConvertEngToNepDate(a.CreatedOn.Value).Day.ToString()
                 }
- );
+            );
             responseData.Status = "OK";
 
             responseData.Results = dailysales;
@@ -461,6 +540,7 @@ namespace DanpheEMR.Controllers
         }
 
         #endregion
+
         #region PHRM Goods Receipt Product Function
         public string PHRMGoodsReceiptProductReport(DateTime FromDate, DateTime ToDate, int ItemId)
         {
@@ -532,6 +612,7 @@ namespace DanpheEMR.Controllers
             return DanpheJSONConvert.SerializeObject(responseData);
         }
         #endregion
+
         #region PHRM  Dispensary Store Stock ReportFunction
         public string PHRMNarcoticsDispensaryStoreStockReport()
         {
@@ -745,224 +826,158 @@ namespace DanpheEMR.Controllers
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
-
-            //try
-            //{
-            //    PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-            //    DataTable stockItemsResult = phrmreportingDbContext.PHRMStockItemsReport(itemId);
-            //    responseData.Status = "OK";
-            //    responseData.Results = stockItemsResult;
-            //}
-            //catch (Exception ex)
-            //{
-            //    responseData.Status = "Failed";
-            //    responseData.ErrorMessage = ex.Message;
-            //}
             try
             {
-                //var totalStock = phrmdbcontext.PHRMStockTransactionModel.
-                //    Where(a => a.ExpiryDate >= DateTime.Now).ToList().
-                //    GroupBy(a => new { a.ItemId, a.BatchNo }).
-                //    Select(g => new PHRMStockTransactionItemsModel
-                //    {
-                //        ItemId = g.Key.ItemId,
-                //        BatchNo = g.Key.BatchNo,
-                //        Quantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity) - g.Where(w => w.InOut == "in").Sum(f => f.FreeQuantity).Value - g.Where(w => w.InOut == "out").Sum(o => o.Quantity),
-                //        FreeQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
-                //        ExpiryDate = g.FirstOrDefault().ExpiryDate,
-                //        MRP = g.FirstOrDefault().MRP,
-                //        Price = g.FirstOrDefault().Price,
+                //if (location == 1)
+                //{
+                //    var dispensaryCategory = Enums.ENUM_StoreCategory.Dispensary;
+                //    var totalStock = (from stk in phrmdbcontext.DispensaryStocks.AsEnumerable()
+                //                      join itm in phrmdbcontext.PHRMItemMaster on stk.ItemId equals itm.ItemId
+                //                      join dispensary in phrmdbcontext.PHRMStore.Where(s => s.Category == dispensaryCategory) on stk.StoreId equals dispensary.StoreId
+                //                      where ((itemId == 0) ? true : stk.ItemId == itemId) && stk.AvailableQuantity > 0
+                //                      select new StockItemsReportViewModel
+                //                      {
+                //                          ItemId = stk.ItemId,
+                //                          BatchNo = stk.BatchNo,
+                //                          ExpiryDate = stk.ExpiryDate,
+                //                          ItemName = itm.ItemName,
+                //                          AvailableQuantity = stk.AvailableQuantity,
+                //                          MRP = stk.MRP,
+                //                          IsActive = true,
+                //                          MinStockQuantity = itm.MinStockQuantity,
+                //                          Location = dispensary.Name
+                //                      }).ToList();
 
-                //    }).Where(a => (a.Quantity > 0 || a.Quantity == 0) && (a.ItemId == itemId || itemId == 0)).
-                //    GroupJoin(phrmdbcontext.PHRMItemMaster.Where(a => a.IsActive == true).ToList(), a => a.ItemId, b => b.ItemId,
-                //    (a, b) => new GoodReceiptItemsViewModel
-                //    {
-                //        ItemId = a.ItemId.Value,
-                //        BatchNo = a.BatchNo,
-                //        ExpiryDate = a.ExpiryDate.Value.Date,
-                //        ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
-                //        AvailableQuantity = a.Quantity,
-                //        MRP = a.MRP.Value,
-                //        GRItemPrice = a.Price.Value,
-                //        GenericId = b.Select(s => s.GenericId.Value).FirstOrDefault(),
-                //        IsActive = true,
-                //        MinStockQuantity= b.Select(s=>s.MinStockQuantity).FirstOrDefault(),
-
-
-                //    }
-                //        ).OrderBy(expDate => expDate.ExpiryDate).ToList().Join(phrmdbcontext.PHRMGenericModel.ToList(), a => a.GenericId, b => b.GenericId, (a, b) => new
-                //        { GoodReceiptItemsViewModel = a, PHRMGenericModel = b }).Join(phrmdbcontext.PHRMCategory.ToList(), a => a.PHRMGenericModel.CategoryId, b => b.CategoryId, (a, b) => new { a.GoodReceiptItemsViewModel, a.PHRMGenericModel, PHRMCategory = b })
-                //        .Select(s => new GoodReceiptItemsViewModel
+                //    responseData.Status = "OK";
+                //    responseData.Results = totalStock;
+                //}
+                //else if (location == 2) //for store
+                //{
+                //    var totalStock = phrmdbcontext.StockTransactions.Where(a => a.IsActive == true).ToList().
+                //        GroupBy(a => new { a.ItemId, a.BatchNo, a.MRP, a.ExpiryDate, a.StockId, a.CostPrice }).
+                //        Select(g => new
                 //        {
+                //            ItemId = g.Key.ItemId,
+                //            BatchNo = g.Key.BatchNo,
+                //            InQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
+                //            OutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.Quantity),
+                //            ExpiryDate = g.Key.ExpiryDate,
+                //            MRP = g.Key.MRP,
+                //            IsActive = g.FirstOrDefault().IsActive
 
-                //            ItemId = s.GoodReceiptItemsViewModel.ItemId,
-                //            BatchNo = s.GoodReceiptItemsViewModel.BatchNo,
-                //            ExpiryDate = s.GoodReceiptItemsViewModel.ExpiryDate.Date,
-                //            ItemName = s.GoodReceiptItemsViewModel.ItemName,
-                //            AvailableQuantity = s.GoodReceiptItemsViewModel.AvailableQuantity,
-                //            MRP = s.GoodReceiptItemsViewModel.MRP,
-                //            GRItemPrice = s.GoodReceiptItemsViewModel.GRItemPrice,
-                //            CategoryName = s.PHRMCategory.CategoryName,
-                //            TotalAmount= (s.GoodReceiptItemsViewModel.GRItemPrice) * Convert.ToDecimal(s.GoodReceiptItemsViewModel.AvailableQuantity),
-                //            IsActive = true,
-                //            MinStockQuantity=s.GoodReceiptItemsViewModel.MinStockQuantity,
+                //        }).Where(a => (a.ItemId == itemId || itemId == 0)).
+                //        GroupJoin(phrmdbcontext.PHRMItemMaster.ToList(), a => a.ItemId, b => b.ItemId,
+                //        (a, b) => new StockItemsReportViewModel
+                //        {
+                //            ItemId = a.ItemId,
+                //            BatchNo = a.BatchNo,
+                //            ExpiryDate = a.ExpiryDate.Value.Date,
+                //            ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
+                //            AvailableQuantity = a.InQuantity - a.OutQuantity,
+                //            MRP = a.MRP.Value,
+                //            IsActive = b.Select(s => s.IsActive).FirstOrDefault(),
+                //            MinStockQuantity = b.Select(s => s.MinStockQuantity).FirstOrDefault(),
 
-                //        });
-                if (location == 1)
-                {
-                    var totalStock = (from stk in phrmdbcontext.DispensaryStock.AsEnumerable()
-                                      join itm in phrmdbcontext.PHRMItemMaster on stk.ItemId equals itm.ItemId
-                                      join dispensary in phrmdbcontext.PHRMDispensary on stk.DispensaryId equals dispensary.DispensaryId
-                                      where ((itemId == 0) ? true : stk.ItemId == itemId) && stk.AvailableQuantity > 0
-                                      select new StockItemsReportViewModel
-                                      {
-                                          ItemId = stk.ItemId,
-                                          BatchNo = stk.BatchNo,
-                                          ExpiryDate = stk.ExpiryDate,
-                                          ItemName = itm.ItemName,
-                                          AvailableQuantity = stk.AvailableQuantity,
-                                          MRP = stk.MRP,
-                                          IsActive = true,
-                                          MinStockQuantity = itm.MinStockQuantity,
-                                          Location = dispensary.Name
-                                      }).ToList();
+                //        }).Where(a => a.AvailableQuantity > 0).OrderBy(a => a.ItemName).ToList();
 
-                    responseData.Status = "OK";
-                    responseData.Results = totalStock;
-                }
-                else if (location == 2) //for store
-                {
-                    var totalStock = phrmdbcontext.PHRMStoreStock.Where(a => a.IsActive == true).ToList().
-                        GroupBy(a => new { a.ItemId, a.BatchNo, a.MRP, a.ExpiryDate, a.GoodsReceiptItemId, a.Price, a.StoreId }).
-                        Select(g => new
-                        {
-                            ItemId = g.Key.ItemId,
-                            BatchNo = g.Key.BatchNo,
-                            InQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
-                            OutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.Quantity),
-                            FreeInQuantity = g.Where(w => w.InOut == "in").Sum(q => q.FreeQuantity),
-                            FreeOutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.FreeQuantity),
-                            ExpiryDate = g.Key.ExpiryDate,
-                            MRP = g.Key.MRP,
-                            StoreName = g.FirstOrDefault().StoreName,
-                            IsActive = g.FirstOrDefault().IsActive
+                //    responseData.Status = "OK";
+                //    responseData.Results = totalStock;
+                //}
+                //else if (location == 3)
+                //{
+                //    var totalStock = (from wardstock in phrmdbcontext.WardStock
+                //                      join ward in phrmdbcontext.WardModel on wardstock.WardId equals ward.WardId
+                //                      join item in phrmdbcontext.PHRMItemMaster on wardstock.ItemId equals item.ItemId
+                //                      where wardstock.StockType == "pharmacy" & (wardstock.ItemId == itemId || itemId == 0)
+                //                      group new { wardstock, ward, item } by new { wardstock.ItemId, wardstock.StockId, wardstock.BatchNo, wardstock.MRP, wardstock.ExpiryDate } into x
+                //                      select new StockItemsReportViewModel
+                //                      {
 
-                        }).Where(a => (a.ItemId == itemId || itemId == 0)).
-                        GroupJoin(phrmdbcontext.PHRMItemMaster.ToList(), a => a.ItemId, b => b.ItemId,
-                        (a, b) => new StockItemsReportViewModel
-                        {
-                            ItemId = a.ItemId.Value,
-                            BatchNo = a.BatchNo,
-                            ExpiryDate = a.ExpiryDate.Value.Date,
-                            ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
-                            AvailableQuantity = a.InQuantity + a.FreeInQuantity - a.OutQuantity - a.FreeOutQuantity,
-                            MRP = a.MRP.Value,
-                            IsActive = b.Select(s => s.IsActive).FirstOrDefault(),
-                            MinStockQuantity = b.Select(s => s.MinStockQuantity).FirstOrDefault(),
-                            Location = a.StoreName
+                //                          ItemId = x.Key.ItemId,
+                //                          ItemName = x.Select(a => a.item.ItemName).FirstOrDefault(),
+                //                          BatchNo = x.Key.BatchNo,
+                //                          AvailableQuantity = x.Sum(a => a.wardstock.AvailableQuantity),
+                //                          ExpiryDate = x.Key.ExpiryDate,
+                //                          MRP = (decimal)(((int)(x.Key.MRP * 100)) / 100),
+                //                          Location = x.Select(a => a.ward.WardName).FirstOrDefault() + " Ward",
+                //                          MinStockQuantity = x.Select(a => a.item.MinStockQuantity).FirstOrDefault(),
+                //                          IsActive = true
+                //                      }).ToList();
+                //    responseData.Status = (totalStock == null) ? "Failed" : "OK";
+                //    responseData.Results = totalStock;
+                //}
+                //else if (location == 0)
+                //{
+                //    var dispensaryCategory = Enums.ENUM_StoreCategory.Dispensary;
 
-                        }).Where(a => a.AvailableQuantity > 0).OrderBy(a => a.ItemName).ToList();
+                //    var totalStock = new List<StockItemsReportViewModel>();
+                //    var totalStock1 = (from stk in phrmdbcontext.DispensaryStocks.AsEnumerable()
+                //                       join itm in phrmdbcontext.PHRMItemMaster on stk.ItemId equals itm.ItemId
+                //                       join dispensary in phrmdbcontext.PHRMStore.Where(s => s.Category == dispensaryCategory) on stk.StoreId equals dispensary.StoreId
+                //                       where ((itemId == 0) ? true : stk.ItemId == itemId) && stk.AvailableQuantity > 0
+                //                       select new StockItemsReportViewModel
+                //                       {
+                //                           ItemId = stk.ItemId,
+                //                           BatchNo = stk.BatchNo,
+                //                           ExpiryDate = stk.ExpiryDate,
+                //                           ItemName = itm.ItemName,
+                //                           AvailableQuantity = stk.AvailableQuantity,
+                //                           MRP = stk.MRP,
+                //                           IsActive = true,
+                //                           MinStockQuantity = itm.MinStockQuantity,
+                //                           Location = dispensary.Name
+                //                       }).ToList();
+                //    var totalStock2 = phrmdbcontext.StockTransactions.Where(a => a.IsActive == true).ToList().
+                //        GroupBy(a => new { a.ItemId, a.BatchNo, a.MRP, a.ExpiryDate }).
+                //        Select(g => new
+                //        {
+                //            ItemId = g.Key.ItemId,
+                //            BatchNo = g.Key.BatchNo,
+                //            InQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
+                //            OutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.Quantity),
+                //            ExpiryDate = g.Key.ExpiryDate,
+                //            MRP = g.Key.MRP,
+                //            IsActive = g.FirstOrDefault().IsActive
 
-                    responseData.Status = "OK";
-                    responseData.Results = totalStock;
-                }
-                else if (location == 3)
-                {
-                    var totalStock = (from wardstock in phrmdbcontext.WardStock
-                                      join ward in phrmdbcontext.WardModel on wardstock.WardId equals ward.WardId
-                                      join item in phrmdbcontext.PHRMItemMaster on wardstock.ItemId equals item.ItemId
-                                      where wardstock.StockType == "pharmacy" & (wardstock.ItemId == itemId || itemId == 0)
-                                      group new { wardstock, ward, item } by new { wardstock.ItemId, wardstock.StockId, wardstock.BatchNo, wardstock.MRP, wardstock.ExpiryDate } into x
-                                      select new StockItemsReportViewModel
-                                      {
+                //        }).Where(a => (a.ItemId == itemId || itemId == 0)).
+                //        GroupJoin(phrmdbcontext.PHRMItemMaster.ToList(), a => a.ItemId, b => b.ItemId,
+                //        (a, b) => new StockItemsReportViewModel
+                //        {
+                //            ItemId = a.ItemId,
+                //            BatchNo = a.BatchNo,
+                //            ExpiryDate = a.ExpiryDate.Value.Date,
+                //            ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
+                //            AvailableQuantity = a.InQuantity - a.OutQuantity,
+                //            MRP = a.MRP.Value,
+                //            IsActive = b.Select(s => s.IsActive).FirstOrDefault(),
+                //            MinStockQuantity = b.Select(s => s.MinStockQuantity).FirstOrDefault(),
 
-                                          ItemId = x.Key.ItemId,
-                                          ItemName = x.Select(a => a.item.ItemName).FirstOrDefault(),
-                                          BatchNo = x.Key.BatchNo,
-                                          AvailableQuantity = x.Sum(a => a.wardstock.AvailableQuantity),
-                                          ExpiryDate = x.Key.ExpiryDate,
-                                          MRP = (decimal)(((int)(x.Key.MRP * 100)) / 100),
-                                          Location = x.Select(a => a.ward.WardName).FirstOrDefault() + " Ward",
-                                          MinStockQuantity = x.Select(a => a.item.MinStockQuantity).FirstOrDefault(),
-                                          IsActive = true
-                                      }).ToList();
-                    responseData.Status = (totalStock == null) ? "Failed" : "OK";
-                    responseData.Results = totalStock;
-                }
-                else if (location == 0)
-                {
-                    var totalStock = new List<StockItemsReportViewModel>();
-                    var totalStock1 = (from stk in phrmdbcontext.DispensaryStock.AsEnumerable()
-                                       join itm in phrmdbcontext.PHRMItemMaster on stk.ItemId equals itm.ItemId
-                                       join dispensary in phrmdbcontext.PHRMDispensary on stk.DispensaryId equals dispensary.DispensaryId
-                                       where ((itemId == 0) ? true : stk.ItemId == itemId) && stk.AvailableQuantity > 0
-                                       select new StockItemsReportViewModel
-                                       {
-                                           ItemId = stk.ItemId,
-                                           BatchNo = stk.BatchNo,
-                                           ExpiryDate = stk.ExpiryDate,
-                                           ItemName = itm.ItemName,
-                                           AvailableQuantity = stk.AvailableQuantity,
-                                           MRP = stk.MRP,
-                                           IsActive = true,
-                                           MinStockQuantity = itm.MinStockQuantity,
-                                           Location = dispensary.Name
-                                       }).ToList();
-                    var totalStock2 = phrmdbcontext.PHRMStoreStock.Where(a => a.IsActive == true).ToList().
-                        GroupBy(a => new { a.ItemId, a.BatchNo, a.MRP, a.ExpiryDate, a.GoodsReceiptItemId, a.Price, a.StoreId }).
-                        Select(g => new
-                        {
-                            ItemId = g.Key.ItemId,
-                            BatchNo = g.Key.BatchNo,
-                            InQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
-                            OutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.Quantity),
-                            FreeInQuantity = g.Where(w => w.InOut == "in").Sum(q => q.FreeQuantity),
-                            FreeOutQuantity = g.Where(w => w.InOut == "out").Sum(q => q.FreeQuantity),
-                            ExpiryDate = g.Key.ExpiryDate,
-                            MRP = g.Key.MRP,
-                            StoreName = g.FirstOrDefault().StoreName,
-                            IsActive = g.FirstOrDefault().IsActive
+                //        }).Where(a => a.AvailableQuantity > 0).OrderBy(a => a.ItemName).ToList();
 
-                        }).Where(a => (a.ItemId == itemId || itemId == 0)).
-                        GroupJoin(phrmdbcontext.PHRMItemMaster.ToList(), a => a.ItemId, b => b.ItemId,
-                        (a, b) => new StockItemsReportViewModel
-                        {
-                            ItemId = a.ItemId.Value,
-                            BatchNo = a.BatchNo,
-                            ExpiryDate = a.ExpiryDate.Value.Date,
-                            ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
-                            AvailableQuantity = a.InQuantity + a.FreeInQuantity - a.OutQuantity - a.FreeOutQuantity,
-                            MRP = a.MRP.Value,
-                            IsActive = b.Select(s => s.IsActive).FirstOrDefault(),
-                            MinStockQuantity = b.Select(s => s.MinStockQuantity).FirstOrDefault(),
-                            Location = a.StoreName
+                //    var totalStock3 = (from wardstock in phrmdbcontext.WardStock
+                //                       join ward in phrmdbcontext.WardModel on wardstock.WardId equals ward.WardId
+                //                       join item in phrmdbcontext.PHRMItemMaster on wardstock.ItemId equals item.ItemId
+                //                       where wardstock.StockType == "pharmacy" & (wardstock.ItemId == itemId || itemId == 0)
+                //                       group new { wardstock, ward, item } by new { wardstock.ItemId, wardstock.StockId, wardstock.BatchNo, wardstock.MRP, wardstock.ExpiryDate } into x
+                //                       select new StockItemsReportViewModel
+                //                       {
 
-                        }).Where(a => a.AvailableQuantity > 0).OrderBy(a => a.ItemName).ToList();
-
-                    var totalStock3 = (from wardstock in phrmdbcontext.WardStock
-                                       join ward in phrmdbcontext.WardModel on wardstock.WardId equals ward.WardId
-                                       join item in phrmdbcontext.PHRMItemMaster on wardstock.ItemId equals item.ItemId
-                                       where wardstock.StockType == "pharmacy" & (wardstock.ItemId == itemId || itemId == 0)
-                                       group new { wardstock, ward, item } by new { wardstock.ItemId, wardstock.StockId, wardstock.BatchNo, wardstock.MRP, wardstock.ExpiryDate } into x
-                                       select new StockItemsReportViewModel
-                                       {
-
-                                           ItemId = x.Key.ItemId,
-                                           ItemName = x.Select(a => a.item.ItemName).FirstOrDefault(),
-                                           BatchNo = x.Key.BatchNo,
-                                           AvailableQuantity = x.Sum(a => a.wardstock.AvailableQuantity),
-                                           ExpiryDate = x.Key.ExpiryDate,
-                                           MRP = (decimal)(((int)(x.Key.MRP * 100)) / 100),
-                                           Location = x.Select(a => a.ward.WardName).FirstOrDefault() + " Ward",
-                                           MinStockQuantity = x.Select(a => a.item.MinStockQuantity).FirstOrDefault(),
-                                           IsActive = true
-                                       }).ToList();
-                    totalStock1.AddRange(totalStock2);
-                    totalStock1.AddRange(totalStock3);
-                    totalStock = totalStock1.OrderBy(a => a.ItemName).ToList();
-                    responseData.Status = "OK";
-                    responseData.Results = totalStock;
-                }
+                //                           ItemId = x.Key.ItemId,
+                //                           ItemName = x.Select(a => a.item.ItemName).FirstOrDefault(),
+                //                           BatchNo = x.Key.BatchNo,
+                //                           AvailableQuantity = x.Sum(a => a.wardstock.AvailableQuantity),
+                //                           ExpiryDate = x.Key.ExpiryDate,
+                //                           MRP = (decimal)(((int)(x.Key.MRP * 100)) / 100),
+                //                           Location = x.Select(a => a.ward.WardName).FirstOrDefault() + " Ward",
+                //                           MinStockQuantity = x.Select(a => a.item.MinStockQuantity).FirstOrDefault(),
+                //                           IsActive = true
+                //                       }).ToList();
+                //    totalStock1.AddRange(totalStock2);
+                //    totalStock1.AddRange(totalStock3);
+                //    totalStock = totalStock1.OrderBy(a => a.ItemName).ToList();
+                //    responseData.Status = "OK";
+                //    responseData.Results = totalStock;
+                //}
 
             }
             catch (Exception ex)
@@ -1122,6 +1137,7 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #endregion
+
         #region Main Pharmacy PHRM Expiry Report
         #region View Function Pharmacy Expiry Report
         public IActionResult PHRMExpiryReport()
@@ -1131,14 +1147,14 @@ namespace DanpheEMR.Controllers
         #endregion
 
         #region Grid Data Function PHRMExpiryStockReport
-        public string PHRMExpiryStockReport(string ItemName)
+        public string PHRMExpiryStockReport(int? ItemId, int? StoreId, DateTime FromDate, DateTime ToDate)
         {
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
 
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable expiryStkResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
+                DataTable expiryStkResult = phrmreportingDbContext.PHRMExpiryReport(ItemId, StoreId, FromDate, ToDate);
                 responseData.Status = "OK";
                 responseData.Results = expiryStkResult;
             }
@@ -1151,12 +1167,12 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region Export To Excel Function PHRMExpiryReport
-        public FileContentResult ExportToExcelPHRMExpiryReport(string ItemName)
+        public FileContentResult ExportToExcelPHRMExpiryReport(int ItemId, int StoreId, DateTime FromDate, DateTime ToDate)
         {
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
+                DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemId, StoreId, FromDate, ToDate);
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
                 //creating list for adding the column 
@@ -1179,6 +1195,7 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #endregion
+
         #region Main Pharmacy PHRM Daily Sales Report
         #region View Function Pharmacy Daily Sales Report
         public IActionResult PHRMDailySales()
@@ -1188,54 +1205,55 @@ namespace DanpheEMR.Controllers
         #endregion
 
         #region Grid Data Function PHRMDailySalesSummary
-        public string PHRMDailySalesSummary(string ItemName)
-        {
-            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+        //public string PHRMDailySalesSummary(string ItemName)
+        //{
+        //    DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
 
-            try
-            {
-                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable expiryStkResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
-                responseData.Status = "OK";
-                responseData.Results = expiryStkResult;
-            }
-            catch (Exception ex)
-            {
-                responseData.Status = "Failed";
-                responseData.ErrorMessage = ex.Message;
-            }
-            return DanpheJSONConvert.SerializeObject(responseData);
-        }
+        //    try
+        //    {
+        //        PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+        //        DataTable expiryStkResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
+        //        responseData.Status = "OK";
+        //        responseData.Results = expiryStkResult;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        responseData.Status = "Failed";
+        //        responseData.ErrorMessage = ex.Message;
+        //    }
+        //    return DanpheJSONConvert.SerializeObject(responseData);
+        //}
         #endregion
         #region Export To Excel Function PHRMExpiryReport
-        public FileContentResult ExportToExcelPHRMDailySalesReport(string ItemName)
-        {
-            try
-            {
-                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
-                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+        //public FileContentResult ExportToExcelPHRMDailySalesReport(string ItemName)
+        //{
+        //    try
+        //    {
+        //        PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+        //        DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
+        //        ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
-                //creating list for adding the column 
-                List<ColumnMetaData> colForExpiryReport = new List<ColumnMetaData>();
+        //        //creating list for adding the column 
+        //        List<ColumnMetaData> colForExpiryReport = new List<ColumnMetaData>();
 
-                //passing the collection in exportExcelHelper 
-                export.LoadFromDataTable(colForExpiryReport, excelExportExpiryReportResult, "Expiry Report", false, true);
+        //        //passing the collection in exportExcelHelper 
+        //        export.LoadFromDataTable(colForExpiryReport, excelExportExpiryReportResult, "Expiry Report", false, true);
 
-                //this used to export the package in excel...
-                byte[] filecontent = export.package.GetAsByteArray();
-                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    , "ExpiryReport_.xlsx");
+        //        //this used to export the package in excel...
+        //        byte[] filecontent = export.package.GetAsByteArray();
+        //        return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        //            , "ExpiryReport_.xlsx");
 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
 
-        }
+        //}
         #endregion
         #endregion
+
         #region Main Pharmacy Minimum Stock Report
         #region View Function Pharmacy Minimun Stock Report
         public IActionResult PHRMMinStock()
@@ -1265,34 +1283,35 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region Export To Excel Function PHRMMinStockReport
-        public FileContentResult ExportToExcelPHRMMinStockReport(string ItemName)
-        {
-            try
-            {
-                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
-                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+        //public FileContentResult ExportToExcelPHRMMinStockReport(string ItemName)
+        //{
+        //    try
+        //    {
+        //        PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+        //        DataTable excelExportExpiryReportResult = phrmreportingDbContext.PHRMExpiryReport(ItemName);
+        //        ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
-                //creating list for adding the column 
-                List<ColumnMetaData> colForExpiryReport = new List<ColumnMetaData>();
+        //        //creating list for adding the column 
+        //        List<ColumnMetaData> colForExpiryReport = new List<ColumnMetaData>();
 
-                //passing the collection in exportExcelHelper 
-                export.LoadFromDataTable(colForExpiryReport, excelExportExpiryReportResult, "Expiry Report", false, true);
+        //        //passing the collection in exportExcelHelper 
+        //        export.LoadFromDataTable(colForExpiryReport, excelExportExpiryReportResult, "Expiry Report", false, true);
 
-                //this used to export the package in excel...
-                byte[] filecontent = export.package.GetAsByteArray();
-                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                     , "MinStockReport_.xlsx");
+        //        //this used to export the package in excel...
+        //        byte[] filecontent = export.package.GetAsByteArray();
+        //        return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        //             , "MinStockReport_.xlsx");
 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
 
-        }
+        //}
         #endregion
         #endregion
+
         #region Main Pharmacy PHRM Supplier Stock Report 
         #region View Function PHRM Supplier Stock Report
         public IActionResult PHRMSupplierStock()
@@ -1301,13 +1320,13 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region Grid Data Function PHRMSupplierStockReport
-        public string PHRMSupplierStockReport(DateTime FromDate, DateTime ToDate, string SupplierName)
+        public string PHRMSupplierStockReport(DateTime FromDate, DateTime ToDate, int SupplierId)
         {
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable supplierStkResult = phrmreportingDbContext.PHRMSupplierStockReport(FromDate, ToDate, SupplierName);
+                DataTable supplierStkResult = phrmreportingDbContext.PHRMSupplierStockReport(FromDate, ToDate, SupplierId);
                 responseData.Status = "OK";
                 responseData.Results = supplierStkResult;
             }
@@ -1320,12 +1339,12 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region Export To Excel Function PHRMSupplierStockReport
-        public FileContentResult ExportToExcelPHRMSupplierStockReport(DateTime FromDate, DateTime ToDate, string SupplierName)
+        public FileContentResult ExportToExcelPHRMSupplierStockReport(DateTime FromDate, DateTime ToDate, int SupplierId)
         {
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable excelExportSuppStkResult = phrmreportingDbContext.PHRMSupplierStockReport(FromDate, ToDate, SupplierName);
+                DataTable excelExportSuppStkResult = phrmreportingDbContext.PHRMSupplierStockReport(FromDate, ToDate, SupplierId);
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
                 //creating list for adding the column 
@@ -1516,60 +1535,53 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #endregion
+
         #region Grid Data Function PHRMStockSummaryReport
-        public string PHRMStockSummaryReport(DateTime FromDate, DateTime ToDate)
+        public string PHRMStockSummaryReport(DateTime FromDate, DateTime ToDate, int FiscalYearId, int? StoreId)
         {
             DanpheHTTPResponse<dynamic> responseData = new DanpheHTTPResponse<dynamic>();
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable StkSummaryReportResult = phrmreportingDbContext.PHRMStockSummaryReport(FromDate.Date, ToDate.Date);
-                List<StockSummaryReportModel> StockTransations = DataTableToList.ConvertToList<StockSummaryReportModel>(StkSummaryReportResult);
-                var stockSummary = StockTransations.GroupBy(x => x.ItemId)
-                                                    .Select(groupOfItems => new StockSummaryDTO
-                                                    {
-                                                        ItemId = groupOfItems.Key,
-                                                        ItemName = groupOfItems.FirstOrDefault().ItemName,
-                                                        UOMName = groupOfItems.FirstOrDefault().UOMName,
-                                                        OpeningQuantity = groupOfItems.Sum(i => i.StartingQuantity),
-                                                        OpeningAmount = groupOfItems.Sum(i => i.StartingAmount),
-                                                        Purchase = groupOfItems.Sum(i => i.GRIReceivedQuantity + i.GRIFreeQuantity),
-                                                        PurchaseAmount = groupOfItems.Sum(i => i.GRITotalAmount),
-                                                        PurchaseReturn = groupOfItems.Sum(i => i.RTSQuantity),
-                                                        PurchaseReturnAmount = groupOfItems.Sum(i => i.RTSTotalAmount),
-                                                        StockManageIn = groupOfItems.Sum(i => i.StockManageQuantityIn),
-                                                        StockManageInAmount = groupOfItems.Sum(i => i.StockManageAmountIn),
-                                                        StockManageOut = groupOfItems.Sum(i => i.StockManageQuantityOut),
-                                                        StockManageOutAmount = groupOfItems.Sum(i => i.StockManageAmountOut),
-                                                        Sale = groupOfItems.Sum(i => i.SalesQuantity + i.ProvisionalQuantity),
-                                                        SaleAmount = groupOfItems.Sum(i => i.SalesTotalAmount + i.ProvisionalTotalAmount),
-                                                        SaleReturn = groupOfItems.Sum(i => i.ReturnQuantity),
-                                                        SaleReturnAmount = groupOfItems.Sum(i => i.ReturnTotalAmount),
-                                                        ClosingQuantity = groupOfItems.Sum(i => i.EndingQuantity),
-                                                        ClosingAmount = groupOfItems.Sum(i => i.EndingAmount)
-                                                    }).ToList();
-                var grandTotal = new GrandTotalDTO
+                DataTable StkSummaryReportResult = phrmreportingDbContext.PHRMStockSummaryReport(FromDate, ToDate, FiscalYearId, StoreId);
+                List<StockSummaryDTO> StockTransations = DataTableToList.ConvertToList<StockSummaryDTO>(StkSummaryReportResult);
+
+                var grandTotal = new StockSummaryDTO
                 {
-                    OpeningQuantity = stockSummary.Sum(s => s.OpeningQuantity),
-                    OpeningAmount = stockSummary.Sum(s => s.OpeningAmount),
-                    Purchase = stockSummary.Sum(s => s.Purchase),
-                    PurchaseAmount = stockSummary.Sum(s => s.PurchaseAmount),
-                    PurchaseReturn = stockSummary.Sum(s => s.PurchaseReturn),
-                    PurchaseReturnAmount = stockSummary.Sum(s => s.PurchaseReturnAmount),
-                    StockManageIn = stockSummary.Sum(s => s.StockManageIn),
-                    StockManageInAmount = stockSummary.Sum(s => s.StockManageInAmount),
-                    StockManageOut = stockSummary.Sum(s => s.StockManageOut),
-                    StockManageOutAmount = stockSummary.Sum(s => s.StockManageOutAmount),
-                    Sale = stockSummary.Sum(s => s.Sale),
-                    SaleAmount = stockSummary.Sum(s => s.SaleAmount),
-                    SaleReturn = stockSummary.Sum(s => s.SaleReturn),
-                    SaleReturnAmount = stockSummary.Sum(s => s.SaleReturnAmount),
-                    ClosingQuantity = stockSummary.Sum(s => s.ClosingQuantity),
-                    ClosingAmount = stockSummary.Sum(s => s.ClosingAmount)
+                    OpeningQty = StockTransations.Sum(s => s.OpeningQty),
+                    OpeningValue = StockTransations.Sum(s => s.OpeningValue),
+                    OpeningQty_WithProvisional = StockTransations.Sum(s => s.OpeningQty_WithProvisional),
+                    OpeningValue_WithProvisional = StockTransations.Sum(s => s.OpeningValue_WithProvisional),
+                    PurchaseQty = StockTransations.Sum(s => s.PurchaseQty),
+                    PurchaseValue = StockTransations.Sum(s => s.PurchaseValue),
+                    PurchaseReturnQty = StockTransations.Sum(s => s.PurchaseReturnQty),
+                    PurchaseReturnValue = StockTransations.Sum(s => s.PurchaseReturnValue),
+                    SalesQty = StockTransations.Sum(s => s.SalesQty),
+                    SalesValue = StockTransations.Sum(S => S.SalesValue),
+                    SaleReturnQty = StockTransations.Sum(s => s.SaleReturnQty),
+                    SaleReturnValue = StockTransations.Sum(s => s.SaleReturnValue),
+                    ProvisionalQty = StockTransations.Sum(s => s.ProvisionalQty),
+                    ProvisionalValue = StockTransations.Sum(s => s.ProvisionalValue),
+                    WriteOffQty = StockTransations.Sum(s => s.WriteOffQty),
+                    WriteOffValue = StockTransations.Sum(s => s.WriteOffValue),
+                    StockManageInQty = StockTransations.Sum(s => s.StockManageInQty),
+                    StockManageInValue = StockTransations.Sum(s => s.StockManageInValue),
+                    StockManageOutQty = StockTransations.Sum(s => s.StockManageOutQty),
+                    StockManageOutValue = StockTransations.Sum(s => s.StockManageOutValue),
+                    TransferInQty = StockTransations.Sum(s => s.TransferInQty),
+                    TransferInValue = StockTransations.Sum(s => s.TransferInValue),
+                    TransferOutQty = StockTransations.Sum(s => s.TransferOutQty),
+                    TransferOutValue = StockTransations.Sum(s => s.TransferOutValue),
+                    ConsumptionQty = StockTransations.Sum(s => s.ConsumptionQty),
+                    ConsumptionValue = StockTransations.Sum(s => s.ConsumptionValue),
+                    ClosingQty = StockTransations.Sum(s => s.ClosingQty),
+                    ClosingValue = StockTransations.Sum(s => s.ClosingValue),
+                    ClosingQty_WithProvisional = StockTransations.Sum(s => s.ClosingQty_WithProvisional),
+                    ClosingValue_WithProvisional = StockTransations.Sum(s => s.ClosingValue_WithProvisional)
                 };
 
                 responseData.Status = "OK";
-                responseData.Results = new { StkSummary = stockSummary, GrandTotal = grandTotal };
+                responseData.Results = new { StkSummary = StockTransations, GrandTotal = grandTotal };
 
             }
             catch (Exception ex)
@@ -1580,6 +1592,7 @@ namespace DanpheEMR.Controllers
             return DanpheJSONConvert.SerializeObject(responseData);
         }
         #endregion
+
         #region Grid Data Function PHRMItemTxnSummaryReport
         public IActionResult PHRMItemTxnSummaryReport(DateTime FromDate, DateTime ToDate, int ItemId)
         {
@@ -1587,7 +1600,7 @@ namespace DanpheEMR.Controllers
             try
             {
                 PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
-                DataTable StkSummaryReportResult = phrmreportingDbContext.PHRMItemTxnSummaryReport(FromDate.Date, ToDate.Date, ItemId);
+                DataTable StkSummaryReportResult = phrmreportingDbContext.PHRMItemTxnSummaryReport(FromDate, ToDate, ItemId);
 
                 responseData.Status = "OK";
                 responseData.Results = StkSummaryReportResult;
@@ -1625,23 +1638,23 @@ namespace DanpheEMR.Controllers
         {
             PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
 
-            var totalStock = phrmdbcontext.PHRMStockTransactionModel.
+            var totalStock = phrmdbcontext.StockTransactions.
                 Where(a => a.ExpiryDate >= DateTime.Now).ToList().
                 GroupBy(a => new { a.ItemId, a.BatchNo }).
                 Select(g => new
                 {
                     ItemId = g.Key.ItemId,
                     BatchNo = g.Key.BatchNo,
-                    Quantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity) - g.Where(w => w.InOut == "in").Sum(f => f.FreeQuantity).Value - g.Where(w => w.InOut == "out").Sum(o => o.Quantity),
-                    FreeQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
+                    Quantity = g.Sum(q => q.InQty) - g.Sum(o => o.OutQty),
+                    FreeQuantity = g.Sum(q => q.InQty),
                     MRP = g.FirstOrDefault().MRP,
-                    Price = g.FirstOrDefault().Price,
+                    Price = g.FirstOrDefault().CostPrice,
 
                 }).Where(a => (a.Quantity > 0 || a.Quantity == 0) && (a.ItemId == itemId || itemId == 0)).
                 GroupJoin(phrmdbcontext.PHRMItemMaster.Where(a => a.IsActive == true).ToList(), a => a.ItemId, b => b.ItemId,
                 (a, b) => new
                 {
-                    ItemId = a.ItemId.Value,
+                    ItemId = a.ItemId,
                     BatchNo = a.BatchNo,
                     ItemName = b.Select(s => s.ItemName).FirstOrDefault(),
                     AvailableQuantity = a.Quantity,
@@ -1670,6 +1683,26 @@ namespace DanpheEMR.Controllers
             return result;
         }
 
+        #endregion
+        #region PHRM Item Wise Purchase Report
+        public string PHRMItemWisePurchaseReport(DateTime FromDate, DateTime ToDate, int? itemid, string invoiceNo, int? grNo, int? supplierId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable dtResult = phrmreportingDbContext.PHRMItemWisePurchaseReport(FromDate, ToDate, itemid, invoiceNo, grNo, supplierId);
+                responseData.Status = "OK";
+                responseData.Results = dtResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+        }
         #endregion
 
         #region Grid Data Function PHRM ABC/VED Stock Report
@@ -1884,6 +1917,296 @@ namespace DanpheEMR.Controllers
                 throw ex;
             }
 
+        }
+        #endregion
+
+        #region PHRM Date Wise Purchase Report
+        public string PHRMDateWisePurchaseReport(DateTime FromDate, DateTime ToDate, int? supplierId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable dateWisePurchaseResults = phrmreportingDbContext.PHRMDateWisePurchaseReport(FromDate, ToDate, supplierId);
+                responseData.Status = "OK";
+                responseData.Results = dateWisePurchaseResults;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Return From Customer
+        public string ReturnFromCustomerReport(DateTime fromDate, DateTime toDate, int? userId, int? dispensaryId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable returnFromCustomerResult = phrmreportingDbContext.ReturnFromCustomerReport(fromDate, toDate, userId, dispensaryId);
+                responseData.Status = "OK";
+                responseData.Results = returnFromCustomerResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Sales Statement Report
+        public string SalesStatementReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable returnFromCustomerResult = phrmreportingDbContext.SalesStatementReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = returnFromCustomerResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Sales Summary Report
+        public string SalesSummaryReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable returnFromCustomerResult = phrmreportingDbContext.SalesSummaryReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = returnFromCustomerResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Settlement Summary Report
+        public string SetlementSummaryReport(DateTime FromDate, DateTime ToDate, int? storeId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable settlementSummaryResult = phrmreportingDbContext.SettlementSummaryReport(FromDate, ToDate, storeId);
+                responseData.Status = "OK";
+                responseData.Results = settlementSummaryResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Patient Wise Settlement Summary Report
+
+
+        public string PatientWiseSettlementSummaryReport(DateTime FromDate, DateTime ToDate, int PatientId)
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate",FromDate),
+                new SqlParameter("@ToDate",ToDate),
+                new SqlParameter("@PatientId", PatientId)
+            };
+
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataSet SettlementViewDetail = DALFunctions.GetDatasetFromStoredProc("SP_PHRM_GetSettlementDetailReportOfSelectedPatient", paramList, reportingDbContext);
+                DataTable dtPatientInfo = SettlementViewDetail.Tables[0];
+                DataTable dtSettlement = SettlementViewDetail.Tables[1];
+                DataTable dtReturnedSettlement = SettlementViewDetail.Tables[2];
+                DataTable dtCashDiscount = SettlementViewDetail.Tables[3];
+                var settlementData = new
+                {
+                    PatientInfo = Settlement_PatientInfoVM.MapDataTableToSingleObject(dtPatientInfo),
+                    Settlements = dtSettlement,
+                    ReturnedSettlement = dtReturnedSettlement,
+                    CashDiscount = dtCashDiscount,
+
+                };
+                responseData.Status = "OK";
+                responseData.Results = settlementData;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+
+
+        }
+        #endregion
+
+
+        #region Purchase Summary Report
+        public string PurchaseSummaryReport(DateTime FromDate, DateTime ToDate, int? StoreId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable returnFromCustomerResult = phrmreportingDbContext.PurchaseSummaryReport(FromDate, ToDate, StoreId);
+                responseData.Status = "OK";
+                responseData.Results = returnFromCustomerResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Insurance Patient Bima Report
+        public string InsurancePatientBimaReport(DateTime FromDate, DateTime ToDate, int? CounterId, int? UserId, Int64? ClaimCode, string NSHINumber)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable returnFromCustomerResult = phrmreportingDbContext.InsurancePatientBimaReport(FromDate, ToDate, CounterId, UserId, ClaimCode, NSHINumber);
+                responseData.Status = "OK";
+                responseData.Results = returnFromCustomerResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Patient Sales Detail Report
+        public string PatientSalesDetailReport(DateTime FromDate, DateTime ToDate, int? PatientId, int? CounterId, int? UserId, int? StoreId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable patientSalesDetailReport = phrmreportingDbContext.PatientSalesDetailReport(FromDate, ToDate, PatientId, CounterId, UserId, StoreId);
+                responseData.Status = "OK";
+                responseData.Results = patientSalesDetailReport;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Stock Summary Report II
+        public string StockSummarySecondReport(DateTime TillDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable stockSummarySecondResult = phrmreportingDbContext.StockSummarySecondReport(TillDate);
+                responseData.Status = "OK";
+                responseData.Results = stockSummarySecondResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region STOCK Transfers Report
+        public string PHRMStockTransfersReport(DateTime FromDate, DateTime ToDate, int? itemId, int? sourceStoreId, int? targetStoreId, bool notReceivedStocks)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable stockTransfersResult = phrmreportingDbContext.PHRMStockTransfersReport(FromDate, ToDate, itemId, sourceStoreId, targetStoreId, notReceivedStocks);
+                responseData.Status = "OK";
+                responseData.Results = stockTransfersResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Supplier Wise Stock Report
+        public string PHRMSupplierWiseStockReport(DateTime FromDate, DateTime ToDate, int? itemId, int? storeId, int? supplierId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                PharmacyReportingDbContext phrmreportingDbContext = new PharmacyReportingDbContext(connString);
+                DataTable supplierWiseStockResult = phrmreportingDbContext.PHRMSupplierWiseStockReport(FromDate, ToDate, itemId, storeId, supplierId);
+                responseData.Status = "OK";
+                responseData.Results = supplierWiseStockResult;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Models, Dtos
+        internal class PHRMDailySalesReportDto
+        {
+            public int InvoicePrintId { get; set; }
+            public int? InvoiceId { get; set; }
+            public string GenericName { get; set; }
+            public string ItemName { get; set; }
+            public string BatchNo { get; set; }
+            public DateTime? ExpiryDate { get; set; }
+            public double? Quantity { get; set; }
+            public decimal? Price { get; set; }
+            public decimal? MRP { get; set; }
+            public double? StockValue { get; set; }
+            public decimal? TotalAmount { get; set; }
+            public DateTime? CreatedOn { get; set; }
+            public string PatientName { get; set; }
+            public string PaymentMode { get; set; }
+            public string StoreName { get; set; }
+            public string CounterName { get; set; }
+            public string CreatedByName { get; set; }
         }
         #endregion
     }

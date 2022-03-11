@@ -1,12 +1,9 @@
 
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { SharedModule } from "../shared/shared.module";
-import { DischargeSummaryAddComponent } from '../discharge-summary/add-view-summary/discharge-summary-add.component';
-import { DischargeSummaryViewComponent } from '../discharge-summary/add-view-summary/discharge-summary-view.component';
 import { VisitDLService } from '../appointments/shared/visit.dl.service';
 import { AppointmentDLService } from '../appointments/shared/appointment.dl.service';
 import { PatientsBLService } from '../patients/shared/patients.bl.service';
@@ -41,11 +38,9 @@ import { BirthCertificateGenerateComponent } from './shared/generate-certificate
     DanpheAutoCompleteModule,
   ],
   declarations: [
-    //DischargeSummaryAddComponent,
-    //DischargeSummaryViewComponent,
     DischargeSummaryComponent,
     DeathCertificateComponent,
-    BirthCertificateGenerateComponent
+    BirthCertificateGenerateComponent,   
   ],
   exports: [],
   bootstrap: []

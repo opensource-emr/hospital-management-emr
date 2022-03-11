@@ -6,6 +6,7 @@ import { BillingTransactionItem } from '../../billing/shared/billing-transaction
 import { InPatientLabTest } from '../../labs/shared/InpatientLabTest';
 import { EmergencyDischargeSummary } from './emergency-discharge-summary.model';
 import { PatientsDLService } from '../../patients/shared/patients.dl.service';
+import { UploadCosentFormModel } from './upload-consent-form.Model';
 
 @Injectable()
 export class EmergencyBLService {
@@ -18,13 +19,13 @@ export class EmergencyBLService {
       map(res => { return res });
   }
 
-  GetAllERPatients() {
-    return this.emergencyDLService.GetAllERPatients().
+  GetAllERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllERPatients(caseId).
       map(res => { return res });
   }
 
-  GetAllTriagedPatients() {
-    return this.emergencyDLService.GetAllTriagedPatients().
+  GetAllTriagedPatients(caseId: number) {
+    return this.emergencyDLService.GetAllTriagedPatients(caseId).
       map(res => { return res });
   }
 
@@ -33,32 +34,32 @@ export class EmergencyBLService {
       .map(res => { return res })
   }
 
-  GetAllLamaERPatients() {
-    return this.emergencyDLService.GetAllLamaERPatients().
+  GetAllLamaERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllLamaERPatients(caseId).
       map(res => { return res });
   }
 
-  GetAllAdmittedERPatients() {
-    return this.emergencyDLService.GetAllAdmittedERPatients().
+  GetAllAdmittedERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllAdmittedERPatients(caseId).
       map(res => { return res });
   }
 
-  GetAllDeathERPatients() {
-    return this.emergencyDLService.GetAllDeathERPatients().
+  GetAllDeathERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllDeathERPatients(caseId).
       map(res => { return res });
   }
 
 
-  GetAllTransferredERPatients() {
-    return this.emergencyDLService.GetAllTransferredERPatients().
+  GetAllTransferredERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllTransferredERPatients(caseId).
       map(res => { return res });
   }
-  GetAllDischargedERPatients() {
-    return this.emergencyDLService.GetAllDischargedERPatients().
+  GetAllDischargedERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllDischargedERPatients(caseId).
       map(res => { return res });
   }
-  GetAllDorERPatients() {
-    return this.emergencyDLService.GetAllDorERPatients().
+  GetAllDorERPatients(caseId: number) {
+    return this.emergencyDLService.GetAllDorERPatients(caseId).
       map(res => { return res });
   }
   GetAllCountries() {
@@ -172,7 +173,45 @@ export class EmergencyBLService {
         return responseData;
       });
   }
+  public GetConsentFormUploadList(id: number) {
+    return this.emergencyDLService.GetConsentFormUploadList(id).map((res) => {
+      return res;
+    });
+  }
+  public UploadConsentForm(filesToUpload, patFile: UploadCosentFormModel) {
+    try{
+    let formToPost = new FormData();
+    var fileName: string;
+    var omited = _.omit(patFile, ['FileUploadValidator']);
 
+    var reportDetails = JSON.stringify(omited);//encodeURIComponent();
 
+    for (let i = 0; i < filesToUpload.length; i++) {
+      formToPost.append('files', filesToUpload[i],fileName);
+    }
+    formToPost.append("reportDetails", reportDetails);
+    return this.emergencyDLService.PostConsentForm(formToPost).map((res) => {
+      return res;
+    });
+  }
+    catch (exception) {
+      throw exception;
+    }
+  
+  }
+  public DeleteFile(id: number) {
+    return this.emergencyDLService.DeleteFile(id).map((res) => {
+      return res;
+    });
+  }
+  public GetFileFromServer(id: number) {
+    return this.emergencyDLService.GetFileFromServer(id).map((res) => {
+      return res;
+    });
+  }
 
+  public GetPatientsWithVisitsInfo(searchTxt) {
+    return this.patientDLService.GetPatientsWithVisitsInfo(searchTxt)
+      .map(res => res);
+  }
 }

@@ -11,22 +11,24 @@
     border-radius: 6px !important;
   }
 
-    .selectedItem:hover {
-      background-color: #212529;
-      border-color: #212529;
-    }
+  .selectedItem:hover {
+    background-color: #212529;
+    border-color: #212529;
+  }
 
   .deleteItem {
     margin-left: 20px;
     color: #cee2ca;
     cursor: pointer;
   }
+
   .dv-vendorcode-info {
     background-color: yellow;
     color: black;
     cursor: default;
     font-size: 10px;
   }
+
   /* .itembox {
     background-color: #82919e;
     justify-content: center;
@@ -38,173 +40,198 @@
   } */
 
   .no-padding {
-    padding:0px;
+    padding: 0px;
+  }
+
+  .info-warning {
+    background-color: orange !important;
   }
 </style>
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-10 col-md-offset-1">
-        <div class="modelbox-div clearfix">          
-            <div class="caption lb-caption">
-              <h3>
-                <span *ngIf="!update">Add Vendor</span>
-                <span *ngIf="update">Update Vendor</span>
-              </h3>
-              <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>           
-            </div>
-             <form [formGroup]="CurrentVendor.VendorsValidator" class="form-horizontal hm-form">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3>
+              <span *ngIf="!update">Add Vendor</span>
+              <span *ngIf="update">Update Vendor</span>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form [formGroup]="CurrentVendor.VendorsValidator" class="form-horizontal hm-form">
             <div class="form-body">
               <div class="row">
                 <div class="col-md-6 col-xs-6">
                   <div class="form-group">
                     <label class="control-label col-md-5">Vendor Name<sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
-                      <textarea class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.VendorName"
-                                formControlName="VendorName" id="VendorName" placeholder="Vendor Name" (focusout)="CreateVendorCode()"></textarea>
-                      <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('VendorName','required') || !(CurrentVendor.IsDirty('VendorName'))">Vendor Name is required</span>
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('VendorName')" [hidden]="CurrentVendor.IsValidCheck('VendorName','maxlength')"> Length is not proper</span>
-                    </div>
-                  </div>                  
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Contact Person<b>:</b></label>
-                    <div class="col-md-7">
-                      <input class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.ContactPerson"
-                             [ngModelOptions]="{standalone: true}" placeholder="Contact Person" />
-                    </div>
-                  </div>                  
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Contact Number<sup class="color-red">*</sup><b>:</b></label>
-                    <div class="col-md-7">
-                      <input class="form-control" maxlength="10" type="text"
-                             [(ngModel)]="CurrentVendor.ContactNo"
-                             formControlName="ContactNo"
-                             id="ContactNo"
-                             placeholder="Contact Number" />
-                      <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('ContactNo','required') || !(CurrentVendor.IsDirty('ContactNo'))">ContactNo is required</span>
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')" [hidden]="CurrentVendor.IsValidCheck('ContactNo','pattern')">ContactNo is not proper</span>
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')" [hidden]="CurrentVendor.IsValidCheck('ContactNo','maxlength')"> Must be Under 10 digits</span>
-                    </div>
-                  </div>                  
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Pan No<b>:</b></label>
-                    <div class="col-md-7">
-                      <input class="form-control" maxlength="9" type="text"
-                             [(ngModel)]="CurrentVendor.PanNo"
-                             formControlName="PanNo"
-                             id="PanNo"
-                             placeholder="Pan Number" />
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('PanNo')" [hidden]="CurrentVendor.IsValidCheck('PanNo','pattern')">PanNo is not proper</span>
-                    </div>
-                  </div>                  
-                                    
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Vendor Country<sup class="color-red">*</sup><b>:</b></label>
-                    <div class="col-md-7">
-                      <select id="ddlCountry" class="form-control" [(ngModel)]="CurrentVendor.CountryId" formControlName="CountryId"  >
-                        <option *ngFor="let Country of Countries" value="{{Country.CountryId}}" >{{Country.CountryName}}</option>
-                      </select>
-                      <span class="error-msg" *ngIf="CurrentVendor.IsDirty('CountryId')" [hidden]="CurrentVendor.IsValidCheck('CountryId','required')"> Country is required</span>
-                    </div>
-                  </div>                  
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Is Active <b>:</b> </label>
-                    <div class="col-md-7">
-                      <div class="input-group">
-                        <div class="icheck-inline">
-                          <label class="mt-checkbox mt-checkbox-outline">
-                            <input id="isActive"
-                                   type="checkbox"
-                                   [(ngModel)]="CurrentVendor.IsActive"
-                                   [ngModelOptions]="{standalone: true}" />
-                            <span></span>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>              
-                </div>
-                <div class="col-md-6 col-xs-6">
-                  <div class="form-group">
-                    <label class="control-label col-md-5">Vendor Code<b>:</b></label>
-                    <div class="col-md-7 div-relative">
-                      <input class="form-control"
-                        maxlength="5"
-                        minlength="5"
-                        [(ngModel)]="CurrentVendor.VendorCode"
-                        [attr.disabled]="update?true:null"
-                        formControlName="VendorCode"
-                        placeholder="Vendor Code"
-                        (focusout)="CreateVendorCode()" />
-                      <i *ngIf="!update" title="This Vendor Code is not final. It may change during SAVE." color=#006687
-                      class="fa fa-info-circle" aria-hidden="true">
-                      </i>
-                      <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('VendorCode','required') || !(CurrentVendor.IsDirty('VendorCode'))">
-                        VendorCode is required
-                      </span>
+                      <input class="form-control" maxlength="200" type="text" [(ngModel)]="CurrentVendor.VendorName"
+                        formControlName="VendorName" id="txtVendorName" placeholder="Vendor Name"
+                        (focusout)="CreateVendorCode()" (keyup.enter)="FocusElementById('ContactAddress')" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentVendor.IsValidCheck('VendorName','required') || !(CurrentVendor.IsDirty('VendorName'))">Vendor
+                        Name is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('VendorName')"
+                        [hidden]="CurrentVendor.IsValidCheck('VendorName','maxlength')"> Length is not proper</span>
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-5">ContactAddress<sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
-                      <input class="form-control" maxlength="30" type="text"
-                             [(ngModel)]="CurrentVendor.ContactAddress"
-                             formControlName="ContactAddress"
-                             id="ContactAddress"
-                             placeholder="ContactAddress" />
-                      <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('ContactAddress','required') || !(CurrentVendor.IsDirty('ContactAddress'))">ContactAddress is required</span>
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactAddress')" [hidden]="CurrentVendor.IsValidCheck('ContactAddress','maxlength')"> Length is not proper</span>
+                      <input class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentVendor.ContactAddress"
+                        formControlName="ContactAddress" id="ContactAddress" placeholder="ContactAddress"
+                        (keyup.enter)="FocusElementById('ContactNo')" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentVendor.IsValidCheck('ContactAddress','required') || !(CurrentVendor.IsDirty('ContactAddress'))">ContactAddress
+                        is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactAddress')"
+                        [hidden]="CurrentVendor.IsValidCheck('ContactAddress','maxlength')"> Length is not proper</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Contact Number<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" maxlength="100" type="text" [(ngModel)]="CurrentVendor.ContactNo"
+                        formControlName="ContactNo" id="ContactNo" placeholder="Contact Number"
+                        (keyup.enter)="FocusElementById('txtPanNo')" />
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentVendor.IsValidCheck('ContactNo','required') || !(CurrentVendor.IsDirty('ContactNo'))">ContactNo
+                        is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')"
+                        [hidden]="CurrentVendor.IsValidCheck('ContactNo','pattern')">ContactNo is not proper</span>
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')"
+                        [hidden]="CurrentVendor.IsValidCheck('ContactNo','maxlength')"> Must be Under 10 digits</span>
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-5">Email<b>:</b></label>
+                    <label class="control-label col-md-5">Pan No<b>:</b><sup class="color-red">*</sup></label>
                     <div class="col-md-7">
-                      <input class="form-control" maxlength="100" type="text"
-                             [(ngModel)]="CurrentVendor.Email"
-                             formControlName="Email"
-                             id="Email"
-                             placeholder="Email Address" />
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('Email')" [hidden]="CurrentVendor.IsValidCheck('Email','pattern')">Email is not proper</span>
+                      <input class="form-control" maxlength="50" type="text" [(ngModel)]="CurrentVendor.PanNo"
+                        formControlName="PanNo" id="txtPanNo" placeholder="Pan Number"
+                        (keyup.enter)="FocusElementById('AssignItemIdToVendor')" />
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('PanNo')"
+                        [hidden]="CurrentVendor.IsValidCheck('PanNo','required')">PanNo is required.</span>
                     </div>
                   </div>
+
                   <div class="form-group">
-                    <label class="control-label col-md-5">Credit Period (days)<b>:</b></label>
+                    <label class="control-label col-md-5">Vendor Country<sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
-                      <input type="number" [(ngModel)]="CurrentVendor.CreditPeriod" placeholder="Credit Period" formControlName="CreditPeriod" />
-                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('CreditPeriod')" [hidden]="CurrentVendor.IsValidCheck('CreditPeriod','pattern')">Credit is must be integer.</span>
+                      <select id="ddlCountry" class="form-control" [(ngModel)]="CurrentVendor.CountryId"
+                        formControlName="CountryId">
+                        <option *ngFor="let Country of Countries" value="{{Country.CountryId}}">{{Country.CountryName}}
+                        </option>
+                      </select>
+                      <span class="error-msg" *ngIf="CurrentVendor.IsDirty('CountryId')"
+                        [hidden]="CurrentVendor.IsValidCheck('CountryId','required')"> Country is required</span>
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-5">Currency Code<sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
                       <div class="div-relative">
-                        <select id="ddlCurrency" class="form-control" [(ngModel)]="CurrentVendor.DefaultCurrencyId" formControlName="DefaultCurrencyId">
-                          <option *ngFor="let div of GetCurrencyCodeList" [value]="div.CurrencyID">{{div.CurrencyCode}}</option>
+                        <select id="ddlCurrency" class="form-control" [(ngModel)]="CurrentVendor.DefaultCurrencyId"
+                          formControlName="DefaultCurrencyId">
+                          <option *ngFor="let div of GetCurrencyCodeList" [value]="div.CurrencyID">{{div.CurrencyCode}}
+                          </option>
                         </select>
-                        <a *ngIf="!CurrentVendor.DefaultCurrencyId" class="fa fa-question" (click)="AddCurrencyCodePopUp()" title="Click to add to Currency Code"></a>
-                        <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('DefaultCurrencyId','required') || !(CurrentVendor.IsDirty('DefaultCurrencyId'))">Please Enter Currency Type</span>
+                        <a *ngIf="!CurrentVendor.DefaultCurrencyId" class="fa fa-question"
+                          (click)="AddCurrencyCodePopUp()" title="Click to add to Currency Code"></a>
+                        <span class="color-red font-sm"
+                          [hidden]="CurrentVendor.IsValidCheck('DefaultCurrencyId','required') || !(CurrentVendor.IsDirty('DefaultCurrencyId'))">Please
+                          Enter Currency Type</span>
                         <!--<span class="color-red font-sm" *ngIf="!CurrentVendor.IsValidCheck('DefaultCurrencyId')" >Currency Type is required</span>-->
                         <!--<span class="error-msg" *ngIf="CurrentVendor.IsDirty('DefaultCurrencyId')" [hidden]="CurrentVendor.IsValidCheck('DefaultCurrencyId','required')"> DefaultCurrencyId is required</span>-->
-                      </div>                      
+                      </div>
                     </div>
                   </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Bank Details<b>:</b></label>
+                    <div class="col-md-7">
+                      <textarea class="form-control" id="BankDetails" maxlength="400"
+                        [(ngModel)]="CurrentVendor.BankDetails" formControlName="BankDetails"
+                        placeholder="Bank Details">
+                      </textarea>
+
+                    </div>
+                  </div>
+
+
+
+                </div>
+                <div class="col-md-6 col-xs-6">
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Vendor Code<b>:</b></label>
+                    <div class="col-md-7 div-relative">
+                      <!-- Sud:25Sept'21: We're Generating vendor code from backend.. so Disabled Vendor code entry from frontend until further requirement clarity -->
+                      <input class="form-control" maxlength="7" minlength="5" [(ngModel)]="CurrentVendor.VendorCode"
+                        disabled  formControlName="VendorCode"
+                        placeholder="Vendor Code" (focusout)="CreateVendorCode()" />
+                      <i *ngIf="!update" title="This Vendor Code is not final. It may change during SAVE." color=#006687
+                        class="fa fa-info-circle info-warning" aria-hidden="true">
+                      </i>
+                      <span class="color-red font-sm"
+                        [hidden]="CurrentVendor.IsValidCheck('VendorCode','required') || !(CurrentVendor.IsDirty('VendorCode'))">
+                        VendorCode is required
+                      </span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Contact Person<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.ContactPerson"
+                        [ngModelOptions]="{standalone: true}" placeholder="Contact Person" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Email<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" maxlength="100" type="text" [(ngModel)]="CurrentVendor.Email"
+                        formControlName="Email" id="Email" placeholder="Email Address" />
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('Email')"
+                        [hidden]="CurrentVendor.IsValidCheck('Email','pattern')">Email is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="vendorDisplayParameter && vendorDisplayParameter.ShowSARFNo==true">
+                    <label class="control-label col-md-5">SARFNo<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" maxlength="50" type="text" [(ngModel)]="CurrentVendor.SARFNo"
+                        formControlName="SARFNo" id="SARFNo" placeholder="SARF Number" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Credit Period (days)<b>:</b></label>
+                    <div class="col-md-7">
+                      <input type="number" [(ngModel)]="CurrentVendor.CreditPeriod" min="0" placeholder="Credit Period"
+                        formControlName="CreditPeriod" />
+                      <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('CreditPeriod')"
+                        [hidden]="CurrentVendor.IsValidCheck('CreditPeriod','pattern')">Credit is must be
+                        integer.</span>
+                    </div>
+                  </div>
+
                   <div class="form-group">
                     <label class="control-label col-md-5">GovtRegDate<b>:</b></label>
                     <div class="col-md-7">
                       <!--<input type="text" autocomplete="off" class="nepali-date-cal" />-->
-                      <input type="date" id="english-date" [(ngModel)]="CurrentVendor.GovtRegDate" placeholder="GovtRegDate" [ngModelOptions]="{standalone: true}" />
+                      <!-- <input type="date"  [(ngModel)]="CurrentVendor.GovtRegDate" placeholder="GovtRegDate" [ngModelOptions]="{standalone: true}" /> -->
+
+                      <danphe-date-picker [(ngModel)]="CurrentVendor.GovtRegDate" [ngModelOptions]="{standalone: true}"
+                        [CalendarTypes]="'np,en'"> </danphe-date-picker>
                     </div>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group"
+                    *ngIf="vendorDisplayParameter && vendorDisplayParameter.ShowIsTDSApplicable==true">
                     <label class="control-label col-md-5">Is TDS Applicable <b>:</b> </label>
                     <div class="col-md-7">
                       <div class="input-group">
                         <div class="icheck-inline">
                           <label class="mt-checkbox mt-checkbox-outline">
-                            <input 
-                                   type="checkbox"  
-                                   [(ngModel)]="CurrentVendor.IsTDSApplicable"
-                                   [ngModelOptions]="{standalone: true}" />
+                            <input type="checkbox" [(ngModel)]="CurrentVendor.IsTDSApplicable"
+                              [ngModelOptions]="{standalone: true}" />
                             <span></span>
                           </label>
                         </div>
@@ -213,56 +240,74 @@
                   </div>
                   <div class="form-group" *ngIf="CurrentVendor.IsTDSApplicable">
                     <div [@enterAnimation]>
-                    <label class="control-label col-md-5">Tds(%)<b>:</b></label>
-                    <div class="col-md-7">
-                      <input type="number" [(ngModel)]="CurrentVendor.Tds" placeholder="Tds(%)" [ngModelOptions]="{standalone: true}" />
+                      <label class="control-label col-md-5">Tds(%)<b>:</b></label>
+                      <div class="col-md-7">
+                        <input type="number" [(ngModel)]="CurrentVendor.Tds" placeholder="Tds(%)"
+                          [ngModelOptions]="{standalone: true}" />
+                      </div>
                     </div>
                   </div>
-                  </div>
-                  <div class="form-group">
+                  <div class="form-group"
+                    *ngIf="vendorDisplayParameter && vendorDisplayParameter.ShowDefaultItemSupplied==true">
                     <label class="control-label col-md-5">Default Item Supplied<b>:</b></label>
                     <div class="col-md-7">
                       <div class="form-group itembox">
-                        <span class="selectedItem" *ngFor="let itm of defaultItemList">{{itm.ItemName}}<span *ngIf="isEditItem" title="Delete Item" (click)="deleteItem(itm.ItemId)" class="deleteItem">x</span></span>
+                        <span class="selectedItem" *ngFor="let itm of defaultItemList">{{itm.ItemName}}<span
+                            *ngIf="isEditItem" title="Delete Item" (click)="deleteItem(itm.ItemId)"
+                            class="deleteItem">x</span></span>
                       </div>
                       <div class="div-relative form-group no-margin">
-                        <input danphe-auto-complete class="form-control" *ngIf="isEditItem"
-                               [(ngModel)]="selectedItem"
-                               [source]="filteredItemList"
-                               [list-formatter]="myListFormatter"
-                               placeholder="Item Name"
-                               display-property-name="ItemName"
-                               value-property-name=null
-                               max-num-list="10"
-                               [ngModelOptions]="{standalone:true}"
-                               onclick="this.select();" />
+                        <input danphe-auto-complete class="form-control" *ngIf="isEditItem" [(ngModel)]="selectedItem"
+                          [source]="filteredItemList" [list-formatter]="myListFormatter" placeholder="Item Name"
+                          display-property-name="ItemName" value-property-name=null max-num-list="10"
+                          [ngModelOptions]="{standalone:true}" onclick="this.select();" />
                         <!--(valueChanged)="AssignItemIdToVendor()"-->
                         <!--<select *ngIf="isEditItem" [(ngModel)]="selectedItemId" class="form-control" [ngModelOptions]="{standalone:true}">
         <option *ngFor="let itm of filteredItemList" [value]='itm.ItemId'>{{itm.ItemName}}</option>
       </select>-->
-                  <div class="m1">
-                    <button *ngIf="isEditItem" class="btn btn-success" (click)="AssignItemIdToVendor()"><i class="fa fa-plus"></i>Add</button>
-                    <button *ngIf="!isEditItem" class="btn btn-success" (click)="EditItemId()"><i class="fa fa-edit"></i> Edit</button>
-                  </div>                      
-                      </div>                       
-                      
+                        <div class="m1">
+                          <button *ngIf="isEditItem" class="btn green btn-success margin-7-hr"
+                            (click)="AssignItemIdToVendor()"><i class="fa fa-plus"></i>Add</button>
+                          <button *ngIf="!isEditItem" class="btn green btn-success margin-7-hr"
+                            (click)="EditItemId()"><i class="fa fa-edit"></i> Edit</button>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" type="checkbox" [(ngModel)]="CurrentVendor.IsActive"
+                              [ngModelOptions]="{standalone: true}" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="col-md-12 col-xs-12">                  
+                <div class="col-md-12 col-xs-12">
                   <div class="form-actions">
-                    <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddVendor()" value="Add Vendor" [disabled]="loading" />
-                    <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" />
+                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update"
+                      (click)="loading=true;AddVendor()" value="{{loading == true ? 'Adding..': 'Add Vendor'}}"
+                      [disabled]="loading" id="AssignItemIdToVendor" />
+                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update"
+                      (click)="loading=true;Update()" value="{{loading == true ? 'Updating..':'Update' }}"
+                      [disabled]="loading" id="AssignItemIdToVendor" />
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
           </form>
         </div>
       </div>
     </div>
-    
+
   </div>
 </div>
 <currency-add *ngIf="showAddCurrencyCodePopUp" [showAddPage]="showAddCurrencyCodePopUp"
-              (callback-add)="OnNewCurrencyCodeAdded($event)"></currency-add>
+  (callback-add)="OnNewCurrencyCodeAdded($event)"></currency-add>

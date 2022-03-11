@@ -1,5 +1,5 @@
 <style>
-  .table-hover > tbody > tr > td {
+  .table-hover>tbody>tr>td {
     background-color: #fff;
     color: #000;
     font-size: 12px;
@@ -7,7 +7,7 @@
     border: 1px solid #ccc;
   }
 
-  .table-hover > tbody > tr:first-child td {
+  .table-hover>tbody>tr:first-child td {
     background-color: #f3f4f6;
   }
 
@@ -16,6 +16,13 @@
     top: -1px;
     background-color: #f1f1f1;
     z-index: 2;
+  }
+
+  tr.tbl-footer-summary td {
+    position: sticky;
+    z-index: 3;
+    bottom: -1px;
+    background-color: #f1f1f1 !important;
   }
 </style>
 <div class="wrapper">
@@ -33,43 +40,15 @@
               <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
               </from-to-date-select>
             </div>
-
-            <!-- <div class="col-md-5 col-xs-12" style="padding-left: 1px;">
-              <div class="form-group">
-                <label class="control-label col-md-4">From Date<b class="color-red"> *</b><b
-                    style="float:right;">:</b></label>
-                <div class="col-md-8">
-                  <danphe-date-picker [(ngModel)]="currentdailysales.fromDate" ngDefaultControl [CalendarTypes]="'np,en'"
-                    formControlName="fromDate"> </danphe-date-picker>
-                  <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('fromDate')"
-                    [hidden]="currentdailysales.IsValidCheck('fromDate','required')"> From Date is required</span><br />
-                  <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('fromDate')"
-                    [hidden]="currentdailysales.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-5 col-xs-12" style="padding-left: 1px;">
-              <div class="form-group">
-                <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b
-                    style="float:right;">:</b></label>
-                <div class="col-md-8">
-                  <danphe-date-picker [(ngModel)]="currentdailysales.toDate" ngDefaultControl [CalendarTypes]="'np,en'"
-                    formControlName="toDate"> </danphe-date-picker>
-                  <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('toDate')"
-                    [hidden]="currentdailysales.IsValidCheck('toDate','required')"> To Date is required</span><br />
-                  <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('toDate')"
-                    [hidden]="currentdailysales.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
-                </div>
-              </div>
-            </div> -->
-
-
             <div class="col-md-2 col-xs-12">
               <div class="form-group">
-                <button class="btn blue" type="button" (click)="Load()">
+                <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="loading">
                   <i class="fa fa-search"></i> Show Report
                 </button>
               </div>
+            </div>
+            <div class="col-md-3" *ngIf="loading">
+              <label>Loading... Please wait.</label>
             </div>
           </div>
         </div>
@@ -80,7 +59,7 @@
                 <label class="control-label col-md-3">Counter<b style="float:right;">:</b></label>
                 <div class="col-md-6">
                   <select id="ddlCounter" [(ngModel)]="currentdailysales.CounterId" class="form-control"
-                          [ngModelOptions]="{standalone: true}">
+                    [ngModelOptions]="{standalone: true}">
                     <option value="">All</option>
                     <option *ngFor="let counter of counterlist" value="{{counter.CounterId}}">
                       {{counter.CounterName}}
@@ -94,15 +73,15 @@
                 <label class="control-label col-md-2">User<b style="float:right;">:</b></label>
                 <div class="col-md-7">
 
-                  <input danphe-auto-complete class="form-control" [(ngModel)]="currentdailysales.CreatedBy"
-                         [source]="userList" [list-formatter]="UserListFormatter" placeholder="Enter User Name"
-                         display-property-name="EmployeeName" value-property-name="EmployeeId" onclick="this.select();"
-                         [ngModelOptions]="{standalone: true}" />
+                  <input danphe-auto-complete class="form-control" [(ngModel)]="selectedUser"
+                    [source]="userList" [list-formatter]="UserListFormatter" placeholder="Enter User Name"
+                    display-property-name="EmployeeName" value-property-name="EmployeeId" onclick="this.select();"
+                    [ngModelOptions]="{standalone: true}" (focusout) = "userChanged()" />
                 </div>
               </div>
             </div>
             <div class="col-md-2 col-xs-12">
-              <div class="form-group" *ngIf="DailySalesReportData.length>0">
+              <div class="form-group" *ngIf="isReportDataLoaded">
                 <button class="btn blue" style="margin-left:0px" type="button" (click)="SwitchViews()">
                   <i class="fa fa-eye"></i> {{viewMode}}
                 </button>
@@ -114,79 +93,85 @@
     </form>
   </div>
   <div class="row" *ngIf="!IsSummaryViewMode">
-    <div class="col-lg-12 col-sm-12" *ngIf="DailySalesReportData.length>0">
+    <div class="col-lg-12 col-sm-12" *ngIf="isReportDataLoaded">
       <danphe-grid [grid-colDefaults]="DailySalesReportColumns" [grid-data]="DailySalesReportData"
-                   [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"
-                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-for]="'billing'" [grid-date-range]="dateRange"
+        [grid-footer-content]="footerContent"> </danphe-grid>
     </div>
   </div>
   <div class="row" *ngIf="!IsSummaryViewMode">
-    <div class="col-lg-12 col-sm-12" *ngIf="DailySalesReportData.length>0">
+    <div class="col-lg-12 col-sm-12" *ngIf="isReportDataLoaded">
       <div class="col-md-12 col-xs-12">
         <div id="print_netCashCollection">
           <div style="padding-top:7px;">
             <h4 style="font-weight:bold">
               Net Cash Collection &nbsp;&nbsp; <span class="blinkAmount">
                 (
-                {{summaryFormatted.TotalCash}})
+                {{total_DetailedView.TotalCash}})
               </span>
             </h4>
             <div>
               <table class="tbl-summ" border="1" style="width:50%;">
                 <tr>
                   <td> Gross Total Sales </td>
-                  <td> {{summaryFormatted.GrossTotal_Sales}} </td>
+                  <td> {{total_DetailedView.GrossTotal_Sales}} </td>
                 </tr>
                 <tr>
                   <td> Discount </td>
-                  <td> {{summaryFormatted.Discount}} </td>
+                  <td> {{total_DetailedView.Discount}} </td>
                 </tr>
                 <tr>
                   <td> Return SubTotal </td>
-                  <td> {{summaryFormatted.ReturnSubTotal}} </td>
+                  <td> {{total_DetailedView.ReturnSubTotal}} </td>
                 </tr>
                 <tr>
                   <td> Return Discount </td>
-                  <td> {{summaryFormatted.ReturnDiscount}} </td>
+                  <td> {{total_DetailedView.ReturnDiscount}} </td>
                 </tr>
                 <tr>
                   <td>Return Amount</td>
-                  <td>{{summaryFormatted.ReturnAmount}}</td>
+                  <td>{{total_DetailedView.ReturnAmount}}</td>
                 </tr>
                 <tr>
                   <td>Net Sales</td>
-                  <td style="font-weight:bold;"> {{summaryFormatted.NetSales}}</td>
+                  <td style="font-weight:bold;"> {{total_DetailedView.NetSales}}</td>
                 </tr>
                 <tr>
                   <td>Less Credit Amount</td>
-                  <td> {{summaryFormatted.CreditAmount}}</td>
+                  <td> {{total_DetailedView.CreditAmount}}</td>
                 </tr>
                 <tr>
                   <td>Add Deposit Received</td>
-                  <td> {{summaryFormatted.DepositReceived}}</td>
+                  <td> {{total_DetailedView.DepositReceived}}</td>
                 </tr>
                 <tr>
                   <td>Less Deposit Refund</td>
-                  <td> {{summaryFormatted.DepositRefund}}</td>
+                  <td> {{total_DetailedView.DepositRefund}}</td>
                 </tr>
                 <tr>
                   <td>Add Collection From Receivables</td>
-                  <td> {{summaryFormatted.CreditReceived}}</td>
+                  <td> {{total_DetailedView.CreditReceived}}</td>
                 </tr>
                 <tr>
                   <td>Less Cash Discount</td>
-                  <td> {{summaryFormatted.CashDiscount}}</td>
+                  <td> {{total_DetailedView.CashDiscount}}</td>
+                </tr>
+                <tr *ngIf ="showOtherPayment" >
+                  <td>{{ otherPaymentsLabelSettingsValue.LabelName }}</td>
+                  <td> {{total_DetailedView.OtherPayments}}</td>
                 </tr>
                 <tr style="border: 2px solid;">
                   <td style="font-weight:bold;"> Total Collection </td>
-                  <td style="font-weight:bold;"> {{summaryFormatted.TotalCash}} </td>
+                  <td style="font-weight:bold;"> {{total_DetailedView.TotalCash}} </td>
                 </tr>
               </table>
             </div>
           </div>
         </div>
         <div class="col-md-6 form-group" style="text-align:center">
-          <button class="blue btn" type="button" (click)="Print('print_netCashCollection')"> <i class="fa fa-print"></i> Print </button>
+          <button class="blue btn" type="button" (click)="Print('print_netCashCollection')"> <i class="fa fa-print"></i>
+            Print </button>
         </div>
       </div>
     </div>
@@ -199,63 +184,49 @@
         <table class="table-hover tblReport" border="1" width="100%" style="background-color:initial;">
           <tbody>
             <tr style="background-color: #f3f4f6;color: #000;">
-              <td style="font-weight:bold">S.N.</td>
-              <td style="font-weight:bold">
-                Date
-                <b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b>
-                <span style="display: inline-block;background: #D8DEF1;cursor: pointer;">
-                  <i class="fa fa-refresh no-print hidden-print" (click)="ChangeDateFormate()" title="Change date format to AD/BS"></i>
-                </span>
-
-              </td>
+              <td style="font-weight:bold;">S.N.</td>
               <td style="font-weight:bold">User</td>
-              <td style="font-weight:bold">Gross Total (Sales Less Return)</td>
-              <td style="font-weight:bold">Net Discount</td>
-              <td style="font-weight:bold">Deposit Received</td>
-              <td style="font-weight:bold">Deposit Refund</td>
-              <td style="font-weight:bold">Collection from Receivables</td>
-              <td style="font-weight:bold">Net Credit Sales</td>
-              <td style="font-weight:bold">Cash Discount</td>
-              <td style="font-weight:bold">Cash Collection</td>
+              <td style="font-weight:bold;text-align:right;">Cash Sales</td>
+              <td style="font-weight:bold;text-align:right;">Return Cash Sales</td>
+              <td style="font-weight:bold;text-align:right;">Deposit Received</td>
+              <td style="font-weight:bold;text-align:right;">Deposit Refund</td>
+              <td style="font-weight:bold;text-align:right;">Collection From Receivables</td>
+              <td style="font-weight:bold;text-align:right;">Settlement Discount</td>
+              <td *ngIf ="showOtherPayment" style="font-weight:bold;text-align:right;">{{ otherPaymentsLabelSettingsValue.LabelName }}</td>
+              <td style="font-weight:bold;text-align:right;">Cash Collection</td>
             </tr>
             <tr *ngFor="let row of dailySalesReportSummaryData;let i=index">
               <td>{{i+1}}</td>
-              <td *ngIf="!IsLocalDate">{{row.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-              <td *ngIf="IsLocalDate">{{row.BillingDate | nepaliDate:'format':'YYYY-MM-DD'}}</td>
-              <td style="text-align:left">{{row.CreatedBy }}</td>
-              <td style="text-align:right">{{row.SubTotal | ParseAmount}}</td>
-              <td style="text-align:right">{{row.DiscountAmount | ParseAmount}}</td>
-              <td style="text-align:right">{{row.DepositReceived | ParseAmount}} </td>
-              <td style="text-align:right">{{row.DepositRefund  | ParseAmount}}</td>
-              <td style="text-align:right">{{row.CreditReceived  | ParseAmount}}</td>
-              <td style="text-align:right">{{row.CreditAmount  | ParseAmount}}</td>
-              <td style="text-align:right">{{row.CashDiscount  | ParseAmount}}</td>
-              <td style="text-align:right">{{row.CashCollection | ParseAmount}}</td>
+              <td style="text-align:left">{{row.FullName }}</td>
+              <td style="text-align:right">{{row.CashSales_Amount | ParseAmount}}</td>
+              <td style="text-align:right">{{row.CashSales_ReturnAmount | ParseAmount}}</td>
+              <td style="text-align:right">{{row.Deposit_Received | ParseAmount}} </td>
+              <td style="text-align:right">{{row.Deposit_Refund | ParseAmount}}</td>
+              <td style="text-align:right">{{row.CollectionFromReceivables | ParseAmount}}</td>
+              <td style="text-align:right">{{row.Sett_CashDiscount | ParseAmount}}</td>
+              <td *ngIf ="showOtherPayment" style="text-align:right">{{row.OtherPaymentsGiven | ParseAmount}}</td>
+              <td style="text-align:right">{{row.NetCollection | ParseAmount}}</td>
             </tr>
 
+            <tr class="tbl-footer-summary">
+              <td style="font-weight:bold;text-align:right;" colspan="2">Grand Total</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CashSales_Amount| ParseAmount}}</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CashSales_ReturnAmount | ParseAmount}}
+              </td>
+              <td style="font-weight:bold;text-align:right">{{total_SummaryView.Deposit_Received | ParseAmount}}</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.Deposit_Refund | ParseAmount}}</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CollectionFromReceivables |
+                ParseAmount}}</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.Sett_CashDiscount | ParseAmount}}</td>
+              <td *ngIf ="showOtherPayment" style="font-weight:bold;text-align:right;">{{total_SummaryView.OtherPaymentsGiven | ParseAmount}}</td>
+              <td style="font-weight:bold;text-align:right;">{{total_SummaryView.NetCollection | ParseAmount}}</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <table class="table-hover tblReport" border="1" width="100%">
-        <tbody>
-          <tr>
-            <td colspan="12">&nbsp;</td>
-          </tr>
-          <tr *ngFor="let row of summaryGrandTotal;let i=index">
-            <td style="font-weight:bold;text-align:right;" colspan="4">Grand Total</td>
-            <td style="font-weight:bold;text-align:right;">{{row.SubTotal| ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.DiscountAmount | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right">{{row.DepositReceived | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.DepositRefund  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CreditReceived  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CreditAmount  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CashDiscount  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CashCollection | ParseAmount}}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-    <div class="form-group" style="text-align:center">
+    <div></div>
+    <div class="col-md-12" style="text-align:center; margin-top: 15px;">
       <button class="blue btn" type="button" (click)="Print('printPage')"> <i class="fa fa-print"></i> Print </button>
       <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('printPage')">
         <i class="fa fa-file-excel-o"></i> Export

@@ -41,7 +41,6 @@ export class PatientDuplicateWarningBox {
   setMatchingPatientLists() {
     if (this.matchedPatResult) {
       this.matchedPatientList = new Array<Patient>();
-
       if (!this.byPassClientCheck) {
         var nowYear: number = Number(moment().format("YYYY"));
         var patYear: number = Number(this.Patient.Age);
@@ -83,8 +82,6 @@ export class PatientDuplicateWarningBox {
         })
       }
     }
-
-    console.log(this.matchedPatientList);
 
   }
 

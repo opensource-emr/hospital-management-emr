@@ -10,6 +10,7 @@ import { BillingService } from "../../billing/shared/billing.service";
 @Component({
   selector: 'billing-package-select',
   templateUrl: './billing-package-select.html',
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class BillingPackageSelectComponent {
   public billingPackageList: Array<BillingPackage> = new Array<BillingPackage>();
@@ -66,7 +67,7 @@ export class BillingPackageSelectComponent {
           else if (currInsPkg.BillingItemsXML.Items && (currInsPkg.BillingItemsXML.Items.length == 0 || currInsPkg.BillingItemsXML.Items.length)) {
             //do nothing here.. 
           }
-          
+
 
         });
       }
@@ -122,6 +123,12 @@ export class BillingPackageSelectComponent {
     this.showSelectPage = false;
     this.filterBy = "";
     this.getBillingPackageList();
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.Close();
+    }
   }
 
 }

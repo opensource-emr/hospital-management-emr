@@ -20,11 +20,10 @@
 <div class="row" *ngIf="showItemSummary">
   <div class="col-md-12 no-print">
     <span style="float:right;">
-      <label for="chkViewChange" class="mt-checkbox mt-checkbox-outline">
+      <label for="chkViewChange" class="mt-checkbox mt-checkbox-outline" style="font-size: 15px;">
         <input type="checkbox" [(ngModel)]="showDetailView" id="chkViewChange" />
-        <span></span>Show Detail View
+        <span style="border: 2px solid black !important;"></span>Show Detail View
       </label>
-
     </span>
   </div>
   <div class="col-md-12">
@@ -74,12 +73,15 @@
                             <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
                           </div>-->
                         </td>
+                        <td style="text-align:center"><b>Type</b></td>
                         <td style="text-align:center"><b>Invoice No.</b></td>
                         <td style="text-align:center"><b>Patient</b></td>
                         <td style="text-align:center"><b>Hospital No</b></td>
                         <td style="text-align:center"><b>Item Name</b></td>
+                        <td style="text-align:center"><b>SubTotal</b></td>
+                        <td style="text-align:center"><b>Discount Amount</b></td>
                         <td style="text-align:center"><b>Total Bill Amt.</b></td>
-                        <td style="text-align:center"><b>Incentive%</b></td>
+                        <!-- <td style="text-align:center"><b>Incentive%</b></td> -->
                         <td style="text-align:center"><b>Incentive Amt.</b></td>
                         <td style="text-align:center"><b>TDS Amt.</b></td>
                         <td style="text-align:center"><b>Net Payable</b></td>
@@ -91,12 +93,16 @@
                         <td style="text-align:center">{{i+1}}</td>
                         <td style="width: 6%;" *ngIf="!isDateFormatBS">{{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                         <td style="width: 6%;" *ngIf="isDateFormatBS">{{row.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}</td>
+                        <td style="width: 6%;" *ngIf="!row.IsReturnTxn">Sales</td>
+                        <td style="width: 6%;" *ngIf="row.IsReturnTxn">Sales Return</td>
                         <td style="text-align:center">{{row.InvoiceNoFormatted}}</td>
                         <td style="text-align:center">{{row.PatientName}}</td>
                         <td style="text-align:center">{{row.HospitalNum}}</td>
                         <td style="text-align:center">{{row.ItemName}}</td>
+                        <td style="text-align:center">{{row.SubTotal}}</td>
+                        <td style="text-align:center">{{row.DiscountAmount}}</td>
                         <td style="text-align:center">{{row.TotalAmount}}</td>
-                        <td style="text-align:center">{{row.IncentivePercent}}</td>
+                        <!-- <td style="text-align:center">{{row.IncentivePercent}}</td> -->
                         <td style="text-align:center">{{row.IncentiveAmount}}</td>
                         <td style="text-align:center">{{row.TDSAmount}}</td>
                         <td style="text-align:center">{{row.NetPayableAmt}}</td>

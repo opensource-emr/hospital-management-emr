@@ -1,0 +1,35 @@
+div.inv_modal * {
+    font-weight: 400;
+}
+
+.modelbox-div {
+    padding: 18px;
+}
+
+.bold, .bold>div, .bold>div>u {
+    font-weight: 700;
+}
+
+table>thead>tr>th {
+    font-weight: 700;
+}
+.center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cancelStamp {
+    transform: rotate(-14deg);
+    color: #d23;
+    border: 0.5rem solid #d23;
+    border-radius: 0;
+    font-size: 10pt;
+    font-weight: 700;
+    border: 0.25rem solid #555;
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.25rem 1rem;
+    text-transform: uppercase;
+    border-radius: 1rem;
+    font-family: "Courier";
+    mix-blend-mode: multiply;
+  }

@@ -22,7 +22,6 @@ export class TermsListComponent {
     public allTermsLists: Array<TermsConditionsMasterModel> = new Array<TermsConditionsMasterModel>();
     public selTermslist: Array<TermsConditionsMasterModel> = new Array<TermsConditionsMasterModel>();
 
-    @Input("TermsApplicationId")
     public TermsApplicationId: number = ENUM_TermsApplication.Inventory; 
 
     constructor(public changeDetector: ChangeDetectorRef,
@@ -32,10 +31,7 @@ export class TermsListComponent {
         this.TermsGridColumns = GridColumnSettings.TermsConditionsList
     }
     ngOnInit() {
-        this._route.params.subscribe(params => { 
-            this.TermsApplicationId = params['id'];
             this.getTermsList();
-        });
     }
 
     /*sanjit: 18May'20 : this component is used in both inventory and pharmacy and there is no service that is shared by these two module,
@@ -48,7 +44,7 @@ export class TermsListComponent {
                     this.showTermsList = true;
                 }
                 else {
-                    alert("Failed ! " + res.ErrorMessage);
+                    console.log("Failed ! " + res.ErrorMessage);
                 }
 
             },err =>{

@@ -1,4 +1,10 @@
-<input type="button" class="btn btn-primary" (click)="AddItem()" value="Add Item" />
+<style>
+  input.checkbox {
+    width: 20px;
+    height: 20px;
+  }
+</style>
+<button type="button" class="btn green btn-success" (click)="AddItem()">Add New Item<i class="fa fa-plus" style="width: auto;"></i></button>
 <input type="button" class="btn btn-primary" (click)="Addcccharge()" value="Add C.C Charges" style="margin-left: 5PX;" />
 <div class="row">
   <div class="col-md-12 col-xs-12 col-sm-12">
@@ -70,16 +76,7 @@
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Select Sales Category <sup>*</sup><b>:</b></label>
                       <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
-                               [(ngModel)]="selCategory"
-                               [source]="salesCategoryList"
-                               placeholder="Category Type"
-                               formControlName="SalesCategoryId"
-                               display-property-name="Name"
-                               value-property-name="Name"
-                               (valueChanged)="AssignSelectedCategory()"
-                               [list-formatter]="SalesCategoryListFormatter"
-                               max-num-list="15" style="width: 100%;" />
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" id="category" [(ngModel)]="selCategory" [source]="salesCategoryList" (keyup.enter)="!update?setFocusById('item'):setFocusById('company')" placeholder="Category Type" formControlName="SalesCategoryId" display-property-name="Name" value-property-name="Name" (valueChanged)="AssignSelectedCategory()" [list-formatter]="SalesCategoryListFormatter" max-num-list="15" style="width: 100%;" />
                         <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('SalesCategoryId','required') || !(CurrentItem.IsDirty('SalesCategoryId'))">Category is required</div>
                       </div>
                     </div>
@@ -88,11 +85,10 @@
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Item Name <sup>*</sup><b>:</b></label>
                       <div class="col-md-8">
-                        <input *ngIf="update" disabled class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
-                        <input *ngIf="!update" class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
+                        <input *ngIf="update" id="item" (keyup.enter)="setFocusById('company')" disabled class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
+                        <input *ngIf="!update" id="item" (keyup.enter)="setFocusById('company')" class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
                         <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemName','required') || !(CurrentItem.IsDirty('ItemName'))">
-                          name
-                          of item is required
+                          Name of item is required
                         </span>
                       </div>
                     </div>
@@ -108,8 +104,9 @@
                   <div class="form-group">
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Select Company <sup>*</sup><b>:</b></label>
-                      <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selCompany" [source]="companyList" placeholder="Company Name" formControlName="CompanyId" display-property-name="CompanyName" value-property-name="CompanyName" (valueChanged)="AssignSelectedCompany()" [list-formatter]="CompaniesListFormatter" max-num-list="15" style="width: 100%;" />
+                      <div class="col-md-8 div-relative">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" id="company" (keyup.enter)="setFocusById('item-type')" [(ngModel)]="selCompany" [source]="companyList" placeholder="Company Name" formControlName="CompanyId" display-property-name="CompanyName" value-property-name="CompanyName" (valueChanged)="AssignSelectedCompany()" [list-formatter]="CompaniesListFormatter" max-num-list="15" style="width: 100%;" />
+                        <a class="fa fa-question" (click)="AddCompanyPopUp(i)" title="Unable to find Comapany? Click to add"></a>
                         <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('CompanyId','required') || !(CurrentItem.IsDirty('SalesCategoryId'))"> Category is required</div>
                       </div>
                     </div>
@@ -117,8 +114,9 @@
                   <div class="form-group">
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Item Type<sup>*</sup><b>:</b></label>
-                      <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selItemType" [source]="itemtypeList" placeholder="Item Type" formControlName="ItemTypeId" display-property-name="ItemTypeName" value-property-name="ItemTypeName" (valueChanged)="AssignSelectedItemType()" [list-formatter]="ItemTypesListFormatter" max-num-list="15" style="width: 100%;" />
+                      <div class="col-md-8 div-relative">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" id="item-type" (keyup.enter)="setFocusById('unit')" [(ngModel)]="selItemType" [source]="itemtypeList" placeholder="Item Type" formControlName="ItemTypeId" display-property-name="ItemTypeName" value-property-name="ItemTypeName" (valueChanged)="AssignSelectedItemType()" [list-formatter]="ItemTypesListFormatter" max-num-list="15" style="width: 100%;" />
+                        <a class="fa fa-question" (click)="AddItemTypePopUp(i)" title="Unable to find ItemType? Click to add"></a>
                         <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemTypeId','required') || !(CurrentItem.IsDirty('ItemTypeId'))"> Item type is required</div>
                       </div>
                     </div>
@@ -126,8 +124,9 @@
                   <div class="form-group">
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Select Unit<sup>*</sup><b>:</b></label>
-                      <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selUOM" [source]="uomList" placeholder="Unit Of Measurement" formControlName="UOMId" display-property-name="UOMName" value-property-name="UOMName" (valueChanged)="AssignSelectedUOM()" [list-formatter]="UOMListFormatter" max-num-list="8" style="width: 100%;" />
+                      <div class="col-md-8 div-relative">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" id="unit" (keyup.enter)="setFocusById('generic')" [(ngModel)]="selUOM" [source]="uomList" placeholder="Unit Of Measurement" formControlName="UOMId" display-property-name="UOMName" value-property-name="UOMName" (valueChanged)="AssignSelectedUOM()" [list-formatter]="UOMListFormatter" max-num-list="8" style="width: 100%;" />
+                        <a class="fa fa-question" (click)="AddUomTypePopUp(i)" title="Unable to find UOM? Click to add"></a>
                         <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('UOMId','required') || !(CurrentItem.IsDirty('UOMId'))">
                           Unit
                           is
@@ -139,9 +138,9 @@
                   <div class="form-group">
                     <div class="row no-margin">
                       <label class="control-label col-md-4">Generic Name<sup>*</sup><b>:</b></label>
-                      <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selGenName" [source]="genericList" placeholder="Generic Name" display-property-name="GenericName" value-property-name="GenericId" (valueChanged)="AssignSelectedGenName()"
-                               [list-formatter]="GenNamesListFormatter" max-num-list="15" formControlName="GenericId" style="width: 100%;" />
+                      <div class="col-md-8 div-relative">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" id="generic" (keyup.enter)="setFocusById('cccharge')" [(ngModel)]="selGenName" [source]="genericList" placeholder="Generic Name" display-property-name="GenericName" value-property-name="GenericId" (valueChanged)="AssignSelectedGenName()" [list-formatter]="GenNamesListFormatter" max-num-list="15" formControlName="GenericId" style="width: 100%;" />
+                        <a class="fa fa-question" (click)="AddGenericTypePopUp(i)" title="Unable to find Generic? Click to add"></a>
                         <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('GenericId','required') || !(CurrentItem.IsDirty('GenericId'))">
                           Generic
                           Name is required
@@ -156,9 +155,7 @@
                         <div class="input-group">
                           <div class="icheck-inline">
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input id="chk_isActive" name="IsActive" type="checkbox" value="IsActive"
-                                     [(ngModel)]="CurrentItem.IsActive"
-                                     [ngModelOptions]="{standalone: true}">
+                              <input id="chk_isActive" name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsActive" [ngModelOptions]="{standalone: true}">
                               <span></span>
                             </label>
                           </div>
@@ -173,10 +170,7 @@
                         <div class="input-group">
                           <div class="icheck-inline">
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input name="IsActive" id="chk_isInternationalBrand" type="checkbox" value="IsActive"
-                                     [(ngModel)]="CurrentItem.IsInternationalBrand"
-                                     (change)="getCCchargevalue($event)"
-                                     [ngModelOptions]="{standalone: true}">
+                              <input name="IsActive" id="chk_isInternationalBrand" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsInternationalBrand" (change)="getCCchargevalue($event)" [ngModelOptions]="{standalone: true}">
                               <span></span>
                             </label>
                           </div>
@@ -190,8 +184,7 @@
 
                       <!-- <input [(ngModel)]="CurrentItem.CCCharge" placeholder="C.C Charge" [ngModelOptions]="{standalone: true} " /> -->
                       <div class="col-md-8">
-                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" display-property-name="CCChargevalue" value-property-name="CCChargevalue" [(ngModel)]="ccchargeData" [source]="ccChargelist" placeholder="CC Charge" (valueChanged)="AssignSelectedccCharge()"
-                               [list-formatter]="CCchargeListFormatter" max-num-list="15" [ngModelOptions]="{standalone: true} " />
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" value="0" id="cccharge" (keyup.enter)="IsPkgitem ? setFocusById('packing') : (!update ? setFocusById('save') : setFocusById('update'))" display-property-name="CCChargevalue" value-property-name="CCChargevalue" [(ngModel)]="ccchargeData" [source]="ccChargelist" placeholder="CC Charge" (valueChanged)="AssignSelectedccCharge()" [list-formatter]="CCchargeListFormatter" max-num-list="15" [ngModelOptions]="{standalone: true} " />
 
                       </div>
                     </div>
@@ -203,9 +196,7 @@
                         <div class="input-group">
                           <div class="icheck-inline">
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input id="chk_isNarcotic" name="IsNarcotic" type="checkbox" value="CurrentItem.IsNarcotic"
-                                     [(ngModel)]="CurrentItem.IsNarcotic"
-                                     [ngModelOptions]="{standalone: true}">
+                              <input id="chk_isNarcotic" name="IsNarcotic" type="checkbox" value="CurrentItem.IsNarcotic" [(ngModel)]="CurrentItem.IsNarcotic" [ngModelOptions]="{standalone: true}">
                               <span></span>
                             </label>
                           </div>
@@ -277,21 +268,6 @@
                       </div>
                     </div>
                   </div>
-                  <!--<div class="form-group">
-                    <div class="row no-margin">
-                      <label class="control-label col-md-4">VAT Percentage<b>:</b></label>
-                      <div class="col-md-8">
-                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.VATPercentage" formControlName="VATPercentage" value="" placeholder="Enter VAT Percentage" />
-                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('VATPercentage','required') || !(CurrentItem.IsDirty('VATPercentage'))">
-                          VAT
-                          Percentage is required
-                        </span> <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('VATPercentage')" [hidden]="CurrentItem.IsValidCheck('VATPercentage','pattern')">
-                          Percentage is
-                          not proper
-                        </span>
-                      </div>
-                    </div>
-                  </div>-->
                   <div class="form-group">
                     <div class="row no-margin">
                       <label class="control-label col-md-4" for="chk_isVatApplicable">Is VAT Applicable<b>:</b></label>
@@ -299,9 +275,7 @@
                         <div class="input-group">
                           <div class="icheck-inline">
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input name="IsActive" type="checkbox" value="IsVATApplicable" id="chk_isVatApplicable"
-                                     [(ngModel)]="CurrentItem.IsVATApplicable"
-                                     [ngModelOptions]="{standalone: true}">
+                              <input name="IsActive" type="checkbox" value="IsVATApplicable" id="chk_isVatApplicable" [(ngModel)]="CurrentItem.IsVATApplicable" [ngModelOptions]="{standalone: true}">
                               <span></span>
                             </label>
                           </div>
@@ -309,16 +283,47 @@
                       </div>
                     </div>
                   </div>
-
-                  <div class="row">
+                  <div class="form-group" *ngIf="CurrentItem.IsVATApplicable">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">VAT Percentage(Purchase)<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="number" maxlength="10" [(ngModel)]="CurrentItem.PurchaseVATPercentage" formControlName="PurchaseVATPercentage" value="" placeholder="Enter VAT Percentage" onClick="this.select()" />
+                        <!-- <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('PurchaseVATPercentage','required') || !(CurrentItem.IsDirty('PurchaseVATPercentage'))">
+                          VAT
+                          Percentage is required
+                        </span> -->
+                        <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('PurchaseVATPercentage')" [hidden]="CurrentItem.IsValidCheck('PurchaseVATPercentage','pattern')">
+                          Percentage is
+                          not proper
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="CurrentItem.IsVATApplicable">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">VAT Percentage(Sales)<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="number" maxlength="10" [(ngModel)]="CurrentItem.SalesVATPercentage" formControlName="SalesVATPercentage" value="" placeholder="Enter VAT Percentage" onClick="this.select()" />
+                        <!-- <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('SalesVATPercentage','required') || !(CurrentItem.IsDirty('SalesVATPercentage'))">
+                          VAT
+                          Percentage is required
+                        </span>  -->
+                        <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('SalesVATPercentage')" [hidden]="CurrentItem.IsValidCheck('SalesVATPercentage','pattern')">
+                          Percentage is
+                          not proper
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row" *ngIf="IsPkgitem">
                     <label class="control-label col-md-4">Select Packing<b>:</b></label>
                     <div class="col-md-8">
                       <div class="div-relative">
-                        <select class="form-control" [(ngModel)]="CurrentItem.PackingTypeId" [ngModelOptions]="{standalone: true}">
+                        <select class="form-control" id="packing" [(ngModel)]="CurrentItem.PackingTypeId" [ngModelOptions]="{standalone: true}" (change)="AddOrUpdate();">
                           <option *ngFor="let data of packingtypeList" [value]="data.PackingTypeId"> {{data.PackingName}} </option>
                         </select>
-                        <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('PackagingTypeId','required') || !(CurrentItem.IsDirty('PackagingTypeId'))">Packaging TypeId is required</span>-->
-                        <a *ngIf="!CurrentItem.PackingTypeId" class="fa fa-question" (click)="AddPackingTypePopUp(i)" title="Unable to find PackingType? Click to add"></a>
+                        <!-- <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('PackagingTypeId','required') || !(CurrentItem.IsDirty('PackagingTypeId'))">Packaging TypeId is required</span> -->
+                        <a class="fa fa-question" (click)="AddPackingTypePopUp(i)" title="Unable to find PackingType? Click to add"></a>
                       </div>
                     </div>
                   </div>
@@ -346,9 +351,37 @@
                   </div>
                 </div>
                 <div class="col-md-12">
-                  <div class="form-actions">
-                    <input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />
-                    <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+                  <div style="background-color: #ebf0fb;margin-bottom: 10px;border: 1px solid;border-radius: 5px !important;padding: 15px;border: 1px solid #d9dee8;">
+                    <p style="font-weight: bold;color: #2d68ea;text-align: left;text-decoration: underline;font-size: 16px;margin-bottom: 15px;"> Custom Prices </p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> Insurance Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <input class="checkbox" id="insuranceApplicable" name="insuranceApplicable" type="checkbox" [(ngModel)]="CurrentItem.IsInsuranceApplicable" [ngModelOptions]="{standalone: true}">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-5"> Government Insurance Price <sup *ngIf="CurrentItem.IsInsuranceApplicable">*</sup><b>:</b> </label>
+                          <div class="col-md-7">
+                            <input class="form-control" type="number" maxlength="100" [(ngModel)]="CurrentItem.GovtInsurancePrice" [ngModelOptions]="{standalone: true}" value="" placeholder="Price" onwheel="this.blur();" [attr.disabled]="!CurrentItem.IsInsuranceApplicable ? true: null" />
+                            <span class="color-red font-sm" *ngIf="checkGovtInsurancePrice() == false">required (minimum 1)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="all-buttons text-right">
+                    <button type="button" id="save" class="btn green btn-success" *ngIf="!update" (click)="Add()">Save</button>
+                    <button type="button" id="update" class="btn green btn-success" *ngIf="update" (click)="Update()">Update</button>
                   </div>
                 </div>
               </div>
@@ -412,6 +445,8 @@
     <!--Model Box Body End-->
   </div>
 </div>
-<packingtype-add *ngIf="showPackingTypeAddPopUp"
-                 [showAddPage]="showPackingTypeAddPopUp"
-                 (callback-add)="OnNewPackingTypeAdded($event)"></packingtype-add>
+<packingtype-add *ngIf="showPackingTypeAddPopUp" [showAddPage]="showPackingTypeAddPopUp" (callback-add)="OnNewPackingTypeAdded($event)"></packingtype-add>
+<selectcompanytype-item-add *ngIf="showCompanyAddPopUp" [showAddPage]="showCompanyAddPopUp" (callback-add)="OnNewComapnyAdded($event)"></selectcompanytype-item-add>
+<generictype-add *ngIf="showGenericTypeAddPopUp" [showAddPage]="showGenericTypeAddPopUp" (callback-add)="OnNewGenericTypeAdded($event)"></generictype-add>
+<itemtyp-item-add *ngIf="showItemTypeAddPopUp" [showAddPage]="showItemTypeAddPopUp" (callback-add)="OnNewItemTypeAdded($event)"></itemtyp-item-add>
+<uom-item-add *ngIf="showUOMTypeAddPopUp" [showAddPage]="showUOMTypeAddPopUp" (callback-add)="OnNewUomTypeAdded($event)"></uom-item-add>

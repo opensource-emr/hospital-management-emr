@@ -1,0 +1,170 @@
+<div class="row" *ngIf="showRequisitionList">
+  <div class="col-md-2">
+    <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition" />
+  </div>
+  <!-- <div class="col-md-3">
+    <label class="icheck-inline col-md-4" style="font-size:13px;top:5px">Select Store<sup>*</sup><b>:</b></label>
+    <select name="" id="" class="col-md-8">
+      <option value="">General</option>
+      <option value="">Medical</option>
+    </select>
+  </div> -->
+  <div class="col-md-4">
+    <strong>Select Inventory : &nbsp;&nbsp;</strong>
+    <select [(ngModel)]="selectedInventory"   (ngModelChange)="OnInventoryChange()" style="width:60%!important;">       
+      <option *ngFor="let inv of inventoryList" value="{{inv.StoreId}}"> {{inv.Name}} </option>
+    </select>
+  </div>
+  <div class="col-md-6">
+    <div class="input-group pull-right padding-15-tp">
+      <div class="icheck-inline"> List by Requisition Status: &nbsp;
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" checked name="RequisitionStatusFilter"
+            [(ngModel)]="RequisitionStatusFilter" value="pending" style="width:15px;height:15px" />
+          <span></span>Pending </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+            [(ngModel)]="RequisitionStatusFilter" value="complete" style="width:15px;height:15px" />
+          <span></span>Complete </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+            [(ngModel)]="RequisitionStatusFilter" value="cancelled" style="width:15px;height:15px" />
+          <span></span>Cancelled </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+            [(ngModel)]="RequisitionStatusFilter" value="withdrawn" style="width:15px;height:15px" />
+          <span></span>Withdrawn </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+            [(ngModel)]="RequisitionStatusFilter" value="all" style="width:15px;height:15px" />
+          <span></span>All </label>
+      </div>
+    </div>
+  </div>
+  <!-- @*-----All Item Requisition List-----*@-->
+</div>
+<div class="row" *ngIf="showRequisitionList">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="SubstoreAssetRequisitionGridColumns" [grid-data]="RequisitionGridDataFiltered"
+      [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      (grid-actions)="RequisitionGridAction($event)" (onDateChange)="onDateChange($event)"> </danphe-grid>
+  </div>
+</div>
+
+
+  <wardsupply-asset-new-requisition *ngIf="showCreateRequisition" (callback-new-req)="CallBackNewReq($event)" >
+  </wardsupply-asset-new-requisition>
+
+
+  <!-- <wardsupply-asset-requisition-details *ngIf="showRequisitionDetails" (callback-details)="CallBackDetails($event)">
+  </wardsupply-asset-requisition-details> -->
+
+
+
+  <style>
+    .receiveContainer {
+      border: dotted 1px rgb(58, 57, 57);
+      box-shadow: 0.5px 0.5px rgba(36, 15, 15, 0.527) !important;
+      margin: 5px;
+      padding: 15px;
+    }
+    
+    .receiveStamp {
+      transform: rotate(12deg);
+      color: #555;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 0.25rem solid #555;
+      display: inline-block;
+      text-transform: uppercase;
+      border-radius: 1rem;
+      font-family: "Courier";
+      mix-blend-mode: multiply;
+      color: #0a9928;
+      border: 0.5rem solid #0a9928;
+      transform: rotate(-14deg);
+      border-radius: 0;
+    }
+  </style>
+  <div class="wrapper" *ngIf="showReceivedItems">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="left">
+          <button class="btn btn-primary btn-sm" (click)="RouteBack()">
+            <i class="fa fa-backward"></i>
+            Back&nbsp;to&nbsp;Requisition&nbsp;List
+          </button>
+        </div>
+        <div class="right">
+          <button class="btn btn-primary btn-sm" (click)="Print()">
+            <i class="fa fa-print"></i>
+            Print
+          </button>
+        </div>
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <div id="printpage" class="row printStyle print-border">
+              <div>
+                <div class="media receiveContainer" *ngIf="!!Requisition">
+                  <p class="media-body small border-bottom border-gray">
+                    <strong>Requisition No:</strong>
+                    {{Requisition.RequisitionNo}}
+                  </p>
+                  <p class="media-body small border-bottom border-gray">
+                    <strong>Requisition Date:</strong>
+                    {{Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
+                    <i *ngIf="Requisition.RequisitionDate">({{Requisition.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                  </p>
+                  <p class="media-body small border-bottom border-gray">
+                    <strong>Requisition Status:</strong>
+                    {{Requisition.RequisitionStatus}}
+                  </p>
+                </div>
+                <div *ngIf="!!DispatchList">
+                  <div class="media text-muted receiveContainer" *ngFor="let dispatch of DispatchList">
+                    <span class="media-body small border-bottom border-gray">
+                      <strong>Dispatch Id:</strong>
+                      {{dispatch.DispatchId}}
+                    </span>
+                    <span class="media-body small border-bottom border-gray">
+                      <strong>Dispatched By:</strong>
+                      <div *ngIf="!!dispatch.ReceivedBy; else elseBlockOne">{{dispatch.ReceivedBy}}</div>
+                      <ng-template #elseBlockOne>Not Received</ng-template>
+                    </span>
+                    <span class="media-body small border-bottom border-gray">
+                      <strong>Dispatched On:</strong>
+                      <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
+                        {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
+                        <i *ngIf="dispatch.ReceivedOn">({{dispatch.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                      </div>
+                      <ng-template #elseBlockTwo>Not Received</ng-template>
+                    </span>
+                    <div>
+                      <table class="table table-striped table-condensed">
+                        <thead>
+                          <tr>
+                            <th>Item Name</th>
+                            <th>Batch No</th>
+                            <th>BarCode Number</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let item of dispatch.DispatchItems">
+                            <td>{{item.ItemName}}</td>
+                            <td>{{item.BatchNo}}</td>
+                            <td><b>{{item.BarCodeNumber}}</b></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

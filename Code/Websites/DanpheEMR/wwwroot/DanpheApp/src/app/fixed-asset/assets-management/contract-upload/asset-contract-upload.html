@@ -1,0 +1,94 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Upload Contract</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form">
+            <!--Start: Model Body-->
+            <div class="form-body">
+              <div class="row">                
+                <!--Start: Header Logo Details -->
+                <div class="col-md-12" style="padding-left:40px!important;">
+                  <div class="row">
+                    <div class="form-group" *ngIf="editMode">
+                      <div class="row">
+                        <div class="col-md-7">
+                          <table class="table" style="width:auto;">
+                            <tr>
+                              <td>Item Code:</td>
+                              <td>{{selectedAsset?.ItemCode}}</td>
+                            </tr>
+                            <tr>
+                              <td>Asset Name:</td>
+                              <td>{{selectedAsset?.ItemName}}</td>
+                            </tr>
+                            <tr>
+                              <td>Bar Code:</td>
+                              <td>{{selectedAsset?.BarCodeNumber}}</td>
+                              
+                              <td ></td>
+                            </tr>
+                          </table>
+                        </div>
+                        <div *ngIf="selectedAsset" class="col-md-3">
+                          <danphe-bar-code [barcode-number]="selectedAsset.BarCodeNumber">
+                          </danphe-bar-code>
+                        </div>                        
+                        <div class="col-md-12">
+                          <label style="color: purple; font-size:large; margin-right:88px;"><strong>Contract already Uploaded !!</strong></label>                      
+                        <!-- <button class="btn btn-primary" (click)="ViewContractFile()"> View Contract</button> <br> -->
+                        <button class="btn btn-primary" (click)="DownloadContractFile()"> Download Contract File</button> <br>
+                        </div>
+                        <div class="col-md-12" style="margin-top:30px; margin-bottom: 30px;">                            
+                        <span style="font-size:large; font-weight:700;" class="col-md-5 row clearfix">Want to Re-Upload Contract ?</span><input style="margin:opx!important;" type="checkbox" class="col-md-1 formcontrol" [(ngModel)]="reUploadContractFlag" [ngModelOptions]="{standalone: true}"/>
+                        </div>
+                    </div>                    
+                    </div>
+                    <div *ngIf="!editMode">
+                      <p style="color: orangered;">No Contract for this Asset Till Date !!</p>
+                  </div>
+                    <div class="form-group" *ngIf=" !editMode || (editMode && reUploadContractFlag)">
+                      <div class="row">
+                        <label class="control-label col-md-5">
+                          Choose Contract File<sup>*</sup><b>:</b>
+                        </label>
+                        <div class="col-md-6">
+                          <input class="form-control" #fileInput type="file"
+                                 accept=".*txt,.*doc,.*docx,.*pdf,"
+                                 (change)="OnFileSelected(fileInput.files)"
+                                 value="" multiple />
+                          <span Class="color-red font-sm" [hidden]="isFileValid">Valid file is required!</span>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="container" *ngIf="showFilePreview">
+                    <!-- <p>Contract Preview</p> <sup href="" class="btn btn-danger" (click) ="showFilePreview=false;">Close(X)</sup> -->
+                    <iframe [src]="fileSrc" type="application/pdf" title="Contract File Preview" width="60%" height="500px"></iframe>
+                  </div>
+                </div>
+                <!--End: Header Logo Details -->
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+            <div class="form-group panel-footer text-right" >
+              <!-- <input *ngIf ="!editMode" type="button" class="btn btn-primary" (click)="SubmitHeader()" value="Submit Contract" [disabled]="loading"/>
+              <input *ngIf ="editMode" type="button" class="btn btn-primary" (click)="SubmitHeader()" value="Update Contract" [disabled]="loading"/> -->
+              <button type="button" class="btn btn-primary" 
+              (click)="SubmitHeader()" [disabled]="loading" 
+              *ngIf=" !editMode || (editMode && reUploadContractFlag)">{{editMode?"Update Contract":"Submit Contract"}} 
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

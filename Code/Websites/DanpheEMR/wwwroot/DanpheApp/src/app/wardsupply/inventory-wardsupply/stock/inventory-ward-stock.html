@@ -1,9 +1,15 @@
 <div class="row">
+  <div class="col-md-12 right">
+    <label for="selectedInventory" style="width: 12pc;">
+      <i class="fa fa-filter"></i> Filter by Store <span class="right">:</span>
+    </label>
+    <select [(ngModel)]="selectedInventoryId" id="selectedInventory" (change)="filterStockByInventory()" style="margin-left: 1rem">
+      <option [ngValue]="null">ALL</option>
+      <option *ngFor="let inventory of inventoryList" [value]="inventory.StoreId">{{inventory.Name}}</option>
+    </select>
+  </div>
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="inventoryStockGridColumns"
-                 [grid-data]="inventoryStockDetailsList"
-                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
-                 (grid-actions)="StockDetailsGridAction($event)">
+    <danphe-grid [grid-colDefaults]="inventoryStockGridColumns" [grid-data]="filterSubstoreStockList" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (grid-actions)="StockDetailsGridAction($event)">
     </danphe-grid>
   </div>
 </div>
@@ -74,15 +80,12 @@
             <div class="form-group">
               <label class="control-label col-md-4">
                 Transfer Quantity
-                <b class="color-red">  *</b><b style="float:right;">:</b>
+                <b class="color-red"> *</b><b style="float:right;">:</b>
               </label>
               <div class="col-md-8">
                 <form [formGroup]="selectedStock.StockManageValidator">
-                  <input [(ngModel)]="selectedStock.DispachedQuantity"
-                         formControlName="DispachedQuantity" class="form-control"
-                         name="DispachedQuantity" type="number" />
-                  <div style="color:red" *ngIf="selectedStock.IsDirty('DispachedQuantity')"
-                       [hidden]="selectedStock.IsValid('DispachedQuantity','invalidNumber')">quantity is required</div>
+                  <input [(ngModel)]="selectedStock.DispachedQuantity" formControlName="DispachedQuantity" class="form-control" name="DispachedQuantity" type="number" />
+                  <div style="color:red" *ngIf="selectedStock.IsDirty('DispachedQuantity')" [hidden]="selectedStock.IsValid('DispachedQuantity','invalidNumber')">quantity is required</div>
                   <div style="color:red" *ngIf="selectedStock.Quantity < selectedStock.DispachedQuantity">cant out more quantity than current qty</div>
 
                 </form>
@@ -93,15 +96,12 @@
             <div class="form-group">
               <label class="control-label col-md-4">
                 Remarks
-                <b class="color-red">  *</b><b style="float:right;">:</b>
+                <b class="color-red"> *</b><b style="float:right;">:</b>
               </label>
               <div class="col-md-8">
                 <form [formGroup]="selectedStock.StockManageValidator">
-                  <textarea [(ngModel)]="selectedStock.Remarks"
-                            formControlName="Remark" class="form-control"
-                            name="Remark" type="text"></textarea>
-                  <div style="color:red" *ngIf="selectedStock.IsDirty('Remark')"
-                       [hidden]="selectedStock.IsValid('Remark','required')">remark is required</div>
+                  <textarea [(ngModel)]="selectedStock.Remarks" formControlName="Remark" class="form-control" name="Remark" type="text"></textarea>
+                  <div style="color:red" *ngIf="selectedStock.IsDirty('Remark')" [hidden]="selectedStock.IsValid('Remark','required')">remark is required</div>
                 </form>
               </div>
             </div>

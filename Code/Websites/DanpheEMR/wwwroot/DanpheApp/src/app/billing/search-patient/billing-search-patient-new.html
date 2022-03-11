@@ -1,0 +1,137 @@
+<style>
+  .btn.green i {
+    color: #ffffff;
+  }
+</style>
+<div class="wrapper">
+  <div class="row margin-15-bt margin-5-tp">
+    <div class="col-md-4">
+      <div class="caption custom-caption">
+        <h3>
+          <span><i class="fa fa-user"></i>Search Patients</span>
+
+        </h3>
+      </div>
+    </div>
+    <div class="col-md-8 text-right">
+      <div class="pull-right">
+        <div class="shortcut-key shortkey-right " title="Shortcut Keys" style="margin-top: 0;">
+          <a href="javascript: void(0)"><img alt="keyboard shortcut"
+              src="../../../themes/theme-default/images/Keyboard-icon.svg"></a>
+          <div class="keydropdown">
+            <ul>
+              <li><kbd>ALT</kbd> + <kbd>N</kbd> = <samp>Add New Patient</samp></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <button *ngIf="showPatRegistration" class="btn green btn-success pull-right" (click)="ShowOpPatAddPopUp()"><i
+          class="fa fa-plus"></i>Add New Patient</button>
+    </div>
+
+  </div>
+  <div class="">
+    <div class="row">
+      <div class="col-md-4">
+        <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="PatientObj"
+          [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+          placeholder="search by HospitalNo, Patient Name" display-property-name="ShortName" value-property-name=null
+          (ngModelChange)="PatientInfoChanged()" onClick="this.select();" max-num-list="500"
+          (keyup.enter)="SetFocusOnButton('btn_billRequest')" [min-chars]="5" match-formatted="true"
+          [grid-sort]="'ShortName'" style="width: 100% !important;" />
+      </div>
+      <div class="col-md-1">
+
+      </div>
+      <div class="col-md-7">
+        <div class="row">
+          <div class="col-md-3" style="text-align: right;">
+            Search IPD Patients :
+          </div>
+          <div class="col-md-9">
+            <input danphe-auto-complete id="srchIP_PatientList" class="form-control searchtbx"
+              [(ngModel)]="PatientIPObj" [list-formatter]="IPPatientListFormatter"
+              [source]="IpdPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+              placeholder="Search by IPD-No, Patient Name, Hospital No" display-property-name="ShortName" value-property-name=null
+              (ngModelChange)="PatientIPInfoChanged()" onClick="this.select();" max-num-list="500"
+              (keyup.enter)="SetFocusOnButton('btn_billRequest')" [min-chars]="5" match-formatted="true"
+              [no-match-found-text]="'Patient Not found in IPD'"
+              [grid-sort]="'ShortName'" style="width: 100% !important;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <div class="col-md-12" *ngIf="showPatientPanel">
+        <div class="page-bar bill-p-info mt10">
+          <div>
+            <span>
+              <i class="fa fa-user"></i>&nbsp;Name : <b>{{selPatient.ShortName}}</b>
+            </span>
+            <span>
+              <i class="fa fa-h-sign"></i>&nbsp;Hospital # : <b> {{selPatient.PatientCode}}</b>
+            </span>
+            <span>
+              <i class="fa fa-male"></i>&nbsp;Age/Sex : {{selPatient.Age}}/ {{selPatient.Gender}}
+            </span>
+            <span>
+              <i class="fa fa-phone"></i>&nbsp;Visit : <b *ngIf="selPatient.IsAdmitted">Inpatient</b><b
+                *ngIf="!selPatient.IsAdmitted">Outpatient</b>
+            </span>
+          </div>
+          <div>
+            <span>
+              <i class="fa fa-user"></i>&nbsp;Address : <b>{{selPatient.Address}}</b>
+            </span>
+            <span *ngIf="selPatient.PhoneNumber">
+              <i class="fa fa-phone"></i>&nbsp;Contact No : <b>{{selPatient.PhoneNumber}}</b>
+            </span>
+            <span *ngIf="selPatient.IsAdmitted">
+              <i class="fa fa-phone"></i>&nbsp;Ward/Bed : <b>{{selPatient.WardName}}/{{selPatient.BedCode}}</b>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <div *ngIf="showBillingPanel">
+        <div class="page-bar-secondary">
+          <button id="btn_billRequest" class="btn green btn-success" (click)="NewBillingRequest()">New Billing
+            Request</button>
+          <button id="btn_addDeposit" class="btn green btn-success margin-15-lft" (click)="NewDeposit()">Add
+            Deposit</button>
+          <div class="show-bill-btn">
+            <label for="chkLoadBillHistory" class="text-primary mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" [(ngModel)]="loadBillHistory" id="chkLoadBillHistory" />
+              <span></span>Show Bill History
+            </label>
+          </div>
+          <button [rbac-permission]="{'name':'billing-pat-sticker-button','actionOnInvalid':'hidden'}"
+          id="btn_patientSticker" class="btn green btn-success margin-15-lft" (click)="OnClickPatientSticker()">Patient
+            Sticker</button>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div *ngIf="loadBillHistory" class="page-bar">
+              <bill-history [showPatientBillHistory]="showBillingPanel" [patient]="selPatient"></bill-history>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <bill-op-patient-add *ngIf="showAddNewOpPopUp" (callBackAddClose)="GetBackFromOpPatAdd($event)"></bill-op-patient-add>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPatientSticker">
+  <div class="portlet-body form">
+    <div class="modelbox-div" style="margin-left:30%;margin-right:16%">
+      <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right"
+          (click)="ClosePrintStickerPopup()">X</i>
+          <patient-sticker [patientId]="this.selPatient.PatientId" (after-print-action)="AfterStickerPrint($event)"> </patient-sticker>
+        </div>
+    </div>
+  </div>
+</div>

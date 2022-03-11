@@ -10,9 +10,10 @@ import { forEach } from "@angular/router/src/utils/collection";
 
 @Component({
     selector: "parameter-edit",
-  templateUrl: "./parameter-edit.html",
-  styles: [`.margin-8-tp{margin-top: 8px;}
-            .ln-middle{line-height: 2.3;}`]
+    templateUrl: "./parameter-edit.html",
+    styles: [`.margin-8-tp{margin-top: 8px;}
+            .ln-middle{line-height: 2.3;}`],
+    host: { '(window:keydown)': 'hotkeys($event)' }
 
 })
 export class ParameterEditComponent {
@@ -23,7 +24,8 @@ export class ParameterEditComponent {
 
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
-    
+    public outerPropName: string = null;
+
     public newRow = {
         KeyName: null,
         Value: null,
@@ -42,13 +44,13 @@ export class ParameterEditComponent {
         if (this.selectedParameter) {
             this.currentParameter = Object.assign(this.currentParameter, this.selectedParameter);
         }
-    }   
+    }
 
     public Update() {
         //Incase of JSON
         if (this.currentParameter && this.currentParameter.ValueDataType && (this.currentParameter.ValueDataType.toLowerCase() == "json" || this.selectedParameter.ValueDataType.toLowerCase() == "json-encr")) {
-            
-            var originalObj = JSON.parse(this.currentParameter.ParameterValue); 
+
+            var originalObj = JSON.parse(this.currentParameter.ParameterValue);
 
             this.TraverseIt(originalObj, this.currentParameter.MappedObject);
 
@@ -65,11 +67,11 @@ export class ParameterEditComponent {
         }
         //Incase of boolean
         else if (this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "boolean") {
-            
+
             if (this.currentParameter.MappedObject[0].ActualValueType == 'number') {
                 if (this.currentParameter.MappedObject[0].Value == 'true') {
                     this.currentParameter.ParameterValue = '1';
-                } else { this.currentParameter.ParameterValue = '0';}
+                } else { this.currentParameter.ParameterValue = '0'; }
             }
             else {
                 this.currentParameter.ParameterValue = this.currentParameter.MappedObject[0].Value;
@@ -77,40 +79,48 @@ export class ParameterEditComponent {
         }
         //Incase of array
         else if (this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "array") {
-          var updatedArr = [];
-          
-          var newObject = new Object();
-          for (var val of this.currentParameter.MappedArray) {
-            newObject = new Object();
-            for (var newObj of val) {
-              if (newObj.KeyName) {
-                if (newObj.ValueType == 'boolean') {
-                  if (newObj.ValueType == newObj.ActualValueType) {
-                    newObject[newObj.KeyName] = newObj.Value == 'true' ? true : false;
-                  } else { newObject[newObj.KeyName] = newObj.Value == 'true' ? 'true' : 'false'; }
-                } else {
-                  newObject[newObj.KeyName] = newObj.Value;
-                }                
-              } else {
-                newObject = newObj.Value;
-              }    
+            var updatedArr = [];
+
+            var newObject = new Object();
+            for (var val of this.currentParameter.MappedArray) {
+                newObject = new Object();
+                for (var newObj of val) {
+                    if (newObj.KeyName) {
+                        if (newObj.ValueType == 'boolean') {
+                            if (newObj.ValueType == newObj.ActualValueType) {
+                                newObject[newObj.KeyName] = newObj.Value == 'true' ? true : false;
+                            } else { newObject[newObj.KeyName] = newObj.Value == 'true' ? 'true' : 'false'; }
+                        } else {
+                            newObject[newObj.KeyName] = newObj.Value;
+                        }
+                    } else {
+                        newObject = newObj.Value;
+                    }
+                }
+                updatedArr.push(newObject);
             }
-            updatedArr.push(newObject);
-          }
-                    
-          this.currentParameter.ParameterValue = JSON.stringify(updatedArr);
+
+            this.currentParameter.ParameterValue = JSON.stringify(updatedArr);
         }
         //Incase of Value LookUp
         else if (this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "value-lookup") {
 
         }//Incase of arrayobj
-        else if(this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "arrayobj"){
-            var originalObj = JSON.parse(this.currentParameter.ParameterValue); 
+        else if (this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "arrayobj") {
+            var originalObj = JSON.parse(this.currentParameter.ParameterValue);
 
             this.TraverseArrayObj(originalObj, this.currentParameter.MappedObject);
 
             this.currentParameter.ParameterValue = JSON.stringify(originalObj);
-           
+
+        }
+        //Incase of jsonobj
+        else if (this.currentParameter && this.currentParameter.ValueDataType && this.currentParameter.ValueDataType.toLowerCase() == "jsonobj") {
+            var originalObj = JSON.parse(this.currentParameter.ParameterValue);
+
+            this.TraverseJsonObj(originalObj, this.currentParameter.MappedObject);
+
+            this.currentParameter.ParameterValue = JSON.stringify(originalObj);
         }
         else {
             this.msgBoxServ.showMessage("Failed", ["Sorry! Cannot Edit this parameter...Try directly from Db.."])
@@ -120,112 +130,149 @@ export class ParameterEditComponent {
     }
 
     public TraverseIt(mainObj: any, mapObj: Array<MappedObj>) {
-        
+
         for (var property in mainObj) {
             if (typeof mainObj[property] == 'object') {
                 this.TraverseIt(mainObj[property], mapObj);
             } else {
                 if (property != 'remove') {
-                        var obj = mapObj.find(val => val.KeyName == property);
-                        var type = obj.ValueType;
-                        var actualType = obj.ActualValueType;
-
-                        if (type != 'boolean') {
-                            mainObj[property] = obj.Value;
-                        }
-                        //Type in the json in Db is Boolean
-                        else {
-                            //stores boolean true/false as a string => "true" / "false"
-                            if (actualType != 'boolean') {
-                                if (actualType == 'number') {
-                                    mainObj[property] = obj.Value == 'true' ? '1' : '0';
-                                } else {
-                                    mainObj[property] = obj.Value;
-                                }
-                            }
-                            //stores boolean true/false as a boolean itself => true / false
-                            else {                                
-                                mainObj[property] = obj.Value == 'true' ? true : false;
-                            }
-                        }
-                    }                  
-                
-            }
-        }        
-    }
-
-    public TraverseArrayObj(mainObj: any, mapObj: Array<MappedObj>){
-        
-        for (var property in mainObj) {
-            if (typeof mainObj[property] == 'object') {
-               mainObj[property].forEach(val => {
-                   mapObj.forEach(ma => {
-                    if(mainObj[property].includes(ma.Value)){
-                    
-                    }else {                      
-                        mainObj[property].splice(mainObj[property].indexOf(ma.Value), 1);
-                    }   
-                   })
-                
-             })
-            
-            mapObj.forEach((val, index) => {
-                if(val.KeyName == property){
-                    var obj = val;
+                    var obj = mapObj.find(val => val.KeyName == property);
                     var type = obj.ValueType;
                     var actualType = obj.ActualValueType;
-                    var data = mainObj[property].filter(function (el) {
-                        return el == obj.Value;       
-                                     
-                     });
-                     
-                    if(data == null){
-                    }else if(data == obj.Value){
-                    } 
+
+                    if (type != 'boolean') {
+                        mainObj[property] = obj.Value;
+                    }
+                    //Type in the json in Db is Boolean
                     else {
-                    mainObj[property].push(obj.Value);
+                        //stores boolean true/false as a string => "true" / "false"
+                        if (actualType != 'boolean') {
+                            if (actualType == 'number') {
+                                mainObj[property] = obj.Value == 'true' ? '1' : '0';
+                            } else {
+                                mainObj[property] = obj.Value;
+                            }
+                        }
+                        //stores boolean true/false as a boolean itself => true / false
+                        else {
+                            mainObj[property] = obj.Value == 'true' ? true : false;
+                        }
                     }
                 }
-            });
-            } else {
-                if (property != 'remove') {
-                        var obj = mapObj.find(val => val.KeyName == property);
-                        var type = obj.ValueType;
-                        var actualType = obj.ActualValueType;
 
-                        if (type != 'boolean') {
-                            mainObj[property] = obj.Value;
-                        }
-                        //Type in the json in Db is Boolean
-                        else {
-                            //stores boolean true/false as a string => "true" / "false"
-                            if (actualType != 'boolean') {
-                                if (actualType == 'number') {
-                                    mainObj[property] = obj.Value == 'true' ? '1' : '0';
-                                } else {
-                                    mainObj[property] = obj.Value;
-                                }
-                            }
-                            //stores boolean true/false as a boolean itself => true / false
-                            else {                                
-                                mainObj[property] = obj.Value == 'true' ? true : false;
-                            }
-                        }
-                    }                  
-                
             }
-        } 
+        }
     }
 
+    public TraverseArrayObj(mainObj: any, mapObj: Array<MappedObj>) {
 
-  public Updatedata() {
+        for (var property in mainObj) {
+            if (typeof mainObj[property] == 'object') {
+                mainObj[property].forEach(val => {
+                    mapObj.forEach(ma => {
+                        if (mainObj[property].includes(ma.Value)) {
+
+                        } else {
+                            mainObj[property].splice(mainObj[property].indexOf(ma.Value), 1);
+                        }
+                    })
+
+                })
+
+                mapObj.forEach((val, index) => {
+                    if (val.KeyName == property) {
+                        var obj = val;
+                        var type = obj.ValueType;
+                        var actualType = obj.ActualValueType;
+                        var data = mainObj[property].filter(function (el) {
+                            return el == obj.Value;
+
+                        });
+
+                        if (data == null) {
+                        } else if (data == obj.Value) {
+                        }
+                        else {
+                            mainObj[property].push(obj.Value);
+                        }
+                    }
+                });
+            } else {
+                if (property != 'remove') {
+                    var obj = mapObj.find(val => val.KeyName == property);
+                    var type = obj.ValueType;
+                    var actualType = obj.ActualValueType;
+
+                    if (type != 'boolean') {
+                        mainObj[property] = obj.Value;
+                    }
+                    //Type in the json in Db is Boolean
+                    else {
+                        //stores boolean true/false as a string => "true" / "false"
+                        if (actualType != 'boolean') {
+                            if (actualType == 'number') {
+                                mainObj[property] = obj.Value == 'true' ? '1' : '0';
+                            } else {
+                                mainObj[property] = obj.Value;
+                            }
+                        }
+                        //stores boolean true/false as a boolean itself => true / false
+                        else {
+                            mainObj[property] = obj.Value == 'true' ? true : false;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    public TraverseJsonObj(mainObj: any, mapObj: Array<MappedObj>) {
+        for (var property in mainObj) {
+            if (typeof mainObj[property] == 'object') {
+                this.outerPropName = property;
+                this.TraverseJsonObj(mainObj[property], mapObj);
+            } else {
+                if (property != 'remove') {
+                    var obj = mapObj.find(val => val.KeyName == property && val.OuterKeyName == this.outerPropName);
+                    var type = obj.ValueType;
+                    var actualType = obj.ActualValueType;
+
+                    if (type != 'boolean') {
+                        mainObj[property] = obj.Value;
+                    }
+                    //Type in the json in Db is Boolean
+                    else {
+                        //stores boolean true/false as a string => "true" / "false"
+                        if (actualType != 'boolean') {
+                            if (actualType == 'number') {
+                                mainObj[property] = obj.Value == 'true' ? '1' : '0';
+                            } else {
+                                mainObj[property] = obj.Value;
+                            }
+                        }
+                        //stores boolean true/false as a boolean itself => true / false
+                        else {
+                            mainObj[property] = obj.Value == 'true' ? true : false;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    public Updatedata() {
         this.settingsBLService.UpdateParameterValue(this.currentParameter)
             .subscribe(res => {
                 if (res.Status == "OK") {
                     this.coreService.InitializeParameters().subscribe(res => {
-                        this.CallBackLoadParameters(res);           
+                        this.CallBackLoadParameters(res);
                     });
                     this.callbackAdd.emit({ submit: true });
+                    this.msgBoxServ.showMessage("Success", ["Parameter updated successfully."])
+                } else {
+                    this.msgBoxServ.showMessage("Failed", ["Sorry! Cannot Edit this parameter...Try directly from Db.."])
                 }
             });
     }
@@ -235,6 +282,9 @@ export class ParameterEditComponent {
             this.coreService.Parameters = res.Results;
             this.coreService.SetTaxLabel();
             this.coreService.SetCurrencyUnit();
+            this.coreService.SetCalendarADBSButton();
+            this.coreService.SetLocalNameFormControl();
+            this.coreService.SetCountryMapOnLandingPage();
             //commented: customername, landingpage, empilabels etc for UAT: sudarshan--13jul2017
             //this.pageParameters.CustomerName = res.Results.filter(a => a.ParameterName == 'CustomerName')[0]["ParameterValue"];
             //this.pageParameters.LandingPageCustLogo = res.Results.filter(a => a.ParameterName == 'LandingPageCustLogo')[0]["ParameterValue"];
@@ -259,28 +309,35 @@ export class ParameterEditComponent {
 
     public DeleteRow(obj, ind) {
         var d = this.getCount(obj.KeyName);
-        if(d < 2){
+        if (d < 2) {
             console.log("Cannot be cancelled.");
-        }else{
+        } else {
             this.currentParameter.MappedObject.splice(ind, 1);
         }
     }
 
-    public AddNewRow(obj, ind){
+    public AddNewRow(obj, ind) {
         let newobj = _.clone(obj);
         newobj.Value = null;
         this.currentParameter.MappedObject.splice(ind + 1, 0, newobj);
     }
 
     //function to count ocurrences of mapped object 
-    public getCount(prop){
+    public getCount(prop) {
         let arr = this.currentParameter.MappedObject;
         var count = 0;
-        for(var i=0; i<arr.length; i++){
-            if(arr[i].KeyName == prop){
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].KeyName == prop) {
                 count++;
             }
         }
         return count;
     }
+
+    //anjana:7May'21: close popup on escape key enter
+    public hotkeys(event) {
+        if (event.keyCode == 27) {
+          this.callbackAdd.emit({submit: false});
+        }
+      }
 }

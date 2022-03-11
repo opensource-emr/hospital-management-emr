@@ -15,7 +15,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">HEENT<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.HEENT" (focusout)="Focusit()"   rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.HEENT" (focusout)="Focusit()"   rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -24,7 +24,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">Chest<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.Chest"  (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.Chest"  (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">CVS<b>:</b></label>
                     <div class="col-md-8"> 
-                        <textarea [(ngModel)]="objectiveNote.CVS" (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.CVS" (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">Abdomen<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.Abdomen" (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.Abdomen" (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">Extremity<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.Extremity" (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.Extremity" (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">Skin<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.Skin" (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.Skin" (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                 <div class="row">
                     <label class="cstm-control-label control-label col-md-4">Neurological<b>:</b></label>
                     <div class="col-md-8">
-                        <textarea [(ngModel)]="objectiveNote.Neurological" (focusout)="Focusit()"  rows="3"></textarea>
+                        <textarea [(ngModel)]="objectiveNote.Neurological" (focusout)="Focusit()"  rows="2"></textarea>
                     </div>
                 </div>
             </div>        
@@ -166,7 +166,58 @@
                                         </div>
                                     </td>
                                 </tr>
-
+                                <tr>
+                                    <td>Nadi</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Nadi}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Mala</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Mala}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Mutra</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Mutra}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Jivha</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Jivha}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Shabda</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Shabda}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sparsha</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Sparsha}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Drik</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Drik}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Akriti</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Akriti}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lung Field</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.LungField}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Heart Sounds</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.HeartSounds}}</td>
+                                </tr>
+                                <tr>
+                                    <td>PA_Tenderness</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.PA_Tenderness}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Organomegaly</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Organomegaly}}</td>
+                                </tr>
+                                <tr>
+                                    <td>CNS_Consiousness</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.CNS_Consiousness}}</td>
+                                </tr>
                             </tbody>
                         </table>
 
@@ -182,9 +233,60 @@
     
     <div class="popup-static portlet box portlet-fullscreen" *ngIf="addVitalBox">
         <div class="portlet-body form" style="background-color:white; width: 50%; margin: 0 auto; margin-top: 100px;">
-            <vitals-add *ngIf="showAddVitalBox" (callBackShowHide)="showHideFunc($event)"></vitals-add>
+            <vitals-add *ngIf="addVitalBox" (callBackShowHide)="showHideFunc($event)"></vitals-add>
         </div>
     </div>       
 
+    <div class="col-md-6">  
+            <div class="hm-bg-white hm-ecard">
+              <div class="each-card">
+                <h4 class="clp clp-hd clearfix" data-toggle="collapse" data-target="#medication" aria-expanded="true">
+                 Medication
+                  <span>[{{clinicalDetail.Medications.length}}]</span>
+                  <button class="btn primary-btn" (click)="AddMediactionPopUp()">
+                    <i class="fa fa-plus"></i>
+                    Add
+                  </button>
+                </h4>
+                <div id="medication" class="collapse in clp-cntnt" [ngStyle]="{'overflow-y': clinicalDetail.Medications.length ? 'scroll' : ''}">
+                  <p *ngIf="!clinicalDetail.Medications.length">No records found</p>
+                  <table class="table table-striped" *ngIf="clinicalDetail.Medications.length">
+                    <thead>
+                      <tr>
+                        <th sortable-header col="itemnames"><b>Medication Name</b></th>
+                        <th sortable-header col="itemnames"><b>Type</b></th>
+                        <th sortable-header col="itemnames"><b>Dose</b></th>
+                        <th sortable-header col="itemnames"><b>Route</b></th>
+                        <th sortable-header col="itemnames"><b>Last Taken</b></th>
+                        <th sortable-header col="itemnames"><b>Frequency</b></th>
+                        <th sortable-header col="itemnames"><b>Comments</b></th>
+                        <th sortable-header col="itemnames"><b>Change</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let add of clinicalDetail.Medications">
+                            <td>{{add.MedicationName}}</td>
+                            <td>{{add.MedicationType | uppercase}}</td>
+                            <td>{{add.Dose}}</td>
+                            <td>{{add.Route}}</td>
+                            <td>{{add.LastTaken  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                            <td>{{add.Frequency}}</td>
+                            <td>{{add.Comments}}</td>
+                    </tr>
+                  </table>
+                </div>
+      
+              </div>
+            </div>       
+          </div>
+          <div class="popup-static portlet box portlet-fullscreen" *ngIf="showMedicationAddBox">
+              <div class="portlet-body form hm-portlet-body">
+                  <div class="modelbox-div">
+                      <div>
+                          <home-medication-add [show-homemedication-add]="showMedicationAddBox"
+                                       (callback-addupdate)="CallBackAddMedication($event)"></home-medication-add>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
 </div>

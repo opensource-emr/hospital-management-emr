@@ -205,6 +205,30 @@ export class AccountingDLService {
     }
     //END: GET Reporting DATA
 
+    //get inventory vendors
+    GetInvVendorList() {
+        try {
+          return this.http.get<any>("/api/Accounting?reqType=get-invVendor-list", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+    //get pharmacy supplier
+    GetPharmacySupplier() {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=phrm-supplier", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+    //get good receipt list 
+    GetGRList(vendorId: number,sectionId:number,number:any,date:string) {
+        try {
+            return this.http.get<response>('/api/Accounting?reqType=get-grlist&voucherId='+ vendorId+'&sectionId='+sectionId+'&voucherNumber='+number+'&transactiondate='+date);
+        } catch (ex) {
+            throw ex;
+        }
+    }
 
     //START: POST
     public PostTransaction(TransactionObjString: string) {
@@ -266,4 +290,8 @@ export class AccountingDLService {
     }
     //END: PUT
 
+    //post payment to accounting Payment table
+    public PostPayment(data: string,Transactiondata:string) {
+        return this.http.post<any>("/api/Accounting?reqType=post-payment&transactionObj="+Transactiondata,data);
+    }
 }

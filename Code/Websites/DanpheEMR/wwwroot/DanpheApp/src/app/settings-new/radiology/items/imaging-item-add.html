@@ -22,6 +22,8 @@
                     [(ngModel)]="CurrentImagingItem.ImagingTypeId"
                     [attr.disabled]="update ? '' : null"
                     formControlName="ImagingTypeId"
+                    id="imagingType"
+                    (change)="FocusElementById('ImagingTypeName')"
                   >
                     <option
                       *ngFor="let imgType of imgTypeList"
@@ -72,6 +74,7 @@
                     id="ImagingTypeName"
                     [attr.disabled]="update ? '' : null"
                     placeholder="Enter Item Name"
+                    (keyup.enter)="FocusElementById('add')"
                   />
                   <span
                     class="color-red font-sm"
@@ -121,8 +124,8 @@
               </div>
             </div>
             <div class="panel-footer">
-              <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddImagingItem()" value="Add"/>
-              <input type="button" class="btn btn-primary" *ngIf="update" (click)="UpdateImagingItem()" value="Update"/>
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddImagingItem()" value="Add" id="add"/>
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateImagingItem()" value="Update"/>
             </div>
           </form>
         </div>

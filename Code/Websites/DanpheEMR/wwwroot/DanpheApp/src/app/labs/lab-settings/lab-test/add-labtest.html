@@ -2,21 +2,21 @@
   table tr td {
     padding: 4px;
   }
+
   input.comp-check-box {
     height: 20px !important;
   }
+
   .checkbox {
     margin-left: 20px;
   }
+
   label.control-label {
     line-height: 30px;
   }
 </style>
 <!--Model Box Starting Here-->
-<div
-  class="popup-static portlet box portlet-fullscreen"
-  *ngIf="showLabTestAddPage"
->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showLabTestAddPage">
   <div class="portlet-body form">
     <div class="modelbox-div lab_modal_box">
       <div class="modelbox-header">
@@ -31,49 +31,27 @@
             <div class="col-md-6">
               <div class="form-group">
                 <div class="row">
-                  <label for="labTestName" class="control-label col-md-4"
-                    >Lab Test Name<sup class="color-red">*</sup><b>:</b></label
-                  >
+                  <label for="labTestName" class="control-label col-md-4">Lab Test Name<sup
+                      class="color-red">*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input
-                      class="form-control"
-                      [(ngModel)]="labTest.LabTestName"
-                      formControlName="LabTestName"
-                      required
-                      value=""
-                      [attr.disabled]="update ? '' : null"
-                      type="text"
-                      id="labTestName"
-                      placeholder="Lab Test Name"
-                    />
-                    <span
-                      class="color-red font-sm"
-                      [hidden]="labTest.IsValidCheck('LabTestName','required') || !(labTest.IsDirty('LabTestName'))"
-                      >Enter Lab Test Name</span
-                    >
+                    <input class="form-control" [(ngModel)]="labTest.LabTestName" formControlName="LabTestName" required
+                      value="" [attr.disabled]="update ? '' : null" type="text" id="labTestName"
+                      placeholder="Lab Test Name" />
+                    <span class="color-red font-sm"
+                      [hidden]="labTest.IsValidCheck('LabTestName','required') || !(labTest.IsDirty('LabTestName'))">Enter
+                      Lab Test Name</span>
                   </div>
                 </div>
               </div>
               <div class="form-group">
                 <div class="row">
-                  <label for="labCategory" class="control-label col-md-4"
-                    >Lab Category<sup class="color-red">*</sup><b>:</b></label
-                  >
+                  <label for="labCategory" class="control-label col-md-4">Lab Category<sup
+                      class="color-red">*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input
-                      class="form-control"
-                      danphe-auto-complete
-                      [ngModelOptions]="{standalone: true}"
-                      [(ngModel)]="selectedCategory"
-                      [list-formatter]="myCategoryListFormatter"
-                      [source]="allCategories"
-                      placeholder="Enter Lab Category"
-                      display-property-name="TestCategoryName"
-                      value-property-name="null"
-                      id="labCategory"
-                      max-num-list="10"
-                      onClick="this.select();"
-                    />
+                    <input class="form-control" danphe-auto-complete [ngModelOptions]="{standalone: true}"
+                      [(ngModel)]="selectedCategory" [list-formatter]="myCategoryListFormatter" [source]="allCategories"
+                      placeholder="Enter Lab Category" display-property-name="TestCategoryName"
+                      value-property-name="null" id="labCategory" max-num-list="10" onClick="this.select();" />
                   </div>
                 </div>
               </div>
@@ -81,44 +59,23 @@
             <div class="col-md-6">
               <div class="form-group">
                 <div class="row">
-                  <label for="labTestCode" class="control-label col-md-4"
-                    >Lab Test Code <b>:</b></label
-                  >
+                  <label for="labTestCode" class="control-label col-md-4">Lab Test Code <b>:</b></label>
                   <div class="col-md-8">
-                    <input
-                      class="form-control"
-                      [(ngModel)]="labTest.LabTestCode"
-                      type="text"
-                      id="labTestCode"
-                      placeholder="Lab Test Code"
-                      [disabled]="update"
-                      [ngModelOptions]="{standalone: true}"
-                    />
+                    <input class="form-control" [(ngModel)]="labTest.LabTestCode" type="text" id="labTestCode"
+                      placeholder="Lab Test Code" [disabled]="update" [ngModelOptions]="{standalone: true}" />
                   </div>
                 </div>
               </div>
               <div class="form-group" *ngIf="!update">
                 <div class="row">
-                  <label for="serviceDept" class="control-label col-md-4"
-                    >Service Department<sup class="color-red">*</sup
-                    ><b>:</b></label
-                  >
+                  <label for="serviceDept" class="control-label col-md-4">Service Department<sup
+                      class="color-red">*</sup><b>:</b></label>
                   <div class="col-md-8">
-                    <input
-                      class="form-control"
-                      danphe-auto-complete
-                      [ngModelOptions]="{standalone: true}"
-                      [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'"
-                      [(ngModel)]="selectedDepartment"
-                      [list-formatter]="myListFormatter"
-                      [source]="srvdeptList"
-                      placeholder="Enter Service Department Name"
-                      display-property-name="ServiceDepartmentName"
-                      value-property-name="null"
-                      id="serviceDept"
-                      max-num-list="10"
-                      onClick="this.select();"
-                    />
+                    <input class="form-control" danphe-auto-complete [ngModelOptions]="{standalone: true}"
+                      [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'" [(ngModel)]="selectedDepartment"
+                      [list-formatter]="myListFormatter" [source]="srvdeptList"
+                      placeholder="Enter Service Department Name" display-property-name="ServiceDepartmentName"
+                      value-property-name="null" id="serviceDept" max-num-list="10" onClick="this.select();" />
                   </div>
                 </div>
               </div>
@@ -149,15 +106,15 @@
               <div class="col-md-6">
                 <div class="checkbox no-margin">
                   <label class="mt-checkbox mt-checkbox-outline">
-                    <input
-                      id="hasNegativeRes"
-                      [(ngModel)]="labTest.HasNegativeResults"
-                      name="hasNegativeResults"
-                      type="checkbox"
-                      (change)="callChange()"
-                      [ngModelOptions]="{standalone: true}"
-                    />
+                    <input id="hasNegativeRes" [(ngModel)]="labTest.HasNegativeResults" name="hasNegativeResults"
+                      type="checkbox" (change)="callChange()" [ngModelOptions]="{standalone: true}" />
                     <span></span>Has Negative Results
+                  </label>
+
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input id="SmsApplicable" [(ngModel)]="labTest.SmsApplicable" name="SmsApplicable" type="checkbox"
+                      (change)="callChange()" [ngModelOptions]="{standalone: true}" />
+                    <span></span>Is SMS Applicable?
                   </label>
                   <!--
                           <label>
@@ -170,17 +127,11 @@
               <div class="col-md-6" *ngIf="labTest.HasNegativeResults">
                 <div class="form-group">
                   <div class="row">
-                    <label for="negResultTxt" class="control-label col-md-4"
-                      >Negative Result Text <sup class="color-red">*</sup
-                      ><b>:</b></label
-                    >
+                    <label for="negResultTxt" class="control-label col-md-4">Negative Result Text <sup
+                        class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <textarea
-                        id="negResultTxt"
-                        style="width: 100%;"
-                        [(ngModel)]="labTest.NegativeResultText"
-                        [ngModelOptions]="{standalone: true}"
-                      ></textarea>
+                      <textarea id="negResultTxt" style="width: 100%;" [(ngModel)]="labTest.NegativeResultText"
+                        [ngModelOptions]="{standalone: true}"></textarea>
                     </div>
                   </div>
                 </div>
@@ -196,90 +147,50 @@
                 <div class="s_f_wrapper">
                   <div class="form-group">
                     <div class="row">
-                      <label for="reportingName" class="control-label col-md-5"
-                        >Reporting Name<b>:</b></label
-                      >
+                      <label for="reportingName" class="control-label col-md-5">Reporting Name<b>:</b></label>
                       <div class="col-md-7">
-                        <input
-                          id="reportingName"
-                          class="form-control"
-                          type="text"
-                          [(ngModel)]="labTest.ReportingName"
-                          placeholder="Lab Test Reporting Name"
-                          [ngModelOptions]="{standalone: true}"
-                        />
+                        <input id="reportingName" class="form-control" type="text" [(ngModel)]="labTest.ReportingName"
+                          placeholder="Lab Test Reporting Name" [ngModelOptions]="{standalone: true}" />
                       </div>
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="row">
-                      <label
-                        for="reportTemplateId"
-                        class="control-label col-md-5"
-                        >Report Template Name<sup class="color-red">*</sup
-                        ><b>:</b></label
-                      >
+                      <label for="reportTemplateId" class="control-label col-md-5">Report Template Name<sup
+                          class="color-red">*</sup><b>:</b></label>
                       <div class="col-md-7">
-                        <input
-                          id="reportTemplateId"
-                          class="form-control"
-                          danphe-auto-complete
-                          [ngModelOptions]="{standalone: true}"
-                          [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'"
-                          [(ngModel)]="selectedReportTemplate"
-                          [list-formatter]="reportListFormatter"
-                          [source]="labReportList"
-                          placeholder="Report Template Short Name"
-                          display-property-name="ReportTemplateName"
-                          (focusout)="AssignSelectedTemplate()"
-                          value-property-name="null"
-                          max-num-list="15"
-                          onClick="this.select();"
-                        />
+                        <input id="reportTemplateId" class="form-control" danphe-auto-complete
+                          [ngModelOptions]="{standalone: true}" [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'"
+                          [(ngModel)]="selectedReportTemplate" [list-formatter]="reportListFormatter"
+                          [source]="labReportList" placeholder="Report Template Short Name"
+                          display-property-name="ReportTemplateName" (focusout)="AssignSelectedTemplate()"
+                          value-property-name="null" max-num-list="15" onClick="this.select();" />
                       </div>
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="row">
-                      <label class="control-label col-md-5"
-                        >Reset Runlength<b>:</b></label
-                      >
+                      <label class="control-label col-md-5">Reset Runlength<b>:</b></label>
                       <div class="col-md-7">
-                        <select
-                          class="form-control"
-                          [(ngModel)]="labTest.RunNumberType"
-                          [ngModelOptions]="{standalone: true}"
-                          id="reportTemplateId"
-                          placeholder="Report Template Short Name"
-                        >
-                          <option
-                            *ngFor="let runtype of RunNumType"
-                            value="{{runtype}}"
-                            >{{runtype}}</option
-                          >
+                        <select class="form-control" [(ngModel)]="labTest.RunNumberType"
+                          [ngModelOptions]="{standalone: true}" id="reportTemplateId"
+                          placeholder="Report Template Short Name">
+                          <option *ngFor="let runtype of RunNumType" value="{{runtype}}">{{runtype}}</option>
                         </select>
                       </div>
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="row">
-                      <label class="control-label col-md-12"
-                        >Select Specimen(s)</label
-                      >
+                      <label class="control-label col-md-12">Select Specimen(s)</label>
                       <div class="col-md-12">
                         <div class="row">
                           <div class="col-md-4" *ngFor="let sp of specimens">
                             <div class="checkbox ml0">
                               <label class="mt-checkbox mt-checkbox-outline">
-                                <input
-                                  id="{{sp.Name}}"
-                                  [(ngModel)]="sp.IsSelected"
-                                  name="sp.Name"
-                                  type="checkbox"
-                                  ng-checked="sp.IsSelected=true"
-                                  (change)="SpecimenChkOnChange(sp)"
-                                  [ngModelOptions]="{standalone: true}"
-                                />
+                                <input id="{{sp.Name}}" [(ngModel)]="sp.IsSelected" name="sp.Name" type="checkbox"
+                                  ng-checked="sp.IsSelected=true" (change)="SpecimenChkOnChange(sp)"
+                                  [ngModelOptions]="{standalone: true}" />
                                 <span></span>{{sp.Name}}
                               </label>
                               <!--
@@ -303,34 +214,22 @@
                       </div>
                     </div>
                     <div>
-                      <textarea
-                        rows="5"
-                        style="width: 100%;"
-                        [(ngModel)]="labTest.Interpretation"
-                        [ngModelOptions]="{standalone: true}"
-                      ></textarea>
+                      <textarea rows="5" style="width: 100%;" [(ngModel)]="labTest.Interpretation"
+                        [ngModelOptions]="{standalone: true}"></textarea>
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="row">
-                      <label
-                        for="labTestDisplaySeq"
-                        class="control-label col-md-5"
-                        >Lab Test Display Sequence<b>:</b></label
-                      >
+                      <label for="labTestDisplaySeq" class="control-label col-md-5">Lab Test Display
+                        Sequence<b>:</b></label>
                       <div class="col-md-7">
-                        <input
-                          id="labTestDisplaySeq"
-                          class="form-control"
-                          type="number"
-                          [(ngModel)]="labTest.DisplaySequence"
-                          [ngModelOptions]="{standalone: true}"
-                        />
+                        <input id="labTestDisplaySeq" class="form-control" type="number"
+                          [(ngModel)]="labTest.DisplaySequence" [ngModelOptions]="{standalone: true}" />
                       </div>
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                       <div class="checkbox ml0">
                         <label class="mt-checkbox mt-checkbox-outline">
                           <input
@@ -343,17 +242,12 @@
                           <span></span> Is Active
                         </label>
                       </div>
-                    </div>
+                    </div> -->
                     <div class="col-md-5">
                       <div class="checkbox ml0">
                         <label class="mt-checkbox mt-checkbox-outline">
-                          <input
-                            id="isApplicable"
-                            [(ngModel)]="labTest.IsValidForReporting"
-                            name="IsValidForReporting"
-                            type="checkbox"
-                            [ngModelOptions]="{standalone: true}"
-                          />
+                          <input id="isApplicable" [(ngModel)]="labTest.IsValidForReporting" name="IsValidForReporting"
+                            type="checkbox" [ngModelOptions]="{standalone: true}" />
                           <span></span> Is Valid for Reporting
                         </label>
                       </div>
@@ -361,11 +255,8 @@
                     <div class="col-md-4">
                       <div class="checkbox ml0">
                         <label class="mt-checkbox mt-checkbox-outline">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="labTest.IsTaxApplicable"
-                            [ngModelOptions]="{standalone: true}"
-                          />
+                          <input type="checkbox" [(ngModel)]="labTest.IsTaxApplicable"
+                            [ngModelOptions]="{standalone: true}" />
                           <span></span> Tax Applicable
                         </label>
                       </div>
@@ -374,126 +265,80 @@
                 </div>
               </div>
             </div>
-            <div
-              *ngIf="templateType =='normal' || templateType =='culture'"
-              class="col-md-6"
-            >
+            <div *ngIf="templateType =='normal' || templateType =='culture'" class="col-md-6">
               <div class="bg-light">
                 <div class="lab-test-header">
                   <h3>Select Components For this Lab Test</h3>
                 </div>
                 <div class="s_f_wrapper s_f_label">
-                  <table
-                    class="table table-striped table-hover table-bordered inv_table"
-                  >
+                  <table class="table table-striped table-hover table-bordered inv_table">
                     <thead>
                       <tr>
                         <th></th>
-                        <th><b>ComponentName</b></th>
-                        <th><b>Unit</b></th>
-                        <th><b>Display Sequence</b></th>
-                        <th><b>Indent</b></th>
-                        <th><b>Sheet</b></th>
-                        <th><b>Active</b></th>
+                        <th><strong>ComponentName</strong></th>
+                        <th><strong>Unit</strong></th>
+                        <th><strong>Disp. Sequence</strong></th>
+                        <th><strong>Indent</strong></th>
+                        <th><strong>Group Val.</strong></th>
+                        <th><strong>Sheet</strong></th>
+                        <th><strong>Active</strong></th>
                         <th *ngIf="labTest.LabTestComponentMap.length > 1"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        *ngFor="let testcomp of labTest.LabTestComponentMap; let i = index"
-                      >
+                      <tr *ngFor="let testcomp of labTest.LabTestComponentMap; let i = index">
                         <td>
-                          <a
-                            (click)="AddNewComponentRow(i)"
-                            class="btn primary-btn"
-                            ><i class="glyphicon glyphicon-plus"></i
-                          ></a>
+                          <a (click)="AddNewComponentRow(i)" class="btn primary-btn"><i
+                              class="glyphicon glyphicon-plus"></i></a>
                         </td>
                         <td>
                           <div>
-                            <input
-                              danphe-auto-complete
-                              class="form-control"
-                              [ngModelOptions]="{standalone: true}"
-                              [(ngModel)]="testcomp.LabTestComponent"
-                              [list-formatter]="componentListFormatter"
-                              [source]="allLabTestComponentList"
-                              placeholder="Enter Component"
-                              display-property-name="ComponentName"
-                              value-property-name="null"
-                              (valueChanged)="ComponentSelected(i)"
-                              onClick="this.select();"
-                              id="{{'testcomp-'+i}}"
-                              max-num-list="10"
-                            />
+                            <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="testcomp.LabTestComponent" [list-formatter]="componentListFormatter"
+                              [source]="allLabTestComponentList" placeholder="Enter Component"
+                              display-property-name="ComponentName" value-property-name="null"
+                              (valueChanged)="ComponentSelected(i)" onClick="this.select();" id="{{'testcomp-'+i}}"
+                              max-num-list="10" match-formatted="true"/>
                           </div>
                         </td>
                         <td style="width: 75px;">
-                          <input
-                            [disabled]="true"
-                            class="form-control"
-                            [(ngModel)]="testcomp.LabTestComponent.Unit"
-                            [ngModelOptions]="{standalone: true}"
-                            value=""
-                            type="text"
-                            placeholder="Unit"
-                          />
+                          <input [disabled]="true" class="form-control" [(ngModel)]="testcomp.LabTestComponent.Unit"
+                            [ngModelOptions]="{standalone: true}" value="" type="text" placeholder="Unit" />
                         </td>
-                        <td style="width: 75px;">
-                          <input
-                            class="form-control"
-                            [(ngModel)]="testcomp.DisplaySequence"
-                            [ngModelOptions]="{standalone: true}"
-                            value=""
-                            type="text"
-                            placeholder="Display Sequence"
-                          />
+                        <td style="width: 55px;">
+                          <input class="form-control" [(ngModel)]="testcomp.DisplaySequence"
+                            [ngModelOptions]="{standalone: true}" value="" type="text" placeholder="Display Sequence" />
                         </td>
-                        <td style="width: 75px;">
-                          <input
-                            class="form-control"
-                            [(ngModel)]="testcomp.IndentationCount"
-                            [ngModelOptions]="{standalone: true}"
-                            min="1"
-                            max="3"
-                            value=""
-                            type="number"
-                          />
+                        <td style="width: 55px;">
+                          <input class="form-control" [(ngModel)]="testcomp.IndentationCount"
+                            [ngModelOptions]="{standalone: true}" min="1" max="3" value="" type="number" />
+                        </td>
+                        <td>
+                          <input class="form-control" [(ngModel)]="testcomp.GroupName"
+                            [ngModelOptions]="{standalone: true}" value="" type="text" />
                         </td>
                         <td>
                           <label class="mt-checkbox mt-checkbox-outline">
-                            <input class="form-control comp-check-box"
-                                   [(ngModel)]="testcomp.ShowInSheet"
-                                   [ngModelOptions]="{standalone: true}"
-                                   value=""
-                                   type="checkbox" />
+                            <input class="form-control comp-check-box" [(ngModel)]="testcomp.ShowInSheet"
+                              [ngModelOptions]="{standalone: true}" value="" type="checkbox" />
                             <span></span>
                           </label>
                         </td>
                         <td>
                           <label class="mt-checkbox mt-checkbox-outline">
-                            <input
-                              class="form-control comp-check-box"
-                              [(ngModel)]="testcomp.IsActive"
-                              [ngModelOptions]="{standalone: true}"
-                              value=""
-                              type="checkbox"
-                            />
+                            <input class="form-control comp-check-box" [(ngModel)]="testcomp.IsActive"
+                              [ngModelOptions]="{standalone: true}" value="" type="checkbox" />
                             <span></span>
                           </label>
                         </td>
                         <td *ngIf="labTest.LabTestComponentMap.length > 1">
-                          <a (click)="DeleteRow(i)" class="btn btn-danger"
-                            ><i class="fa fa-times"></i
-                          ></a>
+                          <a (click)="DeleteRow(i)" class="btn btn-danger"><i class="fa fa-times"></i></a>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                   <div class="padding-15-vr">
-                    <a (click)="showAddNewLabComponent=true;"
-                      >Create New Component ?</a
-                    >
+                    <a (click)="showAddNewLabComponent=true;">Create New Component ?</a>
                   </div>
                 </div>
               </div>
@@ -508,29 +353,15 @@
       </div>
       <div class="modelbox-footer">
         <div class="all-buttons text-right">
-          <button
-            type="button"
-            class="btn primary-btn margin-7-hr"
-            *ngIf="!update"
-            [disabled]="loading"
-            (click)="loading=true;AddLabTest()"
-          >
+          <button type="button" class="btn primary-btn margin-7-hr" *ngIf="!update" [disabled]="loading"
+            (click)="loading=true;AddLabTest()">
             Add
           </button>
-          <button
-            type="button"
-            class="btn primary-btn margin-7-hr"
-            *ngIf="update"
-            [disabled]="loading"
-            (click)="loading=true;UpdateLabTest()"
-          >
+          <button type="button" class="btn primary-btn margin-7-hr" *ngIf="update" [disabled]="loading"
+            (click)="loading=true;UpdateLabTest()">
             Update
           </button>
-          <button
-            type="button"
-            class="btn btn-cancel btn-outline margin-7-hr"
-            (click)="Close()"
-          >
+          <button type="button" class="btn btn-cancel btn-outline margin-7-hr" (click)="Close()">
             Close
           </button>
         </div>
@@ -543,10 +374,7 @@
     </div>
   </div>
 </div>
-<div
-  class="popup-static portlet box portlet-fullscreen"
-  *ngIf="showAddNewLabComponent"
->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddNewLabComponent">
   <div class="portlet-body form">
     <div class="col-md-12">
       <div class="modelbox-div">
@@ -554,17 +382,11 @@
           <h4 class="margin-0-vr"><span>Add Components</span></h4>
         </div>
         <div class="modelbox-body">
-          <add-labTestComponent
-            [labTestComponent]="selectedLabTestComponent"
-            [lookUpNames]="LookUpNames"
-            (callback-Add)="GetAddedAndUpdatedData($event)"
-          ></add-labTestComponent>
+          <add-labTestComponent [labTestComponent]="selectedLabTestComponent" [lookUpNames]="LookUpNames"
+            (callback-Add)="GetAddedAndUpdatedData($event)"></add-labTestComponent>
         </div>
         <div class="close-modelbox">
-          <button
-            class="btn btn-danger"
-            (click)="showAddNewLabComponent=false;"
-          >
+          <button class="btn btn-danger" (click)="showAddNewLabComponent=false;">
             X
           </button>
         </div>
@@ -587,24 +409,16 @@
               <label for="newSpeciemnName">Specimen Name</label>
             </div>
             <div class="col-md-7">
-              <input
-                id="newSpeciemnName"
-                class="form-control"
-                type="text"
-                name="newSpeciemnName"
-                [(ngModel)]="newSpecimenName"
-              />
+              <input id="newSpeciemnName" class="form-control" type="text" name="newSpeciemnName"
+                [(ngModel)]="newSpecimenName" />
             </div>
           </div>
         </div>
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button
-              type="button"
-              class="btn btn-primary margin-7-hr"
+            <button type="button" class="btn btn-primary margin-7-hr"
               [disabled]="loading || newSpecimenName.trim() == '' || newSpecimenName == ''"
-              (click)="loading=true;AddNewSpecimen()"
-            >
+              (click)="loading=true;AddNewSpecimen()">
               Add
             </button>
           </div>

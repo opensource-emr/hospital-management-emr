@@ -18,7 +18,8 @@
                 <label for="referrerName" class="control-label col-md-5">Referrer Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
                   <input id="referrerName" class="form-control" type="text" placeholder="Referrer Name"
-                         formControlName="ReferrerName" [(ngModel)]="externalRef.ReferrerName">
+                         formControlName="ReferrerName" [(ngModel)]="externalRef.ReferrerName"
+                         (keyup.enter)="SetFocusById('address')" >
                   <span class="color-red font-sm margin-15-lft" [hidden]="!(externalRef.IsDirty('ReferrerName') && !externalRef.IsValidCheck('ReferrerName','required'))">Referrer Name is required</span>
 
                 </div>
@@ -27,25 +28,25 @@
                 <label for="address" class="control-label col-md-5">Address <b>:</b></label>
                 <div class="col-md-7">
                   <input type="text" id="address" class="form-control" placeholder="Address"
-                         [ngModelOptions]="{standalone: true}" [(ngModel)]="externalRef.ContactAddress">
+                         [ngModelOptions]="{standalone: true}" [(ngModel)]="externalRef.ContactAddress"
+                         (keyup.enter)="SetFocusById('contactNum')" >
                 </div>
               </div>
               <div class="form-group">
-                <label for="contactNum" class="control-label col-md-5">Contact Number<sup> *</sup><b>:</b></label>
+                <label for="contactNum" class="control-label col-md-5">Contact Number<b>:</b></label>
                 <div class="col-md-7">
                   <input id="contactNum" class="form-control" type="tel" placeholder="Contact Number"
-                         formControlName="ContactNumber" [(ngModel)]="externalRef.ContactNumber" maxlength="15">
+                         formControlName="ContactNumber" [(ngModel)]="externalRef.ContactNumber" maxlength="15"
+                         (keyup.enter)="SetFocusById('panNum')">
                   <span class="color-red font-sm" *ngIf="externalRef.IsDirty('ContactNumber')"
                         [hidden]="externalRef.IsValidCheck('ContactNumber','pattern')">Please enter valid contact number.</span>
-                  <span class="color-red font-sm" *ngIf="externalRef.IsDirty('ContactNumber')"
-                        [hidden]="externalRef.IsValidCheck('ContactNumber','required')">Contact number is required.</span>
                 </div>
               </div>
               <div class="form-group">
                 <label for="email" class="control-label col-md-5">Email<b>:</b></label>
                 <div class="col-md-7">
                   <input id="email" class="form-control" type="email" placeholder="Email"
-                         formControlName="EmailAddress" [(ngModel)]="externalRef.EmailAddress">
+                         formControlName="EmailAddress" [(ngModel)]="externalRef.EmailAddress" (keyup.enter)="SetFocusById('panNum')">
                 </div>
                 <span class="color-red font-sm margin-15-lft" [hidden]="!(externalRef.IsDirty('EmailAddress') && !externalRef.IsValidCheck('EmailAddress','pattern'))">Eg: abc@gmail.com</span>
               </div>
@@ -55,7 +56,18 @@
                   <input class="form-control" type="text"
                          onClick="this.select();" placeholder="PAN Number"
                          [(ngModel)]="externalRef.PANNumber"
-                         [ngModelOptions]="{standalone: true}">
+                         [ngModelOptions]="{standalone: true}"
+                         id="panNum" (keyup.enter)="SetFocusById('NMCNum')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="NMCNumber" class="control-label col-md-5">NMC Number<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text"
+                         onClick="this.select();" placeholder="NMC Number"
+                         [(ngModel)]="externalRef.NMCNumber"
+                         [ngModelOptions]="{standalone: true}"
+                         id="NMCNum" (keyup.enter)="SetFocusById('add')">
                 </div>
               </div>
               <div class="form-group">
@@ -68,7 +80,7 @@
                 </div>
               </div>
               <div class="form-group">
-                <label for="isActive" class="control-label col-md-5">Is Incentive Applicable</label>
+                <label for="IsIncentiveApplicable" class="control-label col-md-5">Is Incentive Applicable</label>
                 <div class="col-md-7">
                   <div class="input-group">
                     <div class="icheck-inline">
@@ -104,8 +116,8 @@
 
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <input type="button" *ngIf="isAddNewRef" class="btn primary-btn btn-sm margin-7-hr" (click)="AddReferral()" value="Add" />
-              <input type="button" *ngIf="!isAddNewRef" class="btn primary-btn btn-sm margin-7-hr" (click)="UpdateReferral()" value="Update" />
+              <button id="add" *ngIf="isAddNewRef" class="btn green btn-success margin-7-hr" (click)="AddReferral()" >Add</button>
+              <button id="add" *ngIf="!isAddNewRef" class="btn green btn-success margin-7-hr" (click)="UpdateReferral()" >Update</button>
               <!-- <button type="button" class="btn btn-danger btn-sm margin-7-hr" (click)="close()">Close</button> -->
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef,Renderer2 } from "@angular/core";
 import { SettingsBLService } from '../../shared/settings.bl.service';
 import { Reaction } from "../../shared/reaction.model";
 import { SecurityService } from '../../../security/shared/security.service';
@@ -24,12 +24,20 @@ export class ReactionAddComponent {
     public rxnSelected: Reaction;
 
     @Output("callback-Add") callbackAdd: EventEmitter<Object> = new EventEmitter<Object>(); 
-
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
     constructor(public settingsBLService: SettingsBLService,
         public securityService: SecurityService,
-        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
+        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService,
+        public renderer: Renderer2) {
         this.GetReactions();
-    }
+        this.SetFocusById('ReactionName'); 
+        this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+              this.Close();
+            }
+          });   
+        }
+        globalListenFunc: Function;
 
     @Input("showAddPage")
     public set value(val: boolean) {
@@ -45,6 +53,7 @@ export class ReactionAddComponent {
             this.CurrentReaction.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.update = false;
         }
+        this.SetFocusById('ReactionName'); 
     }
 
     public GetReactions() {
@@ -71,6 +80,7 @@ export class ReactionAddComponent {
         for (var i in this.CurrentReaction.ReactionValidator.controls) {
             this.CurrentReaction.ReactionValidator.controls[i].markAsDirty();
             this.CurrentReaction.ReactionValidator.controls[i].updateValueAndValidity();
+            this.SetFocusById('ReactionName'); 
         }
 
         if (this.CurrentReaction.IsValidCheck(undefined, undefined)) {
@@ -83,6 +93,7 @@ export class ReactionAddComponent {
                     } else {
                             this.showMessageBox("error", res.ErrorMessage);
                             this.logError(res.ErrorMessage);
+                            this.SetFocusById('ReactionName'); 
                         }
                        
                     },
@@ -111,6 +122,7 @@ export class ReactionAddComponent {
                     else {
                         this.showMessageBox("error", res.ErrorMessage);
                         this.logError(res.ErrorMessage);
+                        this.SetFocusById('ReactionName'); 
                     }
 
                     },
@@ -146,4 +158,19 @@ export class ReactionAddComponent {
     logError(err: any) {
         console.log(err);
     }
+    public SetFocusById(id: string) {
+        window.setTimeout(function () {
+            let elementToBeFocused = document.getElementById(id);
+            if (elementToBeFocused) {
+                elementToBeFocused.focus();
+            }
+        }, 600);
+    }
+    AddUpdateEnterKey() {
+        if (this.update==false)
+          this.SetFocusById('addReaction');
+        else {
+          this.SetFocusById('updateReaction');
+        }
+      }
 }

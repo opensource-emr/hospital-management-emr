@@ -25,7 +25,7 @@
                                                id="PrimaryGroup"
                                                (change)="PrimaryGroupChanged()"
                                                placeholder="PrimaryGroup" formControlName="PrimaryGroup" >
-                      <option *ngFor="let pg of primaryGroupList" [disabled]="update" value={{pg}}>{{pg}}</option>
+                      <option *ngFor="let pg of primaryGroupList" [disabled]="update" value={{pg.PrimaryGroupName}}>{{pg.PrimaryGroupName}}</option>
                     </select>
                     <span class="color-red font-sm" [hidden]="CurrentLedgerGroup.IsValidCheck('PrimaryGroup','required') || !(CurrentLedgerGroup.IsDirty('PrimaryGroup'))">Primary Group Name is required</span> </div>
                 </div>
@@ -35,11 +35,11 @@
                   <label class="control-label col-md-5">Chart Of Account<b class="color-red">*</b><b style="float:right;">:</b></label>
                   <div class="col-md-7">
                     <select class="form-control" maxlength="30" type="text"
-                                                [(ngModel)]="CurrentLedgerGroup.COA"
+                                                [(ngModel)]="CurrentLedgerGroup.COAId"
                                                 id="COA"
                                                 (change)="COAChanged()"
                                                 placeholder="LedgerGroupName" formControlName="COA">
-                      <option *ngFor="let pg of coaList" [disabled]="update" value={{pg}}>{{pg}}</option>
+                      <option *ngFor="let pg of coaList" [disabled]="update" value={{pg.ChartOfAccountId}}>{{pg.ChartOfAccountName}}</option>
                     </select>
                     <span class="color-red font-sm" [hidden]="CurrentLedgerGroup.IsValidCheck('COA','required') || !(CurrentLedgerGroup.IsDirty('COA'))">COA Name is required</span> </div>
                 </div>

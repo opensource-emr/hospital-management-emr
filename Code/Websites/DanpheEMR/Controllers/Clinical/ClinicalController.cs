@@ -671,16 +671,16 @@ namespace DanpheEMR.Controllers.Clinical
                         var notes = (from note in dbContext.Notes
                                      join visit in dbContext.Visit on note.PatientVisitId equals visit.PatientVisitId
                                      join emp in dbContext.Employee on note.CreatedBy equals emp.EmployeeId
-                                     join primaryDoc in dbContext.Employee on note.ProviderId equals primaryDoc.EmployeeId
                                      join nt in dbContext.NoteType on note.NoteTypeId equals nt.NoteTypeId into noteTypeTemp
                                      from noteType in noteTypeTemp.DefaultIfEmpty()
                                      where note.PatientId == patientId
+                                     let primaryDoc = dbContext.Employee.Where(d => d.EmployeeId == note.ProviderId).Select(s => s.FullName).FirstOrDefault() ?? ""
                                      select new
                                      {
                                          visit.VisitCode,
                                          note.PatientId,
                                          note.PatientVisitId,
-                                         PrimaryDoctor = primaryDoc.FullName,
+                                         PrimaryDoctor = primaryDoc,
                                          note.TemplateName,
                                          note.NotesId,
                                          WrittenBy = emp.FullName,
@@ -1009,6 +1009,107 @@ namespace DanpheEMR.Controllers.Clinical
                     responseData.Status = "OK";
                     responseData.Results = allICDandOrders;
                 }
+                else if (reqType == "getopdExaminationById")
+                {
+                    var opdEx_Note = (from note in dbContext.Notes
+                                  join sNote in dbContext.SubjectiveNotes on note.NotesId equals sNote.NotesId into tempSubNote
+                                  from subjNote in tempSubNote.DefaultIfEmpty()
+                                  join obNote in dbContext.ObjectiveNotes on note.NotesId equals obNote.NotesId into tempObjNote
+                                  from objNote in tempObjNote.DefaultIfEmpty()
+
+                                  join pat in dbContext.Patients on note.PatientId equals pat.PatientId
+                                  join primaryDoc in dbContext.Employee on note.ProviderId equals primaryDoc.EmployeeId
+                                  join sd in dbContext.Employee on note.SecondaryDoctorId equals sd.EmployeeId into secondaryDocTemp
+                                  from secondaryDoc in secondaryDocTemp.DefaultIfEmpty()
+
+                                  join emp in dbContext.Employee on note.CreatedBy equals emp.EmployeeId
+                                  join nt in dbContext.NoteType on note.NoteTypeId equals nt.NoteTypeId into noteTypeTemp
+                                  from noteType in noteTypeTemp.DefaultIfEmpty()
+
+                                  join daignosis in dbContext.ClinicalDiagnosis on note.NotesId equals daignosis.NotesId into tempdaignosis
+                                  from clnd in tempdaignosis.DefaultIfEmpty()
+
+                                  join prescription in dbContext.ClinicalPrescriptionNote on note.NotesId equals prescription.NotesId into tempPre
+                                  from pre in tempPre.ToList()
+                                  where note.NotesId == notesId
+                                  select new
+                                  {
+                                      note.PatientId,
+                                      note.PatientVisitId,
+                                      note.NotesId,
+                                      note.IsPending,
+                                      note.FollowUp,
+                                      note.FollowUpUnit,
+                                      note.Remarks,
+                                      WrittenBy = emp.FullName,
+                                      noteType.NoteType,
+                                      PrimaryDoctor = primaryDoc.FullName,
+                                      SecondaryDoctor = secondaryDoc.FullName,
+                                      pat.Age,
+                                      Sex = pat.Gender,
+                                      PatientName = pat.FirstName + " " + (String.IsNullOrEmpty(pat.MiddleName) ? " " : pat.MiddleName) + " " + pat.LastName,
+                                      SubjectiveNote = subjNote,
+                                      ObjectiveNote = objNote,
+                                      Prescription = pre,
+                                      DiagnosisOrdersList = (from allDiagnosis in dbContext.ClinicalDiagnosis
+                                                             where allDiagnosis.NotesId == notesId && allDiagnosis.IsActive == true
+                                                             select new
+                                                             {
+                                                                 allDiagnosis.DiagnosisId,
+                                                                 IsEditable = true,
+                                                                 ICD = (from icd in dbContext.ICD10
+                                                                        where icd.ICD10ID == allDiagnosis.ICD10ID
+                                                                        select new
+                                                                        {
+                                                                            icd.ICD10Code,
+                                                                            icd.ICD10Description,
+                                                                            icd.ICD10ID,
+                                                                            icd.ICDShortCode,
+                                                                            icd.ValidForCoding
+                                                                        }),
+
+
+                                                                 AllIcdLabOrders = (from allLab in dbContext.LabRequisitions
+                                                                                    where allLab.DiagnosisId == allDiagnosis.DiagnosisId && allLab.OrderStatus != "cancel"
+                                                                                    select new
+                                                                                    {
+                                                                                        ItemId = allLab.LabTestId,
+                                                                                        ItemName = allLab.LabTestName,
+                                                                                        PreferenceType = "Lab",
+                                                                                        IsGeneric = false,
+                                                                                    }
+                                                                                  ).ToList(),
+                                                                 AllIcdImagingOrders = (from allImaging in dbContext.ImagingRequisitions
+                                                                                        where allImaging.DiagnosisId == allDiagnosis.DiagnosisId && allImaging.OrderStatus != "cancel"
+                                                                                        select new
+                                                                                        {
+                                                                                            ItemId = allImaging.ImagingItemId,
+                                                                                            ItemName = allImaging.ImagingItemName,
+                                                                                            allImaging.ImagingTypeId,
+                                                                                            PreferenceType = "Imaging",
+                                                                                            IsGeneric = false,
+
+                                                                                        }).ToList(),
+                                                                 AllIcdPrescriptionOrders = (from allMedication in dbContext.PHRMPrescriptionItems
+                                                                                             where allMedication.DiagnosisId == allDiagnosis.DiagnosisId && allMedication.OrderStatus != "cancel"
+                                                                                             select new
+                                                                                             {
+                                                                                                 allMedication.ItemId,
+                                                                                                 dbContext.PHRMItemMaster.FirstOrDefault(item => allMedication.ItemId == item.ItemId).ItemName,
+                                                                                                 allMedication.Quantity,
+                                                                                                 allMedication.Frequency,
+                                                                                                 allMedication.HowManyDays,
+                                                                                                 allMedication.Dosage,
+                                                                                                 allMedication.GenericId,
+                                                                                                 PreferenceType = "Medication",
+                                                                                                 IsGeneric = false,
+                                                                                             }).ToList(),
+
+                                                             }).ToList()
+                                  }).FirstOrDefault();
+                    responseData.Results = opdEx_Note;
+                    responseData.Status = "OK";
+                }
                 else
                 {
                     responseData.Status = "Failed";
@@ -1050,11 +1151,7 @@ namespace DanpheEMR.Controllers.Clinical
                             break;
                         }
                     case "Consult Note": 
-                        {
-                            notesData.SubjectiveNote = clinicalDbContext.SubjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
-                            notesData.ObjectiveNote = clinicalDbContext.ObjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
-
-                            break; }
+                        { break; }
                     case "Free Text": 
                         {
                             notesData.FreeTextNote = clinicalDbContext.FreeText.FirstOrDefault(FT => FT.NotesId == NotesId);
@@ -2789,6 +2886,220 @@ namespace DanpheEMR.Controllers.Clinical
                             responseData.Status = "Failed";
                             throw ex;
                         }
+                    }
+                }
+                else if (reqType == "postopdexamination")
+                {
+                    string str = this.ReadPostData();
+                    NotesModel NotesMaster = JsonConvert.DeserializeObject<NotesModel>(str);
+                    using (var dbContextTransaction = dbContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            NotesMaster.CreatedBy = currentUser.EmployeeId;
+                            NotesMaster.CreatedOn = DateTime.Now;
+                            dbContext.Notes.Add(NotesMaster);
+                            dbContext.SaveChanges();
+                            var Notesid = NotesMaster.NotesId;
+
+                            SubjectiveNoteModel subjectiveNote = NotesMaster.SubjectiveNote;
+                            ObjectiveNoteModel objectiveNote = NotesMaster.ObjectiveNote;
+                            FreeTextNoteModel freetext = NotesMaster.FreeTextNote;
+                            PrescriptionNotesModel prescription = NotesMaster.ClinicalPrescriptionNote;
+                            ProcedureNoteModel procedure = NotesMaster.ProcedureNote;
+
+                            List<ClinicalDiagnosisModel> clinialDiagnosis = NotesMaster.AllIcdAndOrders;
+
+                            if (subjectiveNote != null)
+                            {
+                                subjectiveNote.NotesId = Notesid;
+                                subjectiveNote.PatientVisitId = NotesMaster.PatientVisitId;
+                                subjectiveNote.PatientId = NotesMaster.PatientId;
+                                subjectiveNote.CreatedBy = currentUser.EmployeeId;
+                                subjectiveNote.CreatedOn = DateTime.Now;
+                                subjectiveNote.IsActive = true;
+                                dbContext.SubjectiveNotes.Add(subjectiveNote);
+                                dbContext.SaveChanges();
+
+                            }
+                            if (objectiveNote != null)
+                            {
+                                objectiveNote.NotesId = Notesid;
+                                objectiveNote.PatientVisitId = NotesMaster.PatientVisitId;
+                                objectiveNote.PatientId = NotesMaster.PatientId;
+                                objectiveNote.CreatedBy = currentUser.EmployeeId;
+                                objectiveNote.CreatedOn = DateTime.Now;
+                                objectiveNote.IsActive = true;
+                                dbContext.ObjectiveNotes.Add(objectiveNote);
+                                dbContext.SaveChanges();
+                            }
+                            if (freetext != null)
+                            {
+                                freetext.NotesId = Notesid;
+                                freetext.PatientVisitId = NotesMaster.PatientVisitId;
+                                freetext.PatientId = NotesMaster.PatientId;
+                                freetext.CreatedBy = currentUser.EmployeeId;
+                                freetext.CreatedOn = DateTime.Now;
+                                freetext.IsActive = true;
+                                dbContext.FreeText.Add(freetext);
+                                dbContext.SaveChanges();
+                            }
+                            if (prescription != null)
+                            {
+                                prescription.NotesId = NotesMaster.NotesId;
+                                prescription.CreatedBy = currentUser.EmployeeId;
+                                prescription.CreatedOn = System.DateTime.Now;
+                                dbContext.ClinicalPrescriptionNote.Add(prescription);
+                                dbContext.SaveChanges();
+                            }
+                            if (procedure !=null)
+                            {
+                                procedure.NotesId = Notesid;
+                                procedure.PatientVisitId = NotesMaster.PatientVisitId;
+                                procedure.PatientId = NotesMaster.PatientId;
+                                procedure.CreatedBy = currentUser.EmployeeId;
+                                procedure.CreatedOn = DateTime.Now;
+                                procedure.IsActive = true;
+                                dbContext.ProcedureNote.Add(procedure);
+                                dbContext.SaveChanges();
+                            }
+
+                            if ((clinialDiagnosis != null) && clinialDiagnosis.Count > 0)
+                            {
+
+                                List<BillItemRequisition> allBillRequisition = new List<BillItemRequisition>();
+                                var priceForLabRequisition = (from billItemPrice in dbContext.BillItemPrices
+                                                              join servDept in dbContext.ServiceDepartments
+                                                              on billItemPrice.ServiceDepartmentId equals servDept.ServiceDepartmentId
+                                                              where servDept.IntegrationName == "LAB"
+                                                              select new
+                                                              {
+                                                                  ItemId = billItemPrice.ItemId,
+                                                                  ItemName = billItemPrice.ItemName,
+                                                                  Price = billItemPrice.Price,
+                                                                  ServiceDepartmentId = servDept.ServiceDepartmentId,
+                                                                  DepartmentName = servDept.ServiceDepartmentName
+                                                              }).ToList();
+
+                                var priceForRadRequisition = (from billItemPrice in dbContext.BillItemPrices
+                                                              join servDept in dbContext.ServiceDepartments
+                                                              on billItemPrice.ServiceDepartmentId equals servDept.ServiceDepartmentId
+                                                              where servDept.IntegrationName == "Radiology"
+                                                              select new
+                                                              {
+                                                                  ItemId = billItemPrice.ItemId,
+                                                                  ItemName = billItemPrice.ItemName,
+                                                                  Price = billItemPrice.Price,
+                                                                  ServiceDepartmentId = servDept.ServiceDepartmentId,
+                                                                  DepartmentName = servDept.ServiceDepartmentName
+                                                              }).ToList();
+
+
+                                BillItemRequisition RequisitionItem = new BillItemRequisition();
+
+                                foreach (ClinicalDiagnosisModel Diagnosis in clinialDiagnosis)
+                                {
+                                    Diagnosis.CreatedOn = DateTime.Now;
+                                    Diagnosis.CreatedBy = currentUser.EmployeeId;
+                                    Diagnosis.NotesId = NotesMaster.NotesId;
+                                    dbContext.ClinicalDiagnosis.Add(Diagnosis);
+                                    dbContext.SaveChanges();
+
+
+
+                                    foreach (LabRequisitionModel labReq in Diagnosis.AllIcdLabOrders)
+                                    {
+                                        labReq.CreatedBy = currentUser.EmployeeId;
+                                        labReq.CreatedOn = DateTime.Now;
+                                        labReq.DiagnosisId = Diagnosis.DiagnosisId;
+                                        dbContext.LabRequisitions.Add(labReq);
+                                        dbContext.SaveChanges();
+
+                                        var itemDetail = (from labPrice in priceForLabRequisition
+                                                          where labPrice.ItemId == labReq.LabTestId
+                                                          select labPrice).FirstOrDefault();
+
+
+                                        RequisitionItem = new BillItemRequisition();
+                                        RequisitionItem.RequisitionId = labReq.RequisitionId;
+                                        RequisitionItem.BillStatus = labReq.BillingStatus;
+                                        RequisitionItem.PatientId = labReq.PatientId;
+                                        RequisitionItem.PatientVisitId = labReq.PatientVisitId.Value;
+                                        RequisitionItem.ProviderId = labReq.ProviderId.Value;
+                                        RequisitionItem.ServiceDepartmentId = itemDetail.ServiceDepartmentId;
+                                        RequisitionItem.DepartmentName = itemDetail.DepartmentName;
+                                        RequisitionItem.ItemId = itemDetail.ItemId;
+                                        RequisitionItem.ItemName = itemDetail.ItemName;
+                                        RequisitionItem.Price = itemDetail.Price;
+                                        RequisitionItem.Quantity = 1;
+                                        RequisitionItem.ProcedureCode = labReq.ProcedureCode;
+                                        RequisitionItem.CreatedBy = currentUser.EmployeeId;
+                                        RequisitionItem.CreatedOn = DateTime.Now;
+
+                                        allBillRequisition.Add(RequisitionItem);
+                                    }
+
+                                    foreach (ImagingRequisitionModel imgnRequisition in Diagnosis.AllIcdImagingOrders)
+                                    {
+                                        imgnRequisition.CreatedBy = currentUser.EmployeeId;
+                                        imgnRequisition.CreatedOn = DateTime.Now;
+                                        imgnRequisition.DiagnosisId = Diagnosis.DiagnosisId;
+                                        dbContext.ImagingRequisitions.Add(imgnRequisition);
+                                        dbContext.SaveChanges();
+
+                                        var itemDetail = (from radPrice in priceForRadRequisition
+                                                          where radPrice.ItemId == imgnRequisition.ImagingItemId
+                                                          select radPrice).FirstOrDefault();
+
+
+                                        RequisitionItem = new BillItemRequisition();
+                                        RequisitionItem.RequisitionId = imgnRequisition.ImagingRequisitionId;
+                                        RequisitionItem.BillStatus = imgnRequisition.BillingStatus;
+                                        RequisitionItem.PatientId = imgnRequisition.PatientId;
+                                        RequisitionItem.PatientVisitId = imgnRequisition.PatientVisitId.Value;
+                                        RequisitionItem.ProviderId = imgnRequisition.ProviderId.Value;
+                                        RequisitionItem.ServiceDepartmentId = itemDetail.ServiceDepartmentId;
+                                        RequisitionItem.DepartmentName = itemDetail.DepartmentName;
+                                        RequisitionItem.ItemId = itemDetail.ItemId;
+                                        RequisitionItem.ItemName = itemDetail.ItemName;
+                                        RequisitionItem.Price = itemDetail.Price;
+                                        RequisitionItem.Quantity = 1;
+                                        RequisitionItem.ProcedureCode = imgnRequisition.ProcedureCode;
+                                        RequisitionItem.CreatedBy = currentUser.EmployeeId;
+                                        RequisitionItem.CreatedOn = DateTime.Now;
+
+                                        allBillRequisition.Add(RequisitionItem);
+                                    }
+
+                                    foreach (PHRMPrescriptionItemModel phrmRequisition in Diagnosis.AllIcdPrescriptionOrders)
+                                    {
+                                        phrmRequisition.CreatedBy = currentUser.EmployeeId;
+                                        phrmRequisition.CreatedOn = DateTime.Now;
+                                        phrmRequisition.DiagnosisId = Diagnosis.DiagnosisId;
+                                        dbContext.PHRMPrescriptionItems.Add(phrmRequisition);
+                                        dbContext.SaveChanges();
+                                    }
+
+                                }
+                                foreach (BillItemRequisition bill in allBillRequisition)
+                                {
+                                    dbContext.BillItemRequisitions.Add(bill);
+                                }
+                                dbContext.SaveChanges();
+                            }
+
+                            dbContextTransaction.Commit();
+                            responseData.Status = "OK";
+
+                        }
+                        catch (Exception ex)
+                        {
+                            //Rollback all transaction if exception occured
+                            dbContextTransaction.Rollback();
+                            responseData.Status = "Failed";
+                            throw ex;
+                        }
+
                     }
                 }
                 else

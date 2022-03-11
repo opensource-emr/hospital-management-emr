@@ -1,0 +1,25 @@
+<div class="wrapper">
+    <div class="row no-gutters">
+        <div class="col-md-12">
+            <div class="input-group pull-right">
+              <div class="icheck-inline">
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input name="salutation" type="checkbox" value="SearchAll" [(ngModel)]="IsSearchAll"
+                    (ngModelChange)="LoadPatListForAllowance()">
+                  <span></span> Search From All Patients
+                </label>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 col-sm-12">
+          <danphe-grid [grid-colDefaults]="matPaymentPatientGridColumns" 
+          [grid-data]="MatPaymentPatientsList"(grid-actions)="MaternityPatientGridActions($event)"
+            [setFocusOnGridSearch]="true" (serverSearchText)="SearchPatientFromGrid($event)" [customServerSearch]="true"
+            [NepaliDateInGridParams]="NepaliDateInGridSettings">
+          </danphe-grid>
+        </div>
+      </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="wrapper">
+  <div class="row" *ngIf="!showReceipt">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="duplicateProvisionalBillGridColumns" [grid-data]="provisionalInvoiceList"
+        (grid-actions)="DuplicateProvisionalBillPrintGridActions($event)" (serverSearchText)="serverSearchTxt($event)"
+        [customServerSearch]="enableServerSideSearch" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        <!-- [rangeType]="dateRange"  (onDateChange)="onDateChange($event)" [show-CustomDate]="true"> -->
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<!--Start: provisional slip Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReceipt">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseProvisionalSlip()">X</a>
+          <div>
+            <bil-print-provisional-slip *ngIf="showReceipt" [PatientId]="currentData.PatientId"> </bil-print-provisional-slip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: provisional slip Print Popup-->

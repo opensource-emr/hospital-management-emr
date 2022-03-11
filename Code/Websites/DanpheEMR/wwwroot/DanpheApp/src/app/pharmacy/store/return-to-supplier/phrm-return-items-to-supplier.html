@@ -10,11 +10,6 @@
     font-weight: bold;
   }
 
-  /*
-.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
-	padding: 1px !important; 
-}
-*/
   .total-table td {
     padding-bottom: 5px !important;
   }
@@ -26,18 +21,13 @@
 <div *ngIf="showReturnSupp">
   <button class="btn blue" type="button" (click)="BackToReturnSupplier()">Back</button>
 </div>
-<div *ngIf="showReturnSupp"></div>
 <div class="row" *ngIf="!showReturnSupp">
   <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator" class="form-horizontal hm-form">
     <div class="col-md-3">
       <div class="form-group">
         <label class="control-label col-md-4 col-sm-3">Supplier<b>:</b></label>
         <div class="col-md-8 col-sm-9">
-          <!-- <select class="form-control" style="float:left" (change)="FilterItemListForSelectedSupplier()"  placeholder="-- Search Supplier --"  id="SupplierId" [(ngModel)]="curtRetSuppModel.SupplierId" formControlName="SupplierId">
-            <option *ngFor="let suplist of supplierList"  value='{{suplist.SupplierId}}'>{{suplist.SupplierName}}</option>
-          </select> -->
-          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" formControlName="SupplierId" [(ngModel)]="selSupplier" [source]="supplierList" placeholder="-- Search Supplier --" [list-formatter]="SupplierListFormatter" ngModelOptions="{standalone:true}" display-property-name="SupplierName" value-property-name="null" max-num-list="15" style="width: 100%;" />
-          <!-- <span style="color:red" *ngIf="curtRetSuppModel.IsDirty('SupplierId')" [hidden]="curtRetSuppModel.IsValidCheck('SupplierId','required')"> Supplier is required</span> </div> -->
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [ngModelOptions]="{standalone:true}" [(ngModel)]="selSupplier" [source]="supplierList" placeholder="-- Search Supplier --" [list-formatter]="SupplierListFormatter" ngModelOptions="{standalone:true}" display-property-name="SupplierName" value-property-name="null" max-num-list="15" style="width: 100%;" />
         </div>
       </div>
     </div>
@@ -46,67 +36,36 @@
         <label class="control-label col-md-5 col-sm-5">GRNo<b>:</b></label>
         <div class="col-md-7 col-sm-7">
           <input style="width:80px;" class="form-control" value="" [(ngModel)]="currGRDetail.GoodReceiptPrintId" [ngModelOptions]="{standalone:true}" min="1" type="text" value="">
-          <!-- <div style="color:red" *ngIf="curtRetSuppItemModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')"> Credit Note Number is Required</div> -->
         </div>
       </div>
     </div>
-    <div class="col-md-2">
+    <!-- <div class="col-md-2">
       <div class="form-group">
         <label class="control-label col-md-6 col-sm-5">Batch No.<b>:</b></label>
         <div class="col-md-6 col-sm-7">
           <input style="width:80px;" class="form-control" [(ngModel)]="curtRetSuppItemModel.BatchNo" [ngModelOptions]="{standalone:true}" min="1" type="text" value="">
-          <!-- <div style="color:red" *ngIf="curtRetSuppItemModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')"> Credit Note Number is Required</div> -->
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="col-md-3">
       <div class="form-group">
         <label class="control-label col-md-4 col-sm-5">InvoiceNo<b>:</b></label>
         <div class="col-md-8 col-sm-7">
           <input style="width:80px;" class="form-control" [(ngModel)]="currGRDetail.InvoiceNo" [ngModelOptions]="{standalone:true}" min="1" type="text" value="">
-          <!-- <div style="color:red" *ngIf="curtRetSuppItemModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')"> Credit Note Number is Required</div> -->
         </div>
       </div>
     </div>
-
-    <!-- <div class="col-md-4">
-      <div class="form-group">
-        <label class="control-label col-md-4 col-sm-5">Fiscal Year<b>:</b></label>
-        <div class="col-md-8 col-sm-7">
-          <select [(ngModel)]="selFiscYrId" [ngModelOptions]="{standalone: true}" (change)="OnChangeSupplierOrFiscalYear()" style="height: 28px;">
-            <option *ngFor="let fisc of allFiscalYrs;" [ngValue]="fisc.FiscalYearId">{{fisc.FiscalYearFormatted}}</option>
-          </select>
-        </div>
-        </div>
-      </div> -->
-    <!-- <div class="col-md-4">
-        <div class="input-group">
-          <div class="icheck-inline">
-            <label class="mt-checkbox mt-checkbox-outline">
-              <input type="checkbox" value="date" [(ngModel)]="date" [ngModelOptions]="{standalone: true}">
-              <span></span>&emsp;Expiry/NearExpiry </label>
-          </div>
-        </div>
-      </div> -->
   </form>
   <div class="form-group clearfix">
     <button class="btn blue" type="button" (click)=" getReturnToSupplier()"> <i class="fa fa-search"></i> Search </button>
   </div>
 </div>
-<!-- <div class="col-md-1 col-xs-12" *ngIf ="!showReturnSupp">
-  <div class="form-group clearfix">
-    <button class="btn blue" type="button" (click)=" getReturnToSupplier()">
-      <i class="fa fa-search"></i>
-      Search
-    </button>
-  </div>
-</div> -->
 <div *ngIf="showReturnSupp">
   <div class="col-md-3">
     <div class="form-group">
       <label class="control-label col-md-4 col-sm-3">Supplier<b>:</b></label>
       <div class="col-md-8 col-sm-9">
-        {{supplierName}}
+        {{currentSupplier.SupplierName}}
       </div>
     </div>
   </div>
@@ -126,7 +85,6 @@
       </div>
     </div>
   </div>
-  <div *ngIf="showReturnSupp"></div>
   <div>
     <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator" class="form-horizontal hm-form mb10">
       <label class="control-label col-md-2 col-sm-5" style="padding-left: 0; margin: 10px 0;">Credit Note No.<sup style="color: red;">*</sup> <b>:</b></label>
@@ -138,19 +96,7 @@
   </div>
 </div>
 
-<!-- <div class="row" *ngIf ="curtRetSuppModel.SupplierId"> -->
 <div class="row" *ngIf="showReturnSupp">
-  <!-- <div> 
-      <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator" class="form-horizontal hm-form">
-    <div class="form-group" >
-     &nbsp;&nbsp; <label class="control-label col-md-2 col-sm-5" >Credit Note No.<sup style="color: red;">*</sup> <b>:</b></label>
-      <div class="col-md-8 col-sm-7">
-        <input style="width:80px;" class="form-control" [(ngModel)]="curtRetSuppModel.CreditNoteId" min="1" formControlName="CreditNoteId" name="CreditNoteId" type="text" value="">
-        <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')"> Credit Note Number is Required</div>
-      </div>
-    </div>
-    </form>
-  </div> -->
   <div class="col-md-12">
     <div class="table-responsive">
       <table class="table table-striped table-hover inv_table table-bordered padLess_table">
@@ -164,11 +110,11 @@
             <th><b>GR Price</b></th>
             <th><b>Expiry Date</b></th>
             <th sortable-header col="quantity"><b>Return Qty</b></th>
-            <th><b>Free Qty</b></th>
-            <th><b>Return Free Qty</b></th>
-            <th><b>Free Amount</b></th>
-            <th><b>Return Free Amount</b></th>
-            <th><b>CCCharge</b></th>
+            <th *ngIf="showFreeQty"><b>Free Qty</b></th>
+            <th *ngIf="showFreeQty"><b>Return Free Qty</b></th>
+            <th *ngIf="showFreeQty"><b>Free Amount</b></th>
+            <th *ngIf="showFreeQty"><b>Return Free Amount</b></th>
+            <th *ngIf="showCCCharge"><b>CCCharge</b></th>
             <th><b>Sub Total</b></th>
             <th *ngIf="IsitemlevlDis">Dis%</th>
             <th *ngIf="IsitemlevlDis">Dis Amount</th>
@@ -178,14 +124,9 @@
         <tbody>
           <tr *ngFor="let row of curtRetSuppModel.returnToSupplierItems; let i = index">
             <td>
-              <!-- <form > -->
 
               <input type="checkbox" [(ngModel)]="row.checked" />
-
-              <!-- <div style="color:red" *ngIf="row.IsDirty('Checked')" [hidden]="row.IsValidCheck('Checked','required')"> One Item Should be Selected</div> -->
-              <!-- </form> -->
             </td>
-            <!-- <td><a (click)="DeleteRow(i)"><i class="btn btn-xs btn-danger fa fa-times"></i></a></td> -->
             <td class="autocomplete-item">
               <form [formGroup]="row.ReturnToSupplierItemValidator">
                 <input disabled class="form-control " [(ngModel)]="row.SelectedItem" ngModelOptions="{standalone:true}" placeholder="Item Name" display-property-name="ItemName" value-property-name=null min-chars="0" formControlName="ItemId" max-num-list="20" style="width:200px;font-weight: bold; " />
@@ -193,17 +134,14 @@
               </form>
             </td>
             <td><label style="float:left;width:110px;font-weight: bold"> {{row.BatchNo}}
-                <!--<option *ngFor="let batchNo of row.BatchNoList" value="{{batchNo.BatchNo}}">{{batchNo.BatchNo}}</option>-->
               </label></td>
             <td>
               <form>
                 <input style="width:80px;" [ngModelOptions]="{standalone: true}" [(ngModel)]="row.TotalAvailableQuantity" disabled min="1" name="totalAvailablequantity" type="number" value="">
-                <!--<div style="color:red" *ngIf="row.IsDirty('TotalAvailableQuantity')" [hidden]="row.IsValidCheck('TotalAvailableQuantity','required')"> Total Available Quantity is required</div>-->
               </form>
             </td>
             <td><input style="width:80px;" class="form-control" [(ngModel)]="row.BatchWiseAvailableQuantity" disabled name="batchAvailableQty" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" type="number"></td>
-            <!-- <td><a (click)="AddRowRequest()"> <i class="fa fa-plus btn btn-sm btn-success"></i> </a></td> -->
-            <td><input style="width:80px;" [attr.disabled]="!row.checked ? true: null" [(ngModel)]="row.ItemPrice" class="form-control" name="price" type="number" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" (focusout)="onBatchNoChange($event,i)"></td>
+            <td><input style="width:80px;" [attr.disabled]="true" [(ngModel)]="row.ItemPrice" class="form-control" name="price" type="number" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" (focusout)="onBatchNoChange($event,i)"></td>
             <td><input style="width:110px;" disabled [(ngModel)]="row.ExpiryDate" [ngStyle]="{'background-color':getBG_Color(row.ExpiryDate),'color':getColor(row.ExpiryDate)}" class="form-control" disabled name="expirydate" type="text"></td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
@@ -212,11 +150,11 @@
                 <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
               </form>
             </td>
-            <td><input style="width:80px;" disabled [(ngModel)]="row.FreeQuantity" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="Free Quantity" type="number"></td>
-            <td><input style="width:80px;" [attr.disabled]="!row.checked ? true: null" [(ngModel)]="row.FreeQuantityReturn" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="Free Quantity Return" type="number"></td>
-            <td><input style="width:80px;" disabled [(ngModel)]="row.FreeAmount" class="form-control" name="Free Amount" type="number" (focusout)="onBatchNoChange($event,i)"></td>
-            <td><input style="width:80px;" disabled [(ngModel)]="row.FreeAmountReturn" class="form-control" name="Free Amount Return" type="number" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" (focusout)="onBatchNoChange($event,i)"></td>
-            <td><input style="width: 80px;" [attr.disabled]="!row.checked ? true: null" [(ngModel)]="row.CCCharge" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="CCCharge" type="number"></td>
+            <td *ngIf="showFreeQty"><input style="width:80px;" disabled [(ngModel)]="row.FreeQuantity" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="Free Quantity" type="number"></td>
+            <td *ngIf="showFreeQty"><input style="width:80px;" [attr.disabled]="!row.checked ? true: null" [(ngModel)]="row.FreeQuantityReturn" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="Free Quantity Return" type="number"></td>
+            <td *ngIf="showFreeQty"><input style="width:80px;" disabled [(ngModel)]="row.FreeAmount" class="form-control" name="Free Amount" type="number" (focusout)="onBatchNoChange($event,i)"></td>
+            <td *ngIf="showFreeQty"><input style="width:80px;" disabled [(ngModel)]="row.FreeAmountReturn" class="form-control" name="Free Amount Return" type="number" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" (focusout)="onBatchNoChange($event,i)"></td>
+            <td *ngIf="showCCCharge"><input style="width: 80px;" [attr.disabled]="true" [(ngModel)]="row.CCCharge" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="CCCharge" type="number"></td>
             <td><input style="width:110px;" disabled [(ngModel)]="row.SubTotal" class="form-control" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i)" name="total" type="number"></td>
             <td *ngIf="IsitemlevlDis"><input [attr.disabled]="!row.checked ? true: null" [(ngModel)]="row.DiscountPercentage" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i,0,0,row.DiscountPercentage,0)" min="0" style="width:80px " class="table-input" name="DiscountPercent" type="number" value="{{0}}"></td>
             <td *ngIf="IsitemlevlDis"><input disabled [(ngModel)]="row.DiscountedAmount" (ngModelChange)="CalculationForPHRMReturnToSupplierItem(row,i,0,0,0,row.DiscountedAmount)" min="0" style="width:80px " class="table-input" name="GrTotalDisAmt" type="number" value="{{0}}"></td>
@@ -228,7 +166,6 @@
     <div class="mt20 t-wrap">
       <table class="col-sm-offset-8 col-sm-4 total-table">
         <tr>
-          <!--          <td></td>-->
           <td>Select Return Date:</td>
           <td>
             <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator">
@@ -238,22 +175,18 @@
           </td>
         </tr>
         <tr>
-          <!--          <td class="col-sm-offset-6 col-sm-3"></td>-->
           <td> SubTotal: </td>
           <td><input class="form-control" disabled [(ngModel)]="curtRetSuppModel.SubTotal" id="subtotal" name="subtotal" type="number"></td>
         </tr>
         <tr *ngIf="!IsitemlevlDis">
-          <!--          <td class="col-sm-offset-6 col-sm-3"></td>-->
           <td> DiscountPercentage: </td>
           <td><input class="form-control" [(ngModel)]="curtRetSuppModel.DiscountPercentage" (ngModelChange)="CalculationForPHRMReturnToSupplier()" name="DiscountPercentage" type="number"></td>
         </tr>
         <tr>
-          <!--          <td class="col-sm-offset-6 col-sm-3"></td>-->
           <td> Dis. Amount: </td>
           <td><input class="form-control" disabled (ngModelChange)="CalculationForPHRMReturnToSupplier()" [(ngModel)]="curtRetSuppModel.DiscountAmount" name="DiscountAmount" type="number"></td>
         </tr>
         <tr>
-          <!--          <td class="col-sm-offset-8 col-sm-2"></td>-->
           <td>VAT (13%):</td>
           <td><input class="form-control" disabled (ngModelChange)="CalculationForPHRMReturnToSupplier()" [(ngModel)]="curtRetSuppModel.VATAmount" name="VATAmount" type="number"></td>
         </tr>
@@ -266,21 +199,24 @@
           </td>
         </tr>
         <tr>
-          <!--          <td class="col-sm-offset-8 col-sm-2"></td>-->
           <td>Total Amount: </td>
           <td><input class="form-control" disabled (ngModelChange)="CaculationForPHRMReturnToSupplier()" [(ngModel)]="curtRetSuppModel.TotalAmount" name="TotalAmount" type="number"></td>
         </tr>
         <tr>
-          <!--          <td class="col-sm-offset-8 col-sm-2"></td>-->
           <td>Remarks: </td>
           <td><input class="form-control" [(ngModel)]="curtRetSuppModel.Remarks" name="Remarks" type="text"></td>
         </tr>
         <tr>
           <td>Return Status <sup>*</sup><b>:</b></td>
-          <td><select [(ngModel)]="selectedValue">
-              <option *ngFor="let v of returnType" [value]="v.name">{{v.name}}</option>
-            </select>
-            <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('ReturnStatus')" [hidden]="curtRetSuppModel.IsValidCheck('ReturnStatus','required')"> Return Status is required</div>
+          <td>
+            <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator" class="form-horizontal hm-form">
+              <select [(ngModel)]="curtRetSuppModel.ReturnStatus" formControlName="ReturnStatus">
+                <option value="1">Breakage</option>
+                <option value="2">Expiry</option>
+                <option value="3">Breakage and Expiry</option>
+              </select>
+              <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('ReturnStatus')" [hidden]="curtRetSuppModel.IsValidCheck('ReturnStatus','required')"> Return Status is required</div>
+            </form>
           </td>
 
         </tr>
@@ -319,9 +255,14 @@
 </div>
 <div class="row" *ngIf="!showReturnSupp">
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="returnToSupplierListGridColumns" [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-CustomDate]="true" [grid-data]="returnToSupplierData" (grid-actions)="ReturnToSupplierGridAction($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="returnToSupplierListGridColumns" [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true" [grid-data]="returnToSupplierData" (grid-actions)="ReturnToSupplierGridAction($event)"> </danphe-grid>
   </div>
 </div>
-<div>
-  <goods-receipt-view *ngIf="showGoodReceipt" [showPopUp]="showGoodReceipt" [goodsReceiptId]="currentSupplier.GoodReceiptId" (call-back-close)="OnGRPopUpClose()"></goods-receipt-view>
+<div *ngIf="showGoodReceipt">
+  <goods-receipt-view [showPopUp]="showGoodReceipt" [goodsReceiptId]="currentSupplier.GoodReceiptId" (call-back-close)="OnGRPopUpClose()"></goods-receipt-view>
 </div>
+<!-- Nepali GR View  START-->
+<div *ngIf="showPopUp">
+  <app-phrm-gr-view-np [showPopUp]="showPopUp" [goodsReceiptId]="currentSupplier.GoodReceiptId" [canUserModify]="true" (call-back-close)="OnGRViewPopUpClose()"></app-phrm-gr-view-np>
+</div>
+<!-- Nepali GR View  END-->

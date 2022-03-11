@@ -19,6 +19,7 @@ import { PurchaseOrderListComponent } from './inventory/purchase-order/purchase-
 import { PurchaseOrderVerifyComponent } from './inventory/purchase-order/purchase-order-verify.component';
 import { GoodsReceiptListComponent } from './inventory/goods-receipt/goods-receipt-list.component';
 import { GoodsReceiptVerifyComponent } from './inventory/goods-receipt/goods-receipt-verify.component';
+import { ReactiveFormsModule } from "@angular/forms";
 
 @NgModule({
   providers: [
@@ -41,6 +42,6 @@ import { GoodsReceiptVerifyComponent } from './inventory/goods-receipt/goods-rec
     GoodsReceiptListComponent,
     GoodsReceiptVerifyComponent
   ],
-  imports: [CommonModule, VerificationRoutingModule, SharedModule]
+  imports: [CommonModule, VerificationRoutingModule, SharedModule, ReactiveFormsModule]
 })
 export class VerificationModule {}

@@ -1,0 +1,31 @@
+<!-- Start: Birth Certificate -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Add Death Details</span></h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+
+                    <add-death-details-shared (death-details-emitter)="callBackForDeathDetails($event)">
+
+                    </add-death-details-shared>
+                    
+                    <div class="panel-footer" style="height: 50px; ">
+                        <!-- <button (click)="Close()" class="cancel-cert btn-pd btn btn-sm btn-danger right"
+                            style="margin-right:3px;">Cancel</button> -->
+                        <!-- <button style="margin-right:10px;" *ngIf="!IsEditMode" [attr.disabled]="IsLoading?true:null"
+                            (click)="SaveDeathDetails()"
+                            class="add-cert btn-pd btn btn-sm btn-primary right">Submit</button> -->
+                        <button style="margin-right:10px;" *ngIf="IsEditMode" [attr.disabled]="IsLoading?true:null"
+                            (click)="PutDeathCertificate()"
+                            class="add-cert btn-pd btn btn-sm btn-primary right">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Birth Certificate -->

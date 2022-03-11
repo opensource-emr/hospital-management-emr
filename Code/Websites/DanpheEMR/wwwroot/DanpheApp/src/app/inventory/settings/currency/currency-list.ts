@@ -51,6 +51,7 @@ export class CurrencyListComponent {
                 this.changeDetector.detectChanges();
                 this.selectedCurrency = $event.Data;
                 this.showAddPage = true;
+                this.FocusElementById('CurrencyCode');
             }
             default:
                 break;
@@ -58,6 +59,7 @@ export class CurrencyListComponent {
     }
     AddCurrency() {
         this.showAddPage = false;
+        this.FocusElementById('CurrencyCode');
         this.changeDetector.detectChanges();
         this.showAddPage = true;
     }
@@ -80,6 +82,12 @@ export class CurrencyListComponent {
         this.selectedCurrency = null;
         this.index = null;
     }
-
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 }

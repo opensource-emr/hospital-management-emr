@@ -127,7 +127,7 @@ export class AddLabTestComponent {
     //this.sub.unsubscribe();//IMPORTANT to unsubscribe after going away from current component.
   }
 
-  public SetAllComponentsIntoTest() {}
+  public SetAllComponentsIntoTest() { }
 
   public GetAllSpecimenList() {
     this.labSettingBlServ
@@ -338,14 +338,13 @@ export class AddLabTestComponent {
 
   public AddLabTest() {
     let validationMsg = this.CheckIfDataIsValid();
-    console.log(this.selectedCategory)
     this.labTest.LabTestCategoryId = this.selectedCategory.TestCategoryId;
     if (this.loading) {
       if (validationMsg.IsValid) {
         this.labTest.LabTestSpecimenSource = "Peripheral Vein";
         this.labTest.LOINC = null;
         this.labTest.ServiceDepartmentId = this.selectedDepartment.ServiceDepartmentId;
-        //this.labTest.LabTestCategoryId = this.selectedCategory.TestCategoryId;
+        // this.labTest.LabTestCategoryId = this.selectedCategory.TestCategoryId;
         //this.labTest.LabTestGroupId = 1;
 
         for (var j in this.labTest.LabTestValidator.controls) {
@@ -430,7 +429,7 @@ export class AddLabTestComponent {
       if (validationMsg.IsValid) {
         this.labTest.LabTestSpecimenSource = "Peripheral Vein";
         this.labTest.LOINC = null;
-        //this.labTest.LabTestCategoryId = this.selectedCategory.TestCategoryId;
+        this.labTest.LabTestCategoryId = this.selectedCategory.TestCategoryId? this.selectedCategory.TestCategoryId : 1;
 
         for (var j in this.labTest.LabTestValidator.controls) {
           this.labTest.LabTestValidator.controls[j].markAsDirty();
@@ -461,7 +460,6 @@ export class AddLabTestComponent {
                   this.loading = false;
                 }
               });
-            console.log(this.labTest);
           } else {
             this.msgBoxServ.showMessage("failed", [
               "There is Validation Error. Please Try Again",

@@ -39,7 +39,7 @@
                         <div class="col-md-8">
                           <input type="text" name="TemplateCode" required value="" class="form-control" maxlength="30" [readonly]="update"
                                                [(ngModel)]="currentTemplate.TemplateCode" id="TemplateCode" formControlName="TemplateCode"
-                                               placeholder="enter template code" />
+                                               placeholder="enter template code"  (keyup.enter)="FocusElementById('TemplateName')" />
                           <span class="color-red font-sm" [hidden]="currentTemplate.IsValidCheck('TemplateCode','required') || !(currentTemplate.IsDirty('TemplateCode'))">template code required</span> </div>
                       </div>
                     </form>
@@ -51,7 +51,7 @@
                         <div class="col-md-8">
                           <input type="text" name="TemplateName" required value="" class="form-control" maxlength="100"
                                                [(ngModel)]="currentTemplate.TemplateName" id="TemplateName" formControlName="TemplateName"
-                                               placeholder="template name" />
+                                               placeholder="template name" (keyup.enter)="FocusElementById('TemplateContent')"/>
                           <span class="color-red font-sm" [hidden]="currentTemplate.IsValidCheck('TemplateName','required') || !(currentTemplate.IsDirty('TemplateName'))">template name required</span> </div>
                       </div>
                     </form>
@@ -75,7 +75,10 @@
                       <span class="color-red font-sm" *ngIf="!isValidTemplate">template content required</span> <br />
                       <danphe-ckeditor [readonly]="false"
                                                  (get-html-content)="onChangeEditorData($event)"
-                                                 [set-html-content]="currentTemplate.TemplateHTML"> </danphe-ckeditor>
+                                                 [set-html-content]="currentTemplate.TemplateHTML"
+                                                 id="TemplateContent"
+                                                 (keyup.enter)="FocusElementById('Add')"
+                                                 > </danphe-ckeditor>
                     </div>
                   </div></div>
                   <div class="col-md-12"><div class="form-group">
@@ -92,8 +95,8 @@
             </div>
           </div>
 			<div class="panel-footer">
-                    <input type="button" class="btn btn-primary" *ngIf="!IsUpdate" (click)="Add()" value="Add" />
-                    <input type="button" class="btn btn-primary" *ngIf="IsUpdate" (click)="Update()" value="Update" />
+                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!IsUpdate" (click)="Add()" value="Add" id="Add" />
+                    <input type="button" class="btn green btn-success margin-7-hr" *ngIf="IsUpdate" (click)="Update()" value="Update" id="Add"  />
                   </div>
         </div>
       </div>

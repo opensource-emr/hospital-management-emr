@@ -10,22 +10,26 @@ namespace DanpheEMR.ServerModel
 {
     public class GoodsReceiptModel
     {
-        public bool? IsCancel { get; set; }
-
         [Key]
         public int GoodsReceiptID { get; set; }
-        public int GoodsReceiptNo { get; set; }
+        public bool? IsCancel { get; set; }
+        public int GoodsArrivalNo { get; set; }
+        public DateTime? VendorBillDate { get; set; }
+        public DateTime? GoodsArrivalDate { get; set; }
+        public int? IMIRNo { get; set; }
+        public DateTime? IMIRDate { get; set; }
+        public int? GoodsReceiptNo { get; set; }
         public DateTime? GoodsReceiptDate { get; set; }
         public int? PurchaseOrderId { get; set; }
         public string GRCategory { get; set; }
-        public decimal TotalAmount { get; set; }
         public string Remarks { get; set; }
+        public decimal TotalAmount { get; set; }
         public string CancelRemarks { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public int VendorId { get; set; }
         public string BillNo { get; set; }
-        public DateTime? ReceivedDate { get; set; }
+        public DateTime? ReceivedDate { get; set; } // Remove this date as it is not of any use.
         public string ReceiptNo { get; set; }
         public DateTime? OrderDate { get; set; }
 
@@ -52,7 +56,9 @@ namespace DanpheEMR.ServerModel
         public virtual List<GoodsReceiptItemsModel> GoodsReceiptItem { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
-        public int FiscalYearId { get; set; }
+        public int? FiscalYearId { get; set; }
+        [NotMapped]
+        public string GoodsArrivalFiscalYearFormatted { get; set; }
         [NotMapped]
         public string FiscalYear { get; set; }
 
@@ -102,5 +108,26 @@ namespace DanpheEMR.ServerModel
 
         public int? CancelledBy { get; set; }//sud:15-Oct-2020: This property was there in db but not in here.
         public DateTime? CancelledOn { get; set; }//sud:15-Oct-2020: This property was there in db but not in here.
+        public bool? IsDonation { get; set; }
+        public int? DonationId { get; set; }
+
+
+        public DateTime? MaterialCoaDate { get; set; }
+
+        public string MaterialCoaNo { get; set; }
+
+        public bool? IsSupplierApproved { get; set; }
+        public bool? IsDeliveryTopClosed { get; set; }
+        public bool? IsBoxNumbered { get; set; }
+        public int? ReceivedBy { get; set; }
+        public DateTime? ReceivedOn { get; set; }
+        public string ReceivedRemarks { get; set; }
+        public int StoreId { get; set; }
+
+        /// <summary>
+        /// Maintains sequence for GoodsReceiptNo
+        /// </summary>
+        public int? GRGroupId { get; set; }
+        public bool IsPaymentDoneFromAcc { get; set; }
     }
 }

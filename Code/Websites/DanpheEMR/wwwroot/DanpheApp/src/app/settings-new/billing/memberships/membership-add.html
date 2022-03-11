@@ -12,6 +12,8 @@
                 <label class="control-label col-md-5">Community<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
                   <input danphe-auto-complete class="form-control"
+                     id="CommunityName" 
+                     (keyup.enter)="GoToNextInput('MembershipTypeName')"
 									   formControlName="CommunityName"
 									   [(ngModel)]="CurrentMembership.CommunityName"
 									   [source]="communityLists"
@@ -33,7 +35,7 @@
                   <input type="text" name="" required value="" class="form-control" maxlength="40"
 									   [(ngModel)]="CurrentMembership.MembershipTypeName"
 									   formControlName="MembershipTypeName"
-									   id="MembershipTypeName" placeholder="Membership Name" />
+									   id="MembershipTypeName" (keyup.enter)="GoToNextInput('Discount')" placeholder="Membership Name" />
                   <span Class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('MembershipTypeName','required') || !(CurrentMembership.IsDirty('MembershipTypeName'))">Enter Membership Name</span> </div>
               </div>
               <div class="form-group">
@@ -42,7 +44,7 @@
                   <input type="text" name="" required value="" class="form-control" maxlength="3"
 									   [(ngModel)]="CurrentMembership.DiscountPercent"
 									   formControlName="DiscountPercent"
-									   id="Discount" placeholder="Discount Percentage" />
+									   id="Discount" (keyup.enter)="GoToNextInput('savebtn')" placeholder="Discount Percentage" />
                   <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'required') || !(CurrentMembership.IsDirty('DiscountPercent'))">Enter Discount Percentage</span> <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'min') || !(CurrentMembership.IsDirty('DiscountPercent'))">Discount Percent can't be negative</span> <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'max') || !(CurrentMembership.IsDirty('DiscountPercent'))">Discount Percent can't be more than 100</span> </div>
               </div>
               <div class="form-group">
@@ -71,8 +73,8 @@
               
             </div>
 			  <div class="panel-footer">
-                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
-                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                <input  id="savebtn"  type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+                <input  id="savebtn"  type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
               </div>
           </form>
         </div>

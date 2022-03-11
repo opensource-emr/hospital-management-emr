@@ -7,12 +7,21 @@
   <div class="col-md-12" *ngIf="showItemLevelReport"> 
     <!-- Ramavtar/11Sep'18 this btn uses class non-printable -> so while printing this page we hide btn -->
     <button class="blue btn non-printable" type="button" (click)="CallBackDepts()" *ngIf="showBackBtn"> <i class="fa fa-arrow-left"></i> Back </button>
-    <button class="blue btn right non-printable" type="button" (click)="ExportToExcelBilDeptItemSummary()"> <i class="fa fa-file-excel-o"></i> Excel </button>
+    <button class="blue btn right non-printable" type="button" (click)="ExportToExcelBilDeptItemSummary('dept-summary')"> <i class="fa fa-file-excel-o"></i> Excel </button>
     <div class="col-md-12" style="padding:0px"> <span class="col-md-2 left" style="padding:0px">From Date: {{FromDate}}<br />
       ToDate: {{ToDate}}<br />
-      </span> <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Service Department: <b>{{ServiceDepartment}}</b> </span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
+      </span>
+      <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span>
+   </div>
+    <div id ="dept-summary">  
+      
     <table class="table-striped table-hover table-bordered" style="background-color:initial;width:100%">
       <thead style="background-color:whitesmoke">
+        <tr>
+          <td colspan="14">
+            <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Service Department: <b>{{ServiceDepartment}}</b> </span> 
+          </td>
+        </tr>
         <tr>
           <td style="text-align:center"><b>Sr No.</b></td>
           <td><b>Date</b></td>
@@ -73,5 +82,6 @@
             <td>{{summary.tot_SalesTotal}}</td>--> 
       </tr>
     </table>
+    </div>
   </div>
 </div>

@@ -1,0 +1,132 @@
+<style>
+    .bg-on {
+        font-weight: bold;
+        /*color: #f65151;*/
+        background-color: #f65151;
+    }
+
+    .bg-off {
+        background-color: #ffffff;
+        font-weight: bold;
+    }
+
+    input[type=checkbox].chk-itms {
+        zoom: 1.5;
+    }
+
+    tr.dispatch-disabled {
+        opacity: 0.8;
+        color: #908181;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue-sharp bold uppercase">Dispatch Requisition</span>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:20px;">
+    <div class="col-md-12">
+        <div class="form-control" style="background-color:whitesmoke">
+            <div class="row">
+                <div class="col-md-4">Requisition No: {{requisitionStockVM.requisition.RequisitionNo}}<b></b></div>
+                <div class="col-md-4">Store Name:<b> {{StoreName}}</b><br /></div>
+                <div class="col-md-4">Requested On: {{RequestedOn}}<b></b></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+
+
+        <div class="table-responsive" style="padding-top:10px">
+
+            <table class="table table-striped table-hover" style="background-color:initial">
+                <thead>
+                    <tr>
+                        <th><input checked type="checkbox" class="chk-itms" name="ToogleAll" [(ngModel)]="selectedAll"
+                                (change)="ToogleAllDispatchItems()"></th>
+                        <th></th>
+                        <th>
+                            Item Name
+                        </th>
+                        <th>
+                            Require Quantity
+                        </th>
+                        <th>
+                            Dispatch Quantity
+                        </th>
+                        <th>
+                            Available Quantity
+                        </th>
+                        <th>
+                            Item Remarks
+                        </th>
+                    </tr>
+                </thead>
+                <tbody *ngFor="let row of model; let i = index">
+                    <tr [ngClass]="{'dispatch-disabled': !row.isActive}">
+                        <td><input checked type="checkbox" class="chk-itms" name="ItemSelection" [(ngModel)]="row.isActive"
+                                (change)="checkIfAllSelected(i)"></td>
+                        <td>{{i+1}}.</td>
+                        <td>
+
+                            <input name="ItemName" [(ngModel)]="row.ItemName" disabled style="width:180px "
+                                class="table-input" type="text" />
+                        </td>
+                        <td>
+                            <input name="RequiredQuantity" [(ngModel)]="row.RequiredQuantity" disabled
+                                style="width:120px " class="table-input" type="text" />
+                        </td>
+                        <td>
+
+                            <form [formGroup]="row.DispatchItemValidator">
+                                <input id="dispatchQty{{i}}" (keyup.enter)="GoToNextInput(i)"
+                                    [ngClass]="row.IsDisQtyValid ? 'bg-off' : 'bg-on'" name="DispatchedQuantity"
+                                    formControlName="DispatchedQuantity" (focusout)="CheckAvailableQuantity(row,i)"
+                                    min="0" [(ngModel)]="row.DispatchedQuantity" style="width:120px;"
+                                    class="table-input" type="number"
+                                    title="{{row.IsDisQtyValid ? '' : 'stock not available'}}" (keyup.enter)="setFocusById('dispatchQty'+i+1)"/>
+
+                                <div style="color:red" *ngIf="row.IsDirty('DispatchedQuantity')"
+                                    [hidden]="row.IsValidCheck('DispatchedQuantity','required')">required</div>
+                                <div style="color:red" *ngIf="row.DispatchedQuantity == 0 && row.isActive == true">Please uncheck this item.</div>
+                            </form>
+                        </td>
+                        <td>
+                            <form [formGroup]="row.DispatchItemValidator">
+                                <input name="AvailableQuantity" [(ngModel)]="row.AvailableQuantity" formControlName="AvailableQty" style="width:120px" class="table-input" type="number" />
+                            </form>
+                        </td>
+                        <td>
+                            <textarea name="ItemRemarks" id="itemRemarks{{i}}" class="form-control" cols="15" rows="1" [(ngModel)]="row.ItemRemarks"></textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-12">
+            <span class="col-md-2">Remarks<sup *ngIf="isDispatchAllowed==false" class="color-red">*</sup><b></b><span
+                    class="right">:</span></span>
+            <textarea id="remarks" name="Remarks" [(ngModel)]="Remarks" cols="70" rows="3" (keyup.enter)="setFocusById('receivedBy')"></textarea>
+        </div>
+        <div class="col-md-12">
+            <span class="col-md-2"> Received By<span class="right">:</span></span>
+            <input id="receivedBy" type="text" [(ngModel)]="ReceivedBy" (keyup.enter)="setFocusById('DispatchBtn')"> </div>
+        <div class="col-sm-offset-5 col-sm-5">
+
+            <input id="DispatchBtn" type="button" class="btn green btn-success margin-7-hr" value="Dispatch" (click)="SaveDispatchItems()"
+                [disabled]="loading" />
+            <span></span>
+
+            <a class="btn btn-danger" (click)="Cancel()">Discard</a>
+
+        </div>
+    </div>
+
+</div>

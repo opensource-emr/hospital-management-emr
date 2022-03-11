@@ -21,7 +21,8 @@ import { ENUM_AppointmentType, ENUM_BillingStatus, ENUM_VisitType, ENUM_OrderSta
 
 @Component({
   selector: "danphe-followup-visit",
-  templateUrl: "./followup-visit.html"
+  templateUrl: "./followup-visit.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class FollowUpVisitComponent {
   public showFollowupPage: boolean = false;
@@ -195,6 +196,7 @@ export class FollowUpVisitComponent {
     retVal.AppointmentType = ENUM_AppointmentType.followup;
     retVal.BillStatus = ENUM_BillingStatus.paid;//  "paid";
     retVal.Patient = this.parentVisit.Patient;
+    retVal.BillingTransaction = retQckVisitVm.BillingTransaction;
 
     return retVal;
   }
@@ -224,6 +226,7 @@ export class FollowUpVisitComponent {
     if (this.newBillTxn && this.newBillTxn.BillingTransactionItems) {
       this.newBillTxn.PatientId = this.parentVisit.PatientId;
       this.newBillTxn.BillingTransactionItems[0].PatientId = this.parentVisit.PatientId;
+      this.newBillTxn.InvoiceType = 'op-normal';
     }
 
     qckVisit_Fwup.BillingTransaction = this.newBillTxn;
@@ -269,7 +272,7 @@ export class FollowUpVisitComponent {
     let visitType = res.Results.Visit.VisitType;
     this.routeFromService.RouteFrom = (visitType == "emergency" ? "ER-Sticker" : "OPD");
     this.billingService.globalBillingReceipt = opdReceipt;
-    this.router.navigate(['/Billing/ReceiptPrint']);
+    // this.router.navigate(['/Billing/ReceiptPrint']);
   }
 
   Close() {
@@ -367,5 +370,11 @@ export class FollowUpVisitComponent {
           this.visitService.PatientTodaysVisitList = [];
         }
       });
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.followupCompleted.emit("Close");
+    }
   }
 }

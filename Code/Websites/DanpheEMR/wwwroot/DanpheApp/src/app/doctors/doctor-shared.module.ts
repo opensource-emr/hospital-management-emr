@@ -15,10 +15,9 @@ import { PatientClinicalDocumentsComponent } from "../clinical/others/patient-cl
 import { PatientCurrentMedicationsComponent } from "../clinical/medications/patient-current-medications.component";
 import { DynTemplateModule } from "../core/dyn-templates/dyn-templates.module";
 import { ProblemsBLService } from "../clinical/shared/problems.bl.service";
-import { HistoryBLService } from "../clinical/shared/history.bl.service";
 
 @NgModule({
-  providers: [ProblemsBLService, HistoryBLService],
+  providers: [ProblemsBLService],
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -27,7 +26,6 @@ import { HistoryBLService } from "../clinical/shared/history.bl.service";
     SharedModule,
     DanpheAutoCompleteModule,
     DynTemplateModule,
-
   ],
   declarations: [
     PatientOverviewComponent,
@@ -52,4 +50,4 @@ import { HistoryBLService } from "../clinical/shared/history.bl.service";
     PatientCurrentMedicationsComponent,
   ],
 })
-export class DoctorSharedModule { }
+export class DoctorSharedModule {}

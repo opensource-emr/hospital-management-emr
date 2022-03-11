@@ -1,0 +1,182 @@
+<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+
+    .childStyle {
+        margin-left: 20px !important;
+        color: green !important;
+        font-weight: normal !important;
+    }
+
+    .custom_table a {
+        font-family: 'Quicksand', 'Open Sans', sans-serif;
+        text-align: left;
+    }
+
+    .padLess_table th {
+        padding: 10px !important;
+    }
+
+    .padLess_table th b {
+        font-size: 13px;
+    }
+
+    .table-wrapper table {
+        background-color: #ffffff;
+    }
+
+    .table-wrapper table th {
+        position: sticky;
+        top: -1px;
+        background-color: #599be0 !important;
+        color: white;
+        z-index: 9;
+
+    }
+
+    .table-wrapper table tr+tr th {
+        top: 30px;
+        background-color: #f9f9f9 !important;
+        color: #555;
+
+    }
+
+    .trialbal-footer {
+        background-color: #dddddd !important;
+        position: sticky;
+        bottom: 0;
+    }
+	.control-label {
+		margin: 7px 0 0 0;
+	}
+	.control-label b {
+		font-weight: 600;
+	}
+	.row {
+		margin: 0 -5px;
+	}
+	div[class*="col-"] {
+		padding: 0 5px;
+	}
+	@media only screen and (max-width: 1080px) { 
+		.label-frm-to {
+			margin-left: 5px;
+		}
+	}
+</style>
+<div class="row">
+    <div class="col-md-6">
+        <div class="caption lb-caption">
+            <i class="fa fa-bar-chart"></i>
+            <span class="caption-subject">Purchase Summary Report  </span>
+        </div>     
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <from-to-date-select (on-change)="onDateChange($event)" >
+        </from-to-date-select>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="form-group row">
+            <label class="control-label col-md-4">Vendor<b style="float:right;">:</b></label>
+            <div class="col-md-6 autocomplete-item">
+                <input id="VendorName" danphe-auto-complete class="form-control" [(ngModel)]="selectedVndr"
+                [source]="VendorList" [list-formatter]="VendorListFormatter" placeholder="Vendor Name"
+                display-property-name="VendorName" value-property-name=null (valueChanged)="GetVendorDetails()"
+                 (focusout)="GetVendorDetails()" onclick="this.select();" [match-formatted]="true"/>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">                   
+        <div class="form-group">
+            <button class="btn green btn-success" type="button" (click)="GetPurchaseSummaryReport()" [disabled]="loading">
+                <i class="fa fa-search"></i>&nbsp;
+                <span *ngIf="!loading">Load</span>
+                <span *ngIf="loading">Loading...</span>
+                
+            </button>
+        </div>                    
+    </div>  
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="purchaseSummaryGridColumns"
+                   [grid-data]="purchaseSummaryRecordListFiltered"
+                   (onDateChange)="onDateChange($event)"                  
+                   (grid-actions)="GridAction($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                   [grid-exportOptions]="GetGridExportOptions()"
+                   [grid-showExport]="true">
+      </danphe-grid>
+    </div>
+    <div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+        <div class="table-responsive table-wrapper" id="print_summary">
+            <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
+                border="1">
+                <thead>          
+                    <tr>
+                        <th colspan="6" style="text-align: center; font-weight: bold; ">
+                            Purchase Summary  {{vendorName ? 'of '+ vendorName: ''}}</th>
+                    </tr>          
+                    <tr>
+                        <th><b></b></th>
+                        <th><b>Sub Total</b></th>                   
+                        <th><b>Discount</b></th>
+                        <th><b>VAT</b></th>
+                        <th><b>Other Charges</b></th>
+                        <th><b>Total Amount</b></th>                        
+                    </tr>
+                </thead>
+                <tbody>      
+                    <ng-container *ngFor="let row of summaryOfReport">
+                        <tr>
+                            <td  style="font-weight:bold; color:blue">                                
+                                <span>{{row.Title}}</span>
+                            </td>
+                           
+                            <td style="text-align:right; ">
+                                <span >
+                                    {{row.SubTotal | Currency}}
+                                </span>
+                            </td>
+                            <td style="text-align:right; ">
+                                <span >
+                                    {{row.Discount | Currency}}
+                                </span>
+                            </td>
+                            <td style="text-align:right; ">
+                                <span >
+                                    {{row.VAT | Currency}}
+                                </span>
+                            </td>
+                            <td style="text-align:right; ">
+                                <span >
+                                    {{row.TotalOtherCharges | Currency}}
+                                </span>
+                            </td>
+                            <td style="text-align:right; ">
+                                <span >
+                                    {{row.TotalAmount | Currency}}
+                                </span>
+                            </td>
+                        </tr>
+                    </ng-container>     
+                </tbody>
+            </table>   
+        </div>
+    </div>
+    <div class="col-lg-12 col-sm-12 col-md-12" style="margin-bottom: 25px !important;">
+        <button class="blue btn" type="button" (click)="Print('print_summary')"> <i class="fa fa-print"></i> Print </button>
+    </div>
+  </div> 
+
+  <div *ngIf="showGrDetail">
+    <gr-view  [GRId]="grId"></gr-view>
+</div>
+
+  

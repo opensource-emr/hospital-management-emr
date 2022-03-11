@@ -59,8 +59,8 @@ export class InventoryConsumptionComponent {
             if (res.Results.length) {
               this.ItemTypeListWithItems = [];
               this.ItemTypeListWithItems = res.Results;
-              this.ItemTypeListWithItems = this.ItemTypeListWithItems.filter(item=>item.Quantity > 0 && item.ItemType == "Consumables");
-              if(this.ItemTypeListWithItems.length == 0){this.messageboxService.showMessage("Failed",["No Stock Available. Please Add Stock."]);}
+              this.ItemTypeListWithItems = this.ItemTypeListWithItems.filter(item => item.AvailableQuantity > 0 && item.ItemType == "Consumables");
+              if (this.ItemTypeListWithItems.length == 0) { this.messageboxService.showMessage("Failed", ["No Stock Available. Please Add Stock."]); }
             }
             else {
               this.messageboxService.showMessage("Failed", ["No Stock Available. Please Add Stock."]);
@@ -74,7 +74,7 @@ export class InventoryConsumptionComponent {
   }
   GetAvailableQuantity(itm) {
     try {
-      return this.ItemTypeListWithItems.find(a => a.ItemId == itm.ItemId).Quantity;
+      return this.ItemTypeListWithItems.find(a => a.ItemId == itm.ItemId).AvailableQuantity;
     }
     catch (ex) {
       this.messageboxService.showMessage("Error", ['Quantity not available!!']);
@@ -83,7 +83,7 @@ export class InventoryConsumptionComponent {
   }
   //used to format display of item in ng-autocomplete
   ItemListFormatter(data: any): string {
-    let html = data["ItemName"] + '|Qty:' + data["Quantity"];
+    let html = data["ItemName"] + '|Qty:' + data["AvailableQuantity"];
     return html;
   }
   onChangeItem($event, index) {
@@ -103,7 +103,7 @@ export class InventoryConsumptionComponent {
     else {
       this.messageboxService.showMessage("Error", ["Item is already present in the list"]);
       this.AddRow(index);
-      this.FocusElementById("itemName"+index);
+      this.FocusElementById("itemName" + index);
     }
   }
   DeleteRow(index) {
@@ -120,15 +120,15 @@ export class InventoryConsumptionComponent {
   AddRow(index?) {
     try {
       var tempSale: WardInventoryConsumptionModel = new WardInventoryConsumptionModel();
-      if(index == null){
+      if (index == null) {
         this.SelecetdItemList.push(tempSale);
       }
-      else{
-        this.SelecetdItemList.splice(index,1,tempSale);
+      else {
+        this.SelecetdItemList.splice(index, 1, tempSale);
       }
 
       let len = this.SelecetdItemList.length - 1;
-      this.FocusElementById("itemName"+len);
+      this.FocusElementById("itemName" + len);
     }
     catch (exception) {
       this.messageboxService.showMessage("Error", [exception]);
@@ -211,6 +211,21 @@ export class InventoryConsumptionComponent {
       nextEl.select();
     }
   }
+  OnPressedEnterKeyInItemField(index) {
+    if (this.SelecetdItemList[index].SelectedItem != null && this.SelecetdItemList[index].ItemId != 0) {
+        this.FocusElementById(`qtyip${index}`);
+    }
+    else {
+        if (this.SelecetdItemList.length == 1) {
+            this.FocusElementById('itemName0')
+        }
+        else {
+          this.SelecetdItemList.splice(index, 1);
+          this.FocusElementById('save');
+        }
+
+    }
+}
   // public IsConsumptionDateValid() : boolean{
   //   return this.inventoryService.allFiscalYearList.some( fy => (fy.IsClosed == null || fy.IsClosed == false) && moment(this.ConsumptionDate).isBetween(fy.StartDate,fy.EndDate));
   // }

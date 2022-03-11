@@ -14,7 +14,8 @@ import { CoreService } from "../../../core/shared/core.service";
 import { BillingService } from "../../../billing/shared/billing.service";
 @Component({
   selector: "billingPackage-add",
-  templateUrl: "./billing-package-add.html"
+  templateUrl: "./billing-package-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 })
 export class BillingPackageAddComponent {
 
@@ -48,6 +49,7 @@ export class BillingPackageAddComponent {
     this.taxPercent = this.billingService.taxPercent;
     this.GetSrvDeptList();
     this.GetBillingItems();
+       
   }
   @Input("showAddPage")
   public set value(val: boolean) {
@@ -68,6 +70,7 @@ export class BillingPackageAddComponent {
       this.initialAssign = true;
       this.selectedBillItems = [];
       this.totalDiscount = CommonFunctions.parseAmount((Number(this.CurrentBillingPackage.TotalPrice) * Number(this.CurrentBillingPackage.DiscountPercent)) / 100);
+      //this.totalDiscount = this.CurrentBillingPackage.TotalPrice * (this.CurrentBillingPackage.DiscountPercent / 100);
       this.AssignSelectedPackageItems();
     }
     else {
@@ -77,8 +80,12 @@ export class BillingPackageAddComponent {
       this.AddRow(-1);
       this.update = false;
     }
+    this.GoToNextInput("PackageName");
   }
 
+  ngOnInit(){
+    this.ItemsListFormatter = this.ItemsListFormatter.bind(this);
+  }
   //getting service department list
   public GetSrvDeptList() {
     this.settingsBLService.GetBillingServDepartments()
@@ -350,6 +357,9 @@ export class BillingPackageAddComponent {
   }
 
   Add() {
+    if(this.totalDiscount == 0){
+      this.CurrentBillingPackage.DiscountPercent = 0;
+    }
     this.settingsBLService.AddBillingPackage(this.CurrentBillingPackage, this.packageItemList)
       .subscribe(
         res => {
@@ -445,14 +455,28 @@ export class BillingPackageAddComponent {
     let html: string = "";
     if (data.ServiceDepartmentName != "OPD") {
       html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + data["Price"];
     }
     else {
       let docName = data.Doctor ? data.Doctor.DoctorName : "";
       html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + data["Price"];
     }
     return html;
     // return data["ItemName"];
+  }
+
+  private GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event){
+    if(event.keyCode == 27){ // For ESCAPE_KEY =>close pop up
+      this.Close(); 
+    }
   }
 }

@@ -14,7 +14,7 @@ export class DynamicReport {
     //public ProviderName: string = null;
     public fromDate: string = "";
     public toDate: string = "";
-    public departmentName: string = "";
+    public departmentName: any;
     public providerName: string = "";
   
     public DyanamicValidator: FormGroup = null;

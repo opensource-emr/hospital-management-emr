@@ -5,7 +5,8 @@ import { LabTestViewResult, LabPendingResultVM } from "./lab-view.models";
 
 @Injectable()
 export class LabService {
-  defaultPrinterName: string = null;
+    defaultPrinterName: string = null;
+    routeNameAfterverification: string = '';
 }
 
 @Injectable()

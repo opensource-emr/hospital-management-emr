@@ -38,6 +38,7 @@ import { DanpheHTTPResponse } from "../../shared/common-models";
 import { ENUM_BillingStatus, ENUM_InvoiceType } from '../../shared/shared-enums';
 import { CoreService } from '../../core/shared/core.service';
 import { CreditOrganization } from '../../settings-new/shared/creditOrganization.model';
+import { MembershipType } from '../../../../src/app/patients/shared/membership-type.model';
 //sud:5May'18--BackButtonDisable is not working as expected, correct and implement later
 //import { BackButtonDisable } from "../../core/shared/backbutton-disable.service";
 
@@ -48,7 +49,7 @@ import { CreditOrganization } from '../../settings-new/shared/creditOrganization
 export class BillingTransactionItemComponent {
   public model: BillingTransaction = new BillingTransaction();
   public BillingTransactionItems: Array<BillingTransactionItem> = null;
-  public currencyUnit: string = null;
+  //public currencyUnit: string = null;
   loading: boolean = false;
   public checkDeductfromDeposit: boolean = false; //flag to check checkbox selected
 
@@ -66,7 +67,14 @@ export class BillingTransactionItemComponent {
     BalanceAmount: null
   };
 
-  public showProvisionalReceipt: boolean = false;
+  public showInvoicePrintPage: boolean = false;//sud:16May'21--to print from same page.
+
+  
+  public membershipSchemeParam = { ShowCommunity: false, IsMandatory: true };
+  public MembershipTypeName: string = null;
+  public memTypeSchemeId: number = null;
+  public currMemDiscountPercent: number = 0;
+  public DiscountPercentSchemeValid: boolean = true;
 
   constructor(public billingService: BillingService,
     public routeFromService: RouteFromService,
@@ -79,7 +87,7 @@ export class BillingTransactionItemComponent {
     public changeDetector: ChangeDetectorRef,
     public coreService: CoreService) {
     //this.BackButton.DisableBackButton();
-    this.currencyUnit = this.billingService.currencyUnit;
+    //this.currencyUnit = this.billingService.currencyUnit;
     this.model = this.billingService.getGlobalBillingTransaction();
 
     this.model.CounterId = this.securityService.getLoggedInCounter().CounterId;
@@ -95,6 +103,7 @@ export class BillingTransactionItemComponent {
       let patientId = this.model.PatientId;
       this.LoadPatientPastBillSummary(patientId);
       this.ChangeSubTotal();//check once more if we can use CalculationForAll for this. 
+      this.LoadMembershipSettings();
 
       //assign default values to model and billingItems.
       this.model.PaymentMode = "cash";
@@ -104,6 +113,9 @@ export class BillingTransactionItemComponent {
         item.DiscountPercentAgg = CommonFunctions.parseAmount(item.DiscountPercentAgg);//sud:12Mar'19--to round off disc. percent for display
       });
 
+      if (!this.model.InvoiceType) {
+        this.model.InvoiceType = ENUM_InvoiceType.outpatient;
+      }
       this.creditOrganizationsList = this.billingService.AllCreditOrganizationsList;
       this.CreditOrganizationMandatory = this.coreService.LoadCreditOrganizationMandatory();//pratik: 26feb'20 --Credit Organization compulsoryor not while Payment Mode is credit 
     }
@@ -133,6 +145,12 @@ export class BillingTransactionItemComponent {
       });
   }
 
+
+  //sud:19May'21--needed to print invoice.
+  public bil_InvoiceNo: number = 0;
+  public bil_FiscalYrId: number = 0;
+  public bil_BilTxnId: number = null;
+
   //updates the billing Transaction only after the amount paid by the patient
   PostBillingTransaction() {
     this.loading = true;
@@ -154,11 +172,15 @@ export class BillingTransactionItemComponent {
       if (this.model.InvoiceType != ENUM_InvoiceType.inpatientPartial) {//&& this.model.InvoiceType != ENUM_InvoiceType.inpatientDischarge
         this.model.TransactionType = this.billingService.BillingType;
       }
+      else {
+
+      }
 
       if (this.model.Change >= 0) {
-        //added: sud: 1June'18
-        this.model.DepositBalance = this.newDepositBalance;
-        this.model.DepositReturnAmount = this.depositDeductAmount;
+        // //added: sud: 1June'18
+        // this.model.DepositBalance = this.newDepositBalance;
+        // this.model.DepositReturnAmount = this.depositDeductAmount;//pratik:may11,2021:  haldel in CalculateDepositBalance Function
+
         this.model.PaidAmount = this.GetPaidAmount();//sud: 4june'18
 
         if (this.model.BillingTransactionItems.length > 0) {
@@ -182,7 +204,14 @@ export class BillingTransactionItemComponent {
           this.BillingBLService.PostBillingTransaction(this.model)
             .subscribe((res: DanpheHTTPResponse) => {
               if (res.Status == "OK") {
-                this.CallBackPostBillTxn(res.Results);
+
+                this.bil_InvoiceNo = res.Results.InvoiceNo;
+                this.bil_FiscalYrId = res.Results.FiscalYearId;
+                this.bil_BilTxnId =  res.Results.BillingTransactionId;
+                this.loading = false;//enables the submit button once all the calls are completed
+                this.showInvoicePrintPage = true;//sud:16May'21--To print from same page..
+
+                //this.CallBackPostBillTxn(res.Results);
               }
               else {
                 this.msgBoxServ.showMessage("failed", ["couldn't submit the request. please check the log for detail."], res.ErrorMessage);
@@ -205,6 +234,8 @@ export class BillingTransactionItemComponent {
         this.msgBoxServ.showMessage("error", ["The tender amount is less than the payable amount"]);
         this.loading = false;//enables the submit button once all the calls are completed
       }
+    }else{
+      this.loading = false;
     }
   }
 
@@ -231,50 +262,12 @@ export class BillingTransactionItemComponent {
         this.msgBoxServ.showMessage("failed", ["Remarks is mandatory for credit bill"]);
       }
     }
-    return isFormValid;
-  }
-
-
-  CallBackPostBillTxn(billingTxn: BillingTransaction) {
-
-    this.model.BillingTransactionId = billingTxn.BillingTransactionId;
-    //this.model.PaidDate = moment(billingTxn.PaidDate).format("YYYY-MM-DD HH:mm:ss");
-    this.model.DiscountPercent = billingTxn.DiscountPercent;
-    this.model.Remarks = billingTxn.Remarks;
-    this.model.FiscalYear = billingTxn.FiscalYear;//sud:5May'18
-    this.model.InvoiceCode = billingTxn.InvoiceCode;
-    this.model.InvoiceNo = billingTxn.InvoiceNo;
-    this.model.BillingTransactionId = billingTxn.BillingTransactionId;
-    this.model.TaxId = billingTxn.TaxId;
-    this.model.CreatedBy = billingTxn.CreatedBy;
-    this.model.CreatedOn = billingTxn.CreatedOn;
-    let txnReceipt = BillingReceiptModel.GetReceiptForTransaction(this.model);
-    txnReceipt.Patient = Object.create(this.patientService.globalPatient);
-    txnReceipt.IsValid = true;
-    //txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-    txnReceipt.BillingUser = billingTxn.BillingUserName; //Yubraj 28th June '19
-    txnReceipt.Remarks = this.model.Remarks;
-
-
-    if (this.model.TransactionType && this.model.TransactionType.toLowerCase() == "inpatient" && this.routeFromService.RouteFrom == "inpatient") {
-      if (this.model.InvoiceType != ENUM_InvoiceType.inpatientPartial) {
-        txnReceipt.ReceiptType = "ip-receipt";
-      }
-
+    if (!this.DiscountPercentSchemeValid) {
+      isFormValid = false;
+      this.msgBoxServ.showMessage("failed", ["Discount scheme is mandatory. Default is: General(0%)"]);
     }
 
-    this.billingService.globalBillingReceipt = txnReceipt;
-
-    this.loading = false;//enables the submit button once all the calls are completed
-
-
-    this.router.navigate(['Billing/ReceiptPrint']);
-
-
-    //if (this.routeFromService.RouteFrom == "inpatient") {
-
-    //}
-
+    return isFormValid;
   }
 
 
@@ -332,79 +325,107 @@ export class BillingTransactionItemComponent {
   }
 
 
-  Calculationforall() {
+  // Calculationforall() {
 
-    let DP: number = 0; //discountPercent for the model (aggregate total) 
-    let dp_item: number = 0; // discountPercent for individual item
-    let totalTax: number = 0;
-    let loopTax: number = 0;
-    let SubTotal: number = 0;
-    let totalAmount: number = 0;
-    let totalAmountAgg: number = 0;
-    let totalQuantity: number = 0;
-    let subtotal: number = 0;
-    let calsubtotal: number = 0;
-    let subtotalfordiscountamount: number = 0;
-    DP = this.model.DiscountPercent;
-    let successiveDiscount: number = 0;
-    let totalAmountforDiscountAmount: number = 0;
-    let DiscountAgg: number = 0;
-    let DiscountedAmountTotalAggnew: number = 0;
-    //-------------------------------------------------------------------------------------------------------------------------------
-    for (var i = 0; i < this.model.BillingTransactionItems.length; i++) {
-      let curRow = this.model.BillingTransactionItems[i];
+  //   let DP: number = 0; //discountPercent for the model (aggregate total) 
+  //   let dp_item: number = 0; // discountPercent for individual item
+  //   let totalTax: number = 0;
+  //   let loopTax: number = 0;
+  //   let SubTotal: number = 0;
+  //   let totalAmount: number = 0;
+  //   let totalAmountAgg: number = 0;
+  //   let totalQuantity: number = 0;
+  //   let subtotal: number = 0;
+  //   let calsubtotal: number = 0;
+  //   let subtotalfordiscountamount: number = 0;
+  //   DP = this.model.DiscountPercent;
+  //   let successiveDiscount: number = 0;
+  //   let totalAmountforDiscountAmount: number = 0;
+  //   let DiscountAgg: number = 0;
+  //   let DiscountedAmountTotalAggnew: number = 0;
+  //   //-------------------------------------------------------------------------------------------------------------------------------
+  //   for (var i = 0; i < this.model.BillingTransactionItems.length; i++) {
+  //     let curRow = this.model.BillingTransactionItems[i];
+  //     curRow.DiscountPercent = DP;
+  //     dp_item = curRow.DiscountPercent;
+  //     //don't change discountpercentagg if current row already has it. 
+  //     //curRow.DiscountPercentAgg = curRow.DiscountPercentAgg ? curRow.DiscountPercentAgg : CommonFunctions.parseAmount(dp_item);
+  //     subtotal = (curRow.Quantity * curRow.Price); //100
+  //     let DiscountedAmountItem = (subtotal - (dp_item / 100) * subtotal) //Discounted Amount for individual Item 
+  //     let DiscountedAmountTotal = (DiscountedAmountItem - DP * DiscountedAmountItem / 100); // Discounted Amount From the Total Discount //**
+  //     let tax = (curRow.TaxPercent / 100 * (DiscountedAmountTotal));
+  //     curRow.Tax = CommonFunctions.parseAmount(tax);
+  //     curRow.Price = CommonFunctions.parseAmount(curRow.Price);
+  //     //go for calculation even when models's discount percent is zero.
+  //     if (DP >= 0) {
+  //       successiveDiscount = ((100 - dp_item) / 100 * (100 - DP) / 100 * subtotal);
+  //       let successiveDiscountAmount = successiveDiscount + curRow.TaxPercent / 100 * successiveDiscount;
+  //      // DiscountAgg = ((subtotal - successiveDiscountAmount) + curRow.Tax) * 100 / subtotal;
+  //       //curRow.DiscountPercentAgg = CommonFunctions.parseAmount(DiscountAgg);
+  //       curRow.DiscountAmount = CommonFunctions.parseAmount(curRow.DiscountPercent * subtotal / 100);
+  //     }
+  //     else {
+  //       curRow.DiscountAmount = CommonFunctions.parseAmount(curRow.DiscountPercent * subtotal / 100);
+  //     }
 
-      dp_item = curRow.DiscountPercent;
-      //don't change discountpercentagg if current row already has it. 
-      curRow.DiscountPercentAgg = curRow.DiscountPercentAgg ? curRow.DiscountPercentAgg : CommonFunctions.parseAmount(dp_item);
-      subtotal = (curRow.Quantity * curRow.Price); //100
-      let DiscountedAmountItem = (subtotal - (dp_item / 100) * subtotal) //Discounted Amount for individual Item 
-      let DiscountedAmountTotal = (DiscountedAmountItem - DP * DiscountedAmountItem / 100); // Discounted Amount From the Total Discount //**
-      let tax = (curRow.TaxPercent / 100 * (DiscountedAmountTotal));
-      curRow.Tax = CommonFunctions.parseAmount(tax);
-      curRow.Price = CommonFunctions.parseAmount(curRow.Price);
-      //go for calculation even when models's discount percent is zero.
-      if (DP >= 0) {
-        successiveDiscount = ((100 - dp_item) / 100 * (100 - DP) / 100 * subtotal);
-        let successiveDiscountAmount = successiveDiscount + curRow.TaxPercent / 100 * successiveDiscount;
-        DiscountAgg = ((subtotal - successiveDiscountAmount) + curRow.Tax) * 100 / subtotal;
-        curRow.DiscountPercentAgg = CommonFunctions.parseAmount(DiscountAgg);
-        curRow.DiscountAmount = CommonFunctions.parseAmount(curRow.DiscountPercentAgg * subtotal / 100);
-      }
-      else {
-        curRow.DiscountAmount = CommonFunctions.parseAmount(curRow.DiscountPercentAgg * subtotal / 100);
-      }
+  //     // let DiscountedAmountTotalAgg = (DiscountedAmountItem - (DP * DiscountedAmountItem / 100));
+  //     // totalAmountAgg = DiscountedAmountTotalAgg + curRow.Tax;
+  //     totalAmount = DiscountedAmountTotal + curRow.Tax;
+  //     // curRow.TotalAmount = CommonFunctions.parseAmount(totalAmount);
+  //     //separate taxable and non-taxable amount based on IsTaxApplicable field.
+  //     //@Ashim: Pls check here if we have Those two fields or not in currRow
+  //     curRow.TaxableAmount = curRow.IsTaxApplicable ? curRow.SubTotal - curRow.DiscountAmount : 0;
+  //     curRow.NonTaxableAmount = curRow.IsTaxApplicable ? 0 : curRow.SubTotal - curRow.DiscountAmount;
 
-      let DiscountedAmountTotalAgg = (DiscountedAmountItem - (DP * DiscountedAmountItem / 100));
-      totalAmountAgg = DiscountedAmountTotalAgg + curRow.Tax;
-      totalAmount = DiscountedAmountTotal + curRow.Tax;
-      curRow.TotalAmount = CommonFunctions.parseAmount(totalAmount);
-      //separate taxable and non-taxable amount based on IsTaxApplicable field.
-      //@Ashim: Pls check here if we have Those two fields or not in currRow
-      curRow.TaxableAmount = curRow.IsTaxApplicable ? curRow.SubTotal - curRow.DiscountAmount : 0;
-      curRow.NonTaxableAmount = curRow.IsTaxApplicable ? 0 : curRow.SubTotal - curRow.DiscountAmount;
+  //     totalAmountforDiscountAmount = totalAmountforDiscountAmount + curRow.DiscountPercent * subtotal / 100;
+  //     //totalAmountforDiscountAmount = totalAmountforDiscountAmount + subtotal - DiscountedAmountTotalAgg;
+  //     // loopTax = (curRow.TaxPercent * DiscountedAmountTotalAgg / 100);
+  //     // totalTax = totalTax + loopTax;
+  //     // SubTotal = SubTotal + totalAmountAgg;
+  //     let CurQuantity = curRow.Quantity;
+  //     totalQuantity = totalQuantity + CurQuantity;
+  //     subtotalfordiscountamount = subtotalfordiscountamount + subtotal;
+  //     calsubtotal = calsubtotal + subtotal;
+  //   }
 
-      totalAmountforDiscountAmount = totalAmountforDiscountAmount + curRow.DiscountPercentAgg * subtotal / 100;
-      //totalAmountforDiscountAmount = totalAmountforDiscountAmount + subtotal - DiscountedAmountTotalAgg;
-      loopTax = (curRow.TaxPercent * DiscountedAmountTotalAgg / 100);
-      totalTax = totalTax + loopTax;
-      SubTotal = SubTotal + totalAmountAgg;
-      let CurQuantity = curRow.Quantity;
-      totalQuantity = totalQuantity + CurQuantity;
-      subtotalfordiscountamount = subtotalfordiscountamount + subtotal;
-      calsubtotal = calsubtotal + subtotal;
-    }
+  //   this.model.SubTotal = CommonFunctions.parseAmount(calsubtotal);
+  //   this.model.TotalQuantity = totalQuantity;
+  //   this.model.DiscountAmount = CommonFunctions.parseAmount(totalAmountforDiscountAmount);
+  //   this.model.TotalAmount = CommonFunctions.parseAmount(this.model.SubTotal-this.model.DiscountAmount);
+  //   this.model.Tender = CommonFunctions.parseAmount(this.model.TotalAmount);
+  //   this.model.TaxTotal = CommonFunctions.parseAmount(totalTax);
 
-    this.model.SubTotal = CommonFunctions.parseAmount(calsubtotal);
-    this.model.TotalQuantity = totalQuantity;
-    this.model.DiscountAmount = CommonFunctions.parseAmount(totalAmountforDiscountAmount);
-    this.model.TotalAmount = CommonFunctions.parseAmount(SubTotal);
-    this.model.Tender = CommonFunctions.parseAmount(this.model.TotalAmount);
-    this.model.TaxTotal = CommonFunctions.parseAmount(totalTax);
+  //   if (this.checkDeductfromDeposit) {
+  //     this.CalculateDepositBalance();
+  //   }
+  // }
 
-    if (this.checkDeductfromDeposit) {
-      this.CalculateDepositBalance();
-    }
+  ReCalculateInvoiceAmounts(){
+    let overallSubTot = this.model.BillingTransactionItems.reduce(function (acc, itm) { return acc + itm.SubTotal; }, 0);
+
+    this.model.SubTotal = CommonFunctions.parseAmount(overallSubTot);
+    this.model.DiscountAmount = CommonFunctions.parseAmount((Number(this.model.SubTotal) * Number(this.model.DiscountPercent)) / 100);
+    this.model.TotalAmount = CommonFunctions.parseAmount(overallSubTot - this.model.DiscountAmount);
+    this.model.Tender = this.model.TotalAmount;
+    //if(this.model.)
+
+    this.ChangeTenderAmount();
+  }
+
+  InvoiceDiscountOnChange() {
+    //Need to re-calculate aggregatediscounts of each item and Invoice amounts when Invoice Discount is changed.
+    this.model.BillingTransactionItems.forEach(itm => {
+      //itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountPercentAgg = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
+      itm.DiscountAmount = itm.SubTotal * itm.DiscountPercentAgg / 100;
+      itm.TotalAmount = itm.SubTotal - itm.DiscountAmount;
+      itm.TaxableAmount = itm.IsTaxApplicable ? CommonFunctions.parseAmount(itm.TotalAmount) : 0;
+      itm.NonTaxableAmount = itm.IsTaxApplicable ? 0 : CommonFunctions.parseAmount(itm.TotalAmount);
+      //this.CalculateAggregateDiscountsOfItems(itm);
+    });
+
+    this.ReCalculateInvoiceAmounts();
   }
 
   //we need to set certain properties acc. to current payment mode. 
@@ -436,24 +457,6 @@ export class BillingTransactionItemComponent {
     }
   }
 
-  PrintProvisionalSlip() {
-    if (this.model.DiscountPercent < 0 || this.model.DiscountPercent > 100) {
-      this.msgBoxServ.showMessage("error", ["Please enter valid Total Discount Percent."]);
-      this.loading = false;
-      return;
-    }
-    let txnReceipt = BillingReceiptModel.GetReceiptFromTxnItems(this.model.BillingTransactionItems);
-    txnReceipt.Patient = Object.create(this.patientService.globalPatient);
-    txnReceipt.IsValid = true;
-    txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-    txnReceipt.Remarks = this.model.Remarks;
-    txnReceipt.BillingDate = moment().format("YYYY-MM-DD HH:mm:ss");
-    txnReceipt.ReceiptType = "provisional";
-    txnReceipt.DepositBalance = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance);
-    this.billingService.globalBillingReceipt = txnReceipt;
-    this.router.navigate(['Billing/ReceiptPrint']);
-  }
-
 
   public deductDeposit: boolean = false;
   public currentDepositBalance: number = 0;
@@ -476,12 +479,15 @@ export class BillingTransactionItemComponent {
         let patientId = this.model.PatientId;
         this.newDepositBalance = this.currentDepositBalance - this.model.TotalAmount;
         this.newDepositBalance = CommonFunctions.parseAmount(this.newDepositBalance);
+        this.model.DepositAvailable = this.currentDepositBalance;
         if (this.newDepositBalance >= 0) {
           this.depositDeductAmount = this.model.Tender;
           this.model.Tender = null;
           this.changeDetector.detectChanges();
           this.model.Tender = 0;
           this.model.Change = 0;
+          this.model.DepositUsed = this.model.TotalAmount;
+          this.model.DepositBalance = this.newDepositBalance;
         }
         //newDepositBalance will be in negative if it comes to else.
         else {
@@ -489,10 +495,16 @@ export class BillingTransactionItemComponent {
           this.depositDeductAmount = this.currentDepositBalance;//all deposit has been returned.
           this.newDepositBalance = 0;//reset newDepositBalance since it's all Used NOW. 
           this.model.Change = 0;//Reset Change since we've reset Tender above.
+          this.model.DepositUsed = this.currentDepositBalance;//all current balance is used. 
+          this.model.DepositBalance = 0;//all balance is already used, so balance will be ZERO.
         }
         //this.routeFromService.RouteFrom = "DepositDeductpart";        //ramavtar: 24Oct'18
       }
       else {
+        this.model.DepositReturnAmount = 0
+        this.model.DepositUsed = 0;
+        this.model.DepositAvailable = 0;
+        this.model.DepositBalance = 0;
         this.msgBoxServ.showMessage("failed", ["Deposit balance is zero, Please add deposit to use this feature."]);
         this.deductDeposit = !this.deductDeposit;
       }
@@ -501,7 +513,7 @@ export class BillingTransactionItemComponent {
       //reset all required properties..
       this.model.TransactionType = "ItemTransaction"
       this.model.Tender = this.model.TotalAmount;
-      this.newDepositBalance = this.currentDepositBalance;
+      this.newDepositBalance = 0;
       this.depositDeductAmount = 0;
       this.model.DepositReturnAmount = 0;
       this.model.Change = 0;
@@ -537,6 +549,57 @@ export class BillingTransactionItemComponent {
   CreditOrganizationChanges($event) {
     this.model.OrganizationName = $event.OrganizationName;
     this.model.OrganizationId = $event.OrganizationId;
+  }
+
+  //sud:16May'21--Moving Invoice Printing as Popup
+  public CloseInvoicePrint() {
+    this.showInvoicePrintPage = false;
+    this.model = this.billingService.getGlobalBillingTransaction();
+    this.router.navigate(["/Billing/SearchPatient"]);
+  }
+
+  public LoadMembershipSettings() {
+    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "MembershipSchemeSettings");
+    if (currParam && currParam.ParameterValue) {
+      this.membershipSchemeParam = JSON.parse(currParam.ParameterValue);
+    }
+  }
+ngOnInit(){
+  if(this.model.BillingTransactionItems[0].DiscountSchemeId > 0){
+    this.memTypeSchemeId = this.model.BillingTransactionItems[0].DiscountSchemeId;
+  }
+}
+  OnMembershipTypeChanged($event: MembershipType) {
+
+    if (!$event) {
+      this.DiscountPercentSchemeValid = false;
+      this.memTypeSchemeId = null;
+      this.currMemDiscountPercent = 0;
+    //   this.model.Remarks = null;
+    //   //return;
+    }
+    else {
+      
+        this.memTypeSchemeId = $event.MembershipTypeId;
+        this.DiscountPercentSchemeValid = true;
+        this.currMemDiscountPercent = $event.DiscountPercent;
+        this.MembershipTypeName = $event.MembershipTypeName;
+        this.model.DiscountPercent = this.currMemDiscountPercent;
+        //this.ReCalculateInvoiceAmounts();
+        this.model.BillingTransactionItems.forEach(a => {
+          a.DiscountSchemeId = this.memTypeSchemeId;
+          //a.DiscountPercent = this.currMemDiscountPercent;
+        });
+    }
+
+    // if (this.currMemDiscountPercent && this.currMemDiscountPercent != 0) {
+    //   this.model.Remarks = $event ? $event.MembershipTypeName : null;
+    //   // this.model.DiscountPercent = this.currMemDiscountPercent;
+    // }
+    // else {
+    //   this.model.Remarks = null;
+    // }
+    this.InvoiceDiscountOnChange();
   }
 
 }

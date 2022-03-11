@@ -1,0 +1,100 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-close"></i></a>
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <!--Model Box Body Start-->
+                  <div class="col-md-12">
+                    <div class="right" [hidden]="true">
+                      <button class="btn btn-primary btn-sm" (click)="Print()">
+                        <i class="fa fa-print"></i>
+                        Print
+                      </button>
+                    </div>
+                    <div id="printpage" class="row printStyle print-border">
+                      <div>
+                        <div *ngIf="!!incomingStockDetail">
+                          <div class="media text-muted receiveContainer">
+                            <span class="media-body small border-bottom border-gray">
+                              <strong>Dispatch Id:</strong>
+                              {{incomingStockDetail.DispatchId}}
+                            </span>
+                            <span class="media-body small border-bottom border-gray">
+                              <strong>Transferred From:</strong>
+                              {{incomingStockDetail.RequestedFromStore}}
+                            </span>
+                            <span class="media-body small border-bottom border-gray">
+                              <strong>Received By:</strong>
+                              <div *ngIf="!!incomingStockDetail.ReceivedBy; else elseBlockOne">{{incomingStockDetail.ReceivedBy}}</div>
+                              <ng-template #elseBlockOne>Not Received</ng-template>
+                            </span>
+                            <span class="media-body small border-bottom border-gray">
+                              <strong>Received On:</strong>
+                              <div *ngIf="!!incomingStockDetail.ReceivedOn; else elseBlockTwo">
+                                {{incomingStockDetail.ReceivedOn | date : "yyyy-MM-dd"}}
+                                <i *ngIf="incomingStockDetail.ReceivedOn">({{incomingStockDetail.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                              </div>
+                              <ng-template #elseBlockTwo>Not Received</ng-template>
+                            </span>
+                            <div>
+                              <table class="table table-striped table-condensed">
+                                <thead>
+                                  <tr>
+                                    <th>Medicine Name</th>
+                                    <th>Batch No</th>
+                                    <th>Expiry Date</th>
+                                    <th>Cost Price</th>
+                                    <th>Incoming Qty</th>
+                                    <th>Item Remarks</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr *ngFor="let item of incomingStockDetail.DispatchItems">
+                                    <td style="text-align: left;">{{item.ItemName}}(<i style="color: blue;">{{item.GenericName}}</i>)</td>
+                                    <td style="text-align: left;">{{item.BatchNo}}</td>
+                                    <td style="text-align: left;">{{item.ExpiryDate | date : "yyyy-MM-dd"}}</td>
+                                    <td style="text-align: left;">{{item.CostPrice}}</td>
+                                    <td style="text-align: left;"><b>{{item.DispatchedQuantity}}</b></td>
+                                    <td style="text-align: left;">{{item.ItemRemarks}}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div class="media-body small border-bottom border-gray">
+                              <div>
+                                <strong class="col-md-2">Transferred Remarks:</strong>
+                                <span class="media-body" style="text-align: left;">{{incomingStockDetail.TransferredRemarks}}</span>
+                              </div><br />
+                              <div>
+                                <strong class="col-md-2">Receiving Remarks :</strong>
+                                <span class="media-body" style="text-align: left;" *ngIf="!!incomingStockDetail.ReceivedBy; else elseBlockThree">{{incomingStockDetail.ReceivedRemarks}}</span>
+                                <ng-template #elseBlockThree>
+                                  <textarea class="col-md-7" id="remarks" [(ngModel)]="incomingStockDetail.ReceivedRemarks" name="ReceiveRemarks" rows="3" (keyup.enter)="setFocusById('btn_Save')"></textarea>
+                                </ng-template>
+                              </div>
+                            </div>
+                            <div class="text-center">
+                              <button class="btn green btn-success" id="btn_Save" *ngIf="incomingStockDetail.ReceivedBy == null; else elseBlockFour" [disabled]="loading == true" (click)="ReceiveIncomingStock(incomingStockDetail.DispatchId,incomingStockDetail.ReceivedRemarks)">Receive</button>
+                              <ng-template #elseBlockFour>
+                                <div class="receiveStamp"> Received </div>
+                              </ng-template>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

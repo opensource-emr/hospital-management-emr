@@ -24,7 +24,8 @@
                                            [(ngModel)]="CurrentUnitOfMeasurement.UOMName"
                                            formControlName="UOMName"
                                            id="UOMName"
-                                           placeholder="UnitOfMeasurement Name" />
+                                           placeholder="UnitOfMeasurement Name" 
+                                           (keyup.enter)="FocusElementById('AddUnitOfMeasurement')"/>
                                     <span class="color-red font-sm" [hidden]="CurrentUnitOfMeasurement.IsValidCheck('UOMName','required') || !(CurrentUnitOfMeasurement.IsDirty('UOMName'))">UnitOfMeasurement Name is required</span>
                                     <span class="color-red font-sm" *ngIf="CurrentUnitOfMeasurement.IsDirty('UOMName')" [hidden]="CurrentUnitOfMeasurement.IsValidCheck('UOMName','maxlength')"> Length is not proper</span>
                                 </div>
@@ -56,8 +57,8 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddUnitOfMeasurement()" value="Add UnitOfMeasurement" [disabled]="loading" />
-                                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddUnitOfMeasurement()" value="Add UnitOfMeasurement" [disabled]="loading" id="AddUnitOfMeasurement" />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" id="AddUnitOfMeasurement"/>
                             </div>                        
                     </div>
                 </form>

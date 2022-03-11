@@ -16,10 +16,8 @@ import { BillingDepositComponent } from './bill-deposit/billing-deposit.componen
 import { BillingSearchPatientComponent } from './search-patient/billing-search-patient.component';
 import { ProvisionalBillingComponent } from './bill-provisional/provisional-billing.component';
 //import { InsuranceProvisionalBillingComponent } from './bill-provisional/insurance-provisional-billing.component';
-import { ReceiptPrintMainComponent } from './receipt/receipt-print-main.component';
 import { BillOrderRequestComponent } from './bill-request/bill-order-request.component';
 import { BillCancellationRequestComponent } from './bill-cancellation/bill-cancellation-request.component';
-import { BillReturnRequestComponent } from './bill-return/bill-return-request.component';
 import { BillingCounterActivateComponent } from './bill-counter/billing-counter-activate.component';
 import { EditDoctorFeatureComponent } from './edit-doctors/edit-doctor-feature.component';
 import { EditDoctorComponent } from './shared/edit-doctor/edit-doctor.component';
@@ -42,25 +40,13 @@ import { AppointmentDLService } from '../appointments/shared/appointment.dl.serv
 
 import { ImagingDLService } from '../radiology/shared/imaging.dl.service';
 import { BillingDashboardComponent } from '../dashboards/billing/billing-dashboard.component';
-//import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
-import { BillingReceiptComponent } from './receipt/billing-receipt.component';
 import { OrdersBLService } from "../orders/shared/orders.bl.service";
 import { BillingSelectPatientCanActivateGuard } from "./shared/billing-select-patient-canactivate-guard";
-
-//import { DepositReceiptComponent } from "./bill-deposit/deposit-receipt.component";
-import { BillSettlementReceiptComponent } from "./bill-settlements/settlement-receipt.component";
-import { BillDuplicatePrintsMainComponent } from "./bill-duplicate-prints/bill-duplicate-prints-main.component";
-import { DuplicateInvoicePrintComponent } from './bill-duplicate-prints/duplicate-invoice-print.component';
-import { DuplicateDepositReceiptComponent } from "./bill-duplicate-prints/duplicate-deposit-receipt-print.component";
-import { DuplicateCreditSettlementReceiptComponent } from "./bill-duplicate-prints/duplicate-credit-settlement-receipt-print.component";
-import { DuplicateDepositSettlementReceiptPrintComponent } from "./bill-duplicate-prints/duplicate-deposit-settlement-receipt-print.component";
 
 import { SettlementsMainComponent } from '../billing/bill-settlements/settlements.main.component';
 
 //sud: 31May'18--for provisional receipt--
-import { BillingProvisionalReceiptComponent } from "./receipt/billing-provisional-receipt.component";
 import { QrBillingComponent } from '../shared/qr-code/billing/qr-billing.component';
-import { IPBillingReceiptComponent } from './receipt/ip-billing-receipt.component';
 import { ADT_DLService } from '../adt/shared/adt.dl.service';
 import { IpBillMainComponent } from './ip-billing/ip-billing.main.component';
 import { PatientIpSummaryComponent } from './ip-billing/patient/patient-ip-summary.component';
@@ -68,24 +54,29 @@ import { IpBillItemRequest } from './ip-billing/bill-request/ip-bill-item-reques
 import { ChangeVisitTypeComponent } from './change-visit/change-visit-type.component';
 //sud:30Sept'18--to replace ng-autocomplete with danphe-autocomplete
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete/danphe-auto-complete.module';
-
-import { IPDischargeBillBreakupComponent } from './ip-billing/receipts/ip-discharge-bill-breakup.component';
 import { PatientsBLService } from '../patients/shared/patients.bl.service';
-import { IPBillingRequestSlipComponent } from './receipt/ip-billing-request-slip.component';
-import { BillingDenominationComponent } from '../billing/bill-denomination/bill-denomination.component'
-import { DuplicateProvisionalReceiptComponent } from './bill-duplicate-prints/duplicate-provisional-receipt.component';
+//import { IPBillingRequestSlipComponent } from './print-pages/ip-item-request-print/ip-billing-request-slip.component';
 import { BillingSharedModule } from './billing-shared.module';
 import { BillOutpatientAddComponent } from './op-patient-add/bill-op-patient-add.component';
 import { PatientSharedModule } from '../patients/patient-shared.module';
-import { BillReturnPartialComponent } from './bill-return/partial-return/bill-return-partial.component';
-
-
 import { SettingsSharedModule } from '../settings-new/settings-shared.module';
+import { BillingSearchPatientNewComponent } from './search-patient/billing-search-patient-new.component';
+import { BillingDenominationAccountsComponent } from './bill-denomination/Accounts/bill-denomination-accounts.component';
+import { BillingDenominationMainComponent } from './bill-denomination/bill-denomination-main.component';
+import { BillingDenominationCounterComponent } from './bill-denomination/Counter/bill-denomination-counter.component';
+import { BillingDenominationReportComponent } from './bill-denomination/Reports/bill-denomination-reports.component';
+import { BillingDenominationComponent } from './bill-denomination/bill-denomination.component-old';
+import { BILL_CreditNoteComponent } from './bill-return/bill-credit-note.component';
+import { BillingPrintSharedModule } from './print-pages/billing-print-shared.module';
+import { ReceiptPrintMainComponent_Old } from './print-pages/invoice-main/receipt-print-main-old.component';
+import { BillingReceiptComponent_Old } from './print-pages/op-normal-invoice/billing-receipt-old.component';
+import { BillingDenominationSummaryReportComponent } from './bill-denomination/Reports/bill-denomination-summary-reports';
+import { BillingDailyCollectionVsHandoverReportComponent } from './bill-denomination/Reports/bill-dailycollectionVsHandover-reports';
+import { StickerSharedModule } from '../stickers/stickers-shared-module';
+import { BillSettlementInvoiceDetail } from './bill-settlements/bill-settlement-invoice-detail.component';
 @NgModule({
   providers: [
-    //BillingService,//commented for Quick-Appointment. //review it and correct it later: sudarshan.
     BillingBLService, BillingDLService, LabsDLService,
-
     VisitDLService, AppointmentDLService, PatientsDLService,
     ImagingDLService, OrdersBLService, ADT_DLService, PatientsBLService,
     BillingSelectPatientCanActivateGuard],
@@ -94,64 +85,48 @@ import { SettingsSharedModule } from '../settings-new/settings-shared.module';
     CommonModule,
     ReactiveFormsModule,
     HttpClientModule,
-    // AgGridModule.forRoot(),
     DanpheAutoCompleteModule,
     FormsModule, SharedModule, QRCodeModule,
     BillingSharedModule,
     PatientSharedModule,
-    SettingsSharedModule
+    SettingsSharedModule,
+    BillingPrintSharedModule,
+    StickerSharedModule
   ],
   declarations: [
     BillingMainComponent,
     BillingTransactionItemComponent,
     BillingDepositComponent,
     BillingSearchPatientComponent,
+    BillingSearchPatientNewComponent,
     BillingTransactionComponent,
     ProvisionalBillingComponent,
-    ReceiptPrintMainComponent,//sud: 17June'18--folder structure and names changed as per angular structure.
-    BillingReceiptComponent,
     BillOrderRequestComponent,
     BillingCounterActivateComponent,
     BillCancellationRequestComponent,
-    BillReturnRequestComponent,
     BillingDashboardComponent,
     EditDoctorFeatureComponent,
     EditDoctorComponent,
-    //BillingPackageSelectComponent,
     BillSettlementsComponent,
-    BillSettlementReceiptComponent,
-    BillDuplicatePrintsMainComponent,
-    DuplicateInvoicePrintComponent,
-    DuplicateDepositReceiptComponent,
-    DuplicateCreditSettlementReceiptComponent,
-    DuplicateDepositSettlementReceiptPrintComponent,
-    //BillCopyReceiptComponent,
     GroupDiscountComponent,
-    BillingProvisionalReceiptComponent,
     QrBillingComponent,
-    IPBillingReceiptComponent,//sud:20Aug'18
-    //EditBillItemComponent,
-    //UpdateItemPriceComponent,
     IpBillMainComponent,//sud:10Sept'18
-    // IPDischargeBillBreakupComponent,
     PatientIpSummaryComponent,
     IpBillItemRequest,
     ChangeVisitTypeComponent,
-    //EditBillItemDocPriceComponent,
-    IPDischargeBillBreakupComponent,
-    BillSettlementReceiptComponent,
-    IPBillingRequestSlipComponent, //Hom: 24 April'19
     SettlementsMainComponent,
-    //InsuranceSettlementsComponent,
-    //BillInsuranceMainComponent,
-    //UpdateInsuranceBalanceComponent,
     BillingDenominationComponent,
-    DuplicateProvisionalReceiptComponent,
+    BillingDenominationMainComponent,
+    BillingDenominationAccountsComponent,
+    BillingDenominationCounterComponent,
+    BillingDenominationReportComponent,
+    BillingDenominationSummaryReportComponent,
+    BillingDailyCollectionVsHandoverReportComponent,
     BillOutpatientAddComponent,
-    //BillPastTestListComponent,
-    //InsuranceProvisionalBillingComponent, //Yubraj: 3rd July '19
-    //InsuranceBillItemRequest //Yubraj: 14th july '19
-    BillReturnPartialComponent,//Rajesh: 12sept'19
+    BILL_CreditNoteComponent,
+    ReceiptPrintMainComponent_Old,
+    BillingReceiptComponent_Old,
+    BillSettlementInvoiceDetail
   ],
   bootstrap: []//do we need anything here ? <sudarshan:2jan2017>
 })

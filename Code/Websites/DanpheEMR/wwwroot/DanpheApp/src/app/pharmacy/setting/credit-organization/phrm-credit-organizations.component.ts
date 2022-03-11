@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnInit, Renderer2 } from "@angular/core";
 
 import { SecurityService } from '../../../security/shared/security.service';
 import { CreditOrganization } from '../../shared/pharmacy-credit-organizations.model';
@@ -9,26 +9,31 @@ import * as moment from 'moment/moment';
     selector: "phrm-credit-organizations",
     templateUrl: "./phrm-credit-organizations.html"
 })
-export class PHRMCreditOrganizationsComponent {
+export class PHRMCreditOrganizationsComponent implements OnInit {
 
     public CurrentCreditOrganization: CreditOrganization = new CreditOrganization();
 
-    public showAddPage: boolean = false;
-    @Input("selectedItem")
-    public selectedItem: CreditOrganization;
-    @Output("callback-add")
-    callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
+    @Input("showAddPage") public showAddPage: boolean = false;
+    @Input("selectedItem") public selectedItem: CreditOrganization;
+    @Output("callback-add") callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
+    globalListenFunc: Function;
 
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public securityService: SecurityService,
         public msgBoxServ: MessageboxService,
-        public changeDetector: ChangeDetectorRef) {
+        public changeDetector: ChangeDetectorRef, public renderer2: Renderer2) {
     }
-    @Input("showAddPage")
-    public set value(val: boolean) {
-        this.showAddPage = val;
+   
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+        this.setFocusById('OrganizationName');
         if (this.selectedItem) {
             this.update = true;
             this.CurrentCreditOrganization = new CreditOrganization();
@@ -43,7 +48,6 @@ export class PHRMCreditOrganizationsComponent {
             this.update = false;
         }
     }
-
     Add() {
         for (var i in this.CurrentCreditOrganization.CreditOrganizationValidator.controls) {
             this.CurrentCreditOrganization.CreditOrganizationValidator.controls[i].markAsDirty();
@@ -96,12 +100,17 @@ export class PHRMCreditOrganizationsComponent {
         console.log(err);
     }
     Close() {
-        this.selectedItem = null;
+        this.CurrentCreditOrganization = null;
         this.update = false;
         this.showAddPage = false;
     }
     showMessageBox(status: string, message: string) {
         this.msgBoxServ.showMessage(status, [message]);
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 
 }

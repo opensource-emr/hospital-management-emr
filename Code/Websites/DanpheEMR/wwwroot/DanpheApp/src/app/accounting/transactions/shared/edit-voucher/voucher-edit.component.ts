@@ -151,10 +151,11 @@ export class VoucherEditComponent {
 
   @Input("editvoucherNumber")
   public set value(val: string) {
-    if (val) {
+    if (!!val) {//mumbai-team-june2021-danphe-accounting-cache-change
       // this.Reset();
       // this.GetTxn(val);
       this.showeditPage = false;
+      this.editVoucherNo = val;//mumbai-team-june2021-danphe-accounting-cache-change
       this.GetLedgerList();
       this.GetVoucher();
       this.GetVoucherHead();
@@ -162,7 +163,6 @@ export class VoucherEditComponent {
 
       // this.LoadCalendarTypes();
       this.setParameterValues();
-      this.editVoucherNo = val;
     }
   }
 
@@ -196,19 +196,21 @@ export class VoucherEditComponent {
 
   GetVoucher() {
     try {
-      this.accountingBLService.GetVoucher().subscribe((res) => {
-        this.voucherList = res.Results;
+      if(!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherList = this.accountingService.accCacheData.VoucherType;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherList = this.voucherList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         this.AssignVoucher();
-      });
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
   }
   GetVoucherHead() {
     try {
-      this.accountingBLService.GetVoucherHead().subscribe((res) => {
-        this.voucherHeadList = res.Results;
-      });
+      if(!!this.accountingService.accCacheData.VoucherHead && this.accountingService.accCacheData.VoucherHead.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherHeadList = this.accountingService.accCacheData.VoucherHead;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherHeadList = this.voucherHeadList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -259,22 +261,21 @@ export class VoucherEditComponent {
   //get all Ledger
   GetLedgerList() {
     try {
-      this.accSettingBlService.GetLedgerList().subscribe((res) => {
-        if (res.Results) {
-          this.ledgerList = res.Results;
-          this.GetVoucherDetailForEdit(this.editVoucherNo,this.fiscalYearId);
-          this.ledgerList.forEach((a) => {
-            if (a.ClosingBalance > 0) {
-              a.ClosingBalwithDrCr = "Dr" + a.ClosingBalance;
-            } else if (a.ClosingBalance == 0) {
-              a.ClosingBalwithDrCr = "0";
-            } else {
-              a.ClosingBalwithDrCr = "Cr" + -a.ClosingBalance;
-            }
-          });
-          this.isValidRefId = true;
-        }
-      });
+      if (!!this.accountingService.accCacheData.Ledgers.length && this.accountingService.accCacheData.Ledgers.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerList = this.accountingService.accCacheData.Ledgers;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerList = this.ledgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.GetVoucherDetailForEdit(this.editVoucherNo, this.fiscalYearId);
+        this.ledgerList.forEach((a) => {
+          if (a.ClosingBalance > 0) {
+            a.ClosingBalwithDrCr = "Dr" + a.ClosingBalance;
+          } else if (a.ClosingBalance == 0) {
+            a.ClosingBalwithDrCr = "0";
+          } else {
+            a.ClosingBalwithDrCr = "Cr" + -a.ClosingBalance;
+          }
+        });
+        this.isValidRefId = true;
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -290,14 +291,14 @@ export class VoucherEditComponent {
         if (temp <= 0) {
           temp = 0;
         }
-        currentTxnItem.Amount = temp;
+        currentTxnItem.Amount = CommonFunctions.parseDecimal(temp);
       } else {
         currentTxnItem.DrCr = true;
         var temp = this.totalCredit - this.totalDebit;
         if (temp <= 0) {
           temp = 0;
         }
-        currentTxnItem.Amount = temp;
+        currentTxnItem.Amount =  CommonFunctions.parseDecimal(temp);
       }
       this.transaction.TransactionItems.push(currentTxnItem);
       //here we need to pass index of newly created ledger. Index will always be length-1
@@ -343,6 +344,9 @@ export class VoucherEditComponent {
 
   //POST the txn to Database
   UpdateTransaction() {
+    //for avoid validation error
+    this.transaction.UpdateValidator("off", "PayeeName", "required");
+    this.transaction.UpdateValidator("off", "ChequeNumber", "");
     this.HideSavebtn = true;
     // let check = confirm("Are you sure you want to save?");
     // if (check && this.transactionId == null) {
@@ -392,7 +396,7 @@ export class VoucherEditComponent {
             this.CheckSelLedger()
           ) {
             this.transaction.TotalAmount = this.totalDebit;
-            this.transaction.FiscalYearId = this.fiscalYear.FiscalYearId;
+            this.transaction.FiscalYearId = this.fiscalYearId;
             if (this.checkDateValidation()) {
               if (this.IsBackDateEntry == false) {
                 this.transaction.IsBackDateEntry = false;
@@ -558,8 +562,8 @@ export class VoucherEditComponent {
     try {
       let valid = true;
       //parse to same format before comparison..
-      this.totalDebit = CommonFunctions.parseAmount(this.totalDebit);
-      this.totalCredit = CommonFunctions.parseAmount(this.totalCredit);
+     //this.totalDebit = CommonFunctions.parseAmount(this.totalDebit);
+      //this.totalCredit = CommonFunctions.parseAmount(this.totalCredit);
 
       if (this.totalDebit && this.totalCredit) {
         if (this.totalDebit != this.totalCredit) {
@@ -634,7 +638,7 @@ export class VoucherEditComponent {
       this.totalDebit = this.totalAmount = 0;
       this.totalCredit = 0;
       this.transaction.TransactionItems.forEach((a) => {
-        a.Amount = CommonFunctions.parseAmount(a.Amount);
+        //a.Amount = CommonFunctions.parseAmount(a.Amount);
         if (a.DrCr === true || a.DrCr.toString() == "true") {
           this.totalDebit += a.Amount;
         } else {
@@ -645,6 +649,9 @@ export class VoucherEditComponent {
           this.totalAmount = this.totalDebit;
         }
       });
+      this.totalDebit =  CommonFunctions.parseDecimal(this.totalDebit);
+      this.totalCredit =  CommonFunctions.parseDecimal(this.totalCredit);
+      this.totalAmount = this.totalDebit;
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }

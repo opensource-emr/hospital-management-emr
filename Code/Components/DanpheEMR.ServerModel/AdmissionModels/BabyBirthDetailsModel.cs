@@ -19,7 +19,6 @@ namespace DanpheEMR.ServerModel
         public DateTime BirthDate {get;set;}
         public TimeSpan BirthTime {get;set;}
         public int? DischargeSummaryId {get;set;}
-        public int NumberOfBabies { get; set; }
         public int PatientId { get; set; }
         public int PatientVisitId { get; set; }
         public int? MedicalRecordId { get; set; }
@@ -38,6 +37,8 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
 
         public bool IsActive { get; set; }
+
+        public int BirthConditionId { get; set; }
 
         [NotMapped]
         public bool IsDeleted { get; set; }

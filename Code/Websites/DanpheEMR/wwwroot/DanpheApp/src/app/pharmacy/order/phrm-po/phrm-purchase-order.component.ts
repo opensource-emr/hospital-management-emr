@@ -1,19 +1,19 @@
 ﻿import { Component, ChangeDetectorRef } from '@angular/core'
-import { Router, RouterOutlet, RouterModule } from '@angular/router'
+import { Router } from '@angular/router'
 import { SecurityService } from "../../../security/shared/security.service"
 import { PHRMPurchaseOrder } from "../../shared/phrm-purchase-order.model";
 import { PHRMPurchaseOrderItems } from "../../shared/phrm-purchase-order-items.model";
 import { PHRMSupplierModel } from "../../shared/phrm-supplier.model"
 import { PHRMItemMasterModel } from "../../shared/phrm-item-master.model"
-import { PHRMItemTypeModel } from "../../shared/phrm-item-type.model"
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service"
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service"
 import { ENUM_TermsApplication } from '../../../shared/shared-enums';
 import { TermsConditionsMasterModel } from '../../../inventory/shared/terms-conditions-master.model';
-import { CoreService } from '../../../core/shared/core.service';
-import { PHRMPackingTypeModel } from '../../shared/phrm-packing-type.model';
+import { PharmacyPOService } from '../pharmacy-po.service';
 @Component({
-    templateUrl: "./phrm-purchase-order.html"
+    templateUrl: "./phrm-purchase-order.html",
+    styleUrls: ["./phrm-purchase-order.css"],
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PHRMPurchaseOrderComponent {
     //binding logic
@@ -21,90 +21,93 @@ export class PHRMPurchaseOrderComponent {
     public currentPO: PHRMPurchaseOrder = new PHRMPurchaseOrder();
     /////For Temporary Storing and Remove Items Whose Qty is Zero When Click on Submit
     public tempcurrentPO: PHRMPurchaseOrder = new PHRMPurchaseOrder();
-    
-    //for show and hide packing features
-    public IsPkgitem: boolean = false;
+
     //for showing the supplier details
-    public SelectedSupplier: PHRMSupplierModel = new PHRMSupplierModel();
+    public SelectedSupplier: PHRMSupplierModel;
 
     ///this is to get supplierlist 
     public supplierList: Array<PHRMSupplierModel> = new Array<PHRMSupplierModel>();
     //this is to get terms list
     public termsList: Array<TermsConditionsMasterModel> = [];
-    public taxList:Array<any>;
-    public taxData:Array<any>;
+    public taxList: Array<any>;
     //display Supplier on certain condition only
-    public ShowSupplierDetails: boolean = false;
     //this Item is used for search button(means auto complete button)...
     public ItemList: Array<PHRMItemMasterModel> = new Array<PHRMItemMasterModel>();
-    public ItemTypeList: Array<PHRMItemTypeModel> = new Array<PHRMItemTypeModel>();
-    //public ItemTypeList: any;
-    public itemTypeMapItemListData = new Array<{ ItemTypeId: number, ItemList: Array<PHRMItemMasterModel> }>();
     public showAddItemPopUp: boolean = false;
     public index: number = 0;
 
     public checkIsItemPresent: boolean = false;
-    //this is to add or delete the number of row in ui
-    public rowCount: number = 0;
     //declare boolean loading variable for disable the double click event of button
     loading: boolean = false;
     validRoutes: any;
-    public packingtypeList:Array<PHRMPackingTypeModel> = new Array<PHRMPackingTypeModel>();
-    constructor(public securityService: SecurityService, public changeDetectorRef: ChangeDetectorRef
-        , public pharmacyBLService: PharmacyBLService, public router: Router
-        , public msgserv: MessageboxService,public coreService:CoreService) {
+    editPO: boolean = false;
+    selectedPO: any;
+    constructor(public pharmacyPOService: PharmacyPOService, public securityService: SecurityService, public changeDetectorRef: ChangeDetectorRef, public pharmacyBLService: PharmacyBLService, public router: Router, public msgserv: MessageboxService) {
         this.validRoutes = this.securityService.GetChildRoutes("Pharmacy/Order");
         this.ItemList = new Array<PHRMItemMasterModel>();
         this.GetSupplierList();
-        // this.LoadItemTypeList();
         this.AddRowRequest(0);
         this.LoadAllItems();
         this.GetTaxList();
         this.GetPharmacyTermsList();
-        this.GetPackingList();
-        this.showpacking();
+        this.LoadForEditPO();
+    }
+    ngOnDestroy() {
+        this.pharmacyPOService.PurchaseOrderId = 0;
+    }
+    LoadForEditPO() {
+        if (this.pharmacyPOService.PurchaseOrderId > 0) {
+            this.editPO = true;
+            this.findPurchaseOrder();
+        }
+    }
+    findPurchaseOrder() {
+        var poId = this.pharmacyPOService.PurchaseOrderId;
+        this.pharmacyPOService.findPurchaseOrder(poId)
+            .subscribe(res => {
+                if (res.Status == 'OK') {
+                    this.selectedPO = res.Results.purchaseOrder;
+                    this.currentPO.SubTotal = this.selectedPO.SubTotal;
+                    this.currentPO.TotalAmount = this.selectedPO.TotalAmount;
+                    this.currentPO.VATAmount = this.selectedPO.VATAmount;
+                    this.currentPO.Remarks = this.selectedPO.Remarks;
+                    this.currentPO.PurchaseOrderId = this.selectedPO.PurchaseOrderId;
+                    this.currentPO.CreatedBy = this.selectedPO.CreatedBy;
+                    this.currentPO.CreatedOn = this.selectedPO.CreatedOn;
+                    this.currentPO.PODate = this.selectedPO.PODate;
+                    this.currentPO.POStatus = this.selectedPO.POStatus;
+                    this.currentPO.PurchaseOrderValidator.get("SupplierId").setValue(this.selectedPO.SupplierName);
+                    this.currentPO.PHRMPurchaseOrderItems = [];
+                    for (let index = 0; index < this.selectedPO.PHRMPurchaseOrderItems.length; index++) {
+                        this.currentPO.PHRMPurchaseOrderItems.push(new PHRMPurchaseOrderItems());
+                        //this.currentPO.PHRMPurchaseOrderItems[index].PurchaseOrderItemValidator.get("ItemId").setValue(this.selectedPO.PHRMPurchaseOrderItems[index].ItemName);
+                        //this.currentPO.PHRMPurchaseOrderItems[index].PurchaseOrderItemValidator.get("Quantity").setValue(this.selectedPO.PHRMPurchaseOrderItems[index].Quantity);
+                        this.currentPO.PHRMPurchaseOrderItems[index].StandaredPrice = this.selectedPO.PHRMPurchaseOrderItems[index].StandaredPrice;
+                        this.currentPO.PHRMPurchaseOrderItems[index].VatPercentage = this.selectedPO.PHRMPurchaseOrderItems[index].VatPercentage;
+                        this.currentPO.PHRMPurchaseOrderItems[index].VATAmount = this.selectedPO.PHRMPurchaseOrderItems[index].VATAmount;
+                        this.currentPO.PHRMPurchaseOrderItems[index].TotalAmount = this.selectedPO.PHRMPurchaseOrderItems[index].TotalAmount;
+                        this.currentPO.PHRMPurchaseOrderItems[index].DeliveryDays = this.selectedPO.PHRMPurchaseOrderItems[index].DeliveryDays;
+                        this.currentPO.PHRMPurchaseOrderItems[index].SelectedItem = this.selectedPO.PHRMPurchaseOrderItems[index].ItemName;
+                        this.currentPO.PHRMPurchaseOrderItems[index].ItemId = this.selectedPO.PHRMPurchaseOrderItems[index].ItemId;
+                        this.currentPO.PHRMPurchaseOrderItems[index].POItemStatus = this.selectedPO.PHRMPurchaseOrderItems[index].POItemStatus;
+                        this.currentPO.PHRMPurchaseOrderItems[index].PendingQuantity = this.selectedPO.PHRMPurchaseOrderItems[index].PendingQuantity;
+                        //this.currentPO.PHRMPurchaseOrderItems[index].PurchaseOrderId = this.selectedPO.PHRMPurchaseOrderItems[index].PurchaseOrderId;
+                        this.currentPO.PHRMPurchaseOrderItems[index].PurchaseOrderItemId = this.selectedPO.PHRMPurchaseOrderItems[index].PurchaseOrderItemId;
+                        this.currentPO.PHRMPurchaseOrderItems[index].Quantity = this.selectedPO.PHRMPurchaseOrderItems[index].Quantity;
+                        this.currentPO.PHRMPurchaseOrderItems[index].CreatedBy = this.selectedPO.PHRMPurchaseOrderItems[index].CreatedBy;
+                        this.currentPO.PHRMPurchaseOrderItems[index].CreatedOn = this.selectedPO.PHRMPurchaseOrderItems[index].CreatedOn;
+                        this.currentPO.PHRMPurchaseOrderItems[index].AuthorizedBy = this.selectedPO.PHRMPurchaseOrderItems[index].AuthorizedBy;
+                        this.currentPO.PHRMPurchaseOrderItems[index].AuthorizedOn = this.selectedPO.PHRMPurchaseOrderItems[index].AuthorizedOn;
+
+                    }
+                }
+            })
     }
 
     ngAfterViewChecked() {
         this.changeDetectorRef.detectChanges();
     }
 
-    //GET:getting supplier details By Supplier Id
-    GetSupplierDetails(SupplierId) {
-        if (SupplierId != null && SupplierId != 0) {
-            this.pharmacyBLService.GetSupplierDetailsBySupplierId(SupplierId)
-                .subscribe(res => {
-                    if (res.Status == 'OK') {
-                        this.SelectedSupplier = res.Results[0];
-                        //display Supplier on certain condition only
-                        this.ShowSupplierDetails = true;
-
-                    }
-                    else {
-                        err => {
-                            this.msgserv.showMessage("falied", ['failed to get SupplierDetails.. please check log for details.']);
-                        }
-                    }
-                });
-
-        }
-    }
-
-    //Get: packing List 
-    GetPackingList(){
-        this.pharmacyBLService.GetPackingTypeList()
-        .subscribe(res=>{
-            if(res.Status == 'OK'){
-                this.packingtypeList = res.Results;
-            }
-            else{
-                 this.msgserv.showMessage('failed',['Failed to get PackingTypeList'+ res.ErrorMessage]); 
-            }
-        },
-        err=>{
-            this.msgserv.showMessage('error',['Failed to get PackingList'+ err.ErrorMessage]);
-        })
-    }
     //GET:geting List Of all Supplier 
     GetSupplierList() {
         this.pharmacyBLService.GetSupplierList()
@@ -113,6 +116,7 @@ export class PHRMPurchaseOrderComponent {
                     this.supplierList = res.Results;
                     ///displaying only those supplier in Dropdownlist whose status is Active Now.
                     this.supplierList = this.supplierList.filter(suplr => suplr.IsActive == true);
+                    this.SetFocusById("SupplierName");
                 }
                 else {
                     this.msgserv.showMessage("failed", ['Failed to get SupplierList.' + res.ErrorMessage]);
@@ -123,7 +127,26 @@ export class PHRMPurchaseOrderComponent {
                 }
             )
     }
-
+    OnSupplierChanged() {
+        let supplier = null;
+        if (!this.SelectedSupplier) {
+            this.currentPO.SupplierId = null;
+        }
+        else if (typeof (this.SelectedSupplier) == 'string') {
+            supplier = this.supplierList.find(a => a.SupplierName.toLowerCase() == this.SelectedSupplier.toString().toLowerCase());
+        }
+        else if (typeof (this.SelectedSupplier) == "object") {
+            supplier = this.SelectedSupplier;
+        }
+        if (supplier) {
+            this.currentPO.SupplierId = supplier.SupplierId;
+            this.currentPO.SupplierName = supplier.SupplierName;
+        }
+        else {
+            this.currentPO.SupplierId = null;
+            this.currentPO.SupplierName = "";
+        }
+    }
     GetPharmacyTermsList() {
         this.pharmacyBLService.GetTermsList(ENUM_TermsApplication.Pharmacy)
             .subscribe(res => {
@@ -135,113 +158,55 @@ export class PHRMPurchaseOrderComponent {
                 }
 
             }, err => {
-                this.msgserv.showMessage("Failed", [err.error.ErrorMessage])
+                console.log(err.error.ErrorMessage);
             });
     }
-    //GET: to load the itemType in the start
-    //LoadItemTypeList(): void {
-    //    this.pharmacyBLService.GetItemTypeList()
-    //        .subscribe(res => this.CallBackGetItemTypeList(res));
-    //}
-    //CallBackGetItemTypeList(res) {
-    //    if (res.Status == 'OK') {
-    //        ////this.ItemTypeList = [];
-    //        if (res.Results) {
-    //            this.ItemTypeList = res.Results;
-    //            ///displaying only those ItemTypeList in Dropdown whose Status is Active Now. 
-    //            this.ItemTypeList = this.ItemTypeList.filter(itmtype => itmtype.IsActive == true);
-
-    //        }
-
-    //    }
-    //    else {
-    //        err => {
-    //            this.msgserv.showMessage("failed", ['failed to get ItemsList.. please check log for details.']);
-    //        }
-    //    }
-    //}
-    //onChange(itemTypeId, index) {
-    //    //find itemtype with itemlist as locally if yes then take this else go to server
-    //    let ItemTypeData = this.itemTypeMapItemListData.find(a => a.ItemTypeId == itemTypeId);
-    //    if (ItemTypeData && itemTypeId) {
-    //        this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = [];
-    //        this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = ItemTypeData.ItemList;
-    //    }
-    //    else {
-    //        if (itemTypeId && index >= 0) {
-    //            this.pharmacyBLService.GetItemListByItemTypeId(itemTypeId)
-    //                .subscribe(res => {
-    //                    if (res.Status == "OK" && res.Results.length > 0) {
-    //                        this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = [];
-    //                        this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = res.Results;
-    //                        let tempItmList = { ItemTypeId: itemTypeId, ItemList: res.Results };
-    //                        this.itemTypeMapItemListData.push(tempItmList);
-    //                    }
-    //                    else {
-    //                        this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = [];
-    //                        this.msgserv.showMessage("notice-message", ["No Items Avaliable for this ItemType"]);
-    //                    }
-    //                });
-    //        }
-    //    }
-    //}
     LoadAllItems() {
-        this.pharmacyBLService.GetItemList()
+        this.pharmacyPOService.GetItemsForPO()
             .subscribe(res => {
-                if (res.Status == "OK" && res.Results.length > 0) {
-                    //this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = [];
-                    //this.currentPO.PHRMPurchaseOrderItems[index].ItemListByItemType = res.Results;
-                    let tempItmList = { ItemTypeId: null, ItemList: res.Results };
-
-                    this.itemTypeMapItemListData.push(tempItmList);
-                    this.ItemList = res.Results;
+                if (res.Status == "OK") {
+                    this.ItemList = res.Results.ItemList;
                 }
                 else {
-                    //this.currentPO.PHRMPurchaseOrderItems[].ItemListByItemType = [];
                     this.msgserv.showMessage("notice-message", ["No Items Avaliable for this ItemType"]);
                 }
             });
-
-
     }
 
-     //this function load all master tax data
-  GetTaxList(){
-    try {
-      this.pharmacyBLService.GetTAXList().subscribe(
-          (res) => {
-            if (res.Status == "OK") {
-              this.taxList = res.Results;
-              this.taxData = this.taxList;
-            } else {
-              console.log(res.ErrorMessage);
-              this.msgserv.showMessage("failed", [
-                "Failed to get tax list, see detail in console log",
-              ]);
-            }
-          },
-          (err) => {
-            console.log(err.ErrorMessage);
-            this.msgserv.showMessage("error", [
-              "Failed to get tax list., see detail in console log",
-            ]);
-          }
-        );
-    } catch (exception) {
-      console.log(exception);
-      this.msgserv.showMessage("error", ["error details see in console log"]);
+    //this function load all master tax data
+    GetTaxList() {
+        try {
+            this.pharmacyBLService.GetTAXList().subscribe(
+                (res) => {
+                    if (res.Status == "OK") {
+                        this.taxList = res.Results;
+                    } else {
+                        console.log(res.ErrorMessage);
+                        this.msgserv.showMessage("failed", [
+                            "Failed to get tax list, see detail in console log",
+                        ]);
+                    }
+                },
+                (err) => {
+                    console.log(err.ErrorMessage);
+                    this.msgserv.showMessage("error", [
+                        "Failed to get tax list., see detail in console log",
+                    ]);
+                }
+            );
+        } catch (exception) {
+            console.log(exception);
+            this.msgserv.showMessage("error", ["error details see in console log"]);
+        }
     }
-  }
-    SelectItemFromSearchBox(Item: any, index) {
+    OnItemSelected(Item: any, index) {
         //if proper item is selected then the below code runs ..othewise it goes out side the function
         if (typeof Item === "object" && !Array.isArray(Item) && Item !== null) {
             //this for loop with if conditon is to check whether the  item is already present in the array or not 
             //means to avoid duplication of item
-            this.currentPOItem = Item;
             for (var i = 0; i < this.currentPO.PHRMPurchaseOrderItems.length; i++) {
-                if (this.currentPO.PHRMPurchaseOrderItems[i].ItemId == Item.ItemId) {
+                if (this.currentPO.PHRMPurchaseOrderItems[i].ItemId == Item.ItemId && i != index) {
                     this.checkIsItemPresent = true;
-
                 }
             }
             //id item is present the it show alert otherwise it assign the value
@@ -251,7 +216,6 @@ export class PHRMPurchaseOrderComponent {
                 this.changeDetectorRef.detectChanges();
                 this.currentPO.PHRMPurchaseOrderItems.splice(index, 1);
                 this.currentPOItem = new PHRMPurchaseOrderItems();
-                /// this.currentPOItem.Quantity = 1;
                 this.currentPO.PHRMPurchaseOrderItems.push(this.currentPOItem);
 
             }
@@ -260,16 +224,10 @@ export class PHRMPurchaseOrderComponent {
                     // Assiging the value StandardRate,VatPercentage and ItemId in the particular index ..
                     //it helps for changing item after adding the item and also in adding in new item
                     if (a == index) {
-                        this.currentPO.PHRMPurchaseOrderItems[index].StandaredPrice = Item.GRItemPrice //0;
+                        //this.currentPO.PHRMPurchaseOrderItems[index].StandaredPrice = Item.StandardRate || 0;
                         /////we can display VATPercentage of those item which are VATApplicable because some item does not contails VAT so that we can take VATPercentage for that Zero(0)
                         this.currentPO.PHRMPurchaseOrderItems[index].VatPercentage = (Item.IsVATApplicable == true) ? this.taxList[0].TAXPercentage : 0;
                         this.currentPO.PHRMPurchaseOrderItems[index].ItemId = Item.ItemId;
-                        if(Item.PackingTypeId !=null){
-                            this.currentPO.PHRMPurchaseOrderItems[index].Packing =this.UpdatePackingSettingForItem(Item,a);
-                        }
-                        else{
-                            //this.currentPO.PHRMPurchaseOrderItems[index].Packing =this.UpdatePackingSettingForItem(Item,a);
-                        }
                         //calculation of POItem
                         this.CalculationForPOItem();
                     }
@@ -279,31 +237,6 @@ export class PHRMPurchaseOrderComponent {
         }
     }
 
-    private UpdatePackingSettingForItem(selectedPOItem: any,i) {
-        if (this.packingtypeList != null && this.packingtypeList.length > 0 && selectedPOItem.PackingTypeId != null) {
-            var selectedItemPackingType = this.packingtypeList.find(a => a.PackingTypeId == selectedPOItem.PackingTypeId);
-            if (selectedItemPackingType != null) {
-                this.currentPOItem.Packing = selectedItemPackingType;
-                this.currentPOItem.PackingQty = selectedItemPackingType.PackingQuantity;
-
-                // selectedGRItem.PackingName = selectedItemPackingType.PackingName ;
-                // selectedGRItem.PackingQty = selectedItemPackingType.PackingQuantity;
-                // selectedGRItem.ItemQTy = selectedGRItem.ReceivedQuantity / selectedGRItem.PackingQty;
-                return this.currentPOItem.Packing
-            }
-
-        }
-        else {
-             this.currentPOItem.PackingQty = this.packingtypeList[i].PackingQuantity;
-            //selectedPOItem.PurchaseOrderItemValidator.updateValueAndValidity();
-            return null;
-        }
-    }
-   //used to format display item in ng-autocomplete
-   PackingListsFormatter(data: any): string {
-    let html = data["PackingName"];
-    return html;
-}
     AddItemPopUp(i) {
         this.showAddItemPopUp = false;
         this.index = i;
@@ -315,7 +248,6 @@ export class PHRMPurchaseOrderComponent {
     AddRowRequest(index) {
         if (this.currentPO.PHRMPurchaseOrderItems.length == 0) {
             this.currentPO.PHRMPurchaseOrderItems.push(this.currentPOItem);
-            ////this.currentPOItem.Quantity = 1;
         }
         else {
             //checking the validation
@@ -326,10 +258,7 @@ export class PHRMPurchaseOrderComponent {
                     this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].updateValueAndValidity();
                 }
             }
-            ////row can be added if only if the item is selected is last row
-            this.rowCount++;
             this.currentPOItem = new PHRMPurchaseOrderItems();
-            ////this.currentPOItem.Quantity = 1;
             this.currentPO.PHRMPurchaseOrderItems.push(this.currentPOItem);
         }
     }
@@ -352,21 +281,20 @@ export class PHRMPurchaseOrderComponent {
         }
     }
     //used to format display item in ng-autocomplete
-    myListFormatter(data: any): string {
+    ItemListFormatter(data: any): string {
         let html = data["ItemName"];
+        return html;
+    }
+    SupplierListFormatter(data: any): string {
+        let html = data["SupplierName"];
         return html;
     }
     // to do Calculation of POItem
     CalculationForPOItem() {
 
         if (this.currentPOItem.StandaredPrice != null && this.currentPOItem.Quantity != null && this.currentPOItem.VatPercentage != null) {
-            //this Vat is the coversion of vatpercentage
-            let Vat = this.currentPOItem.VatPercentage / 100;
-            ///this vatAmount is calculating VATAmount of Each items
-            let vatAmount = (this.currentPOItem.StandaredPrice * this.currentPOItem.Quantity) * Vat;
-            
+            this.CalculationForPO();
         }
-        this.CalculationForPO();
     }
 
     //this calculation is for the whole PO
@@ -377,17 +305,17 @@ export class PHRMPurchaseOrderComponent {
         this.currentPO.TotalAmount = 0;
         for (var i = 0; i < this.currentPO.PHRMPurchaseOrderItems.length; i++) {
             ///calculating currentPO SubTotalAmount and currentPOItems SubTotalAmount using formula StandaredPrice * Quantity
-            this.currentPO.PHRMPurchaseOrderItems[i].SubTotal = (this.currentPO.PHRMPurchaseOrderItems[i].StandaredPrice * (this.currentPO.PHRMPurchaseOrderItems[i].Quantity * this.currentPOItem.PackingQty))
-            this.currentPO.SubTotal = this.currentPO.SubTotal + this.currentPO.PHRMPurchaseOrderItems[i].SubTotal;
+            this.currentPO.PHRMPurchaseOrderItems[i].SubTotal = (this.currentPO.PHRMPurchaseOrderItems[i].StandaredPrice * this.currentPO.PHRMPurchaseOrderItems[i].Quantity)
+            this.currentPO.SubTotal = this.currentPO.SubTotal + (this.currentPO.PHRMPurchaseOrderItems[i].StandaredPrice * this.currentPO.PHRMPurchaseOrderItems[i].Quantity);
             /////this Vat is the coversion of vatpercentage
             let Vat = this.currentPO.PHRMPurchaseOrderItems[i].VatPercentage / 100;
             ////calculating VATAmount 
-            let vatAmount1 = (this.currentPO.PHRMPurchaseOrderItems[i].SubTotal) * Vat;
+            let vatAmount1 = (this.currentPO.PHRMPurchaseOrderItems[i].StandaredPrice * this.currentPO.PHRMPurchaseOrderItems[i].Quantity) * Vat;
             /////calculating currentPO VATAmount and currentPOItems VATAmount 
             this.currentPO.PHRMPurchaseOrderItems[i].VATAmount = vatAmount1;
             this.currentPO.VATAmount = (Math.round((this.currentPO.VATAmount + vatAmount1) * 100) / 100);
             /////calculating currentPO TotalAmount and currentPOItems TotalAmount
-            this.currentPO.PHRMPurchaseOrderItems[i].TotalAmount = (this.currentPO.PHRMPurchaseOrderItems[i].SubTotal+ vatAmount1);
+            this.currentPO.PHRMPurchaseOrderItems[i].TotalAmount = (this.currentPO.PHRMPurchaseOrderItems[i].StandaredPrice * this.currentPO.PHRMPurchaseOrderItems[i].Quantity + vatAmount1);
             this.currentPO.TotalAmount = (Math.round((this.currentPO.TotalAmount + this.currentPO.PHRMPurchaseOrderItems[i].TotalAmount) * 100) / 100);
         }
     }
@@ -399,35 +327,36 @@ export class PHRMPurchaseOrderComponent {
         // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
         //if the CheckIsValid == true the validation is proper else no
         var CheckIsValid = true;
-
+        var errorMessages: string[] = [];
         if (this.currentPO.IsValidCheck(undefined, undefined) == false) {
             // for loop is used to show PurchaseOrderValidator message ..if required  field is not filled
+            CheckIsValid = false;
             for (var b in this.currentPO.PurchaseOrderValidator.controls) {
                 this.currentPO.PurchaseOrderValidator.controls[b].markAsDirty();
                 this.currentPO.PurchaseOrderValidator.controls[b].updateValueAndValidity();
-                CheckIsValid = false;
+                if (this.currentPO.PurchaseOrderValidator.controls[b].invalid) {
+                    errorMessages.push(`${b} is not valid.`)
+                }
             }
         }
-
-
         for (var i = 0; i < this.currentPO.PHRMPurchaseOrderItems.length; i++) {
             if (this.currentPO.PHRMPurchaseOrderItems[i].IsValidCheck(undefined, undefined) == false) {
+                CheckIsValid = false;
                 // for loop is used to show PurchaseOrderItemValidator message ..if required  field is not filled
                 for (var a in this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls) {
                     this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].markAsDirty();
                     this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].updateValueAndValidity();
+                    if (this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].invalid) {
+                        errorMessages.push(`${a} is not valid for item ${i + 1}.`)
+                    }
                 }
-                CheckIsValid = false;
             }
         }
-
-
-        if (this.currentPO.PHRMPurchaseOrderItems.length == 0) {
-            this.msgserv.showMessage("notice-message", ["Please Add Item ...Before Requesting"]);
+        if (this.currentPO.PHRMPurchaseOrderItems == null || this.currentPO.PHRMPurchaseOrderItems.length == 0) {
+            CheckIsValid = false;
+            errorMessages.push("Please Add Item ...Before Requesting");
         }
-
-        if (CheckIsValid == true && this.currentPO.PHRMPurchaseOrderItems != null) {
-
+        if (CheckIsValid == true) {
             ////Push Actual PurchaseItems To Temporary Model
             for (var i = 0; i < this.currentPO.PHRMPurchaseOrderItems.length; i++) {
                 this.tempcurrentPO.PHRMPurchaseOrderItems.push(this.currentPO.PHRMPurchaseOrderItems[i]);
@@ -436,7 +365,6 @@ export class PHRMPurchaseOrderComponent {
             this.currentPO.PHRMPurchaseOrderItems = [];
 
             for (var i = 0; i < this.tempcurrentPO.PHRMPurchaseOrderItems.length; i++) {
-                ///this.tempRetSuppModel.returnToSupplierItems[i].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
 
                 if (this.tempcurrentPO.PHRMPurchaseOrderItems[i].Quantity != 0) {
                     //    ///updating the each POItemsStatus to Active
@@ -446,9 +374,7 @@ export class PHRMPurchaseOrderComponent {
 
                     ////Now Current Return Obj has Those Item Whose Qunatity Is Greater Then Zero
                     this.currentPO.PHRMPurchaseOrderItems.push(this.tempcurrentPO.PHRMPurchaseOrderItems[i]);
-
                 }
-
             }
             if (this.currentPO.PHRMPurchaseOrderItems.length) {
                 this.loading = true;
@@ -456,8 +382,8 @@ export class PHRMPurchaseOrderComponent {
                 this.currentPO.POStatus = "active";
                 this.currentPO.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
                 ////calling pharmacyblservice 
-                this.pharmacyBLService.PostToPurchaseOrder(this.currentPO).
-                    subscribe(res => {
+                this.pharmacyBLService.PostToPurchaseOrder(this.currentPO).finally(() => this.loading = false)
+                    .subscribe(res => {
                         if (res.Status == 'OK') {
                             this.msgserv.showMessage("success", ["Purchase Order is Generated and Saved"]);
                             this.changeDetectorRef.detectChanges();
@@ -465,12 +391,9 @@ export class PHRMPurchaseOrderComponent {
                             this.currentPO.PHRMPurchaseOrderItems = new Array<PHRMPurchaseOrderItems>();
                             this.currentPO = new PHRMPurchaseOrder();
                             this.SelectedSupplier = new PHRMSupplierModel();
-                            this.ShowSupplierDetails = false;
                             this.currentPOItem = new PHRMPurchaseOrderItems();
-                            /// this.currentPOItem.Quantity = 1;
                             this.currentPO.PHRMPurchaseOrderItems.push(this.currentPOItem);
                             this.router.navigate(['/Pharmacy/Order/PurchaseOrderList']);
-                            this.loading = false;
                         }
                         else {
                             err => {
@@ -488,43 +411,136 @@ export class PHRMPurchaseOrderComponent {
                 this.msgserv.showMessage("notice-message", ['All Selected Purchase Items Quantity is zero']);
                 this.router.navigate(['/Pharmacy/Order/PurchaseOrderItems']);
             }
-
-
-
-
-
-
-
-
-
-
-
         }
-
-    }
-
-     // for show and hide packing feature
-     showpacking() {
-        this.IsPkgitem = true;
-        let pkg = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyGRpacking" && p.ParameterGroupName == "Pharmacy").ParameterValue;
-        if (pkg == "true") {
-            this.IsPkgitem = true;
-        } else {
-            this.IsPkgitem = false;
-            //this.goodReceiptItem.GoodReceiptItemValidator.controls["PackingQuantity"].disable();
-        }
-
-    }
-    AssignPackingQty(row,i){
-        if(this.currentPOItem){
-            this.UpdatePackingSettingForItem(row.Packing,i)
-            this.currentPOItem.PackingQty = this.currentPOItem.Packing.PackingQuantity;
-            this.currentPOItem.PackingName = this.currentPOItem.Packing.PackingName;
+        else {
+            this.msgserv.showMessage("Failed", errorMessages);
         }
     }
+    UpdatePurchaseOrder() {
+        // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
+        //if the CheckIsValid == true the validation is proper else no
+        var CheckIsValid = true;
+        var errorMessages = [];
+        if (this.currentPO.IsValidCheck(undefined, undefined) == false) {
+            this.loading = true;
+            // for loop is used to show PurchaseOrderValidator message ..if required  field is not filled
+            for (var b in this.currentPO.PurchaseOrderValidator.controls) {
+                this.currentPO.PurchaseOrderValidator.controls[b].markAsDirty();
+                this.currentPO.PurchaseOrderValidator.controls[b].updateValueAndValidity();
+                if (this.currentPO.PurchaseOrderValidator.controls[b].status == "INVALID") {
+                    errorMessages.push(`${b} is invalid.`);
+                }
+                CheckIsValid = false;
+            }
+        }
 
+        for (var i = 0; i < this.currentPO.PHRMPurchaseOrderItems.length; i++) {
+            if (this.currentPO.PHRMPurchaseOrderItems[i].IsValidCheck(undefined, undefined) == false) {
+                // for loop is used to show PurchaseOrderItemValidator message ..if required  field is not filled
+                for (var a in this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls) {
+                    this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].markAsDirty();
+                    this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].updateValueAndValidity();
+                    if (this.currentPO.PHRMPurchaseOrderItems[i].PurchaseOrderItemValidator.controls[a].status == "INVALID") {
+                        errorMessages.push(`${a} is invalid in item ${i + 1}.`);
+                    }
+                }
+                CheckIsValid = false;
+            }
+        }
+
+        if (this.currentPO.PHRMPurchaseOrderItems.length == 0) {
+            errorMessages.push("Please Add Item ...Before Requesting");
+        }
+
+        if (CheckIsValid == true && this.currentPO.PHRMPurchaseOrderItems != null) {
+            
+            this.pharmacyPOService.UpdatePurchaseOrder(this.currentPO).
+                subscribe(res => {
+                    if (res.Status == 'OK') {
+                        this.msgserv.showMessage("success", ["Purchase Order Updated Successfully!"]);
+                        this.changeDetectorRef.detectChanges();
+                        //deleting all creating new PO..after successully adding to db
+                        this.currentPO.PHRMPurchaseOrderItems = new Array<PHRMPurchaseOrderItems>();
+                        this.currentPO = new PHRMPurchaseOrder();
+                        this.currentPOItem = new PHRMPurchaseOrderItems();
+                        this.currentPOItem.Quantity = 1;
+                        this.currentPO.PHRMPurchaseOrderItems.push(this.currentPOItem);
+                        this.pharmacyPOService.PurchaseOrderId = res.Results;
+                        this.router.navigate(['/Pharmacy/Order/PurchaseOrderList']);
+                        this.loading = false;
+                    }
+                    else {
+                        this.msgserv.showMessage("failed", ['failed to add Purchase Order.. please check log for details.']);
+                        this.logError(res.ErrorMessage);
+                        this.loading = false;
+
+                    }
+                });
+        }
+        else {
+            this.msgserv.showMessage("Notice-Message", errorMessages);
+        }
+    }
+    OnPressedEnterKeyInItemField(index: number) {
+        if (this.currentPO.PHRMPurchaseOrderItems[index].ItemId > 0) {
+            this.SetFocusById('QuantityAt' + index);
+        }
+        else {
+            if (this.currentPO.PHRMPurchaseOrderItems.length > 1) {
+                this.currentPO.PHRMPurchaseOrderItems.pop();
+            }
+            else {
+                this.SetFocusById('ItemName' + index)
+            }
+            //this.currentPO.PHRMPurchaseOrderItems.pop();
+            let isDataValid = this.currentPO.PHRMPurchaseOrderItems.every(a => a.PurchaseOrderItemValidator.valid == true);
+            if (isDataValid) {
+                this.SetFocusById("PrintButton");
+            }
+        }
+    }
+    OnPressedEnterKeyInPrice(index: number) {
+        let isDataValid = this.currentPO.PHRMPurchaseOrderItems.every(a => a.PurchaseOrderItemValidator.valid == true);
+        if (isDataValid) {
+            this.AddRowRequest(index);
+            this.changeDetectorRef.detectChanges();
+            this.SetFocusById(`ItemName${index + 1}`);
+        }
+    }
     logError(err: any) {
         console.log(err);
+    }
+    hotkeys(event) {
+        if (event.altKey) {
+            switch (event.keyCode) {
+                case 80: {// => ALT+P comes here
+                    if (!this.editPO) {
+                        this.AddPurchaseOrder();
+                    }
+                    else {
+                        this.UpdatePurchaseOrder();
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    //Discard button
+    DiscardPurchaseOrder() {
+
+        //navigate to POLIST Page
+        this.router.navigate(["/Pharmacy/Order/PurchaseOrderList"]);
+    }
+
+    SetFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            var element = <HTMLInputElement>document.getElementById(IdToBeFocused);
+            element.focus();
+            //element.select();
+        }, 20);
     }
 }
 

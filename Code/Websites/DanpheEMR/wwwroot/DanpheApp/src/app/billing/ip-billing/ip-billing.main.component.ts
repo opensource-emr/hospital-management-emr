@@ -22,7 +22,7 @@ export class IpBillMainComponent {
   public selPatId: number = 0;
   public selVisitId: number = 0;
   public ipPatientGridColumns: Array<any> = null;
-
+  public currentCounter: number = null;
 
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
@@ -32,9 +32,15 @@ export class IpBillMainComponent {
     public patientService: PatientService,
     public router: Router,
     public msgBoxServ: MessageboxService) {
-    this.LoadInpatientList();
-    this.ipPatientGridColumns = GridColumnSettings.IpBillPatientSearch;
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('AdmittedDate', true));
+    this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
+    if (this.currentCounter < 1) {
+      this.callbackService.CallbackRoute = '/Billing/InpatBilling'
+      this.router.navigate(['/Billing/CounterActivate']);
+    } else {
+      this.LoadInpatientList();
+      this.ipPatientGridColumns = GridColumnSettings.IpBillPatientSearch;
+      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('AdmittedDate', true));
+    }
   }
 
   LoadInpatientList() {
@@ -43,6 +49,13 @@ export class IpBillMainComponent {
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
           this.allInpatList = res.Results;
+          //ward/bed search wasnot working from grid so combining the columns as one to fill the grid data..
+          if (this.allInpatList && this.allInpatList.length > 0) {
+            this.allInpatList.forEach(ipInfo => {
+              //below column will be added in all rows and also used as fieldName in grid-column-settings.
+              ipInfo["WardBedInfo"] = ipInfo.BedInformation.Ward + "/" + ipInfo.BedInformation.BedCode;
+            });
+          }
         }
         else {
           this.msgBoxServ.showMessage("failed", ["Unable to get ip-patient list."]);

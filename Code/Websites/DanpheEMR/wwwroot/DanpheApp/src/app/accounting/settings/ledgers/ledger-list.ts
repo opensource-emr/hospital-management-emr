@@ -8,6 +8,8 @@ import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
+import { AccountingService } from "../../shared/accounting.service";
+import { MasterType,DanpheCache } from "../../../shared/danphe-cache-service-utility/cache-services";
 
 @Component({
   selector: 'ledger-list',
@@ -25,22 +27,17 @@ export class LedgerListComponent {
 
   constructor(public accountingSettingsBLService: AccountingSettingsBLService,
     public msgBox: MessageboxService,
-    public changeDetector: ChangeDetectorRef) {
+    public changeDetector: ChangeDetectorRef,
+    public accountingService: AccountingService) {
     this.ledgerGridColumns = GridColumnSettings.ledgerList;
     this.getLedgerList();
   }
   public getLedgerList() {
-    this.accountingSettingsBLService.GetLedgerList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.ledgerList = res.Results;
-          this.showLedgerList = true;
-        }
-        else {
-          alert("Failed ! " + res.ErrorMessage);
-        }
-
-      });
+    if(!!this.accountingService.accCacheData.LedgersALL && this.accountingService.accCacheData.LedgersALL.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+      this.ledgerList = this.accountingService.accCacheData.LedgersALL;//mumbai-team-june2021-danphe-accounting-cache-change
+      this.ledgerList = this.ledgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+      this.showLedgerList = true;
+      }
   }
 
   AddLedger() {
@@ -62,6 +59,7 @@ export class LedgerListComponent {
 
     this.changeDetector.detectChanges();
     this.getLedgerList();
+    this.UpdateLedgers();
     this.showAddPage = false;
     this.showEditPage = false;
     this.changeDetector.detectChanges();
@@ -87,8 +85,10 @@ export class LedgerListComponent {
         this.index = $event.RowIndex;
         this.changeDetector.detectChanges();
         this.selectedLedger = $event.Data;
+        this.changeDetector.detectChanges();//mumbai-team-june2021-danphe-accounting-cache-change
         this.showLedgerList = true;
         this.showEditPage = true;
+        this.changeDetector.detectChanges();//mumbai-team-june2021-danphe-accounting-cache-change
         break;
       }
       default:
@@ -112,6 +112,7 @@ export class LedgerListComponent {
                 this.msgBox.showMessage("success", [res.Results.LedgerName + ' ' + responseMessage]);
                 //This for send to callbackadd function to update data in list
                 this.getLedgerList();
+                this.UpdateLedgers();
               }
               else {
                 this.msgBox.showMessage("error", ['Something wrong' + res.ErrorMessage]);
@@ -128,6 +129,19 @@ export class LedgerListComponent {
 
   logError(err: any) {
     console.log(err);
+  }
+  // we are using ledgersAll in cache for setting ledger-list page 
+  //From this page we can update or add new ledger so we need to update Ledgers list in cache
+  //this method will update Ledgers in cache object
+  public UpdateLedgers() {
+    try {
+      DanpheCache.clearDanpheCacheByType(MasterType.Ledgers);
+      DanpheCache.clearDanpheCacheByType(MasterType.LedgersAll);
+      this.accountingService.RefreshAccCacheData();
+    }
+    catch (ex) {
+      console.log(ex);
+    }
   }
 
 }

@@ -260,7 +260,7 @@ export class PHRMSuppliersListComponent {
 
   //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
   GetPharmacyBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy BillingHeader').ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy Receipt Header').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     else

@@ -66,6 +66,7 @@ export class PostReportComponent {
   public hospitalCode: string = null;
   public imageUploadFolderPath: string = null;//sud:18Aug'19--for radiology image upload.
   public enableDoctorUpdateFromSignatory: boolean = false;
+  public addReportWithoutSignatory: boolean = false;
 
   public ExtRefSettings = null;
  
@@ -89,6 +90,7 @@ export class PostReportComponent {
 
     this.ExtRefSettings = this.radiologyService.GetExtReferrerSettings();
     this.enableDoctorUpdateFromSignatory = this.coreService.UpdateAssignedToDoctorFromAddReportSignatory();
+    this.addReportWithoutSignatory = this.coreService.AddReportWOSignatory();
   }
 
 
@@ -521,16 +523,51 @@ export class PostReportComponent {
 
   //validation check if the item is selected from the list
   public CheckIfSignatureValid(): boolean {
-    if (this.report.Signatories) {
-      var signatureList = JSON.parse(this.report.Signatories);
-      if (!(signatureList && signatureList.length)) {
+    if(!this.addReportWithoutSignatory){
+      if (this.report.Signatories) {
+        var signatureList = JSON.parse(this.report.Signatories);
+        if(!(signatureList && signatureList.length)){
+          this.msgBoxServ.showMessage("failed",["Please select at least one signature from the list."]);
+          return false;
+        }
+        var validSignature = signatureList.find(a=>a.Signature !=null);
+        if(validSignature){
+          return true;
+        }
+        else{
+          this.msgBoxServ.showMessage("failed",["Please select valid signature from the list."]);
+          return false;
+        }
+        // for(var i=0; i<signatureList.length; i++){
+        //     if(signatureList[i].length){
+        //       if (!(signatureList && signatureList.length && signatureList.Signature.length)) {
+        //         this.msgBoxServ.showMessage("failed", ["Please select at least one signatory from the list."]);
+        //         return false;
+        //       }
+        //       return true;
+        //     }else {
+        //       this.msgBoxServ.showMessage("failed", ["Please insert Radiology Signature from Settings before adding report."]);
+        //       return false;
+        //     }
+        // }
+      }else {
         this.msgBoxServ.showMessage("failed", ["Please select at least one signatory from the list."]);
         return false;
       }
-      return true;
-    } else {
-      this.msgBoxServ.showMessage("failed", ["Please select at least one signatory from the list."]);
-      return false;
+    }else{
+      if (this.report.Signatories) {
+        var signatureList = JSON.parse(this.report.Signatories);
+        if (!(signatureList && signatureList.length)) {
+          this.msgBoxServ.showMessage("failed", [
+            "Please select at least one signatory from the list.",
+          ]);
+          return false;
+        }
+        return true;
+      }else {
+        this.msgBoxServ.showMessage("failed", ["Please select at least one signatory from the list."]);
+         return false;
+      }
     }
 
   }

@@ -17,7 +17,8 @@ import {
 } from '@angular/forms'
 @Component({
     selector: "change-doctor",
-    templateUrl: "./change-doctor.html"
+    templateUrl: "./change-doctor.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class ChangeDoctorComponent implements OnInit {
     public newAdmittingInfo: AdmittingDocInfoVM;
@@ -29,7 +30,7 @@ export class ChangeDoctorComponent implements OnInit {
     public AdmittingDocValidator: FormGroup = null;
     public departmentId: number;
     constructor(
-      public admissionBLService: ADT_BLService,
+        public admissionBLService: ADT_BLService,
         public msgBoxServ: MessageboxService,
         public coreService: CoreService) {
         this.GetDepartments();
@@ -71,7 +72,7 @@ export class ChangeDoctorComponent implements OnInit {
             this.newAdmittingInfo.PatientVisitId = this.admittedPatDrInfo.PatientVisitId;
             this.admissionBLService.ChangeAdmittingDoc(this.newAdmittingInfo)
                 .subscribe((res: DanpheHTTPResponse) => {
-                    if (res.Status == "OK") {                    
+                    if (res.Status == "OK") {
                         this.msgBoxServ.showMessage("success", ["Doctor changed successfully."]);
                         this.closeChangeDocEmitter.emit({ newAdmittingInfo: res.Results });
                         this.newAdmittingInfo = new AdmittingDocInfoVM();
@@ -105,10 +106,10 @@ export class ChangeDoctorComponent implements OnInit {
                 this.newAdmittingInfo.AdmittingDoctorId = doctor.ProviderId;//this will give providerid
                 this.newAdmittingInfo.AdmittingDoctorName = doctor.ProviderName;
                 this.IsValidSelProvider = true;
-               // this.emitDoctorDetail.emit({ "selectedDoctor": this.selectedDoctor });
+                // this.emitDoctorDetail.emit({ "selectedDoctor": this.selectedDoctor });
             }
-                else
-                    this.IsValidSelProvider = false;
+            else
+                this.IsValidSelProvider = false;
         }
     }
     FilterDoctorList() {
@@ -159,6 +160,12 @@ export class ChangeDoctorComponent implements OnInit {
         }
         else {
             return !(this.AdmittingDocValidator.controls[controlname].hasError(typeofvalidation));
+        }
+    }
+
+    public hotkeys(event) {
+        if (event.keyCode == 27) {
+            this.ClosePopUp();
         }
     }
 

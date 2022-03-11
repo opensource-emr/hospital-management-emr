@@ -62,7 +62,14 @@ namespace DanpheEMR.ServerModel
         public string OrganizationName { get; set; }
         [NotMapped]
         public int? OrganizationId { get; set; }
-
+        [NotMapped]
+        public string ServiceDepartmentName { get; set; }
+        [NotMapped]
+        public int? ServiceDepartmentId { get; set; }
+        [NotMapped]
+        public int? ItemId { get; set; }
+        [NotMapped]
+        public string ItemName { get; set; }
         //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
         public int? HospitalId { get; set; }
 

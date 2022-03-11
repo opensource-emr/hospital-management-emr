@@ -14,6 +14,7 @@ export class LabTestComponent {
   public Range: string = null;
   public Method: string = null;
   public ComponentName: string = null;
+  public ComponentId: number = 0;
   public Remarks: string = null;
   public IsSelected: boolean = true;
   //public IsPrint: boolean = null;

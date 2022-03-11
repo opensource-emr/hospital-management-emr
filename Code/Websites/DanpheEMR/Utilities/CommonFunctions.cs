@@ -1,5 +1,6 @@
 ﻿using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
+using DanpheEMR.ServerModel;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,47 @@ namespace DanpheEMR.Utilities
 {
     public class CommonFunctions
     {
+        public static List<LabTestComponentResult> MapMachineResultsToComponentResults(List<MachineResultsVM> machineData)
+        {
+            List<LabTestComponentResult> data = new List<LabTestComponentResult>();
+            foreach (var item in machineData)
+            {
+                var singleItem = new LabTestComponentResult();
+                singleItem.RequisitionId = item.RequisitionId;
+                singleItem.LabTestId = item.LabTestId;
+                singleItem.Value = item.Value;
+                singleItem.Unit = item.Component.Unit;
+                singleItem.Range = item.Component.Range;
+                singleItem.RangeDescription = item.Component.RangeDescription;
+                singleItem.ComponentName = item.Component.ComponentName;
+                singleItem.Method = item.Component.Method;
+                singleItem.IsAbnormal = item.IsAbnormal;
+                singleItem.TemplateId = item.TemplateId;
+                singleItem.CreatedBy = item.CreatedBy;
+                singleItem.CreatedOn = item.CreatedOn;
+                singleItem.ComponentId = item.LISComponentId;
+                singleItem.IsActive = true;
+                singleItem.ResultGroup = 1;
+
+                data.Add(singleItem);
+            }
+            return data;
+        }
+        public static List<DoseNumber> GetDosesNumberArray()
+        {
+            var data = new List<DoseNumber>();
+            data.Add(new DoseNumber { Id = 1, NumberInfo = "1st" });
+            data.Add(new DoseNumber { Id = 2, NumberInfo = "2nd" });
+            data.Add(new DoseNumber { Id = 3, NumberInfo = "3rd" });
+            data.Add(new DoseNumber { Id = 4, NumberInfo = "4th" });
+            data.Add(new DoseNumber { Id = 5, NumberInfo = "5th" });
+            data.Add(new DoseNumber { Id = 6, NumberInfo = "6th" });
+            data.Add(new DoseNumber { Id = 7, NumberInfo = "7th" });
+            data.Add(new DoseNumber { Id = 8, NumberInfo = "8th" });
+            data.Add(new DoseNumber { Id = 9, NumberInfo = "9th" });
+            data.Add(new DoseNumber { Id = 10, NumberInfo = "10th" });
+            return data;
+        }
 
         public static int GetCoreParameterIntValue(CoreDbContext coreDbContext, string groupName, string paramterName)
         {

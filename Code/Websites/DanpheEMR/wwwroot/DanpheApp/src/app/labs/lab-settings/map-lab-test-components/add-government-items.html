@@ -1,76 +1,74 @@
 <style>
- .hm-form input{    
-    height: auto;
- }
- 
+    .hm-form input {
+        height: auto;
+    }
 </style>
 
 <div class="wrapper">
-</div><div class="popup-static portlet box portlet-fullscreen">
+</div>
+<div class="popup-static portlet box portlet-fullscreen">
     <div class="portlet-body form">
-      <div class="col-md-8 col-md-push-2">
-        <div class="modelbox-div lab_modal_box">
-          <div class="modelbox-header">
-            <h4 class="margin-0-vr">
-              <span *ngIf="!update">Map Lab Components</span>
-              <span *ngIf="update">Update Mapped Lab Components</span>
-            </h4>
-          </div>
-          <div class="modelbox-body" >
-                <form class="form-horizontal hm-form mlr" [formGroup]="MappedComponent.GovItemValidator">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row">
-                                    <label for="LabComponentName" class="contorl-label col-md-4">Lab Component Name:</label>
-                                    <div class="col-md-8 drpdown">
-                                        <input
-                                                class="form-control" danphe-auto-complete 
-                                                formControlName="ReportItemId"
-                                                [(ngModel)]="selectedComponent"
-                                                [list-formatter] ="componentListFormatter"                                           
-                                                [source]="allgovitems"
-                                                placeholder="Enter Component Name"
-                                                display-property-name="DisplayName"
-                                                (valueChanged) = "LabComponentOnChange()"
-                                                onclick="this.select();"
-                                            /> 
-                                            <span style="color:red" *ngIf="MappedComponent.IsDirty('ReportItemId')" [hidden]="MappedComponent.IsValidCheck('ReportItemId','required')"> Input is invalid</span>
-                                        <!--<select class="form-control" [(ngModel)]="MappedComponent.ReportItemId" formControlName="ReportItemId">
+        <div class="col-md-8 col-md-push-2">
+            <div class="modelbox-div lab_modal_box">
+                <div class="modelbox-header">
+                    <h4 class="margin-0-vr">
+                        <span *ngIf="!update">Map Lab Components</span>
+                        <span *ngIf="update">Update Mapped Lab Components</span>
+                    </h4>
+                </div>
+                <div class="modelbox-body">
+                    <form class="form-horizontal hm-form mlr" [formGroup]="MappedComponent.GovItemValidator">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <label for="LabComponentName" class="contorl-label col-md-4">Gov LabReportItem
+                                            Name:</label>
+                                        <div class="col-md-8 drpdown">
+                                            <input class="form-control" danphe-auto-complete
+                                                [ngModelOptions]="{standalone: true}"
+                                                [(ngModel)]="selectedGovReportItem"
+                                                [list-formatter]="govReportItemsListFormatter" [source]="allgovitems"
+                                                placeholder="Enter Component Name" display-property-name="TestName"
+                                                value-property-name=null (valueChanged)="GoveReportItemOnChange()"
+                                                onclick="this.select();" match-formatted="true" 
+                                                [disabled]="disableSelectedGovReportItem?true:null"/>
+                                            <span class="color-red font-sm"
+                                                *ngIf="MappedComponent.IsDirty('ReportItemId')"
+                                                [hidden]="MappedComponent.IsValidCheck('ReportItemId','required')">
+                                                Enter Gov. Lab Report Name</span>
+                                            <!--<select class="form-control" [(ngModel)]="MappedComponent.ReportItemId" formControlName="ReportItemId">
                                             <option selected>Select Component Name</option>
                                             <option *ngFor="let item of allgovitems" value="{{item.ReportItemId}}">
                                                 {{item.TestName}}
                                             </option>
                                         </select>
                                          -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
 
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row">
-                                    <label for="LabTestName" class="contorl-label col-md-4">Lab Test Name:</label>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <label for="LabTestName" class="contorl-label col-md-4">Lab Test Name:</label>
 
-                                    <div class="col-md-8">
-                                        <input 
-                                            class="form-control" danphe-auto-complete 
-                                            formControlName="LabItemId"
-                                            [(ngModel)]="selectedTest"
-                                            [list-formatter] ="myListFormatter"                                           
-                                            [source]="labtestitems"
-                                            placeholder="Enter Test Name"
-                                            display-property-name="LabTestName"
-                                            (valueChanged) = "LabTestOnChange()"
-                                            onclick="this.select();"
-                                        />
-                                        <span style="color:red" *ngIf="MappedComponent.IsDirty('LabItemId')" [hidden]="MappedComponent.IsValidCheck('LabItemId','required')"> Input is invalid</span>
-                                    </div>
+                                        <div class="col-md-8">
+                                            <input class="form-control" danphe-auto-complete
+                                                [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedTest"
+                                                [list-formatter]="myListFormatter" [source]="labtestitems"
+                                                placeholder="Enter Test Name" display-property-name="LabTestName"
+                                                (valueChanged)="LabTestOnChange()" onclick="this.select();"
+                                                match-formatted="true" />
+                                            <span class="color-red font-sm" *ngIf="MappedComponent.IsDirty('LabItemId')"
+                                                [hidden]="MappedComponent.IsValidCheck('LabItemId','required')">Enter
+                                                Lab Test Name</span>
+                                        </div>
 
 
-                                    <!--<div class="col-md-8">
+                                        <!--<div class="col-md-8">
                                         <input danphe-auto-complete [(ngModel)]="MappedComponent.LabItemId" placeholder="Select Lab Test Name"
                                             display-property-name="Lab Test Name" 
                                         />
@@ -82,120 +80,122 @@
                                         </select>
                                         <span style="color:red" *ngIf="MappedComponent.IsDirty('LabItemId')" [hidden]="MappedComponent.IsValidCheck('LabItemId','required')"> Input is invalid</span>
                                     </div> -->
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                       
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row">
-                                    <label for="IsActive" class="contorl-label col-md-4">Is Active:</label>
-                                    <div class="col-md-8 chkBox">
-                                        <input type="checkbox" name="IsActive" class="" id="IsActive" [(ngModel)]="MappedComponent.IsActive" [ngModelOptions]="{standalone: true}">
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6" *ngIf="update">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <label for="IsActive" class="contorl-label col-md-4">Is Active:</label>
+                                        <div class="col-md-8 chkBox">
+                                            <input type="checkbox" name="IsActive" class="" id="IsActive"
+                                                [(ngModel)]="MappedComponent.IsActive"
+                                                [ngModelOptions]="{standalone: true}">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row">
-                                    <label for="IsComponentBased" class="contorl-label col-md-4">Is Component Based:</label>
-                                    <div class="col-md-8 chkBox">
-                                        <input type="checkbox" class="chkBox" id="IsComponentBased" [(ngModel)]="MappedComponent.IsComponentBased" [ngModelOptions]="{standalone: true}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <label for="IsComponentBased" class="contorl-label col-md-4">Is Component
+                                            Based:</label>
+                                        <div class="col-md-8 chkBox">
+                                            <input type="checkbox" class="chkBox" id="IsComponentBased"
+                                                [(ngModel)]="MappedComponent.IsComponentBased"
+                                                (change)="OnComponentBasedChange()"
+                                                [ngModelOptions]="{standalone: true}">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row" *ngIf="MappedComponent.IsComponentBased">
-                                    <label for="IsActive" class="contorl-label col-md-4">Component Name:</label>
-                                    <div class="col-md-8 drpdown">
-                                        <input 
-                                                class="form-control drpdown" danphe-auto-complete 
-                                                [ngModelOptions]="{standalone: true}"
-                                                [(ngModel)]="compName"
-                                                [list-formatter] ="componentListFormatter"                                           
-                                                [source]="allgovitems"
-                                                placeholder="Enter Component Name"
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row" *ngIf="MappedComponent.IsComponentBased">
+                                        <label for="ComponentName" class="contorl-label col-md-4">Component
+                                            Name:</label>
+                                        <div class="col-md-8 drpdown">
+                                            <input class="form-control drpdown" danphe-auto-complete
+                                                [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedComponent"
+                                                [list-formatter]="componentListFormatter"
+                                                [source]="labTestComponentItems" placeholder="Enter Component Name"
                                                 display-property-name="DisplayName"
-                                                (valueChanged) = "ComponentNameOnChange()"
-                                                onclick="this.select();"
-                                            />
-                                        <!--<select class="form-control" [(ngModel)]="MappedComponent.ComponentName" [ngModelOptions]="{standalone: true}">
+                                                (valueChanged)="LabComponentOnChange()" onclick="this.select();"
+                                                match-formatted="true" />
+                                            <span class="color-red font-sm"
+                                                *ngIf="MappedComponent.IsDirty('ComponentId')"
+                                                [hidden]="MappedComponent.IsValidCheck('ComponentId','required')"> Enter
+                                                component name</span>
+                                            <!--<select class="form-control" [(ngModel)]="MappedComponent.ComponentName" [ngModelOptions]="{standalone: true}">
                                             <option [selected] ="true">Select Component Name</option>
                                             <option *ngFor="let item of allgovitems" value="{{item.ComponentName}}">
                                                 {{item.TestName}}
                                             </option>
                                         </select>-->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row" *ngIf="MappedComponent.IsComponentBased">
-                                    <label for="IsResultCount" class="contorl-label col-md-4">Is Result Count:</label>
-                                    <div class="col-md-8">
-                                        <input type="checkbox" class="chkBox" id="IsResultCount" [(ngModel)]="MappedComponent.IsResultCount" 
-                                        [ngModelOptions]="{standalone: true}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row" *ngIf="MappedComponent.IsComponentBased">
+                                        <label for="IsResultCount" class="contorl-label col-md-4">Is Result
+                                            Count:</label>
+                                        <div class="col-md-8">
+                                            <input type="checkbox" class="chkBox" id="IsResultCount"
+                                                [(ngModel)]="MappedComponent.IsResultCount"
+                                                [ngModelOptions]="{standalone: true}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row" *ngIf="MappedComponent.IsResultCount">
+                                        <label for="IsActive" class="contorl-label col-md-4">Positive Indicator:</label>
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control"
+                                                [(ngModel)]="MappedComponent.PositiveIndicator"
+                                                [ngModelOptions]="{standalone: true}">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="row" *ngIf="!MappedComponent.IsResultCount" >
-                                    <label for="IsActive" class="contorl-label col-md-4">Positive Indicator:</label>
-                                    <div class="col-md-8">
-                                        <input type="text" class="form-control" [(ngModel)]="MappedComponent.PositiveIndicator" [ngModelOptions]="{standalone: true}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-           </div>
-          <div class="modelbox-footer">
-            <div class="all-buttons text-right">
-              <button
-                type="button"
-                class="btn btn-primary margin-7-hr"
-                *ngIf="!update"
-                [disabled]="loading"
-                (click)="loading=true;MapNewItem()">
-                Add
-              </button>
-              <button
-                type="button"
-                class="btn primary-btn margin-7-hr"
-                *ngIf="update"
-                [disabled]="loading"
-                (click)="loading=true;UpdateMappedItem()">
-                Update
-              </button>
-              <!-- <button type="button" class="btn btn-cancel btn-outline margin-7-hr" (click)="Close()">
+                    </form>
+                </div>
+                <div class="modelbox-footer">
+                    <div class="all-buttons text-right">
+                        <button type="button" class="btn btn-primary margin-7-hr" *ngIf="!update" [disabled]="loading"
+                            (click)="loading=true;MapNewItem()">
+                            Add
+                        </button>
+                        <button type="button" class="btn primary-btn margin-7-hr" *ngIf="update" [disabled]="loading"
+                            (click)="loading=true;UpdateMappedItem()">
+                            Update
+                        </button>
+                        <!-- <button type="button" class="btn btn-cancel btn-outline margin-7-hr" (click)="Close()">
                 Close
               </button> -->
+                    </div>
+                </div>
+                <div class="close-modelbox lb-close-btn">
+                    <button class="btn btn-danger" (click)="Close()">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-          <div class="close-modelbox lb-close-btn">
-            <button class="btn btn-danger" (click)="Close()">
-              <i class="fa fa-times"></i>
-            </button>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
-  
+</div>

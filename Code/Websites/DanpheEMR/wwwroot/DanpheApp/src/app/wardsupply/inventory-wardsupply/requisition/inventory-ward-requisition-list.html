@@ -1,40 +1,40 @@
-
 <div class="row">
-  <div class="col-md-3">
+  <div class="col-md-2">
     <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition" />
   </div>
-  <div class="col-md-9">
-    <div class="input-group pull-right padding-15-tp">
+  <div class="col-md-7">
+    <div class="input-group">
       <div class="icheck-inline"> List by Requisition Status: &nbsp;
         <label class="mt-radio mt-radio-outline">
-          <input type="radio" (change)="LoadRequisitionListByStatus()" checked name="RequisitionStatusFilter"
-                        [(ngModel)]="RequisitionStatusFilter" value="pending" style="width:15px;height:15px" />
+          <input type="radio" (change)="LoadRequisitionListByStatus()" checked name="RequisitionStatusFilter" [(ngModel)]="RequisitionStatusFilter" value="pending" style="width:15px;height:15px" />
           <span></span>Pending </label>
         <label class="mt-radio mt-radio-outline">
-          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
-                        [(ngModel)]="RequisitionStatusFilter" value="complete" style="width:15px;height:15px" />
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter" [(ngModel)]="RequisitionStatusFilter" value="complete" style="width:15px;height:15px" />
           <span></span>Complete </label>
         <label class="mt-radio mt-radio-outline">
-          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
-                        [(ngModel)]="RequisitionStatusFilter" value="cancelled" style="width:15px;height:15px" />
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter" [(ngModel)]="RequisitionStatusFilter" value="cancelled" style="width:15px;height:15px" />
           <span></span>Cancelled </label>
         <label class="mt-radio mt-radio-outline">
-          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
-                        [(ngModel)]="RequisitionStatusFilter" value="withdrawn" style="width:15px;height:15px" />
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter" [(ngModel)]="RequisitionStatusFilter" value="withdrawn" style="width:15px;height:15px" />
           <span></span>Withdrawn </label>
         <label class="mt-radio mt-radio-outline">
-          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
-                        [(ngModel)]="RequisitionStatusFilter" value="all" style="width:15px;height:15px" />
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter" [(ngModel)]="RequisitionStatusFilter" value="all" style="width:15px;height:15px" />
           <span></span>All </label>
       </div>
     </div>
   </div>
-  <!-- @*-----All Item Requisition List-----*@--> 
+  <div class="col-md-3">
+    <label for="selectedInventory">
+      <i class="fa fa-filter"></i> Filter by Store :
+    </label>
+    <select [(ngModel)]="selectedInventoryId" id="selectedInventory" (change)="LoadRequisitionListByStatus()" style="margin-left: 1rem">
+      <option [ngValue]="null">ALL</option>
+      <option *ngFor="let inventory of inventoryList" [value]="inventory.StoreId">{{inventory.Name}}</option>
+    </select>
+  </div>
 </div>
 <div class="row">
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="deptwiseGridColumns" [grid-data]="RequisitionGridDataFiltered"
-                    [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                    (grid-actions)="RequisitionGridAction($event)" (onDateChange)="onDateChange($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="deptwiseGridColumns" [grid-data]="RequisitionGridDataFiltered" [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="RequisitionGridAction($event)" (onDateChange)="onDateChange($event)"> </danphe-grid>
   </div>
 </div>

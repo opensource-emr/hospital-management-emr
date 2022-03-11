@@ -81,7 +81,6 @@ export class RadiologyEditDoctorsComponent {
           .subscribe(res => {
             if (res.Status == "OK") {
               this.allImagingFilteredItems = res.Results;
-              console.log(this.allImagingFilteredItems);
               if (this.editDoctorModels.length != 0) {
                 for (var i = 0; i < this.editDoctorModels.length; i++) {
                   this.editDoctorModels[i].Date = moment(this.editDoctorModels[i].Date).format("YYYY-MM-DD HH:mm");

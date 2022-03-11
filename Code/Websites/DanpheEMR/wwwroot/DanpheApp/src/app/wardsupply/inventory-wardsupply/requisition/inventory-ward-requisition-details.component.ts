@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 
 import { RequisitionItems } from "../../../inventory/shared/requisition-items.model";
@@ -34,6 +34,9 @@ export class InventoryRequisitionDetailsComponent {
   public IsCancel: boolean = false;
   public isModificationAllowed: boolean = true;
   public mainRemarks: string;
+  public showNepaliReceipt: boolean;
+  public printDetaiils: HTMLElement;
+  public showPrint: boolean;
   constructor(public securityService: SecurityService,
     public InventoryBLService: InventoryBLService,
     public inventoryService: InventoryService,
@@ -42,9 +45,17 @@ export class InventoryRequisitionDetailsComponent {
     public msgBoxServ: MessageboxService,
     public routeFrom: RouteFromService,
     public coreservice: CoreService) {
+    this.SetFocusById('print');
+    this.CheckReceiptSettings();
     this.CheckForSubstoreActivation();
   }
+  CheckReceiptSettings() {
+    //check for english or nepali receipt style
+    let receipt = this.coreservice.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+    this.showNepaliReceipt = (receipt == "true");
+    this.requisitionId = this.inventoryService.RequisitionId
 
+  }
   CheckForSubstoreActivation() {
     this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
     try {
@@ -54,8 +65,10 @@ export class InventoryRequisitionDetailsComponent {
       }
       else {
         //write whatever is need to be initialise in constructor here.
-
-        this.LoadRequisitionDetails(this.inventoryService.RequisitionId);//sud:3Mar'20-Property Rename in InventoryService
+        if (this.showNepaliReceipt == false) {
+          this.LoadRequisitionDetails(this.inventoryService.RequisitionId);
+        }
+        //sud:3Mar'20-Property Rename in InventoryService
         //this.header = JSON.parse(this.coreservice.Parameters[1].ParameterValue);//sud:3Mar'20-Removed-not used anywhere.
       }
     } catch (exception) {
@@ -120,30 +133,13 @@ export class InventoryRequisitionDetailsComponent {
     }
   }
 
-  //this is used to print the receipt
   print() {
-    let popupWinindow;
-    var printContents = document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    popupWinindow.document.write(`
-    <html>
-      <head>
-        <link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" />
-      </head>
-      <style>
-        .printStyle {border: dotted 1px;margin: 10px 100px;}
-        .print-border-top {border-top: dotted 1px;}
-        .print-border-bottom {border-bottom: dotted 1px;}
-        .print-border {border: dotted 1px;}
-        .center-style {text-align: center;}
-        .border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}
-        .hidden-in-print { display:none !important}
-      </style>
-      <body onload="window.print()">`
-      + printContents
-      + "</html>");
-    popupWinindow.document.close();
+    this.printDetaiils = document.getElementById("printpage");
+    this.showPrint = true;
+  }
+  callBackPrint() {
+    this.printDetaiils = null;
+    this.showPrint = false;
   }
   //edit requisition
   EditRequistion(status) {
@@ -172,7 +168,7 @@ export class InventoryRequisitionDetailsComponent {
           res => {
             if (res.Status == "OK") {
               this.requisitionList();
-              this.messageBoxService.showMessage("Success", ["Requisition "+ this.requisitionId+" Withdrawn"]);
+              this.messageBoxService.showMessage("Success", ["Requisition " + this.requisitionId + " Withdrawn"]);
             } else {
               this.messageBoxService.showMessage("Error", ["Requisition Withdrawal Failed"]);
             }
@@ -191,4 +187,12 @@ export class InventoryRequisitionDetailsComponent {
     this.routeFrom.RouteFrom = "RequisitionDetails"
     this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionList']);
   }
+  public SetFocusById(id: string) {
+    window.setTimeout(function () {
+        let elementToBeFocused = document.getElementById(id);
+        if (elementToBeFocused) {
+            elementToBeFocused.focus();
+        }
+    }, 600);
+}
 }

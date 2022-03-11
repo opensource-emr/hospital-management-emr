@@ -12,9 +12,16 @@ export class VisitDLService {
   constructor(public http: HttpClient) {
   }
 
+  public GetApptForDeptOnSelectedDate(deptId, selectedDate, patientId) {
+    return this.http.get<any>("/api/Visit?reqType=CheckIfApptExistForDepartmentOnDate&departmentId=" + deptId + "&requestDate=" + selectedDate + "&patientId=" + patientId, this.options);
+  }
+
   //gets the list of visit using visitstatus
-  public GetVisitsByStatus(status: string, maxdayslimit,searchTxt) {
-    return this.http.get<any>("/api/Visit?status=" + status + "&dayslimit=" + maxdayslimit + "&search="+ searchTxt, this.options);
+  public GetVisitsByStatus(status: string, maxdayslimit, searchTxt) {
+    return this.http.get<any>("/api/Visit?status=" + status + "&dayslimit=" + maxdayslimit + "&search=" + searchTxt, this.options);
+  }
+  public GetVisits(maxdayslimit, searchTxt) {
+    return this.http.get<any>("/api/Visit?&reqType=list-visit&dayslimit=" + maxdayslimit + "&search="+ searchTxt, this.options);
   }
 
   public GetPatientVisitList(patientId) {
@@ -22,16 +29,16 @@ export class VisitDLService {
   }
 
   public GetPatientVisitEarlierList(patientId, followup) {
-    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistorylist&patientId=" + patientId + "&followup=" + followup , this.options);
+    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistorylist&patientId=" + patientId + "&followup=" + followup, this.options);
   }
 
   public GetPatientVisitList_Today(patientId) {
-    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistory-today&patientId=" + patientId ,  this.options);
+    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistory-today&patientId=" + patientId, this.options);
   }
 
 
-  public GetVisitList(claimCode: string) {
-    return this.http.get<any>("/api/Visit?&reqType=existingClaimCode-VisitList&claimCode=" + claimCode, this.options);
+  public GetVisitList(claimCode: number, patId: number) {
+    return this.http.get<any>("/api/Insurance?&reqType=existingClaimCode-VisitList&claimCode=" + claimCode + "&patientId=" + patId, this.options);
   }
 
   public GetPatientVisitsProviderWise(patientId) {
@@ -47,9 +54,9 @@ export class VisitDLService {
   public GetDepartmentByEmployeeId(employeeId: number) {
     return this.http.get<any>("/api/Master?type=departmentByEmployeeId&employeeId=" + employeeId, this.options);
   }
-  public GetPastVisits(fromDate, toDate,searchTxt) { //fromDate: string, toDate: string
+  public GetPastVisits(fromDate, toDate, searchTxt) { //fromDate: string, toDate: string
     // return this.http.get<any>("/api/Visit?reqType=pastVisitList&fromDate=" + fromDate + "&toDate=" + toDate, this.options);
-    return this.http.get<any>("/api/Visit?reqType=pastVisitList&FromDate=" + fromDate + "&ToDate=" + toDate+"&search="+searchTxt, this.options);
+    return this.http.get<any>("/api/Visit?reqType=pastVisitList&FromDate=" + fromDate + "&ToDate=" + toDate + "&search=" + searchTxt, this.options);
   }
 
   //posts new visit
@@ -159,17 +166,21 @@ export class VisitDLService {
 
   //sud: 31Jul'19-For Old Patient Opd
   public GetDepartmentOldPatientPrices() {
-    return this.http.get<any>("/api/Visit?&reqType=get-dept-oldpatient-opd-items", this.options);
+    return this.http.get<any>("/api/Visit?reqType=get-dept-oldpatient-opd-items", this.options);
   }
 
 
   //gets all doctors who has AppointmentApplicable==true and IsActive==true.
   public GetVisitDoctors() {
-    return this.http.get<any>("/api/Visit?&reqType=get-visit-doctors", this.options);
+    return this.http.get<any>("/api/Visit?reqType=get-visit-doctors", this.options);
   }
 
-  public GetBillItemList() {
-    return this.http.get<any>("/api/billing?reqType=billItemList", this.options);
+  public GetRequestingDepartmentByVisitId(visitId: number) {
+    return this.http.get<any>("/api/Visit?reqType=get-requesting-department&visitId=" + visitId, this.options);
+  }
+
+  public GetBillItemList(srvDeptIdList = "", itemIdList = "") {
+    return this.http.get<any>("/api/billing?reqType=billItemList&srvDeptIdListStr=" + srvDeptIdList + "&itemIdListStr=" + itemIdList, this.options);
   }
 
   //sud:26June'19-- For Free-Followup Visits.

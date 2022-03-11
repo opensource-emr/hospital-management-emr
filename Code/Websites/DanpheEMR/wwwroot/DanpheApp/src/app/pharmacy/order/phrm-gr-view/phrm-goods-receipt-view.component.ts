@@ -1,29 +1,36 @@
 import { Component, ChangeDetectorRef, Input, OnInit, Output, EventEmitter } from '@angular/core'
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { PHRMSupplierModel } from '../../shared/phrm-supplier.model';
-import { PHRMGoodsReceiptItemsModel } from '../../shared/phrm-goods-receipt-items.model';
 import { PHRMGoodsReceiptModel } from '../../shared/phrm-goods-receipt.model';
 import { Router } from '@angular/router'
 import { PharmacyService } from '../../shared/pharmacy.service'
 import { CoreService } from '../../../core/shared/core.service'
 import { PharmacyBLService } from '../../shared/pharmacy.bl.service'
-import * as moment from 'moment';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 @Component({
       selector: "goods-receipt-view",
       templateUrl: "./phrm-goods-receipt-view.html",
-      styleUrls: ["./phrm-goods-receipt-view.css"]
+      styleUrls: ["./phrm-goods-receipt-view.css"],
+      host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PHRMGoodReceiptViewComponent implements OnInit {
       @Input('goodsReceiptId') goodsReceiptId: number;
       @Input("showPopUp") showPopUp: boolean;
       @Input("canUserModify") canUserModify: boolean;
-      public showConfirmationBox: boolean;
-      @Output("call-back-close") CallBackClose: EventEmitter<any> = new EventEmitter();
+      @Input("isGRCancelled") isGRCancelled: boolean = false;
+      @Output("popup-close-event") popUpCloseEvent: EventEmitter<any> = new EventEmitter();
+      @Output('gr-cancel-event') grCancelEvent: EventEmitter<Object> = new EventEmitter<Object>();
       currentGR: PHRMGoodsReceiptModel = new PHRMGoodsReceiptModel();
       headerDetail: { hospitalName, address, email, PANno, tel, DDA };
 
       isItemLevelDiscountEnabled: boolean;
-      IsPackagingItem: boolean;
+      isPackingEnabled: boolean;
+      showFreeQty: boolean = false;
+      showCCCharge: boolean = false;
+      printDetaiils: any;
+      showPrint: boolean;
+      cancelRemarks: string;
+      cancelForm = new FormGroup({ CancelRemarks: new FormControl('', Validators.required) });
+      showConfirmationPopUp: boolean = false;
 
       constructor(public coreService: CoreService,
             public pharmacyBLService: PharmacyBLService,
@@ -31,21 +38,20 @@ export class PHRMGoodReceiptViewComponent implements OnInit {
             public changeDetector: ChangeDetectorRef,
             public msgBox: MessageboxService,
             public router: Router) {
-            this.GetGoodsReceiptDetail
-            this.GetPharmacyHeaderParameter();
+            this.GetPharmacyReceiptHeaderParameter();
             this.showItemLevelDiscount();
             this.showpacking();
+            this.checkGRCustomization();
       }
       ngOnInit(): void {
             this.GetGoodsReceiptDetail();
+            this.SetFocusById("printButton");
       }
       GetGoodsReceiptDetail() {
-            this.pharmacyBLService.GetGRDetailsByGRId(this.goodsReceiptId)
+            this.pharmacyBLService.GetGRDetailsByGRId(this.goodsReceiptId, this.isGRCancelled)
                   .subscribe(res => {
                         if (res.Status == "OK") {
                               this.currentGR = res.Results.goodReceipt;
-                              //this.currentGR.CancelledOn = new Date();
-                              this.currentGR.CancelledOn = moment(res.Results.goodReceipt.CancelledOn).format('lll')
                               this.canUserModify = (this.canUserModify && (this.currentGR.IsCancel == false));
                         }
                         else {
@@ -57,8 +63,8 @@ export class PHRMGoodReceiptViewComponent implements OnInit {
                   })
       }
 
-      GetPharmacyHeaderParameter() {
-            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy BillingHeader').ParameterValue;
+      GetPharmacyReceiptHeaderParameter() {
+            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy Receipt Header').ParameterValue;
             if (paramValue) {
                   this.headerDetail = JSON.parse(paramValue);
             }
@@ -68,77 +74,103 @@ export class PHRMGoodReceiptViewComponent implements OnInit {
       }
       Close() {
             this.showPopUp = false;
-            this.CallBackClose.emit();
+            this.popUpCloseEvent.emit();
       }
-
-      printGoodReciept() {
-            let popupWinindow;
-            var printContents = document.getElementById("print-good-reciept").innerHTML;
-            popupWinindow = window.open('', '_blank', 'width=1600,height=900,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-            popupWinindow.document.open();
-            popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
-
-            popupWinindow.document.close();
-
-
+      print(idToBePrinted = 'print-good-reciept') {
+            this.printDetaiils = document.getElementById(idToBePrinted);
+            this.showPrint = true;
       }
-
+      callBackPrint() {
+            this.printDetaiils = null;
+            this.showPrint = false;
+      }
 
       //show or hide GR item level discount
       showItemLevelDiscount() {
             this.isItemLevelDiscountEnabled = true;
-            let itmdis = this.coreService.Parameters.find(p => p.ParameterName == "PharmacyItemlvlDiscount" && p.ParameterGroupName == "Pharmacy").ParameterValue;
-            if (itmdis == "true") {
-                  this.isItemLevelDiscountEnabled = true;
-            } else {
-                  this.isItemLevelDiscountEnabled = false;
-            }
+            let discountParameter = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyDiscountCustomization" && p.ParameterGroupName == "Pharmacy").ParameterValue;
+            discountParameter = JSON.parse(discountParameter);
+            this.isItemLevelDiscountEnabled = (discountParameter.EnableItemLevelDiscount == true);
       }
       // for show and hide packing feature
       showpacking() {
-            this.IsPackagingItem = true;
+            this.isPackingEnabled = true;
             let pkg = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyGRpacking" && p.ParameterGroupName == "Pharmacy").ParameterValue;
             if (pkg == "true") {
-                  this.IsPackagingItem = true;
+                  this.isPackingEnabled = true;
             } else {
-                  this.IsPackagingItem = false;
+                  this.isPackingEnabled = false;
             }
       }
-      //Confirmation for Good Receipt Cancel
+      // Confirmation for Good Receipt Cancel
       cancelGoodsReciept() {
-            let printAgain: boolean = true;
-            this.showConfirmationBox = true;
-            // let cancel_msg = "NOTE !!! Do you want to cancel Good Receipt?";
-            // printAgain = window.confirm(cancel_msg);
-            // if (printAgain) {
-            //       this.cancelGR();
-            // }
+            this.showConfirmationPopUp = true;
       }
       //Good Receipt Cancellation Method
       cancelGR() {
-            this.pharmacyBLService.CancelGoodsReceipt(this.goodsReceiptId, this.currentGR.CancelRemarks)
-                  .subscribe(
-                        res => {
-                              if (res.Status == "OK") {
-                                    this.currentGR.IsCancel = true;
-                                    this.showConfirmationBox = false;
-                                   // this.cancelledByUser = 
-                                    this.msgBox.showMessage("success", ["Goods Receipt Canceled."]);
-                              } else {
-                                    this.msgBox.showMessage("error", ["Goods Receipt Cancelation Failed!!...Some items are already comsumed."]);
-                              }
-                        },
-                        err => {
-                              this.msgBox.showMessage("error", [err.ErrorMessage]);
-                        });
+            for (var b in this.cancelForm.controls) {
+                  this.cancelForm.controls[b].markAsDirty();
+                  this.cancelForm.controls[b].updateValueAndValidity();
+            }
+            if (this.cancelForm.invalid) {
+                  this.msgBox.showMessage("Failed", ["Remarks is required for cancelling."])
+            }
+            else {
+                  this.cancelRemarks = this.cancelForm.get('CancelRemarks').value;
+                  this.pharmacyBLService.PostGoodsReceiptCancelDetail(this.goodsReceiptId, this.cancelRemarks)
+                        .subscribe(
+                              res => {
+                                    if (res.Status == "OK") {
+                                          this.currentGR.IsCancel = true;
+                                          this.showConfirmationPopUp = false;
+                                          this.msgBox.showMessage("success", ["Goods Receipt Canceled."]);
+                                          this.grCancelEvent.emit({ event: 'grCancel', goodsReceiptId: this.goodsReceiptId });
+                                          this.isGRCancelled = true;
+                                          this.GetGoodsReceiptDetail();
+                                    } else {
+                                          this.msgBox.showMessage("error", ["Goods Receipt Cancelation Failed!!...Some items are already comsumed."]);
+                                    }
+                              },
+                              err => {
+                                    this.msgBox.showMessage("error", [err.ErrorMessage]);
+                              });
+            }
       }
       editReceipt(flag: boolean) {
             if (flag) {
                   this.msgBox.showMessage("Access Denied", ["This receipt has been transfered to accounting.", "Further editing is forbidden."]);
             }
             else {
-                  this.pharmacyService.GRId = this.currentGR.GoodReceiptId;
+                  this.pharmacyService.GRId = this.goodsReceiptId;
                   this.router.navigate(['/Pharmacy/Order/GoodsReceiptItems']);
             }
       }
+      checkGRCustomization() {
+            let GRParameterStr = this.coreService.Parameters.find(p => p.ParameterName == "GRFormCustomization" && p.ParameterGroupName == "Pharmacy");
+            if (GRParameterStr != null) {
+                  let GRParameter = JSON.parse(GRParameterStr.ParameterValue);
+                  if (GRParameter.showFreeQuantity == true) {
+                        this.showFreeQty = true;
+                  }
+                  if (GRParameter.showCCCharge == true) {
+                        this.showCCCharge = true;
+                  }
+            }
+      }
+      public hotkeys(event) {
+            //For ESC key => close the pop up
+            if (event.keyCode == 27) {
+                  this.Close();
+            }
+      }
+      SetFocusById(IdToBeFocused: string) {
+            window.setTimeout(function () {
+                  let elemToFocus = document.getElementById(IdToBeFocused);
+                  if (elemToFocus != null && elemToFocus != undefined) {
+                        elemToFocus.focus();
+                  }
+            }, 20);
+      }
+
+
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,6 +53,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<EmergencyPatientModel> EmergencyPatient { get; set; }
         public DbSet<CfgParameterModel> CFGParameters { get; set; }
         public DbSet<NotesModel> Notes { get; set; }
+        public DbSet<EmpCashTransactionModel> EmpCashTransactions { get; set; }
 
 
         public AdmissionDbContext(string conn) : base(conn)
@@ -121,7 +124,29 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
             modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
             modelBuilder.Entity<NotesModel>().ToTable("CLN_Notes");
+            modelBuilder.Entity<EmpCashTransactionModel>().ToTable("TXN_EmpCashTransaction");
         }
+
+
+
+        #region get all admitted patient list
+        public DataTable GetAllAdmittedPatients(string AdmissionStatus, int? PatientVisitId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@AdmissionStatus", AdmissionStatus),
+                new SqlParameter("@PatientVisitId", PatientVisitId)
+            };
+            foreach (SqlParameter parameter in paramList)
+            {
+                if (parameter.Value == null)
+                {
+                    parameter.Value = DBNull.Value;
+                }
+            }
+            DataTable stockItems = DALFunctions.GetDataTableFromStoredProc("SP_ADT_GetAllAdmittedPatients", paramList, this);
+            return stockItems;
+        }
+        #endregion
     }
 }
 

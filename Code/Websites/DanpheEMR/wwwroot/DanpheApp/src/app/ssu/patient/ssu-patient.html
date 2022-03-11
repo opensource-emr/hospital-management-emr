@@ -1,0 +1,395 @@
+<!-- <style>
+  label.mt-checkbox.mt-checkbox-outline {
+    text-indent: 5px;
+  }
+</style> -->
+<div class="wrapper">
+  <div class="popup-static portlet box portlet-fullscreen inv_modal">
+    <div class="portlet-body form">
+      <!--Model Box Body Start-->
+      <div class="col-md-12">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr">
+              <strong>{{model.PatientId ? 'Update SSU Patient':'New SSU Patient Registration'}}</strong>
+            </h4>
+          </div>
+          <button class="btn btn-danger history-del-btn" (click)="Close()">X</button>
+          <div class="modelbox-body">
+            <h4 [ngClass]="EditSSUPatMode ? 'clp clp-hd collapsed' : 'clp clp-hd'"
+              [attr.aria-expanded]="EditSSUPatMode ? 'false' : 'true'" data-toggle="collapse"
+              data-target="#patInfoSection">
+              Patient Information </h4>
+            <div class="row">
+              <div class="col-md-12">
+                <div [ngClass]="EditSSUPatMode ? 'collapse clp-cntnt' : 'collapse clp-cntnt in'" id="patInfoSection">
+                  <form [formGroup]="model.SsuPatientValidator" class="form-horizontal">
+                    <div class="row">
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label col-md-4">First Name<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="regPatFirstName" class="form-control" type="text" maxlength="30"
+                              formControlName="FirstName" [(ngModel)]="model.FirstName" required value=""
+                              (focusout)="capitalizeFirstLetter('FirstName')" placeholder="First Name" (keyUp.enter)="setFocusById('MiddleName')" />
+                            <span class="error-msg" *ngIf="model.IsDirty('FirstName')"
+                              [hidden]="model.IsValidCheck('FirstName','required')"> First Name is required</span> <span
+                              class="error-msg" *ngIf="model.IsDirty('FirstName')"
+                              [hidden]="model.IsValidCheck('FirstName','maxlength')"> First Name must be less than 30
+                              characters</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Middle Name<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="MiddleName" class="form-control" type="text" formControlName="MiddleName"
+                              [(ngModel)]="model.MiddleName" value="" (focusout)="capitalizeFirstLetter('MiddleName')"
+                              placeholder="Middle Name" (keyUp.enter)="setFocusById('LastName')"/>
+                            <span class="error-msg" *ngIf="model.IsDirty('MiddleName')"
+                              [hidden]="model.IsValidCheck('MiddleName','maxlength')"> Middle Name must be less than 30
+                              characters</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Last Name<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="LastName" class="form-control" type="text" formControlName="LastName"
+                              [(ngModel)]="model.LastName" required value=""
+                              (focusout)="capitalizeFirstLetter('LastName')" placeholder="Last Name" (keyUp.enter)="setFocusById('Age')" />
+                            <span class="error-msg" *ngIf="model.IsDirty('LastName')"
+                              [hidden]="model.IsValidCheck('LastName','required')"> Last Name is required</span> <span
+                              class="error-msg" *ngIf="model.IsDirty('LastName')"
+                              [hidden]="model.IsValidCheck('LastName','maxlength')"> Last Name must be less than 30
+                              characters</span>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Age<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <div class="col-md-3" style="padding-left:0px;padding-right: 0px;">
+                              <input id="Age" class="form-control" type="number" min="0" max="150" formControlName="Age"
+                                onclick="this.select()" (focusout)="CalculateDob()" (keyUp.enter)="setFocusById('Gender')"  [(ngModel)]="model.Age"
+                                placeholder="Age" style="padding-right:0px;" />
+                            </div>
+                            <div class="col-md-9" style="padding-right: 0px;">
+                              <div class="input-group">
+
+                                <select id="AgeUnit" class="form-control" [(ngModel)]="model.AgeUnit"
+                                  [ngModelOptions]="{standalone: true}" (ngModelChange)="CalculateDob()">
+                                  <option value="Y">Years</option>
+                                  <option value="M">Months</option>
+                                  <option value="D">Days</option>
+                                </select>
+                              </div>
+                            </div>
+                            <span class="error-msg" *ngIf="model.IsDirty('Age')"
+                              [hidden]="model.IsValidCheck('Age','required')">
+                              Age is required</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Gender<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="Gender" class="form-control" [(ngModel)]="model.Gender" formControlName="Gender" (change)="setFocusById('PhoneNo')">
+                              <option value="null" selected>--select--</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Others">Other</option>
+                            </select>
+                            <span class="error-msg" *ngIf="model.IsDirty('Gender')"
+                              [hidden]="model.IsValidCheck('Gender','required')"> Gender is required</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Phone number<sup
+                              *ngIf="isPhoneNumberMandatory">*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="PhoneNo" class="form-control" type="tel" maxlength="11" [(ngModel)]="model.PhoneNumber"
+                              formControlName="PhoneNumber" placeholder="phone number" (keyUp.enter)="setFocusById('maritalstatus')" />
+                            <span class="error-msg" *ngIf="model.IsDirty('PhoneNumber')"
+                              [hidden]="model.IsValidCheck('PhoneNumber','pattern')">Primary Phone is not proper</span>
+                            <span class="error-msg" *ngIf="model.IsDirty('PhoneNumber')"
+                              [hidden]="model.IsValidCheck('PhoneNumber','required')">Primary Phone is required</span>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Marital status<b>:</b></label>
+                          <div class="col-md-8">
+                            <div class="input-group">
+                              <select id="maritalstatus" [(ngModel)]="model.MaritalStatus"
+                                [ngModelOptions]="{standalone: true}" style="width:100px" name="maritalstatus"
+                                (change)="setFocusById('FatherName')">
+                                <option [ngValue]="null">--select--</option>
+                                <option value="Married">Yes</option>
+                                <option value="UnMarried">No</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6 col-xs-12">
+                        <!-- style="    margin-left: 1px !important;" -->
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Father Name<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="FatherName" class="form-control" [(ngModel)]="model.FatherName"
+                              [ngModelOptions]="{standalone:true}" (keyUp.enter)="setFocusById('MotherName')">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Mother Name<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="MotherName" class="form-control" [(ngModel)]="model.MotherName"
+                              [ngModelOptions]="{standalone:true}" (keyUp.enter)="setFocusById('state')">
+
+                            <!-- <span class="error-msg" [hidden]="model.MotherName || model.FatherName"> Father/Mother Name
+                              is
+                              required</span> -->
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Country<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="ddlCountry" class="form-control" [(ngModel)]="model.CountryId"
+                              formControlName="CountryId" (ngModelChange)="GetCountrySubDivision();DistrictChanged()" (change)="setFocusById('state')">
+                              <option *ngFor="let Country of Countries" value="{{Country.CountryId}}">
+                                {{Country.CountryName}}
+                              </option>
+                            </select>
+                            <span class="error-msg" *ngIf="model.IsDirty('CountryId')"
+                              [hidden]="model.IsValidCheck('CountryId','required')"> Country is required</span>
+                          </div>
+                        </div>
+
+                        <div *ngIf="model.CountryId == 1" class="form-group">
+                          <label class="control-label col-md-4">District/State<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="state" danphe-auto-complete class="form-control" formControlName="CountrySubDivisionId"
+                              [(ngModel)]="selDistrict" [list-formatter]="myListFormatter"
+                              [source]="CountrySubDivisionList" placeholder="Enter District/State"
+                              display-property-name="Value" value-property-name=null (focusout)="DistrictChanged()"
+                              onClick="this.select();" max-num-list="10" (keyUp.enter)="showMunicipality?setFocusById('municipality') : setFocusById('address')" />
+                            <span class="error-msg"
+                              *ngIf="model.IsDirty('CountrySubDivisionId') && model.CountryId == 1"
+                              [hidden]="model.IsValidCheck('CountrySubDivisionId','required')"> District/State is
+                              required</span>
+                          </div>
+                        </div>
+
+                        <div class="form-group" *ngIf="showMunicipality">
+                          <label class="control-label col-md-4">Municipality<b>:</b></label>
+                          <div class="col-md-8">
+                            <municipality-select *ngIf="model" [municipalityId]='model.MunicipalityId' [subDivisionId] = 'selDistrict? selDistrict.Key : model.CountrySubDivisionId' (valueChange) ="updateMunicipality($event)"></municipality-select>
+                            <!-- <span class="error-msg" *ngIf="model.IsDirty('CountryId')"
+                              [hidden]="model.IsValidCheck('CountryId','required')"> Country is required</span> -->
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Address<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="address" danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="model.Address" [source]="olderAddressList" placeholder="Address"
+                              display-property-name="PatAddress" value-property-name=null no-match-found-text=" "
+                              onClick="this.select();" min-chars="2" style="text-transform: capitalize;"
+                              [grid-sort]="'sortonbasicdatatype'" max-num-list="10" (keyUp.enter)="setFocusById('EthnicGroup')"/>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Caste/Ethnic Group<b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="EthnicGroup" class="form-control" [(ngModel)]="model.EthnicGroup"
+                              [ngModelOptions]="{standalone: true}" (change)="setFocusById('race')">
+                              <option value="Dalit">Dalit</option>
+                              <option value="JanaJaati">JanaJaati</option>
+                              <option value="Madhesi">Madhesi</option>
+                              <option value="Muslim">Muslim</option>
+                              <option value="Brahmin/Chhetri">Brahmin/Chhetri</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Race<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="race" class="form-control" type="text" [(ngModel)]="model.Race"
+                              [ngModelOptions]="{standalone: true}" placeholder="race" (keyUp.enter)="setFocusById('TargetGroupId')" />
+                          </div>
+                        </div>
+                        <!-- <div class="form-group">
+              <label class="control-label col-md-4">Notifications ? <b>:</b></label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input name="phonetext" type="checkbox" value="" [(ngModel)]="model.PhoneAcceptsText"
+                        [ngModelOptions]="{standalone: true}">
+                      <span></span> </label>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+
+                        <!-- <div class="form-group">
+              <label class="control-label col-md-4">Occupation<b>:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" type="text" [(ngModel)]="model.Occupation"
+                  [ngModelOptions]="{standalone: true}" placeholder="occupation" />
+              </div>
+            </div> -->
+
+                        <!-- <div class="form-group">
+              <label class="control-label col-md-4">Dialysis Patient<b>:</b></label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="checkbox" [(ngModel)]="model.IsDialysis" (ngModelChange)="OnSelectDialysis()"
+                        [ngModelOptions]="{standalone: true}">
+                      <span></span>Yes </label>
+                  </div>
+                </div>
+
+              </div>
+            </div> -->
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <h4 class="clp clp-hd" aria-expanded="true" data-toggle="collapse" data-target="#insuranceInfoSection">
+                  SSU
+                  Information</h4>
+                <div class="collapse clp-cntnt in" id="insuranceInfoSection">
+                  <form [formGroup]="model.SsuPatientValidator" class="form-horizontal">
+                    <div class="row">
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Target Group<sup>*</sup><b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="TargetGroupId" class="form-control" [(ngModel)]="model.SSU_Information.TargetGroupId"
+                              [ngModelOptions]="{standalone: true}" (focusout)="OnTargetGroupChange()" (change)="setFocusById('hasTG_certificate')">
+                              <option [value]="0">Choose Target Group</option>
+                              <option *ngFor="let tg of TargetGroupList; let i = index;" [value]="tg.TargetGroupId">
+                                {{tg.TargetGroup}}</option>
+                            </select>
+                            <span class="error-msg"
+                              [hidden]="model.SSU_Information.TargetGroupId || model.SSU_Information.TargetGroupId==0">Target
+                              Group is
+                              required</span>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Has Target Group Certificate?<b></b></label>
+                          <div class="col-md-8">
+                            <div class="input-group">
+                              <select id="hasTG_certificate" [(ngModel)]="hasTG_Certificate"
+                                [ngModelOptions]="{standalone: true}" style="width:100px" name="hasTG_Certificate"
+                                (change)="setFocusById('TG_CertificateType')">
+                                <option [ngValue]="null">--select--</option>
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group" *ngIf="hasTG_Certificate">
+                          <label class="control-label col-md-4">Target Group Certificate Type<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="TG_CertificateType" class="form-control" [(ngModel)]="model.SSU_Information.TG_CertificateType"
+                              [ngModelOptions]="{standalone: true}" type="text" (keyUp.enter)="setFocusById('TG_CertificateNo')"/>
+                          </div>
+                        </div>
+
+                        <div class="form-group" *ngIf="hasTG_Certificate">
+                          <label class="control-label col-md-4">Certificate No.<b>:</b></label>
+                          <div class="col-md-8">
+                            <input id="TG_CertificateNo" class="form-control" [(ngModel)]="model.SSU_Information.TG_CertificateNo"
+                              [ngModelOptions]="{standalone: true}" type="text" (keyUp.enter)="setFocusById('IncomeSource')" />
+                          </div>
+                        </div>
+
+                      </div>
+                      <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                          <membership-select id="membership" *ngIf="isPatientInfoLoaded"
+                            [show-community]="membershipSchemeParam.ShowCommunity"
+                            [selected-id]="model.MembershipTypeId" (on-membership-change)="OnMembershipChanged($event)"
+                            [is-mandatory]="membershipSchemeParam.IsMandatory"> </membership-select>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Income Source <b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="IncomeSource" class="form-control" [(ngModel)]="model.SSU_Information.IncomeSource"
+                              [ngModelOptions]="{standalone: true}" (change)="setFocusById('IncomeSource2')">
+                              <option [value]="''">--Select Income Source--</option>
+                              <option *ngFor="let ic of IncomeSourceList" [value]="ic.IncomeSource">{{ic.IncomeSource}}
+                              </option>
+                            </select>
+
+                            <input id="IncomeSource2" class="form-control" type="text" placeholder="Enter the Other IncomeSource"
+                              [(ngModel)]="OtherIncome" *ngIf="model.SSU_Information.IncomeSource=='Others'"
+                              [ngModelOptions]="{standalone: true}" (keyUp.enter)="setFocusById('PatFamilyFinancialStatus')">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-md-4">Financial Status <b>:</b></label>
+                          <div class="col-md-8">
+                            <select id="PatFamilyFinancialStatus" class="form-control" [(ngModel)]="model.SSU_Information.PatFamilyFinancialStatus"
+                              [ngModelOptions]="{standalone: true}" (change)="setFocusById('saveButton')">
+                              <option [value]="''">--Select Status--</option>
+                              <option [value]="'poor'">Poor</option>
+                              <option [value]="'ultra-poor'">Ultra Poor</option>
+                              <option [value]="'not-poor'">Not Poor</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modelbox-footer">
+            <!-- <div class="all-buttons text-right">
+              <button class="btn btn-danger" style="float: right; margin-bottom: 10px; margin-right: 20px;"
+                (click)="Close()">
+                Close
+              </button>
+              <button *ngIf="EditMode" class="btn btn-primary"
+                style="float: right; margin-bottom: 10px; margin-right: 20px;" (click)="Save(1)">
+                Update
+              </button>
+              <button *ngIf="!EditMode" class="btn btn-primary"
+                style="float: right; margin-bottom: 10px; margin-right: 20px;" (click)="Save(0)">
+                Save
+              </button>
+            </div> -->
+            <div class="all-buttons text-right">
+              <button id="SaveButton0" type="button" *ngIf="model.PatientId<=0" class="btn btn-primary btn-sm margin-7-hr"
+                [disabled]="false" (click)="Save(0)">
+                Register </button>
+              <button id="SaveButton1" type="button" *ngIf="model.PatientId >0" class="btn btn-primary btn-sm margin-7-hr"
+                (click)="Save(1)">
+                Update </button>
+              <button type="button" class="btn btn-danger btn-sm margin-7-hr" (click)="Close()"> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Model Box Body End-->
+    </div>
+  </div>
+</div>

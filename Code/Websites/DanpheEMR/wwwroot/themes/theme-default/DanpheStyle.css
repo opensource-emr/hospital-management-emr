@@ -39,7 +39,7 @@
     padding-left: 5px;
     padding-right: 5px;
     display: inline-block;
-    min-width: 150px;
+    max-width: 150px;
     border: 1px solid #ccc;
 }
 input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {
@@ -137,6 +137,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
         font-family: Verdana !important;
         font-size: 11px;
     }
+    
 }
 body {
     background-color: transparent;
@@ -262,7 +263,8 @@ danphe-auto-complete {
     border: 1px solid #ccc;
     padding: 0px 7px;
 }
-.main-visit membership-select div span {
+/*sud:6May'21: below classes not required.*/
+/* .main-visit membership-select div span {
     margin-left: 0px !important;
 }
 .main-visit membership-select div:not(.small-info) {
@@ -281,7 +283,7 @@ danphe-auto-complete {
     height: 30px;
     width: 170px !important;
     font-family: 'Quicksand', 'Open Sans', sans-serif;
-}
+} */
 .main-visit .headin-left {
     background: #fff !important;
     border: none !important;
@@ -1820,6 +1822,22 @@ a.close-btn i.fa {
 .no-margin {
     margin: 0px;
 }
+.receipt-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .receipt-print-main .print-detail {
+    width: 100%;
+  }
+  .center-div {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+.center-div p {
+    margin-top:85px;
+ }
 .customer-logo {
     width: 100px;
     height: 120px;
@@ -2428,6 +2446,7 @@ tbody.culture-positive-testres tr.sensitiv-rst-data td:not(:last-child) {
 }
 .signature-item-inside {
     font-weight: 700;
+    margin-top: 10px;
 }
 .signature-image-holder {
     text-align: center !important;
@@ -2445,7 +2464,7 @@ tbody.culture-positive-testres tr.sensitiv-rst-data td:not(:last-child) {
     color: #fff;
 }
 .main-signature {
-    white-space: pre-line;
+    white-space: pre;
     display: inline-block;
     border-top: 1px solid;
     padding: 7px 15px;
@@ -2499,7 +2518,7 @@ table.table-bordered.thin-bordered > thead > tr > td, table.table-bordered.thin-
 .danphe-auto-complete-wrapper input {
     padding-right: 15px;
 }
-}
+
 .danphe-auto-complete-wrapper > input {
     padding-right: 35px;
 }
@@ -3727,8 +3746,8 @@ table.table-bordered.thin-bordered > thead > tr > td, table.table-bordered.thin-
 }
 .circularQueueDiv {
     position: absolute;
-    left: 35%;
-    bottom: 100px;
+    left: 75%;
+    bottom: 470px;
     width: 35px;
     border: 2px solid;
     border-radius: 50% !important;
@@ -3755,4 +3774,146 @@ table.table-bordered.thin-bordered > thead > tr > td, table.table-bordered.thin-
     border-radius: 4px !important;
     font-size: 13px;
 }
+.receipt-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .receipt-print-main .print-detail {
+    width: 100%;
+  }
+  .center-div {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+.center-div p {
+    margin-top:85px;
+ }
+
+ /* KEYBOARD SHORTCUT KEY GLOSSARY CSS */
+
+.shortcut-key {
+  position: relative;
+  float: left;
+  margin-top: 7px;
+  margin-left: 5px;
+}
+
+.shortcut-key a {
+  display: block;
+  border: 1px solid #ccc;
+  padding: 5px;
+  width: 60px;
+  border-radius: 5px !important;
+}
+
+.shortcut-key a img {
+  display: block;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.keydropdown {}
+
+.keydropdown ul {
+  width: auto;
+  white-space: nowrap;
+  background-color: #beb8b8;
+  position: absolute;
+  left: 0;
+  top: 120%;
+  padding: 7px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin: 0;
+  opacity: 0.30;
+  visibility: hidden;
+  z-index: 1000;
+}
+
+.keydropdown ul:before {
+  content: "";
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #ccc transparent;
+  border-style: solid;
+  position: absolute;
+  top: -11px;
+}
+
+.keydropdown ul:after {
+  content: "";
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #beb8b8 transparent;
+  border-style: solid;
+  position: absolute;
+  top: -10px;
+}
+
+.shortcut-key:hover .keydropdown ul {
+  opacity: 1;
+  visibility: visible;
+}
+
+.keydropdown ul li {
+  display: block;
+  padding: 5px 0;
+}
+
+.keydropdown ul li kbd {
+  border: 1px solid #ccc;
+  padding: 0px 3px;
+  border-radius: 3px;
+  background-color: #fff;
+  display: inline-block;
+  vertical-align: middle;
+  color: #000;
+}
+
+.shortkey-right {
+  float: right;
+}
+
+.shortkey-right .keydropdown ul {
+  right: 0;
+  left: auto;
+}
+
+.shortkey-right .keydropdown ul:before, .shortkey-right .keydropdown ul:after {
+  content: "";
+  left: auto;
+  right: 5%;
+}
+
+.keydropdown ul li samp {
+  margin-left: 2px;
+  font-size: 9pt;
+}
+
+/* KEYBOARD SHORTCUT KEY GLOSSARY CSS */
+
+.text-uppercase{text-transform: uppercase;}
+.text-bold{font-weight: 700;}
+.flex-col{flex-direction: column;}
+.text-right{text-align: right;}
+.text-left{text-align: left;}
+.flx{display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;}
+.discharge-bill-sm-holder {font-size: 12px;}
+.discharge-bill-sm-header {padding: 5px 0px 8px 0px;}
+.discharge-bill-sm-holder{font-size: 12px;line-height: 16px;}
+.discharge-bill-amount-descripton{margin-top: 30px;line-height: 2;}
+.discharge-bill-amount-summary{margin-top: 15px;}
+.discharge-bill-sm-row > .txt-val, .discharge-bill-sm-row > .txt-label{font-size: 12px; line-height: 12px;}
+
+
+/*For LAB printing from Report Dispatch Section-Multiple Report at once*/
+.lab-single-report{
+    page-break-after: always;
+}
+
+
 

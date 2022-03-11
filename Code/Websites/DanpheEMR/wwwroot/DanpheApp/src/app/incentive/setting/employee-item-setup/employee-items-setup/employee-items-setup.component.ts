@@ -383,12 +383,12 @@ export class EmployeeItemsSetupComponent {
   ItemsListFormatter(data: any): string {
     if (data["Doctor"]) {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b >";
+        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + "<b>" + data["Price"] + "</b >";
       return html;
     }
     else {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b >";
+        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + "<b>" + data["Price"] + "</b >";
       return html;
     }
   }

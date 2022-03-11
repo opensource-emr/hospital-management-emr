@@ -48,6 +48,9 @@ import { ADTSharedModule } from '../adt/adt-shared.module';
 import { ClinicalSharedModule } from '../clinical/clinical-shared-module';
 import { PatientSharedModule } from '../patients/patient-shared.module';
 import { DoctorSharedModule } from '../doctors/doctor-shared.module';
+import { EmergencyService } from './shared/emergency.service';
+import { PatientCasesSelectComponent } from './shared/select-cases/select-patient-case.component';
+import { uploadConsentAcionComponent } from './patients-list/Consent/upload-consent.component';
 
 @NgModule({
   providers: [
@@ -64,7 +67,8 @@ import { DoctorSharedModule } from '../doctors/doctor-shared.module';
     IOAllergyVitalsBLService,
     VisitDLService,
     AppointmentDLService,
-    PatientsDLService
+    PatientsDLService,
+    EmergencyService
   ],
   imports: [
     EmergencyRoutingModule,
@@ -73,7 +77,7 @@ import { DoctorSharedModule } from '../doctors/doctor-shared.module';
     CommonModule,
     HttpClientModule,
     AngularMultiSelectModule,
-    SharedModule,   
+    SharedModule,
     DischargeSummaryModule,
     DanpheAutoCompleteModule,
     BillingSharedModule,
@@ -102,7 +106,9 @@ import { DoctorSharedModule } from '../doctors/doctor-shared.module';
     ERDischargeSummaryComponent,
     ViewERDischargeSummaryComponent,
     AddERDischargeSummaryComponent,
-    ERDorPatientListComponent
+    ERDorPatientListComponent,
+    PatientCasesSelectComponent,
+    uploadConsentAcionComponent
   ],
   bootstrap: []
 

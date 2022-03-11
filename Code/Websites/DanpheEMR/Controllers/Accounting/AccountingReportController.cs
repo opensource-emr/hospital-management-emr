@@ -22,6 +22,7 @@ using System.Dynamic;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json.Converters;
 using DanpheEMR.AccTransfer;
+using DanpheEMR.ServerModel.AccountingModels;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers
@@ -40,7 +41,7 @@ namespace DanpheEMR.Controllers
 
         // GET: api/values
         [HttpGet]
-        public string Get(string reqType, int ledgerId, DateTime FromDate, DateTime ToDate, /*int transactionId*/ string transactionIds, int DayVoucherNumber, int voucherId, int sectionId, int FiscalYearId, string selectedDate, string voucherReportType,int ReverseTransactionId)
+        public string Get(string reqType, int ledgerId, DateTime FromDate, DateTime ToDate, /*int transactionId*/ string transactionIds, int DayVoucherNumber, int voucherId, int sectionId, int FiscalYearId, string selectedDate, string voucherReportType, int ReverseTransactionId, int LedgerGroupId,string VoucherNumber)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
@@ -267,92 +268,60 @@ namespace DanpheEMR.Controllers
                                       itm.OpeningBalanceType,
                                       DepartmentName = "TempTest",
                                       itm.Description,
-                                      TransactionItems = //(showTxnItemLevel == true) ? null :
+                                      TransactionItems = (showTxnItemLevel == true) ? null :
                                                                                         (from txnItm in accountingDBContext.TransactionItems
-                                                                                              where txnItm.HospitalId == currentHospitalId
-                                                                                              join ledger in accountingDBContext.Ledgers on txnItm.LedgerId equals ledger.LedgerId
-                                                                                              join txn in accountingDBContext.Transactions on txnItm.TransactionId equals itm.TransactionId
-                                                                                              join v in accountingDBContext.Vouchers on txn.VoucherId equals v.VoucherId
-                                                                                              where
-                                                                                              ledger.HospitalId == currentHospitalId &&
-                                                                                              txnItm.TransactionId == txn.TransactionId && txn.IsActive == true && v.VoucherName == itm.VoucherName
-                                                                                              && (DbFunctions.TruncateTime(txn.TransactionDate) >= FromDate && DbFunctions.TruncateTime(txn.TransactionDate) <= ToDate)
-                                                                                              && ledger.LedgerName != itm.LedgerName && txn.TransactionDate == itm.TransactionDate
-                                                                                              select new
-                                                                                              {
-                                                                                                  txnItm.TransactionItemId,
-                                                                                                  LedgerName = ledger.LedgerName,
-                                                                                                  Code = ledger.Code,
-                                                                                                  DrCr = txnItm.DrCr,
-                                                                                                  LedAmount = txnItm.Amount,
-                                                                                                  Description = (txn.SectionId == 4) ? txnItm.Description : "",//get description only for manual voucher entry, 4 Id for Manual section
-                                                                                                  Details = (from txnitm in accountingDBContext.TransactionItems
-                                                                                                             where txnitm.HospitalId == currentHospitalId
-                                                                                                             join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
-                                                                                                             join pat in accountingDBContext.PatientModel on txndetail.ReferenceId equals pat.PatientId
-                                                                                                             where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Patient"
-                                                                                                             group new { txnitm, pat, txndetail } by new
-                                                                                                             {
-                                                                                                                 txndetail.ReferenceId,
-                                                                                                                 txnitm.DrCr
-                                                                                                             } into x1
-                                                                                                             select new
-                                                                                                             {
-                                                                                                                 Id = x1.Key.ReferenceId,
-                                                                                                                 Name = x1.Select(a => a.pat.FirstName + a.pat.LastName).FirstOrDefault(),
-                                                                                                                 DrCr = x1.Key.DrCr,
-                                                                                                                 Amount = x1.Select(a => a.txndetail.Amount).Sum(),
-                                                                                                             }).ToList(),
-                                                                                                  //SupplierDetails = (from txnitm in accountingDBContext.TransactionItems
-                                                                                                  //                   join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
-                                                                                                  //                   join sup in accountingDBContext.PHRMSupplier on txndetail.ReferenceId equals sup.SupplierId
-                                                                                                  //                   where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Supplier"
-                                                                                                  //                   group new { txnitm, sup, txndetail } by new
-                                                                                                  //                   {
-                                                                                                  //                       txndetail.ReferenceId,
-                                                                                                  //                       txnitm.DrCr
-                                                                                                  //                   } into x1
-                                                                                                  //                   select new
-                                                                                                  //                   {
-                                                                                                  //                       Id = x1.Key.ReferenceId,
-                                                                                                  //                       Name = x1.Select(a => a.sup.SupplierName).FirstOrDefault(),
-                                                                                                  //                       DrCr = x1.Key.DrCr,
-                                                                                                  //                       Amount = x1.Select(a => a.txndetail.Amount).Sum(),
-                                                                                                  //                   }).ToList(),
-                                                                                                  //   VendorDetails = (from txnitm in accountingDBContext.TransactionItems
-                                                                                                  //                       join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
-                                                                                                  //                       join sup in accountingDBContext.InvVendors on txndetail.ReferenceId equals sup.VendorId
-                                                                                                  //                       where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Vendor"
-                                                                                                  //                    group new { txnitm, sup, txndetail } by new
-                                                                                                  //                       {
-                                                                                                  //                           txndetail.ReferenceId,
-                                                                                                  //                           txnitm.DrCr
-                                                                                                  //                       } into x1
-                                                                                                  //                       select new
-                                                                                                  //                       {
-                                                                                                  //                           Id = x1.Key.ReferenceId,
-                                                                                                  //                           Name = x1.Select(a => a.sup.VendorName).FirstOrDefault(),
-                                                                                                  //                           DrCr = x1.Key.DrCr,
-                                                                                                  //                           Amount = x1.Select(a => a.txndetail.Amount).Sum(),
-                                                                                                  //                       }).ToList(),
-                                                                                                  CapitalsGoods = (from txnitm in accountingDBContext.TransactionItems
-                                                                                                                   where txnitm.HospitalId == currentHospitalId
-                                                                                                                   join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
-                                                                                                                   join pat in accountingDBContext.InventoryItems on txndetail.ReferenceId equals pat.ItemId
-                                                                                                                   where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Capital Goods Items"
-                                                                                                                   group new { txnitm, pat, txndetail } by new
-                                                                                                                   {
-                                                                                                                       txndetail.ReferenceId,
-                                                                                                                       txnitm.DrCr
-                                                                                                                   } into x1
-                                                                                                                   select new
-                                                                                                                   {
-                                                                                                                       Id = x1.Key.ReferenceId,
-                                                                                                                       Name = x1.Select(a => a.pat.ItemName).FirstOrDefault(),
-                                                                                                                       DrCr = x1.Key.DrCr,
-                                                                                                                       Amount = x1.Select(a => a.txndetail.Amount).Sum(),
-                                                                                                                   }).ToList(),
-                                                                                              }).OrderByDescending(a => a.DrCr == true).ToList(),
+                                                                                         where txnItm.HospitalId == currentHospitalId
+                                                                                         join ledger in accountingDBContext.Ledgers on txnItm.LedgerId equals ledger.LedgerId
+                                                                                         join txn in accountingDBContext.Transactions on txnItm.TransactionId equals itm.TransactionId
+                                                                                         join v in accountingDBContext.Vouchers on txn.VoucherId equals v.VoucherId
+                                                                                         where
+                                                                                         ledger.HospitalId == currentHospitalId &&
+                                                                                         txnItm.TransactionId == txn.TransactionId && txn.IsActive == true && v.VoucherName == itm.VoucherName
+                                                                                         && (DbFunctions.TruncateTime(txn.TransactionDate) >= FromDate && DbFunctions.TruncateTime(txn.TransactionDate) <= ToDate)
+                                                                                         && ledger.LedgerName != itm.LedgerName && txn.TransactionDate == itm.TransactionDate
+                                                                                         select new
+                                                                                         {
+                                                                                             txnItm.TransactionItemId,
+                                                                                             LedgerName = ledger.LedgerName,
+                                                                                             Code = ledger.Code,
+                                                                                             DrCr = txnItm.DrCr,
+                                                                                             LedAmount = txnItm.Amount,
+                                                                                             Description = (txn.SectionId == 4) ? txnItm.Description : "",//get description only for manual voucher entry, 4 Id for Manual section
+                                                                                             Details = (from txnitm in accountingDBContext.TransactionItems
+                                                                                                        where txnitm.HospitalId == currentHospitalId
+                                                                                                        join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
+                                                                                                        join pat in accountingDBContext.PatientModel on txndetail.ReferenceId equals pat.PatientId
+                                                                                                        where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Patient"
+                                                                                                        group new { txnitm, pat, txndetail } by new
+                                                                                                        {
+                                                                                                            txndetail.ReferenceId,
+                                                                                                            txnitm.DrCr
+                                                                                                        } into x1
+                                                                                                        select new
+                                                                                                        {
+                                                                                                            Id = x1.Key.ReferenceId,
+                                                                                                            Name = x1.Select(a => a.pat.FirstName + a.pat.LastName).FirstOrDefault(),
+                                                                                                            DrCr = x1.Key.DrCr,
+                                                                                                            Amount = x1.Select(a => a.txndetail.Amount).Sum(),
+                                                                                                        }).ToList(),
+                                                                                             CapitalsGoods = (from txnitm in accountingDBContext.TransactionItems
+                                                                                                              where txnitm.HospitalId == currentHospitalId
+                                                                                                              join txndetail in accountingDBContext.TransactionItemDetails on txnitm.TransactionItemId equals txndetail.TransactionItemId
+                                                                                                              join pat in accountingDBContext.InventoryItems on txndetail.ReferenceId equals pat.ItemId
+                                                                                                              where txnItm.TransactionItemId == txnitm.TransactionItemId && txn.VoucherNumber == itm.VoucherNumber && txndetail.ReferenceType == "Capital Goods Items"
+                                                                                                              group new { txnitm, pat, txndetail } by new
+                                                                                                              {
+                                                                                                                  txndetail.ReferenceId,
+                                                                                                                  txnitm.DrCr
+                                                                                                              } into x1
+                                                                                                              select new
+                                                                                                              {
+                                                                                                                  Id = x1.Key.ReferenceId,
+                                                                                                                  Name = x1.Select(a => a.pat.ItemName).FirstOrDefault(),
+                                                                                                                  DrCr = x1.Key.DrCr,
+                                                                                                                  Amount = x1.Select(a => a.txndetail.Amount).Sum(),
+                                                                                                              }).ToList(),
+                                                                                         }).OrderByDescending(a => a.DrCr == true).ToList(),
                                   }).ToList();
                     result.ForEach(itm =>
                     {
@@ -360,14 +329,6 @@ namespace DanpheEMR.Controllers
                         {
                             itm.TransactionItems.ForEach(txn =>
                             {
-                                //foreach (var det in txn.SupplierDetails)
-                                //{
-                                //    txn.Details.Add(det);
-                                //}
-                                //foreach (var det in txn.VendorDetails)
-                                //{
-                                //    txn.Details.Add(det);
-                                //}
                                 foreach (var det in txn.CapitalsGoods)
                                 {
                                     txn.Details.Add(det);
@@ -459,16 +420,55 @@ namespace DanpheEMR.Controllers
                         {
                             txn.LedgerList.ForEach(ledgr =>
                             {
-                                //foreach (var det in ledgr.VendorDetail)
-                                //{
-                                //    ledgr.Details.Add(det);
-                                //}
 
                             });
                         });
                     });
                     responseData.Status = "OK";
                     responseData.Results = trialBalance;
+                }
+                #endregion
+
+                #region Group Statement report 
+                else if (reqType == "groupStatementReport")
+                {
+                    List<SqlParameter> paramList = new List<SqlParameter>()
+                                {
+                                        new SqlParameter("@FromDate", FromDate),
+                                        new SqlParameter("@ToDate", ToDate),
+                                        new SqlParameter("@HospitalId", currentHospitalId),
+                                        new SqlParameter("@OpeningFiscalYearId", AccountingTransferData.GetFiscalYearIdForOpeningBalance(accountingDBContext,FiscalYearId,currentHospitalId)),
+                                        new SqlParameter("@LedgerGroupId", LedgerGroupId),
+                                };
+                    var spDataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_RPT_GetGroupStatementData", paramList, accountingDBContext);
+                    var resultStr = JsonConvert.SerializeObject(spDataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
+                    var reportDataList = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);
+
+                    var groupStatementReport = (from row in reportDataList
+                                                select new
+                                                {
+                                                    Particular = row.Particular,
+                                                    LedgerId = row.LedgerId,
+                                                    Code = row.Code,
+                                                    OpeningDr = row.OpeningDr,
+                                                    OpeningCr = row.OpeningCr,
+                                                    TransactionDr = row.TransactionDr,
+                                                    TransactionCr = row.TransactionCr,
+                                                    OpeningTotal = (row.OpeningDr > row.OpeningCr || row.OpeningCr== row.OpeningDr)? (row.OpeningDr-row.OpeningCr): (row.OpeningCr-row.OpeningDr ),
+                                                    OpeningType = (row.OpeningDr > row.OpeningCr || row.OpeningCr == row.OpeningDr) ?"Dr" : "Cr",
+                                                    ClosingDr = row.ClosingDr,
+                                                    ClosingCr =row.ClosingCr,
+                                                    ClosingTotal = (row.ClosingDr > row.ClosingCr || row.ClosingDr==row.ClosingCr)?(row.ClosingDr-row.ClosingCr):(row.ClosingCr-row.ClosingDr),
+                                                    ClosingType = (row.ClosingDr > row.ClosingCr || row.ClosingDr == row.ClosingCr) ? "Dr": "Cr",
+
+                                                }).ToList();
+
+
+
+                    responseData.Status = "OK";
+                    responseData.Results = groupStatementReport;
+
+
                 }
                 #endregion
                 #region Profit and Loss Report
@@ -592,7 +592,6 @@ namespace DanpheEMR.Controllers
                                                                                               l.OpeningBalanceCr,
                                                                                               l.DRAmount,//= x4.Where(a => a.l.TxnItmDrCr == true && a.l.Amount !=null).Select(a => a.l.Amount).Sum(),
                                                                                               l.CRAmount, //= x4.Where(a => a.l.TxnItmDrCr == false && a.l.Amount != null).Select(a => a.l.Amount).Sum(),
-                                                                                              // Amount = x4.Select(a => a.ti.Amount).Sum(),
                                                                                               Details = "",
                                                                                               InventoryItems = ""
                                                                                           }).ToList()
@@ -714,7 +713,7 @@ namespace DanpheEMR.Controllers
                                                     itm = new
                                                     {
                                                         BatchNo = wr.BatchNO,
-                                                        wr.TotalAmount
+                                                        TotalAmount=wr.TotalAmount
                                                     },
                                                     itm.ItemName,
                                                     TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
@@ -731,9 +730,9 @@ namespace DanpheEMR.Controllers
                                                       {
                                                           itm = new
                                                           {
-                                                              rv.BatchNo,
-                                                              rv.TotalAmount,
-                                                              rv.VAT
+                                                              BatchNo=rv.BatchNo,
+                                                              TotalAmount=rv.TotalAmount,
+                                                              VAT=rv.VAT
                                                           },
                                                           itm.ItemName,
                                                           vendor.VendorName,
@@ -744,18 +743,21 @@ namespace DanpheEMR.Controllers
                             else if (txnModel.Where(a => a.TransactionType.Contains("DispatchToDept")).ToList().Count > 0)
                             {
                                 var DispatchToDept = (from wr in inventoryDbContext.StockTransactions.AsEnumerable()
-                                                      join id in referanceIdList on wr.StockTxnId equals id
-                                                      join st in inventoryDbContext.Stock on wr.StockId equals st.StockId
+                                                      join id in referanceIdList on wr.StockTransactionId equals id
+                                                      join st in inventoryDbContext.StoreStocks.Include(x=>x.StockMaster) on wr.StockId equals st.StockId
                                                       join itm in inventoryDbContext.Items on st.ItemId equals itm.ItemId
-                                                      join gr in inventoryDbContext.GoodsReceiptItems on st.GoodsReceiptItemId equals gr.GoodsReceiptItemId
+                                                      //EMR_LPH_MERGE: NageshBB- 18-June-2021 -commented below line for temporary build error solution
+                                                      ///later we need to discuss table and column with inventory team and do chagnes as per requirement
+                                                      //join gr in inventoryDbContext.GoodsReceiptItems on st.GoodsReceiptItemId equals gr.GoodsReceiptItemId
+
                                                       select new
                                                       {
                                                           itm = new
                                                           {
-                                                              BatchNo = st.BatchNO,
-                                                              TotalAmount = Math.Truncate((decimal)wr.Quantity) * gr.ItemRate,
-                                                              gr.VAT,
-                                                              gr.DiscountAmount,
+                                                              BatchNo = st.StockMaster.BatchNo,
+                                                              TotalAmount = wr.CostPrice //Math.Truncate((decimal)wr.Quantity) * gr.ItemRate, //EMR_MERGE_LPH
+                                                              //gr.VAT,//EMR_MERGE_LPH
+                                                              //gr.DiscountAmount, //EMR_MERGE_LPH
                                                           },
                                                           itm.ItemName,
                                                           TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
@@ -764,19 +766,42 @@ namespace DanpheEMR.Controllers
                             }
                             else if (txnModel.Where(a => a.TransactionType.Contains("INVDeptConsumedGoods")).ToList().Count > 0)
                             {
-                                var ConsumedGoodsItems = (from csm in inventoryDbContext.WardInventoryTransactionModel.AsEnumerable()
-                                                          join id in referanceIdList on csm.TransactionId equals id
+                                //var ConsumedGoodsItems = (from csm in inventoryDbContext.WardInventoryTransactionModel.AsEnumerable()
+                                //                          join id in referanceIdList on csm.TransactionId equals id
+                                //                          join itm in inventoryDbContext.Items on csm.ItemId equals itm.ItemId
+                                //                          join gr in inventoryDbContext.GoodsReceiptItems on csm.GoodsReceiptItemId equals gr.GoodsReceiptItemId
+                                //                          where (csm.TransactionType == "consumption-items")
+                                //                          select new
+                                //                          {
+                                //                              itm = new
+                                //                              {
+                                //                                  BatchNo = gr.BatchNO,
+                                //                                  TotalAmount = Math.Truncate((decimal)csm.Quantity) * csm.Price,
+                                //                                  gr.VAT,
+                                //                                  gr.DiscountAmount,
+                                //                              },
+                                //                              itm.ItemName,
+                                //                              TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
+
+
+                                //                          }).ToList();
+                                //responseData.Results = ConsumedGoodsItems;
+                                //NageshBB: 13July2021- after lph changes we have done below change we need to verify this 
+                                var ConsumedGoodsItems = (from csm in inventoryDbContext.StockTransactions.AsEnumerable()
+                                                          join id in referanceIdList on csm.StockTransactionId equals id
+                                                          join stock in inventoryDbContext.StockMasters on csm.StockId equals stock.StockId
                                                           join itm in inventoryDbContext.Items on csm.ItemId equals itm.ItemId
-                                                          join gr in inventoryDbContext.GoodsReceiptItems on csm.GoodsReceiptItemId equals gr.GoodsReceiptItemId
+                                                          join gr in inventoryDbContext.GoodsReceiptItems on csm.StockId equals gr.StockId into grJ
+                                                          from grLJ in grJ.DefaultIfEmpty()
                                                           where (csm.TransactionType == "consumption-items")
                                                           select new
                                                           {
                                                               itm = new
                                                               {
-                                                                  BatchNo = gr.BatchNO,
-                                                                  TotalAmount = Math.Truncate((decimal)csm.Quantity) * csm.Price,
-                                                                  gr.VAT,
-                                                                  gr.DiscountAmount,
+                                                                  BatchNo = stock.BatchNo,
+                                                                  TotalAmount = Math.Truncate((decimal)csm.OutQty) * csm.CostPrice,
+                                                                  VAT = grLJ == null ? 0 : grLJ.VAT,
+                                                                  DiscountAmount = grLJ == null ? 0 : grLJ.DiscountAmount,
                                                               },
                                                               itm.ItemName,
                                                               TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
@@ -784,28 +809,50 @@ namespace DanpheEMR.Controllers
 
                                                           }).ToList();
                                 responseData.Results = ConsumedGoodsItems;
+
                             }
                             else if (txnModel.Where(a => a.TransactionType.Contains("INVStockManageOut")).ToList().Count > 0)
                             {
+                                //var stkTxn1 = (from wr in inventoryDbContext.StockTransactions.AsEnumerable()
+                                //               join id in referanceIdList on wr.StockTxnId equals id
+                                //               join st in inventoryDbContext.Stock on wr.StockId equals st.StockId
+                                //               join itm in inventoryDbContext.Items on st.ItemId equals itm.ItemId
+                                //               //EMR_LPH_MERGE: NageshBB- 18-June-2021 -commented below line for temporary build error solution
+                                //               ///later we need to discuss table and column with inventory team and do chagnes as per requirement
+                                //               //join gr in inventoryDbContext.GoodsReceiptItems on st.GoodsReceiptItemId equals gr.GoodsReceiptItemId
+                                //               select new
+                                //               {
+                                //                   itm = new
+                                //                   {
+                                //                       BatchNo = st.BatchNO,
+                                //                       //TotalAmount = Math.Truncate((decimal)wr.Quantity) * gr.ItemRate, //EMR_LPH_MERGE
+                                //                       //gr.VAT, //EMR_LPH_MERGE
+                                //                       //gr.DiscountAmount, //EMR_LPH_MERGE
+                                //                   },
+                                //                   itm.ItemName,
+                                //                   TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
+                                //               }).ToList();
+                                //responseData.Results = stkTxn1;
                                 var stkTxn1 = (from wr in inventoryDbContext.StockTransactions.AsEnumerable()
-                                              join id in referanceIdList on wr.StockTxnId equals id
-                                              join st in inventoryDbContext.Stock on wr.StockId equals st.StockId
-                                              join itm in inventoryDbContext.Items on st.ItemId equals itm.ItemId
-                                              join gr in inventoryDbContext.GoodsReceiptItems on st.GoodsReceiptItemId equals gr.GoodsReceiptItemId
-                                              select new
-                                              {
-                                                  itm = new
-                                                  {
-                                                      BatchNo = st.BatchNO,
-                                                      TotalAmount = Math.Truncate((decimal)wr.Quantity) * gr.ItemRate,
-                                                      gr.VAT,
-                                                      gr.DiscountAmount,
-                                                  },
-                                                  itm.ItemName,
-                                                  TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
-                                              }).ToList();                                
+                                               join id in referanceIdList on wr.StockTransactionId equals id
+                                               join storestock in inventoryDbContext.StoreStocks.Include(s => s.StockMaster) on wr.StoreStockId equals storestock.StoreStockId
+                                               join st in inventoryDbContext.StoreStocks on wr.StockId equals st.StockId
+                                               join itm in inventoryDbContext.Items on st.ItemId equals itm.ItemId
+                                               join gr in inventoryDbContext.GoodsReceiptItems on st.StockId equals gr.StockId into grJ
+                                               from grLJ in grJ.DefaultIfEmpty()
+                                               select new
+                                               {
+                                                   itm = new
+                                                   {
+                                                       BatchNo = storestock.StockMaster.BatchNo,
+                                                       TotalAmount = Math.Truncate((decimal)storestock.AvailableQuantity) * storestock.StockMaster.CostPrice,
+                                                       VAT = grLJ == null ? 0 : grLJ.VAT,
+                                                       DiscountAmount = grLJ == null ? 0 : grLJ.DiscountAmount,
+                                                   },
+                                                   itm.ItemName,
+                                                   TransactionType = txnModel.Where(a => a.referIds.Contains(id.ToString())).Select(a => a.TransactionType).FirstOrDefault()
+                                               }).ToList();
                                 responseData.Results = stkTxn1;
-
                             }
                             responseData.Status = "OK";
                         }
@@ -816,19 +863,26 @@ namespace DanpheEMR.Controllers
                         {
                             List<dynamic> depData = new List<dynamic>();
                             List<dynamic> BillData = new List<dynamic>();
+                            List<dynamic> ReturnBillData = new List<dynamic>();
 
                             DataSet txnData = accountingDBContext.DailyTransactionReportDetails(txnModel[0].VocuherNumber, currentHospitalId);
 
-                            var deposits = txnModel.Where(c => c.TransactionType.Contains("Deposit")).ToList();
+                            var deposits = txnModel.Where(c => c.TransactionType == "DepositAdd" || c.TransactionType == "DepositReturn").ToList();
                             if (deposits.Count > 0)
                             {
                                 depData = DataTableToList.ToDynamic(txnData.Tables[0]);
                             }
-                            var bills = txnModel.Where(c => !c.TransactionType.Contains("Deposit")).ToList();
+                            var bills = txnModel.Where(c => c.TransactionType == "CashBill" || c.TransactionType == "CreditBill").ToList();
                             if (bills.Count > 0)
                             {
 
                                 BillData = DataTableToList.ToDynamic(txnData.Tables[0]);
+                            }
+                            var returnBill = txnModel.Where(c => c.TransactionType == "CashBillReturn" || c.TransactionType == "CreditBillReturn").ToList();
+                            if (returnBill.Count > 0)
+                            {
+
+                                ReturnBillData = DataTableToList.ToDynamic(txnData.Tables[0]);
                             }
 
                             var result = new
@@ -842,6 +896,13 @@ namespace DanpheEMR.Controllers
                                                    TotalAmount = dep.TotalAmount
                                                }).ToList(),
                                 BillData = (from itm in BillData.AsEnumerable()
+                                            select new
+                                            {
+                                                itm,
+                                                InvoiceNo = itm.InvoiceNo,
+                                                PatientName = itm.PatientName
+                                            }).ToList(),
+                                ReturnBillData = (from itm in ReturnBillData.AsEnumerable()
                                             select new
                                             {
                                                 itm,
@@ -902,16 +963,18 @@ namespace DanpheEMR.Controllers
                             else
                             if (txnModel.Where(a => a.TransactionType.Contains("CashInvoiceReturn")).ToList().Count > 0)
                             {
-                                var CashInvoiceReturnData = (from itm in pharmacyDbContext.PHRMInvoiceTransaction.AsEnumerable()
-                                                             join id in referanceIdList on itm.InvoiceId equals id
-                                                             join detail in pharmacyDbContext.PHRMInvoiceReturnItemsModel.AsEnumerable() on itm.InvoiceId equals detail.InvoiceId
-                                                             join pat in pharmacyDbContext.PHRMPatient on itm.PatientId equals pat.PatientId
+                                var CashInvoiceReturnData = (from invReturn in pharmacyDbContext.PHRMInvoiceReturnModel.AsEnumerable()
+                                                             join id in referanceIdList on invReturn.InvoiceReturnId equals id
+                                                             join detail in pharmacyDbContext.PHRMInvoiceReturnItemsModel.AsEnumerable() on invReturn.InvoiceReturnId equals detail.InvoiceReturnId
+                                                             join pat in pharmacyDbContext.PHRMPatient on invReturn.PatientId equals pat.PatientId
                                                              join invitm in pharmacyDbContext.PHRMInvoiceTransactionItems on detail.InvoiceItemId equals invitm.InvoiceItemId
-                                                             group new { invitm, itm, pat, detail, id } by new { itm.PatientId, id } into x
+                                                             group new { invitm, invReturn, pat, detail, id } by new { invReturn.PatientId, id } into x
                                                              select new
                                                              {
-                                                                 InvoiceNo = x.Select(a => a.itm.InvoiceId).FirstOrDefault(),
+                                                                 InvoiceNo = x.Select(a => a.invReturn.InvoiceReturnId).FirstOrDefault(),
                                                                  PatientName = x.Select(a => a.pat.FirstName + "" + a.pat.LastName).FirstOrDefault(),
+                                                                 DiscountAmount = x.Select(a => a.detail.DiscountAmount).FirstOrDefault(),
+                                                                 VATAmount = x.Select(c => (((decimal)c.invReturn.SubTotal - (((decimal)c.invReturn.SubTotal * Convert.ToDecimal((decimal)c.invReturn.DiscountAmount)))) * Convert.ToDecimal((decimal)c.detail.VATPercentage)) / 100).Sum(),
                                                                  TotalAmount = x.Select(a => a.detail.TotalAmount).FirstOrDefault(),
                                                                  //  ItemName = x.Select(a => a.invitm.ItemName).FirstOrDefault(),
                                                                  ItemList = x.Select(a => new { a.invitm.ItemName, a.invitm.TotalAmount }).ToList(),
@@ -943,14 +1006,31 @@ namespace DanpheEMR.Controllers
                             }
                             else if (txnModel.Where(a => a.TransactionType.Contains("PHRMDispatchToDeptReturn")).ToList().Count > 0)
                             {
-                                var Data = (from stk in pharmacyDbContext.PHRMStockTransactionModel.AsEnumerable()
+                                //EMR_LPH_MERGE: NageshBB- 18-June-2021 -commented below line for temporary build error solution
+                                ///later we need to discuss table and column with pharmacy team and do chagnes as per requirement
+                                //var Data = (from stk in pharmacyDbContext.StockTransactions.AsEnumerable()
+                                //            join itm in pharmacyDbContext.PHRMItemMaster.AsEnumerable() on stk.ItemId equals itm.ItemId
+
+                                //            join id in referanceIdList on stk.StockTxnItemId equals id
+                                //            group new { stk, id, itm } by new { id } into x
+                                //            select new
+                                //            {
+                                //                ItemList = x.Select(a => new { a.itm.ItemName, a.stk.TotalAmount }).ToList(),
+                                //                TotalAmount = x.Select(a => a.stk.SubTotal).FirstOrDefault(),
+                                //                TransactionType = txnModel.Where(a => a.referIds.Contains(a.referIds.ToString())).Select(a => a.TransactionType).FirstOrDefault()
+                                //            }).ToList();
+
+                                //responseData.Results = Data;
+
+                                //sanjit: this condition has been changed beacuse of Stock tables redesign in LPH
+                                var Data = (from stk in pharmacyDbContext.StockTransactions.AsEnumerable()
                                             join itm in pharmacyDbContext.PHRMItemMaster.AsEnumerable() on stk.ItemId equals itm.ItemId
-                                            join id in referanceIdList on stk.StockTxnItemId equals id
+                                            join id in referanceIdList on stk.StockTransactionId equals id
                                             group new { stk, id, itm } by new { id } into x
                                             select new
                                             {
-                                                ItemList = x.Select(a => new { a.itm.ItemName, a.stk.TotalAmount }).ToList(),
-                                                TotalAmount = x.Select(a => a.stk.SubTotal).FirstOrDefault(),
+                                                ItemList = x.Select(a => new { a.itm.ItemName, TotalAmount = a.stk.CostPrice * Convert.ToDecimal(a.stk.InQty) }).ToList(),
+                                                TotalAmount = x.Select(a => Convert.ToDecimal(a.stk.InQty) * a.stk.CostPrice).FirstOrDefault(),
                                                 TransactionType = txnModel.Where(a => a.referIds.Contains(a.referIds.ToString())).Select(a => a.TransactionType).FirstOrDefault()
                                             }).ToList();
 
@@ -958,8 +1038,30 @@ namespace DanpheEMR.Controllers
                             }
                             else if (txnModel.Where(a => a.TransactionType.Contains("PHRMDispatchToDept")).ToList().Count > 0)
                             {
-                                var Data = (from stk in pharmacyDbContext.PHRMStockTransactionModel.AsEnumerable()
-                                            join id in referanceIdList on stk.StockTxnItemId equals id
+                                //EMR_LPH_MERGE: NageshBB- 18-June-2021 -commented below line for temporary build error solution
+                                ///later we need to discuss table and column with pharmacy team and do chagnes as per requirement
+                                //var Data = (from stk in pharmacyDbContext.StockTransactions.AsEnumerable()
+                                //            join id in referanceIdList on stk.StockTxnItemId equals id
+                                //            join wdc in pharmacyDbContext.WardConsumption.AsEnumerable() on stk.ReferenceNo equals wdc.InvoiceItemId
+                                //            join pat in pharmacyDbContext.PHRMPatient.AsEnumerable() on wdc.PatientId equals pat.PatientId
+                                //            group new { stk, pat, id, wdc } by new
+                                //            {
+                                //                id,
+                                //                PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+
+                                //            } into x
+                                //            select new
+                                //            {
+                                //                PatientName = x.Key.PatientName,
+                                //                ItemList = x.Select(a => new { a.wdc.ItemName, a.stk.TotalAmount }).ToList(),
+                                //                TotalAmount = x.Select(a => a.wdc.SubTotal).FirstOrDefault(),
+                                //                TransactionType = txnModel.Where(a => a.referIds.Contains(a.referIds.ToString())).Select(a => a.TransactionType).FirstOrDefault()
+                                //            }).ToList();
+
+                                //responseData.Results = Data;
+                                //sanjit: this condition has been changed beacuse of Stock tables redesign in LPH
+                                var Data = (from stk in pharmacyDbContext.StockTransactions.AsEnumerable()
+                                            join id in referanceIdList on stk.StockTransactionId equals id
                                             join wdc in pharmacyDbContext.WardConsumption.AsEnumerable() on stk.ReferenceNo equals wdc.InvoiceItemId
                                             join pat in pharmacyDbContext.PHRMPatient.AsEnumerable() on wdc.PatientId equals pat.PatientId
                                             group new { stk, pat, id, wdc } by new
@@ -971,7 +1073,7 @@ namespace DanpheEMR.Controllers
                                             select new
                                             {
                                                 PatientName = x.Key.PatientName,
-                                                ItemList = x.Select(a => new { a.wdc.ItemName, a.stk.TotalAmount }).ToList(),
+                                                ItemList = x.Select(a => new { a.wdc.ItemName, TotalAmount = Convert.ToDecimal(a.stk.OutQty) * a.stk.CostPrice }).ToList(),
                                                 TotalAmount = x.Select(a => a.wdc.SubTotal).FirstOrDefault(),
                                                 TransactionType = txnModel.Where(a => a.referIds.Contains(a.referIds.ToString())).Select(a => a.TransactionType).FirstOrDefault()
                                             }).ToList();
@@ -980,18 +1082,22 @@ namespace DanpheEMR.Controllers
                             }
                             else
                             {
-                                var Data = (from itm in pharmacyDbContext.PHRMWriteOffItem.AsEnumerable()
-                                            join detail in pharmacyDbContext.PHRMWriteOff.AsEnumerable() on itm.WriteOffId equals detail.WriteOffId
+                                var Data = (from detail in pharmacyDbContext.PHRMWriteOff.AsEnumerable()
+                                            join itm in pharmacyDbContext.PHRMWriteOffItem.AsEnumerable() on detail.WriteOffId equals itm.WriteOffId
+                                            join mstItm in pharmacyDbContext.PHRMItemMaster.AsEnumerable() on itm.ItemId equals mstItm.ItemId
+                                            //join gr in pharmacyDbContext.PHRMGoodsReceiptItems.AsEnumerable() on itm.GoodReceiptItemId equals gr.GoodReceiptItemId
                                             join id in referanceIdList on detail.WriteOffId equals id
-                                            join gr in pharmacyDbContext.PHRMGoodsReceiptItems on itm.GoodReceiptItemId equals gr.GoodReceiptItemId
-                                            group new { itm, detail, gr, id } by new { id } into x
+                                            group new { detail, itm, mstItm } by new { detail.WriteOffId } into x
                                             select new
                                             {
-                                                SupplierName = x.Select(a => a.gr.SupplierName).FirstOrDefault(),
+                                                //there is no link between writeoff table and good receipt table, so we cannot  get the supplier name 
+                                                //so here I am sending null 
+                                                //SupplierName = x.Select(a => a.gr.SupplierName).FirstOrDefault(),
+                                                SupplierName = "",
                                                 DiscountAmount = x.Select(a => a.detail.DiscountAmount).FirstOrDefault(),
                                                 VATAmount = x.Select(a => a.detail.VATAmount).FirstOrDefault(),
                                                 TotalAmount = x.Select(a => a.detail.TotalAmount).FirstOrDefault(),
-                                                ItemList = x.Select(a => new { a.gr.ItemName, a.itm.TotalAmount }).ToList(),
+                                                ItemList = x.Select(a => new { a.mstItm.ItemName, a.itm.TotalAmount }).ToList(),
                                                 TransactionType = txnModel.Where(a => a.referIds.Contains(a.referIds.ToString())).Select(a => a.TransactionType).FirstOrDefault()
                                             }).ToList();
                                 responseData.Results = Data;
@@ -1024,7 +1130,7 @@ namespace DanpheEMR.Controllers
 
                             responseData.Status = "OK";
                         }
-                        /* * End Pharmacy Section */
+                        /* * End Incetive Section */
                     }
 
 
@@ -1083,8 +1189,6 @@ namespace DanpheEMR.Controllers
                                                                                                x4.Key.LedgerName,
                                                                                                x4.Key.LedgerGroupName,
                                                                                                x4.Key.Code,
-                                                                                               // OpenBal = x3.Where(b => b.l.LedgerName == "cash" && (DbFunctions.TruncateTime(b.t.TransactionDate) >= FromDate)).Select(a => (int?)a.ti.Amount).DefaultIfEmpty(0).Sum(),
-                                                                                               // CloseBal = x3.Where( && (DbFunctions.TruncateTime(b.t.TransactionDate) <= ToDate)).Select(a => (int?)a.ti.Amount).DefaultIfEmpty(0).Sum(),
                                                                                                OpenBal = x4.Where(b => b.lgroup.LedgerGroupName == "Cash In Hand" && (DbFunctions.TruncateTime(b.t.TransactionDate) < FromDate)).Select(a => (int?)a.ti.Amount).DefaultIfEmpty(0).Sum(),
                                                                                                Amountdr = x4.Where(b => b.ti.DrCr == true && (DbFunctions.TruncateTime(b.t.TransactionDate) >= FromDate && DbFunctions.TruncateTime(b.t.TransactionDate) <= ToDate)).Select(a => (int?)a.ti.Amount).DefaultIfEmpty(0).Sum(),
                                                                                                Amountcr = x4.Where(b => b.ti.DrCr == false && (DbFunctions.TruncateTime(b.t.TransactionDate) >= FromDate && DbFunctions.TruncateTime(b.t.TransactionDate) <= ToDate)).Select(a => (int?)a.ti.Amount).DefaultIfEmpty(0).Sum(),
@@ -1094,7 +1198,7 @@ namespace DanpheEMR.Controllers
                                   }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = result;
-                    //var outputString = DanpheJSONConvert.SerializeObject(responseData, true);
+
                 }
                 #endregion
                 #region Daywise Voucher Report
@@ -1369,19 +1473,6 @@ namespace DanpheEMR.Controllers
                                                                                           Dr = x1.Where(a => a.txnitm.DrCr == true).Sum(a => a.txndetail.Amount),
                                                                                           Cr = x1.Where(a => a.txnitm.DrCr == false).Sum(a => a.txndetail.Amount),
                                                                                       }).ToList(),
-                                                                   //UserDetails = (from u in userDetails
-                                                                   //               where u.LedgerId == x.Key.LedgerId && u.DrCr == x.Key.DrCr
-                                                                   //               group new { u } by new
-                                                                   //               {
-                                                                   //                   u.ReferenceId,
-                                                                   //                   u.DrCr
-                                                                   //               } into x1
-                                                                   //               select new
-                                                                   //               {
-                                                                   //                   Name = x1.Select(a => a.u.Name).FirstOrDefault(),
-                                                                   //                   Dr = x1.Where(a => a.u.DrCr == true).Sum(a => a.u.Amount),
-                                                                   //                   Cr = x1.Where(a => a.u.DrCr == false).Sum(a => a.u.Amount),
-                                                                   //               }).ToList(),
                                                                }).OrderByDescending(a => a.DrCr).ToList()
                                        }).FirstOrDefault();
                         //merging supplier details and patient details, user details
@@ -1573,7 +1664,7 @@ namespace DanpheEMR.Controllers
                                 };
                     var spDataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_RPT_GetSystemAduitReport", paramList, accountingDBContext);
                     var resultStr = JsonConvert.SerializeObject(spDataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
-                    var TransactionWithItems = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);                    
+                    var TransactionWithItems = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);
                     responseData.Status = "OK";
                     responseData.Results = TransactionWithItems;
                 }
@@ -1583,13 +1674,13 @@ namespace DanpheEMR.Controllers
                 {
                     List<SqlParameter> paramList = new List<SqlParameter>()
                                 {
-                                        new SqlParameter("@ReverseTransactionId", ReverseTransactionId),                                         
+                                        new SqlParameter("@ReverseTransactionId", ReverseTransactionId),
                                 };
                     var spDataTable = DALFunctions.GetDatasetFromStoredProc("SP_ACC_RPT_GetReverseTranactionDetail", paramList, accountingDBContext);
                     var resultStr = JsonConvert.SerializeObject(spDataTable.Tables[0], new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
                     var RevereTransactionDetailList = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);
                     var txnRecordsStr = JsonConvert.SerializeObject(spDataTable.Tables[1], new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
-                    var txnRecordList = JsonConvert.DeserializeObject<List<dynamic>>(txnRecordsStr);                    
+                    var txnRecordList = JsonConvert.DeserializeObject<List<dynamic>>(txnRecordsStr);
                     responseData.Status = "OK";
                     responseData.Results = new
                     {
@@ -1598,6 +1689,178 @@ namespace DanpheEMR.Controllers
                     };
                 }
                 #endregion
+                #region Bank-Reconcilation-report
+                else if (reqType == "bank-reconcilation-report")
+                {
+                    var fYearId = AccountingTransferData.GetFiscalYearIdForOpeningBalance(accountingDBContext, FiscalYearId, currentHospitalId);
+
+                    var Ledgers = accountingDBContext.Ledgers.AsQueryable();
+                    var led = (from l in Ledgers
+                               join lbh in accountingDBContext.LedgerBalanceHistory on l.LedgerId equals lbh.LedgerId
+                               where lbh.LedgerId == ledgerId && lbh.HospitalId == currentHospitalId && lbh.FiscalYearId == fYearId
+                               select new
+                               {
+                                   lbh.OpeningBalance,
+                                   DrCr = lbh.OpeningDrCr == null ? true : lbh.OpeningDrCr,
+                                   lbh.LedgerId,
+                                   l.LedgerName
+                               }).FirstOrDefault();
+
+                    var transactionRecords = (from t in accountingDBContext.Transactions
+                                      join ti in accountingDBContext.TransactionItems on t.TransactionId equals ti.TransactionId
+                                      join l in Ledgers on ti.LedgerId equals l.LedgerId
+                                      join v in accountingDBContext.Vouchers on t.VoucherId equals v.VoucherId
+                                      where
+                                      ti.HospitalId == currentHospitalId
+                                      && l.HospitalId == currentHospitalId &&
+                                      (ti.LedgerId == ledgerId) && (DbFunctions.TruncateTime(t.TransactionDate) >= FromDate && DbFunctions.TruncateTime(t.TransactionDate) <= ToDate)
+                                      select new
+                                      {
+                                          t.TransactionId,
+                                          t.TransactionDate,
+                                          t.VoucherNumber,
+                                          l.LedgerName,
+                                          l.Code,
+                                          OpeningBalance = led.OpeningBalance,
+                                          OpeningBalanceType = led.DrCr,
+                                          t.FiscalyearId,
+                                          v.VoucherName,
+                                          t.SectionId,
+                                          ti.Amount,
+                                          ti.DrCr,
+                                          Description = (t.SectionId == 4) ? ti.Description : "",
+                                          l.LedgerId,
+                                          t.HospitalId
+                                      }).ToList();
+
+                    List<DataListDTOModel> dataList = new List<DataListDTOModel>();
+
+                    var openingBalanceFiscalYear = (from f in accountingDBContext.FiscalYears where f.FiscalYearId == fYearId select f).FirstOrDefault();
+                    var dataList1 = (from t in accountingDBContext.Transactions
+                                     join ti in accountingDBContext.TransactionItems on t.TransactionId equals ti.TransactionId
+                                     join l in Ledgers on ti.LedgerId equals l.LedgerId
+                                     where
+                                     ti.HospitalId == currentHospitalId
+                                     && l.HospitalId == currentHospitalId &&
+                                     (ti.LedgerId == ledgerId) && (DbFunctions.TruncateTime(t.TransactionDate) >= DbFunctions.TruncateTime(openingBalanceFiscalYear.StartDate) && DbFunctions.TruncateTime(t.TransactionDate) <= ToDate)
+                                     group new { t, ti, l } by new
+                                     {
+                                         l.LedgerId,
+                                     }
+                                    into x
+                                     select new
+                                     {
+                                         FiscalYearId = fYearId,
+                                         AmountDr = x.Where(b => b.ti.DrCr == true && DbFunctions.TruncateTime(b.t.TransactionDate) < FromDate).Select(a => (double?)a.ti.Amount).DefaultIfEmpty(0).Sum() + ((transactionRecords.Count == 0 && led.LedgerId > 0 && led.DrCr == true) ? led.OpeningBalance : 0),
+                                         AmountCr = x.Where(b => b.ti.DrCr == false && DbFunctions.TruncateTime(b.t.TransactionDate) < FromDate).Select(a => (double?)a.ti.Amount).DefaultIfEmpty(0).Sum() + ((transactionRecords.Count == 0 && led.LedgerId > 0 && led.DrCr == false) ? led.OpeningBalance : 0),
+                                     }).ToList();
+
+                    if (transactionRecords.Count == 0)// && dataList1.Count == 0)
+                    {
+                        var dToday = DateTime.Now.Date;
+                        var fYId = AccountingTransferData.GetFiscalYearIdByDate(accountingDBContext, dToday, currentHospitalId);
+                        dataList.Add(new DataListDTOModel
+                        {
+                            FiscalYearId = fYId,
+                            AmountDr = ((led.DrCr == true) ? led.OpeningBalance : 0),
+                            AmountCr = ((led.DrCr == false) ? led.OpeningBalance : 0)
+                        });
+
+                    }
+                    else if (dataList1.Count > 0)
+                    {
+                        dataList1.ForEach(ss =>
+                        {
+                            dataList.Add(
+                                new DataListDTOModel
+                                {
+                                    FiscalYearId = dataList1[0].FiscalYearId,
+                                    AmountDr = (transactionRecords.Count == 0 && led.DrCr == true) ? dataList1[0].AmountDr : dataList1[0].AmountDr,
+                                    AmountCr = (transactionRecords.Count == 0 && led.DrCr == false) ? dataList1[0].AmountCr : dataList1[0].AmountCr
+                                });
+                        });
+
+                    }
+                    
+
+                    var recnsRecords = (from t in transactionRecords
+                                      join r in accountingDBContext.BankReconciliationModel on
+                               t.LedgerId equals r.LedgerId
+                                where t.HospitalId == r.HospitalId && t.VoucherNumber == r.VoucherNumber && t.FiscalyearId == r.FiscalyearId
+                                select r).ToList();
+
+                    var VouchersWithReconciliation = (from itm in transactionRecords
+
+                                                      select new
+                                  {
+                                      TransactionDate = itm.TransactionDate,
+                                      VoucherNumber = itm.VoucherNumber,
+                                      VoucherName = itm.VoucherName,
+                                      LedgerDr = (itm.DrCr == true) ? itm.Amount : 0,
+                                      LedgerCr = (itm.DrCr == false) ? itm.Amount : 0,
+                                      Amount = itm.Amount,
+                                      DrCr = itm.DrCr,
+                                      AmountCr = dataList[0].AmountCr,
+                                      AmountDr = dataList[0].AmountDr,
+                                      Balance = 0,
+                                      BalanceType = true,
+                                      OpeningBalance = itm.OpeningBalance,
+                                      OpeningBalanceType = itm.OpeningBalanceType,
+                                      DepartmentName = "TempTest",
+                                      Description = itm.Description,
+                                      SectionId = itm.SectionId,
+                                      FiscalYearId = itm.FiscalyearId,
+                                                          BankReconciliationTxn = (from b in recnsRecords
+                                                                                   where b.HospitalId == itm.HospitalId && b.FiscalyearId == itm.FiscalyearId
+                                                                 && b.VoucherNumber == itm.VoucherNumber && b.LedgerId == itm.LedgerId
+                                                                                   select b).OrderByDescending(t => t.Id).FirstOrDefault(),
+                                                          TransactionId = itm.TransactionId,
+                                      ledgerId = itm.LedgerId,
+                                  }).ToList();
+                                    
+                                  
+                        var FinalData = new
+                        {
+                            VouchersWithReconciliation,
+                            dataList
+                        };
+                        responseData.Status = "OK";
+                        responseData.Results = FinalData;
+                }
+                else if (reqType == "Bank-Reconciliation-history")
+                {
+
+                    var history = (from bank in accountingDBContext.BankReconciliationModel
+                                   join emp in accountingDBContext.Emmployees on bank.CreatedBy equals emp.EmployeeId
+                                   where bank.HospitalId == currentHospitalId && bank.VoucherNumber == VoucherNumber
+                                   && bank.FiscalyearId == FiscalYearId
+
+                                   select new
+                                   {
+                                       bank.LedgerId,
+                                       bank.VoucherNumber,
+                                       bank.TransactionId,
+                                       bank.TransactionDate,
+                                       bank.BankBalance,
+                                       bank.BankTransactionDate,
+                                       bank.Difference,
+                                       bank.Id,
+                                       bank.CategoryId,
+                                       bank.Remark,
+                                       Balance = 0,
+                                       User = emp.FullName,
+                                   }).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = history;
+                }
+
+                else
+                {
+                    responseData.Status = "failed";
+                    responseData.ErrorMessage = "Invalid request type.";
+                }
+                #endregion
+
 
             }
             catch (Exception ex)
@@ -1620,12 +1883,54 @@ namespace DanpheEMR.Controllers
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
             AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
             RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-
+            int currentHospitalId = HttpContext.Session.Get<int>("AccSelectedHospitalId");
             try
             {
-                string str = this.ReadPostData();
+               
                 string reqType = this.ReadQueryStringData("reqType");
                 string companyName = this.ReadQueryStringData("companyName");
+                if (reqType == "post-reconciliation")
+                {
+                    string str = this.ReadPostData();
+                    List<BankReconciliationModel> txnClient = DanpheJSONConvert.DeserializeObject<List<BankReconciliationModel>>(str);
+
+                    if (txnClient != null)
+                    {
+                        txnClient.ForEach(itm =>
+                        {
+                            var bankObj = new BankReconciliationModel();
+                            bankObj.BankTransactionDate = itm.BankTransactionDate;
+                            bankObj.TransactionDate = itm.TransactionDate;
+                            bankObj.VerifiedBy = currentUser.EmployeeId;
+                            bankObj.IsVerified = itm.IsVerified;
+                            bankObj.VerifiedOn = DateTime.Now;
+                            bankObj.VoucherNumber = itm.VoucherNumber;
+                            bankObj.SectionId = itm.SectionId;
+                            bankObj.Remark = itm.Remark;
+                            bankObj.CategoryId = itm.CategoryId;
+                            bankObj.FiscalyearId = itm.FiscalyearId;
+                            bankObj.BankBalance = itm.BankBalance;
+                            bankObj.Difference = itm.Difference;
+                            bankObj.TransactionId = itm.TransactionId;
+                            bankObj.LedgerId = itm.LedgerId;
+                            bankObj.HospitalId = currentHospitalId;
+                            bankObj.CreatedOn = DateTime.Now;
+                            bankObj.CreatedBy = currentUser.EmployeeId;
+                            bankObj.DrCr = itm.DrCr;
+                            accountingDBContext.BankReconciliationModel.Add(bankObj);
+                        });
+
+                        accountingDBContext.SaveChanges();
+                        responseData.Results = "";
+                        responseData.Status = "OK";
+                    }
+                    else
+                    {
+                        responseData.Status = "Failed";
+                    }
+
+                }
+            
 
             }
             catch (Exception ex)

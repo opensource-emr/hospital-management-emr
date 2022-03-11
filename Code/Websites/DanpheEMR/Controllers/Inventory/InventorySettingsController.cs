@@ -21,7 +21,7 @@ using RefactorThis.GraphDiff;//for entity-update.
 using System.Collections.ObjectModel;
 using DanpheEMR.ServerModel.InventoryModels;
 using DanpheEMR.AccTransfer;
-using System.Data.Entity.SqlServer;
+using DanpheEMR.Security;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -132,6 +132,14 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = unitofmeasurementlist;
                 }
+
+                else if (reqType == "GetItemList")
+                {
+                    List<ItemMasterModel> itemlist = (from i in inventoryDbContext.Items
+                                                      select i).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = itemlist;
+                }
                 else if (reqType == "GetItem")
                 {
                     var itemlist = (
@@ -160,7 +168,9 @@ namespace DanpheEMR.Controllers
                             v.CreatedBy,
                             v.CreatedOn,
                             v.IsActive,
-                            unit.UOMName
+                            unit.UOMName,
+                            v.MSSNO,
+                            v.MaintenanceOwnerRoleId
                         }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = itemlist;
@@ -188,18 +198,9 @@ namespace DanpheEMR.Controllers
             {
                 var termsList = await inventorydb.InventoryTerms.Where(term => term.TermsApplicationEnumId == TermsApplicationId)
                                                                 .ToListAsync<InventoryTermsModel>();
-                if (termsList.Count > 0)
-                {
-                    responseData.Status = "OK";
-                    responseData.Results = termsList;
-                    return Ok(responseData);
-                }
-                else
-                {
-                    responseData.Status = "Failed";
-                    responseData.ErrorMessage = "Failed to load terms list.";
-                    return NotFound(responseData);
-                }
+                responseData.Status = "OK";
+                responseData.Results = termsList;
+                return Ok(responseData);
             }
             catch (Exception ex)
             {
@@ -216,6 +217,28 @@ namespace DanpheEMR.Controllers
             return "value";
         }
 
+        [HttpGet("GetAllRoles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var db = new RbacDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                var roles = await db.Roles.Where(role => role.IsActive == true).Select(role => new
+                {
+                    RoleId = role.RoleId,
+                    RoleName = role.RoleName
+                }).ToListAsync();
+                responseData.Results = roles;
+                responseData.Status = "OK";
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message.ToString();
+            }
+            return Ok(responseData);
+        }
         // POST api/values
         [HttpPost]
         public string Post()
@@ -239,16 +262,8 @@ namespace DanpheEMR.Controllers
                 if (reqType == "AddVendors")
                 {
                     VendorMasterModel vendorModel = DanpheJSONConvert.DeserializeObject<VendorMasterModel>(str);
-
-                    //Check for last max Vendor Code and assign it to new Vendor's VendorCode
-                    string maxVendorCode = inventoryDBContext.Vendors.Where(v => SqlFunctions.IsNumeric(v.VendorCode) == 1).Max(v => v.VendorCode);
-                    int newVendorCode = Convert.ToInt32(maxVendorCode) + 1;
-                    string newVendorCodeInString = "0000" + newVendorCode;
-                    newVendorCodeInString = newVendorCodeInString.Substring(newVendorCodeInString.Length - 5);
-                    vendorModel.VendorCode = newVendorCodeInString;
-
-                    vendorModel.CreatedOn = DateTime.Now;
-
+                    vendorModel.VendorCode = InventoryBL.GetNewVendorCode(inventoryDBContext);
+                    vendorModel.CreatedOn = System.DateTime.Now;
                     inventoryDBContext.Vendors.Add(vendorModel);
                     inventoryDBContext.SaveChanges();
                     responseData.Results = vendorModel;
@@ -346,6 +361,8 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "AddItem")
                 {
                     ItemMasterModel itemModel = DanpheJSONConvert.DeserializeObject<ItemMasterModel>(str);
+                    //sud:25Sept'21--Assigning ItemCode at server side itself.. 
+                    itemModel.Code = InventoryBL.GetNewItemCode(inventoryDBContext, itemModel);//itemmodel needed to find out SubCategory inside the function.
                     itemModel.CreatedOn = System.DateTime.Now;
                     inventoryDBContext.Items.Add(itemModel);
                     inventoryDBContext.SaveChanges();
@@ -397,7 +414,6 @@ namespace DanpheEMR.Controllers
                         VendorMasterModel vendor = DanpheJSONConvert.DeserializeObject<VendorMasterModel>(str);
                         inventoryDBContext.Vendors.Attach(vendor);
                         inventoryDBContext.Entry(vendor).State = EntityState.Modified;
-                        inventoryDBContext.Entry(vendor).Property(x => x.VendorCode).IsModified = false;
                         inventoryDBContext.Entry(vendor).Property(x => x.CreatedOn).IsModified = false;
                         inventoryDBContext.Entry(vendor).Property(x => x.CreatedBy).IsModified = false;
 
@@ -566,4 +582,5 @@ namespace DanpheEMR.Controllers
         }
     }
 }
+
 

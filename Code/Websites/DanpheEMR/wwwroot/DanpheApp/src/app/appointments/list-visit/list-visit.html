@@ -1,24 +1,52 @@
-<div class="wrapper"><!--Sud27June'19-- Transfer visit is handled from New-Visit with few conditions. so below page is not needed as of now--> 
-  
+<div class="wrapper">
+  <!--Sud27June'19-- Transfer visit is handled from New-Visit with few conditions. so below page is not needed as of now-->
+
   <!--<danphe-transfer-visit *ngIf="showTransferPage" [showTransferPage]="showTransferPage"
                        [visit]="selectedVisit"
                        (callback-transfer)="CallBackContinueVisit($event)"></danphe-transfer-visit>-->
-  
-  <danphe-followup-visit *ngIf="showFollowupPage"
-                       [parent-visit]="selectedVisit"
-                       (on-followup-add)="FollowupPopupOnClose($event)"></danphe-followup-visit>
-  
+
+  <danphe-followup-visit *ngIf="showFollowupPage" [parent-visit]="selectedVisit"
+    (on-followup-add)="FollowupPopupOnClose($event)"></danphe-followup-visit>
+
   <!--Sud:3June2019--Free referral is not catered by our current flow, so created a new one-->
-  <danphe-free-referal-visit *ngIf="showReferralPopup"
-                      [visit]="selectedVisit"
-                      (add-referal)="FreeReferralPopupOnClose($event)"> </danphe-free-referal-visit>
-  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showOpdSticker">
+  <danphe-free-referal-visit *ngIf="showReferralPopup" [visit]="selectedVisit"
+    (add-referal)="FreeReferralPopupOnClose($event)"> </danphe-free-referal-visit>
+  <!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showOpdSticker">
     <div class="portlet-body form">
       <div class="modelbox-div" style="margin-left:30%;margin-right:16%">
-        <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right" (click)="Close_OPD_Sticker_Popup()">X</i>
-          <opd-sticker [SelectedVisitDetails]="selectedVisit"
-                     [showOpdSticker]="showOpdSticker"
-                     (after-print-action)="AfterPrintAction($event)"></opd-sticker>
+        <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right"
+            (click)="Close_OPD_Sticker_Popup()">X</i>
+            <div>
+              <div class="col-md-5" style="padding: 15px 5px 0px 30px;">
+                <opd-sticker [SelectedVisitDetails]="selectedVisit" [showOpdSticker]="showOpdSticker"
+                [showDateOfBirth]="showDob" (after-print-action)="AfterPrintAction($event)"></opd-sticker>
+              </div>
+              <div class="col-md-7" >
+                <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId" [bil-txn-id]="bil_BilTxnId" [focus-print-btn]="printInvoice" [from-visit-prints]="true">
+                </bil-print-invoice-main>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showOpdSticker">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-11">
+          <div class="modelbox-div clearfix">
+            <a class="btn btn-danger del-btn" (click)="Close_OPD_Sticker_Popup()">X</a>
+  
+            <div>
+              <div class="col-md-5" style="padding: 15px 5px 0px 30px;">
+                <opd-sticker [SelectedVisitDetails]="selectedVisit" [showOpdSticker]="showOpdSticker"></opd-sticker>
+              </div>
+              <div class="col-md-7">
+                <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId" [bil-txn-id]="bil_BilTxnId" [focus-print-btn]="printInvoice">
+                </bil-print-invoice-main>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -26,10 +54,10 @@
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showERSticker">
     <div class="portlet-body form">
       <div class="modelbox-div" style="margin-left:30%;margin-right:16%">
-        <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right" (click)="Close_ER_Sticker_Popup()">X</i>
-          <emergency-sticker [showSticker]="showERSticker"
-                           [patient-visitId]="patientVisitId"
-                           (after-print-action)="AfterPrintAction($event)"></emergency-sticker>
+        <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right"
+            (click)="Close_ER_Sticker_Popup()">X</i>
+          <emergency-sticker [showSticker]="showERSticker" [patient-visitId]="patientVisitId"
+            (after-print-action)="AfterPrintAction($event)" [SelectedVisitDetails]="selectedVisit"></emergency-sticker>
         </div>
       </div>
     </div>
@@ -40,19 +68,20 @@
         <h3><span><i class="fa fa-user"></i>Patient Visit List</span></h3>
       </div>
     </div>
-    <div class="col-lg-6 col-sm-12 text-right"> <a class="btn blue" (click)="LoadVisitList('')"> <i class="fa fa-refresh "></i> Reload </a> </div>
+    <div class="col-lg-6 col-sm-12 text-right"> <a class="btn blue" (click)="LoadVisitList('')"> <i
+          class="fa fa-refresh "></i> Reload </a> </div>
     <div class="col-lg-12 col-sm-12">
       <div class="warning_div">
         <p>* Followup is valid upto {{maxLastVisitDays}} days of last visit with same doctor</p>
       </div>
       <danphe-grid [grid-colDefaults]="visitGridColumns" [grid-data]="visits" (grid-actions)="VisitGridActions($event)"
-                 (serverSearchText)="serverSearchTxt($event)"
-                 [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+        (serverSearchText)="serverSearchTxt($event)" [customServerSearch]="enableServerSideSearch"> </danphe-grid>
       <!-- [show-ServerSideSearch]="true"
-    [api-type]="patGirdDataApi" --> 
+    [api-type]="patGirdDataApi" -->
     </div>
   </div>
   <div *ngIf="showGenericSticker">
-    <visit-gen-sticker-print *ngIf="showGenericSticker" [single-sticker-info]="patVisitGenericStickerInfo" (on-popup-closed)="CloseGenericSticker($event)"> </visit-gen-sticker-print>
+    <visit-gen-sticker-print *ngIf="showGenericSticker" [single-sticker-info]="patVisitGenericStickerInfo"
+      (on-popup-closed)="CloseGenericSticker($event)"> </visit-gen-sticker-print>
   </div>
 </div>

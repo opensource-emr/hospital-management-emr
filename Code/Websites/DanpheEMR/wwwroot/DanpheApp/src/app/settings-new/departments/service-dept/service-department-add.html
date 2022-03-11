@@ -11,7 +11,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Department<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <select class="form-control" [(ngModel)]="CurrentServiceDepartment.DepartmentId"
+                  <select id="DepartmentId" (change)="GoToNextInput('ServiceDepartmentName')" class="form-control" [(ngModel)]="CurrentServiceDepartment.DepartmentId"
                             formControlName="DepartmentId" (click)="filterServiceDepartment()">
                     <option *ngFor="let dept of deptList"
                               value="{{dept.DepartmentId}}"> {{dept.DepartmentName}} </option>
@@ -24,7 +24,7 @@
                   <input class="form-control" maxlength="40"
                            [(ngModel)]="CurrentServiceDepartment.ServiceDepartmentName"
                            formControlName="ServiceDepartmentName"
-                           type="text" id="ServiceDepartmentName" value="" placeholder="Enter Service Department Name" />
+                           type="text" id="ServiceDepartmentName" (keyup.enter)="GoToNextInput('IntegrationId')" value="" placeholder="Enter Service Department Name" />
                   <span class="color-red font-sm" [hidden]="CurrentServiceDepartment.IsValidCheck('ServiceDepartmentName','required') || !(CurrentServiceDepartment.IsDirty('ServiceDepartmentName'))">ServiceDepartment Name is required</span> <span class="color-red font-sm" *ngIf="CurrentServiceDepartment.IsDirty('ServiceDepartmentName')" [hidden]="CurrentServiceDepartment.IsValidCheck('ServiceDepartmentName','maxlength')"> Length is not proper</span> </div>
               </div>
               <div class="form-group">
@@ -39,7 +39,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Integration Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <select class="form-control" [(ngModel)]="CurrentServiceDepartment.IntegrationName"
+                  <select id="IntegrationId" class="form-control" [(ngModel)]="CurrentServiceDepartment.IntegrationName"
                             formControlName="IntegrationName">
                     <option *ngFor="let intNames of integrationNameList"
                               value="{{intNames.IntegrationName}}"> {{intNames.IntegrationName}} </option>
@@ -85,8 +85,8 @@
               </div>              
             </div>
 			  <div class="panel-footer">
-                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddServiceDepartment()" value="Add" />
-                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                <input id="savebtn" type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddServiceDepartment()" value="Add" />
+                <input id="savebtn" type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
               </div>
           </form>
         </div>

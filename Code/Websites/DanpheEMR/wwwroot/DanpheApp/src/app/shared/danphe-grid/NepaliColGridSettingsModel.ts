@@ -4,7 +4,7 @@ export class NepaliDateInGridParams {
 }
 
 export class NepaliDateInGridColumnDetail {
-  constructor(englishDateColname: string, showtime: boolean) {
+  constructor(englishDateColname: string, showtime: boolean = false) {
     this.EnglishColumnName = englishDateColname;
     this.ShowTime = showtime;
   }    

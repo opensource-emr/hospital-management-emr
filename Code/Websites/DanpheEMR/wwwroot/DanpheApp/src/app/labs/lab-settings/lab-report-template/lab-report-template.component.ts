@@ -5,6 +5,7 @@ import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
 import { LabSettingsBLService } from '../shared/lab-settings.bl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { SecurityService } from '../../../security/shared/security.service';
 
 @Component({
     templateUrl: "./lab-report-template.html"
@@ -17,9 +18,13 @@ export class ReportTemplateComponent {
     public showAddNewPage: boolean = false;
     public index: number = 0;
     public update: boolean = false;
+    public selectedActivateDeactivate: LabReportTemplateModel = null;
+    public selectedItem: LabReportTemplateModel = null;
+    public labGridCols: LabGridColumnSettings = null;
 
-    constructor(public labSettingBlServ: LabSettingsBLService, public msgBoxServ: MessageboxService, public changeDetector: ChangeDetectorRef) {
-        this.reportTemplateGridCol = LabGridColumnSettings.LabReportTemplateList;
+    constructor(public labSettingBlServ: LabSettingsBLService, public msgBoxServ: MessageboxService, public changeDetector: ChangeDetectorRef, public securityService: SecurityService) {
+        this.labGridCols = new LabGridColumnSettings(this.securityService)
+        this.reportTemplateGridCol = this.labGridCols.LabReportTemplateList;
         this.GetReportTemplateList();
     }
 
@@ -81,9 +86,60 @@ export class ReportTemplateComponent {
                 this.selectedTemplate = Object.assign(this.selectedTemplate, event.Data);
                 this.update = true;
                 this.showAddNewPage = true;
+                break;
+            }
+            case "activateDeactivateLabTest": {
+                if (event.Data != null) {
+                    this.selectedActivateDeactivate = null;
+                    this.selectedActivateDeactivate = event.Data;
+                    this.ActivateDeactivateLabReportTemplateStatus(this.selectedActivateDeactivate);
+                    this.selectedItem = null;
+                }
+                break;
+
             }
             default:
                 break;
         }
+    }
+
+      //Anjana: 15 Feb:2021; Update IsActive status of Lab Report Template- Activate or Deactivate
+      ActivateDeactivateLabReportTemplateStatus(rep: LabReportTemplateModel) {
+        if (rep != null) {
+            let status = rep.IsActive == true ? false : true;
+
+            if (status == true) {
+                rep.IsActive = status;
+                this.ChangeActiveStatus(rep);
+            } else {
+                if (confirm("Are you Sure want to Deactivate " + rep.ReportTemplateName + ' ?')) {
+
+                    rep.IsActive = status;
+                    //we want to update the ISActive property in table there for this call is necessry
+                    this.ChangeActiveStatus(rep);
+                }
+            }
+        }
+
+    }
+
+    ChangeActiveStatus(rep) {
+        this.labSettingBlServ.DeactivateReportTemplate(rep)
+            .subscribe(
+                res => {
+                    if (res.Status == "OK") {
+                        let responseMessage = res.Results.IsActive ? "Lab Report Template is now activated." : "Lab Report Template is now deactivated.";
+                        this.msgBoxServ.showMessage("success", [responseMessage]);
+                        //This for send to callbackadd function to update data in list
+                        this.GetReportTemplateList();
+                    }
+                    else {
+                        this.msgBoxServ.showMessage("error", ['Something went wrong.' + res.ErrorMessage]);
+                    }
+                },
+                err => {
+                    this.msgBoxServ.showMessage("success", [err]);
+                });
+
     }
 }

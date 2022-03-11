@@ -3,6 +3,12 @@
     font-weight: bold;
     border: 1px solid;
   }
+  .blackText{
+    background-color: #0773bc !important;
+    border-color: #0773bc !important;
+    font-weight: normal;
+    color: black;
+  }
 </style>
 
 
@@ -87,7 +93,16 @@
 
 
 <div class="triaged-patient-tablelist table-responsive">
-  <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+  <div class="row">
+    <div class="col-md-4">
+      <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+    </div>
+    <div class="col-md-4 col-md-offset-4">
+      <patient-cases (selected-cases-list)="PatientCasesOnChange($event)"></patient-cases>
+  </div>
+  </div>
+  
+
   <table class="table  vert-scrollable tbl-er-triage-list">
     <thead class="table-header-bg">
       <tr>
@@ -116,7 +131,7 @@
       </tr>
     </thead>
     <tbody>
-      <ng-container *ngFor="let pat of TriagedERPatients | searchFilter: searchString | async; let i = index;">
+      <ng-container *ngFor="let pat of filteredData | searchFilter: searchString | async; let i = index;">
         <tr>
           <td class="wd-60">
             {{i+1}}
@@ -152,12 +167,13 @@
                 <span class="caret"> </span>
               </button>
               <ul class="dropdown-menu grid-ddlCstm er-grid-ddlCstm">
-                <li><a (click)="AdmitERPatient(pat)" class="grid-action">Admit</a></li>
-                <li><a (click)="TransferERPatient(pat)" class="grid-action">Transfer</a></li>
-                <li><a (click)="DischargeERPatient(pat)" class="grid-action">Discharge</a></li>
-                <li><a (click)="LeaveERPatOnMedicalAdvice(pat)" class="grid-action">LAMA</a></li>
-                <li><a (click)="DeathCaseOfERPatient(pat)" class="grid-action">Death</a></li>
-                <li><a (click)="DischargeERPatientOnRequest(pat)" class="grid-action">DOR</a></li>
+                <li><a (click)="AdmitERPatient(pat)" class="blackText">Admit</a></li>
+                <li><a (click)="TransferERPatient(pat)" class="blackText">Transfer</a></li>
+                <li><a (click)="DischargeERPatient(pat)" class="blackText">Discharge</a></li>
+                <li><a (click)="LeaveERPatOnMedicalAdvice(pat)" class="blackText">LAMA</a></li>
+                <li><a (click)="DeathCaseOfERPatient(pat)" class="blackText">Death</a></li>
+                <li><a (click)="DischargeERPatientOnRequest(pat)" class="blackText">DOR</a></li>
+                <li><a (click)="UploadConsent(pat)" class="blackText">Upload Consent</a></li>
               </ul>
             </div>
           </td>
@@ -168,7 +184,28 @@
 
   <!--<danphe-grid [grid-colDefaults]="TriagedERPatientGridCol" [grid-data]="TriagedERPatients" (grid-actions)="EditAction($event)">
   </danphe-grid>-->
-
+  <div *ngIf="showUploadConsent.upload_files" class="popup-static portlet box portlet-fullscreen custom_modal"> 
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="caption custom-caption">
+              <h3> <span>Upload Files</span></h3>
+              <a class="btn btn-danger" (click)="showUploadConsent.upload_files=false" title="Cancel">X</a>
+            </div>
+  
+            <div class="col-md-12">
+              <upload-consent *ngIf="showUploadConsent.upload_files"
+              [ERPatientId]="selectedPatient.ERPatientId"
+                [patientDetail]="selectedPatient"
+                (callBackFileUploadClose)="CallBackForClose($event)">
+              </upload-consent>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
 </div>
 
 

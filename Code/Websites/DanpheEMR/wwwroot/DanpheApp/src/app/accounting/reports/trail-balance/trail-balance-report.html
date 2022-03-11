@@ -76,22 +76,33 @@
             <input name="isledgerlevel" type="checkbox" value="Detail View" [(ngModel)]="IsDetailsView">
             <span></span> Detail View
         </label>
+        <label *ngIf="IsDetailsView == true" class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;margin: 5px;">
+            <input name="iszeroledgerlevel" type="checkbox" value="Zero amount Ledger" [(ngModel)]="IsZeroAmountRecords">
+            <span></span> Zero Amt record(s)
+        </label>
     </div>
     <div>
-        <div class="row">
-            <!-- <div *ngIf="IsDataLoaded">
-                <danphe-cust-date-reusable (onDateChange)="onDateChange($event)" [rangeType]="dateRange">
-                </danphe-cust-date-reusable>
-            </div> -->
-            <div class="col-lg-2 col-sm-2 col-xs-12" style="padding: 10px;">
-                <label class="control-label noPadding mb10"> Select Date<sup> *</sup><b>:</b> </label>
-            </div>
-            <div class="col-lg-8 col-sm-8 col-xs-12">               
+    <div class="col-md-10 col-xs-10 col-sm-10"></div>
+        <div class="row"style="background: #bcbcbc; padding-top: 0px;">
+          
+            <div class="col-md-7 col-xs-12"style="margin-right: -45px;">
+                <div class="form-group">
+                <label class="control-label" style="margin-left: 5px;"> Select Fiscal year<sup> *</sup><b>:</b> </label>
+            
+            <div >               
                 <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>    
             </div>
-            <div class="col-lg-2 col-sm-2 col-xs-12">
-                <button class="btn blue primary-btn" type="button" (click)="GetTrialBalanceRpt()" title="Load records of selected date"> <i class="fa fa-refresh"></i> Load </button>
+        </div>
+            </div>
+            <div class="col-md-1 col-xs-12" style="margin-top: 15px;">
+                <div class="form-group">
+                    <br>
+                <button class="btn blue primary-btn" type="button" (click)="GetTrialBalanceRpt()" [disabled]="btndisabled"
+                title="Load records of selected date"> <i class="fa fa-refresh"></i>
+                 Load 
+            </button>
             </div>    
+        </div>
         </div>
         <div>            
             <customer-header style="display:none;padding:0px" id="headerForPrint"
@@ -100,16 +111,11 @@
         </div>
         <div class="row">
             <div id="printpage" *ngIf="IsShowReport">
-                <div class="table-responsive table-wrapper">
+                <div class="table-responsive table-wrapper" id = "print_trialbal">
                     <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
                         border="1" id="exportTable_trialbal">
                         <thead>
-                            <!-- <tr style="background-color: #599be0; color: white;">
-                                <th><b>Particulars</b></th>
-                                <th colspan="4"><b> Opening Balance</b></th>
-                                <th colspan="2"><b>Transactions</b></th>
-                                <th colspan="4"><b>Closing Balance </b></th>
-                            </tr> -->
+                           
                             <tr>
                                 <th style="text-align: center;width: 40%;"><b>Particulars</b></th>
                                 <!-- <th><b>Debit</b></th>
@@ -131,187 +137,172 @@
                                     <td *ngIf="row.level=='COA'" style="font-weight:bold;">
                                         <a (click)="showChild(row,'COA')">{{row.Particulars}}</a>
                                     </td>
-                                    <!-- <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.OpeningDr >0">
-                                            {{row.OpeningDr | Currency}}
+                                   
+                                    <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                        <span>
+                                            {{row.OpeningTotal | Currency:'4'}}
                                         </span>
                                     </td>
                                     <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.OpeningCr >0">
-                                            {{row.OpeningCr | Currency}}
-                                        </span>
-                                    </td> -->
-                                    <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.OpeningTotal >0">
-                                            {{row.OpeningTotal | Currency}}
-                                        </span>
-                                    </td>
-                                    <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.OpeningTotal >0">
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                            <span>
+                                        
                                             {{row.OpeningBalType}}
                                         </span>
                                     </td>
                                     <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.CurrentDr >0">
-                                            {{row.CurrentDr | Currency}}
+                                        <!-- <span *ngIf="row.CurrentDr >0"> -->
+                                            <span>
+                                            {{row.CurrentDr | Currency:'4'}}
                                         </span>
                                     </td>
                                     <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.CurrentCr >0">
-                                            {{row.CurrentCr | Currency}}
+                                        <!-- <span *ngIf="row.CurrentCr >0"> -->
+                                            <span>
+                                            {{row.CurrentCr | Currency:'4'}}
                                         </span>
                                     </td>
-                                    <!-- <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.TotalDr >0">
-                                            {{row.TotalDr | Currency}}
-                                        </span>
-                                    </td>
-                                    <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.TotalCr >0">
-                                            {{row.TotalCr | Currency}}
-                                        </span>
-                                    </td> -->
+                                  
                                     <!-- extra added for new clm balance -->
                                     <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
                                         <span>
-                                            {{row.Balance | Currency}}
-                                            <!-- <span *ngIf="row.TotalDr > row.TotalCr" style="font-weight: bold;">Dr</span>
-                                        <span *ngIf="row.TotalCr > row.TotalDr" style="font-weight: bold;">Cr</span> -->
+                                            {{row.Balance | Currency:'4'}}
+                                           
                                         </span>
                                     </td>
                                     <td style="text-align:right; font-weight:bold;" *ngIf="row.level=='COA'">
-                                        <span *ngIf="row.Balance >0">
+                                        <!-- <span *ngIf="row.Balance >0"> -->
+                                            <span>
                                             {{row.BalanceType}}
                                         </span>
                                     </td>
                                 </tr>
                                 <!-------row level LedgerGroup---------------------------------------------->
                                 <tr
-                                    *ngIf="row.level=='LedgerGroup' &&(IsDetailsView==true ||  row.ShowLedgerGroup==true)">
+                                    *ngIf="row.level=='LedgerGroup' &&(IsDetailsView==true ||  row.ShowLedgerGroup==true) 
+                                    && (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)">
                                     <td *ngIf="row.level=='LedgerGroup' &&(IsDetailsView==true ||  row.ShowLedgerGroup==true)"
                                         style="padding-left:20px !important;">
                                         <a (click)="showChild(row,'LedgerGroup')">{{row.Particulars}}</a>
                                     </td>
-                                    <!-- <td style="text-align:right;"
+                                  
+                                    <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.OpeningDr >0">
-                                            {{row.OpeningDr | Currency}}
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                            <span>
+                                            {{row.OpeningTotal | Currency:'4'}}
                                         </span>
                                     </td>
                                     <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.OpeningCr >0">
-                                            {{row.OpeningCr | Currency}}
-                                        </span>
-                                    </td> -->
-                                    <td style="text-align:right;"
-                                        *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.OpeningTotal >0">
-                                            {{row.OpeningTotal | Currency}}
-                                        </span>
-                                    </td>
-                                    <td style="text-align:right;"
-                                        *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.OpeningTotal >0">
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                            <span>
                                             {{row.OpeningBalType}}
                                         </span>
                                     </td>
 
                                     <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.CurrentDr >0">
-                                            {{row.CurrentDr | Currency}}
+                                        <!-- <span *ngIf="row.CurrentDr >0"> -->
+                                            <span>
+                                            {{row.CurrentDr | Currency:'4'}}
                                         </span>
                                     </td>
                                     <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.CurrentCr >0">
-                                            {{row.CurrentCr | Currency}}
+                                        <!-- <span *ngIf="row.CurrentCr >0"> -->
+                                            <span>
+                                            {{row.CurrentCr | Currency:'4'}}
                                         </span>
                                     </td>
-                                    <!-- <td style="text-align:right;"
-                                        *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.TotalDr >0">
-                                            {{row.TotalDr | Currency}}
-                                        </span>
-                                    </td>
-                                    <td style="text-align:right;"
-                                        *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.TotalCr >0">
-                                            {{row.TotalCr | Currency}}
-                                        </span>
-                                    </td> -->
+                                  
                                     <!-- extra added for new clm balance -->
                                     <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
                                         <span>
-                                            {{row.Balance | Currency}}
+                                            {{row.Balance | Currency:'4'}}
                                         </span>
                                     </td>
                                     <td style="text-align:right;"
                                         *ngIf="row.level=='LedgerGroup' && (IsDetailsView==true || row.ShowLedgerGroup==true)">
-                                        <span *ngIf="row.Balance >0">
+                                        <!-- <span *ngIf="row.Balance >0"> -->
+                                            <span>
                                             {{row.BalanceType }}
                                         </span>
                                     </td>
                                 </tr>
                                 <!-------row level Ledger---------------------------------------------->
                                 <tr *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)">
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true) && 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0|| row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-weight: normal; color: green; padding-left:40px !important;">
                                         <a (click)="SwitchViews(row)" matTooltip="{{row.Particulars}} {{row.Code}}"
                                             style="color:green;">({{row.Code}}) &nbsp;{{row.Particulars}}</a>
 
                                         <span *ngFor="let det of row.Details"
                                             style="font-size:12px;color:green;padding-left:20px;">
-                                            <span *ngIf="det.Dr > 0 || det.Cr > 0"
-                                                style="text-align:left;"><br />{{det.Name}}</span>
-                                            <span *ngIf="det.Dr > 0">Dr {{det.Dr | Currency}}</span>
-                                            <span *ngIf="det.Cr > 0">Cr {{det.Cr | Currency}}</span>
+                                            <!-- <span *ngIf="det.Dr > 0 || det.Cr > 0"
+                                                style="text-align:left;"> -->
+                                                <span style="text-align:left;">
+                                                <br />{{det.Name}}</span>
+                                            <!-- <span *ngIf="det.Dr > 0"> -->
+                                                <span>  
+                                                Dr {{det.Dr | Currency:'4'}}
+                                            </span>
+                                            <!-- <span *ngIf="det.Cr > 0"> -->
+                                                <span>  
+                                                Cr {{det.Cr | Currency:'4'}}
+                                            </span>
                                         </span>
                                     </td>
-                                    <!-- <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.OpeningDr >0">{{row.OpeningDr | Currency}}</span>
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                            <span>  
+                                            {{row.OpeningTotal | Currency:'4'}}
+                                        </span>
                                     </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.OpeningCr >0">{{row.OpeningCr | Currency}}</span>
-                                    </td> -->
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
-                                        style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.OpeningTotal >0">{{row.OpeningTotal | Currency}}</span>
+                                        <!-- <span *ngIf="row.OpeningTotal >0"> -->
+                                            <span>  
+                                            {{row.OpeningBalType}}
+                                        </span>
                                     </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.OpeningTotal >0">{{row.OpeningBalType}}</span>
+                                        <!-- <span *ngIf="row.CurrentDr >0"> -->
+                                            <span>  
+                                            {{row.CurrentDr | Currency:'4'}}
+                                        </span>
                                     </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.CurrentDr >0">{{row.CurrentDr | Currency}}</span>
+                                        <!-- <span *ngIf="row.CurrentCr >0"> -->
+                                            <span>  
+                                            {{row.CurrentCr | Currency:'4'}}
+                                        </span>
                                     </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                  
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.CurrentCr >0">{{row.CurrentCr | Currency}}</span>
-                                    </td>
-                                    <!-- <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
-                                        style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.TotalDr >0">{{row.TotalDr | Currency}}</span>
-                                    </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
-                                        style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.TotalCr >0">{{row.TotalCr | Currency}}</span>
-                                    </td> -->
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
-                                        style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span>{{row.Balance | Currency}}
+                                        <span>{{row.Balance | Currency:'4'}}
 
                                         </span>
 
                                     </td>
-                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)"
+                                    <td *ngIf="row.level=='Ledger' && (IsDetailsView==true || row.ShowLedger==true)&& 
+                                    (IsZeroAmountRecords == false && row.OpeningTotal >0 || row.CurrentDr >0 ||row.CurrentCr >0 || row.Balance >0) || (IsZeroAmountRecords == true)"
                                         style="font-style: italic; font-weight: normal; color: green; text-align: right;">
-                                        <span *ngIf="row.Balance >0">
+                                        <!-- <span *ngIf="row.Balance >0"> -->
+                                            <span>  
                                             {{row.BalanceType}}
                                         </span>
 
@@ -325,7 +316,7 @@
                                 <td class="trialbal-footer"><b>Grand Total</b></td>
                                 <td class="trialbal-footer" style="font-weight:bold; text-align:right;" *ngFor="let r of TotalDrCr">
                                     <span *ngIf="r != 'Dr' && r!='Cr'">
-                                        {{r | Currency}}
+                                        {{r | Currency:'4'}}
                                     </span>
                                     <span *ngIf="r == 'Dr' || r =='Cr'">
                                         {{r}}
@@ -339,17 +330,17 @@
 
                 <div style="padding-bottom: 18px; margin-top: 15px;">
                     <div class="form-actions">
-                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print"
+                        <button class="btn btn-primary hidden-print" (click)="Print('print_trialbal')" value="Print"
                             title="print page">Print<i class="glyphicon glyphicon-print"
                                 style="margin-left:10px;"></i></button>
                         <button *ngIf="showExportbtn" class="btn btn-primary hidden-print"
-                            (click)="ExportToExcel('exportTable_trialbal')" value="" title="export to excel">Export<i
+                            (click)="ExportToExcel('print_trialbal')" value="" title="export to excel">Export<i
                                 class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    
 </div>
 <ledger-report-reusable *ngIf="showLedgerDetail" [showLedgerDetail]="showLedgerDetail" [FiscalYearId]="fiscalYearId" [fromDate]="fromDate"
     [toDate]="toDate" [ledgerId]="ledgerId" [ledgerCode]="ledgerCode" [ledgerName]="ledgerName"

@@ -1,24 +1,26 @@
-﻿
+<button class="btn btn-primary btn-sm" (click)="Back()" style="margin: 0 0 20px 0 !important"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back </button>
 <div class="row" id="medicinePrintpage">
 
 
     <div class="med-prescrip" style="width: 600px; margin: 0 auto; padding: 15px;">
-        <div class="med-prescrip-header">
-           <table style="width: 100%;">
-                <tr>
-                    <td>PAN Number: 500066416</td>
-                    <td>PAN Number: 500066416</td>
-                    <td>PAN Number: 500066416</td>
-                </tr>
-            </table>
-          
-            <div class="hospital-info">
-                <h3 style="text-align:center; margin-bottom: 5px;font-size: 18px; font-weight: 700;">Hospital For Advanced Medicine and Surgery</h3>
-                <p>Mandikhatar, Kathmandu, Nepal</p>
-                <p>Ph No: 01-6224747/4377404</p>
-            </div>
-
+      <div class="med-prescrip-header">
+        <div class="flex-container" style="justify-content: center;">
+          <p class="bill-header-text" style="font-size:13px; font-weight: bold;"><strong>{{hospitalName}}</strong></p>
+          <p class="bill-header-text" style="font-size:12px; font-weight:500;">{{address}},</p>
+          <p class="bill-header-text" style="font-size:12px; font-weight:500;">Ph No: {{tel}}</p>
+          <!-- <p class="bill-header-text" style="font-size:11px; font-weight:500;"><strong>{{title}}</strong></p> -->
         </div>
+
+
+        <div class="hospital-info">
+          <h3 style="text-align:center; margin-bottom: 5px;font-size: 18px; font-weight: 700;">
+            {{hospitalName}}
+          </h3>
+          <p>{{address}}</p>
+          <p>Ph No:{{tel}} </p>
+        </div>
+
+      </div>
         <div class="patient-inf" style="padding: 15px 0px;">
             <div>
                 <table style="width: 100%;">
@@ -45,14 +47,14 @@
                     <th>Medicine</th>
                     <th>Dose</th>
                     <th>Frequency</th>
-                    <th>Duration</th>
+                    <th>Route</th>
                 </tr>
-                <tr *ngFor="let medicine of currPat.MedicationPrescriptions; let i=index;">
+                <tr *ngFor="let med of medicine; let i=index;">
                     <td>{{i+1}}</td>
-                    <td>{{medicine.MedicationName}}</td>
-                    <td>{{medicine.Dose}}</td>
-                    <td>{{medicine.Frequency}}</td>
-                    <td>{{medicine.Duration}}</td>
+                    <td>{{med.MedicationName}}</td>
+                    <td>{{med.Dose}}</td>
+                    <td>{{med.Frequency}}</td>
+                    <td>{{med.Route}}</td>
                 </tr>
 
             </table>

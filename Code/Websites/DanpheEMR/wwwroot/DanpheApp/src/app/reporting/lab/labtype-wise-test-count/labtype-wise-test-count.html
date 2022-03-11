@@ -1,0 +1,118 @@
+<div class="wrapper">
+  <div class="caption custom-caption">
+    <i class="glyphicon glyphicon-asterisk"></i>
+    <span class="caption-subject">LabTypeWise Total Test Count Report</span>
+  </div>
+  <div class="row" style="padding-bottom: 5px ;">
+    <div class="col-md-6 col-xs-12">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group row">
+        <label class="control-label col-md-4"
+          >Enter Category Name<b style="float: right">:</b></label
+        >
+        <div class="col-md-6">
+          <input
+            class="form-control"
+            danphe-auto-complete
+            [(ngModel)]="category"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Enter Category Name"
+            [list-formatter]="categoryListFormatter"
+            [source]="categoryList"
+            display-property-name="TestCategoryName"
+            value-property-name=null
+            onclick="this.select()"
+            (focusout)="assignCategory()"
+                     />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group row">
+        <label class="control-label col-md-4"
+          >Enter Test Name<b style="float: right">:</b></label
+        >
+        <div class="col-md-6">
+          <input
+            class="form-control"
+  
+            [(ngModel)]="test"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Enter Test Name"
+            danphe-auto-complete
+            [list-formatter]="testListFormatter"
+            [source]="labTestList"
+            display-property-name="LabTestName"
+            value-property-name=null
+            onclick="this.select()"
+            (focusout)="assignTestName()"
+        
+          />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7 col-xs-12">
+      <div class="form-group row">
+        <!-- <lab-status-filter [statusAbove]="statusAbove" (resultData)="setOrderStatus($event)"></lab-status-filter> -->
+        <lab-status-filter [statusAbove]="statusAbove" [data]="orderStatus"></lab-status-filter>
+      </div>
+    </div>
+    <div class="col-md-2 col-xs-12">
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="Load()">
+          <i class="fa fa-search"></i> Show Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="showGrid">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid
+        *ngIf="showGrid"
+        [grid-colDefaults]="labTypeWiseTestCountReportColumns"
+        [grid-data]="labTypeWiseTestCountReportData"
+        [grid-exportOptions]="gridExportOptions"
+        [grid-showExport]="true"
+        [grid-footer-content]="footer"
+        [report-for]="Lab"
+        [grid-date-range]="dateRange"
+      >
+      </danphe-grid>
+    </div>
+  </div>
+  <div *ngIf="showSummary" style="margin-bottom: 25px; width: 100%; float: left;"  id="summaryFooter">
+    <div *ngIf="labTypeWiseTestCountReportData.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+            <div style="padding-top:7px;">
+              <h4 style="font-weight:bold;">
+                Summary Report
+              </h4>
+              <div style=" margin: 0px auto">
+                <table class="tbl-summ" border="1" style="width:50%;">
+                  <tr>
+                    <td>Total Test Count (op-lab): </td>
+                    <td> {{summaryFormatted.TotalOPCount}} </td>
+                  </tr>
+                  <tr>
+                    <td>Total Test Count (er-lab): </td>
+                    <td> {{summaryFormatted.TotalERCount}} </td>
+                  </tr>
+                  <tr>
+                    <td>Grand Total:</td>
+                    <td> {{summaryFormatted.GrandTotal}} </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

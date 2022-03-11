@@ -40,5 +40,9 @@ export class Requisition {
     public WardName: string = null;
     public AgeSexFormatted: string = null;
 }
-        
+   
+export class LoginToTelemed{
+    public PhoneNumber: string;
+    public Password: string;
+}
         

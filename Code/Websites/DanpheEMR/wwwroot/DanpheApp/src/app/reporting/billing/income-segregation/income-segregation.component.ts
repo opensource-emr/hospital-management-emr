@@ -1,16 +1,11 @@
 import { Component, Directive, ViewChild } from '@angular/core';
 import { ReportingService } from "../../../reporting/shared/reporting-service";
-import { RPT_BIL_IncomeSegregationModel } from './income-segregation.model';
-import { RPT_BIL_SalesDaybookModel } from '../sales-daybook/sales-daybook.model';
 import { DLService } from "../../../shared/dl.service"
-
-
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { CommonFunctions } from '../../../shared/common.functions';
-
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { CoreService } from "../../../core/shared/core.service";
+import { CommonFunctions } from '../../../shared/common.functions';
 
 @Component({
   templateUrl: "./income-segregation.html"
@@ -19,62 +14,68 @@ export class RPT_BIL_IncomeSegregationComponent {
 
   public fromDate: string = null;
   public toDate: string = null;
-
-  public tot_Price: number = 0;
-  public tot_Tax: number = 0;
-  public tot_DiscntAmt: number = 0;
-  public tot_TotalAmount: number = 0;
-  public tot_ReturnAmount: number = 0;
-  public tot_NetSales: number = 0;
-  public tot_AdvanceSettlement: number = 0;
-  public tot_AdvanceReceived: number = 0;
-  public tot_CashCollection: number = 0;
-  public tot_CreditReceived: number = 0;
+  public selBillingTypeName: string = "all";
+  public dateRange: string = "";
+  //below variables are for calcuation of summary amounts.
+  public tot_CashSales: number = 0;
+  public tot_CashDiscount: number = 0;
   public tot_CreditSales: number = 0;
-  public tot_NetCashCollection: number = 0;
-  public tot_Receivable: number = 0;
-  public tot_CancelTax: number = 0;
-  public tot_CancelAmount: number = 0;
+  public tot_CreditDiscount: number = 0;
+  public tot_GrossSales: number = 0;
+  public tot_TotalDiscount: number = 0;
+  public tot_ReturnCashSales: number = 0;
+  public tot_ReturnCashDiscount: number = 0;
+  public tot_ReturnCreditSales: number = 0;
+  public tot_ReturnCreditDiscount: number = 0;
+  public tot_TotalSalesReturn: number = 0;
+  public tot_TotalReturnDiscount: number = 0;
+  public tot_NetSales: number = 0;
 
-  public tot_accRecord_taxableIncome: number = 0;//sud: 21Mar'19--For Accounting Records, TaxableIncome/Net Sales
-  public tot_accRecord_totalSales: number = 0;//sud: 21Mar'19--For Accounting Records, Total Sales.
+  public tot_SalesQty: number = 0;
+  public tot_RetSalesQty: number = 0;
+  public tot_NetQty: number = 0;
 
-  public currentIncomeSegregation: RPT_BIL_IncomeSegregationModel = new RPT_BIL_IncomeSegregationModel();
-  public currentsalesdaybook: RPT_BIL_SalesDaybookModel = new RPT_BIL_SalesDaybookModel();
+  //	CashSales	CashDiscount	CreditSales	CreditDiscount	GrossSales	TotalDiscount	ReturnCashSales	ReturnCashDiscount	
+  //ReturnCreditSales	ReturnCreditDiscount	TotalSalesReturn	TotalReturnDiscount	NetSales
 
   IncomeSegregationColumns: Array<any> = null;
-  IncomeSegregationData: Array<any> = new Array<any>();
-  SalesDaybookData: Array<any> = new Array<RPT_BIL_SalesDaybookModel>();
+
+  //need rawData for Accurate Calculatition of Summary Records.
+  //when we round-off many rows, then there is chance of mismatch between actual data and the Summary.
+  incomeSegregationData: Array<any> = new Array<any>();
+  //need formattedData to display in Grid. Formatting in grid is tedious. need to write a lot of functions for one single task.
+  //incomeSeg_FormattedData: Array<any> = new Array<any>();
 
   dynamicColumns: Array<string> = new Array<string>();
-  dlService: DLService = null;
+
   public grandTotal: any;
+  public footerContent = '';//sud:24Aug'21--For Summary.
+
   constructor(
-    _dlService: DLService, public msgBoxServ: MessageboxService, public coreService: CoreService, public reportServ: ReportingService) {
-    this.dlService = _dlService;
-    this.currentIncomeSegregation.fromDate = moment().format('YYYY-MM-DD');
-    this.currentIncomeSegregation.toDate = moment().format('YYYY-MM-DD');
-    this.currentsalesdaybook.fromDate = moment().format('YYYY-MM-DD');
-    this.currentsalesdaybook.toDate = moment().format('YYYY-MM-DD');
+    public dlService: DLService, public msgBoxServ: MessageboxService, public coreService: CoreService, public reportServ: ReportingService) {
   }
+
+  ngAfterViewChecked() {
+    this.footerContent = document.getElementById("dvSummary_IncomeSegregationReport").innerHTML;
+  }
+
   gridExportOptions = {
     fileName: 'IncomeSegregation_' + moment().format('YYYY-MM-DD') + '.xls'
-
   };
 
-
+  public loading: boolean = false;
+  
   Load() {
     //this is syntactic sugar code 
     //Reset all Global variable to Zero 
     ///because during the sum of the value of Coloumn ....Last Sum value is remain present because we have declare variable globally therefor we have to reset all global variable to Zero
-    this.tot_Price = this.tot_Tax = this.tot_DiscntAmt = this.tot_TotalAmount = this.tot_ReturnAmount =
-      this.tot_NetSales = this.tot_CashCollection = this.tot_AdvanceSettlement = this.tot_AdvanceReceived =
-      this.tot_CreditReceived = this.tot_CreditSales = this.tot_NetCashCollection = this.tot_Receivable =
-      this.tot_CancelTax = this.tot_CancelAmount = 0;
-    if (this.currentIncomeSegregation.fromDate != null && this.currentIncomeSegregation.toDate != null) {
+    this.incomeSegregationData = [];
+
+    if (this.fromDate != null && this.toDate != null) {
       this.dlService.Read("/BillingReports/IncomeSegregationStaticReport?FromDate="
-        + this.currentIncomeSegregation.fromDate + "&ToDate=" + this.currentIncomeSegregation.toDate)
+        + this.fromDate + "&ToDate=" + this.toDate + "&billingType=" + this.selBillingTypeName)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => this.Success(res),
           res => this.Error(res));
     }
@@ -86,46 +87,104 @@ export class RPT_BIL_IncomeSegregationComponent {
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
   }
+
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
       this.IncomeSegregationColumns = this.reportServ.reportGridCols.GetColumn_Billing_IncomeSegregation;
-      this.IncomeSegregationData = res.Results;
-      //this.CalculateSummaryofDifferentColoumnForSum();
-      this.GetSalesDayBookData();
+      this.incomeSegregationData = res.Results;
+      this.CalculateSummaryAmounts(this.incomeSegregationData);
+      this.FormatAmountsForGrid(this.incomeSegregationData);//pass this data for formatting.
+      this.footerContent = document.getElementById("dvSummary_IncomeSegregationReport").innerHTML;
     }
     else if (res.Status == "OK" && res.Results.length == 0) {
       this.msgBoxServ.showMessage("notice-message", ["No Data is Available For Selcted Parameter"]);
       this.IncomeSegregationColumns = this.reportServ.reportGridCols.GetColumn_Billing_IncomeSegregation;
-      this.IncomeSegregationData = res.Results;
+      this.incomeSegregationData = res.Results;
     }
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }
-
   }
 
-  GetSalesDayBookData() {
-
-    this.dlService.Read("/BillingReports/SalesDaybook?FromDate="
-      + this.currentIncomeSegregation.fromDate + "&ToDate=" + this.currentIncomeSegregation.toDate)
-      .map(res => res)
-      .subscribe(res => this.SuccessSalesDayBook(res),
-        res => this.Error(res));
+  //Function to parse each amount properites of the incomesegregation.
+  public FormatAmountsForGrid(ipDataArr: Array<any>) {
+    if (ipDataArr && ipDataArr.length) {
+      ipDataArr.forEach(itm => {
+        itm.CashSales = CommonFunctions.parseAmount(itm.CashSales);
+        itm.CashDiscount = CommonFunctions.parseAmount(itm.CashDiscount);
+        itm.CreditSales = CommonFunctions.parseAmount(itm.CreditSales);
+        itm.CreditDiscount = CommonFunctions.parseAmount(itm.CreditDiscount);
+        itm.GrossSales = CommonFunctions.parseAmount(itm.GrossSales);
+        itm.TotalDiscount = CommonFunctions.parseAmount(itm.TotalDiscount);
+        itm.ReturnCashSales = CommonFunctions.parseAmount(itm.ReturnCashSales);
+        itm.ReturnCashDiscount = CommonFunctions.parseAmount(itm.ReturnCashDiscount);
+        itm.ReturnCreditDiscount = CommonFunctions.parseAmount(itm.ReturnCreditDiscount);
+        itm.TotalSalesReturn = CommonFunctions.parseAmount(itm.TotalSalesReturn);
+        itm.TotalReturnDiscount = CommonFunctions.parseAmount(itm.TotalReturnDiscount);
+        itm.NetSales = CommonFunctions.parseAmount(itm.NetSales);
+        itm.TotalSaleQuantity = CommonFunctions.parseAmount(itm.TotalSaleQuantity);
+        itm.TotalReturnQuantity = CommonFunctions.parseAmount(itm.TotalReturnQuantity);
+        itm.NetQuantity = CommonFunctions.parseAmount(itm.NetQuantity);
+      });
+    }
   }
 
-  SuccessSalesDayBook(res) {
-    if (res.Status == "OK") {
-      this.SalesDaybookData = res.Results;
-      this.CalculateSummaryofDifferentColoumnForSum();
+  public CalculateSummaryAmounts(ipDataArr: Array<any>) {
+    //resetting all Sum variables to ZERO.
+    this.tot_CashSales = this.tot_CashDiscount = this.tot_CreditSales = this.tot_CreditDiscount = this.tot_GrossSales = this.tot_TotalDiscount =
+      this.tot_ReturnCashSales = this.tot_ReturnCashDiscount = this.tot_ReturnCreditSales = this.tot_ReturnCreditDiscount = this.tot_TotalSalesReturn =
+      this.tot_TotalReturnDiscount = this.tot_NetSales = this.tot_SalesQty = this.tot_RetSalesQty = this.tot_NetQty = 0;
+
+
+    if (ipDataArr && ipDataArr.length) {
+      ipDataArr.forEach(itm => {
+        this.tot_CashSales += itm.CashSales;
+        this.tot_CashDiscount += itm.CashDiscount;
+        this.tot_CreditSales += itm.CreditSales;
+        this.tot_CreditDiscount += itm.CreditDiscount;
+        this.tot_GrossSales += itm.GrossSales;
+        this.tot_TotalDiscount += itm.TotalDiscount;
+        this.tot_ReturnCashSales += itm.ReturnCashSales;
+        this.tot_ReturnCashDiscount += itm.ReturnCashDiscount;
+        this.tot_ReturnCreditSales += itm.ReturnCreditSales;
+        this.tot_ReturnCreditDiscount += itm.ReturnCreditDiscount;
+        this.tot_TotalSalesReturn += itm.TotalSalesReturn;
+        this.tot_TotalReturnDiscount += itm.TotalReturnDiscount;
+        this.tot_NetSales += itm.NetSales;
+
+        this.tot_SalesQty += itm.TotalSaleQuantity;
+        this.tot_RetSalesQty += itm.TotalReturnQuantity;
+        this.tot_NetQty += itm.NetQuantity;
+      });
+
+      this.tot_CashSales = CommonFunctions.parseAmount(this.tot_CashSales);
+      this.tot_CashDiscount = CommonFunctions.parseAmount(this.tot_CashDiscount);
+      this.tot_CreditSales = CommonFunctions.parseAmount(this.tot_CreditSales);
+      this.tot_CreditDiscount = CommonFunctions.parseAmount(this.tot_CreditDiscount);
+      this.tot_GrossSales = CommonFunctions.parseAmount(this.tot_GrossSales);
+      this.tot_TotalDiscount = CommonFunctions.parseAmount(this.tot_TotalDiscount);
+      this.tot_ReturnCashSales = CommonFunctions.parseAmount(this.tot_ReturnCashSales);
+      this.tot_ReturnCashDiscount = CommonFunctions.parseAmount(this.tot_ReturnCashDiscount);
+      this.tot_ReturnCreditSales = CommonFunctions.parseAmount(this.tot_ReturnCreditSales);
+      this.tot_ReturnCreditDiscount = CommonFunctions.parseAmount(this.tot_ReturnCreditDiscount);
+      this.tot_TotalSalesReturn = CommonFunctions.parseAmount(this.tot_TotalSalesReturn);
+      this.tot_TotalReturnDiscount = CommonFunctions.parseAmount(this.tot_TotalReturnDiscount);
+      this.tot_NetSales = CommonFunctions.parseAmount(this.tot_NetSales);
+
+      this.tot_SalesQty = CommonFunctions.parseAmount(this.tot_SalesQty);
+      this.tot_RetSalesQty = CommonFunctions.parseAmount(this.tot_RetSalesQty);
+      this.tot_NetQty = CommonFunctions.parseAmount(this.tot_NetQty);
     }
 
+
   }
+
 
   //on click grid export button we are catching in component an event.. 
   //and in that event we are calling the server excel export....
   OnGridExport($event: GridEmitModel) {
     this.dlService.ReadExcel("/ReportingNew/ExportToExcelIncomeSegregation?FromDate="
-      + this.currentIncomeSegregation.fromDate + "&ToDate=" + this.currentIncomeSegregation.toDate)
+      + this.fromDate + "&ToDate=" + this.toDate)
       .map(res => res)
       .subscribe(data => {
         let blob = data;
@@ -138,92 +197,18 @@ export class RPT_BIL_IncomeSegregationComponent {
 
         res => this.ErrorMsg(res));
   }
+
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
   }
 
-  CalculateSummaryofDifferentColoumnForSum() {
-
-    this.IncomeSegregationData.forEach(SumVariable => {
-
-      //this.tot_Price += SumVariable.Price;
-
-      //this.tot_Tax += SumVariable.Tax;
-      //this.tot_DiscntAmt += SumVariable.DiscountAmount;
-      this.tot_TotalAmount += SumVariable.TotalAmount;
-      //this.tot_ReturnAmount += SumVariable.ReturnAmount;
-      this.tot_CancelTax += SumVariable.CancelTax;
-      this.tot_CancelAmount += SumVariable.CancelAmount;
-    });
-    //this.tot_Price = CommonFunctions.parseAmount(this.tot_Price);
-    //this.tot_Tax = CommonFunctions.parseAmount(this.tot_Tax - this.tot_CancelTax);
-    //this.tot_DiscntAmt = CommonFunctions.parseAmount(this.tot_DiscntAmt);
-    this.tot_TotalAmount = CommonFunctions.parseAmount(this.tot_TotalAmount);
-    //this.tot_ReturnAmount = CommonFunctions.parseAmount(this.tot_ReturnAmount);
-    this.tot_CancelAmount = CommonFunctions.parseAmount(this.tot_CancelAmount);
-
-    this.SalesDaybookData.forEach(SumVariable => {
-      this.tot_Price += SumVariable.SubTotal;
-      this.tot_DiscntAmt += SumVariable.DiscountAmount;
-      this.tot_Tax += SumVariable.TaxAmount;
-      this.tot_ReturnAmount += SumVariable.ReturnAmount;
-      //this.tot_NetSales += SumVariable.NetSales;
-      this.tot_NetSales += SumVariable.TotalAmount;
-      this.tot_AdvanceReceived += SumVariable.DepositReceived;
-      this.tot_AdvanceSettlement += SumVariable.DepositReturn;
-      //this.tot_CashCollection += SumVariable.CashCollection;
-      this.tot_CreditReceived += SumVariable.CrReceived_TotalAmount;
-      this.tot_CreditSales += SumVariable.CrSales_TotalAmount;
-      this.tot_NetCashCollection += SumVariable.CashCollection;
-    });
-    this.tot_ReturnAmount = CommonFunctions.parseAmount(this.tot_ReturnAmount);
-    this.tot_Price = CommonFunctions.parseAmount(this.tot_Price);
-    this.tot_DiscntAmt = CommonFunctions.parseAmount(this.tot_DiscntAmt);
-    //this.tot_NetSales = CommonFunctions.parseAmount((this.tot_TotalAmount) - (this.tot_Tax));
-    this.tot_Tax = CommonFunctions.parseAmount(this.tot_Tax);
-    this.tot_NetSales = CommonFunctions.parseAmount(this.tot_NetSales);
-    this.tot_AdvanceReceived = CommonFunctions.parseAmount(this.tot_AdvanceReceived);
-    this.tot_AdvanceSettlement = CommonFunctions.parseAmount(this.tot_AdvanceSettlement);
-    //this.tot_CashCollection = CommonFunctions.parseAmount(this.tot_CashCollection);
-    this.tot_CreditReceived = CommonFunctions.parseAmount(this.tot_CreditReceived);
-    this.tot_CreditSales = CommonFunctions.parseAmount(this.tot_CreditSales);
-    this.tot_Receivable = CommonFunctions.parseAmount(this.tot_NetSales + this.tot_Tax + this.tot_AdvanceReceived - this.tot_AdvanceSettlement)
-    //this.tot_NetCashCollection = CommonFunctions.parseAmount(this.tot_Receivable - this.tot_CreditSales + this.tot_CreditReceived);
-    this.tot_NetCashCollection = CommonFunctions.parseAmount(this.tot_NetCashCollection);
-    this.grandTotal = CommonFunctions.getGrandTotalData(this.IncomeSegregationData);
-
-
-    //sud: below two values are copied from cshtml to apply .parseAmount function on them, calculation remains unchanged.
-    this.tot_accRecord_taxableIncome = CommonFunctions.parseAmount(this.tot_Price - this.tot_DiscntAmt - this.tot_ReturnAmount);
-    this.tot_accRecord_totalSales = CommonFunctions.parseAmount(this.tot_Price - this.tot_DiscntAmt + this.tot_Tax - this.tot_ReturnAmount);
-
-
-    //sud:21Mar'19-- update decimal points of each values inside grandTotal..
-    if (this.grandTotal && this.grandTotal.length > 0) {
-      this.grandTotal.forEach(itm => {
-        itm.CashSales = CommonFunctions.parseAmount(itm.CashSales);
-        itm.CashDiscount = CommonFunctions.parseAmount(itm.CashDiscount);
-        itm.CreditSales = CommonFunctions.parseAmount(itm.CreditSales);
-        itm.CreditDiscount = CommonFunctions.parseAmount(itm.CreditDiscount);
-        itm.ReturnAmount = CommonFunctions.parseAmount(itm.ReturnAmount);
-        itm.ReturnDiscount = CommonFunctions.parseAmount(itm.ReturnDiscount);
-        itm.GrossSales = CommonFunctions.parseAmount(itm.GrossSales);
-        itm.Discount = CommonFunctions.parseAmount(itm.Discount);
-        itm.NetSales = CommonFunctions.parseAmount(itm.NetSales);
-
-      });
-    }
-
-  }
 
   //Anjana:11June'20--reusable From-ToDate-In Reports..
   OnFromToDateChange($event) {
     this.fromDate = $event ? $event.fromDate : this.fromDate;
     this.toDate = $event ? $event.toDate : this.toDate;
-
-    this.currentIncomeSegregation.fromDate = this.fromDate;
-    this.currentIncomeSegregation.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 
 }

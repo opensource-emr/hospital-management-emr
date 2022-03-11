@@ -30,7 +30,6 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
-        public string ICDSelected { get; set; }
 
         [NotMapped]
         public DateTime? ReceivedOn { get; set; }

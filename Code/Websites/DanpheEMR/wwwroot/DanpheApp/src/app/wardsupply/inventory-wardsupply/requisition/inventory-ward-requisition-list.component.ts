@@ -15,6 +15,7 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../s
 import * as moment from "moment";
 import { WardSupplyBLService } from "../../shared/wardsupply.bl.service";
 import { CoreService } from "../../../core/shared/core.service";
+import { PHRMStoreModel } from "../../../pharmacy/shared/phrm-store.model";
 
 @Component({
   templateUrl: "./inventory-ward-requisition-list.html" // "/InventoryView/RequisitionList"
@@ -22,8 +23,8 @@ import { CoreService } from "../../../core/shared/core.service";
 export class InventoryRequisitionListComponent {
   public CurrentStoreId: number = 0;
   public RequisitionStatusFilter: string = "pending";
-  public RequisitionGridData: Array<Requisition> = null;
-  public RequisitionGridDataFiltered: Array<Requisition> = null;
+  public RequisitionGridData: Array<Requisition> = Array <Requisition>();
+  public RequisitionGridDataFiltered: Array<Requisition> = Array <Requisition>();
   public deptwiseGridColumns: Array<any> = null;
   public itemRequisitionList: Array<any> = null;
   public itemwiseGridColumns: Array<any> = null;
@@ -39,6 +40,8 @@ export class InventoryRequisitionListComponent {
   public toDate: string = null;
   public dateRange: string = null;
   public NepaliDateInGridSettings = new NepaliDateInGridParams();
+  public inventoryList: PHRMStoreModel[] = [];
+  public selectedInventoryId: number = null;
 
   constructor(
     public InventoryBLService: InventoryBLService,
@@ -65,10 +68,25 @@ export class InventoryRequisitionListComponent {
         this.itemwiseGridColumns = GridColumnSettings.ItemwiseRequisitionList;
         this.dateRange = 'None';
         this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
+        this.GetAllInventory();
       }
     } catch (exception) {
       this.messageBoxService.showMessage("Error", [exception]);
     }
+  }
+  private GetAllInventory() {
+    this.wardsupplyBLService.GetInventoryList().subscribe(res => {
+      if (res.Status == "OK") {
+        this.inventoryList = res.Results;
+      }
+      else {
+        console.log(res);
+        this.messageBoxService.showMessage("Failed", ["Failed to load inventory list"]);
+      }
+    }, err => {
+      console.log(err);
+      this.messageBoxService.showMessage("Failed", ["Failed to load inventory list"]);
+    });
   }
   //loading item wise requisition list
   LoadItemwiseList(): void {
@@ -105,24 +123,19 @@ export class InventoryRequisitionListComponent {
   }
 
   LoadDeptwiseList(): void {
-    this.InventoryBLService.GetSubstoreRequistionList(this.fromDate, this.toDate, this.CurrentStoreId)
+    this.wardsupplyBLService.GetSubstoreRequistionList(this.fromDate, this.toDate, this.CurrentStoreId)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.RequisitionGridData = res.Results;
           var isReceiveItemsEnabled = this.CheckIfItemReceiveEnabled();
           this.RequisitionGridData.forEach(req => req.isReceiveItemsEnabled = isReceiveItemsEnabled)
           if (this.RequisitionGridData.length == 0) {
-            this.messageBoxService.showMessage("Notice", [
-              "No Requisition Found. Please check the date."
-            ]);
+            this.messageBoxService.showMessage("Notice", ["No Requisition Found. Please check the date."]);
           }
-          else {
             this.LoadRequisitionListByStatus();
-          }
         }
         else {
           this.messageBoxService.showMessage("failed", ['failed to get Requisitions.....please check log for details.']);
-          ;
           console.log(res.ErrorMessage);
         }
       });
@@ -149,6 +162,13 @@ export class InventoryRequisitionListComponent {
         this.RequisitionGridDataFiltered = this.RequisitionGridData
       }
     }
+    this.filterStockByInventory();
+  }
+  filterStockByInventory() {
+    if (this.selectedInventoryId == null)
+      this.RequisitionGridDataFiltered = this.RequisitionGridDataFiltered;
+    else
+      this.RequisitionGridDataFiltered = this.RequisitionGridDataFiltered.filter(a => a.RequestToStoreId == this.selectedInventoryId);
   }
   RequisitionGridAction($event: GridEmitModel) {
     switch ($event.Action) {

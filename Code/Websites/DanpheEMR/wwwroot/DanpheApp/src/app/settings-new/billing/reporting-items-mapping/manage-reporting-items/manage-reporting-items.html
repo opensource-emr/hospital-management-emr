@@ -1,0 +1,73 @@
+<style>
+    .bg-on {
+        background-color: cadetblue;
+    }
+
+    .bg-off {
+        background-color: none;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue bold uppercase">Select Items for <b>{{selectedReportingItem.ReportingItemName}}</b></span>
+        </div>
+       
+        <input type="button" class="btn btn-primary" (click)="Submit()" value="Submit" />
+        <div style="height:20%">
+            <table>
+                <tr>
+                    <td>
+                        <input danphe-auto-complete
+                               class="searchtbx"
+                               [(ngModel)]="selectedItem"
+                               [source]="billingItemList"
+                               [list-formatter]="myListFormatter"
+                               placeholder="Item Name"
+                               display-prorolty-name="ItemName"
+                               value-prorolty-name=null
+                               min-chars="2"
+                               (valueChanged)="SelectItemSearchBox(selectedItem)"
+                               max-num-list="10" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br />
+        <div style="width:100%;">
+            <table style="width:100%;" border="1">
+                <tr>
+                    <td style="width:60%;">
+                        
+                        <div>
+                            <span *ngFor="let item of billingItemList;let i=index;">
+                                <span style="padding-left:18px;">
+                                    <input type="checkbox" name="item.ItemId" id = "item.ItemName" [(ngModel)]="item.IsSelected" (ngModelChange)="BillItemEventHandler(item)" style="font-size:10px;" />
+                                    <span [ngClass]="item.IsSelected ? 'bg-on' : 'bg-off'" for="item.ItemName" (click)="selectItem(item)">{{item.ItemName}}&nbsp;({{item.ServiceDepartmentName}})</span>
+                                </span>
+                                <br/>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <table style="width:100%;" border="1">
+            <thead *ngIf="selectedReportingItemBillItemList.length !=0">
+                <tr>
+                    <th class="BillCreditHdr" style="color:red;text-align: center;"> Selected Item</th>
+                </tr>
+            </thead>
+            <tr *ngFor="let item of selectedReportingItemBillItemList;let i=index;">
+                <td><input type="checkbox" name="item.ReportingItemsId" [(ngModel)]="item.IsSelected" (ngModelChange)="BillItemEventHandler(item)" style="color:red;font-size:12px;" /> {{item.ItemName}}&nbsp;({{item.ServiceDepartmentName}})</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+

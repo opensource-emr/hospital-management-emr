@@ -423,8 +423,8 @@ button.cancel{
     border: 1px solid #ccc;
 }
 .form-control:focus, input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, select:focus{
-	border: 1px solid #64789c !important;
-	background: #fff !important;
+	border: 1px solid #64789c;
+	background: #fff;
 }
 .header, .header-sm {
     font-family: 'Quicksand','Open Sans', sans-serif;

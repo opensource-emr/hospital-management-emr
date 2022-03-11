@@ -1,0 +1,37 @@
+<div class="wrapper">
+  <div class="col-md-12">
+    <div class="col-md-7">
+      <p *ngIf="showReceiptNavigation" style="margin-bottom: 25px;text-align: center;">
+        <button class="btn btn-primary" title="Previous Receipt" style="float:left;" (click)="PreviousReceipt()"
+          [disabled]="disablePreviousBtn"><i class="fa fa-step-backward"></i>&nbsp;&nbsp;&nbsp;Previous</button>
+        <span><b>Receipt No: {{currentReceiptNo}}</b></span>
+        <button class="btn btn-primary" title="Next Receipt" style="float:right;" (click)="NextReceipt()"
+          [disabled]="disableNextBtn">Next&nbsp;&nbsp;&nbsp;<i class="fa fa-step-forward"></i></button>
+      </p>
+      <!-- <billing-receipt *ngIf="billingReceipt !=null && billingReceipt.IsValid && showNormalReceipt"
+        [BillGenerate]="noOfBillGenerate" [receipt]="billingReceipt"> </billing-receipt> -->
+
+      <!-- @*For Provisional Receipt -- needs revision: sud31May'18*@-->
+
+      <bil-print-provisional-slip *ngIf="showProvisionalReceipt">
+      </bil-print-provisional-slip>
+
+      <div *ngIf="billingReceipt == null">
+        <h4 style="color:red;">Receipt Not Found...</h4>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <emergency-sticker [showSticker]="showERSticker" [patient-visitId]="patientVisitId"
+        (after-print-action)="AfterStickerPrintAction($event)" [routeFrom]="'appointment-check-in'"></emergency-sticker>
+    </div>
+    <div class="col-md-5" *ngIf="showOpdSticker">
+      <opd-sticker [SelectedVisitDetails]="selectedVisit" [isInsuranceBilling]="isInsuranceBilling"
+        [IMISCode]="IMISCode" [showOpdSticker]="showOpdSticker" [routeFrom]="'appointment-check-in'"
+        (after-print-action)="AfterStickerPrintAction($event)"></opd-sticker>
+    </div>
+    <div class="col-md-5" *ngIf="showPackageBillingSticker">
+      <bill-sticker [billingTransactionId]="billingTransactionId" [showSticker]="showPackageBillingSticker"
+        (after-print-action)="AfterStickerPrintAction($event)"></bill-sticker>
+    </div>
+  </div>
+</div>

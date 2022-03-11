@@ -18,4 +18,6 @@ export class OPDStickerViewModel {
   public RoomNo: string = null;
   public OpdTicketCharge: number = null;
   public QueueNo: number = null;
+  public DeptRoomNumber: string = null;
+  public MunicipalityName: string = null;
 }

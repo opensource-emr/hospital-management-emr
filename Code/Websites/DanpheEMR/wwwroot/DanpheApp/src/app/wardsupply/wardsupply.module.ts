@@ -47,7 +47,17 @@ import { InternalConsumptionListComponent } from './internal-consumption-list.co
 import { InternalConsumptionDetailsComponent } from './internal-consumption-details.component';
 import { WardInternalConsumptionReportComponent } from './reports/internal-consumption-report.component';
 import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requisition/inventory-ward-receive-stock/inventory-ward-receive-stock.component';
-
+import { WardSupplyAssetStockComponent } from './wardsupply-asset/wardsupply-asset-stock/wardsupply-asset-stock.component';
+import { WardSupplyAssetRequisitionComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-new-requisition.component';
+import { WardSupplyAssetReturnComponent } from './wardsupply-asset/wardsupply-asset-return/wardsupply-asset-new-return.component';
+import { WardSupplyAssetRequisitionListComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-requisition-list.component';
+import { WardSupplyAssetReturnListComponent } from './wardsupply-asset/wardsupply-asset-return/wardsupply-asset-return-list.component';
+import { WardSupplyAssetMainComponent } from './wardsupply-asset/wardsupply-asset-main.component';
+import { wardsupplyService } from './shared/wardsupply.service';
+import { WardSupplyAssetRequisitionDetailsComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-requisition-details.component';
+import { InventoryPatientConsumptionComponent } from './inventory-wardsupply/patient-consumption/inventory-ward-patient-consumption.component';
+import { InventoryPatientConsumptionListComponent } from './inventory-wardsupply/patient-consumption/inventory-ward-patient-consumption-list.component';
+import {WardSupplyAssetReqDispatchComponent} from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-req-dispatch/wardsupply-asset-req-dispatch-list.component'
 @NgModule({
   providers: [
     WardSupplyBLService,
@@ -58,6 +68,7 @@ import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requi
     InventoryBLService,
     InventoryService,
     InventoryDLService,
+    wardsupplyService,
     { provide: LocationStrategy, useClass: HashLocationStrategy }
   ],
   imports: [
@@ -98,11 +109,21 @@ import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requi
     WardInventoryReportComponent,
     RequisitionDispatchReportComponent,
     TransferReportComponent,
-     ConsumptionReportComponent,
-      InternalConsumptionComponent,
-      InternalConsumptionListComponent,
-      InternalConsumptionDetailsComponent,
-      InventoryWardReceiveStockComponent,
+    ConsumptionReportComponent,
+    InternalConsumptionComponent,
+    InternalConsumptionListComponent,
+    InternalConsumptionDetailsComponent,
+    InventoryWardReceiveStockComponent,
+    WardSupplyAssetMainComponent,
+    WardSupplyAssetStockComponent,
+    WardSupplyAssetRequisitionComponent,
+    WardSupplyAssetRequisitionListComponent,
+    WardSupplyAssetReturnComponent,
+    WardSupplyAssetReturnListComponent,
+    WardSupplyAssetRequisitionDetailsComponent,
+    InventoryPatientConsumptionListComponent,
+    InventoryPatientConsumptionComponent,
+    WardSupplyAssetReqDispatchComponent,
   ],
   bootstrap: []
 })

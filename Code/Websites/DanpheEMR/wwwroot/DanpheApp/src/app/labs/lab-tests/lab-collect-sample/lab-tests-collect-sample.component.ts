@@ -16,8 +16,9 @@ import { LabSticker } from "../../shared/lab-sticker.model";
 import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
-  templateUrl: "./lab-tests-collect-sample.html", 
-  styleUrls: ['./lab-tests-collect-sample.style.css']
+  templateUrl: "./lab-tests-collect-sample.html",
+  styleUrls: ['./lab-tests-collect-sample.style.css'],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class LabTestsCollectSampleComponent {
@@ -64,6 +65,18 @@ export class LabTestsCollectSampleComponent {
   public showEmptySheet: boolean = false;
   public allReqIdListForPrint: Array<number> = [];
 
+  public sampleCollectionSettings: any;
+  public allowRunNoChange: boolean = true;
+  public showSampleDateChange: boolean = true;
+  public showTransfer: boolean = false;
+  public fromTransfer: boolean = false;
+  public showTestChangeParam: boolean = true;
+
+  public labTestToTransfer: any;
+  public labTypeName: string = null;
+  public IsLocalDate = true;
+  public isRunNumberAutoGenerate: boolean = false;
+  public patUnderInsurance: boolean = false;
 
   constructor(public labBLService: LabsBLService,
     public router: Router,
@@ -80,15 +93,32 @@ export class LabTestsCollectSampleComponent {
     this.visitType = this.patientService.getGlobal().PatientType;
     this.RunNumberType = this.patientService.getGlobal().RunNumberType;
     this.RequisitionId = this.patientService.getGlobal().RequisitionId;
-    this.wardNumber = this.patientService.getGlobal().WardName;   
+    this.wardNumber = this.patientService.getGlobal().WardName;
+    this.patUnderInsurance = this.patientService.getGlobal().Ins_HasInsurance;
+
+    var sampleCollectionParam = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'lab' && a.ParameterName == 'LabSampleCollectionPageSettings');
+    if (sampleCollectionParam) {
+      this.sampleCollectionSettings = JSON.parse(sampleCollectionParam.ParameterValue);
+      this.showTestChangeParam = this.sampleCollectionSettings.ShowTestChange;
+      this.showTransfer = this.sampleCollectionSettings.ShowTransfer;
+      this.isRunNumberAutoGenerate = this.sampleCollectionSettings.SampleCodeIsAutoGenerate;
+      this.showSampleDateChange = !this.sampleCollectionSettings.SampleCodeIsAutoGenerate;
+      this.allowRunNoChange = !this.sampleCollectionSettings.SampleCodeIsAutoGenerate;
+    }
   }
 
   ngOnInit() {
-    this.ListLabTestOfPatient();
-    this.labResultService.CreateNewGlobalLabTestResult();
-    this.sampleCreatedOn = moment().format('YYYY-MM-DD HH:mm');
-    this.GetLatestSampleCode();
-    this.SetInsuranceFlagParam();//sud:16Jul'19
+    this.coreService.loading = true;
+    if (this.patientId != 0) {
+      this.ListLabTestOfPatient();
+      this.labResultService.CreateNewGlobalLabTestResult();
+      this.sampleCreatedOn = moment().format('YYYY-MM-DD HH:mm');
+      this.GetLatestSampleCode();
+      this.SetInsuranceFlagParam();//sud:16Jul'19
+    } else {
+      this.router.navigate(['/Lab/Requisition']);
+      this.coreService.loading = false;
+    }
   }
 
 
@@ -146,7 +176,7 @@ export class LabTestsCollectSampleComponent {
 
   // getting the test coponent of selected lab_test on basis of patientId....
   ListLabTestOfPatient(): void {
-    this.labBLService.GetLabSamplesWithCodeByPatientId(this.patientId, this.visitType, this.RunNumberType, this.RequisitionId, this.wardNumber).
+    this.labBLService.GetLabSamplesWithCodeByPatientId(this.patientId, this.visitType, this.RunNumberType, this.RequisitionId, this.wardNumber, this.patUnderInsurance).
       subscribe(res => this.CallBackPatientTestCSVs(res),
         err => {
           this.msgBoxServ.showMessage("error", ["failed to get lab test of patient.. please check log for details."]);
@@ -155,25 +185,31 @@ export class LabTestsCollectSampleComponent {
   }
 
   GetLatestSampleCode(): void {
-    this.sampleCreatedOn = this.sampleCreatedOn ? this.sampleCreatedOn : moment().format('YYYY-MM-DD HH:mm');
-    this.labBLService.GetLatestSampleCode(this.visitType, this.sampleCreatedOn, this.RunNumberType, this.patientId)
-      .subscribe(res => {
-        if (res.Status == 'OK' && res.Results) {
-          this.LatestSampleCode.SampleCode = res.Results.SampleCode;
-          this.LatestSampleCode.SampleNumber = res.Results.SampleNumber;
-          this.LatestSampleCode.BarCodeNumber = res.Results.BarCodeNumber;
-          this.LatestSampleCode.SampleLetter = res.Results.SampleLetter;
-          this.LastSampleCodeOfPat = res.Results.ExistingBarCodeNumbersOfPatient;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-      },
-        err => {
-          this.msgBoxServ.showMessage("error", ["failed to add result.. please check log for details."]);
-
-        });
-    this.showChangeSampleCreatedOn = false;
+    if (!this.isRunNumberAutoGenerate) {
+      this.sampleCreatedOn = this.sampleCreatedOn ? this.sampleCreatedOn : moment().format('YYYY-MM-DD HH:mm');
+      this.labBLService.GetLatestSampleCode(this.visitType, this.sampleCreatedOn, this.RunNumberType, this.patientId, this.patUnderInsurance)
+        .subscribe(res => {
+          if (res.Status == 'OK' && res.Results) {
+            this.LatestSampleCode.SampleCode = res.Results.SampleCode;
+            this.LatestSampleCode.SampleNumber = res.Results.SampleNumber;
+            this.LatestSampleCode.BarCodeNumber = res.Results.BarCodeNumber;
+            this.LatestSampleCode.SampleLetter = res.Results.SampleLetter;
+            this.LastSampleCodeOfPat = res.Results.ExistingBarCodeNumbersOfPatient;
+            this.coreService.loading = this.loading = false;
+          }
+          else {
+            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+            this.coreService.loading = this.loading = false;
+          }
+        },
+          err => {
+            this.msgBoxServ.showMessage("error", ["failed to add result.. please check log for details."]);
+            this.coreService.loading = this.loading = false;
+          });
+      this.showChangeSampleCreatedOn = false;
+    } else {
+      this.coreService.loading = this.loading = false;
+    }
   }
 
 
@@ -201,19 +237,26 @@ export class LabTestsCollectSampleComponent {
           labTest.TestName = res.TestName;
           labTest.SampleCreatedOn = res.SampleCreatedOn;
           labTest.SampleCreatedBy = res.SampleCreatedBy;
+          labTest.PatientId = this.patientId;
+          labTest.VisitType = this.visitType;
           //labTest.SmCode = res.SmCode;
           //labTest.SmNumber = res.SmNumber;
           this.patientTestCSVs.push(labTest);
         });
-      }      
+      }
       else {
-        this.msgBoxServ.showMessage("failed", ["lab bill not paid"]);
+        if (this.fromTransfer) {
+          this.router.navigate(['/Lab/Requisition']);
+        } else {
+          this.msgBoxServ.showMessage("failed", ["lab bill not paid"]);
 
-        this.router.navigate(['/Lab/Requisition']);
+          this.router.navigate(['/Lab/Requisition']);
+        }
+
       }
       if (this.coreService.ShowEmptyReportSheetPrint()) {
         this.showPrintEmptySheet = true;
-      }      
+      }
     }
     else {
       this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -221,30 +264,33 @@ export class LabTestsCollectSampleComponent {
   }
 
   CheckIfSampleCodeExist() {
+    this.coreService.loading = true;
     if (this.loading) {
       if (this.LastSampleCodeOfPat && this.LastSampleCodeOfPat.BarCodeNumber && this.LastSampleCodeOfPat.IsSelected) {
         this.AddSampleCode();
       } else {
         if (this.LatestSampleCode.SampleNumber) {
-          this.labBLService.GetSampleCodeCompared(this.LatestSampleCode.SampleNumber, this.visitType, this.sampleCreatedOn, this.RunNumberType)
+          this.labBLService.GetSampleCodeCompared(this.LatestSampleCode.SampleNumber, this.visitType, this.sampleCreatedOn, this.RunNumberType, this.patUnderInsurance)
             .subscribe(res => {
               if (res.Status == "OK" && res.Results) {
                 if (res.Results.Exist) {
                   this.sampleCodeExistingDetail = res.Results;
                   this.showConfirmationBox = true;
                   this.loading = false;
+                  this.coreService.loading = false;
                 }
                 else {
                   this.AddSampleCode();
                 }
-              } else { this.loading = false; }
+              } else { this.loading = false; this.coreService.loading = false; }
             });
         } else {
           this.msgBoxServ.showMessage("failed", ["Enter valid run number."]);
-          this.loading = false; 
-        }       
+          this.loading = false;
+          this.coreService.loading = false;
+        }
       }
-      
+
     }
   }
 
@@ -260,7 +306,7 @@ export class LabTestsCollectSampleComponent {
       continueUsingLastSample = window.confirm("You have selected UseLastSampleCode for some tests. Do you wish to continue?");
       if (!continueUsingLastSample)
         return;
-    } 
+    }
 
     this.allReqIdListForPrint = [];
     this.patientTestCSVs.filter(sam => {
@@ -279,14 +325,14 @@ export class LabTestsCollectSampleComponent {
           sam.SampleCreatedBy = null;
           sam.BarCodeNumber = this.LastSampleCodeOfPat.BarCodeNumber;
           isLastSampleUsed = true;
-        } 
-        
+        }
+
         var test = _.omit(sam, ['SpecimenList']);
         selectedTests.push(test);
       }
     });
 
-    
+
 
     if (selectedTests.length) {
       this.labBLService.PutSampleCode(selectedTests, this.currentUser)
@@ -295,47 +341,26 @@ export class LabTestsCollectSampleComponent {
             this.sampleDetail = res.Results;
             this.requisitionlist = [];
             this.UpdateSampleCodes();
-
-
-            this.PatientLabInfo.HospitalNumber = Number(this.patientService.globalPatient.PatientCode);
-
-            let dob = this.patientService.globalPatient.DateOfBirth;
-            let gender: string = this.patientService.globalPatient.Gender;
-
-            this.PatientLabInfo.AgeSex = CommonFunctions.GetFormattedAgeSex(dob, gender);
-            this.PatientLabInfo.Age = CommonFunctions.GetFormattedAge(dob);
-            this.PatientLabInfo.Sex = gender;
-            this.PatientLabInfo.PatientName = this.patientService.globalPatient.ShortName;
-            //this.PatientLabInfo.RunNumber = $event.Data.SampleCode;
-            this.PatientLabInfo.SampleCodeFormatted = this.sampleDetail.FormattedSampleCode;
-            this.PatientLabInfo.VisitType = this.patientService.globalPatient.PatientType;
-            this.PatientLabInfo.BarCodeNumber = this.sampleDetail.BarCodeNumber;
-            //this.PatientLabInfo.TestName = $event.Data.LabTestCSV;
-
-            if (this.PatientLabInfo.VisitType.toLowerCase() == 'inpatient') {
-              this.PatientLabInfo.VisitType = 'IP';
-            } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'outpatient') {
-              this.PatientLabInfo.VisitType = 'OP';
-            } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'emergency') {
-              this.PatientLabInfo.VisitType = 'ER';
-            }
-
-
-            this.showlabsticker = false;
-            this.changeDetector.detectChanges();
-            this.showlabsticker = true;
-            this.showModalBox = true;
+            this.ManagePatientLabInfo(res.Results.SampleCollectedOnDateTime);
+            this.coreService.loading = false;
+            this.loading = false;
           }
           else {
             this.msgBoxServ.showMessage("error", ["Some issue in adding sample-code. Please try again."]);
+            this.coreService.loading = false;
+            this.loading = false;
           }
         },
           err => {
             this.msgBoxServ.showMessage("error", ["Some error issue in adding sample-code. Please try again."]);
+            this.coreService.loading = false;
+            this.loading = false;
           });
     }
     else {
       this.msgBoxServ.showMessage("failed", ["Please select test to collect sample."]);
+      this.coreService.loading = false;
+      this.loading = false;
     }
 
   }
@@ -364,6 +389,39 @@ export class LabTestsCollectSampleComponent {
     });
   }
 
+
+  public ManagePatientLabInfo(sampleCollOnDateTime: any) {
+    this.PatientLabInfo.HospitalNumber = Number(this.patientService.globalPatient.PatientCode);
+
+    let dob = this.patientService.globalPatient.DateOfBirth;
+    let gender: string = this.patientService.globalPatient.Gender;
+
+    this.PatientLabInfo.SampleCollectedOnDateTime = moment(sampleCollOnDateTime).format("YYYY-MM-DD HH:mm");;
+    this.PatientLabInfo.AgeSex = CommonFunctions.GetFormattedAgeSex(dob, gender);
+    this.PatientLabInfo.Age = CommonFunctions.GetFormattedAge(dob);
+    this.PatientLabInfo.Sex = gender;
+    this.PatientLabInfo.PatientName = this.patientService.globalPatient.ShortName;
+    //this.PatientLabInfo.RunNumber = $event.Data.SampleCode;
+    this.PatientLabInfo.SampleCodeFormatted = this.sampleDetail.FormattedSampleCode;
+    this.PatientLabInfo.VisitType = this.patientService.globalPatient.PatientType;
+    this.PatientLabInfo.BarCodeNumber = this.sampleDetail.BarCodeNumber;
+    //this.PatientLabInfo.TestName = $event.Data.LabTestCSV;
+
+    if (this.PatientLabInfo.VisitType.toLowerCase() == 'inpatient') {
+      this.PatientLabInfo.VisitType = 'IP';
+    } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'outpatient') {
+      this.PatientLabInfo.VisitType = 'OP';
+    } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'emergency') {
+      this.PatientLabInfo.VisitType = 'ER';
+    }
+
+
+    this.showlabsticker = false;
+    this.changeDetector.detectChanges();
+    this.showlabsticker = true;
+    this.showModalBox = true;
+  }
+
   public CloseModalBox() {
     this.showModalBox = false;
     this.router.navigate(['/Lab/Requisition']);
@@ -374,23 +432,6 @@ export class LabTestsCollectSampleComponent {
       this.showModalBox = false;
       this.router.navigate(['/Lab/Requisition']);
     }
-  }
-
-  public GetLastSampleCode(index: number) {
-    this.labBLService.GetLastSampleCode(this.patientTestCSVs[index].Specimen, this.patientTestCSVs[index].RequisitionId)
-      .subscribe(res => {
-        if (res.Status == 'OK' && res.Results) {
-          this.patientTestCSVs[index].LastSampleCode = moment(res.Results.SampleCreatedOn).format("YYMMDD") + "-" + res.Results.SampleCode;
-          this.patientTestCSVs[index].LastSpecimenUsed = res.Results.LabTestSpecimen;
-          this.patientTestCSVs[index].SampleCreatedOn = res.Results.SampleCreatedOn;
-          this.patientTestCSVs[index].SampleCreatedBy = res.Results.SampleCreatedBy;
-          this.patientTestCSVs[index].ProviderName = res.Results.ProviderName;
-        }
-      },
-        err => {
-          this.msgBoxServ.showMessage("error", ["Some error issue in adding sample-code. Please try again."]);
-          console.log(err);
-        });
   }
 
   public AlterSelectAllTest() {
@@ -446,5 +487,95 @@ export class LabTestsCollectSampleComponent {
 
   public CloseEmptySheet() {
     this.showEmptySheet = false;
+  }
+
+  public transferToLab(data) {
+    this.selectedIndex = data;
+    this.reqId = this.patientTestCSVs[data].RequisitionId;
+    var currentLab = this.securityService.getActiveLab();
+    this.fromTransfer = true;
+    if (currentLab.LabTypeName == "op-lab") {
+      this.labTypeName = "er-lab";
+    } else {
+      this.labTypeName = "op-lab";
+    }
+    let proceed: boolean = true;
+    proceed = window.confirm("Do you want to Transfer this test to " + this.labTypeName + "?");
+    if (proceed) {
+      this.labBLService.TransfertToLab(this.reqId, this.labTypeName)
+        .subscribe(res => {
+          if (res.Status == "OK") {
+            this.patientTestCSVs = [];
+            this.ListLabTestOfPatient();
+          }
+        },
+          err => {
+            this.msgBoxServ.showMessage("error", ["Couldn't transfer to other lab. Please try again."]);
+            this.fromTransfer = false;
+            console.log(err);
+          });
+    }
+  }
+  //this function is hotkeys when pressed by user
+  hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.CloseModalBox();
+    }
+  }
+
+  ChangeDateFormat() {
+    this.IsLocalDate = !this.IsLocalDate;
+  }
+
+  AutoGenerateRunNumber() {
+    var selectedTests: Array<any> = new Array<any>();
+    var isLastSampleUsed: boolean = false;
+    this.allReqIdListForPrint = [];
+    this.patientTestCSVs.filter(sam => {
+      if (sam.IsSelected) {
+        sam.BarCodeNumber = 0;
+        this.allReqIdListForPrint.push(sam.RequisitionId);
+        var test = _.omit(sam, ['SpecimenList']);
+        selectedTests.push(test);
+      }
+    });
+
+    this.coreService.loading = true;
+
+    if (selectedTests.length > 0) {
+      this.labBLService.GenerateSampleRunNumber(selectedTests, this.currentUser).subscribe(res => {
+        if (res.Status == 'OK') {
+          this.LatestSampleCode.SampleCode = res.Results.LatestSampleData.SampleCode;
+          this.LatestSampleCode.SampleNumber = res.Results.LatestSampleData.SampleNumber;
+          this.LatestSampleCode.BarCodeNumber = res.Results.LatestSampleData.BarCodeNumber;
+          this.LatestSampleCode.SampleLetter = res.Results.LatestSampleData.SampleLetter;
+          this.sampleDetail.BarCodeNumber = res.Results.BarCodeNumber;
+          this.sampleDetail.FormattedSampleCode = res.Results.FormattedSampleCode;
+          this.requisitionlist = [];
+          this.UpdateSampleCodes();
+          this.ManagePatientLabInfo(res.Results.SampleCollectedOnDateTime);
+        }
+        else {
+          this.msgBoxServ.showMessage("error", ["Some issue in adding sample-code. Please try again."]);
+          this.coreService.loading = false;
+          this.loading = false;
+        }
+      },
+        err => {
+          this.msgBoxServ.showMessage("error", ["Some error issue in adding sample-code. Please try again."]);
+          this.coreService.loading = false;
+          this.loading = false;
+        });
+    } else {
+      this.msgBoxServ.showMessage("failed", ["Please select test to collect sample."]);
+      this.coreService.loading = false;
+      this.loading = false;
+    }
+
+  }
+
+  ChangeRunNumber() {
+    this.loading = true;
+    this.GetLatestSampleCode();
   }
 }

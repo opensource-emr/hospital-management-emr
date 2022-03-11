@@ -15,7 +15,7 @@ export class BillingDeposit {
     public ReceiptId: number = null;
     public CounterId: number = null;
     public PrintCount: number = 0;
-    public PaymentMode: string = null;
+    public PaymentMode: string = 'cash';
     public PaymentDetails: string = null;
     public FiscalYear: string = null; //used only to display in the deposit slip
     public BillingUser: string = null; //used only to display in the deposit slip
@@ -27,7 +27,12 @@ export class BillingDeposit {
     public IsDuplicatePrint: boolean = false;
     public Address: string = null;
     public PhoneNumber: string = null;
+    public ReceiptNo: number;
 
     //Added for enchancement task:: Yubraj: 18th Dec '18
     public IsActive: boolean = true;
+
+    public InpatientpNumber: string;
+    public AdmissionCase: string;
+    public AdmissionDate: string;
 }

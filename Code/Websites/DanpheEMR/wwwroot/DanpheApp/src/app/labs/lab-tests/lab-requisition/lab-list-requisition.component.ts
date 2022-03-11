@@ -24,9 +24,12 @@ import {
   NepaliDateInGridParams,
   NepaliDateInGridColumnDetail,
 } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
+import * as moment from 'moment/moment';
+import { SecurityService } from "../../../security/shared/security.service";
 
 @Component({
   templateUrl: "./lab-list-requisition.html", // "/LabView/ListLabRequisition"
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class LabListRequisitionComponent {
   public requisitions: Array<LabTestRequisition>;
@@ -34,11 +37,22 @@ export class LabListRequisitionComponent {
   LabGridColumns: Array<any> = null;
   public showLabRequestsPage: boolean = false;
 
-  public timer;
-  public reloadFrequency: number = 5000;
-  public sub: Subscription;
-
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+
+  public NepaliDateForSampleCollectedList: NepaliDateInGridParams = new NepaliDateInGridParams();
+
+  public fromDate: string = null;
+  public toDate: string = null;
+  public dateRange: string = "today";
+  public labGridCols: any;
+
+
+  public sampleCollectedList: any;
+  public showSampleCollectedPage: boolean = false;
+  public SamplesCollectedGridColumns;
+  public reportHeaderHtml_SamplesCollectedList: string = '';
+
+  public sampleCollectedHeader: any;
 
   //@ViewChild('searchBox') someInput: ElementRef;
 
@@ -49,47 +63,59 @@ export class LabListRequisitionComponent {
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public labResultService: LabTestResultService,
-    public coreService: CoreService
+    public coreService: CoreService,
+    public securityService: SecurityService
   ) {
     //labrequisition grid
-    this.LabGridColumns = LabGridColumnSettings.ListRequisitionColumnFilter(
+    this.labGridCols = new LabGridColumnSettings(this.securityService);
+    this.LabGridColumns = this.labGridCols.ListRequisitionColumnFilter(
       this.coreService.GetRequisitionListColumnArray()
     );
+    this.SamplesCollectedGridColumns = this.labGridCols.SampleCollectedList;
     this.GetLabItems();
-
-    if (!this.coreService.GetRefreshmentTime()) {
-      this.reloadFrequency = 5000;
-    } else {
-      this.reloadFrequency = this.coreService.GetRefreshmentTime() * 1000;
-    }
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(
       new NepaliDateInGridColumnDetail("LastestRequisitionDate", false)
     );
+    this.NepaliDateForSampleCollectedList.NepaliDateColumnList.push(
+      new NepaliDateInGridColumnDetail("SampleCreatedOn", true)
+    );
+
+    let param = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'common' && a.ParameterName == 'CustomerHeader');
+
+    if (param) {
+      this.sampleCollectedHeader = JSON.parse(param.ParameterValue);
+    }
+
+    //this.GetSamplesCollectedData();
   }
 
   ngOnInit() {
-    //we are using Timer function of Observable to Call the HTTP with angular timer
-    //first Zero(0) means when component is loaded the timer is also start that time
-    //seceond (60000) means after each 1 min timer will subscribe and It Perfrom HttpClient operation
-    this.timer = Observable.timer(0, this.reloadFrequency);
-    // subscribing to a observable returns a subscription object
-    this.sub = this.timer.subscribe((t) => this.LoadLabRequisition(t));
-  }
-
-  ngOnDestroy() {
-    // Will clear when component is destroyed e.g. route is navigated away from.
-    clearInterval(this.timer);
-    this.sub.unsubscribe(); //IMPORTANT to unsubscribe after going away from current component.
+    //this.LoadLabRequisition();
   }
 
   ngAfterViewInit() {
-    document.getElementById("quickFilterInput").focus();
+    document.getElementById("quickFilterInput") && document.getElementById("quickFilterInput").focus();
+  }
+
+  onDateChange($event) {
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    if ((this.fromDate != null) && (this.toDate != null)) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.LoadLabRequisition();
+      } else {
+        this.msgBoxServ.showMessage('failed', ['Please enter valid From date and To date']);
+      }
+    }
   }
 
   GetLabItems() {
     this.labBLService.GetLabBillingItems().subscribe((res) => {
       if (res.Status == "OK") {
+
         this.labResultService.labBillItems = res.Results;
+        this.reportHeaderHtml_SamplesCollectedList = this.coreService.GetReportHeaderParameterHTML(moment(this.fromDate).format('YYYY-MM-DD'),
+          moment(this.toDate).format('YYYY-MM-DD'), ('Samples Collected List'));
       } else {
         this.msgBoxServ.showMessage("failed", ["Unable to get lab items."]);
       }
@@ -97,8 +123,9 @@ export class LabListRequisitionComponent {
   }
 
   //getting the requsitions
-  LoadLabRequisition(tick): void {
-    this.labBLService.GetLabRequisition().subscribe(
+  LoadLabRequisition(): void {
+    this.requisitions = [];
+    this.labBLService.GetLabRequisition(this.fromDate, this.toDate).subscribe(
       (res) => {
         if (res.Status == "OK") {
           this.requisitions = res.Results;
@@ -129,6 +156,7 @@ export class LabListRequisitionComponent {
     this.patientService.getGlobal().RequisitionId = req.RequisitionId;
     this.patientService.getGlobal().WardName = req.WardName;
     this.patientService.getGlobal().PhoneNumber = req.PhoneNumber;
+    this.patientService.getGlobal().Ins_HasInsurance = req.HasInsurance;
     this.router.navigate(["/Lab/CollectSample"]);
   }
 
@@ -143,5 +171,72 @@ export class LabListRequisitionComponent {
       default:
         break;
     }
+  }
+
+
+  GetSamplesCollectedData(): void {
+    let diff = moment(this.fromDate).diff(moment(this.toDate), 'days');
+    if (Math.abs(diff) > 7) {
+      this.msgBoxServ.showMessage("failed", ["Date Range should not be more than 7 days."]);
+      return;
+    }
+
+    this.labBLService.GetSamplesCollectedData(this.fromDate, this.toDate)
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          if (res.Results.length) {
+            this.sampleCollectedList = res.Results;
+            this.showSampleCollectedPage = true;
+            this.changeDetector.detectChanges();
+          }
+          else {
+            this.sampleCollectedList = null;
+            this.changeDetector.detectChanges();
+          }
+
+        }
+        else {
+          this.msgBoxServ.showMessage("failed", ["failed to get lab test of patient.. please check log for details."]);
+          console.log(res.ErrorMessage);
+        }
+      });
+  }
+
+  ShowHideSamplesCollected() {
+    this.GetSamplesCollectedData();
+  }
+
+  Close() {
+    this.showSampleCollectedPage = false;
+  }
+
+  gridExportOptions = {
+    fileName:
+      "SamplesCollectedList_" + moment().format("YYYY-MM-DD") + ".xls",
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.showSampleCollectedPage = false;
+    }
+
+  }
+
+  public Print() {
+    let popupWinindow;
+    if (document.getElementById("labSampleCollectedlist")) {
+      var printContents = document.getElementById("labSampleCollectedlist").innerHTML;
+    }
+    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+    popupWinindow.document.open();
+    var documentContent = `<html><head>
+                          `;
+
+
+    documentContent += `<link rel="stylesheet" type="text/css" href="../../../../../../themes/theme-default/DanphePrintStyle.css" /></head>`;
+
+    documentContent += '<body class="lab-rpt4moz" onload="window.print()">' + printContents + '</body></html>';
+    popupWinindow.document.write(documentContent);
+    popupWinindow.document.close();
   }
 }

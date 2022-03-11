@@ -12,11 +12,13 @@ import { BillingOpPatientVM } from './bill-op-patientVM';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 import { UnicodeService } from '../../common/unicode.service';
 import { Router } from '@angular/router';
+import { Municipality } from '../../shared/address-controls/municipality-model';
 
 @Component({
   selector: 'bill-op-patient-add',
   templateUrl: './bill-op-patient-add.html',
-  styles: [`padding-7-tp{padding-top: 7px;}`]
+  styles: [`padding-7-tp{padding-top: 7px;}`],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 // App Component class
@@ -32,9 +34,13 @@ export class BillOutpatientAddComponent {
 
   public loading: boolean = false;
   public GoToBilling: boolean = false;
+  public isPhoneMandatory: boolean = true;
+
+  public showMunicipality: boolean = false;
 
   @Output() public callBackAddClose: EventEmitter<Object> = new EventEmitter<Object>();
 
+  public showLocalName: boolean = true;
 
   constructor(public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
@@ -47,7 +53,9 @@ export class BillOutpatientAddComponent {
   ) {
 
     this.Initialize();
-
+    this.isPhoneMandatory = this.coreService.GetIsPhoneNumberMandatory();
+    this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
+    this.showLocalName = this.coreService.showLocalNameFormControl;
   }
 
   ngOnInit() {
@@ -56,6 +64,8 @@ export class BillOutpatientAddComponent {
     this.newPatient.CountryId = country ? country.CountryId : null;
     this.selectedDistrict.CountrySubDivisionId = this.newPatient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
     this.selectedDistrict.CountrySubDivisionName = this.newPatient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
+    this.setFocusById("newPatFirstName");
+    this.phoneNumberMandatory();
   }
 
 
@@ -95,11 +105,12 @@ export class BillOutpatientAddComponent {
   CheckValiadtionAndRegisterNewPatient(goToBilling: boolean) {
     this.GoToBilling = goToBilling;
     if (this.loading) {
+      this.newPatient.CountrySubDivisionId = this.selectedDistrict ? this.selectedDistrict.CountrySubDivisionId : null;
       for (var i in this.newPatient.OutPatientValidator.controls) {
         this.newPatient.OutPatientValidator.controls[i].markAsDirty();
         this.newPatient.OutPatientValidator.controls[i].updateValueAndValidity();
-      }
-      if (this.newPatient.IsValid(undefined, undefined)) {
+      }  
+      if (this.newPatient.IsValid(undefined, undefined) && (this.newPatient.CountrySubDivisionId != null || this.newPatient.CountrySubDivisionId != undefined)) {
         //check if middlename exists or not to append to Shortname 
         var midName = this.newPatient.MiddleName;
         if (midName) {
@@ -107,6 +118,7 @@ export class BillOutpatientAddComponent {
         } else {
           midName = "";
         }
+         
         //removing extra spaces typed by the users
         this.newPatient.FirstName = this.newPatient.FirstName.trim();
         this.newPatient.MiddleName = this.newPatient.MiddleName ? this.newPatient.MiddleName.trim() : null;
@@ -115,8 +127,11 @@ export class BillOutpatientAddComponent {
 
         this.CheckExistingPatientsAndSubmit();
       }
+      else {
+        this.msgBoxServ.showMessage('failed', ["Some of the inputs are invalid. Please check and try again. !"]);
+        this.loading = false;//re-enable the buttons after showing the error message.
+      }
     }
-    this.loading = false;
   }
 
   public matchedPatientList: any;
@@ -124,7 +139,8 @@ export class BillOutpatientAddComponent {
 
   public CheckExistingPatientsAndSubmit() {
     if (!this.newPatient.PatientId) {
-      this.billingBLService.GetExistedMatchingPatientList(this.newPatient.FirstName, this.newPatient.LastName, this.newPatient.PhoneNumber, this.newPatient.Age, this.newPatient.Gender)
+      let age = this.newPatient.Age + this.newPatient.AgeUnit;
+      this.billingBLService.GetExistedMatchingPatientList(this.newPatient.FirstName, this.newPatient.LastName, this.newPatient.PhoneNumber, age, this.newPatient.Gender)
         .subscribe(res => {
           if (res.Status == "OK" && res.Results.length) {
             this.matchedPatientList = res.Results;
@@ -134,6 +150,9 @@ export class BillOutpatientAddComponent {
           else {
             this.RegisterNewPatient();
           }
+        }, (err) => {
+          this.loading = false;
+          this.msgBoxServ.showMessage('failed', ["Failed to add new Patient. Please try later !"]);
         });
     }
     else {
@@ -148,6 +167,7 @@ export class BillOutpatientAddComponent {
     this.billingBLService.AddNewOutpatienPatient(this.newPatient)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
+          this.loading = false;
 
           if (this.GoToBilling) {
             this.callBackAddClose.emit({ action: "register-and-billing", data: res.Results, close: true });
@@ -162,6 +182,9 @@ export class BillOutpatientAddComponent {
           this.msgBoxServ.showMessage('failed', ["Failed to add new Patient. Please try later !"]);
           this.loading = false;
         }
+      }, (err) => {
+        this.loading = false;
+        this.msgBoxServ.showMessage('failed', ["Failed to add new Patient. Please try later !"]);
       });
   }
 
@@ -234,5 +257,28 @@ export class BillOutpatientAddComponent {
       this.showExstingPatientListPage = false;
     }
     this.loading = false;
+  }
+
+  //common function to set focus on  given Element. 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    this.coreService.FocusInputById(targetId);
+  }
+
+  public phoneNumberMandatory() {
+    if (!this.isPhoneMandatory) {
+      this.newPatient.UpdateValidator("off", "PhoneNumber");
+    }
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.callBackAddClose.emit({ close: true });
+    }
+  }
+
+  public updateMunicipality(event) {
+    if (event) {
+      this.newPatient.MunicipalityId = event.data;
+    }
   }
 }

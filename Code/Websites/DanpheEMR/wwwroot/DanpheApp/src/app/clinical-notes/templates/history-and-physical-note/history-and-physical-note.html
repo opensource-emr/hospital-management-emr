@@ -47,50 +47,26 @@
 <div>
   <!-- Subjective Notes related fields for Emergency Note-->
   <div *ngIf="showSOnotes">
-    <subjective-note [subjective-note]="notes.SubjectiveNote" [clinical-detail]="clinicalDetail"
-      (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
+    <subjective-note [subjective-note]="notes.SubjectiveNote"
+                     [clinical-detail]="clinicalDetail" (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
   </div>
 
   <!-- Objective Notes fields-->
   <div class="tab-pane" id="objective" *ngIf="showSOnotes">
-    <objective-note [objective-note]="notes.ObjectiveNote" [clinical-detail]="clinicalDetail"
-      (callback-objectivenote)="CallBackObjective($event)"></objective-note>
+    <objective-note [objective-note]="notes.ObjectiveNote"
+                    [clinical-detail]="clinicalDetail" (callback-objectivenote)="CallBackObjective($event)"></objective-note>
   </div>
 
   <!-- ER-Course -->
   <form class="hm-form">
   </form>
   <!-- Assessment-Plan -->
-  <!-- <div class="tab-pane" id="assessment" *ngIf="showAP">
-    <assessment-plan [editMode]="APeditMode" [assessments]="assessment"
-      (callback-assessmentandplan)="CallBackAssesmentAndPlan($event)">
+  <div class="tab-pane" id="assessment" *ngIf="showAP">
+    <assessment-plan [editMode]="APeditMode"
+                     [assessments]="assessment"
+                     (callback-assessmentandplan)="CallBackAssesmentAndPlan($event)">
 
     </assessment-plan>
-  </div> -->
-  <div class="row form-group">
-    <div class="col-md-4">Diagnosis(ICD 10 code)</div>
-    <div class="col-md-8" *ngIf="notes.ICDList && notes.ICDList.length>0">
-      <div class="row margin-5-bt" *ngFor="let icddata of notes.ICDList; let idx = index">
-        <div class="col-md-9">
-          <div class="autocomplete-item">
-            <div>
-              <input danphe-auto-complete class="form-control" [(ngModel)]="notes.ICDList[idx]" [source]="ICD10List"
-                [list-formatter]="ICDListFormatter" placeholder="Select ICD10" display-property-name="ICD10Description"
-                onClick="this.select();" match-formatted="true" [grid-sort]="'ICD10Description'"
-                id="{{ 'icd10-box'+idx }}" max-num-list="20" (valueChanged)="ICDValueChanged()" />
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3" *ngIf="notes.ICDList && notes.ICDList.length > 1">
-          <button class="btn btn-danger" (click)="DeleteRow(idx)">
-            <i class="fa fa-close"></i>
-          </button>
-        </div>
-      </div>
-      <div class="row margin-15-vr">
-        <div class="col-md-4"><button class="btn btn-primary" (click)="AddNewICDRow()">Add ICD</button></div>
-      </div>
-    </div>
   </div>
 
   <!-- Start: Instructions related fields for Emergency Note-->
@@ -98,7 +74,7 @@
     <div class="col-md-6">
       <div class="hm-form">
         <div class="text-head-wrapper clearfix">
-          <h3 class="text-head cstm-add-heading">Prescription</h3>
+          <h3 class="text-head cstm-add-heading">Instructions</h3>
         </div>
         <div class="form-group">
           <div class="row">
@@ -106,25 +82,24 @@
             <div class="col-md-8">
               <div class="row">
                 <div class="col-md-3">
-                  <input class="form-control" type="number" min="0" max="150" onFocus="this.value=0"
-                    [(ngModel)]="notes.FollowUp" (focusout)="FocusOut()" />
+                  <input class="form-control" type="number" min="0" max="150"
+                         onFocus="this.value=0"
+                         [(ngModel)]="notes.FollowUp"
+                         (focusout)="FocusOut()"/>
                 </div>
                 <div class="col-md-9">
                   <div class="input-group">
                     <div class="icheck-inline">
                       <label class="mt-radio mt-radio-outline">
-                        <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="notes.FollowUpUnit"
-                          (focusout)="FocusOut()">
+                        <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
                         <span></span>Days
                       </label>
                       <label class="mt-radio mt-radio-outline">
-                        <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="notes.FollowUpUnit"
-                          (focusout)="FocusOut()">
+                        <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
                         <span></span>Weeks
                       </label>
                       <label class="mt-radio mt-radio-outline">
-                        <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="notes.FollowUpUnit"
-                          (focusout)="FocusOut()">
+                        <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
                         <span></span>Months
                       </label>
                     </div>
@@ -136,10 +111,9 @@
         </div>
         <div class="form-group">
           <div class="row">
-            <label class="control-label col-md-4">Free Text<b>:</b></label>
+            <label class="control-label col-md-4">Remarks<b>:</b></label>
             <div class="col-md-8">
-              <textarea class="form-control" [(ngModel)]="notes.Remarks" maxlength="500" rows="3"
-                (focusout)="FocusOut()"></textarea>
+              <textarea class="form-control" [(ngModel)]="notes.Remarks" maxlength="500" rows="3" (focusout)="FocusOut()"></textarea>
             </div>
           </div>
         </div>

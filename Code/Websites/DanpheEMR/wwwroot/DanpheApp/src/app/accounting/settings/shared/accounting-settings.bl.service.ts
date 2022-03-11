@@ -97,7 +97,17 @@ export class AccountingSettingsBLService {
     catch (ex){
         throw ex;
     }
-}
+    }
+    GetBillingItemsList(){
+        try {
+            return this.accountingSettingsDLService.GetBillingItemsList()
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
 
 //get fiscal year activity details 
 public getfsyearactivitydetail() {
@@ -236,6 +246,10 @@ public getfsyearactivitydetail() {
         return this.accountingSettingsDLService.GetChartofAccount()
             .map(res => { return res });
     }
+    public getTrasferRuleData(sectionId: number) {
+        return this.accountingSettingsDLService.getTrasferRuleData(sectionId)
+            .map(res => { return res });
+    }
 
     //get provisional ledger code
     public GetProvisionalLedgerCode() {
@@ -346,6 +360,11 @@ public getfsyearactivitydetail() {
 
         return this.accountingSettingsDLService.PutLedgersGroup(temp)
             .map(res => { return res })
+    }
+
+    public UpdateTransferRuleIsActive(ruleName) {
+        return this.accountingSettingsDLService.PutTransferRuleIsActive(ruleName)
+            .map(res => { return res });
     }
     //#endregion LedgerGroup Settings Calls
 }

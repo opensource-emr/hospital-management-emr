@@ -42,6 +42,7 @@ namespace DanpheEMR.ServerModel
         public string IMISCode { get; set; }
         public string InsuranceNumber { get; set; }
         public PatientInsurancePkgTxnVM PatientInsurancePkgTxn { get; set; }
+        public double? Ins_InsuranceBalance { get; set; }
     }
 
     public class PatientInsurancePkgTxnVM
@@ -101,6 +102,10 @@ namespace DanpheEMR.ServerModel
         public string ContactNo { get; set; }
         public string Gender { get; set; }
         public string PANNumber { get; set; } // sud: 4Nov'19--needed for IpBilling Receipt.
+        public string Ins_NshiNumber { get; set; }
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? ClaimCode { get; set; }
     }
     public class BillingTransactionDetailVM
     {
@@ -110,7 +115,10 @@ namespace DanpheEMR.ServerModel
         public DateTime? BillingDate { get; set; }
         public string PaymentMode { get; set; }
         public double? DepositBalance { get; set; }
-        public double? DepositDeductAmount { get; set; }
+        //public double? DepositDeductAmount { get; set; }
+        public double? DepositAvailable { get; set; }//sud:11May'21--New fields added in BillingTransactionTable.
+        public double? DepositUsed { get; set; }//sud:11May'21--New fields added in BillingTransactionTable.
+        public double? DepositReturnAmount { get; set; }//sud:11May'21--New fields added in BillingTransactionTable.
         public double? Discount { get; set; }
         public double? TotalAmount { get; set; }
         public double? SubTotal { get; set; }
@@ -127,6 +135,9 @@ namespace DanpheEMR.ServerModel
         public int? OrganizationId { get; set; }
         public string OrganizationName { get; set; }
         public double? ExchangeRate { get; set; } //sanjit: 5-17-2019 for foreign exchange
+        public bool? IsInsuranceBilling { get; set; }
+        public string LabTypeName { get; set; }
+
     }
 
     public class BillItemVM
@@ -147,6 +158,7 @@ namespace DanpheEMR.ServerModel
     {
         public int PatientId { get; set; }
         public int PatientVisitId { get; set; }
+        public int? DiscountSchemeId { get; set; }
         public DateTime? DischargeDate { get; set; }
         public string BillStatus { get; set; }
         public string Remarks { get; set; }

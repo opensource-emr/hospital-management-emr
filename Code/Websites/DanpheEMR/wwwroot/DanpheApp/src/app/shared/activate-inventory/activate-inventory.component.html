@@ -1,0 +1,28 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="caption lb-caption">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Select your Inventory</span>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="inventoryList != undefined">
+      <div class="row">
+        <div class="col-md-3" *ngFor="let inventory of inventoryList" [rbac-permission]="inventory.PermissionInfo">
+          <a class="report_list" (click)="setGlobalDispensary(inventory.StoreId)">
+            <div class="span2 padder-v b-r b-light rpt-link-container"
+              style="display: flex;flex-direction: row;align-items: center;">
+              <span class="fa-stack fa-2x report_icon">
+                <i class="fa fa-plus fa-stack-1x text-white"></i>
+              </span>
+              <span class="report-name">
+                <i>{{inventory.Name}}</i>
+                <i>Inventory</i>
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

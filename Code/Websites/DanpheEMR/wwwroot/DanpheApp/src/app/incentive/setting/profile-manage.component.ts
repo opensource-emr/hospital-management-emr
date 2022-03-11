@@ -184,6 +184,7 @@ export class ProfileManageComponent {
       profile.PriceCategoryName = res.Results.PriceCategoryName;
       profile.TDSPercentage = res.Results.TDSPercentage;
       profile.IsActive = res.Results.IsActive;
+      profile.Description = res.Results.Description;
       this.CallBackAdd(profile);
     }
     else {
@@ -223,6 +224,7 @@ export class ProfileManageComponent {
     this.changeDetector.detectChanges();
     this.showEditItemsPercentPage = false;
     this.selectedProfile = new ProfileModel();
+    this.GetProfileList();
   }
 
   profileListFormatter(data: any): string {

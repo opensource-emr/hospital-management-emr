@@ -22,6 +22,14 @@ export class InsuranceInfo {
     public InitialBalance: number = 0;
     public CurrentBalance: number = 0;
     public InsuranceProviderId: number = 0;
+    public  Ins_HasInsurance: boolean=null;
+    public Ins_NshiNumber:string=null;
+    public Ins_InsuranceBalance : number=0;
+    public Ins_InsuranceProviderId :number=0;
+    public Ins_IsFamilyHead:string=null;
+    public Ins_FamilyHeadNshi :string=null;
+    public Ins_FamilyHeadName:boolean=null;
+    public Ins_IsFirstServicePoint:boolean=null;
 
     public CreatedOn: string = null;
     public CreatedBy: number = null;

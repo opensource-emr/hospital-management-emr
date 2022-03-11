@@ -12,7 +12,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: 'accounthead-add',
-    templateUrl: './account-head-add.html'
+    templateUrl: './account-head-add.html',
+    host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class AccountHeadAddComponent {
@@ -80,8 +81,10 @@ export class AccountHeadAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('AccountHeadName');
                 });
         }
+        this.FocusElementById('AccountHeadName');
     }
     //adding new department
     Update() {
@@ -105,8 +108,10 @@ export class AccountHeadAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('AccountHeadName');
                 });
         }
+        this.FocusElementById('AccountHeadName');
     }
 
     Close() {
@@ -136,7 +141,19 @@ export class AccountHeadAddComponent {
     logError(err: any) {
         console.log(err);
     }
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
+    }
 
 
 }

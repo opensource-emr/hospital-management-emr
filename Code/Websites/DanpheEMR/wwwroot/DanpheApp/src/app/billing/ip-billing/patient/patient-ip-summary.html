@@ -1,6 +1,7 @@
 <style>
-
-  .doc-pagecontainer .portlet .cstm-portlet-body table#editable-sample tr:nth-of-type(odd) td, .doc-pagecontainer .portlet table.doc-tbl tr:nth-of-type(odd) td, table.doc-tbl tr:nth-of-type(odd) td {
+  .doc-pagecontainer .portlet .cstm-portlet-body table#editable-sample tr:nth-of-type(odd) td,
+  .doc-pagecontainer .portlet table.doc-tbl tr:nth-of-type(odd) td,
+  table.doc-tbl tr:nth-of-type(odd) td {
     background: transparent;
   }
 </style>
@@ -11,34 +12,68 @@
         <!--<button class="fa fa-close closeBtn btn-danger" (click)="ClosePatientSummary()"></button>-->
 
         <div class="col-md-12">
-          <h4 class="header inner-header"><i class="fa fa-file-text-o"></i>Inpatient Billing</h4>
-          <div class="action-bar">
-            <button class="btn action-btn btn-sm" style="float:left; margin-right: 5px;" (click)="BackToPatientListGrid()">
+          <div class="col-md-12">
+            <span class="col-md-4 header inner-header" style="padding: 0px;">
+              <i class="fa fa-file-text-o"></i>Inpatient Billing
+            </span>
+            <div class="col-md-6 form-group" style="padding: 0px;">
+              <membership-select *ngIf="ShowMembershipSelect" [show-community]="membershipSchemeParam.ShowCommunity"
+                [selected-id]="MembershipTypeId" (on-membership-change)="OnMembershipChanged($event)"
+                [is-mandatory]="membershipSchemeParam.IsMandatory">
+              </membership-select>
+            </div>
+            <div *ngIf="ItemLevelDiscountSettings.ItemLevelDiscount" class="col-md-2" style="overflow: hidden;">
+              <table>
+                <tbody>
+                  <tr>
+                    <td><input type="checkbox" name="itemLevelCheckBox" id="itemLevelCheckBox" [(ngModel)] = "ipBillingDiscountModel.IsItemDiscountEnabled" (ngModelChange) = "SaveDiscountState(); ItemLevelCheckBoxChanged($event);" style="zoom: 1.5;"></td>
+                    <td><label for="itemLevelCheckBox"> Item Level Discount</label></td>
+                  </tr>
+                </tbody>
+              </table> 
+            </div>
+          </div>
+          <div class="col-md-12 action-bar">
+            <button class="btn action-btn btn-sm" style="float:left; margin-right: 5px;"
+              (click)="BackToPatientListGrid()">
               <i class="fa fa-backward" style="margin-right: 5px;"></i> Back
             </button>
-            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="NewItemBtn_Click()" rbac-permission='{"name":"btn-ipdbilling-newitem","actionOnInvalid":"remove"}'>
+            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="NewItemBtn_Click()"
+              rbac-permission='{"name":"btn-ipdbilling-newitem","actionOnInvalid":"remove"}'>
               <i class="fa fa-plus" style="margin-right: 5px;"></i> New Item
             </button>
-            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="ShowEstimationBill()" rbac-permission='{"name":"btn-ipdbilling-estimationbill","actionOnInvalid":"remove"}'>
+            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="ShowEstimationBill()"
+              rbac-permission='{"name":"btn-ipdbilling-estimationbill","actionOnInvalid":"remove"}'>
               Estimation
               Bill
             </button>
             <button class="btn btn-sm action-btn" style="display:none; margin-right: 5px;"> Cancel Item(s) </button>
-            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="AddDepositBtn_Click()" rbac-permission='{"name":"btn-ipdbilling-deposit","actionOnInvalid":"remove"}'>
+            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="AddDepositBtn_Click()"
+              rbac-permission='{"name":"btn-ipdbilling-deposit","actionOnInvalid":"remove"}'>
               <i class="fa fa-plus" style="margin-right: 5px;"></i> Add Deposit
             </button>
-            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="GroupDiscountBtn_Click()" rbac-permission='{"name":"btn-ipdbilling-groupdiscount","actionOnInvalid":"remove"}'>
-              <i class="fa fa-folder-o" style="margin-right: 5px;"></i> Group Discount
+            <button *ngIf = "ItemLevelDiscountSettings.ItemLevelDiscount" class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="GroupDiscountBtn_Click()"
+              rbac-permission='{"name":"btn-ipdbilling-groupdiscount","actionOnInvalid":"remove"}' [attr.disabled] = "enableItemLevelDiscount? null: true">
+              <i class="fa fa-folder-o" style="margin-right: 5px;"></i> Item Discount
             </button>
-            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="UpdateItems()" rbac-permission='{"name":"btn-ipdbilling-edititems","actionOnInvalid":"remove"}'>
+            <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="UpdateItems()"
+              rbac-permission='{"name":"btn-ipdbilling-edititems","actionOnInvalid":"remove"}'>
               <i class="fa fa-pencil" style="margin-right: 5px;"></i> Edit Items
             </button>
             <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="SelectItemForPartialPayment()"
-                   rbac-permission='{"name":"btn-ipdbilling-partialclearance","actionOnInvalid":"remove"}'>
+              rbac-permission='{"name":"btn-ipdbilling-partialclearance","actionOnInvalid":"remove"}'>
               <i class="fa fa-money" style="margin-right: 5px;"></i>Partial
               Clearance
             </button>
-            <label class="animated-btn blinking-btn" *ngIf="admissionInfo? admissionInfo.IsPoliceCase: false" style="color:orange!important; float:right; font-size: 20px;"> <strong>POLICE CASE</strong></label>
+            <label *ngIf="admissionInfo && admissionInfo.DiscountSchemeId">Discount Scheme:
+              <strong>{{admissionInfo.DiscountSchemeId}}</strong>
+            </label>
+            <!-- <label class="animated-btn blinking-btn" *ngIf="admissionInfo? admissionInfo.IsPoliceCase: false"
+              style="color:orange!important; float:right; font-size: 20px;"> <strong>POLICE CASE</strong></label> -->
+            <label *ngIf="admissionInfo && admissionInfo.AdmissionCase"
+              style="color:orange!important; float:right; font-size: 20px;background-color: #f8f9fa !important;">CASE:
+              <strong>{{admissionInfo.AdmissionCase}}</strong>
+            </label>
           </div>
         </div>
         <div class="col-md-12">
@@ -68,11 +103,11 @@
                       <td style="width:35%"><i class="fa fa-arrow-circle-o-right "></i><b>Procedure:</b></td>
                       <td>
                         <input class="form-control" type="text" maxlength="150"
-                               [(ngModel)]="admissionInfo.ProcedureType" />
+                          [(ngModel)]="admissionInfo.ProcedureType" />
                       </td>
                       <td>
                         <button class="btn btn-sm btn-default" (click)="UpdateProcedure()" [disabled]="loading"
-                                style="margin-left:10px">
+                          style="margin-left:10px">
                           Update
                         </button>
                       </td>
@@ -98,31 +133,31 @@
                     <tr>
                       <td><i class="fa fa-arrow-circle-o-right "></i><b>Disch. Date :</b>&nbsp;&nbsp; </td>
                       <td>
-                        
-                        <danphe-date-picker [(ngModel)]="dischargeDetail.DischargeDate" (ngModelChange)="CalculateTotalDays()" [ngModelOptions]="{standalone: true}"
-                                            [showTime]="true" [CalendarTypes]="'en,np'">
+
+                        <danphe-date-picker [(ngModel)]="dischargeDetail.DischargeDate"
+                          (ngModelChange)="CalculateTotalDays()" [ngModelOptions]="{standalone: true}" [showTime]="true"
+                          [CalendarTypes]="'en,np'">
                         </danphe-date-picker>
                         <label class="color-red font-sm" *ngIf="!validDischargeDate">
-                          Please enter Valid Discharge
-                          Date.
+                          Please enter Valid Discharge Date.
                         </label>
                       </td>
                     </tr>
-                   
+
                   </table>
                 </div>
               </div>
               <br />
               <div class="col-md-12 mb10">
                 <danphe-grid [grid-colDefaults]="IPBillItemGridCol" [grid-data]="patAllPendingItems"
-                             (grid-actions)="IPBillItemGridActions($event)" [show-print-button]="false" [supressPagination]="true"
-                             [resizeColumnToFit]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+                  (grid-actions)="IPBillItemGridActions($event)" [show-print-button]="false" [supressPagination]="true"
+                  [resizeColumnToFit]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
               </div>
             </div>
             <div class="col-md-3">
               <div class="page-bar">
                 <table class="table doc-tbl" style="width:100%;">
-                  <tr *ngIf="model.PharmacyProvisionalAmount">
+                  <!-- <tr *ngIf="model.PharmacyProvisionalAmount">
                     <td colspan="2" style="text-align:left;">
                       <p class="header-sm inner-header-sm">
                         <strong><i class="fa fa-pills"></i>Pharamacy Detail</strong>
@@ -136,7 +171,7 @@
                         {{model.PharmacyProvisionalAmount}}
                       </label>
                     </td>
-                  </tr>
+                  </tr> -->
                   <tr>
                     <td colspan="2" style="text-align:left">
                       <p class="header-sm inner-header-sm">
@@ -148,32 +183,38 @@
                     </td>
                   </tr>
                   <tr>
-                    <td class="bill-child"><label style="font-weight:bold;"> Billing Total </label></td>
-                    <td><label style="font-weight:bold;"> {{model.SubTotal}} </label></td>
+                    <td class="bill-child"><label style="font-weight:bold;"> Sub Total </label></td>
+                    <td><label style="font-weight:bold;"> {{model.SubTotal | number}} </label></td>
                   </tr>
                   <tr>
-                    <td class="bill-child"> Total Discount </td>
+                    <td class="bill-child">Discount %</td>
                     <td>
-                      <input type="number" style="width:100px;" [(ngModel)]="model.TotalDiscount" disabled
-                             class="form-control" />
+                      <input type="number" style="width:100px;" [(ngModel)]="model.DiscountPercent" class="form-control"
+                        [disabled]="!MembershipTypeName || MembershipTypeName == 'General' || isGroupDiscountApplied || enableItemLevelDiscount"
+                        (ngModelChange)="InvoiceDiscountOnChange()" onClick="this.select();" (focusout) = "SaveDiscountState()"
+                        (wheel)="CoreService.PreventNumberChangeOnScroll($event)"/>
+                        <label class="color-red font-sm" *ngIf="InvalidDiscount"> Enter Valid number. </label>
                     </td>
                   </tr>
                   <tr>
-                    <td class="bill-child"> Tax @(0%) </td>
+                    <td class="bill-child"> Discount Amt. </td>
                     <td>
-                      <input type="number" style="width:100px;" [(ngModel)]="model.TaxAmount" disabled
-                             class="form-control" />
+                      <label style="width:100px;" class="form-control" disabled>
+                        {{model.DiscountAmount | number}}
+                      </label>
+                      <!-- <input type="number"  [(ngModel)]="model.DiscountAmount" disabled
+                        class="form-control" /> -->
                     </td>
                   </tr>
                   <tr style="font-weight:bold;">
-                    <td class="bill-child"> Net Total </td>
-                    <td><label style="font-weight:bold;"> {{model.TotalAmount}} </label></td>
+                    <td class="bill-child">Total Amount </td>
+                    <td><label style="font-weight:bold;"> {{model.TotalAmount | number}} </label></td>
                   </tr>
                   <tr style="font-weight:bold;height:40px" *ngIf="model.TotalAmountInUSD!=0">
                     <td class="bill-child">
                       In USD
                       <div style="color:indianred;font-size:smaller">
-                        {{1 | currency}} = {{exchangeRate|currency:'NPR'}}
+                        {{1 | currency}} = {{exchangeRate|currency:CoreService.currencyUnit}}
                       </div>
                     </td>
                     <td><label style="font-weight:bold;"> {{model.TotalAmountInUSD | number | currency}} </label></td>
@@ -181,28 +222,30 @@
                   <tr style="font-weight:bold;">
                     <td class="bill-child">
                       Deposit Balance
-                      <div id="DoctorListToolbox" class="tooltip" *ngIf="model.DepositReturned>0">
+                      <!--Sud: 11May'21 : not needed below code for now-->
+
+                      <!-- <div id="DoctorListToolbox" class="tooltip" *ngIf="model.DepositReturned>0">
                         <span style="cursor: pointer;">
                           <i class="fa fa-info"
-                             style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i>
+                            style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i>
                         </span>
                         <p class="tooltiptext ttptextdown no-print">
                           <span>Advance : {{model.DepositAdded}}</span><br>
                           <span>Adv. Return : {{model.DepositReturned}}</span>
                         </p>
-                      </div>
+                      </div> -->
                     </td>
-                    <td><label style="font-weight:bold;"> {{model.DepositBalance}} </label></td>
+                    <td><label style="font-weight:bold;"> {{model.DepositBalance | number}} </label></td>
                   </tr>
-                  <tr style="font-weight:bold;" *ngIf="model.ToBePaid">
+                  <tr style="font-weight:bold;" *ngIf="model.ToBePaid && model.PayType != 'credit'">
                     <td class="bill-child" style="font-size:14px;">To Be Paid</td>
-                    <td><label style="font-size:15px;"> {{model.ToBePaid}} </label></td>
+                    <td><label style="font-size:15px;"> {{model.ToBePaid | number}} </label></td>
                   </tr>
                   <tr class="dot" *ngIf="model.ToBePaid">
                     <td colspan="2" class="text-capitalize">
                       <p class="header-sm inner-header-sm">
-                        In Words (To Pay):
-                        {{model.ToBePaid | NumberInWords}}
+                        In Words <span *ngIf = "model.PayType != 'credit'">(To Pay)</span>:
+                        {{model.ToBePaid | number | NumberInWords}}
                         Only.
                       </p>
                     </td>
@@ -211,7 +254,7 @@
                     <td class="bill-child" style="font-size:14px;">To Be Refund</td>
                     <td>
                       <label style="font-size:15px;background-color: #c8c3df !important;">
-                        {{model.ToBeRefund}}
+                        {{model.ToBeRefund | number}}
                       </label>
                     </td>
                   </tr>
@@ -219,7 +262,7 @@
                     <td colspan="2" class="text-capitalize">
                       <p class="header-sm inner-header-sm">
                         In Words (To Return):
-                        {{model.ToBeRefund | NumberInWords}}
+                        {{model.ToBeRefund | number | NumberInWords}}
                         Only.
                       </p>
                     </td>
@@ -232,11 +275,12 @@
                     <td class="bill-child">Pay Type</td>
                     <td>
                       <select [(ngModel)]="model.PayType" (ngModelChange)="CalculationForAll()" style="width:100px;"
-                              class="form-control">
+                        class="form-control">
                         <option value="cash"> CASH </option>
-                        <option value="credit" [disabled]="model.ToBeRefund > 0"> CREDIT </option>
-                        <option value="cheque"> CHEQUE </option>
-                        <option value="card"> SMART CARD </option>
+                        <option value="credit" style="font-weight:bold" [disabled]="model.ToBeRefund > 0"> CREDIT
+                        </option>
+                        <!--<option value="cheque"> CHEQUE </option>
+                        <option value="card"> SMART CARD </option>-->
                       </select>
                     </td>
                   </tr>
@@ -255,9 +299,9 @@
                     </td>
                     <td>
                       <select class="form-control" [(ngModel)]="model.OrganizationId"
-                              [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}">
                         <option *ngFor="let oList of creditOrganizationsList" value="{{oList.OrganizationId}}"
-                                class="form-control">
+                          class="form-control">
                           {{oList.OrganizationName}}
                         </option>
                       </select>
@@ -267,16 +311,17 @@
                     <td class="bill-child">Tender:</td>
                     <td>
                       <input type="number" [(ngModel)]="model.Tender" (ngModelChange)="ChangeTenderAmount()"
-                             name="Tender" placeholder="Rupees" [disabled]="model.PaymentMode == 'credit'"
-                             onClick="this.select();" (wheel)="CoreService.PreventNumberChangeOnScroll($event)">
+                        name="Tender" placeholder="Rupees" [disabled]="model.PaymentMode == 'credit'"
+                        onClick="this.select();" (wheel)="CoreService.PreventNumberChangeOnScroll($event)">
                     </td>
                   </tr>
                   <tr *ngIf="model.PayType != 'credit' && model.ToBePaid">
                     <td class="bill-child">Change/Return :</td>
-                    <td><span>{{currencyUnit}}<b>{{model.Change}}</b></span></td>
+                    <td><span><b>{{model.Change | number}}</b></span></td>
                   </tr>
                   <tr>
-                    <td class="bill-child">Remarks<b *ngIf="model.PayType=='credit'" class="color-red"> *</b> :</td>
+                    <td class="bill-child">Billing Remarks<b *ngIf="model.PayType=='credit' || model.DiscountPercent>0"
+                        class="color-red"> *</b> :</td>
                     <td><textarea maxlength="200" [(ngModel)]="model.Remarks" style="width: 130px;"></textarea></td>
                   </tr>
                 </table>
@@ -286,11 +331,11 @@
                 *There will be
                 no deposit deduct / deposit return for <b>CREDIT</b> bill.
               </p>
-              <button class="btn btn-sm green" style="float: right;margin-bottom: 10px;" [disabled]="loading"
-                      (click)="ConfirmDischarge()" rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
-                Confirm Discharge
+              <button class="btn green btn-success" style="float: right;margin-bottom: 10px;" [disabled]="loading"
+                (click)="ConfirmDischarge()"
+                rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
+                Discharge
               </button>
-
 
             </div>
           </div>
@@ -299,7 +344,8 @@
     </div>
   </div>
   <ip-bill-item-request *ngIf="showIpBillRequest" [patientId]="patientId" [visitId]="ipVisitId"
-                        [patientInfo]="patientInfo" [past-tests]="patAllPendingItems" (emit-billItemReq)="CloseNewItemAdd($event)"></ip-bill-item-request>
+    [patientInfo]="patientInfo" [past-tests]="patAllPendingItems" (emit-billItemReq)="CloseNewItemAdd($event)">
+  </ip-bill-item-request>
   <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showDepositPopUp">
     <div class="portlet-body form">
       <div class="row">
@@ -308,30 +354,50 @@
             <a class="btn btn-danger del-btn " (click)="CloseDepositPopUp()">X</a>
             <div class="form-body">
               <billing-deposit [isAddDepositFrmBillTxn]="showDepositPopUp" (emit-deposit)="CallBackDepositAdd($event)"
-                               [showReceiptInput]="true"></billing-deposit>
+                [showReceiptInput]="true"></billing-deposit>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showDischargeBill">
+
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showEstimationBill">
     <div class="portlet-body form">
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
           <div class="modelbox-div clearfix">
             <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
-            <discharge-bill-main [ipVisitId]="ipVisitId" [patientId]="patientId" [billingTxnId]="billingTxnId"
-                                 [billType]="billType" [estimated-dischargeDate]="estimatedDischargeDate" [LastBedQty]="LastBedQty"
-                                 [LastBedItem]="LastBedItem" [estimatedDiscountPercent]="estimatedDiscountPercent"
-                                 [procedureType]="admissionInfo.ProcedureType" [billStatus]="billStatus"
-                                 [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate"> </discharge-bill-main>
+            <bil-print-ip-estimation [ipVisitId]="ipVisitId" [patientId]="patientId"
+              [estimated-dischargeDate]="estimatedDischargeDate" [estimated-discountPercent]="estimatedDiscountPercent"
+              [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate"
+              (closeEstimationBill)="CloseDischargePopUp($event)"> </bil-print-ip-estimation>
 
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showDischargeBill">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="modelbox-div clearfix">
+            <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
+
+            <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId"
+              [bil-txn-id]="bil_BilTxnId" (dischargeIp)="AfterDischargePrint($event)">
+            </bil-print-invoice-main>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="admissionInfo && showDischargePopUpBox">
     <div class="portlet-body form">
       <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
@@ -375,38 +441,43 @@
               <td>Admission Date:</td>
               <!--<td> {{admissionInfo.AdmittedOn | DanpheDateTime:'format':'YYYY-MM-DD hhA'}} </td>-->
               <td>
-                <b><date-lbl [value]="admissionInfo.AdmittedOn" [show-time]="true"></date-lbl></b>
+                <b>
+                  <date-lbl [value]="admissionInfo.AdmittedOn" [show-time]="true"></date-lbl>
+                </b>
               </td>
             </tr>
             <tr>
-              <td> Discharge Date  :</td>
+              <td> Discharge Date :</td>
               <td>
                 <danphe-date-picker [(ngModel)]="dischargeDetail.DischargeDate" [ngModelOptions]="{standalone: true}"
-                                    [showTime]="true" [CalendarTypes]="'en,np'">
+                  [showTime]="true" [CalendarTypes]="'en,np'" (ngModelChange)="CalculateTotalDays()">
                 </danphe-date-picker>
+                <label class="color-red font-sm" *ngIf="!validDischargeDate">
+                  Please enter Valid Discharge Date.
+                </label>
               </td>
             </tr>
           </table>
           <div>
-            Remarks <b style="color:red">*</b>:
+            Discharge Remarks :
             <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeDetail.Remarks"
-                      placeholder="Remarks"></textarea>
+              placeholder="Remarks"></textarea>
           </div>
           <hr />
           <div class="text-center">
             <ng-container *ngIf="allowDischarge">
-              <button type="button" class="btn btn-primary btn-sm" style="margin-top:5px;" [disabled]="loading"
-                      (click)="PostBillAndDischargePatientPharmacyCharge()">
-                Discharge
+              <button type="button" class="btn green btn-success" style="margin-top:5px;" [disabled]="loading"
+                (click)="PostBillAndDischargePatientPharmacyCharge()">
+                Confirm Discharge
               </button>
             </ng-container>
             <ng-container *ngIf="!allowDischarge">
-              <button type="button" class="btn btn-primary btn-sm" style="margin-top:5px;" disabled>
-                Discharge
+              <button type="button" class="btn green btn-success" style="margin-top:5px;" disabled>
+                Confirm Discharge
               </button>
             </ng-container>
             <button type="button" class="btn btn-cancel btn-sm" style="margin-top:5px;" [disabled]="loading"
-                    (click)="showDischargePopUpBox=false;">
+              (click)="showDischargePopUpBox=false;">
               Close
             </button>
           </div>
@@ -414,31 +485,51 @@
       </div>
     </div>
   </div>
+
   <edit-bill-item *ngIf="showEditItemsPopup" [itemToEdit]="selItemForEdit" [discountApplicable]="discountApplicable"
-                  (on-closed)="CloseItemEditWindow($event)" [DoctorsList]="doctorsList" [current-pat-info]="patientInfo">
+    (on-closed)="CloseItemEditWindow($event)" [DoctorsList]="doctorsList" [current-pat-info]="patientInfo">
   </edit-bill-item>
+
+
+
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showCancelAdmissionAlert">
     <div class="portlet-body form">
-      <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
-        <div class="row">
-          <div class="col-md-12" style="margin-top:15px;text-align:center">
-            <h4><b style="color:#bd8111">Alert!</b></h4>
-            <p>
-              <b style="color:#bd8111;font-size:22px">
-                Patient doesn't have billing items. Please cancel the admission
-                from Admission/AdmittedList instead
-              </b>
-            </p>
-            <hr />
+      <div class="col-md-5 col-md-offset-4">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr" style="color:#bd8111;font-size:18px"><strong>Alert!</strong></h4>
           </div>
-          <br />
-          <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
-            <button type="button" class="btn btn-danger" (click)="showCancelAdmissionAlert=false"> Close </button>
+          <div class="modelbox-body">
+            <div>
+              <b style="color:#bd8111;font-size:14px">
+                You're going to discharge a patient without billing, Are your Sure you want to proceed ?
+              </b>
+            </div>
+
+            <div>
+              Discharge Remarks <b style="color:red">*</b>:
+              <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeDetail.Remarks"
+                placeholder="Remarks"></textarea>
+            </div>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button id="btnZeroItemCancel" type="button" class="btn btn-cancel margin-7-hr"
+                (click)="CloseZeroItemBillingPopUp()" [disabled]="loading"> Cancel
+              </button>
+              <button id="btnZeroItemProceed" type="button" class="btn btn-primary margin-7-hr"
+                (click)="ProceedDischargeWithZeroItems()" [disabled]="loading"> Proceed </button>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="CloseZeroItemBillingPopUp()">X</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showCreditBillAlert">
     <div class="portlet-body form">
       <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
@@ -461,13 +552,14 @@
       </div>
     </div>
   </div>
+
   <group-discount *ngIf="showGroupDiscountPopUp" [estimated-dis-percent]="estimatedDiscountPercent"
-                  [items-to-discount]="patAllPendingItems" [admissionInfo]="admissionInfo"
-                  (close-popup)="CloseGroupDiscountPopup($event)"> </group-discount>
+    [items-to-discount]="patAllPendingItems" [admissionInfo]="admissionInfo"
+    (close-popup)="CloseGroupDiscountPopup($event)"> </group-discount>
   <update-items *ngIf="showUpdatePricePopup" [patientDetails]="admissionInfo" [filtered-items]="updatedItems"
-                (close-popup)="CloseUpdatePricePopup($event)"> </update-items>
+    (close-popup)="CloseUpdatePricePopup($event)"> </update-items>
   <partial-payment *ngIf="showPartialPaymentPopup" [patientDetails]="admissionInfo"
-                   [pat-all-items]="ItemForPartialPayment" (close-popup)="ClosePartialPaymentPopup($event)"> </partial-payment>
+    [pat-all-items]="ItemForPartialPayment" (close-popup)="ClosePartialPaymentPopup($event)"> </partial-payment>
 
   <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowOrderStatusInfo && !allowDischarge">
     <div class="portlet-body form">
@@ -489,7 +581,8 @@
               <div class="col-md-12" style="margin-top:15px;text-align:center">
                 <p>
                   <b style="color:#bd8111;font-size:20px">
-                    Few Tests are Pending for this Patients, Please Consult with Respective Department Before Proceeding.
+                    Few Tests are Pending for this Patients, Please Consult with Respective Department Before
+                    Proceeding.
                   </b>
                 </p>
                 <hr />
@@ -522,6 +615,23 @@
                   </tr>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDepositReceipt">
+    <div class="portlet-body form">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div">
+          <div class="modelbox-body" style="display: flex;justify-content: center;">
+            <bil-print-deposit-slip [deposit]="deposit" [showReceipt]="showDepositReceipt"
+              (callback-close)="CloseDepositReceipt($event)"></bil-print-deposit-slip>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="CloseDepositReceipt()">X</button>
           </div>
         </div>
       </div>

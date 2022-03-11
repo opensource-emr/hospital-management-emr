@@ -10,7 +10,7 @@ export class VisitService {
   globalVisit: Visit = new Visit();
   public appointmentType: string = "New";
   public PriceCategory: string = "Normal";//sud:26June'19-- this is needed across NewVisit, FollowupVisit and Referral Visits etc.. 
-  public ClaimCode: string;
+  public ClaimCode: number;//sud:1-oct'21: Changed datatype from String to Number in all places
   public CreateNewGlobal(): Visit {
     this.globalVisit = new Visit();
     return this.globalVisit;
@@ -74,7 +74,7 @@ export class VisitService {
       //let sameDeptCount = todaysVisitList.filter(v => v.PatientId == patientId &&  v.DepartmentId == departmentId);
 
       //for now check only for Same doctor, If same department also needs validation, then we can simply check sameDeptCount.
-      if (doctorId  && this.globalVisit.BillingStatus !="returned" ) {
+      if (doctorId && this.globalVisit.BillingStatus != "returned") {
         let sameDoctCount = todaysVisitList.filter(v => v.PatientId == patientId && v.ProviderId == doctorId);
         if (sameDoctCount.length > 0) {
           hasDuplicate = true;

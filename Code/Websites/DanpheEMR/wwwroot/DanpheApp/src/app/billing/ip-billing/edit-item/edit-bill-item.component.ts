@@ -6,10 +6,12 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { CommonFunctions } from '../../../shared/common.functions';
 import { CoreService } from '../../../core/shared/core.service';
 import { Patient } from '../../../patients/shared/patient.model';
+import { BillingService } from '../../shared/billing.service';
 
 @Component({
   selector: 'edit-bill-item',
-  templateUrl: "./edit-bill-item.html"
+  templateUrl: "./edit-bill-item.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class EditBillItemComponent {
 
@@ -31,7 +33,7 @@ export class EditBillItemComponent {
   @Output("on-closed")
   public onClose = new EventEmitter<object>();
 
-  public showCancleDeatils: boolean = false;
+  public showCancelPrintPopup: boolean = false;
   //sud: 11sept: This is kept for testing purpose, 
   globalListenFunc: Function;
 
@@ -42,10 +44,13 @@ export class EditBillItemComponent {
   @Input("current-pat-info")
   selPatInfo: Patient = null;//sud:12Apr'20--To show Patient Information in Header.
 
+  public itemList: Array<any> = [];
+
 
   constructor(public renderer: Renderer2,
     public billingBlService: BillingBLService,
     public coreService: CoreService,
+    public billingService: BillingService,
     public msgBoxService: MessageboxService) {
 
   }
@@ -54,7 +59,7 @@ export class EditBillItemComponent {
 
   ngOnInit() {
     if (this.itemToEdit_Input) {
-      
+
       this.itemToEdit = Object.assign({}, this.itemToEdit_Input);
       if (this.doctorList) {
         this.docDDLSource = this.doctorList;
@@ -75,6 +80,7 @@ export class EditBillItemComponent {
           }
         }
       }
+      this.itemList = this.billingService.allBillItemsPriceList;
     }
 
     this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
@@ -123,8 +129,8 @@ export class EditBillItemComponent {
 
   public cancelRemarks: string = null;
 
-  ClosePopup() {
-    this.showCancleDeatils = false;
+  CloseCancelPrintPopup() {
+    this.showCancelPrintPopup = false;
     this.onClose.emit({ CloseWindow: true, EventName: "cancelled" });
   }
 
@@ -140,7 +146,7 @@ export class EditBillItemComponent {
           .subscribe((res: DanpheHTTPResponse) => {
             if (res.Status == "OK") {
 
-              this.showCancleDeatils = true;
+              this.showCancelPrintPopup = true;
               //alert("Item Cancelled Successfully.");
               //this.onClose.emit({ CloseWindow: true, EventName: "cancelled" });
             }
@@ -235,16 +241,30 @@ export class EditBillItemComponent {
     let valSummary = { IsValid: true, Messages: [] };
 
     //for price.
-    if (this.itemToEdit.Price) {
-      if (this.itemToEdit.Price <= 0) {
-        valSummary.IsValid = false;
-        valSummary.Messages.push("Price cannot be empty.");
-      }
-    }
-    else {
+    // if (this.itemToEdit.Price != null) {
+    //   if (this.itemToEdit.Price < 0) {
+    //     valSummary.IsValid = false;
+    //     valSummary.Messages.push("Price cannot be negative.");
+    //   }
+    //   else if (!this.itemToEdit.IsZeroPriceAllowed && this.itemToEdit.Price == 0) {
+    //     valSummary.IsValid = false;
+    //     valSummary.Messages.push("Price cannot be zero(0).");
+    //   }
+    // }
+    // else {
+    //   valSummary.IsValid = false;
+    //   valSummary.Messages.push("Price cannot be empty");
+    // }
+    if (this.itemToEdit.Price == null) {
       valSummary.IsValid = false;
-      valSummary.Messages.push("Price cannot be zero or negative");
+      valSummary.Messages.push("Price cannot be empty.");
     }
+    var item = this.itemList.find(a => a.ItemId == this.itemToEdit.ItemId && a.ServiceDepartmentId == this.itemToEdit.ServiceDepartmentId);
+    if ((item && !item.IsZeroPriceAllowed) && this.itemToEdit.Price <= 0) {
+      valSummary.IsValid = false;
+      valSummary.Messages.push("Price cannot zero or negative.");
+    }
+
     //for quantity
     if (this.itemToEdit.Quantity) {
       if (this.itemToEdit.Quantity <= 0) {
@@ -272,12 +292,16 @@ export class EditBillItemComponent {
       valSummary.Messages.push("Assign To Doctor is Mandatory");
     }
 
-    if (!this.itemToEdit.RequestedBy) {
-      valSummary.IsValid = false;
-      valSummary.Messages.push("Referred By Doctor is Mandatory");
-    }
+    // if (!this.itemToEdit.RequestedBy) {
+    //   valSummary.IsValid = false;
+    //   valSummary.Messages.push("Referred By Doctor is Mandatory");
+    // }
 
     return valSummary;
   }
-
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.CloseItemEdit(event);
+    }
+  }
 }

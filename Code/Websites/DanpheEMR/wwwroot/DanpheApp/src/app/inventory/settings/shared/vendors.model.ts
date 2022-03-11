@@ -3,17 +3,17 @@ import { CurrencyMasterModel } from '../../shared/currency-master.model';
 
 export class VendorsModel {
   public VendorId: number = 0;
-  public VendorName: string = null;
-  public VendorCode: string = null;
-  public ContactPersion: string = null;
-  public ContactAddress: string = null;
-  public ContactNo: string = null;
-  public Email: string = null;
+  public VendorName: string = '';
+  public VendorCode: string = '';
+  public ContactPersion: string = '';
+  public ContactAddress: string = '';
+  public ContactNo: string = '';
+  public Email: string = '';
   public CurrencyMaster: Array<CurrencyMasterModel> = new Array<CurrencyMasterModel>();
   public CreatedBy: number = null;
   public CreatedOn: string = null;
   public IsActive: boolean = true;
-  public DefaultCurrencyId: number = null;
+  public DefaultCurrencyId: number = 1;
   public VendorsValidator: FormGroup = null;
   public GovtRegDate: string = null;
   public Tds: number = 0;
@@ -23,6 +23,18 @@ export class VendorsModel {
   public DefaultItem: Array<number> = new Array<number>();
   public DefaultItemJSON: string;
   public CountryId: number = 0;
+
+  public CompanyPosition: string;
+  public Name: string;
+  public PhoneNumber: string;
+  public CompanyPosition2: string;
+  public Name2: string;
+  public PhoneNumber2: string;
+  public SARFNo: string;
+
+
+  public BankDetails: string;// Rajib 12/02/2020 Tilaganga Hospital
+  public CompanyName: string;
   constructor() {
     var _formBuilder = new FormBuilder();
     this.VendorsValidator = _formBuilder.group({
@@ -30,12 +42,14 @@ export class VendorsModel {
       'VendorName': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
       'Email': ['', Validators.compose([Validators.pattern('^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$')])],
       'CreditPeriod': ['', Validators.compose([Validators.pattern('^[0-9]*')])],
-      'ContactNo': ['', Validators.compose([Validators.required, Validators.pattern('^[a-zA-Z0-9_@./#)(&+-]+$')])],
+      'ContactNo': ['', Validators.compose([Validators.required])],
       'DefaultCurrencyId': ['', Validators.compose([Validators.required])],
-      'PanNo': ['', Validators.compose([Validators.pattern('^[a-zA-Z0-9_@./#&+-]+$')])],
-      'CountryId': ['', Validators.compose([Validators.required])],   
-      'VendorCode':['', Validators.compose([Validators.required])],
-  });
+      'PanNo': ['', Validators.required],
+      'CountryId': ['', Validators.compose([Validators.required])],
+      'VendorCode': ['', Validators.compose([Validators.required])],
+      'BankDetails': [''],
+      'SARFNo': [''],
+    });
   }
 
   public IsDirty(fieldName): boolean {

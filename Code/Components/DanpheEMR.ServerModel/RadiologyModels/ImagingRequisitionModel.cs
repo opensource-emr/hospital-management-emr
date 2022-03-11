@@ -40,6 +40,7 @@ namespace DanpheEMR.ServerModel
                 
         public bool IsActive { get; set; }        
 
+        public bool IsReportSaved { get; set; }
         public virtual VisitModel Visit { get; set; }       
 
         public virtual PatientModel Patient { get; set; }
@@ -53,6 +54,8 @@ namespace DanpheEMR.ServerModel
         public int? ScannedBy { get; set; }
         public DateTime? ScannedOn { get; set; }
         public string ScanRemarks { get; set; }
+        public int? FilmTypeId { get; set; }
+        public int? FilmQuantity{ get; set; }
     }  
     
     public class RadiologyScanDoneDetail
@@ -62,5 +65,7 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         public string PatientCode { get; set; }
         public string ShortName { get; set; }
+        public int? FilmTypeId { get; set; }
+        public int? FilmQuantity { get; set; }
     }
 }

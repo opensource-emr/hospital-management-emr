@@ -26,7 +26,7 @@ export class ERTriagePatientListComponent {
   public showAdmitPopUp: boolean = false;
   public showERPatRegistration: boolean = false;
   public showAssignDoctor: boolean = false;
-  public showAddVitals:boolean = false;
+  public showAddVitals: boolean = false;
   public showVitalsList: boolean = true;
   public visitId: number = null;
 
@@ -42,17 +42,26 @@ export class ERTriagePatientListComponent {
   public currentDepartmentName: string = null;
   public globalVisit: any;
   public globalPatient: any;
+  public caseIdList: Array<number> = new Array<number>();
+  public casesList = [];
+  public allKeys: Array<string>;
+  public showUploadConsent = {
+    "upload_files": false,
+    "remove": false,
+  };
+  public filteredData: any;
 
   constructor(public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService, public router: Router,
     public emergencyBLService: EmergencyBLService, public coreService: CoreService, public patientService: PatientService,
     public visitService: VisitService) {
     this.TriagedERPatientGridCol = EmergencyGridColumnSettings.TriagedERPatientList;
-    this.GetERTriagedPatientList();
+    //this.GetERTriagedPatientList();
     this.GetDoctorsList();
   }
 
   ngOnInit() {
     this.currentDepartmentName = this.coreService.GetERDepartmentName();
+    this.allKeys = Object.keys(this.showUploadConsent);
   }
 
 
@@ -76,19 +85,20 @@ export class ERTriagePatientListComponent {
 
 
   public GetERTriagedPatientList() {
-    this.emergencyBLService.GetAllTriagedPatients()
+    var id = this.caseIdList ? this.caseIdList : null;
+    this.emergencyBLService.GetAllTriagedPatients(id[0])
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
           this.TriagedERPatients = res.Results;
+          this.filteredData = res.Results;
+          if (this.caseIdList[0] == 6) {
+            this.filterNestedDetails();
+          }
         } else {
           this.msgBoxServ.showMessage("Failed", ["Cannot Get Triaged Patient List !!"]);
         }
       });
   }
-
-
-
-
 
   //Closes the Registration PopUp if clicked Outside popup window
   public ParentOfPopUpClicked($event) {
@@ -265,13 +275,13 @@ export class ERTriagePatientListComponent {
     let visitId = this.selectedPatient.PatientVisitId;
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.PatientId == patId && tst.PatientVisitId == visitId);     
+      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.PatientId == patId && tst.PatientVisitId == visitId);
       this.TriagedERPatients.splice(itmIndex, 1);
       this.TriagedERPatients = this.TriagedERPatients.slice();
     }
   }
 
-  public AddVitals(selPat: EmergencyPatientModel){
+  public AddVitals(selPat: EmergencyPatientModel) {
     this.ResetAllAndHideParentBodyScroll();
     this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, selPat);
     if (this.doctorsList.length) {
@@ -285,8 +295,8 @@ export class ERTriagePatientListComponent {
   public ReturnFromAllERPatientActions($event) {
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-        //this.GetERTriagedPatientList();
-        this.showAddVitals = false;
+      //this.GetERTriagedPatientList();
+      this.showAddVitals = false;
     }
   }
 
@@ -316,6 +326,43 @@ export class ERTriagePatientListComponent {
     this.globalVisit.ProviderName = data.ProviderName;
     this.globalVisit.VisitDate = moment(data.VisitDateTime).format("YYYY-MM-DD");
     this.globalVisit.VisitTime = moment(data.VisitDateTime).format("HH:MM");
-  } 
+  }
 
+  PatientCasesOnChange($event) {
+    if ($event.mainDetails && $event.mainDetails != 0) {
+      this.caseIdList = [];
+      this.casesList = [];
+      this.caseIdList.push($event.mainDetails);
+      if ($event.nestedDetails && $event.nestedDetails.length >= 1) {
+        $event.nestedDetails.forEach(v => {
+          this.caseIdList.push(v.Id);
+          this.casesList.push(v);
+        });
+      }
+    }else {
+      this.caseIdList = [];
+      this.caseIdList.push($event.mainDetails)
+  }
+    this.GetERTriagedPatientList();
+
+  }
+
+  filterNestedDetails() {
+    this.caseIdList.slice(1);
+    this.filteredData = this.TriagedERPatients.filter(a => this.caseIdList.includes(a.PatientCases.SubCase));
+  }
+  public UploadConsent(selectedPat: EmergencyPatientModel) {
+    this.ResetAllAndHideParentBodyScroll();
+    this.selectedPatient = new EmergencyPatientModel();
+    this.changeDetector.detectChanges();
+    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
+    this.action = "consent";
+    this.allKeys.forEach(k => this.showUploadConsent[k] = (k != "upload_files") ? false : true);
+  }
+  CallBackForClose(event) {
+    if (event && event.close) {
+      this.allKeys.forEach(k => this.showUploadConsent[k] = false);
+     
+    }
+  }
 }

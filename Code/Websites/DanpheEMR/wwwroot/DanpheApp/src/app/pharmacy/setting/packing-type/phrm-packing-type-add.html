@@ -17,9 +17,9 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Packing Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text" maxlength="50"
+                  <input id="packing" class="form-control" type="text" maxlength="50"
                                                [(ngModel)]="CurrentPackingType.PackingName"
-                                               value=""
+                                               value=""(keyup.enter)= "setFocusById('pckqty')"
                                                formControlName="PackingName"
                                                placeholder="Enter a Packing Name" />
                   <span class="color-red font-sm" [hidden]="CurrentPackingType.IsValidCheck('PackingName','required') || !(CurrentPackingType.IsDirty('PackingName'))">Packing Name is required</span> </div>
@@ -27,7 +27,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Packing Quantity<b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text" maxlength="50"
+                  <input id="pckqty" class="form-control" type="text" maxlength="50" (keyup.enter)="!update?setFocusById('save'):setFocusById('update')"
                                                [(ngModel)]="CurrentPackingType.PackingQuantity" [ngModelOptions]="{standalone: true}"
                                                value=""
                                                
@@ -46,9 +46,9 @@
                   </div>
                 </div>
               </div> -->
-              <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />
-                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+              <div  class="all-buttons text-right">
+                <button type="button" id = "save" class="btn green btn-success" *ngIf="!update" (click)="Add()">Save</button> 
+                <button type="button" id ="update"  class="btn green btn-success" *ngIf="update" (click)="Update()">Update</button>
               </div>
             </div>
           </form>

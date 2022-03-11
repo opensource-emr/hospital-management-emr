@@ -148,7 +148,7 @@ export class INCTV_EditFractionComponent {
       validationObj.messageArr.push("Invalid Employee/Consultant.");
     }
 
-    if (frcItemsToValidate.find(a => a.IncentivePercent == null || a.IncentivePercent == undefined)) {
+    if (frcItemsToValidate.find(a => !a.IncentivePercent || a.IncentivePercent < 0)) {// == null || a.IncentivePercent == undefined
       validationObj.isValid = false;
       validationObj.messageArr.push("Invalid Incentive Percent.");
     }
@@ -209,8 +209,15 @@ export class INCTV_EditFractionComponent {
   }
 
   OnIncentivePercentChange(currFrcItem: IncentiveFractionItemsModel) {
-    let incPercent = currFrcItem.IncentivePercent ? currFrcItem.IncentivePercent : 0;
-    currFrcItem.IncentiveAmount = currFrcItem.TotalBillAmount * incPercent / 100;
+    if (currFrcItem.IncentivePercent >= 0) {
+      let incPercent = currFrcItem.IncentivePercent ? currFrcItem.IncentivePercent : 0;
+      currFrcItem.IncentiveAmount = currFrcItem.TotalBillAmount * incPercent / 100;
+    }
+    else {
+      this.msgBoxServ.showMessage("warning", ["Enter Positive Incentive Percentage."]);
+      currFrcItem.IncentiveAmount = 0;
+    }
+
   }
 
   RemoveFractionItem_Single(itm: IncentiveFractionItemsModel, indx) {
@@ -241,6 +248,7 @@ export class INCTV_EditFractionComponent {
 
     newRow.PatientId = this.selTxnItem.PatientId;
     newRow.BillItemPriceId = 0;
+    newRow.Quantity = this.selTxnItem.Quantity;
     newRow.ItemName = this.selTxnItem.ItemName;
     newRow.TotalBillAmount = this.selTxnItem.TotalAmount;
     newRow.IsPaymentProcessed = false;

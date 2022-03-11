@@ -12,5 +12,5 @@ public class PHRMUpdatedStockVM
     public DateTime? OldExpiryDate { get; set; }
     public string OldBatchNo { get; set; }
     public decimal OldMRP { get; set; }
-    public int StoreStockId { get; set; }
+    public decimal CostPrice { get; set; }
 }

@@ -1,0 +1,154 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          <!--Model Box Body Start-->
+          <div id="printpage">
+            <div>
+              <div style="display: flex;justify-content: space-between;">
+                <div></div>
+                <div style="text-align: center;">
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px">{{headerDetail.hospitalName}}</div>
+                  <div style="font-size:1rem; font-weight: 700;">{{headerDetail.address}}</div>
+                  <div style="font-size:1rem; font-weight: 700;text-decoration: underline;">खरिद आदेश</div>
+                </div>
+                <div>
+                  <div>म.ले.प.फारम नं: ४०२ </div>
+                  <div>साबिकको फारम नं: ४५ </div>
+                </div>
+              </div>
+              <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-bottom: 1rem;">
+                <div>
+                  <div>श्री {{currentPO.SupplierName}}</div>
+                  <div>ठेगाना : {{currentPO.ContactAddress}}</div>
+                  <div>संस्था दर्ता नं: </div>
+                </div>
+                <div>
+                  <div>फोन नं: {{currentPO.ContactNo}}</div>
+                  <div>पान नं : </div>
+                </div>
+                <div>
+                  <div>खरिद आदेश नं : {{currentPO.PurchaseOrderId}}</div>
+                  <div>खरिद आदेश मिति :<span *ngIf="currentPO.PODate">{{currentPO.PODate | nepaliDate}}</span> </div>
+                  <div>खरिद सम्वन्धि निर्णय नं : </div>
+                  <div>निर्णय मिति : </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <table class="table table-condensed" border="1">
+                <thead>
+                  <tr>
+                    <th rowspan="2">क्र.सं.</th>
+                    <th colspan="5">सामानको </th>
+                    <th colspan="2">मूल्य</th>
+                    <th rowspan="2">कैफियत</th>
+                  </tr>
+                  <tr>
+                    <th>जिन्सी वर्गीकरण सङ्केत नं</th>
+                    <th>नाम</th>
+                    <th>स्पेसिफिकेसन</th>
+                    <th>इकाई </th>
+                    <th>परिमाण</th>
+                    <th>दर</th>
+                    <th>जम्मा</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let poitem of currentPO.PurchaseOrderItems let i = index">
+                    <td>{{i+1}}</td>
+                    <td>४०७/५२</td>
+                    <td>{{poitem.ItemName}}</td>
+                    <td></td>
+                    <td>{{poitem.UOMName}}</td>
+                    <td>{{poitem.Quantity}}</td>
+                    <td>{{poitem.StandaredPrice}}</td>
+                    <td>{{poitem.TotalAmount}}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td style="font-weight: 700;">जम्मा रकम</td>
+                    <td>{{currentPO.SubTotal}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td style="font-weight: 700;">मु.अ.कर (१३%)</td>
+                    <td>{{currentPO.VATAmount}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td style="font-weight: 700;">कुल जम्मा रकमः</td>
+                    <td>{{currentPO.TotalAmount}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div> माथि उल्लिखित सामान मिति .........भित्र ....................कार्यालय .........स्थानमा दाखिला गरी बिल । इन्भाइस प्रस्तुत गर्नुहोला । </div>
+            <div style="margin: 4rem;">
+              <div style="border: 1px solid black; margin-bottom: 1rem;">
+                <div style="margin-bottom: 2rem;">उपर्युक्तअनुसार खरिद आदेश तयार गर्ने, सिफारिस गर्ने र स्वीकृत गर्नेः</div>
+                <div style="display: flex;justify-content: space-around;">
+                  <div>
+                    <div>फाँटवालाको दस्तखतः</div>
+                    <div>नामः</div>
+                    <div>मितिः</div>
+                  </div>
+                  <div>
+                    <div>शाखा प्रमुखको दस्तखतः</div>
+                    <div>नामः</div>
+                    <div>मितिः</div>
+                  </div>
+                  <div>
+                    <div>कार्लायल प्रमुखाको दस्तखतः</div>
+                    <div>नामः</div>
+                    <div>मितिः</div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-bottom: 2rem;">माथि उल्लिखित सामानहरू मिति ............भित्र............कार्यालयमा बुझाउने छु भनी सहिछाप गर्ने । </div>
+              <div style="display: flex;justify-content: space-around;">
+                <div>फर्मको नाम:</div>
+                <div>दस्तखत र छाप:</div>
+                <div>मितिः</div>
+              </div>
+            </div>
+          </div>
+          <p style="text-align:center;z-index: 4;position: relative;">
+            <button type="button" id="edit" class="btn green btn-success" (click)="EditPO()">Edit <i class="glyphicon glyphicon-edit"></i></button>&nbsp;
+            <button class="btn green btn-success" (click)="print()" id="btnPrintRecipt">
+              <span> <i class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print Receipt</span>
+            </button>
+          </p>
+          <!--Model Box Body END-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

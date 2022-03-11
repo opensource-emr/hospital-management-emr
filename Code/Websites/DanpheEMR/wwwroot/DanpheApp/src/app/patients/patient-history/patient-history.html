@@ -45,8 +45,8 @@
     <li> <a [ngClass]="{'a-tab-active': showDrugDetails==true}" (click)="updateView(2)">Drug Details</a></li>
     <li> <a [ngClass]="{'a-tab-active': showLabDetails==true}" (click)="updateView(3)">Lab Details</a></li>
     <li> <a [ngClass]="{'a-tab-active': showRadiologyDetails==true}" (click)="updateView(4)">Radiology Details</a></li>
-    <li> <a [ngClass]="{'a-tab-active': showBillDetails==true}" (click)="updateView(5)">Bill Details</a></li>
-    <li> <a [ngClass]="{'a-tab-active': showDocumentsDetails==true}" (click)="updateView(6)">Document Details</a></li>
+    <li *ngIf="ShowBillHistory" > <a [ngClass]="{'a-tab-active': showBillDetails==true}" (click)="updateView(5)">Bill Details</a></li>
+    <li > <a [ngClass]="{'a-tab-active': showDocumentsDetails==true}" (click)="updateView(6)">Document Details</a></li>
   </ul>
 </div>
 <div class="col-md-12">

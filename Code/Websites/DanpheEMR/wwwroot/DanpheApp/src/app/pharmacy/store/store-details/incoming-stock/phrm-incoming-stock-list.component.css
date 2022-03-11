@@ -1,0 +1,18 @@
+.round-background-num {
+  box-sizing: border-box;
+  font-style: inherit;
+  background: rgb(223, 225, 230);
+  line-height: initial;
+  align-content: center;
+  padding: 0px 2px;
+  border-radius: 9.6px !important;
+  font-weight: normal;
+  text-transform: none;
+  margin: 3px;
+  width: 30px;
+  min-width: 30px;
+  height: 16px;
+  text-align: center;
+  color: rgb(23, 43, 77);
+  font-size: 11px;
+}

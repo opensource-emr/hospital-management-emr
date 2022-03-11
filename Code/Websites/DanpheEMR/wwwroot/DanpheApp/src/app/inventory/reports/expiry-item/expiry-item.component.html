@@ -1,0 +1,61 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption custom-caption no-margin"> <i class="glyphicon glyphicon-asterisk"></i> <span
+        class="caption-subject">Expiry Item Report</span> </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div class="col-md-12">
+      <div>
+        <table class="table billing-table" style="background-color:initial;margin-bottom:0px;">
+          <thead>
+            <tr>
+              <th><b class="align">From Date<sup>*</sup></b></th>
+              <th><b class="align">To Date<sup>*</sup></b></th>
+              <th><b class="align">Item Name</b></th>
+              <th><b class="align">Sub Store</b></th>
+            </tr>
+          </thead>
+          <tbody style="background-color: #dde3e9;">
+            <tr>
+              <td style="width: 200px;">
+                <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'"
+                 > </danphe-date-picker>
+              </td>
+              <td style="width: 200px;">
+                <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'"
+                  [allow-future-date]="true"> </danphe-date-picker>
+              </td>
+              <td style="width: 250px;">
+                <select name="SelectedItem" id="SelectedItem" [(ngModel)]="ItemId" class="form-control">
+                  <option [ngValue]="null" selected>All Items</option>
+                  <option *ngFor="let item of ItemList" [ngValue]="item.ItemId">
+                    {{item.ItemName}}</option>
+                </select>
+              </td>
+              <td style="width: 250px;">
+                <select [(ngModel)]="StoreId" class="form-control">
+                  <option [ngValue]="null" selected>All Store</option>
+                  <option *ngFor="let store of subStoreList" [ngValue]="store.StoreId">{{store.Name}}</option>
+                </select>
+              </td>
+              <td></td>
+              <td>
+                <button class="btn btn-primary btn-add-new-row" (click)="GetReportData()">Show Report
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <danphe-grid [grid-colDefaults]="expiryItemGridColumns" [grid-data]="expiryItemData"
+          [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="'inventory'"
+          (onDateChange)="OnDateRangeChange($event)">
+        </danphe-grid>
+      </div>
+    </div>
+  </div>
+</div>

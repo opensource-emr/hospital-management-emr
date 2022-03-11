@@ -1,0 +1,272 @@
+<div *ngIf="!isDataLoaded;else loadedPart">
+  <h3>
+    Loading...
+  </h3>
+</div>
+<ng-template #loadedPart>
+  <div class="mt-2r-animated">
+    <div class="col-md-12">
+      <div class="col-md-6">
+        <div class="caption lb-caption">
+          <i class="fa fa-plus"></i>
+          <span class="caption-subject">New Sales Return</span>
+        </div>
+      </div>
+      <div class="pull-right col-md-6">
+        <div class="pull-right" *ngIf="showReturnInvoicePage">
+          <div class="shortcut-key shortkey-right " title="Shortcut Keys">
+            <a href="#"><img src="../../../themes/theme-default/images/Keyboard-icon.svg" alt=""></a>
+            <div class="keydropdown">
+              <ul>
+                <li><kbd>ALT</kbd> + <kbd>P</kbd> = <samp>Print Return Receipt</samp> </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <form [formGroup]="salesReturn.InvoiceReturnValidator">
+          <div class="form-group">
+            <div class="col-md-4">
+              <div class="row">
+                <label for="SearchPatientBox" class="col-md-5">Patient Name <sup class="color--red">*</sup> <span class="right">:</span></label>
+                <div class="col-md-7">
+                  <div class="div-relative autocomplete-item">
+                    <input *ngIf="!isCurrentDispensaryInsurance; else normalPatientSearch" id="SearchPatientBox" autocomplete="off" danphe-auto-complete class="form-control searchtbx" formControlName="Patient" [(ngModel)]="searchedPatient" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'" (ngModelChange)="onPatientChanged()" (focusout)="onPatientChanged()" [list-formatter]="patientListFormatter" placeholder="-- Search Patient --" display-property-name="ShortName" value-property-name=null onClick="this.select();" max-num-list="500" min-chars="3" match-formatted="true" [grid-sort]="'ShortName'" (keyup.enter)="setFocusById('RefenenceInvoiceNo')">
+                    <ng-template #normalPatientSearch>
+                      <input *ngIf="isCurrentDispensaryInsurance; else normalPatientSearch" id="SearchPatientBox" autocomplete="off" danphe-auto-complete class="form-control searchtbx" formControlName="Patient" [(ngModel)]="searchedPatient" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'" (ngModelChange)="onPatientChanged()" (focusout)="onPatientChanged()" [list-formatter]="insPatientListFormatter" placeholder="-- Search Patient --" display-property-name="ShortName" value-property-name=null onClick="this.select();" max-num-list="500" min-chars="3" match-formatted="true" [grid-sort]="'ShortName'" (keyup.enter)="setFocusById('RefenenceInvoiceNo')">
+                    </ng-template>
+                  </div>
+                  <div *ngIf="salesReturn.InvoiceReturnValidator.get('Patient').invalid && (salesReturn.InvoiceReturnValidator.get('Patient').dirty || salesReturn.InvoiceReturnValidator.get('Patient').touched)" class="error-msg">
+                    <div *ngIf="salesReturn.InvoiceReturnValidator.get('Patient').errors.required">
+                      Patient Name is required.
+                    </div>
+                    <div *ngIf="salesReturn.InvoiceReturnValidator.get('Patient').errors.notRegisteredPatient">
+                      Patient is not registered.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="row">
+                <div style="padding:0px!important;margin:0px!important">
+                  <label for="RefenenceInvoiceNo" class="col-md-7 col-sm-7">Reference Invoice No <sup class="color--red">*</sup> <span class="right">:</span></label>
+                  <div class="col-md-5 col-sm-5">
+                    <input id="RefenenceInvoiceNo" class="form-control" formControlName="ReferenceInvoiceNo" [(ngModel)]="salesReturn.ReferenceInvoiceNo" (keyup.enter)="setFocusById('drugName0')">
+                  </div>
+                  <div *ngIf="salesReturn.InvoiceReturnValidator.get('ReferenceInvoiceNo').invalid && (salesReturn.InvoiceReturnValidator.get('ReferenceInvoiceNo').dirty || salesReturn.InvoiceReturnValidator.get('ReferenceInvoiceNo').touched)" class="error-msg">
+                    <div *ngIf="salesReturn.InvoiceReturnValidator.get('ReferenceInvoiceNo').errors.required">
+                      Refenence Invoice No is required.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="row">
+                <label for="ReferenceInvoiceDate" class="col-md-7">Reference Invoice Date <sup class="color--red">*</sup> <span class="right">:</span></label>
+                <div class="col-md-5">
+                  <danphe-date-picker [CalendarTypes]="'np,en'" id="ReferenceInvoiceDate" [(ngModel)]="salesReturn.ReferenceInvoiceDate" [ngModelOptions]="{standalone:true}" (keyup.enter)="setFocusById('drugName0')"> </danphe-date-picker>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div id="patient-info-banner" class="well">
+          <div class="patient_info" *ngIf="searchedPatient">
+            <div class="row">
+              <div class="col-sm-2">
+                <label>Patient Code:<span [innerHTML]="searchedPatient.PatientCode"></span></label>
+              </div>
+              <div class="col-sm-3">
+                <label>Name:<span [innerHTML]="searchedPatient.ShortName"></span></label>
+              </div>
+              <div class="col-sm-2">
+                <label>Address:<span [innerHTML]="searchedPatient.Address"></span></label>
+              </div>
+              <div class="col-sm-1">
+                <label>Age:<span [innerHTML]="searchedPatient.Age? searchedPatient.Age: ''"></span></label>
+              </div>
+              <div class="col-sm-2">
+                <label>Gender:<span [innerHTML]="searchedPatient.Gender? searchedPatient.Gender: ''"></span></label>
+              </div>
+              <div class="col-sm-2">
+                <label>Contact No:<span [innerHTML]="searchedPatient.PhoneNumber? searchedPatient.PhoneNumber: ''"></span></label>
+              </div>
+            </div>
+            <div class="row" *ngIf="isCurrentDispensaryInsurance">
+              <div class="col-sm-2">
+                <label for="NSHINumber">NSHI Number:<span>{{searchedPatient.Ins_NshiNumber}}</span></label>
+              </div>
+              <div class="col-sm-3">
+                <label for="LatestClaimCode">Claim Code:<span>{{searchedPatient.ClaimCode}}</span></label>
+              </div>
+              <div class="col-sm-2">
+                <label for="RemainingBalance">Remaining Balance:<span>{{searchedPatient.Ins_InsuranceBalance}}</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-striped table-hover inv_table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th sortable-header col="itemnames"><b>Drug Name<sup class="color--red">*</sup></b></th>
+              <th sortable-header col="batch"><b>Batch<sup class="color--red">*</sup></b></th>
+              <th sortable-header col="expiry"><b>Expiry<sup class="color--red">*</sup></b></th>
+              <th sortable-header col="quantity"><b>Returned Qty <sup class="color--red">*</sup></b></th>
+              <th sortable-header col="mrp"><b>MRP<sup class="color--red">*</sup></b></th>
+              <th sortable-header col="totalamt"><b>Total Amount</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of salesReturn.InvoiceReturnItems; let i = index">
+              <td> <a (click)="deleteRow(i)"><i class="btn btn-danger fa fa-times btn-rotate-animated"></i></a> </td>
+              <td class="autocomplete-item">
+                <form [formGroup]="row.InvoiceItemsReturnValidator">
+                  <input id="drugName{{i}}" autocomplete="off" danphe-auto-complete class="form-control" [(ngModel)]="row.drugReturnItemObj" formControlName="DrugName" (valueChanged)="onDrugNameChanged(i)" (focusout)="onDrugNameChanged(i)" [source]="itemList" [list-formatter]="phrmItemListFormatter" placeholder="-- Search Drug --" display-property-name="ItemName" value-property-name=null onClick="this.select();" max-num-list="20" min-chars="1" match-formatted="true" [grid-sort]="'ItemName'" (keyup.enter)="onPressedEnterKeyInDrugName(i)">
+                </form>
+                <div *ngIf="row.InvoiceItemsReturnValidator.get('DrugName').invalid && (row.InvoiceItemsReturnValidator.get('DrugName').dirty || row.InvoiceItemsReturnValidator.get('DrugName').touched)" class="error-msg">
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('DrugName').errors.required">
+                    Drug Name is required.
+                  </div>
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('DrugName').errors.notRegisteredDrug">
+                    Invalid Drug
+                  </div>
+                </div>
+              </td>
+              <td>
+                <form [formGroup]="row.InvoiceItemsReturnValidator">
+                  <ng-container *ngIf="row.allowNewBatch;else selectAvailableBatchBox">
+                    <input type="text" name="BatchNo" id="batch{{i}}" minlength="2" [(ngModel)]="row.BatchNo" formControlName="BatchNo" placeholder="Batch No" (keyup.enter)="setFocusById('returnQty'+i)" />
+                    <button type="button" *ngIf=" row.availableBatches.length>0" class="btn btn-success" title="Select Existing Batch" (click)="selectAvailableBatches(i)"><i class="fa fa-undo"></i></button>
+                  </ng-container>
+                  <ng-template #selectAvailableBatchBox>
+                    <select name="AvailableBatches" id="batch{{i}}" class="batchBox" [(ngModel)]="row.selectedBatch" (change)="onBatchNoClicked(i)" formControlName="BatchNo">
+                      <option [ngValue]="null" disabled>Select Batch</option>
+                      <option [ngValue]="{BatchNo:null}">Batch missing? Add new batch?</option>
+                      <option *ngFor="let batch of row.availableBatches" [ngValue]="batch">{{batch.BatchNo}} - {{batch.ExpiryDate | date:'yyyy-MM-dd'}}</option>
+                    </select>
+                  </ng-template>
+                </form>
+                <div *ngIf="row.InvoiceItemsReturnValidator.get('BatchNo').invalid && (row.InvoiceItemsReturnValidator.get('BatchNo').dirty || row.InvoiceItemsReturnValidator.get('BatchNo').touched)" class="error-msg">
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('BatchNo').errors.required">
+                    Batch is required.
+                  </div>
+                </div>
+              </td>
+              <td>
+                <ng-container *ngIf="row.allowNewBatch;else showSelectedExpiry">
+                  <danphe-date-picker [CalendarTypes]="'en'" id="expiryDate{{i}}" [(ngModel)]="row.ExpiryDate" [allow-future-date]="true" (keyup.enter)="setFocusById('returnedQty'+i)"> </danphe-date-picker>
+                </ng-container>
+                <ng-template #showSelectedExpiry>
+                  {{row.ExpiryDate | date:'yyyy-MM-dd'}}
+                </ng-template>
+              </td>
+              <td>
+                <form [formGroup]="row.InvoiceItemsReturnValidator">
+                  <input type="number" name="ReturnedQty" id="returnQty{{i}}" [(ngModel)]="row.ReturnedQty" formControlName="ReturnedQty" (change)="onChangeInMRPOrQty(i)" onClick="this.select();" onFocus="this.select();" (keyup.enter)="setFocusById('mrp'+i)">
+                </form>
+                <div *ngIf="row.InvoiceItemsReturnValidator.get('ReturnedQty').invalid && (row.InvoiceItemsReturnValidator.get('ReturnedQty').dirty || row.InvoiceItemsReturnValidator.get('ReturnedQty').touched)" class="error-msg">
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('ReturnedQty').errors.required">
+                    Returned Qty is required.
+                  </div>
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('ReturnedQty').errors.min">
+                    Invalid Quantity
+                  </div>
+                </div>
+              </td>
+              <td>
+                <form [formGroup]="row.InvoiceItemsReturnValidator">
+                  <input type="number" name="MRP" id="mrp{{i}}" [(ngModel)]="row.MRP" formControlName="MRP" (change)="onChangeInMRPOrQty(i)" onClick="this.select();" onFocus="this.select();" (keyup.enter)="onPressedEnterKeyInMRPField(i)">
+                </form>
+                <div *ngIf="row.InvoiceItemsReturnValidator.get('MRP').invalid && (row.InvoiceItemsReturnValidator.get('MRP').dirty || row.InvoiceItemsReturnValidator.get('MRP').touched)" class="error-msg">
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('MRP').errors.required">
+                    MRP is required.
+                  </div>
+                  <div *ngIf="row.InvoiceItemsReturnValidator.get('MRP').errors.min">
+                    Invalid MRP
+                  </div>
+                </div>
+              </td>
+              <td>{{row.TotalAmount | number: '1.0-2'}}</td>
+            </tr>
+            <tr border>
+              <td><a (click)="addRow()"><i class="btn btn-success fa fa-plus"></i></a></td>
+              <td colspan="4"></td>
+              <th>Total Return Amount</th>
+              <td>{{salesReturn.TotalAmount}}</td>
+            </tr>
+            <tr>
+
+            </tr>
+          </tbody>
+        </table>
+        <div>
+          <form [formGroup]="salesReturn.InvoiceReturnValidator">
+            <div class="form-group">
+              <div class="row">
+                <label for="RemarksBox" class="col-md-2">Remarks <sup class="color--red">*</sup> <span class="right">:</span></label>
+                <div class="col-md-8">
+                  <textarea name="Remarks" id="remarksBox" cols="40" rows="3" [(ngModel)]="salesReturn.Remarks" formControlName="Remark" (keyup.enter)="setFocusById('printReturnBtn')"></textarea>
+                  <div *ngIf="salesReturn.InvoiceReturnValidator.get('Remark').invalid && (salesReturn.InvoiceReturnValidator.get('Remark').dirty || salesReturn.InvoiceReturnValidator.get('Remark').touched)" class="error-msg">
+                    <div *ngIf="salesReturn.InvoiceReturnValidator.get('Remark').errors.required">
+                      Remarks is required.
+                    </div>
+                    <div *ngIf="!salesReturn.InvoiceReturnValidator.get('Remark').errors.required">
+                      <div *ngIf="salesReturn.InvoiceReturnValidator.get('Remark').errors.minlength">
+                        Remarks must be of at least {{salesReturn.InvoiceReturnValidator.get('Remark').errors.minlength.requiredLength}} letters.
+                      </div>
+                      <div *ngIf="salesReturn.InvoiceReturnValidator.get('Remark').errors.noText">
+                        Invalid Remarks
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Print Button Part -->
+    <div class="row">
+      <div class="col-md-12" style="display: flex;justify-content: center;">
+        <button id="printReturnBtn" class="btn btn-danger" title="ALT + P" [disabled]="isRequestLoading" (click)="postManualReturn()"><u>P</u>rint Return Receipt</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Return Receipt Part START-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showReturnReceipt">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="form-body">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <a class="btn btn-danger" (click)="closeReceipt()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <div class="row printStyle print-border">
+            <div style="text-align:center;">
+              <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt">
+              </pharmacy-receipt>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Return Receipt Part END-->

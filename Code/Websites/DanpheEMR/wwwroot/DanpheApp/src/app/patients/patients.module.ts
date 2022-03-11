@@ -52,6 +52,9 @@ import { PatientProfilePicComponent } from './profile-pic/profile-pic.component'
 import { PatientBasicInfoComponent } from './registration/basic-info/patient-basic-info.component';
 //import { MembershipSelectComponent } from '../settings-new/billing/memberships/select-membership-scheme/membership-select.component';
 import { SettingsSharedModule } from '../settings-new/settings-shared.module';
+//remove below import - "neighbourcard-backup"  after patient visitor card is implemented.
+import { PatientNeighbourCard_Backup_Component } from './neighbour-card/patient-neighbour-card-backup.component';
+import { StickerSharedModule } from '../stickers/stickers-shared-module';
 
 //import { MembershipSelectComponent } from './memberships/select-membership-scheme/membership-select.component';
 
@@ -81,7 +84,8 @@ import { SettingsSharedModule } from '../settings-new/settings-shared.module';
     //ImageCropperModule
     DanpheAutoCompleteModule,
     PatientSharedModule,
-    SettingsSharedModule
+    SettingsSharedModule,
+    StickerSharedModule
   ],
 
   declarations: [
@@ -99,6 +103,7 @@ import { SettingsSharedModule } from '../settings-new/settings-shared.module';
     PatientNeighbourCardComponent,
     PatientProfilePicComponent,
     HamsPatientHealthCardComponent,
+    PatientNeighbourCard_Backup_Component//remove this later after visitor card is implemented.
     //MembershipSelectComponent
   ],
 

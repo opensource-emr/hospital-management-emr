@@ -8,6 +8,7 @@ import { AccountingSyncBaseComponent } from '../accounting-sync-base.component';
 import { TransactionModel } from '../../transactions/shared/transaction.model';
 import { TransactionInventoryItem } from '../../transactions/shared/transaction-inventory-item.model';
 import { TransactionItem } from '../../transactions/shared/transaction-item.model';
+import { AccountingService } from '../../shared/accounting.service';
 @Component({
     templateUrl: './inventory-sync-main.html',
 })
@@ -15,8 +16,8 @@ export class InventorySyncComponent extends AccountingSyncBaseComponent<Inventor
     syncType = 'inventory';
     constructor(
         public accSyncDLService: AccountingSyncDLService,
-        public msgBoxServ: MessageboxService) {
-        super(accSyncDLService, msgBoxServ);
+        public msgBoxServ: MessageboxService,public accountingService:AccountingService) {
+        super(accSyncDLService, msgBoxServ,accountingService);
         this.currentVoucher = this.voucherList.find(a => a.VoucherName == "Purchase Voucher");
     }
    

@@ -189,71 +189,41 @@
             <span class="caption-helper"></span>
           </div>
           <div class="tools">
-            <a
-              href="javascript:;"
-              class="collapse"
-              data-original-title=""
-              title=""
-            >
+            <a href="javascript:;" class="collapse" data-original-title="" title="">
             </a>
-            <a
-              href="javascript:;"
-              class="fullscreen"
-              data-original-title=""
-              title=""
-            >
+            <a href="javascript:;" class="fullscreen" data-original-title="" title="">
             </a>
-            <a
-              href="javascript:;"
-              class="remove"
-              data-original-title=""
-              title=""
-            >
+            <a href="javascript:;" class="remove" data-original-title="" title="">
             </a>
           </div>
         </div>
         <div class="portlet-body">
           <div class="m1">
-            <button
-              class="btn blue hidden-print"
-              type="button"
-              (click)="Print()"
-              value="Print"
-              title="print page"
+            <button class="btn blue hidden-print" type="button" (click)="Print()" value="Print" title="print page"
               style="
                 padding-top: 2px;
                 padding-bottom: 2px;
                 padding-right: 10px;
                 padding-left: 10px;
-              "
-            >
+              ">
               <i class="fa fa-print"></i> Print
             </button>
-            <button
-              class="btn blue hidden-print"
-              type="button"
-              (click)="ExportToExcel('bedFeature')"
-              value=""
-              title="export to excel"
-              style="
+            <button class="btn blue hidden-print" type="button" (click)="ExportToExcel('bedFeature')" value=""
+              title="export to excel" style="
                 padding-top: 2px;
                 padding-bottom: 2px;
                 padding-right: 10px;
                 padding-left: 10px;
-              "
-            >
+              ">
               <i class="fa fa-file-excel-o"></i>Export
             </button>
           </div>
           <div id="printpage">
             <div class="table-responsive">
-              <table
-                class="table table-bordered table-hover table-condensed"
-                id="bedFeature"
-              >
+              <table class="table table-bordered table-hover table-condensed" id="bedFeature">
                 <thead>
                   <tr style="background-color: #599be0; color: white;">
-                    <th>Bed Feature</th>
+                    <th>Ward Name</th>
                     <th>Occupied</th>
                     <th>Vacant</th>
                     <th>Reserved</th>
@@ -262,7 +232,7 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let row1 of bedFeature; let i=index">
-                    <td>{{row1.BedFeatureName}}</td>
+                    <td>{{row1.WardName}}</td>
                     <td>{{row1.Occupied}}</td>
                     <td>{{row1.Vacant}}</td>
                     <td>{{row1.Reserved}}</td>
@@ -284,69 +254,38 @@
     </div>
     <div class="clear">
       <ul id="scrollhere" class="pagination">
-        <li
-          class="page-link"
-          (click)="ShowBed(row.BedFeatureName)"
-          *ngFor="let row of bedFeature"
-        >
+        <li class="page-link" (click)="ShowBed(row.BedFeatureName)" *ngFor="let row of bedFeature">
           {{row.BedFeatureName}}
         </li>
       </ul>
-      <h2
-        style="margin-left: 20px; margin-bottom: -40px;"
-        *ngIf="occupiedBed.length"
-      >
+      <h2 style="margin-left: 20px; margin-bottom: -40px;" *ngIf="occupiedBed.length">
         {{occupiedBed.wardName}}
       </h2>
-      <h2
-        style="margin-left: 20px; margin-bottom: -40px;"
-        *ngIf="!occupiedBed.length"
-      >
+      <h2 style="margin-left: 20px; margin-bottom: -40px;" *ngIf="!occupiedBed.length">
         {{vacantBed.wardName}}
       </h2>
       <div class="bedviewcontainer" *ngIf="showBed">
         <div class="inbedviewcontainer" *ngIf="occupiedBed.length">
           <h3>Occupied</h3>
           <div class="bed-container" *ngFor="let bed of occupiedBed">
-            <img
-              id="{{bed.BedCode}}"
-              (click)="showBedDetail(bed.BedCode)"
-              class="bed"
-              title="{{bed.BedCode}}"
-              src="/themes/theme-default/images/bed_occupied.png"
-            />
+            <img id="{{bed.BedCode}}" (click)="showBedDetail(bed.BedCode)" class="bed" title="{{bed.BedCode}}"
+              src="/themes/theme-default/images/bed_occupied.png" />
             <h5>{{bed.PatientName}}</h5>
           </div>
         </div>
         <div class="inbedviewcontainer" *ngIf="vacantBed.length">
           <h3>Vacant</h3>
           <div class="bed-container" *ngFor="let bed of vacantBed">
-            <img
-              id="{{bed.BedCode}}"
-              (click)="showBedDetail(bed.BedCode)"
-              class="bed"
-              title="{{bed.BedCode}}"
-              src="/themes/theme-default/images/bed_vacant.png"
-            />
+            <img id="{{bed.BedCode}}" (click)="showBedDetail(bed.BedCode)" class="bed" title="{{bed.BedCode}}"
+              src="/themes/theme-default/images/bed_vacant.png" />
             <h5>{{bed.BedCode}}</h5>
           </div>
         </div>
       </div>
-      <div
-        class="popup-static portlet box portlet-fullscreen modal-box"
-        *ngIf="showBedDetails"
-      >
-        <div
-          class="col-md-12 modelbox-div bed-detail-container"
-          id="bed-detail"
-        >
-          <b
-            (click)="closeBedDetail()"
-            title="close window"
-            class="btn btn-danger"
-            style="float: right; margin-top: 15px; margin-right: 15px;"
-            >X</b
-          >
+      <div class="popup-static portlet box portlet-fullscreen modal-box" *ngIf="showBedDetails">
+        <div class="col-md-12 modelbox-div bed-detail-container" id="bed-detail">
+          <b (click)="closeBedDetail()" title="close window" class="btn btn-danger"
+            style="float: right; margin-top: 15px; margin-right: 15px;">X</b>
           <h3 style="margin-bottom: 4.5rem;">Bed Details</h3>
           <p><strong>Bed Number:</strong>{{requestedBed.BedCode}}</p>
           <!--<p><strong>Bed ID:{{requestedBed.BedId}}</strong></p>-->
@@ -362,81 +301,46 @@
             <strong>d.Address:</strong>{{requestedBed.Address}}
           </p>
           <div *ngIf="requestedBed.IsOccupied">
-            <button
-              (click)="showVitals()"
-              style="margin: 2px;"
-              class="btn blue"
-              *ngIf="vitalsList.length"
-            >
+            <button (click)="showVitals()" style="margin: 2px;" class="btn blue" *ngIf="vitalsList.length">
               See Vitals
             </button>
             <button (click)="addVitals()" style="margin: 2px;" class="btn blue">
               Add Vitals
             </button>
-            <button
-              (click)="Transfer(requestedBed)"
-              style="margin: 2px;"
-              class="btn blue"
-            >
+            <button (click)="Transfer(requestedBed)" style="margin: 2px;" class="btn blue">
               Transfer
             </button>
           </div>
           <!--<div *ngIf="!requestedBed.IsOccupied">
                 <button class="btn blue">Admit</button>
             </div>-->
-          <vitals-add
-            *ngIf="showVitalAddBox"
-            style="position: absolute; top: -1px; left: -1px; width: 475px;"
-            [visitIdfromADT]="requestedBed.PatientVisitId"
-            (notify-adt)="hideVitals($event)"
-          ></vitals-add>
-          <danphe-bed-transfer
-            *ngIf="showTransferPage"
-            [selectedBedInfo]="selectedBedInfo"
-            (notify-adt)="hideTransfer($event)"
-          >
+          <vitals-add *ngIf="showVitalAddBox" style="position: absolute; top: -1px; left: -1px; width: 475px;"
+            [visitIdfromADT]="requestedBed.PatientVisitId" (notify-adt)="hideVitals($event)"></vitals-add>
+          <danphe-bed-transfer *ngIf="showTransferPage" [selectedBedInfo]="selectedBedInfo"
+            (notify-adt)="hideTransfer($event)" [all-Departments]="allDepartments">
           </danphe-bed-transfer>
 
-          <div
-            class="row"
-            *ngIf="showVitalList"
-            style="position: absolute; top: -1px; left: -1px; width: 480px;"
-          >
+          <div class="row" *ngIf="showVitalList" style="position: absolute; top: -1px; left: -1px; width: 480px;">
             <div class="col-xs-12">
-              <div
-                class="portlet cstm-portlet portlet-with-collapse"
-                style="background-color: #006687; color: #fff;"
-              >
-                <div
-                  class="portlet-title cstm-pt-title"
-                  style="background-color: #006687;"
-                >
+              <div class="portlet cstm-portlet portlet-with-collapse" style="background-color: #006687; color: #fff;">
+                <div class="portlet-title cstm-pt-title" style="background-color: #006687;">
                   <div class="cstm-portlet-caption" style="color: #fff;">
                     Vitals List
                   </div>
                 </div>
                 <div class="cstm-portlet-body" *ngIf="showVitalList">
-                  <div
-                    style="right: 15px; background-color: #006687;"
-                    class="cstm-close"
-                    (click)="closeVitalList()"
-                  >
+                  <div style="right: 15px; background-color: #006687;" class="cstm-close" (click)="closeVitalList()">
                     <a><i class="fa fa-close"></i> </a>
                   </div>
                   <div class="table-responsive">
-                    <table
-                      class="table table-condensed flip-content"
-                      style="margin-bottom: 0px;"
-                    >
+                    <table class="table table-condensed flip-content" style="margin-bottom: 0px;">
                       <tbody>
                         <tr>
                           <td>Recorded On</td>
                           <td *ngFor="let vitals of vitalsList">
-                            <strong
-                              >{{vitals.CreatedOn |
+                            <strong>{{vitals.CreatedOn |
                               DanpheDateTime:'format':'YYYY-MM-DD
-                              HH:mm'}}</strong
-                            >
+                              HH:mm'}}</strong>
                           </td>
                         </tr>
                         <tr>
@@ -504,8 +408,7 @@
                           <td>Body Pain Data</td>
                           <td *ngFor="let painList of painDataList">
                             <div *ngFor="let pnlist of painList">
-                              <span
-                                >{{pnlist.BodyPart}}-{{pnlist.PainScale}}
+                              <span>{{pnlist.BodyPart}}-{{pnlist.PainScale}}
                               </span>
                             </div>
                           </td>
@@ -514,12 +417,8 @@
                           <td>Action</td>
                           <td *ngFor="let vitals of vitalsList;let i = index">
                             <!--<a (click)="Edit(vitals,i)" style="padding: 0;margin-right: 15px;" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>-->
-                            <a
-                              (click)="Print(vitals,i)"
-                              class="bs-glyphicon-class btn yello"
-                              style="padding: 0;"
-                              ><i class="fa fa-print"></i>Print</a
-                            >
+                            <a (click)="Print(vitals,i)" class="bs-glyphicon-class btn yello" style="padding: 0;"><i
+                                class="fa fa-print"></i>Print</a>
                           </td>
                         </tr>
                       </tbody>

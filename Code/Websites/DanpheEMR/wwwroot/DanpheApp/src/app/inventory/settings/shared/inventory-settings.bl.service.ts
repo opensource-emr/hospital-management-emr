@@ -101,7 +101,9 @@ export class InventorySettingBLService {
       .map(res => { return res });
   }
 
-
+  public getAllRoles() {
+    return this.invSettingDLservice.getAllRoles().map(res => res);
+  }
 
   //Post
 

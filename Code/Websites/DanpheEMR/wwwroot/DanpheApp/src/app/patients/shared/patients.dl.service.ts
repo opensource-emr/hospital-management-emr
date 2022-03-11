@@ -14,6 +14,19 @@ export class PatientsDLService {
   public GetPatients(searchTxt) {
     //return this.http.get<any>("/api/Patient", this.options); 
     return this.http.get<any>("/api/Patient?reqType=patient-search-by-text&search=" + searchTxt, this.options);
+  }
+
+  //getting registered patients
+  public GetPatientsList(searchTxt) {
+    //return this.http.get<any>("/api/Patient", this.options); 
+    return this.http.get<any>("/api/Patient?reqType=search-registered-patient&search=" + searchTxt, this.options);
+  }
+  
+  //sud:10-Oct'21--Needed separate api for Patient search in New Visit--
+  //other one was too heavy for frequently used module like new visit. 
+  public GetPatientsListForNewVisit(searchTxt) {
+    //return this.http.get<any>("/api/Patient", this.options); 
+    return this.http.get<any>("/api/Patient?reqType=patient-search-for-new-visit&search=" + searchTxt, this.options);
 
   }
 
@@ -91,7 +104,6 @@ export class PatientsDLService {
       "&IMISCode=" + IMISCode,
       this.options);
   }
-
   public PostPatientFiles(formData: any) {
     try {
       return this.http.post<any>("/api/Patient?reqType=upload", formData);
@@ -123,6 +135,27 @@ export class PatientsDLService {
     let data = patientObjString;
     return this.http.put<any>("/api/Patient?reqType=update-gov-insurance-patient", data, this.options);
 
+  }
+
+
+  // Sud:20Feb'21-- needed separate function only for IPD-patient search.
+  public GetIpdPatientsWithVisitsInfo(searchTxt) {
+    return this.http.get<any>("/api/Patient?reqType=ipdPatientSearch&search=" + searchTxt, this.options);
+  }
+
+
+  public GetMunicipality(id: number) {
+    return this.http.get<any>("/api/Master?type=get-municipalities&countrySubDivisionId=" + id, this.options);
+  }
+
+  public GetFileFromServer(id: number) {
+    return this.http.get<any>("/api/Patient/DownloadFile?patientFileId=" + id, {
+      responseType: 'blob' as 'json',
+    });
+  }
+
+  public GetPatientLatestVisitContext(patientId: number) {
+    return this.http.get<any>("/api/Patient?reqType=pat-last-visitcontext&patientId=" + patientId, this.options);
   }
 
 }

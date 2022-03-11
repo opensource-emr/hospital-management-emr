@@ -10,6 +10,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete';
 import { ReactionAddComponent } from './reactions/reaction-add.component';
 import { ReactionListComponent } from './reactions/reaction-list.component';
+import { ICD10GroupListComponent } from './icd10-groups/icd10-group-list.component';
 
 export const clnSettingsRoutes =
   [
@@ -33,7 +34,8 @@ export const clnSettingsRoutes =
   declarations: [
     ClinicalSettingsMainComponent,
     ReactionAddComponent,
-    ReactionListComponent
+    ReactionListComponent,
+    ICD10GroupListComponent
   ],
   bootstrap: []
 })

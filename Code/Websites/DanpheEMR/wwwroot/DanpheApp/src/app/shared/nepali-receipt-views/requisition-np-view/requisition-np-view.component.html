@@ -1,0 +1,101 @@
+<div class="row">
+  <div class="col-md-10 col-md-offset-1" style="border: 1px dotted;">
+    <div id="printpage">
+      <div style="display: flex;justify-content: space-between;">
+        <div style="width: 20%;">
+          <div style="text-align: left;">
+            <img class="img-responsive" style="max-height:10rem;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+          </div>
+        </div>
+        <div style="text-align: center;width: 60%;">
+          <div style="font-weight: 700;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+          <div style="font-weight: 700;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+          <div style="font-weight: 700;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+          <div style="font-weight: 700;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+          <div style="font-weight: 700;">{{headerDetail.hospitalName}}</div>
+          <div style="font-weight: 700;">{{headerDetail.address}}</div>
+          <div style="font-weight: 700; text-decoration: underline;">माग फारम</div>
+        </div>
+        <div class="text-right" style="width: 20%;">
+          <div style="margin-bottom: 2rem;">
+            <div>म.ले.प.फारम नं: &nbsp;४०१ </div>
+            <div>साबिकको फारम नं: &nbsp;५१</div>
+          </div>
+          <div class="text-left">
+            <div>आ.व.:{{requisition.FiscalYear}}</div>
+            <div>माग नं: {{requisition.RequisitionNo}}</div>
+            <div>मितिः <span *ngIf="requisition.RequisitionDate">{{requisition.RequisitionDate | nepaliDate }}</span> </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <table class="table table-condensed" border="1">
+          <thead>
+            <tr>
+              <th rowspan="2">क्र.सं.</th>
+              <th rowspan="2">सामानको नाम</th>
+              <th rowspan="2">स्पेसिफिकेसन</th>
+              <th colspan="2" style="text-align: center;">माग गरिएको </th>
+              <th rowspan="2">कैफियत</th>
+            </tr>
+            <tr>
+              <th>इकाई </th>
+              <th>परिमाण</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rItem of requisition.RequisitionItems; let i=index">
+              <td>{{i+1}}</td>
+              <td>{{rItem.ItemName}}</td>
+              <td></td>
+              <td>{{rItem.UOMName}}</td>
+              <td>{{rItem.Quantity}}</td>
+              <td>{{rItem.Remarks}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <br>
+      <div style="display: flex; justify-content: space-around;font-weight: 500;">
+        <div style="display: flex; flex-direction: column;">
+          <div style="margin-bottom:1rem;">
+            <div>माग गर्नेको दस्तखतः</div>
+            <div>नामः {{requisition.RequestedByName}} </div>
+            <div>मितिः <span *ngIf="requisition.RequisitionDate">{{requisition.RequisitionDate | nepaliDate }}</span>
+            </div>
+            <div>प्रयोजनः {{requisition.RequestingRemarks}}</div>
+          </div>
+          <div>
+            <div>मालसामान बुझिलिनेको दस्तखतः</div>
+            <div>मितिः</div>
+          </div>
+        </div>
+        <div>
+          <div>सिफारिस गर्नेको दस्तखतः</div>
+          <div>नामः</div>
+          <div>मितिः</div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div style="margin-bottom:1rem;">
+            <div style="display: flex;justify-content: space-between;">
+              <label for="buy_from_market" style="font-weight: 500;font-size: 14px;">क) बजारबाट खरिद गरि दिनु ।</label>
+              <input type="checkbox" id="buy_from_market" disabled>
+            </div>
+            <div style="display: flex;justify-content: space-between;">
+              <label for="send_from_store" style="font-weight: 500;font-size: 14px;"> ख) मौज्दातबाट दिनु</label>
+              <input type="checkbox" id="send_from_store" disabled>
+            </div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            <div>आदेश दिनेको दस्तखतः</div>
+            <div>नामः</div>
+          </div>
+          <div>
+            <div>जिन्सी खातामा चढाउनेको दस्तखतः</div>
+            <div>मितिः</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

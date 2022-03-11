@@ -76,6 +76,11 @@ export class AppointmentBLService {
 
     }
 
+    public GetPatientsListForNewVisit(searchTxt) {
+        return this.patientDLService.GetPatientsListForNewVisit(searchTxt)
+            .map(res => { return res })
+
+    }
     // getting department list 
     public GetDepartment() {
         return this.appointmentDLService.GetDepartment()

@@ -141,11 +141,37 @@ namespace DanpheEMR.Controllers
                     deposit.FiscalYear = fiscYear.FiscalYearFormatted;
                     EmployeeModel currentEmp = billingDbContext.Employee.Where(emp => emp.EmployeeId == currentUser.EmployeeId).FirstOrDefault();
                     deposit.BillingUser = currentEmp.FirstName + " " + currentEmp.LastName;
-
                     deposit.IsActive = true; //yubraj: 18th Dec '18
 
                     billingDbContext.BillingDeposits.Add(deposit);
                     billingDbContext.SaveChanges();
+
+                    if (deposit.DepositType != ENUM_BillDepositType.DepositDeduct)
+                    {
+                        EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                        empCashTransaction.TransactionType = deposit.DepositType;
+                        empCashTransaction.ReferenceNo = deposit.DepositId;
+                        if (deposit.DepositType == ENUM_BillDepositType.Deposit)
+                        {
+                            empCashTransaction.InAmount = deposit.Amount;
+                            empCashTransaction.OutAmount = 0;
+                        }                            
+                        else
+                        {
+                            empCashTransaction.InAmount = 0;
+                            empCashTransaction.OutAmount = deposit.Amount;
+                        }                           
+
+                        empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                        empCashTransaction.TransactionDate = DateTime.Now;
+                        empCashTransaction.CounterID = deposit.CounterId;
+                       
+
+                        BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                    }
+
+
+
                     responseData.Status = "OK";
                     responseData.Results = deposit;//check if we need to send back the whole input object back to client.--sudarshan
                 }

@@ -14,7 +14,8 @@ export class PHRMPatient {
     public LastName: string = "";
     public Age: string = null;
     public Address: string = null;
-
+    public CountryId:number = 0;
+    public CountrySubDivisionId:number = 0;
     public PhoneNumber: string = "";
     public Gender: string = null;
 
@@ -33,9 +34,18 @@ export class PHRMPatient {
     //only for read purpose
     public ShortName: string = "";
     public PHRMPatientValidator: FormGroup = null;
-    public PANNumber: string = null;
-    public CountryId: any;
-    public CountrySubDivisionId: any;
+    public PANNumber: string = "";
+    //insurance details
+    public NSHINumber: string;
+    public LatestClaimCode: number;
+    public RemainingBalance: number;
+    //sud:23March'21--below SSU fields are going null till db and it's crashing in new admission.
+    //these are newly added fields, so it was missing earlier. 
+    public IsSSUPatient: boolean = false;
+    public SSU_IsActive: boolean = false;
+
+    public MunicipalityId: number = 0;
+
     //Constructor of class
     constructor() {
         var _formBuilder = new FormBuilder();

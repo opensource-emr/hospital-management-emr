@@ -1,0 +1,98 @@
+
+<style>
+  .search-with-label {
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .bs-65 {
+    flex-basis: 65%;
+  }
+
+  .bs-30 {
+    flex-basis: 30%;
+  }
+</style>
+<div>
+  <div class="row">
+    <div class="col-md-6">
+      <span >
+        <button style="margin-right: 10px;" class="btn green btn-success"
+        (click)="AddPatient()" id="btnNewInsurancePat">
+          <i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;&nbsp;New Insurance Patient
+        </button>
+      </span>
+    </div>
+    <div *ngIf="showPatientPopup">
+      <ins-patient-registration *ngIf="showPatientPopup" [pat-to-edit]="selectedINSPatientToEdit" [popup-action]="popupAction"
+                                (ins-pat-on-close)="InsPatientPopupOnClose($event)"></ins-patient-registration>
+    </div>
+
+
+    <div *ngIf="showSearchPatient" class="col-md-6">
+      <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+      <div class="search-with-label flex-container">
+        <div class="flex-item bs-30 text-right">
+          <label for="allPatWithOutIns">Edit Information Of</label>
+        </div>
+        &nbsp;&nbsp;
+        <!--[source]="allPatientsForDDL"-->
+        <div class="flex-item bs-65">
+          <input danphe-auto-complete
+                 class="form-control"
+                 [(ngModel)]="selectedINSPatientToEdit"
+                 [list-formatter]="patientListFormatter"
+                 [source]="SearchPatientsByKey(this)"
+                 placeholder="Existing Patient Name"
+                 display-property-name="ShortName"
+                 value-property-name=null
+                 (valueChanged)="EditExistingPatientInfo()"
+                 onClick="this.select();"
+                 id="allPatWithOutIns"
+                 min-chars="3"
+                 max-num-list="20" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="patListGridCols"
+                   [grid-data]="insurancePatientsList" (grid-actions)="PatientGridActions($event)"
+                   [setFocusOnGridSearch]="true" (serverSearchText)="SearchPatientFromGrid($event)" [customServerSearch]="true">
+      </danphe-grid>
+    </div>
+  </div>
+  <gov-insurance-update-balance *ngIf="showBalanceUpdatePage"
+                                [gov-insurance-detail]="currentPatInsDetails"
+                                (callback-update-balance)="CloseInsBalancePopup($event)">
+  </gov-insurance-update-balance>
+  <gov-insurance-balance-history *ngIf="showBalanceHistoryPage"
+                                [patientId]="selPatient"
+                                (balance-History)="CloseInsBalanceHistoryPopup($event)">
+  </gov-insurance-balance-history>
+
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInpatientMessage">
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+          <button class="btn btn-danger del-btn" (click)="showInpatientMessage=false">X</button>
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr">Patient Visit Status</h4>
+          </div>
+          <div class="modelbox-body text-center">
+            <h4><b style="color:#bd8111">Alert!</b></h4>
+            <p><b style="color:#bd8111;">This patient is already admitted in {{wardBedInfo.WardName}} ward, Bed no:
+                {{wardBedInfo.BedCode}}, OPD Visit can’t be Created for this patient.</b></p>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showInpatientMessage=false"> OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

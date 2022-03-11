@@ -383,6 +383,7 @@ export class IPDMainComponent {
       this.FilteredIDPPatientGridData = this.IDPPatientGridData.filter(
         (a) => a.DepartmentId == deptId
       );
+    
     }
   }
 

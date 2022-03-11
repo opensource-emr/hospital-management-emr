@@ -32,6 +32,10 @@ export class BillStickerComponent {
     public maxFollowUpDays: number = null;
     public doctorOrDepartment: string = null;
     public EnableShowTicketPrice: boolean = false;
+    public printerNameSelected: any = null;
+    public allPrinterName: any = null;
+    public showStickerChange: boolean = false;
+    public printerName: string = null;
 
     public options = {
         headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
@@ -62,6 +66,13 @@ export class BillStickerComponent {
             this.doctorOrDepartment = "Doctor";
         }
         this.EnableShowTicketPrice = this.GetEnableShowTicketPrice();
+
+        this.printerName = localStorage.getItem('Danphe_IPD_Default_PrinterName');
+        var allStickerFolderDetail = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'common' && a.ParameterName == 'StickerPrinterSettings');
+
+        if (allStickerFolderDetail) {
+        this.allPrinterName = JSON.parse(allStickerFolderDetail.ParameterValue);
+        }
 
     }
     public GetVisitDetail(txnId: number) {
@@ -205,10 +216,13 @@ Address: `+ this.billStickerDetail.Address;
     }
     //load file storage path
     LoadFileStoragePath() {
-        let params = this.coreService.Parameters;
-        params = params.filter(p => p.ParameterName == "PrintFileLocationPath");
-        let path = params[0].ParameterValue;
-        return path;
+        let filepath;
+        this.allPrinterName.forEach(p => {
+        if(p.Name == this.printerName){
+            filepath = p.FolderPath;
+        }
+        });
+        return filepath;
     }
     //timer function
     timerFunction() {
@@ -235,4 +249,28 @@ Address: `+ this.billStickerDetail.Address;
         }
         return retVal;
     }
+
+    //Multiple sticker printer change 
+  public ChangeStickerPrinter(){
+    this.showStickerChange = true;
+    this.printerNameSelected = this.printerName;
+  }
+
+  public CloseChangeStickerPrinter(){
+    this.showStickerChange = false;
+    this.printerNameSelected = null;
+  }
+
+  public UpdateNewPrinter(){
+    if (this.printerNameSelected) {
+      if (localStorage.getItem('Danphe_IPD_Default_PrinterName')) {
+        localStorage.removeItem('Danphe_IPD_Default_PrinterName');
+      }      
+      localStorage.setItem('Danphe_IPD_Default_PrinterName', this.printerNameSelected);
+      this.printerName = this.printerNameSelected;
+      this.showStickerChange = false;
+    } else {
+      this.msgBoxServ.showMessage('error', ["Please select Printer Location"]);
+    }
+  }
 }

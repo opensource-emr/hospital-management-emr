@@ -1,0 +1,155 @@
+<!-- Zero Qty Filter -->
+<div class="input-group" style="float: right; padding-right: 200px;">
+  <div style="display: flex;align-items: flex-end;">
+    <div style="margin-right: 1rem;"><input type="checkbox" (change)="FilterStockList()" [(ngModel)]="showStockWithZeroQty" name="showStockWithZeroQty" id="showStockWithZeroQty" style="zoom: 1.4;" /></div>
+    <label for="showStockWithZeroQty">Show Zero Quantity </label>
+  </div>
+</div>
+<div class="row" *ngIf="showStockList">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="stockDetailsGridColumns" [grid-data]="stockDetailsList" [resizeColumnToFit]="true" (grid-actions)="StockDetailsGridAction($event)"> </danphe-grid>
+  </div>
+  <div class="right"><strong> Total Stock Value: </strong> {{coreService.currencyUnit}} {{ totalstockvalue | number: '1.0-2' }}</div>
+</div>
+<div class="row" *ngIf="!showStockList">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <span class="caption-subject">
+        <input type="button" class="btn blue" value="Back" (click)="Cancel()" style="margin-right:10px !important;" />
+        Stock Manage </span>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="col-lg-6 col-sm-12">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed bg-white" id="exportTable" style="background-color:initial;margin-top:10px">
+          <tbody>
+            <tr>
+              <td style="font-weight:bold;"> Item Name </td>
+              <td> {{selectedItem.ItemName}} </td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold;"> batch No </td>
+              <td> {{selectedItem.BatchNo}} </td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold;"> Expiry Date </td>
+              <td> {{selectedItem.ExpiryDate | date}} </td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold;"> Price </td>
+              <td> {{selectedItem.Price}} </td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold;"> MRP </td>
+              <td> {{selectedItem.MRP}} </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-6 col-sm-12">
+      <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+        <div class="form-group">
+          <label class="control-label col-md-4"> Adjustment Type <sup>*</sup><b>:</b> </label>
+          <div class="col-md-8">
+            <form [formGroup]="selectedItem.StockManageValidator">
+              <div class="input-group">
+                <div class="icheck-inline">
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input type="radio" value="in" [(ngModel)]="selectedItem.InOut" formControlName="InOut">
+                    <span></span>In </label>
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input type="radio" value="out" [(ngModel)]="selectedItem.InOut" formControlName="InOut">
+                    <span></span>Out </label>
+                </div>
+              </div>
+              <span class="error-msg" *ngIf="selectedItem.IsDirty('InOut')" [hidden]="selectedItem.IsValidCheck('InOut','required')"> adjustment-type is required</span>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+        <div class="form-group">
+          <label class="control-label col-md-4"> Current Qty <b>:</b> </label>
+          <div class="col-md-8">
+            <input [(ngModel)]="selectedItem.Quantity" typeof="number" disabled class="form-control" name="Quantity" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+        <div class="form-group">
+          <label class="control-label col-md-4"> Modified Qty <sup>*</sup><b>:</b> </label>
+          <div class="col-md-8">
+            <form [formGroup]="selectedItem.StockManageValidator">
+              <input [(ngModel)]="selectedItem.UpdatedQty" formControlName="UpdatedQty" class="form-control" name="UpdatedQty" type="number" />
+              <div style="color:red" *ngIf="selectedItem.IsDirty('UpdatedQty')" [hidden]="selectedItem.IsValidCheck('UpdatedQty','invalidNumber')">quantity is required</div>
+              <div style="color:red" *ngIf="selectedItem.InOut=='out' && selectedItem.Quantity < selectedItem.UpdatedQty">cant out more
+                quantity than current qty</div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+        <div class="form-group">
+          <label class="control-label col-md-4"> Remark <sup>*</sup><b>:</b> </label>
+          <div class="col-md-8">
+            <form [formGroup]="selectedItem.StockManageValidator">
+              <textarea [(ngModel)]="selectedItem.Remark" formControlName="Remark" class="form-control" name="Remark" type="text"></textarea>
+              <div style="color:red" *ngIf="selectedItem.IsDirty('Remark')" [hidden]="selectedItem.IsValidCheck('Remark','required')">remark is required</div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+        <div class="form-group">
+          <div class="control-label col-md-4"> </div>
+          <div class="" style="margin-top:10px; float:right;">
+            <input type="button" class="btn btn-success" value="Update Stock" (click)="SaveManagedStock()" [disabled]="loading" />
+            <span></span>
+            <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel" [disabled]="loading">
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;" class="popup-static portlet box portlet-fullscreen modal-box inv_modal" *ngIf="showTransferPage">
+  <div style="width: 100%;">
+    <div class="col-md-4 col-md-offset-4">
+      <div class="modelbox-div clearfix">
+        <div class="caption lb-caption">
+          <h3> <span>Transfer To Store</span> </h3>
+          <a class="btn btn-danger" (click)="Close()" title="close window">X</a>
+        </div>
+        <div class="dis_content_wrap text-center mb20 clearfix">
+          <p><strong>Item Name:</strong>{{selectedItem.ItemName}}</p>
+          <p><strong>Expiry Date:</strong>{{selectedItem.ExpiryDate | date}}</p>
+          <p><strong>MRP:</strong>{{selectedItem.MRP}}</p>
+          <p><strong>Available Quantity:</strong>{{selectedItem.Quantity}}</p>
+          <div class="bold col-md-6">Store Name:</div>
+          <div class="col-md-6">
+            <input class="form-control col-md-6" [(ngModel)]="selectedStore.Name" disabled="disabled" [ngModelOptions]="{standalone: true}" />
+          </div>
+          <div class="bold col-md-6">Transfer Quantity:</div>
+          <div class="col-md-6">
+            <form [formGroup]="selectedItem.StockManageValidator">
+              <input id="transfertoStoreQty" style="max-width:326px;margin-bottom:4px;" class="col-md-6" type="number" formControlName="UpdatedQty" [(ngModel)]="selectedItem.UpdatedQty" />
+            </form>
+          </div>
+          <div style="color:red" *ngIf="selectedItem.IsDirty('UpdatedQty')" [hidden]="selectedItem.IsValidCheck('UpdatedQty','wrongDecimalValue')">Required whole number</div>
+          <div> <span class="error-msg" *ngIf="selectedItem.UpdatedQty<0"> Quantity is not valid. </span> <span class="error-msg" *ngIf="selectedItem.Quantity<selectedItem.UpdatedQty"> Transfer Qty should be less than
+              Total Qty </span> </div>
+          <div class="panel-footer p1 text-center">
+            <button (click)="transferToStore()" class="btn btn-danger" style="margin-bottom:10px; margin-top:10px;">Transfer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- to update the mrp -->
+<div *ngIf="showUpdateMRPPopUpBox">
+  <app-update-mrp [currentStock]="selectedStockForMRPUpdate" (callback-update)="CallBackUpdateMRP($event)"></app-update-mrp>
+</div>

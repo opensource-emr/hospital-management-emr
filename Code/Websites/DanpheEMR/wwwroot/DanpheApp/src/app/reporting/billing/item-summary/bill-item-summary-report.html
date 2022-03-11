@@ -3,7 +3,8 @@
     <div class="form-horizontal">
       <div class="form-body">
         <div class="col-md-12">
-          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Item Summary Report</span> </div>
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+              class="caption-subject">Item Summary Report</span> </div>
           <!--<div class="col-md-10">
             <div class="row">
               <div class="col-md-6">
@@ -29,7 +30,8 @@
               <div class="form-group">
                 <!--<label class="control-label invisible">Action</label>-->
                 <div class="cstm-show-report-btn-holder">
-                  <button class="btn blue" type="button" (click)="LoadBillItemSummary()"> Show Report </button>
+                  <button class="btn green btn-success" type="button" (click)="LoadBillItemSummary();this.loading=true;"
+                    [disabled]="loading"> Show Report </button>
                 </div>
               </div>
             </div>
@@ -41,41 +43,39 @@
   <ng-container *ngIf="showReport">
     <div class="row">
       <div class="col-md-12">
-        <danphe-grid [grid-colDefaults]="ItemSummaryReportGridCol"
-                     [grid-data]="allReportData"
-                     [report-header]="reportHeaderHtml"
-                     [grid-exportOptions]="GetGridExportOptions()"
-                     [grid-showExport]="true"
-                     [show-print-button]="true"> </danphe-grid>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-        <div class="caption custom-caption">
-          <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Calulation Summary</span>
-        </div>
-
-        <div style="width:40%;">
-          <table class="table">
-            <tr>
-              <th>Total Quantity : </th>
-              <th>{{this.summary.total_Qty}}</th>
-            </tr>
-            <tr>
-              <th>Gross Total : </th>
-              <th>{{this.summary.tot_SubTotal | ParseAmount}}</th>
-            </tr>
-            <tr>
-              <th>Total Discount :</th>
-              <th>{{this.summary.tot_DiscountAmount | ParseAmount}}</th>
-            </tr>
-            <tr>
-              <th>Net Total : </th>
-              <th>{{this.summary.tot_BilAmt | ParseAmount}}</th>
-            </tr>
-          </table>
-        </div>
+        <danphe-grid [grid-colDefaults]="ItemSummaryReportGridCol" [grid-data]="allReportData"
+          [grid-exportOptions]="GetGridExportOptions()" [grid-showExport]="true" [show-print-button]="true"
+          [report-for]="billing" [grid-date-range]="dateRange" [grid-footer-content]="footerContent"> </danphe-grid>
       </div>
     </div>
   </ng-container>
+  <div class="row">
+    <div class="col-md-12" id="calc-summary" *ngIf="allReportData && allReportData.length>0">
+      <div class="caption custom-caption">
+        <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Calulation Summary</span>
+      </div>
+
+      <div style="width:40%;">
+        <table class="table">
+          <tr>
+            <th>Total Quantity : </th>
+            <th>{{this.summary.total_Qty}}</th>
+          </tr>
+          <tr>
+            <th>Gross Total : </th>
+            <th>{{this.summary.tot_SubTotal | ParseAmount}}</th>
+          </tr>
+          <tr>
+            <th>Total Discount :</th>
+            <th>{{this.summary.tot_DiscountAmount | ParseAmount}}</th>
+          </tr>
+          <tr>
+            <th>Net Total : </th>
+            <th>{{this.summary.tot_BilAmt | ParseAmount}}</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- </ng-container> -->
 </div>

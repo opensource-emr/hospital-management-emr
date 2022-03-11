@@ -18,7 +18,7 @@
                       <select class="form-control" maxlength="30" [(ngModel)]="CurrentLedger.PrimaryGroup"
                         formControlName="PrimaryGroup" id="primarygroup" (change)="PrimaryGroupChanged()"
                         placeholder="primary group">
-                        <option *ngFor="let pg of primaryGroupList" [disabled]="!typeledger" value={{pg}}> {{pg}}
+                        <option *ngFor="let pg of primaryGroupList" [disabled]="!typeledger" value={{pg.PrimaryGroupName}}> {{pg.PrimaryGroupName}}
                         </option>
                       </select>
                       <span class="color-red font-sm"
@@ -33,9 +33,9 @@
                   <div class="row">
                     <label class="control-label col-md-4">Chart of Account<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <select class="form-control" maxlength="30" [(ngModel)]="CurrentLedger.COA" formControlName="COA"
+                      <select class="form-control" maxlength="30" [(ngModel)]="CurrentLedger.COAId" formControlName="COA"
                         id="COA" (change)="COAChanged()" placeholder="COA">
-                        <option *ngFor="let c of coaList" [disabled]="!typeledger" value={{c}}>{{c}}</option>
+                        <option *ngFor="let c of coaList" [disabled]="!typeledger" value={{c.ChartOfAccountId}}>{{c.ChartOfAccountName}}</option>
                       </select>
                       <span class="color-red font-sm"
                         [hidden]="CurrentLedger.IsValidCheck('COA','required') || !(CurrentLedger.IsDirty('COA'))">COA

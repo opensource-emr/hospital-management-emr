@@ -1,14 +1,17 @@
 ﻿<div class="wrapper">
   <div class="row">
     <div class="col-md-10" *ngIf="showBillDocSummary">
-      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelDocSummary()"> <i class="fa fa-file-excel-o"></i> Excel </button>
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelDocSummary('doctor-summary')"> <i class="fa fa-file-excel-o"></i> Excel </button>
     </div>
     <div class="col-md-12" *ngIf="showBillDocSummary" style="border: 0.5px solid;padding-top: 10px;">
       <div class="col-md-12" style="padding:0px"> 
         <span class="col-md-3 left" style="padding:0px">From Date: <date-lbl [value]="FromDate"></date-lbl><br />
-        To Date: <date-lbl [value]="ToDate"></date-lbl><br />
-        </span> <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px"> <b>Doctor Summary Report</b> </span> <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span> </div>
-      <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+        To Date: <date-lbl [value]="ToDate"></date-lbl><br /></span> 
+      </div>
+      <!-- <div id = "doctor-summary"> -->
+        <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px"> <b>Doctor Summary Report</b> </span> <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span> 
+        <div id = "doctor-summary">
+        <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
         <thead>
           <tr>
             <td style="text-align:center"><b>Sr No.</b></td>
@@ -63,6 +66,7 @@
         </tr>
       </table>
     </div>
+  </div>
     <div class="col-md-12">
       <rpt-bill-doc-dept-summary *ngIf="showBillDocsDeptSummary"
                                [showDocDeptSummary]="showBillDocsDeptSummary"

@@ -65,6 +65,8 @@ export class ViewReportComponent {
   public ExtRefSettings = null;
   public enableDoctorUpdateFromSignatory: boolean = false;
 
+  printDetails: any;
+  showPrint: boolean;
   constructor(public imagingBLService: ImagingBLService, public coreService: CoreService,
     public radiologyService: RadiologyService, public securityService: SecurityService,
     public messageBoxService: MessageboxService,
@@ -227,22 +229,25 @@ export class ViewReportComponent {
 
 
   PrintReportHTML() {
-    let popupWinindow;
     var printContents = document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-
     let documentContent = "<html><head>";
     documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanphePrintStyle.css"/>';
     documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
     documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     documentContent += '</head><style>.no-print{display: none;} .patient-hdr-label{margin: 2px 0;}</style>';
-    documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
-
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
+    documentContent += '<body>' + printContents + '</body></html>'
+    this.printDetails=documentContent;
+    this.showPrint = true;
+    this.showImagingReport=false;
   }
 
+  callBackPrint() {
+    setTimeout(()=>{
+      this.printDetails = null;
+      this.showPrint = false;
+    },300);
+  }
+  
   //method to show dicomImages according to PatientStudyId..
   ViewScannedImages() {
 

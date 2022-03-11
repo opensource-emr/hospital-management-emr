@@ -112,7 +112,7 @@ export class SignatoriesComponent {
       text: "--select--",
       selectAllText: "Select All",
       unSelectAllText: "UnSelect All",
-      enableSearchFilter: false,
+      enableSearchFilter: true,
       classes: "danaphe-multiselect-style",
       groupBy: "",
       enableCheckAll: false,

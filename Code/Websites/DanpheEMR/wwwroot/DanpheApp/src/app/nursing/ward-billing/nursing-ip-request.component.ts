@@ -46,12 +46,11 @@ export class NursingIPRequestComponent {
 
   public pastTests: Array<any> = [];
 
-  @Input("past-tests")  
+  @Input("past-tests")
   set SetPastTests(value: Array<any>) {
     this.PastTest(value);
   }
-  public currentTest: Array<any> =[];
-
+  public currentTest: Array<any> = [];
 
   @Output("emit-billItemReq")
   public emitBillItemReq: EventEmitter<Object> = new EventEmitter<Object>();
@@ -86,6 +85,10 @@ export class NursingIPRequestComponent {
   public BillRequestDoubleEntryWarningTimeHrs: number = 0;
   public PastTestList: any = [];
   public PastTestList_ForDuplicate: any = [];
+  public isRequestedByDrMandatory: boolean = true;
+  public LabTypeName: string = "op-lab";
+  public ShowHidePrice:boolean = false;
+  public totalAmount:number = 0;
 
   constructor(
     public labBLService: LabsBLService,
@@ -106,7 +109,23 @@ export class NursingIPRequestComponent {
     //instead of Using in OnInit Component is initiated from inside  this function by calling InitiateComponent function
     this.GetDoctorsList();
 
-    this.BillRequestDoubleEntryWarningTimeHrs = this.coreService.LoadIPBillRequestDoubleEntryWarningTimeHrs();
+    this.BillRequestDoubleEntryWarningTimeHrs =
+      this.coreService.LoadIPBillRequestDoubleEntryWarningTimeHrs();
+    let param = this.coreService.Parameters.find(
+      (p) =>
+        p.ParameterGroupName == "Common" &&
+        p.ParameterName == "RequestedByDrSettings"
+    ).ParameterValue;
+    if (param) {
+      let paramValue = JSON.parse(param);
+      this.isRequestedByDrMandatory = paramValue.NursingWardRequest.IsMandatory;
+    }
+
+    if (this.coreService.labTypes.length == 1) {
+      this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+      console.log(this.LabTypeName);
+    }
+    this.GetParametersToShowHidePriceCol();
   }
 
   ngOnInit() {
@@ -126,13 +145,33 @@ export class NursingIPRequestComponent {
             );
           }
         });
+
+      this.SetLabTypeNameInLocalStorage();
     }
 
     this.ResetServiceDepartmentList();
-   // this.PastTest(this.pastTests);
+    // this.PastTest(this.pastTests);
     window.setTimeout(function () {
       document.getElementById("items-box0").focus();
     }, 1000);
+
+    this.InitiateComponent();
+  }
+
+  GetParametersToShowHidePriceCol(){
+    let moduleName = "Nursing";
+    let param = this.coreService.Parameters.find(
+      (p) =>
+        p.ParameterGroupName == "Common" &&
+        p.ParameterName == "WardBillingColumnSettings"
+    );
+    if (param) {
+      let paramValue = JSON.parse(param.ParameterValue);
+      let data = paramValue.find(
+        (a) => a.Module.toLowerCase() == moduleName.toLowerCase()
+      );
+      this.ShowHidePrice = data ? data.ShowPrice : this.ShowHidePrice;
+    }
   }
 
   PastTest($event) {
@@ -186,7 +225,6 @@ export class NursingIPRequestComponent {
       } else {
         this.loading = false;
       }
-     
     }
   }
   public SetBillingTxnDetails() {
@@ -237,11 +275,15 @@ export class NursingIPRequestComponent {
 
       this.billingTransaction.TaxId = this.taxDetail.taxId;
 
-       //anjana/7-oct-2020: EMR:2695
-       let currItmMaster = this.billItems.find(itm => itm.ServiceDepartmentId == txnItem.ServiceDepartmentId && itm.ItemId == txnItem.ItemId);
-       if (currItmMaster) {
-         txnItem.IsTaxApplicable = currItmMaster.TaxApplicable;
-       }
+      //anjana/7-oct-2020: EMR:2695
+      let currItmMaster = this.billItems.find(
+        (itm) =>
+          itm.ServiceDepartmentId == txnItem.ServiceDepartmentId &&
+          itm.ItemId == txnItem.ItemId
+      );
+      if (currItmMaster) {
+        txnItem.IsTaxApplicable = currItmMaster.TaxApplicable;
+      }
       if (txnItem.IsTaxApplicable) {
         txnItem.TaxableAmount = txnItem.TotalAmount;
         txnItem.NonTaxableAmount = 0;
@@ -290,6 +332,12 @@ export class NursingIPRequestComponent {
               valCtrls
             ].updateValueAndValidity();
           }
+
+          if (this.isRequestedByDrMandatory == false) {
+            currTxnItm.UpdateValidator("off", "RequestedBy", "required");
+          } else {
+            currTxnItm.UpdateValidator("on", "RequestedBy", "required");
+          }
         }
 
         for (
@@ -334,6 +382,10 @@ export class NursingIPRequestComponent {
   //posts to Departments Requisition Table
   public PostToDepartmentRequisition() {
     //orderstatus="active" and billingStatus="paid" when sent from billingpage.
+    this.billingTransaction.BillingTransactionItems.forEach((item) => {
+      item.LabTypeName = this.LabTypeName;
+    });
+
     this.billingBLService
       .PostDepartmentOrders(
         this.billingTransaction.BillingTransactionItems,
@@ -372,6 +424,7 @@ export class NursingIPRequestComponent {
           this.loading = false;
         }
       });
+      this.totalAmount = 0;
   }
 
   //----------end: post billing transaction-----------------------------------
@@ -432,9 +485,8 @@ export class NursingIPRequestComponent {
             Obj["FullName"] = "SELF";
             this.doctorsList.push(Obj);
 
-            this.InitiateComponent();
-
-            this.billingTransaction.BillingTransactionItems[0].AssignedDoctorList = this.doctorsList;
+            this.billingTransaction.BillingTransactionItems[0].AssignedDoctorList =
+              this.doctorsList;
           } else {
             console.log(res.ErrorMessage);
           }
@@ -485,11 +537,12 @@ export class NursingIPRequestComponent {
               a.ItemId == item.ItemId &&
               a.ServiceDepartmentId == item.ServiceDepartmentId
           );
-          let extItemIndex = this.billingTransaction.BillingTransactionItems.findIndex(
-            (a) =>
-              a.ItemId == item.ItemId &&
-              a.ServiceDepartmentId == item.ServiceDepartmentId
-          );
+          let extItemIndex =
+            this.billingTransaction.BillingTransactionItems.findIndex(
+              (a) =>
+                a.ItemId == item.ItemId &&
+                a.ServiceDepartmentId == item.ServiceDepartmentId
+            );
           // if (extItem && index != extItemIndex) {
           //   this.msgBoxServ.showMessage("failed", [
           //     item.ItemName + " is already entered.",
@@ -521,11 +574,10 @@ export class NursingIPRequestComponent {
         this.billingTransaction.BillingTransactionItems[
           index
         ].ServiceDepartmentId = item.ServiceDepartmentId;
-        this.selectedServDepts[
-          index
-        ] = this.billingTransaction.BillingTransactionItems[
-          index
-        ].ServiceDepartmentName;
+        this.selectedServDepts[index] =
+          this.billingTransaction.BillingTransactionItems[
+            index
+          ].ServiceDepartmentName;
         this.billingTransaction.BillingTransactionItems[
           index
         ].IsValidSelDepartment = true;
@@ -546,16 +598,18 @@ export class NursingIPRequestComponent {
           index
         ].IsValidSelItemName = false;
       if (!item && !this.selectedServDepts[index]) {
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].ItemList = this.billItems;
+        this.billingTransaction.BillingTransactionItems[index].ItemList =
+          this.billItems;
       }
       this.CheckForDoubleEntry();
+    } else {
+      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now =
+        false;
+      this.billingTransaction.BillingTransactionItems[
+        index
+      ].IsDoubleEntry_Past = false;
     }
-    else{
-      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now = false;
-      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Past = false;
-    }
+    this.calculateTotalAmount();
   }
 
   public AssignSelectedDoctor(index) {
@@ -666,9 +720,8 @@ export class NursingIPRequestComponent {
     }
     //else raise an invalid flag
     else {
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].ItemList = this.billItems;
+      this.billingTransaction.BillingTransactionItems[index].ItemList =
+        this.billItems;
       this.billingTransaction.BillingTransactionItems[
         index
       ].IsValidSelDepartment = false;
@@ -683,19 +736,17 @@ export class NursingIPRequestComponent {
         this.billingTransaction.BillingTransactionItems.length &&
         this.billItems.length
       ) {
-        let srvDeptId = this.billingTransaction.BillingTransactionItems[index]
-          .ServiceDepartmentId;
+        let srvDeptId =
+          this.billingTransaction.BillingTransactionItems[index]
+            .ServiceDepartmentId;
         //initalAssign: FilterBillItems was called after assinging all the values(used in ngModelChange in SelectDepartment)
         // and was assigning ItemId=null.So avoiding assignment null value to ItemId during inital assign.
         if (
           this.billingTransaction.BillingTransactionItems[index].ItemId == null
         )
           this.ResetSelectedRow(index);
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].ItemList = this.billItems.filter(
-          (a) => a.ServiceDepartmentId == srvDeptId
-        );
+        this.billingTransaction.BillingTransactionItems[index].ItemList =
+          this.billItems.filter((a) => a.ServiceDepartmentId == srvDeptId);
 
         let servDeptName = this.GetServiceDeptNameById(srvDeptId);
         //sud:6Feb'19--we have Use doctormandatory field of database item, not from code.
@@ -718,9 +769,8 @@ export class NursingIPRequestComponent {
       let billItems = this.billItems.filter(
         (a) => a.ServiceDepartmentName != "OPD"
       );
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].ItemList = billItems;
+      this.billingTransaction.BillingTransactionItems[index].ItemList =
+        billItems;
     }
   }
 
@@ -742,9 +792,8 @@ export class NursingIPRequestComponent {
   ResetSelectedRow(index) {
     this.selectedItems[index] = null;
     this.selectedAssignedToDr[index] = null;
-    this.billingTransaction.BillingTransactionItems[
-      index
-    ] = this.NewBillingTransactionItem();
+    this.billingTransaction.BillingTransactionItems[index] =
+      this.NewBillingTransactionItem();
   }
 
   AddNewBillTxnItemRow(index = null) {
@@ -785,6 +834,7 @@ export class NursingIPRequestComponent {
     }
 
     this.CheckForDoubleEntry();
+    this.calculateTotalAmount();
   }
   //----end: add/delete rows-----
 
@@ -1054,48 +1104,60 @@ export class NursingIPRequestComponent {
 
   assignDocterlist(row, i) {
     if (row.ItemId == 0) {
-      this.billingTransaction.BillingTransactionItems[
-        i
-      ].AssignedDoctorList = this.doctorsList;
+      this.billingTransaction.BillingTransactionItems[i].AssignedDoctorList =
+        this.doctorsList;
     }
   }
 
   HasDoubleEntryInPast() {
     if (this.PastTestList && this.PastTestList.length > 0) {
       var currDate = moment().format("YYYY-MM-DD HH:mm:ss");
-      if (this.BillRequestDoubleEntryWarningTimeHrs && this.BillRequestDoubleEntryWarningTimeHrs != 0) {
-        this.PastTestList.forEach(a => {
+      if (
+        this.BillRequestDoubleEntryWarningTimeHrs &&
+        this.BillRequestDoubleEntryWarningTimeHrs != 0
+      ) {
+        this.PastTestList.forEach((a) => {
           //var diff = moment.duration(a.CreatedOn.diff(currDate));
-          if (this.DateDifference(currDate, a.CreatedOn) < this.BillRequestDoubleEntryWarningTimeHrs) {
+          if (
+            this.DateDifference(currDate, a.CreatedOn) <
+            this.BillRequestDoubleEntryWarningTimeHrs
+          ) {
             this.PastTestList_ForDuplicate.push(a);
           }
         });
       }
-
-
     }
   }
 
   CheckForDoubleEntry() {
-    this.billingTransaction.BillingTransactionItems.forEach(itm => {
-
-      if (this.billingTransaction.BillingTransactionItems.filter(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ItemId == itm.ItemId).length > 1) {
+    this.billingTransaction.BillingTransactionItems.forEach((itm) => {
+      if (
+        this.billingTransaction.BillingTransactionItems.filter(
+          (a) =>
+            a.ServiceDepartmentId == itm.ServiceDepartmentId &&
+            a.ItemId == itm.ItemId
+        ).length > 1
+      ) {
         itm.IsDoubleEntry_Now = true;
         //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
-      }
-      else {
+      } else {
         itm.IsDoubleEntry_Now = false;
       }
       this.HasDoubleEntryInPast();
-      if (this.PastTestList_ForDuplicate && this.PastTestList_ForDuplicate.find(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ItemId == itm.ItemId)) {
+      if (
+        this.PastTestList_ForDuplicate &&
+        this.PastTestList_ForDuplicate.find(
+          (a) =>
+            a.ServiceDepartmentId == itm.ServiceDepartmentId &&
+            a.ItemId == itm.ItemId
+        )
+      ) {
         itm.IsDoubleEntry_Past = true;
         //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
-      }
-      else {
+      } else {
         itm.IsDoubleEntry_Past = false;
       }
     });
-
   }
 
   public DateDifference(currDate, startDate): number {
@@ -1104,8 +1166,76 @@ export class NursingIPRequestComponent {
 
     //return diffInHours;
 
-
-    var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(moment(startDate, "YYYY/MM/DD HH:mm:ss"), 'hours');
+    var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(
+      moment(startDate, "YYYY/MM/DD HH:mm:ss"),
+      "hours"
+    );
     return diffHrs;
+  }
+
+  public OnLabTypeChange() {
+    this.billingTransaction.BillingTransactionItems.forEach((item) => {
+      item.LabTypeName = this.LabTypeName;
+    });
+    this.FilterBillItems(0);
+
+    if (this.LabTypeName) {
+      if (localStorage.getItem("NursingSelectedLabTypeName")) {
+        localStorage.removeItem("NursingSelectedLabTypeName");
+      }
+      localStorage.setItem("NursingSelectedLabTypeName", this.LabTypeName);
+      let ptr = this.coreService.labTypes.find(
+        (p) => p.DisplayName == this.LabTypeName
+      );
+    } else {
+      this.msgBoxServ.showMessage("error", ["Please select Lab Type Name."]);
+    }
+  }
+
+  SetLabTypeNameInLocalStorage() {
+    let labtypeInStorage = localStorage.getItem("NursingSelectedLabTypeName");
+    if (this.coreService.labTypes.length == 1){
+      localStorage.setItem("NursingSelectedLabTypeName", this.coreService.labTypes[0].LabTypeName);
+      return;
+    }else if(this.coreService.labTypes.length == 0){
+      localStorage.setItem("NursingSelectedLabTypeName", 'op-lab');
+      return;
+    }
+      if (labtypeInStorage) {
+          let selectedLabType = this.coreService.labTypes.find(
+            (val) => val.LabTypeName == labtypeInStorage
+          );
+          if (selectedLabType) {
+            this.LabTypeName = labtypeInStorage;
+          } else {
+            localStorage.removeItem("NursingSelectedLabTypeName");
+            let defaultLabType = this.coreService.labTypes.find(
+              (type) => type.IsDefault == true
+            );
+            if (!defaultLabType) {
+              this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+            } else {
+              this.LabTypeName = defaultLabType.LabTypeName;
+            }
+            localStorage.setItem(
+              "NursingSelectedLabTypeName",
+              this.LabTypeName
+            );
+          }
+      } else {
+        let defaultLabType = this.coreService.labTypes.find(
+          (type) => type.IsDefault == true
+        );
+        if (!defaultLabType) {
+          this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+        } else {
+          this.LabTypeName = defaultLabType.LabTypeName;
+        }
+      }
+  }
+
+  calculateTotalAmount(){
+   this.totalAmount = this.billingTransaction.BillingTransactionItems.reduce(function (acc, obj) { return acc + ((obj.Price * obj.Quantity)); }, 0); 
+
   }
 }

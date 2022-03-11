@@ -14,7 +14,7 @@ import { VoucherHeadListComponent} from './voucherhead/voucher-head-list';
 import { ReverseTransaction } from "./reverse-transaction/reverse-transaction.component";
 import { SectionListComponent } from './section/section-list';
 import { COAListComponent } from './coa/coa-list.component';
-
+import {TransferRulesComponent} from './transfer-rules/transfer-rules.component';
 @NgModule({
     imports: [
         RouterModule.forChild([
@@ -33,7 +33,8 @@ import { COAListComponent } from './coa/coa-list.component';
                     { path: 'VoucherHeadList', component: VoucherHeadListComponent },
                     {path: 'ReverseTransaction', component:ReverseTransaction },
                     {path: 'SectionList', component:SectionListComponent },
-                    {path: 'COAList',component:COAListComponent}
+                    {path: 'COAList',component:COAListComponent},
+                    {path: 'TransferRules',component:TransferRulesComponent},
                 ]
             }
         ])

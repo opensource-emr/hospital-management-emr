@@ -5,8 +5,10 @@ import { GridEmitModel } from "../../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
 import { CommonFunctions } from "../../../../shared/common.functions";
+import { AccountingService } from '../../../shared/accounting.service';
 
 import { CoreService } from "../../../../core/shared/core.service";
+import { FiscalYearModel } from "../../../../accounting/settings/shared/fiscalyear.model";
 @Component({
   selector: 'ledger-report-reusable',
   templateUrl: './ledger-report-reusable.html',
@@ -15,7 +17,7 @@ import { CoreService } from "../../../../core/shared/core.service";
 export class LedgerReportResuableComponent {
   public ledgerResult: any;
   // public ledgerList: Array<{ LedgerId: number, LedgerName: string }> = [];
-  public fiscalyearList: Array<{ FiscalYearId: number, FiscalYearName: string, StartDate: Date, EndDate: Date, IsActive: boolean }> = [];
+  public fiscalyearList: Array<FiscalYearModel> = new Array<FiscalYearModel>(); //mumbai-team-june2021-danphe-accounting-cache-change
   //public selLedger: { LedgerId, LedgerName } = null;
   public selFiscalYear: { FiscalYearId, FiscalYearName, StartDate, EndDate, IsActive } = null;
   public txnGridColumns: Array<any> = null;
@@ -78,6 +80,7 @@ export class LedgerReportResuableComponent {
 
   constructor(
     public accReportBLService: AccountingReportsBLService,
+    public accountingService: AccountingService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
     public coreservice: CoreService) {
@@ -108,17 +111,11 @@ export class LedgerReportResuableComponent {
   //}
 
   public GetFiscalYears() {
-    this.accReportBLService.GetFiscalYearsList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.fiscalyearList = res.Results;
-          this.selFiscalYear = this.fiscalyearList.find(x => x.IsActive == true);
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-
-      });
+    if (this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.accountingService.accCacheData.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.fiscalyearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+      this.selFiscalYear = this.fiscalyearList.find(x => x.IsActive == true);
+    }
   }
 
   DisplayParticular() {

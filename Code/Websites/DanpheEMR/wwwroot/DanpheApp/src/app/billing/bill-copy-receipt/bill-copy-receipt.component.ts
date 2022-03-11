@@ -7,7 +7,8 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CommonFunctions } from "../../shared/common.functions";
 @Component({
   selector: 'bill-copy-recipt',
-  templateUrl: './bill-copy-receipt.html'
+  templateUrl: './bill-copy-receipt.html',
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class BillCopyReceiptComponent {
   @Input("patientId")
@@ -106,4 +107,9 @@ export class BillCopyReceiptComponent {
     this.selectedTxnId = null;
   }
 
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.Close();
+    }
+  }
 }

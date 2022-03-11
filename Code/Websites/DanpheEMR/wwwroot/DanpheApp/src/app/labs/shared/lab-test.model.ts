@@ -37,8 +37,8 @@ export class LabTest {
 
     public ServiceDepartmentId: number = null;
 
-    public LabReportTemplateModel: LabReportTemplateModel = null;   
-    
+    public LabReportTemplateModel: LabReportTemplateModel = null;
+
     public DisplaySequence: number = 1000;
     public RunNumberType: string = 'normal';
 
@@ -50,9 +50,12 @@ export class LabTest {
     public IsTaxApplicable: boolean = false;
 
     public ReportTemplateName: string = null;
-    
+
     public TemplateType: string = null;
     public LabTestCategoryId: number = null;
+    public GroupName: string;
+
+    public SmsApplicable: boolean = false;
 
     constructor() {
         var _formBuilder = new FormBuilder();
@@ -71,17 +74,17 @@ export class LabTest {
 
     }
 
-  public IsValid(): boolean{ if (this.LabTestValidator.valid) { return true; } else { return false; } }
+    public IsValid(): boolean { if (this.LabTestValidator.valid) { return true; } else { return false; } }
 
 
-  public IsValidCheck(fieldname, validator): boolean {
+    public IsValidCheck(fieldname, validator): boolean {
 
-    if (fieldname == undefined) {
-      return this.LabTestValidator.valid;
-    }
-    else {
-      return !(this.LabTestValidator.hasError(validator, fieldname));
-    }
+        if (fieldname == undefined) {
+            return this.LabTestValidator.valid;
+        }
+        else {
+            return !(this.LabTestValidator.hasError(validator, fieldname));
+        }
     }
 
 

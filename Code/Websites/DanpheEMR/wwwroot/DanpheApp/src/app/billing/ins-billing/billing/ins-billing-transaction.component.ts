@@ -30,7 +30,8 @@ import { CreditOrganization } from '../../../settings-new/shared/creditOrganizat
 import { ENUM_BillingStatus, ENUM_BillPaymentMode, ENUM_VisitType, ENUM_PriceCategory } from '../../../shared/shared-enums';
 
 @Component({
-  templateUrl: "./ins-billing-transaction.html" //"/BillingView/BillingTransaction"
+  templateUrl: "./ins-billing-transaction.html", //"/BillingView/BillingTransaction"
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class INSBillingTransactionComponent {
@@ -38,7 +39,7 @@ export class INSBillingTransactionComponent {
   public model: BillingTransaction = new BillingTransaction();
   //public this.model.BillingTransactionItems: Array<BillingTransactionItem> = null;  //initialize the array of object to add the row 
   //public currentBilTxnItem: BillingTransactionItem = null;
-  public currencyUnit: string = null;
+  //public currencyUnit: string = null;
   public itemList: Array<any> = [];
   public isItemLoaded: boolean = false;
   public disableTextBox: boolean = false;
@@ -127,7 +128,7 @@ export class INSBillingTransactionComponent {
     this.taxId = this.billingService.taxId;
     this.currentBillingFlow = this.routeFromService.RouteFrom;
     this.routeFromService.RouteFrom = "";
-    if (this.currentCounter < 1) { 
+    if (this.currentCounter < 1) {
       this.callbackService.CallbackRoute = '/Billing/InsuranceMain/PatientList'
       this.router.navigate(['/Billing/CounterActivate']);
     }
@@ -353,7 +354,7 @@ export class INSBillingTransactionComponent {
 
 
     //if (this.billingService.BillingFlow == "insurance" || this.billingService.BillingFlow == "insurance-package") {
-      
+
     //}
     ////get all items
     //else {
@@ -998,7 +999,9 @@ export class INSBillingTransactionComponent {
     }
     this.billingService.globalBillingReceipt = txnReceipt;
     this.loading = false;//enables the submit button once all the calls are completed
+
     this.router.navigate(['Billing/ReceiptPrint']);
+
   }
 
   ////-------------- implementing individual discount from the total discount percentahe----------
@@ -1471,12 +1474,12 @@ export class INSBillingTransactionComponent {
     let html: string = "";
     if (data.ServiceDepartmentName != "OPD") {
       html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + data["Price"];
     }
     else {
       let docName = data.Doctor ? data.Doctor.DoctorName : "";
       html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit+" "+ data["Price"];
     }
     //else {
     //    html = data["ItemName"]+
@@ -1769,7 +1772,7 @@ export class INSBillingTransactionComponent {
         });
       }
     }
-    else if (this.priceCategory == ENUM_PriceCategory.SAARCCitizen ) {//"SAARCCitizen"; default is: 'Normal'
+    else if (this.priceCategory == ENUM_PriceCategory.SAARCCitizen) {//"SAARCCitizen"; default is: 'Normal'
       //this.priceCategoryShortName = "(S)";
       //alert("Normal selected");
       if (this.itemList != null && this.itemList.length > 0) {
@@ -1935,12 +1938,17 @@ export class INSBillingTransactionComponent {
     }
   }
 
-
-
   ShowPastBillHistory() {
     if (this.showPastBillHistory) {
 
     }
   }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.ShowDuplicateItemComfirmation = false
+    }
+  }
+
 
 }

@@ -45,7 +45,7 @@ export class ActivateWardComponent implements OnInit {
   }
 
   ngOnInit() {
-
+    
   }
   private CallBackGetAllWard(res) {
     if (res.Status == "OK") {

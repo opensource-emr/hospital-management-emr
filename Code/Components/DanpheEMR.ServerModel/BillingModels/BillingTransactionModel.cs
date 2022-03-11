@@ -25,6 +25,8 @@ namespace DanpheEMR.ServerModel
         public double? TotalAmount { get; set; }
         public double? PaidAmount { get; set; }
         public double? DepositAmount { get; set; }
+        public double? DepositAvailable { get; set; }
+        public double? DepositUsed { get; set; }
         public double? DepositReturnAmount { get; set; }
         public double? DepositBalance { get; set; }
         public string Remarks { get; set; }
@@ -74,9 +76,9 @@ namespace DanpheEMR.ServerModel
         public int? InsuranceProviderId { get; set; }
         //Yubraj: 22nd April '19 for credit organization 
         public double? ExchangeRate { get; set; }//Sanjit: 5-17-19 added for foreign exchange
-        public int? OrganizationId { get; set; } 
+        public int? OrganizationId { get; set; }
         [NotMapped]
-        public string OrganizationName{ get; set; }
+        public string OrganizationName { get; set; }
 
         [NotMapped]//Yubraj 16th Jan '19
         public int? ReceiptNo { get; set; }
@@ -93,6 +95,12 @@ namespace DanpheEMR.ServerModel
         public string BillingUserName { get; set; }//Yubaraj:28June'19--needed for Billing receipt to return current logged in user.
 
         public string InvoiceType { get; set; }// pratik:29April 2020-- needed for partial payment invoice in ipbilling
+
+        public string LabTypeName { get; set; }//pratik:25Feb2021
+
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? ClaimCode { get; set; }//pramod
 
         public static BillingTransactionModel GetCloneWithItems(BillingTransactionModel txnToClone)
         {
@@ -133,9 +141,18 @@ namespace DanpheEMR.ServerModel
                 PrintCount = txnToClone.PrintCount,
                 Tender = txnToClone.Tender,
                 ReturnStatus = txnToClone.ReturnStatus,
-                InvoiceType = txnToClone.InvoiceType
+                InvoiceType = txnToClone.InvoiceType,
+                LabTypeName = txnToClone.LabTypeName
             };
             return retTxnModel;
         }
     }
+    public class BillingTransactionPostVM
+    {
+        public List<LabRequisitionModel> LabRequisition = new List<LabRequisitionModel>();
+        public List<ImagingRequisitionModel> ImagingItemRequisition = new List<ImagingRequisitionModel>();
+        public List<VisitModel> VisitItems = new List<VisitModel>();
+        public BillingTransactionModel Txn = new BillingTransactionModel();
+    }
+
 }

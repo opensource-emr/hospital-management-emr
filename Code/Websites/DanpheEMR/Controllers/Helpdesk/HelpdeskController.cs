@@ -11,6 +11,9 @@ using DanpheEMR.ServerModel.ReportingModels;
 using DanpheEMR.ServerModel.HelpdeskModels;
 using System.Data;
 using DanpheEMR.ViewModel.ADT;
+using System.Data.SqlClient;
+
+//sud:30May'2021-for Gitlab webhook testing -- we can remove this line.
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,12 +24,13 @@ namespace DanpheEMR.Controllers.HelpDesk
     {
         public HelpdeskController(IOptions<MyConfiguration> _config) : base(_config)
         {
+
             //connectionStr = _config.Value.Connectionstring;
 
         }
         // GET: api/values
         [HttpGet]
-        public string Get(string reqType,string status)
+        public string Get(string reqType, string status)
         {
             HelpdeskDbContext dbContextHelpdesk = new HelpdeskDbContext(connString);
             AdmissionDbContext dbAdmission = new AdmissionDbContext(connString);
@@ -50,7 +54,7 @@ namespace DanpheEMR.Controllers.HelpDesk
                     responseData.Results = empsInfoList;
                 }
                 //gets the BedInformation from Bed,Bedtype and Ward tables
-                if (reqType == "getBedinfo")
+                else if (reqType == "getBedinfo")
                 {
                     //.ToList()is done two times,since we can't use requestDate.Date inside IQueryable
                     DynamicReport bedsInfoList = dbContextHelpdesk.GetBedInformation();
@@ -58,80 +62,47 @@ namespace DanpheEMR.Controllers.HelpDesk
                     responseData.Status = "OK";
                     responseData.Results = bedsInfoList;
                 }
-                //gets the BedInformation , Patient Information and Ward Name
-                if (reqType == "getBedPatientInfo")
+                else if (reqType == "getBedPatientInfo")
                 {
-                    var bedpatientinfo = dbAdmission.Beds.ToList().GroupJoin(dbAdmission.PatientBedInfos.ToList().Where(a => a.EndedOn == null), a => a.BedId, b => b.BedId, (a, b) =>
-                          new BedPatientViewModel
-                          {
-                              BedId = a.BedId,
-                              WardId = a.WardId,
-                              BedCode = a.BedCode,
-                              PatientId = b.Select(s => s.PatientId).FirstOrDefault(),
-                              PatientBedInfoId = b.Select(s=>s.PatientBedInfoId).FirstOrDefault(),
-                              StartedOn = b.Select(s => s.StartedOn).FirstOrDefault(),
-                              EndedOn = b.Select(s=>s.EndedOn).FirstOrDefault(),
-                              BedNumber = a.BedNumber,
-                              IsOccupied = a.IsOccupied
+                    var bedpatientinfo = (from patientBedInfo in dbAdmission.PatientBedInfos.Where(a => a.IsActive == true && a.EndedOn == null)
+                                          join bed in dbAdmission.Beds on patientBedInfo.BedId equals bed.BedId
+                                          where bed.IsActive == true && bed.IsOccupied == true
+                                          join ward in dbAdmission.Wards on patientBedInfo.WardId equals ward.WardId
+                                          where ward.IsActive == true
+                                          join bedFeatureMap in dbAdmission.BedFeaturesMaps on bed.BedId equals bedFeatureMap.BedId
+                                          join bedFeature in dbAdmission.BedFeatures on bedFeatureMap.BedFeatureId equals bedFeature.BedFeatureId
+                                          where bedFeature.IsActive == true
+                                          join patient in dbAdmission.Patients on patientBedInfo.PatientId equals patient.PatientId
+                                          join visit in dbAdmission.Visits.Distinct() on patientBedInfo.PatientId equals visit.PatientId
+                                          where visit.VisitType == "inpatient"
 
-                          }).GroupJoin(dbAdmission.Patients.ToList(), a => a.PatientId, b => b.PatientId, (a, b) =>
-                                  new BedPatientViewModel
-                                  {
-                                      BedId = a.BedId,
-                                      WardId = a.WardId,
-                                      BedCode = a.BedCode,
-                                      PatientId = b.Select(s => s.PatientId).FirstOrDefault(),
-                                      PatientBedInfoId = a.PatientBedInfoId,
-                                      StartedOn = a.StartedOn,
-                                      EndedOn = a.EndedOn,
-                                      BedNumber = a.BedNumber,
-                                      IsOccupied = a.IsOccupied,
-                                      PatientName = b.Select(s => s.FirstName).FirstOrDefault() + " " + b.Select(s => s.MiddleName).FirstOrDefault() + " " + b.Select(s => s.LastName).FirstOrDefault(),
-                                      PatientCode = b.Select(s => s.PatientCode).FirstOrDefault(),
-                                      Address = b.Select(s => s.Address).FirstOrDefault()
-                                  }).GroupJoin(dbAdmission.Wards.ToList(), a => a.WardId, b => b.WardId, (a, b) =>
-                                   new BedPatientViewModel
-                                   {
-                                       BedId = a.BedId,
-                                       WardId = b.Select(s => s.WardId).FirstOrDefault(),
-                                       WardName = b.Select(s => s.WardName).FirstOrDefault(),
-                                       BedCode = a.BedCode,
-                                       PatientId = a.PatientId,
-                                       PatientBedInfoId = a.PatientBedInfoId,
-                                       StartedOn = a.StartedOn,
-                                       EndedOn = a.EndedOn,
-                                       BedNumber = a.BedNumber,
-                                       IsOccupied = a.IsOccupied,
-                                       PatientName = a.PatientName,
-                                       PatientCode = a.PatientCode,
-                                       Address = a.Address
-                                   }).GroupJoin(dbAdmission.Admissions.ToList(),a => a.PatientId , b =>b.PatientId,(a,b)=>
-                                   new BedPatientViewModel
-                                   {
-                                       BedId = a.BedId,
-                                       WardId = a.WardId,
-                                       WardName = a.WardName,
-                                       BedCode = a.BedCode,
-                                       PatientId = a.PatientId,
-                                       PatientBedInfoId = a.PatientBedInfoId,
-                                       StartedOn = a.StartedOn,
-                                       EndedOn = a.EndedOn,
-                                       BedNumber = a.BedNumber,
-                                       IsOccupied = a.IsOccupied,
-                                       PatientName = a.PatientName,
-                                       PatientCode = a.PatientCode,
-                                       Address = a.Address,
-                                       PatientVisitId = b.Select(s=>s.PatientVisitId).FirstOrDefault(),
-                                       PatientAdmissionId =b.Select(s=>s.PatientAdmissionId).FirstOrDefault(),
-                                       DischargedDate = b.Select(s=>s.DischargeDate).FirstOrDefault(),
-                                       AdmittedDate = b.Select(s => s.AdmissionDate).FirstOrDefault()
-                                   });
+                                          select new BedPatientViewModel
+                                          {
+                                              BedNumber = bed.BedNumber,
+                                              BedCode = bed.BedCode,
+                                              Address = patient.Address,
+                                              BedFeatureId = bedFeature.BedFeatureId,
+                                              BedId = bed.BedId,
+                                              VisitCode = visit.VisitCode,
+                                              EndedOn = patientBedInfo.EndedOn,
+                                              StartedOn = patientBedInfo.StartedOn,
+                                              PatientName = patient.FirstName + " " + patient.MiddleName + " " + patient.LastName,
+                                              PatientAdmissionId = patient.PatientId,
+                                              WardName = ward.WardName,
+                                              WardId = ward.WardId,
+                                              PatientBedInfoId = patientBedInfo.BedFeatureId,
+                                              PatientCode = patient.PatientCode,
+                                              Age = patient.Age,
+                                              PhoneNumber = patient.PhoneNumber
 
+                                          }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = bedpatientinfo;
+
                 }
+
                 //gets the WardInformation from WardBedType and Ward tables
-                if (reqType == "getWardinfo")
+                else if (reqType == "getWardinfo")
                 {
                     //data from GetWardInformation Method from Dbcontext
                     List<WardInformationModel> wardsInfoList = dbContextHelpdesk.GetWardInformation();
@@ -139,13 +110,13 @@ namespace DanpheEMR.Controllers.HelpDesk
                     responseData.Status = "OK";
                     responseData.Results = wardsInfoList;
                 }
-                else if(reqType == "getBedFeature"){
-                  DanpheHTTPResponse<DataTable> data = new DanpheHTTPResponse<DataTable>();
+                else if (reqType == "get-bedoccupancy-of-wards")
+                {
+                    DanpheHTTPResponse<DataTable> data = new DanpheHTTPResponse<DataTable>();
                     try
                     {
-
                         HelpdeskDbContext helpdeskDbContext = new HelpdeskDbContext(connString);
-                        DataTable dtResult = helpdeskDbContext.BedFeatureReprot();
+                        DataTable dtResult = helpdeskDbContext.GetBedOccupancyOfWards();
                         data.Status = "OK";
                         data.Results = dtResult;
                     }
@@ -156,6 +127,13 @@ namespace DanpheEMR.Controllers.HelpDesk
                         data.ErrorMessage = ex.Message;
                     }
                     return DanpheJSONConvert.SerializeObject(data);
+                }
+                else if (reqType == "get-allbeds-with-patientsinfo")
+                {
+                    HelpdeskDbContext helpdeskDbContext = new HelpdeskDbContext(connString);
+                    DataTable dtBedsWithPat = DALFunctions.GetDataTableFromStoredProc("SP_ADT_AllBedsWithPatientsInfo", helpdeskDbContext);
+                    responseData.Results = dtBedsWithPat;
+                    responseData.Status = "OK";
                 }
             }
             catch (Exception ex)

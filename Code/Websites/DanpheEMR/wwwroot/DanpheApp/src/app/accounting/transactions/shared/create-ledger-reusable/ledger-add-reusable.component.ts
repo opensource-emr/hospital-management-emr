@@ -7,6 +7,8 @@ import { LedgerModel } from '../../../settings/shared/ledger.model';
 import { SecurityService } from '../../../../security/shared/security.service';
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
+import { AccountingService } from "../../../../accounting/shared/accounting.service";
+import * as _ from 'lodash';
 
 @Component({
     selector: 'ledger-add-reusable',
@@ -41,11 +43,13 @@ export class LedgersAddReusableComponent {
     
     public phrmSupplierList: any;
     public ledgerMappingList: any;
+     public allcoaList: any[];
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
-        public accountingBLService: AccountingBLService) {
+        public accountingBLService: AccountingBLService,
+        public accountingService: AccountingService) {
 
     }
 
@@ -64,23 +68,24 @@ export class LedgersAddReusableComponent {
         this.update = false;
         this.CurrentLedger = new LedgerModel();
         this.CurrentLedger.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-
+         this.getCoaList();
+         this.getPrimaryGroupList();
     }
 
 
     GetLedgerGroup() {
-        this.accountingSettingsBLService.GetLedgerGroup()
-            .subscribe(res => this.CallBackLedgerGroup(res));
+        if (!!this.accountingService.accCacheData.LedgerGroups && this.accountingService.accCacheData.LedgerGroups.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+            this.CallBackLedgerGroup(this.accountingService.accCacheData.LedgerGroups)//mumbai-team-june2021-danphe-accounting-cache-change
+        }
     }
 
     CallBackLedgerGroup(res) {
         this.sourceLedGroupList = new Array<LedgerModel>();
-        this.sourceLedGroupList = res.Results;
-        this.ledgergroupList = [];
-        this.primaryGroupList = [];
+        this.sourceLedGroupList = res; //mumbai-team-june2021-danphe-accounting-cache-change
+        this.sourceLedGroupList = this.sourceLedGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgergroupList = this.sourceLedGroupList;
         this.coaList = [];
         this.ledgerList = new Array<LedgerModel>();
-        this.primaryGroupList = Array.from([new Set(this.sourceLedGroupList.map(i => i.PrimaryGroup))][0]);
     }
     //adding new Ledger
     AddLedger() {
@@ -144,7 +149,8 @@ export class LedgersAddReusableComponent {
             retLedgerObj.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
             retLedgerObj.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
             retLedgerObj.LedgerName = this.CurrentLedger.LedgerName;
-      
+            retLedgerObj = _.omit(retLedgerObj, ['LedgerValidator']);//remove validator, as we dont need it in this.accountingService.accCacheData.Ledgers
+            this.accountingService.accCacheData.Ledgers.push(retLedgerObj);
             //this.showAddPage = false;
             this.ledgergroupList = new Array<LedgerModel>();
             this.ledgerList = new Array<LedgerModel>();
@@ -205,26 +211,34 @@ export class LedgersAddReusableComponent {
     }
     public PrimaryGroupChanged() {
         if (this.CurrentLedger.PrimaryGroup) {
-            this.coaList = [];
             this.ledgergroupList = [];
             this.selLedgerGroup = null;
-            this.CurrentLedger.LedgerGroupName = null;
-            this.CurrentLedger.LedgerName = null;
             this.ledgerList = new Array<LedgerModel>();
-            let selectedPrimaryGroupList = this.sourceLedGroupList.filter(a => a.PrimaryGroup == this.CurrentLedger.PrimaryGroup);
-            this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
-            this.CurrentLedger.COA = this.coaList[0];
+            this.CurrentLedger.LedgerGroupId=0;
+            this.CurrentLedger.LedgerGroupName=null;
+            if(this.coaList.length!=0){
+                this.coaList = [];
+                this.CurrentLedger.COAId = null;
+                this.CurrentLedger.LedgerGroupName = null;
+            }
+            let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == this.CurrentLedger.PrimaryGroup)[0].PrimaryGroupId;
+            this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
             this.COAChanged();
         }
     }
 
     public COAChanged() {
-        if (this.CurrentLedger.COA) {
+        if (this.CurrentLedger.COAId) {
             this.ledgergroupList = [];
             this.selLedgerGroup = null;
-            this.CurrentLedger.LedgerGroupName = null;
-            this.CurrentLedger.LedgerName = null;
             this.ledgerList = new Array<LedgerModel>();
+            //this.CurrentLedger.COAId = +this.CurrentLedger.COAId;
+            this.CurrentLedger.COA = this.coaList.filter(c => c.ChartOfAccountId == this.CurrentLedger.COAId)[0].ChartOfAccountName;
+            this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == this.CurrentLedger.COA);
+        }
+        else{
+            this.CurrentLedger.COAId = this.coaList[0].ChartOfAccountId;
+            this.CurrentLedger.COA = this.coaList[0].ChartOfAccountName;
             this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == this.CurrentLedger.COA);
         }
     }
@@ -239,16 +253,10 @@ export class LedgersAddReusableComponent {
         }
     }
     public getLedgerList() {
-        this.accountingSettingsBLService.GetLedgerList()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.sourceLedgerList = res.Results;
-                }
-                else {
-                    alert("Failed ! " + res.ErrorMessage);
-                }
-
-            });
+        if (!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length>0) {//mumbai-team-june2021-danphe-accounting-cache-change
+            this.sourceLedgerList = this.accountingService.accCacheData.Ledgers;//mumbai-team-june2021-danphe-accounting-cache-change
+            this.sourceLedgerList = this.sourceLedgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        }
     }
     LedgerGroupListFormatter(data: any): string {
         return data["LedgerGroupName"];
@@ -365,13 +373,15 @@ export class LedgersAddReusableComponent {
         ledgerGroup.LedgerGroupId = $event.currentLedger.LedgerGroupId;
         ledgerGroup.PrimaryGroup = $event.currentLedger.PrimaryGroup;
         ledgerGroup.COA = $event.currentLedger.COA;
+        ledgerGroup.COAId = $event.currentLedger.COAId;
         ledgerGroup.LedgerGroupName = $event.currentLedger.LedgerGroupName;
         ledgerGroup.IsActive = $event.currentLedger.IsActive;
         ledgerGroup.Description = $event.currentLedger.Description;
         ledgerGroup.Name = $event.currentLedger.Name;
-        this.ledgergroupList.push(ledgerGroup);
-        this.ledgergroupList = this.ledgergroupList.slice();
+        this.CurrentLedger=new LedgerModel;
+        this.CurrentLedger=Object.assign(this.CurrentLedger,ledgerGroup);
         this.GetLedgerGroup();
+        this.PrimaryGroupChanged();       
     }
     checkUniqueLedgerName() {
         if (this.CurrentLedger.LedgerName) {
@@ -387,6 +397,18 @@ export class LedgersAddReusableComponent {
         else {
             this.msgBoxServ.showMessage("notice", ['LedgerName required.']);
             this.loading = false;
+        }
+    }
+    public getCoaList() {
+        if(!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+          this.allcoaList = this.accountingService.accCacheData.COA;//mumbai-team-june2021-danphe-accounting-cache-change
+          this.allcoaList = this.allcoaList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        }
+      }
+    public getPrimaryGroupList() {
+        if(!!this.accountingService.accCacheData.PrimaryGroup && this.accountingService.accCacheData.PrimaryGroup.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+          this.primaryGroupList = this.accountingService.accCacheData.PrimaryGroup;//mumbai-team-june2021-danphe-accounting-cache-change
+          this.primaryGroupList = this.primaryGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         }
     }
 }

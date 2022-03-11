@@ -27,6 +27,7 @@ export class ItemSubCategoryListComponent {
     this.itemSubCategoryGridColumns = GridColumnSettings.ItemSubCategoryList;
     //this.getAccountHead();
     this.getMappedledgerlist();
+    this.getItemSubCategoryList();
 
   }
   public getItemSubCategoryList() {
@@ -79,6 +80,7 @@ export class ItemSubCategoryListComponent {
         this.changeDetector.detectChanges();
         this.selectedItemSubCategory = $event.Data;
         this.showAddPage = true;
+        this.FocusElementById('ItemSubCategoryName');
       }
       default:
         break;
@@ -86,6 +88,7 @@ export class ItemSubCategoryListComponent {
   }
   AddItemSubCategory() {
     this.showAddPage = false;
+    this.FocusElementById('ItemSubCategoryName');
     this.changeDetector.detectChanges();
     this.showAddPage = true;
   }
@@ -103,6 +106,13 @@ export class ItemSubCategoryListComponent {
     this.selectedItemSubCategory = null;
     this.index = null;
   }
-
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
 
 }

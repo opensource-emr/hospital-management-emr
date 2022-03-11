@@ -1,0 +1,313 @@
+<!-- <div class="popup-static portlet box portlet-fullscreen custom_modal " style="margin-bottom:25px">
+    <div class="portlet-body ">
+      <div class="row">
+      <div class="col-md-12">       
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Assets Maintenance Edit</span></h3>
+            <a class="btn btn-danger" (click)="Close()"><i class="fa fa-close"></i></a> 
+          </div> 
+          <div class="selectedAssetForEdit" style="padding: 0 10px;">
+           <table class="table table-striped table-bordered table-hover">
+            <thead>
+              <tr class="tbl-td-padding">
+                <th>Item Code</th>
+                <th>Bar Code Number</th>
+                <th>Item Name</th>
+                <th>Total Life in Year</th>
+                <th>Year of use</th>
+                <th>Manufacture Date</th>
+                <th>Warranty</th>
+                <th>Performance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="selectedAssetForEdit">
+                <td>{{selectedAssetForEdit.ItemCode}}</td>
+                <td>{{selectedAssetForEdit.BarCodeNumber}}</td>
+                <td>{{selectedAssetForEdit.ItemName}}</td>
+                <td><input type="number" min="0" [(ngModel)]="selectedAssetForEdit.TotalLife" style="width:100px;"></td>
+                <td>
+                  <input type="text" [(ngModel)]="selectedAssetForEdit.YearOfUse"   style="width:100px;" />
+                 </td>
+                 <td>
+                  <danphe-date-picker  disbal ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}" [(ngModel)]="selectedAssetForEdit.ManufactureDate" [allow-future-date]="true" style="width:100px;" ></danphe-date-picker>
+                 </td>
+                 <td>{{selectedAssetForEdit.WarrantyExpiryDate | date:'yyyy-MM-dd'}}</td>
+   
+                <td>
+                  <select [(ngModel)]="selectedAssetForEdit.Performance"  >
+                    <option [ngValue]="null" disabled >Choose...</option>
+                    <option value="Good Condition">Good Condition</option>
+                    <option value="Working">Working</option>
+                    <option value="Not Working">Not Working</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+           </table>
+           <div class="selectedAssetForEdit text-center">
+            <div class="panel-footer">
+              <input type="button" class="btn btn-success" (click)="Save()" value="Update"   [disabled]="loading" />
+            </div>          
+          </div>
+            </div>
+          </div>
+  
+        </div>  
+      </div> 
+      </div>
+    </div>
+    -->
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAssetForm">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3>Assets Maintenance Edit </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form" [formGroup]="selectedAssetForEdit.FAEditAssetMainteanceValidators">
+
+            <!--Start: Model Body-->
+            <div class="form-body clearfix">
+              <div class="row">
+                <!--Start: Header Details -->
+                <div class="col-md-10 col-md-offset-1">
+                  <div class="row">
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Item Code <b> : </b></label>
+                        <div class="col-md-6">
+                          {{selectedAssetForEdit.ItemCode}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Bar Code Number <b>:</b></label>
+                        <div class="col-md-6">
+                          {{selectedAssetForEdit.BarCodeNumber}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Item Name <b>:</b></label>
+                        <div class="col-md-6">
+                          {{selectedAssetForEdit.ItemName}}
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Warranty <b>:</b></label>
+                        <div class="col-md-6">
+                          {{selectedAssetForEdit.WarrantyExpiryDate | date:'yyyy-MM-dd'}}
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6"> Performance <b>:</b></label>
+                        <div class="col-md-6">
+                          <select [(ngModel)]="selectedAssetForEdit.Performance" [ngModelOptions]="{standalone:true}"
+                            class="col-md-12">
+                            <option [ngValue]="null" disabled>Choose...</option>
+                            <option value="Working">Working</option>
+                            <option value="Not Working">Not Working</option>
+                          </select>
+
+                          <!-- <span style="color:red" [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('Performance','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('Performance'))">
+                                Performance  is required</span> -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Periodic Service ( In
+                          Every )<b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="number" [(ngModel)]="selectedAssetForEdit.PeriodicServiceDays"
+                            [ngModelOptions]="{standalone:true}" min="0" class="col-md-12"
+                            placeholder="Enter Periodic service days..." />
+
+                          <!-- <span Class="color-red font-sm" formControlName="PeriodicServiceDays"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('YearOfUse','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('YearOfUse'))">
+                            Required</span> -->
+                        </div>
+                        <label class="col-md-1" style="padding-left:0px!important;">Days</label>
+                      </div>
+                    </div>
+
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Year of use<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="number" [(ngModel)]="selectedAssetForEdit.YearOfUse" formControlName="YearOfUse"
+                            class="col-md-12" placeholder="Enter Year Of Use..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('YearOfUse','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('YearOfUse'))">Year
+                            of use is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Manufacture Date <b>:</b></label>
+                        <div class="col-md-6">
+                          <danphe-date-picker [CalendarTypes]="'np,en'" formControlName="ManufactureDate"
+                            [(ngModel)]="selectedAssetForEdit.ManufactureDate" style="width:100px;">
+                          </danphe-date-picker>
+
+                          <!-- <danphe-date-picker [CalendarTypes]="'np,en'" formControlName="ManufactureDate"
+                            [(ngModel)]="selectedAssetForEdit.ManufactureDate" style="width:100px;">
+                          </danphe-date-picker> -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Total Life in Year<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="number" [(ngModel)]="selectedAssetForEdit.TotalLife" formControlName="TotalLife"
+                            min="0" class="col-md-12" placeholder="Enter TotalLife..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('TotalLife','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('TotalLife'))">Total
+                            Life in Year is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Installation Date <b>:</b></label>
+                        <div class="col-md-6">
+                          <danphe-date-picker [CalendarTypes]="'np,en'" formControlName="InstallationDate"
+                            [(ngModel)]="selectedAssetForEdit.InstallationDate" style="width:100px;">
+                          </danphe-date-picker>
+
+
+                          <!-- <danphe-date-picker [CalendarTypes]="'np,en'" formControlName="InstallationDate"
+                            [(ngModel)]="selectedAssetForEdit.InstallationDate" style="width:100px;">
+                          </danphe-date-picker> -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12" style="margin-bottom:15px!important;margin-top:30px!important;">
+                      <label style="padding-left:0px!important; font-size:medium!important;font-weight:700!important;">
+                        <strong>Vendor Contact Details</strong></label>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Name1<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.Name" formControlName="Name"
+                            class="col-md-12" placeholder="Enter Name..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('Name','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('Name'))">Name
+                            is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Name2<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.Name2" formControlName="Name2"
+                            class="col-md-12" placeholder="Enter Name..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('Name2','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('Name2'))">Name
+                            is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Position1<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.CompanyPosition"
+                            formControlName="CompanyPosition" class="col-md-12"
+                            placeholder="Enter Company Position..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('CompanyPosition','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('CompanyPosition'))">Company
+                            Position is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Position2<sup>*</sup><b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.CompanyPosition2"
+                            formControlName="CompanyPosition2" class="col-md-12"
+                            placeholder="Enter Company Position..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selectedAssetForEdit.IsEditAssetmaintenanceValidCheck('CompanyPosition2','required') || !(selectedAssetForEdit.IsEditAssetmaintenanceDirty('CompanyPosition2'))">Company
+                            Position is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Phone Number1<b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.PhoneNumber"
+                            formControlName="PhoneNumber" class="col-md-12" placeholder="Enter Phone Number..." />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-6">Contact Person Phone Number2<b>:</b></label>
+                        <div class="col-md-6">
+                          <input type="text" [(ngModel)]="selectedAssetForEdit.PhoneNumber2"
+                            formControlName="PhoneNumber2" class="col-md-12" placeholder="Enter Phone Number..." />
+
+
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <!--End: Header Details -->
+
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+            <div class="form-group panel-footer text-right no-margin">
+              <button type="button" class="btn btn-success" (click)="Save()" [disabled]="loading">
+                Update
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

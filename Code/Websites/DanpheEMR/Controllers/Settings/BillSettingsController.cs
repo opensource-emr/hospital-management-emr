@@ -12,15 +12,10 @@ using DanpheEMR.CommonTypes;
 using DanpheEMR.ServerModel.Helpers;//for appointmenthelpers
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.Security;
-using RefactorThis.GraphDiff;
 using System.Xml;
 using Newtonsoft.Json;
 using DanpheEMR.Core;
-using DanpheEMR.Core.Parameters;
-using DanpheEMR.ServerModel.LabModels;
-using System.IO;
 using Microsoft.AspNetCore.Http;
-using System.Drawing;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -51,6 +46,7 @@ namespace DanpheEMR.Controllers
             int templateId,
             bool ShowIsActive,
             string integrationName,
+            int reportingItemsId,
             bool showInactiveItems = false)
         {
             MasterDbContext masterDbContext = new MasterDbContext(connString);
@@ -110,6 +106,8 @@ namespace DanpheEMR.Controllers
                                         InsuranceApplicable = item.InsuranceApplicable,
                                         GovtInsurancePrice = item.GovtInsurancePrice,
                                         IsInsurancePackage = item.IsInsurancePackage,
+                                        IsZeroPriceAllowed = item.IsZeroPriceAllowed,
+                                        IsErLabApplicable = item.IsErLabApplicable,
                                         Doctor = (from doc in billingDbContext.Employee.DefaultIfEmpty()
                                                   where doc.IsAppointmentApplicable == true && doc.EmployeeId == item.ItemId && srv.ServiceDepartmentName == "OPD"
                                                   && srv.ServiceDepartmentId == item.ServiceDepartmentId
@@ -152,6 +150,24 @@ namespace DanpheEMR.Controllers
 
                     responseData.Status = "OK";
                     responseData.Results = filteredItems;
+                }
+                else if (reqType != null && reqType == "get-reporting-items-List")
+                {
+                    var list = billingDbContext.ReportingItemsModels.ToList();
+                    if (list != null)
+                    {
+                        responseData.Status = "OK";
+                        responseData.Results = list;
+                    }
+                }
+                else if (reqType != null && reqType == "get-dynamic-reporting-name-List")
+                {
+                    var list = billingDbContext.DynamicReportNameModels.ToList();
+                    if (list != null)
+                    {
+                        responseData.Status = "OK";
+                        responseData.Results = list;
+                    }
                 }
                 //GET: Price Change History List of Bill Item by ItemId and ServiceDepartmentId
                 else if (reqType != null && reqType == "get-billItemPriceChangeHistory")
@@ -291,6 +307,7 @@ namespace DanpheEMR.Controllers
                                                   item.IsForeignerPriceApplicable,
                                                   item.IsInsForeignerPriceApplicable,
                                                   item.IsEHSPriceApplicable,
+                                                  item.IsZeroPriceAllowed,
                                                   ItemNamePrice = item.ItemName + " " + item.Price.ToString()
                                               }).ToList();
                     responseData.Status = "OK";
@@ -332,8 +349,33 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = itemList;
                 }
+                else if (reqType == "get-printer-settings")
+                {
+                    var printerSettings = (from print in billingDbContext.PrinterSettings
+                                           where print.IsActive == true
+                                           select print).ToList();
 
+                    responseData.Status = "OK";
+                    responseData.Results = printerSettings;
+                }
+                else if (reqType == "get-all-printer-settings")
+                {
+                    var printerSettings = (from print in billingDbContext.PrinterSettings
+                                               //where print.IsActive == true
+                                           select print).ToList();
 
+                    responseData.Status = "OK";
+                    responseData.Results = printerSettings;
+                }
+                else if (reqType == "get-security-reportingItemBillItem")
+                {
+                    var itemList = billingDbContext.ReportingItemsAndBillingItemMappingModels
+                        .Where(a => a.ReportingItemsId == reportingItemsId)
+                        .OrderBy(a => a.BillItemPriceId).ToList();
+
+                    responseData.Status = "OK";
+                    responseData.Results = itemList;
+                }
             }
             catch (Exception ex)
             {
@@ -408,6 +450,29 @@ namespace DanpheEMR.Controllers
                     responseData.Results = item;
                     responseData.Status = "OK";
                 }
+                else if (reqType == "post-reportingItem")
+                {
+
+                    ReportingItemsModel item = DanpheJSONConvert.DeserializeObject<ReportingItemsModel>(str);
+
+                    item.CreatedBy = currentUser.EmployeeId;
+                    item.CreatedOn = DateTime.Now;
+                    billingDbContext.ReportingItemsModels.Add(item);
+                    billingDbContext.SaveChanges();
+                    responseData.Results = item;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "post-security-reportingItemBillItem")
+                {
+                    List<ReportingItemBillingItemMapping> mappingObject = DanpheJSONConvert.DeserializeObject<List<ReportingItemBillingItemMapping>>(str);
+                    mappingObject.ForEach(mapping =>
+                    {
+                        billingDbContext.ReportingItemsAndBillingItemMappingModels.Add(mapping);
+                    });
+
+                    billingDbContext.SaveChanges();
+                    responseData.Status = "OK";
+                }
                 else if (reqType == "post-billing-package")
                 {
                     BillingPackageModel package = DanpheJSONConvert.DeserializeObject<BillingPackageModel>(str);
@@ -436,6 +501,17 @@ namespace DanpheEMR.Controllers
                     billingDbContext.MembershipType.Add(mem);
                     billingDbContext.SaveChanges();
                     responseData.Results = mem;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "post-printer-setting")
+                {
+                    PrinterSettingsModel printerSetting = DanpheJSONConvert.DeserializeObject<PrinterSettingsModel>(str);
+                    printerSetting.IsActive = true;
+                    printerSetting.CreatedBy = currentUser.EmployeeId;
+                    printerSetting.CreatedOn = DateTime.Now;
+                    billingDbContext.PrinterSettings.Add(printerSetting);
+                    billingDbContext.SaveChanges();
+                    responseData.Results = printerSetting;
                     responseData.Status = "OK";
                 }
             }
@@ -510,6 +586,28 @@ namespace DanpheEMR.Controllers
                     responseData.Results = item;
                     responseData.Status = "OK";
                 }
+                else if (reqType == "put-reportingItem")
+                {
+                    ReportingItemsModel item = DanpheJSONConvert.DeserializeObject<ReportingItemsModel>(str);
+                    billingDbContext.ReportingItemsModels.Attach(item);
+                    billingDbContext.Entry(item).State = EntityState.Modified;
+                    billingDbContext.SaveChanges();
+                    responseData.Results = item;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "put-security-reportingItemBillItem")
+                {
+                    List<ReportingItemBillingItemMapping> mappingObject = DanpheJSONConvert.DeserializeObject<List<ReportingItemBillingItemMapping>>(str);
+                    mappingObject.ForEach(mapping =>
+                    {
+                        billingDbContext.ReportingItemsAndBillingItemMappingModels.Attach(mapping);
+                        billingDbContext.Entry(mapping).State = EntityState.Modified;
+                    });
+                    billingDbContext.SaveChanges();
+                    responseData.Results = mappingObject;
+                    responseData.Status = "OK";
+
+                }
                 else if (reqType == "put-billing-package")
                 {
                     BillingPackageModel package = DanpheJSONConvert.DeserializeObject<BillingPackageModel>(str);
@@ -545,6 +643,39 @@ namespace DanpheEMR.Controllers
                     billingDbContext.SaveChanges();
                     responseData.Results = membership;
                     responseData.Status = "OK";
+                }
+
+                else if (reqType == "put-printer-setting")
+                {
+                    PrinterSettingsModel printerSetting = DanpheJSONConvert.DeserializeObject<PrinterSettingsModel>(str);
+
+                    printerSetting.ModifiedBy = currentUser.EmployeeId;
+                    printerSetting.ModifiedOn = DateTime.Now;
+
+                    billingDbContext.PrinterSettings.Attach(printerSetting);
+                    //masterDBContext.Entry(clientEmployee).State = EntityState.Modified;
+                    billingDbContext.Entry(printerSetting).Property(x => x.PrintingType).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.GroupName).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.PrinterDisplayName).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.PrinterName).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.ModelName).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.Width_Lines).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.Height_Lines).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.HeaderGap_Lines).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.FooterGap_Lines).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.mh).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.ml).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.ServerFolderPath).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.Remarks).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.IsActive).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.ModifiedBy).IsModified = true;
+                    billingDbContext.Entry(printerSetting).Property(x => x.ModifiedOn).IsModified = true;
+
+                    billingDbContext.SaveChanges();
+
+                    responseData.Results = printerSetting;
+                    responseData.Status = "OK";
+
                 }
             }
             catch (Exception ex)

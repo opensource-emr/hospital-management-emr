@@ -38,13 +38,13 @@
     <span *ngIf="!includeExtReferrer">(internal) </span>
   </div>-->
   <div class="col-md-6 pad-0-rt">
-    <input *ngIf="filteredReferrerList" [disabled]="disableTextBox" class="form-control cstm-form-control"
+    <input *ngIf="filteredReferrerList" [disabled]="disableTextBox" class="form-control cstm-form-control" id="currentRequestedByDoctor"
            danphe-auto-complete
            [ngModelOptions]="{standalone: true}" [(ngModel)]="currentRequestedByDoctor"
            [source]="filteredReferrerList"
            [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
            display-property-name="FullName" value-property-name=null match-formatted="true"
-           (focusout)="RequestedByDrOnChange()" onClick="this.select();" max-num-list="10" />
+           (focusout)="RequestedByDrOnChange()" (keyup.enter)="OnPressedEnterKeyInReferrerField()" onClick="this.select();" max-num-list="10" />
     <!--<button type="button" class="btn btn-xs blue" *ngIf="defaultRefInfo && defaultRefInfo.ShowButton" (click)="SelectDefault()" style="margin-left:30px;">
       {{defaultRefInfo.ButtonLabel}}
     </button>-->

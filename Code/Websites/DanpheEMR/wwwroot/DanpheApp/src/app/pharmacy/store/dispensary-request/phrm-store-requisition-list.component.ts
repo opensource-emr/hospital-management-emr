@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { Router } from '@angular/router';
 
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
@@ -13,18 +13,23 @@ import { RouteFromService } from '../../../shared/routefrom.service';
 import * as moment from 'moment/moment';
 import { PHRMStoreDispatchItems } from "../../shared/phrm-store-dispatch-items.model";
 import { CoreService } from "../../../core/shared/core.service";
+import { DispensaryRequisitionService } from "../../../dispensary/dispensary-main/stock-main/requisition/dispensary-requisition.service";
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
-      templateUrl: "./phrm-store-requisition-list.component.html"
+      templateUrl: "./phrm-store-requisition-list.component.html",
+      host: { '(window:keydown)': 'hotkeys($event)' }
 })
-export class PHRMStoreRequisitionListComponent {
-      public deptRequisitionList: Array<PHRMStoreRequisition> = null;
+export class PHRMStoreRequisitionListComponent implements OnInit {
+      public requisitionList: Array<PHRMStoreRequisition> = null;
+      public filterRequisitionList: PHRMStoreRequisition[] = [];
       public innerDispatchdetails: PHRMStoreDispatchItems = new PHRMStoreDispatchItems();
       public dispatchListbyId: Array<PHRMStoreDispatchItems> = new Array<PHRMStoreDispatchItems>();
       public requisitionItemsDetails: Array<PHRMStoreRequisitionItems> = new Array<PHRMStoreRequisitionItems>();
-      public deptwiseGridColumns: Array<any> = null;
+      public requisitionGridColumns: Array<any> = null;
       public dispatchList: Array<{ CreatedByName, CreatedOn, RequisitionId, DispatchId, ReceivedBy, DispatchedByName, DepartmentName }> = new Array<{ CreatedByName, CreatedOn, RequisitionId, DispatchId, ReceivedBy, DispatchedByName, DepartmentName }>();
-      DispatchListGridColumns: ({ headerName: string; field: string; width: number; template?: undefined; } | { headerName: string; field: string; width: number; template: string; })[];
+      DispatchListGridColumns: Array<any> = null;
+      //({ headerName: string; field: string; width: number; template?: undefined; } | { headerName: string; field: string; width: number; template: string; })[];
       public itemchecked: boolean = true;
       public showItemwise: boolean = false;
       public index: number = 0;
@@ -49,48 +54,49 @@ export class PHRMStoreRequisitionListComponent {
       StandardRate: any;
       TotalAmount: any;
       Sum: number = 0;
+      public fromDate: string = null;
+      public toDate: string = null;
+      public dateRange: string = null;
+      public NepaliDateInRequisitionGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+      public NepaliDateInDispatchListGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+      public showNepaliReceipt: boolean;
 
-      constructor(public coreService: CoreService,
+      constructor(public coreService: CoreService, public dispensaryRequisitionService: DispensaryRequisitionService,
             public PharmacyBLService: PharmacyBLService,
             public PharmacyService: PharmacyService,
             public router: Router,
             public routeFrom: RouteFromService,
             public messageBoxService: MessageboxService) {
-            this.deptwiseGridColumns = GridColumnSettings.PHRMStoreRequisitionList;
-            this.DispatchListGridColumns = GridColumnSettings.PHRMDispatchList;
-            this.LoadDeptwiseList("all");
+            this.dateRange = 'last1Week';
             this.GetPharmacyBillingHeaderParameter()
+
+            this.NepaliDateInRequisitionGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
+            this.requisitionGridColumns = GridColumnSettings.PHRMStoreRequisitionList;
+
+            this.CheckReceiptSettings();
+      }
+      ngOnInit() {
+            this.DispatchListGridColumns = GridColumnSettings.PHRMDispatchList;
+            this.NepaliDateInDispatchListGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreatedOn', false));
+      }
+      onDateChange($event) {
+            this.fromDate = $event.fromDate;
+            this.toDate = $event.toDate;
+            if (this.fromDate != null && this.toDate != null) {
+                  if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+                        this.LoadRequisitionList();
+                  } else {
+                        this.messageBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+                  }
+            }
       }
 
-
-      BackToGrid() {
-            this.showItemwise = false;
-            this.LoadDeptwiseList("pending");
-      }
-
-      LoadDeptwiseList(status): void {
-            this.showItemwise = false;
-            //
-            var Status = "";
-            if (status == "pending") {
-                  Status = "active,partial";
-            }
-            else if (status == "complete") {
-                  Status = "complete";
-            }
-            else if (status == "all") {
-                  Status = "active,partial,complete,initiated";
-            }
-            else {
-                  Status = "initiated"
-            }
-            this.PharmacyBLService.GetDeptwiseRequisitionList(Status)
+      LoadRequisitionList(): void {
+            this.dispensaryRequisitionService.GetAllRequisitionList(this.fromDate, this.toDate)
                   .subscribe(res => {
                         if (res.Status == "OK") {
-                              this.deptRequisitionList = res.Results
-                              this.deptRequisitionList.forEach(i => {
-                                    i.canDispatchItem = true
-                              });
+                              this.requisitionList = res.Results.requisitionList;
+                              this.filterRequisitionList = res.Results.requisitionList;
                         }
                         else {
                               this.messageBoxService.showMessage("failed", ['failed to get Requisitions.....please check log for details.']);
@@ -99,7 +105,19 @@ export class PHRMStoreRequisitionListComponent {
                         }
                   });
       }
-
+      FilterRequisitionList(status: string) {
+            var Status = [];
+            if (status == "pending") {
+                  Status = ["active", "partial"];
+            }
+            else if (status == "complete") {
+                  Status = ["complete"];
+            }
+            else {
+                  Status = ["active", "partial", "complete", "initiated", "cancelled"];
+            }
+            this.filterRequisitionList = this.requisitionList.filter(a => Status.includes(a.RequisitionStatus));
+      }
       DeptGridAction($event: GridEmitModel) {
             switch ($event.Action) {
                   case "requisitionDispatch":
@@ -117,13 +135,34 @@ export class PHRMStoreRequisitionListComponent {
                   case "dispatchList":
                         {
                               var data = $event.Data;
-                              this.requisitionId = data.RequistionId;
+                              this.requisitionId = data.RequisitionId;
                               this.departmentName = data.DepartmentName;
                               this.requisitionDate = data.RequisitionDate;
                               this.PharmacyBLService.GetDispatchDetails(this.requisitionId)
                                     .subscribe(res => this.ShoWDispatchbyRequisitionId(res));
                               this.showDispatchList = true;
                               break;;
+                        }
+                  case "approveTransfer":
+                        {
+                              var data = $event.Data;
+                              this.requisitionId = data.RequisitionId;
+                              this.dispensaryRequisitionService.ApproveRequisition(this.requisitionId)
+                                    .subscribe(res => {
+                                          if (res.Status == "OK") {
+                                                this.messageBoxService.showMessage("Success", [`Requisition ${data.RequisitionNo} is approved successfully.`]);
+                                                let selectedRequisition = this.filterRequisitionList.find(r => r.RequisitionId == this.requisitionId);
+                                                selectedRequisition.RequisitionStatus = "complete";
+                                                selectedRequisition.CanApproveTransfer = false;
+                                                this.filterRequisitionList = this.filterRequisitionList.slice();
+                                          }
+                                          else {
+                                                this.messageBoxService.showMessage("Failed", [`Requisition ${data.RequisitionNo} approval failed.`]);
+                                          }
+                                    },
+                                          err => {
+                                                this.messageBoxService.showMessage("Failed", [`Requisition ${data.RequisitionNo} approval failed.`]);
+                                          });
                         }
                   default:
                         break;
@@ -136,6 +175,7 @@ export class PHRMStoreRequisitionListComponent {
                   this.dispatchList = res.Results;
             }
             else {
+                  this.showDispatchList = false;
                   this.messageBoxService.showMessage("notice-message", ["There is no Requisition details !"]);
 
             }
@@ -148,8 +188,15 @@ export class PHRMStoreRequisitionListComponent {
                         if ($event.Data != null) {
                               var tempDispatchId = $event.Data.DispatchId;
                               this.innerDispatchdetails = $event.Data;
-                              this.ShowbyDispatchId(tempDispatchId);
+                              this.DispatchId = $event.Data.DispatchId;
+                              this.CheckReceiptSettings()
+                              this.PharmacyService.DispatchId = $event.Data.DispatchId
+                              if (this.showNepaliReceipt == false) {
+                                    this.ShowbyDispatchId(tempDispatchId);
+                              }
+
                               this.showDispatchList = false;
+                              this.showDetailsbyDispatchId = true;
                         }
                         break;
                   }
@@ -162,7 +209,6 @@ export class PHRMStoreRequisitionListComponent {
                   .subscribe(res => {
                         if (res.Status == "OK") {
                               this.dispatchListbyId = res.Results;
-                              this.showDetailsbyDispatchId = true;
                               for (var i = 0; i < this.dispatchListbyId.length; i++) {
                                     this.Sum += (this.dispatchListbyId[i].StandardRate * this.dispatchListbyId[i].DispatchedQuantity);
 
@@ -180,13 +226,13 @@ export class PHRMStoreRequisitionListComponent {
 
       RouteToDispatch(data) {
             //Pass the RequistionId and DepartmentName to Next page for getting DispatchItems using pharmacyService
-            this.PharmacyService.Id = data.RequistionId;
+            this.PharmacyService.Id = data.RequisitionId;
             this.PharmacyService.Name = data.DepartmentName;
             this.router.navigate(['/Pharmacy/Store/StoreDispatch']);
       }
       RouteToViewDetail(data) {
             //pass the Requisition Id to RequisitionView page for List of Details about requisition
-            this.PharmacyService.Id = data.RequistionId;
+            this.PharmacyService.Id = data.RequisitionId;
             this.PharmacyService.Name = data.DepartmentName;
             this.router.navigate(['/Pharmacy/Store/StoreRequisitionDetails']);
       }
@@ -197,6 +243,7 @@ export class PHRMStoreRequisitionListComponent {
       Close() {
             this.showDispatchList = false;
             this.showDetailsbyDispatchId = false;
+            this.showNepaliReceipt = false;
             this.Sum = 0;
             this.dispatchList.splice(0);
       }
@@ -213,10 +260,26 @@ export class PHRMStoreRequisitionListComponent {
 
       //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
       GetPharmacyBillingHeaderParameter() {
-            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy BillingHeader').ParameterValue;
+            var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Pharmacy Receipt Header').ParameterValue;
             if (paramValue)
                   this.headerDetail = JSON.parse(paramValue);
             else
                   this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
       }
+      //route to create Requisition page
+      DirectDispatch() {
+            this.router.navigate(['/Pharmacy/Store/DirectDispatch']);
+      }
+      CheckReceiptSettings() {
+            //check for english or nepali receipt style
+            let receipt = this.coreService.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+            this.showNepaliReceipt = (receipt == "true");
+      }
+      public hotkeys(event) {
+            //For ESC key => close the pop up
+            if (event.keyCode == 27) {
+                  this.Close();
+            }
+      }
+
 }

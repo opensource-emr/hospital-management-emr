@@ -26,12 +26,25 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <DebugType>Portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="wwwroot\**" />
+    <TypeScriptCompile Remove="wwwroot\**" />
+  </ItemGroup>
 
 
 
@@ -49,6 +62,118 @@
 
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Controllers\AccountController.cs" />
+    <None Include="Controllers\Accounting\AccountingBL.cs" />
+    <None Include="Controllers\Accounting\AccountingController.cs" />
+    <None Include="Controllers\Accounting\AccountingReportController.cs" />
+    <None Include="Controllers\Accounting\AccountingSettingsController.cs" />
+    <None Include="Controllers\Admission\AdmissionController.cs" />
+    <None Include="Controllers\Admission\AdmissionViewController.cs" />
+    <None Include="Controllers\Admission\DischargeSummaryController.cs" />
+    <None Include="Controllers\Appointment\AppointmentController.cs" />
+    <None Include="Controllers\Appointment\AppointmentViewController.cs" />
+    <None Include="Controllers\Appointment\VisitBL.cs" />
+    <None Include="Controllers\Appointment\VisitController.cs" />
+    <None Include="Controllers\Billing\BillingBL.cs" />
+    <None Include="Controllers\Billing\BillingController.cs" />
+    <None Include="Controllers\Billing\BillingDepositController.cs" />
+    <None Include="Controllers\Billing\BillingTransactionBL.cs" />
+    <None Include="Controllers\Billing\BillingViewController.cs" />
+    <None Include="Controllers\Billing\BillInsuranceController.cs" />
+    <None Include="Controllers\Billing\BillReturnController.cs" />
+    <None Include="Controllers\Billing\BillSettlementController.cs" />
+    <None Include="Controllers\Billing\IpBillingController.cs" />
+    <None Include="Controllers\Clinical\ClinicalController.cs" />
+    <None Include="Controllers\Clinical\ClinicalViewController.cs" />
+    <None Include="Controllers\Core\CoreController.cs" />
+    <None Include="Controllers\Core\DynTemplatesController.cs" />
+    <None Include="Controllers\Core\ParametersController.cs" />
+    <None Include="Controllers\DanpheActionFilter.cs" />
+    <None Include="Controllers\Dashboard\DashboardController.cs" />
+    <None Include="Controllers\Dashboard\DashboardViewController.cs" />
+    <None Include="Controllers\DicomViewer\DicomController.cs" />
+    <None Include="Controllers\Dispensary\DispensaryController.cs" />
+    <None Include="Controllers\Dispensary\DispensaryRequisitionController.cs" />
+    <None Include="Controllers\Dispensary\DispensaryTransferController.cs" />
+    <None Include="Controllers\Doctors\DoctorsController.cs" />
+    <None Include="Controllers\Doctors\DoctorsViewController.cs" />
+    <None Include="Controllers\Doctors\VisitSummaryController.cs" />
+    <None Include="Controllers\Emergency\EmergencyController.cs" />
+    <None Include="Controllers\Emergency\EmergencyViewController.cs" />
+    <None Include="Controllers\Employee\EmployeeController.cs" />
+    <None Include="Controllers\Employee\EmployeeViewController.cs" />
+    <None Include="Controllers\Fraction\DesignationController.cs" />
+    <None Include="Controllers\Fraction\FractionCalculationController.cs" />
+    <None Include="Controllers\Fraction\FractionPercentController.cs" />
+    <None Include="Controllers\Helpdesk\HelpdeskController.cs" />
+    <None Include="Controllers\Helpdesk\HelpdeskViewController.cs" />
+    <None Include="Controllers\HomeController.cs" />
+    <None Include="Controllers\Incentive\IncentiveBL.cs" />
+    <None Include="Controllers\Incentive\IncentiveController.cs" />
+    <None Include="Controllers\Insurance\InsuranceBL.cs" />
+    <None Include="Controllers\Insurance\InsuranceController.cs" />
+    <None Include="Controllers\Inventory\InventoryBL.cs" />
+    <None Include="Controllers\Inventory\InventoryCompanyController.cs" />
+    <None Include="Controllers\Inventory\InventoryController.cs" />
+    <None Include="Controllers\Inventory\InventoryEmailController.cs" />
+    <None Include="Controllers\Inventory\InventoryGoodReceiptController.cs" />
+    <None Include="Controllers\Inventory\InventoryReportsController.cs" />
+    <None Include="Controllers\Inventory\InventorySettingsController.cs" />
+    <None Include="Controllers\Inventory\InventorySettingViewController.cs" />
+    <None Include="Controllers\Inventory\InventoryViewController.cs" />
+    <None Include="Controllers\Lab\LabController.cs" />
+    <None Include="Controllers\Lab\LabReportExport.cs" />
+    <None Include="Controllers\Lab\LabReportExportController.cs" />
+    <None Include="Controllers\Lab\LabsBL.cs" />
+    <None Include="Controllers\Lab\LabSettingController.cs" />
+    <None Include="Controllers\Lab\LabViewController.cs" />
+    <None Include="Controllers\Master\MasterController.cs" />
+    <None Include="Controllers\MedicalRecords\MedicalRecordsController.cs" />
+    <None Include="Controllers\Notification\NotificationController.cs" />
+    <None Include="Controllers\Nursing\NursingController.cs" />
+    <None Include="Controllers\Nursing\NursingViewController.cs" />
+    <None Include="Controllers\Order\OrdersController.cs" />
+    <None Include="Controllers\Order\OrderView.cs" />
+    <None Include="Controllers\Patient\PatientBL.cs" />
+    <None Include="Controllers\Patient\PatientController.cs" />
+    <None Include="Controllers\Patient\PatientViewController.cs" />
+    <None Include="Controllers\Payroll\PayrollController.cs" />
+    <None Include="Controllers\Pharmacy\CreditNote\PharmacyCreditNoteController.cs" />
+    <None Include="Controllers\Pharmacy\Credit\PharmacyCreditController.cs" />
+    <None Include="Controllers\Pharmacy\Dashboard\PharmacyDashboardController.cs" />
+    <None Include="Controllers\Pharmacy\PharmacyBL.cs" />
+    <None Include="Controllers\Pharmacy\PharmacyController.cs" />
+    <None Include="Controllers\Pharmacy\PharmacyReportController.cs" />
+    <None Include="Controllers\Pharmacy\PharmacyViewController.cs" />
+    <None Include="Controllers\Pharmacy\Rack\PharmacyRackController.cs" />
+    <None Include="Controllers\Radiology\RadiologyController.cs" />
+    <None Include="Controllers\Radiology\RadiologyReportController.cs" />
+    <None Include="Controllers\Radiology\RadiologyViewController.cs" />
+    <None Include="Controllers\Reporting\BillingReportsController.cs" />
+    <None Include="Controllers\Reporting\ExportToExcel\ReportingNewController.cs" />
+    <None Include="Controllers\Reporting\GovernmentReportingController.cs" />
+    <None Include="Controllers\Reporting\ReportingController.cs" />
+    <None Include="Controllers\Scheduling\SchedulingBL.cs" />
+    <None Include="Controllers\Scheduling\SchedulingController.cs" />
+    <None Include="Controllers\Scheduling\SchedulingViewController.cs" />
+    <None Include="Controllers\Security\SecurityController.cs" />
+    <None Include="Controllers\Settings\ADTSettingsController.cs" />
+    <None Include="Controllers\Settings\BillSettingsController.cs" />
+    <None Include="Controllers\Settings\EmployeeSettingsController.cs" />
+    <None Include="Controllers\Settings\RadiologySettingsController.cs" />
+    <None Include="Controllers\Settings\SecuritySettingsController.cs" />
+    <None Include="Controllers\Settings\SettingsController.cs" />
+    <None Include="Controllers\Settings\SettingsViewController.cs" />
+    <None Include="Controllers\SocialServiceUnit\SocialServiceUnitController.cs" />
+    <None Include="Controllers\SocialServiceUnit\SsuPatientBL.cs" />
+    <None Include="Controllers\SystemAdmin\SystemAdminController.cs" />
+    <None Include="Controllers\SystemAdmin\SystemAdminViewController.cs" />
+    <None Include="Controllers\Verification\VerificationBL.cs" />
+    <None Include="Controllers\Verification\VerificationController.cs" />
+    <None Include="Controllers\WardSupply\SubstoreBL.cs" />
+    <None Include="Controllers\WardSupply\WardSupplyBL.cs" />
+    <None Include="Controllers\WardSupply\WardSupplyController.cs" />
+    <None Include="Controllers\WardSupply\WardSupplyViewController.cs" />
     <None Update="Views\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -59,8 +184,10 @@
     <PackageReference Include="Audit.NET" Version="14.0.2" />
     <PackageReference Include="Audit.NET.SqlServer" Version="14.0.2" />
     <PackageReference Include="Audit.WebApi.Core" Version="14.0.2" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.52.0.2354" />
     <PackageReference Include="iTextSharp" Version="5.5.13" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="2.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0" />
@@ -89,7 +216,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RefactorThis.GraphDiff" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
@@ -121,6 +248,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\DispensaryTransfer\" />
     <Folder Include="Services\Pharmacy\DashBoard\" />
   </ItemGroup>
 

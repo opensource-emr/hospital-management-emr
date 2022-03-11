@@ -1,5 +1,6 @@
 import { Component, ChangeDetectorRef, EventEmitter, Output, Input } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { resolve } from 'url';
 import { CoreService } from '../../../core/shared/core.service';
 import { PatientService } from '../../../patients/shared/patient.service';
@@ -7,11 +8,13 @@ import { CountrySubdivision } from '../../../settings-new/shared/country-subdivi
 import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
 import { PharmacyBLService } from '../../shared/pharmacy.bl.service';
 import { PHRMPatient } from '../../shared/phrm-patient.model';
+import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
 
 @Component({
   selector: 'phrm-op-patient-add',
   templateUrl: './phrm-op-patient-add.html',
-  styles: [`padding-7-tp{padding-top: 7px;}`]
+  styles: [`padding-7-tp{padding-top: 7px;}`],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PhrmOutpatientAddComponent {
   //master data for form filling
@@ -32,15 +35,18 @@ export class PhrmOutpatientAddComponent {
 
   public matchedPatientList: any;
   public showExstingPatientListPage: boolean = false;
+  public showMunicipality: boolean = false;
 
-  constructor(public changeDetector: ChangeDetectorRef, public coreService: CoreService, public patientService: PatientService, public pharmacyBLService: PharmacyBLService) {
+  constructor(public changeDetector: ChangeDetectorRef, public coreService: CoreService, public patientService: PatientService, public pharmacyBLService: PharmacyBLService,public msgBoxServ:MessageboxService, public patientBlService: PatientsBLService) {
     this.GetMasterData();
+    this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
+
   }
 
   ngOnInit() {
-    this.AssignDefaultCountryAndSubDivision();
-    this.ModifyValidatorsInPatientModel();
     this.CheckForEditMode();
+    this.AssignDefaultCountryAndSubDivision();
+    this.ModifyValidatorsInPatientModel();  
     this.setFocusById("newPatFirstName");
   }
 
@@ -48,8 +54,13 @@ export class PhrmOutpatientAddComponent {
     let country = this.coreService.GetDefaultCountry();
     let subDivision = this.coreService.GetDefaultCountrySubDivision();
     this.newPatient.CountryId = country ? country.CountryId : null;
-    this.selectedDistrict.CountrySubDivisionId = this.newPatient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
-    this.selectedDistrict.CountrySubDivisionName = this.newPatient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
+    if(this.newPatient.CountrySubDivisionId != 0){
+      this.selectedDistrict.CountrySubDivisionId = this.newPatient.CountrySubDivisionId;
+      this.selectedDistrict.CountrySubDivisionName = this.newPatient.CountrySubDivisionName;
+    }else {
+      this.selectedDistrict.CountrySubDivisionId = this.newPatient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
+      this.selectedDistrict.CountrySubDivisionName = this.newPatient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
+    }
   }
 
   private ModifyValidatorsInPatientModel() {
@@ -61,16 +72,34 @@ export class PhrmOutpatientAddComponent {
 
   private CheckForEditMode() {
     //First Name will be empty for the first time patient is being added.
-    if (this.newPatient.FirstName != "") {
+    if (this.newPatient.FirstName != "" && this.newPatient.FirstName != 'Anonymous') {
       this.EditMode = true;
       this.DivideAgeAndAgeUnit();
     }
+    else{
+      this.newPatient = new PHRMPatient();
+    }
+    
   }
 
   private DivideAgeAndAgeUnit() {
-    if (this.newPatient.Age != null) {
-      this.newPatient.AgeUnit = this.newPatient.Age.substring(this.newPatient.Age.length, this.newPatient.Age.length - 1);
-      this.newPatient.Age = this.newPatient.Age.substring(0, this.newPatient.Age.length - 1);
+    if (this.newPatient.Age) {
+      var splitData = [];
+      if (this.newPatient.Age.includes("Y")) {
+        splitData = this.newPatient.Age.split("Y");
+        this.newPatient.Age = splitData[0];
+        this.newPatient.AgeUnit = "Y";
+      }
+      else if (this.newPatient.Age.includes("M")) {
+        splitData = this.newPatient.Age.split("M");
+        this.newPatient.Age = splitData[0];
+        this.newPatient.AgeUnit = "M";
+      }
+      else if (this.newPatient.Age.includes("D")) {
+        splitData = this.newPatient.Age.split("D");
+        this.newPatient.Age = splitData[0];
+        this.newPatient.AgeUnit = "D";
+      }
     }
   }
 
@@ -108,15 +137,24 @@ export class PhrmOutpatientAddComponent {
       this.newPatient.PHRMPatientValidator.controls[i].markAsDirty();
       this.newPatient.PHRMPatientValidator.controls[i].updateValueAndValidity();
     }
+    if(this.newPatient.AgeUnit == null){
+      this.msgBoxServ.showMessage("error", ["Please select the Patient Age Unit"]);
+      return;
+    }
     if (this.newPatient.IsValidCheck(undefined, undefined)) {
       //removing extra spaces typed by the users
       this.newPatient.FirstName = this.newPatient.FirstName.trim();
       this.newPatient.MiddleName = (this.newPatient.MiddleName == null) ? "" : this.newPatient.MiddleName.trim();
       this.newPatient.LastName = this.newPatient.LastName.trim();
       this.newPatient.ShortName = this.newPatient.FirstName + " " + ((this.newPatient.MiddleName != "") ? (this.newPatient.MiddleName + " ") : "") + this.newPatient.LastName;
-
-      if ((await this.IsPatientExistInDb()) == false) {
-        this.EmitNewPatient();
+      this.newPatient.CountrySubDivisionId = this.selectedDistrict ? this.selectedDistrict.CountrySubDivisionId : null;
+      if (this.newPatient.CountrySubDivisionId == null) {
+        this.msgBoxServ.showMessage("error", ["Please select valid district."])
+      }
+      else {
+        if ((await this.IsPatientExistInDb()) == false) {
+          this.EmitNewPatient();
+        }
       }
     }
   }
@@ -154,6 +192,12 @@ export class PhrmOutpatientAddComponent {
     this.showPopUp = false;
     this.callBackClose.emit();
   }
+  public hotkeys(event) {
+    //For ESC key => close the pop up
+    if (event.keyCode == 27) {
+      this.Close();
+    }
+  }
 
   private ResetPatient() {
     this.newPatient = new PHRMPatient();
@@ -189,12 +233,12 @@ export class PhrmOutpatientAddComponent {
     * Set Focus to the id provided
   */
   setFocusById(targetId: string, waitingTimeinMS: number = 10) {
-    var timer = window.setTimeout(function () {
-      let itmNameBox = document.getElementById(targetId);
-      if (itmNameBox) {
-        itmNameBox.focus();
-      }
-      clearTimeout(timer);
-    }, waitingTimeinMS);
+    this.coreService.FocusInputById(targetId);
+  }
+
+  public updateMunicipality(event){
+    if(event){
+    this.newPatient.MunicipalityId = event.data;
+    }
   }
 }

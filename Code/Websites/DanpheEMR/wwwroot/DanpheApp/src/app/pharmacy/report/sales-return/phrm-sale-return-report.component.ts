@@ -21,7 +21,8 @@ export class PHRMSaleReturnReportComponent {
     PHRMSaleReturnReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+    public pharmacy:string = "pharmacy";
+    
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
         this.PHRMSaleReportColumn = PHRMReportsGridColumns.PHRMSaleReturnReport;
         this.phrmReports.FromDate = moment().format('YYYY-MM-DD');

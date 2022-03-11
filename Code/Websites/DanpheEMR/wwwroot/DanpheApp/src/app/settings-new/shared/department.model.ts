@@ -16,6 +16,7 @@ export class Department {
   public DepartmentName: string = null;
 
   public Description: string = null;
+  public NoticeText: string = null;
   public DepartmentHead: number = 0;
   public IsActive: boolean = true;
   public IsAppointmentApplicable: boolean = false;
@@ -30,8 +31,11 @@ export class Department {
 
   public ParentDepartmentId: number = null;
   public ParentDepartmentName: string = null;
+  public RoomNumber: string = null;
 
   public ServiceItemsList: Array<BillItemPriceModel> = [];
+
+  public IsZeroPriceAllowed: boolean=false;//pratik:30march'21  for client side only
 
   constructor() {
 

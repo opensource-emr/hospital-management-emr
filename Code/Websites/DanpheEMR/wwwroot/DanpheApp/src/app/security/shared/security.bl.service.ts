@@ -33,6 +33,9 @@ export class SecurityBLService {
         return this.securityDlService.GetActiveBillingCounter()
             .map(res => { return res })
     }
+    public GetActiveLab(){
+        return this.securityDlService.GetActiveLab().map(res => {return res; });
+    }
     public GetActivePharmacyCounter() {
         return this.securityDlService.GetActivePharmacyCounter()
             .map(res => { return res })
@@ -72,5 +75,10 @@ export class SecurityBLService {
             .map(res => { return res })
     }    
 
+    public ActivateLab(labId: number, labName: string){
+        return this.securityDlService.ActivateLab(labId, labName).map(res => {
+          return res;
+        });
+      }
 
 }

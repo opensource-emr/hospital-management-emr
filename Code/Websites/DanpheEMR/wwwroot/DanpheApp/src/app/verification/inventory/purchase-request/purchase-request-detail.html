@@ -76,8 +76,7 @@
         <div class="col-md-12">
           <div class="row" style="margin-bottom: 10px;">
             <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
-              <img class="img-responsive" style="max-height:70px;"
-                src="../../../themes/theme-default/images/hams-logo.PNG" />
+              <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
             </div>
             <div style="width: 64%;float: left;padding-bottom:  0px;">
               <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
@@ -105,6 +104,7 @@
               Requested Date:<b> {{PurchaseRequest.RequestDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
               <i *ngIf="PurchaseRequest.RequestDate">({{PurchaseRequest.RequestDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
             </div>
+            <div>Request From : <b>{{PurchaseRequest.RequestFromStoreName}}</b></div>
           </div>
 
           <div class="clear"></div>
@@ -126,24 +126,17 @@
               </thead>
               <tbody *ngFor="let reqItm of PurchaseRequestVM.RequestedItemList;let i = index">
                 <tr id="itemRow" style="text-align:center" [ngClass]="{'rq-row-background-red': !reqItm.IsActive}">
-                  <td><i *ngIf="reqItm.IsActive == true" 
-                      [ngClass]="{ 'fa':true,'fa-pencil': !reqItm.IsEdited , 'fa-undo': reqItm.IsEdited}"
-                      title="{{ reqItm.IsEdited ? 'Undo Edit' : 'Edit Item'}}" (click)="EditItem(i)"></i>
+                  <td><i *ngIf="reqItm.IsActive == true" [ngClass]="{ 'fa':true,'fa-pencil': !reqItm.IsEdited , 'fa-undo': reqItm.IsEdited}" title="{{ reqItm.IsEdited ? 'Undo Edit' : 'Edit Item'}}" (click)="EditItem(i)"></i>
                   </td>
-                  <td><i *ngIf="reqItm.IsEdited == false" 
-                      [ngClass]="{ 'fa':true,'fa-times': reqItm.IsActive , 'fa-undo': !reqItm.IsActive}"
-                      title="{{ reqItm.IsActive ? 'Cancel Item' : 'Undo Cancel'}}" (click)="CancelItem(i)"></i>
+                  <td><i *ngIf="reqItm.IsEdited == false" [ngClass]="{ 'fa':true,'fa-times': reqItm.IsActive , 'fa-undo': !reqItm.IsActive}" title="{{ reqItm.IsActive ? 'Cancel Item' : 'Undo Cancel'}}" (click)="CancelItem(i)"></i>
                   </td>
                   <td>{{reqItm.ItemName}}</td>
                   <td>{{reqItm.Code}}</td>
                   <td>{{reqItm.UOMName}}</td>
                   <td>
                     <span [hidden]="reqItm.IsEdited">{{reqItm.RequestedQuantity}}</span>
-                    <input type="number" class="rqRowEditQty" id="rqRowEditQty{{i}}" [hidden]="!reqItm.IsEdited"
-                      [(ngModel)]="reqItm.RequestedQuantity" onClick="this.select();" min="1"
-                      (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
-                    <div class="error-message" *ngIf="reqItm.RequestedQuantity < 1" [hidden]="reqItm.RequestedQuantity >= 1"> Use&nbsp;<i
-                        class="fa fa-times"></i>&nbsp;instead.
+                    <input type="number" class="rqRowEditQty" id="rqRowEditQty{{i}}" [hidden]="!reqItm.IsEdited" [(ngModel)]="reqItm.RequestedQuantity" onClick="this.select();" min="1" (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                    <div class="error-message" *ngIf="reqItm.RequestedQuantity < 1" [hidden]="reqItm.RequestedQuantity >= 1"> Use&nbsp;<i class="fa fa-times"></i>&nbsp;instead.
                     </div>
                   </td>
                   <td>
@@ -152,8 +145,8 @@
                       <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
                       </span>
                       <p class="tooltiptext ttptextdown no-print">
-                        Cancelled&nbsp;By:&nbsp;{{reqItm.CancelledBy}}<br/>
-                        Cancelled&nbsp;On:&nbsp;{{reqItm.CancelledOn | date : 'medium'}}<br/>
+                        Cancelled&nbsp;By:&nbsp;{{reqItm.CancelledBy}}<br />
+                        Cancelled&nbsp;On:&nbsp;{{reqItm.CancelledOn | date : 'medium'}}<br />
                         <em *ngIf="!!reqItm.CancelRemarks">Remarks:&nbsp;{{reqItm.CancelRemarks}}</em>
                       </p>
                     </span>
@@ -164,8 +157,7 @@
           </div>
           <div class="col-md-12 hidden-in-print" style="margin:10px 0" [hidden]="isVerificationAllowed==false">
             <label for="VerificationRemarks" class="col-md-2">Remarks <span class="right">:</span></label>
-            <textarea class="col-md-10" [(ngModel)]="VerificationRemarks" name="VerificationRemarks"
-              rows="3"></textarea>
+            <textarea class="col-md-10" [(ngModel)]="VerificationRemarks" name="VerificationRemarks" rows="3"></textarea>
           </div>
           <hr />
           <div class="col-md-12" *ngIf="PurchaseRequestVM != null" style="font-size: 12px;">
@@ -178,8 +170,7 @@
               <u>Verified By</u>:
               <div *ngFor="let verifier of PurchaseRequestVM.Verifiers;let i = index;">
                 {{i+1}}&nbsp;{{verifier.Name}}&nbsp;({{verifier.Date | date : 'medium'}})&nbsp;
-                  <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span
-                      [title]="verifier.Remarks">{{verifier.Remarks | slice:0:10 }}..</span></span>
+                <span *ngIf="!!verifier.Remarks "><i>Rem:</i><span [title]="verifier.Remarks">{{verifier.Remarks | slice:0:10 }}..</span></span>
               </div>
             </div>
           </div>
@@ -192,14 +183,10 @@
   </div>
   <div class="row center-style">
     <div class="col-md-12 col-xs-12 ">
-      <button rbac-permission="{{nextVerifiersPermission}}"
-        [disabled]="isVerificationAllowed == false || loading == true" (click)="ApprovePurchaseRequest()"
-        class="btn btn-primary">
+      <button rbac-permission="{{nextVerifiersPermission}}" [disabled]="isVerificationAllowed == false || loading == true" (click)="ApprovePurchaseRequest()" class="btn btn-primary">
         <i class="fa fa-check"></i>Approve
       </button>
-      <button rbac-permission="{{nextVerifiersPermission}}"
-        [disabled]="isVerificationAllowed == false || loading == true" (click)="RejectPurchaseRequest()"
-        class="btn btn-danger">
+      <button rbac-permission="{{nextVerifiersPermission}}" [disabled]="isVerificationAllowed == false || loading == true" (click)="RejectPurchaseRequest()" class="btn btn-danger">
         <i class="fa fa-times"></i>Reject All
       </button>
     </div>

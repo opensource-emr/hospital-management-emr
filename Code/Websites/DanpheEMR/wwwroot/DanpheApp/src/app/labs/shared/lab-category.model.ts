@@ -13,4 +13,5 @@ export class LabCategoryModel {
   public ModifiedOn: string = null;
   public ModifiedBy: number = null;
   public IsDefault: boolean = false;
+  public IsActive: boolean = true;
 }

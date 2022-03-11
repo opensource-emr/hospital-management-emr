@@ -1,0 +1,89 @@
+<style>
+    .circularQueueDiv {
+      position: absolute;
+      left: 35%;
+      bottom: 100px;
+      width: 35px;
+      border: 2px solid;
+      border-radius: 50% !important;
+      height: 35px;
+      text-align: center;
+      padding-top: 5px;
+    }
+  
+    .patientstickercontainer {
+      padding: 10px;
+    }
+  </style>
+  
+  <div class="wrapper">
+    <div class="row" *ngIf="showPatientSticker">
+      <div id="patientSticker" *ngIf="PatientStickerDetails !=null"
+        style="width: 400px;border: 1px dotted black;font-size: 12px;">
+        <div id="patientprintpage" [ngClass]="'opdstkcontainer-' + hospitalCode" class="patientstickercontainer">
+          <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
+            <div>
+              <div>
+  
+                <div>
+                  <div style="display:inline-block;width: 15%;vertical-align: top;"> Name&nbsp;: </div>
+                  <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                    <div style="display:inline-block;"> {{PatientStickerDetails.PatientName}} &nbsp;&nbsp;&nbsp; </div>
+                    <div style="display:inline-block;font-style:italic;"> {{ageSex}} </div>
+                  </div>
+                </div>
+  
+                <div>
+                  <span style="display:inline-block;">
+                    Hospital No. : {{PatientStickerDetails.HospitalNo}}
+                  </span>
+                  <span style="float:right;padding-right: 5px;"> Contact : {{PatientStickerDetails.Contact}} </span>
+                </div>
+  
+                <div>
+                  <div *ngIf="PatientStickerDetails.CountryName == 'Nepal'" style="width: 80%"><span>
+                      Address&nbsp;:&nbsp;{{PatientStickerDetails.Address}} &nbsp; {{(PatientStickerDetails.MunicipalityName)}} ,
+                      {{PatientStickerDetails.District}} </span>
+                  </div>
+                  <div style="width: 80%" *ngIf="PatientStickerDetails.CountryName != 'Nepal'">
+                    Address&nbsp;:&nbsp;{{PatientStickerDetails.Address}},{{PatientStickerDetails.CountryName}} </div>
+                </div>
+  
+              </div>
+              <div style="clear: both;"></div>
+              <hr style="border:0.5px solid black;margin:0px;" />
+            </div>
+  
+            <div style="display: flex; width: 100%; flex-direction: column;" [ngClass]="'dptdescleft-' + hospitalCode"
+              class="dptdesc-left">
+  
+              <div style="padding-top: 4px;">
+                <span> Printed By&nbsp;: {{PrintedBy}} </span>
+                <span style="float:right;padding-right: 20px;"> Printed On&nbsp;: {{localDateTime}} </span>
+              </div>
+            </div>
+  
+            <!-- <div *ngIf="showQrCode" class="opd-qrcode" [ngClass]="'opdqrcode-' + hospitalCode">
+              <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+            </div> -->
+  
+          </div>
+        </div>
+      </div>
+  
+      <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+        <button class="btn green btn-success" value="" (click)="print()" id="btnPrintOpdSticker" [disabled]="coreService.loading">
+          <span>Print</span>&nbsp;&nbsp;
+          &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+        </button>
+      </div>
+  
+        <select-printer [group-name]="'reg-sticker'" [storage-key]="'opd-sticker'"
+        (on-printer-change)="OnPrinterChanged($event)">
+        </select-printer>
+  
+    </div>
+  </div>
+  
+  <app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+  </app-print-page>

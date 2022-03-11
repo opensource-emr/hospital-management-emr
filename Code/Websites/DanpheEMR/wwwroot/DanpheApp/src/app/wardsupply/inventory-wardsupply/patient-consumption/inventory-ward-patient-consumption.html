@@ -1,0 +1,113 @@
+<style>
+  .table-tr-style {
+    background-color: rgb(0, 102, 136);
+    color: rgb(255, 255, 255);
+  }
+</style>
+
+<div class="row" style="margin-bottom: 15px;">
+  <!-- <div class="col-md-8">
+    <div class="caption lb-caption left"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Consumption Entry</span> </div>
+    <a class="btn blue right" (click)="ShowConsumptionPage()"> <i class="fa fa-backward"></i> Back </a>
+  </div> -->
+  <!-- <div class="col-md-8 col-xs-12">
+    <div class="form-group">
+      <div class="row clearfix"><label class="control-label col-md-3">Consumption Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="ConsumptionDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+        <div class="error-message" *ngIf="IsConsumptionDateValid() == false"> Invalid Fiscal Year Date. </div>
+      </div></div>
+    </div>
+  </div> -->
+  <div class="col-md-6">
+    <label for="srch_PatientList" class="col-md-3" style="font-weight: 600;font-size: medium;"> Select
+      Patient<sup>*</sup>:</label>
+    <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="SelectedPatient"
+      [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+      placeholder="search by HospitalNo, Patient Name" display-property-name="ShortName" value-property-name=null
+      (ngModelChange)="PatientInfoChanged()" onClick="this.select();" max-num-list="500" [min-chars]="3"
+      match-formatted="true" [grid-sort]="'ShortName'" style="width: 400px !important;" (keyup.enter)="FocusElementById('itemName0')" />
+    <span class="color-red font-sm" [hidden]="ValidPatient">Patient is Required!</span>
+
+    <!-- (keyup.enter)="SetFocusOnButton('btn_billRequest')" -->
+  </div>
+</div>
+<div class="row" *ngIf="IsShowConsumption">
+  <div class="col-md-8">
+    <table class="table table-striped table-hover inv_table padLess_table table-bordered">
+      <thead>
+        <tr class="table-tr-style">
+          <th></th>
+          <th><b>Item&nbsp;Name</b></th>
+          <th>Code</th>
+          <th>Unit</th>
+          <th><b>Available Qty.</b></th>
+          <th><b>Consumed Qty.</b></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of SelecetdItemList; let i = index">
+          <td style="width: 46px;"><a class="" (click)="DeleteRow(i)"><i
+                class="btn btn-xs btn-danger fa fa-times"></i></a></td>
+          <td style="width: auto;" class="autocomplete-item">
+            <form [formGroup]="row.ConsumptionValidator" autocomplete="off">
+              <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem"
+                [source]="ItemTypeListWithItems" [list-formatter]="ItemListFormatter" placeholder="--Select Item--"
+                display-property-name="ItemName" value-property-name=null onClick="this.select();"
+                (valueChanged)="onChangeItem($event,i)" max-num-list="20" min-chars="1" [grid-sort]="'ItemName'"
+                match-formatted="true" [ngModelOptions]="{standalone:true}" (keyup.enter)="OnPressedEnterKeyInItemField(i)"
+                (keyup.esc)="DeleteRow(i)" />
+              <!--<span class="color-red font-sm" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValid('ItemName','required')">Select Item..</span>-->
+            </form>
+          </td>
+          <td style="width: 80px;">{{row.Code}}</td>
+          <td style="width: 80px;">{{row.UOMName}}</td>
+          <td style="width: 150px;"><input [(ngModel)]="row.Quantity" [ngModelOptions]="{standalone: true}" min="0"
+              class="form-control" type="number" value="" disabled></td>
+          <td style="width: 150px;">
+            <form [formGroup]="row.ConsumptionValidator">
+              <input [(ngModel)]="row.ConsumeQuantity" formControlName="ConsumeQuantity" min="1" class="form-control"
+                type="number" onwheel="this.blur()" value="" id="qtyip{{i}}" (keyup.enter)="AddRow()"
+                onClick="this.select();"> <span class="color-red font-sm"
+                [hidden]="row.IsValid('ConsumeQuantity','min(1)')">Enter Quantity..</span> <span
+                class="color-red font-sm" *ngIf="row.IsDirty('ConsumeQuantity')"
+                [hidden]="row.ConsumeQuantity<=row.Quantity">Consume Qty is greater.</span>
+            </form>
+          </td>
+          <td style="width: 46px;"><a class="btn btn-primary btn-xs" (click)="AddRow()"><i class="fa fa-plus"></i></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- <table class=" col-sm-6 ">
+      <tr class="form-group">
+        <td></td>
+        <td>Remark:</td>
+        <td class="text-capitalize"><textarea [(ngModel)]="WardConsumption.Remark" name="remark" id="remark"
+            cols="40"></textarea></td>
+      </tr>
+      </tbody>
+
+    </table> -->
+    <div class="mt20 t-wrap clearfix">
+      <table class="col-sm-4 col-md-offset-8 total-table">
+        <tr>
+          <td>Remark:</td>
+          <td class="text-capitalize">
+            <div class="form-group">
+              <textarea [(ngModel)]="PatientConsumptionReceipt.Remarks" name="remark" id="remark"
+                style="width: 100%;"></textarea>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div class="panel-footer text-right">
+        <input type="button" id="save"class="btn green btn-success margin-7-hr" value="Save" (click)="Save()" [disabled]="loading" />
+        <span></span>
+        <input type="button" class="btn btn-danger" [disabled]="loading" (click)="DiscardChanges()" value="Discard">
+        <span></span>
+      </div>
+    </div>
+  </div>
+</div>

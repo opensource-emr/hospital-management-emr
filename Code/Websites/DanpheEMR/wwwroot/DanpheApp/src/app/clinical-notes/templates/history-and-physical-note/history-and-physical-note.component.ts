@@ -12,9 +12,6 @@ import { PatientClinicalDetail } from "../../../clinical/shared/patient-clinical
 import { NoteTemplateBLService } from "../../shared/note-template.bl.service";
 import { AssessmentAndPlanModel, DiagnosisOrderVM } from "../../shared/assessment-and-plan.model";
 import { PatientOrderListModel } from "../../../clinical/shared/order-list.model";
-import { ICD10 } from "../../../clinical/shared/icd10.model";
-import { DanpheCache } from "../../../shared/danphe-cache-service-utility/cache-services";
-import { MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 
 @Component({
   selector: "history-and-physical-note",
@@ -34,13 +31,12 @@ export class HistoryAndPhsicalNoteComponent {
   public clinicalDetail: PatientClinicalDetail = new PatientClinicalDetail();
 
   @Output()
-  public outPutHpNote: EventEmitter<Object> = new EventEmitter<Object>();
+  public outPutHpNote: EventEmitter<Object> = new EventEmitter<Object>();  
   public assessment: AssessmentAndPlanModel = new AssessmentAndPlanModel();
   public showAP: boolean = false;
   public APeditMode: boolean = false;
   public assessmentForEdit: any;
   public showSOnotes: boolean = false;
-  public ICD10List = [];
 
   constructor(public visitService: VisitService,
     public visitBLService: VisitBLService,
@@ -49,10 +45,9 @@ export class HistoryAndPhsicalNoteComponent {
     public notetemplateBLService: NoteTemplateBLService,
     public patientService: PatientService) {
     this.pat = this.patientService.globalPatient;
-    this.patVisit = this.visitService.globalVisit;
+    this.patVisit = this.visitService.globalVisit,
     this.date = moment().format("YYYY-MM-DD,h:mm:ss a");
-    this.AddNewICDRow();
-    this.GetICDList();
+
   }
   @Input('editHpNote')
   public set HpNote(hpNote: any) {
@@ -64,21 +59,15 @@ export class HistoryAndPhsicalNoteComponent {
 
       // get assessment orders
       this.GetAllOrders(this.notes.NotesId);
-      if (this.notes && this.notes.ICDSelected && this.notes.ICDSelected.trim().length) {
-        this.notes.ICDList = JSON.parse(this.notes.ICDSelected);
-      } else {
-        this.AddNewICDRow();
-      }
       this.APeditMode = true;
       this.showSOnotes = true;
 
     } else {
-      this.AddNewICDRow();
       this.showSOnotes = true;
       this.showAP = true;
     }
   }
-
+  
   public GetAllOrders(NoteId) {
     this.notetemplateBLService.GetAllOrdersByNoteId(NoteId)
       .subscribe(res => {
@@ -149,7 +138,7 @@ export class HistoryAndPhsicalNoteComponent {
 
           //this.assessmentForEdit = { editMode: false, assessment: this.assessment }
           this.showAP = true;
-        }
+        } 
       });
   }
 
@@ -174,49 +163,9 @@ export class HistoryAndPhsicalNoteComponent {
     console.log("from assessment orders:");
     console.log(data);
     this.notes.ClinicalDiagnosis = data;
-    this.outPutHpNote.emit(this.notes);
+    this.outPutHpNote.emit(this.notes); 
   }
 
-  public DeleteRow(ind: number) {
-    this.notes.ICDList.splice(ind, 1);
-    this.ICDValueChanged();
-  }
-
-  public AddNewICDRow() {
-    let newicd: ICD10 = Object.assign({}, new ICD10());
-    newicd.ICD10Description = '';
-    this.notes.ICDList.push(newicd);
-
-    let new_index = this.notes.ICDList.length - 1;
-    if (new_index > 0) {
-      window.setTimeout(function () {
-        let itmNameBox = document.getElementById('icd10-box' + new_index);
-        if (itmNameBox) {
-          itmNameBox.focus();
-        }
-      }, 500);
-    }
-  }
-
-  ICDListFormatter(data: any): string {
-    let html;
-    //if the ICD is not valid for coding then it will be displayed as bold.
-    //needs to disable the field that are not valid for coding as well.
-    if (!data.ValidForCoding) {
-      html = "<b>" + data["ICD10Code"] + "  " + data["ICD10Description"] + "</b>";
-    }
-    else {
-      html = data["ICD10Code"] + "  " + data["ICD10Description"];
-    }
-    return html;
-  }
-  public GetICDList() {
-    this.ICD10List = DanpheCache.GetData(MasterType.ICD, null);
-  }
-
-  public ICDValueChanged() {
-    this.outPutHpNote.emit(this.notes);
-  }
 }
 
 

@@ -3,6 +3,7 @@ import { SurgicalHistory } from './surgical-history.model';
 import { SocialHistory } from './social-history.model';
 import { FamilyHistory } from './family-history.model';
 import { Allergy } from './allergy.model';
+import { HomeMedication } from './home-medication.model';
 
 
 export class PatientClinicalDetail {
@@ -14,4 +15,5 @@ export class PatientClinicalDetail {
     public SocialHistory: Array<SocialHistory> = [];
     public FamilyHistory: Array<FamilyHistory> = [];
     public Allergies: Array<Allergy> = [];
+    public Medications:Array<HomeMedication>=[];
 }

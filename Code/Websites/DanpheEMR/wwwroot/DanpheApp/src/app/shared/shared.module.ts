@@ -36,7 +36,7 @@ import { DanpheMultiSelectComponent } from "../shared/danphe-multiselect/danphe-
 import { AngularMultiSelectModule } from "angular2-multiselect-dropdown";
 
 import { LabsBLService } from "../labs/shared/labs.bl.service";
-import { LabTestResultService } from "../labs/shared/lab.service";
+import { LabService, LabTestResultService } from "../labs/shared/lab.service";
 import { ImagingBLService } from "../radiology/shared/imaging.bl.service";
 import { ImagingDLService } from "../radiology/shared/imaging.dl.service";
 import { BillingDLService } from "../billing/shared/billing.dl.service";
@@ -80,19 +80,14 @@ import { DanpheAutoCompleteModule } from "../shared/danphe-autocomplete/danphe-a
 import { RbacPermissionDirective } from "../security/shared/rbac-permission.directive";
 
 import { BillingHeaderComponent } from "../shared/billing-header/billing-header.component";
-import { DepositReceiptComponent } from "../billing/bill-deposit/deposit-receipt.component";
+//import { DepositReceiptComponent } from "../billing/print-pages/deposit-slip/deposit-receipt.component";
 import { DanpheBarCodeComponent } from "./bar-code/danphe-bar-code.component";
 
 import { VisitSticker_Generic_Single_Component } from "./visit-generic-stickers/visit-gen-sticker-single.component";
 import { VisitSticker_Generic_PrintComponent } from "./visit-generic-stickers/visit-generic-stickers-print.component";
-import { DischargeBillMainComponent } from "./../billing/ip-billing/receipts/discharge-bill-main.component";
-import { DischargeBillBreakupComponent } from "./../billing/ip-billing/receipts/discharge-bill-breakup.component";
-import { DischargeBillSummaryComponent } from "./../billing/ip-billing/receipts/discharge-bill-summary.component";
+
 import { PostReportComponent } from "../radiology/shared/report/post-report.component";
-import {
-  DanpheAutoCompleteDirective,
-  DanpheAutoCompleteComponent,
-} from "./danphe-autocomplete";
+
 import { DrugsRequestComponent } from "../nursing/drugs-request/drugs-request.component";
 import { DicomService } from "./danphe-dicom-viewer/shared/dicom.service";
 import { DicomMainModule } from "./danphe-dicom-viewer/dicom-main.module";
@@ -142,7 +137,16 @@ import { PHRMItemTypeManageComponent } from "../pharmacy/setting/item-type/phrm-
 import { PHRMCompanyManageComponent } from "../pharmacy/setting/company/phrm-company-manage.component";
 import { PHRMCategoryManageComponent } from "../pharmacy/setting/category/phrm-category-manage.component";
 import { ResetEmergencyContextGuard } from "./reset-emergencycontext-guard";
-import { PdfViewerModule } from 'ng2-pdf-viewer';
+//import { PdfViewerModule } from 'ng2-pdf-viewer'; //rusha:30May'21--commented until proper solution is found.
+import { PharmacyReceiptComponent } from "../pharmacy/receipt/pharmacy-receipt.component";
+import { PhrmInvoiceViewComponent } from "../pharmacy/sale/invoice-view/phrm-invoice-view.component";
+import { PHRMUpdateMRPComponent } from "../pharmacy/setting/mrp/phrm-update-mrp.component";
+import { RequisitionNpViewComponent } from "./nepali-receipt-views/requisition-np-view/requisition-np-view.component";
+import { DispatchNpViewComponent } from './nepali-receipt-views/dispatch-np-view/dispatch-np-view.component';
+import { MunicipalitySelectComponent } from "./address-controls/municipality-select.component";
+import { DefaultDischargeSummaryTemplateComponent } from "../discharge-summary/add-view-summary/view-templates/default-discharge-summary-template.comonent";
+import { SCHDischargeSummaryTemplateComponent } from "../discharge-summary/add-view-summary/view-templates/SCH/sch-discharge-summary-template.comonent";
+
 
 @NgModule({
   providers: [
@@ -176,6 +180,7 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
       useClass: DanpheLoadingInterceptor,
       multi: true,
     },
+    LabService
   ],
   imports: [
     ReactiveFormsModule,
@@ -198,7 +203,7 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     DicomMainModule,
     MatTooltipModule,
     SettingsSharedModule,
-    PdfViewerModule,
+    //PdfViewerModule,
 
   ],
   declarations: [
@@ -235,14 +240,11 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     EmergencyStickerComponent,
     PrintHeaderComponent,
     BillingHeaderComponent,
-    DepositReceiptComponent,
+    //DepositReceiptComponent,
     RbacPermissionDirective,
     DanpheBarCodeComponent,
     VisitSticker_Generic_Single_Component,
     VisitSticker_Generic_PrintComponent,
-    DischargeBillMainComponent,
-    DischargeBillBreakupComponent,
-    DischargeBillSummaryComponent,
     DrugsRequestComponent,
     BooleanParameterPipe,
     SearchFilterPipe,
@@ -274,7 +276,13 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     PHRMUnitOfMeasurementManageComponent,
     PHRMItemTypeManageComponent,
     PHRMCompanyManageComponent,
-    PHRMCategoryManageComponent
+    PHRMCategoryManageComponent,
+    PhrmInvoiceViewComponent,
+    PharmacyReceiptComponent,
+    PHRMUpdateMRPComponent, RequisitionNpViewComponent, DispatchNpViewComponent,
+    MunicipalitySelectComponent,
+    DefaultDischargeSummaryTemplateComponent,
+    SCHDischargeSummaryTemplateComponent
   ],
   exports: [
     DanpheDateTime,
@@ -315,15 +323,12 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     EmergencyStickerComponent,
     PrintHeaderComponent,
     BillingHeaderComponent,
-    DepositReceiptComponent,
+    //DepositReceiptComponent,
     RbacPermissionDirective,
     //NgxBarcodeModule,
     DanpheBarCodeComponent,
     VisitSticker_Generic_Single_Component,
     VisitSticker_Generic_PrintComponent,
-    DischargeBillMainComponent,
-    DischargeBillBreakupComponent,
-    DischargeBillSummaryComponent,
     DrugsRequestComponent,
     DicomMainModule,
     MatTooltipModule,
@@ -356,7 +361,15 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     PHRMItemTypeManageComponent,
     PHRMCompanyManageComponent,
     PHRMCategoryManageComponent,
-    PdfViewerModule,
+    //PdfViewerModule,
+    PhrmInvoiceViewComponent,
+    PharmacyReceiptComponent,
+    PHRMUpdateMRPComponent,
+    RequisitionNpViewComponent,
+    DispatchNpViewComponent,
+    MunicipalitySelectComponent,
+    DefaultDischargeSummaryTemplateComponent,
+    SCHDischargeSummaryTemplateComponent
   ],
 })
 export class SharedModule { }

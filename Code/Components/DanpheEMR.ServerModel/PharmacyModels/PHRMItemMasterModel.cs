@@ -22,7 +22,8 @@ namespace DanpheEMR.ServerModel
         public double? ReOrderQuantity { get; set; }
         public double? MinStockQuantity { get; set; }
         public double? BudgetedQuantity { get; set; }
-        public double? VATPercentage { get; set; }
+        public double? PurchaseVATPercentage { get; set; }
+        public double? SalesVATPercentage { get; set; }
         public bool IsVATApplicable { get; set; }
         public int? PackingTypeId { get; set; }
         public bool IsInternationalBrand { get; set; }
@@ -42,5 +43,7 @@ namespace DanpheEMR.ServerModel
         public string VED { get; set; }
         public double? CCCharge { get; set; }
         public bool IsNarcotic { get; set; }
+        public bool? IsInsuranceApplicable { get; set; }
+        public decimal? GovtInsurancePrice { get; set; }
     }
 }

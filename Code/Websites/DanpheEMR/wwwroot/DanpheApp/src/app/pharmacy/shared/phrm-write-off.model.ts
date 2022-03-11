@@ -14,6 +14,7 @@ export class PHRMWriteOffModel {
 
     public WriteOffId: number = 0;
     public WriteOffDate: string = "";
+    public StoreId: number;
     public SubTotal: number = 0;
     public TotalAmount: number = 0;
     public WriteOffRemark: string = null;
@@ -27,18 +28,18 @@ export class PHRMWriteOffModel {
     public WriteOffValidator: FormGroup = null;
 
     public phrmWriteOffItem: Array<PHRMWriteOffItemModel> = new Array<PHRMWriteOffItemModel>();
-    
+
     constructor() {
-       
+
         var _formBuilder = new FormBuilder();
         this.WriteOffValidator = _formBuilder.group({
-            'WriteOffDate': ['', Validators.compose([Validators.required, this.dateValidatorsForPast])],
+            // 'WriteOffDate': ['', Validators.compose([Validators.required])],
             'WriteOffRemark': ['', Validators.compose([Validators.required])]
         });
 
         this.WriteOffDate = moment().format("YYYY-MM-DD");
     }
-    public IsValid():boolean{if(this.WriteOffValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.WriteOffValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.WriteOffValidator.valid;
         }

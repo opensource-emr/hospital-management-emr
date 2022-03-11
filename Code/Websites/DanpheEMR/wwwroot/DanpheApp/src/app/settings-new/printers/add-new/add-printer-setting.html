@@ -1,0 +1,172 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div ref_modal_div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3>
+              <span>
+                <ng-container *ngIf="isAddNewPrinterSetting">Add Printer Setting</ng-container>
+                <ng-container *ngIf="!isAddNewPrinterSetting">Edit Printer Setting</ng-container>
+              </span>
+            </h3>
+            <a class="btn btn-danger" (click)="close()">X</a>
+          </div>
+          <form [formGroup]="PrinterSettings.PrinterSettingsValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label for="printingType" class="control-label col-md-5">Printing Type<b>:</b></label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="PrinterSettings.PrintingType" class="form-control" name="PrintingType"
+                    id="printingType" (change)="coreService.FocusInputById('printerDisplayName')"
+                    [ngModelOptions]="{standalone: true}">
+                    <option value="browser">Browser</option>
+                    <option value="dotmatrix">Dotmatrix</option>
+                    <option value="server">Server</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="groupName" class="control-label col-md-5">Group Name <sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <select id="groupName" class="form-control" formControlName="GroupName"
+                    [(ngModel)]="PrinterSettings.GroupName" (change)="coreService.FocusInputById('printerDisplayName')">
+                    <option value="bill-receipt">Bill Receipt</option>
+                    <option value="reg-sticker">Registration Sticker</option>
+                    <option value="lab-sticker">Lab Sticker</option>
+                    <option value="phrm-receipt">Pharmacy Receipt</option>
+                  </select>
+                  <span class="color-red font-sm margin-15-lft"
+                    [hidden]="!(PrinterSettings.IsDirty('GroupName') && !PrinterSettings.IsValidCheck('GroupName','required'))">
+                    GroupName is required!!</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="printerDisplayName" class="control-label col-md-5">
+                  Printer Display Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="printerDisplayName" class="form-control" type="tel" placeholder=""
+                    formControlName="PrinterDisplayName" [(ngModel)]="PrinterSettings.PrinterDisplayName"
+                    (keyup.enter)="coreService.FocusInputById('PrinterName')">
+                  <span class="color-red font-sm margin-15-lft"
+                    [hidden]="!(PrinterSettings.IsDirty('PrinterDisplayName') && !PrinterSettings.IsValidCheck('PrinterDisplayName','required'))">
+                    Printer Display Name is required!!</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="PrinterName" class="control-label col-md-5">Printer Name<sup *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="PrinterName" class="form-control" type="text" placeholder="" [ngModelOptions]="{standalone: true}"
+                  onClick="this.select();" [(ngModel)]="PrinterSettings.PrinterName" (keyup.enter)="coreService.FocusInputById('ModelName')">                 
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ModelName" class="control-label col-md-5">Model Name<sup
+                    *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text" onClick="this.select();" placeholder=""
+                    [(ngModel)]="PrinterSettings.ModelName" [ngModelOptions]="{standalone: true}" id="ModelName"
+                    (keyup.enter)="coreService.FocusInputById('Width_Lines')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="Width_Lines" class="control-label col-md-5">Width_Lines<sup
+                  *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" placeholder=""
+                    [(ngModel)]="PrinterSettings.Width_Lines" [ngModelOptions]="{standalone: true}" id="Width_Lines"
+                    (keyup.enter)="coreService.FocusInputById('Height_Lines')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="Height_Lines" class="control-label col-md-5">Height_Lines<sup
+                  *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" id="Height_Lines"
+                    [(ngModel)]="PrinterSettings.Height_Lines" [ngModelOptions]="{standalone: true}"
+                    (keyup.enter)="coreService.FocusInputById('HeaderGap_Lines')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="HeaderGap_Lines" class="control-label col-md-5">HeaderGap_Lines<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" id="HeaderGap_Lines"
+                    [(ngModel)]="PrinterSettings.HeaderGap_Lines" [ngModelOptions]="{standalone: true}"
+                    (keyup.enter)="coreService.FocusInputById('FooterGap_Lines')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="FooterGap_Lines" class="control-label col-md-5">FooterGap_Lines<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" id="FooterGap_Lines"
+                    [(ngModel)]="PrinterSettings.FooterGap_Lines" [ngModelOptions]="{standalone: true}"
+                    (keyup.enter)="coreService.FocusInputById('mh')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="mh" class="control-label col-md-5">mh<sup
+                  *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" id="mh"
+                    [(ngModel)]="PrinterSettings.mh" [ngModelOptions]="{standalone: true}"
+                    (keyup.enter)="coreService.FocusInputById('ml')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ml" class="control-label col-md-5">ml<sup
+                  *ngIf="PrinterSettings.PrintingType=='dotmatrix'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="number" onClick="this.select();" id="ml"
+                    [(ngModel)]="PrinterSettings.ml" [ngModelOptions]="{standalone: true}"
+                    (keyup.enter)="coreService.FocusInputById('ServerFolderPath')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ServerFolderPath" class="control-label col-md-5">
+                  ServerFolderPath <sup
+                  *ngIf="PrinterSettings.PrintingType=='server'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text" onClick="this.select();" placeholder=""
+                    [(ngModel)]="PrinterSettings.ServerFolderPath" [ngModelOptions]="{standalone: true}"
+                    id="ServerFolderPath" (keyup.enter)="coreService.FocusInputById('Remarks')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="Remarks" class="control-label col-md-5">Remarks<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text" onClick="this.select();" placeholder=""
+                    [(ngModel)]="PrinterSettings.Remarks" [ngModelOptions]="{standalone: true}" id="Remarks"
+                    (keyup.enter)="coreService.FocusInputById('add')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="isActive" class="control-label col-md-5">Is Active</label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" type="checkbox" [ngModelOptions]="{standalone: true}"
+                          [(ngModel)]="PrinterSettings.IsActive" name="chkIsActive" />
+                        <span></span>
+                        True
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button id="add" *ngIf="isAddNewPrinterSetting" class="btn green btn-success margin-7-hr"
+                (click)="AddPrinterSetting()">Add</button>
+              <button id="add" *ngIf="!isAddNewPrinterSetting" class="btn green btn-success margin-7-hr"
+                (click)="UpdatePrinterSetting()">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

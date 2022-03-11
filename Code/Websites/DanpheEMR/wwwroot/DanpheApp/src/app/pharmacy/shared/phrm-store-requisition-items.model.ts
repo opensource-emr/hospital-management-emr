@@ -28,16 +28,22 @@ export class PHRMStoreRequisitionItems {
     public BatchNo: string = "";
 
     ////to make the instance ItemMaster with new row
-      public SelectedItem: PHRMItemMasterModel = null;
+    public SelectedItem: PHRMItemMasterModel = null;
 
     //ItemName only for display purpose
     public ItemName: string = "";
     public Code: string = ""
-      public Item: PHRMItemMasterModel = null;
-      public Requisition: PHRMStoreRequisition = null;
+    public Item: PHRMItemMasterModel = null;
+    public Requisition: PHRMStoreRequisition = null;
     public CreatedByName: string = null;
     public DispatchedByName: string = null;
-      StoreRackName: string;
+    StoreRackName: string;
+    public RequiredQuantity: number = 0;
+    AvailableQuantity: number;
+    DispatchedQuantity: number;
+    StoreId: any;
+    //for display purpose ie Requisiting Store Name
+    public RequestedSourceStore: string;
 
     constructor() {
 

@@ -1,34 +1,44 @@
 <div class="wrapper">
-<div class="row" *ngIf="showPatientList">
-  <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patients" (grid-actions)="PatientGridActions($event)"
-        (serverSearchText)="serverSearchTxt($event)"
-                 [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+  <div class="row" *ngIf="showPatientList">
+    <div class="col-lg-12 col-sm-12" id="patientListGridHolder">
+      <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patients"
+        (grid-actions)="PatientGridActions($event)" (serverSearchText)="serverSearchTxt($event)"
+        [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+    </div>
   </div>
-</div>
-<div class="row" *ngIf="showPatientHistory">
-  <div class="col-lg-12 col-sm-12">
-    <input type="button" class="btn btn-primary" (click)="HidePatientHistory()" value="Back" />
-    <patient-history [showPatientHistory]="showPatientHistory"
-                         [selectedPatient]="selectedPatient"></patient-history>
+  <div class="row" *ngIf="showPatientHistory">
+    <div class="col-lg-12 col-sm-12">
+      <input type="button" class="btn btn-primary" (click)="HidePatientHistory()" value="Back" />
+      <patient-history [showPatientHistory]="showPatientHistory" [selectedPatient]="selectedPatient"></patient-history>
+    </div>
   </div>
-</div>
-<div class="row" *ngIf="displayHealthcard">
-  <div class="col-lg-12 col-sm-12">
-    <patient-health-card *ngIf="hospitalHealthCard && hospitalHealthCard=='default'" [showCard]="displayHealthcard" [selectedPat]="selectedPatient"> </patient-health-card>
-    <hams-health-card *ngIf="hospitalHealthCard && hospitalHealthCard=='hams'" [showCard]="displayHealthcard" [selectedPat]="selectedPatient"> </hams-health-card>
+  <div class="row" *ngIf="displayHealthcard">
+    <div class="col-lg-12 col-sm-12">
+      <patient-health-card *ngIf="hospitalHealthCard && hospitalHealthCard=='default'" [showCard]="displayHealthcard"
+        [selectedPat]="selectedPatient"> </patient-health-card>
+      <hams-health-card *ngIf="hospitalHealthCard && hospitalHealthCard=='hams'" [showCard]="displayHealthcard"
+        [selectedPat]="selectedPatient"> </hams-health-card>
+    </div>
   </div>
-</div>
-<div class="row" *ngIf="showNeighbourCard">
-  <div class="col-lg-12 col-sm-12">
-    <patient-neighbour-card [showCard]="showNeighbourCard" [selectedPat]="selectedPatient"> </patient-neighbour-card>
+  <div class="row" *ngIf="showNeighbourCard">
+    <div class="col-lg-12 col-sm-12">
+      <patient-neighbour-card [showCard]="showNeighbourCard" [selectedPat]="selectedPatient"> </patient-neighbour-card>
+    </div>
   </div>
-</div>
-<div *ngIf="uploadFilesShow">
-  <input type="button" class="btn btn-primary" (click)="HideUploadFile()" style="    margin-left: 15px;
+  <div *ngIf="uploadFilesShow">
+    <input type="button" class="btn btn-primary" (click)="HideUploadFile()" style="    margin-left: 15px;
     margin-bottom: 3px;" value="Back" />
-  <patient-upload-files [isShowUploadMode]="isShowUploadMode"
-                          [isShowListMode]="isShowListMode"
-                          [patientId]="patientId"> </patient-upload-files>
-</div>
+    <patient-upload-files [isShowUploadMode]="isShowUploadMode" [isShowListMode]="isShowListMode"
+      [patientId]="patientId"> </patient-upload-files>
+  </div>
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showPatientSticker">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="margin-left:30%;margin-right:16%">
+        <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right"
+            (click)="ClosePrintStickerPopup()">X</i>
+            <patient-sticker [patientId]="this.selectedPatient" (after-print-action)="AfterStickerPrint($event)"> </patient-sticker>
+          </div>
+      </div>
+    </div>
+  </div>
 </div>

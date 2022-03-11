@@ -39,5 +39,14 @@ namespace DanpheEMR.ServerModel
         public PatientModel Patient { get; set; }
         [NotMapped]
         public string BillingUser { get; set; }
+
+        public double? CollectionFromReceivable { get; set; }
+        public double? DiscountReturnAmount { get; set; }
+
+        [NotMapped]
+        public List<int> PHRMReturnIdsCSV { get; set; }
+
+        //[NotMapped]
+        public int StoreId { get; set; }
     }
 }

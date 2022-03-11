@@ -15,29 +15,30 @@ export class EmergencyDLService {
   public GetERNumAndModeOfArrData() {
     return this.http.get<any>("/api/Emergency?reqType=latestERNumAndModeOfArrival", this.options);
   }
-  public GetAllERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allERPatientList", this.options);
+  public GetAllERPatients(caseId: number) {
+    if (!caseId) { caseId = 0; }
+    return this.http.get<any>("/api/Emergency?reqType=allERPatientList" + "&selectedCase=" + caseId, this.options);
   }
-  public GetAllTriagedPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allTriagedPatientList", this.options);
+  public GetAllTriagedPatients(caseid: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allTriagedPatientList&selectedCase=" +caseid, this.options);
   }
-  public GetAllLamaERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allLamaPatientList", this.options);
+  public GetAllLamaERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allLamaPatientList&selectedCase=" + caseId, this.options);
   }
-  public GetAllAdmittedERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allAdmittedPatientList", this.options);
+  public GetAllAdmittedERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allAdmittedPatientList&selectedCase=" + caseId, this.options);
   }
-  public GetAllDeathERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allDeathPatientList", this.options);
+  public GetAllDeathERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allDeathPatientList&selectedCase=" + caseId, this.options);
   }
-  public GetAllTransferredERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allTransferredPatientList", this.options);
+  public GetAllTransferredERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allTransferredPatientList&selectedCase=" + caseId, this.options);
   }
-  public GetAllDischargedERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allDischargedPatientList", this.options);
+  public GetAllDischargedERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allDischargedPatientList&selectedCase=" + caseId, this.options);
   }
-  public GetAllDorERPatients() {
-    return this.http.get<any>("/api/Emergency?reqType=allDorPatientList", this.options);
+  public GetAllDorERPatients(caseId: number) {
+    return this.http.get<any>("/api/Emergency?reqType=allDorPatientList&selectedCase=" + caseId, this.options);
   }
   public GetPatients() {
     return this.http.get<any>("/api/Emergency?reqType=allExistingPatients", this.options);
@@ -102,5 +103,23 @@ export class EmergencyDLService {
   }
   public UndoTriageOfERPatient(data) {
     return this.http.put<any>("/api/Emergency?reqType=undoTriageOfPatient", data, this.options);
+  }
+  public GetConsentFormUploadList(id: number) {
+    return this.http.get<any>("/api/Emergency?reqType=GetUploadedConsentForm&id=" + id, this.options);
+  }
+  public PostConsentForm(data: any) {
+    try {
+      return this.http.post<any>("/api/Emergency/UploadEmergencyPatConsentForm", data);
+      } catch (exception) {
+      throw exception;
+    }
+  }
+  public DeleteFile(id: number) {
+    return this.http.delete<any>("/api/Emergency/DeleteCosentForm?id=" + id, this.options);
+  }
+  public GetFileFromServer(id: number) {
+    return this.http.get<any>("/api/Emergency/DownloadFile?FileId=" + id, {
+      responseType: 'blob' as 'json',
+    });
   }
 }

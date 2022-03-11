@@ -1,0 +1,86 @@
+<div style="float: right;position: relative;top: -3rem;">
+  <button (click)="print()" class="btn green btn-success margin-7-hr">
+    Print <i class="glyphicon glyphicon-print"></i>
+  </button>
+</div>
+<div id="printpage" style="font-weight: normal; border: 1px dotted; margin: 5rem; padding: 5rem;background-color: white;">
+  <div style="display: flex; justify-content: space-around;">
+    <div style="text-align: left;">
+      <img class="img-responsive" style="max-height:10rem;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+    </div>
+    <div style="text-align: center;">
+      <div style="font-weight: 700;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+      <div style="font-weight: 700;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+      <div style="font-weight: 700;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+      <div style="font-weight: 700;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+      <div style="font-weight: 700;">{{headerDetail.hospitalName}}</div>
+      <div style="font-weight: 700;">{{headerDetail.address}}</div>
+      <div style="font-weight: 700;text-decoration: underline;">खर्च/निकासा फाराम</div>
+    </div>
+    <div>
+      <div>म.ले.प.फारम नं:&nbsp;४०४ </div>
+      <div>साबिकको फारम नं:&nbsp;५१ </div>
+    </div>
+  </div>
+  <div style="float: right; font-weight: 600;">
+    <div>आ.व.:{{DispatchDetails.FiscalYear}}</div>
+    <div>निकासा नं:{{DispatchDetails.DispatchId}}</div>
+    <div>मितिः <span *ngIf="DispatchDetails.DispatchedDate">{{DispatchDetails.DispatchedDate | nepaliDate}}</span> </div>
+  </div>
+  <div>
+    <table class="table table-condensed " border="1">
+      <thead>
+        <tr>
+          <th rowspan="2">क्र.सं.</th>
+          <th rowspan="2">सामानको नाम</th>
+          <th rowspan="2">कोड नं</th>
+          <th rowspan="2">स्पेसिफिकेसन</th>
+          <th colspan="3">निकासा गरिएको </th>
+          <th rowspan="2">जम्मा रकम</th>
+          <th rowspan="2">जिन्सी खाता पाना नम्बर </th>
+          <th rowspan="2">कैफियत</th>
+        </tr>
+        <tr>
+          <th>एकाइ</th>
+          <th>परिमाण</th>
+          <th>दर</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of DispatchDetails.DispatchItems ;let i = index">
+          <td>{{i +1}}</td>
+          <td>{{row.ItemName}}</td>
+          <td>{{row.BatchNo}}</td>
+          <td></td>
+          <td>{{row.UOMName}}</td>
+          <td>{{row.Quantity}}</td>
+          <td>{{row.Price}}</td>
+          <td>{{row.Quantity * row.Price | number : '1.2-2'}}</td>
+          <td>{{row.RegisterPageNo}}</td>
+          <td>{{row.Remark}}</td>
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+  <div style="display: flex;justify-content: space-around;">
+    <div style="display: flex; flex-direction: column;">
+      <div>स्टोर शाखाको दस्तखतः</div>
+      <div>नामः</div>
+      <div>मितिः</div>
+    </div>
+    <div>
+
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <div>स्वीकृत गर्नेको दस्तखतः</div>
+      <div>नामः</div>
+      <div>मितिः</div>
+    </div>
+    <div></div>
+
+  </div>
+</div>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

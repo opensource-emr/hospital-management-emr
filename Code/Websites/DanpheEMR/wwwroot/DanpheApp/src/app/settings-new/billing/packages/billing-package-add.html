@@ -22,7 +22,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Package Name<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <textarea name="PackageName" max="100" class="form-control" [(ngModel)]="CurrentBillingPackage.BillingPackageName" formControlName="BillingPackageName"></textarea>
+                      <textarea id="PackageName" (keyup.enter)="GoToNextInput('Description')"  name="PackageName" max="100" class="form-control" [(ngModel)]="CurrentBillingPackage.BillingPackageName" formControlName="BillingPackageName"></textarea>
                       <span class="color-red font-sm" [hidden]="CurrentBillingPackage.IsValidCheck('BillingPackageName','required') || !(CurrentBillingPackage.IsDirty('BillingPackageName'))">Billing Package Name is required.</span> <span class="color-red font-sm" *ngIf="CurrentBillingPackage.IsDirty('BillingPackageName')" [hidden]="CurrentBillingPackage.IsValidCheck('BillingPackageName','maxlength')">Max length 100 characters.</span> </div>
                   </div>
                 </div>
@@ -38,7 +38,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-2">Description<sup>*</sup><b>:</b></label>
                     <div class="col-md-4">
-                      <textarea name="Description" max="200" class="form-control" [(ngModel)]="CurrentBillingPackage.Description" formControlName="Description"></textarea>
+                      <textarea id="Description" (keyup.enter)="GoToNextInput('ServiceDeptId')"  name="Description" max="200" class="form-control" [(ngModel)]="CurrentBillingPackage.Description" formControlName="Description"></textarea>
                       <span class="color-red font-sm" [hidden]="CurrentBillingPackage.IsValidCheck('Description','required') || !(CurrentBillingPackage.IsDirty('Description'))">Description is required.</span> <span class="color-red font-sm" *ngIf="CurrentBillingPackage.IsDirty('Description')" [hidden]="CurrentBillingPackage.IsValidCheck('Description','maxlength')">Max length 200 characters.</span> </div>
                   </div>
                 </div>
@@ -74,7 +74,9 @@
                                                 </option>
                                             </select>-->
                             
-                            <input class="form-control" danphe-auto-complete
+                            <input class="form-control"
+                                                   id="ServiceDeptId" (keyup.enter)="GoToNextInput('ItemName')" 
+                                                   danphe-auto-complete
                                                    style="width: 250px;"
                                                    formControlName="ServiceDeptId"
                                                    [ngClass]="{'border-red': row.IsDirty('ServiceDeptId') && !row.IsValidCheck('ServiceDeptId','required'), 'border-red': !row.IsValidSelDepartment }"
@@ -102,6 +104,8 @@
                                                 </option>
                                             </select>-->
                             <input class="form-control" danphe-auto-complete
+                                                   id="ItemName" 
+                                                   (keyup.enter)="GoToNextInput('Quantity')" 
                                                    formControlName="ItemId"
                                                    style="width:250px"
                                                    [ngClass]="{'border-red': row.IsDirty('ItemId') && !row.IsValidCheck('ItemId','required'), 'border-red': !row.IsValidSelItemName }"
@@ -114,12 +118,15 @@
                                                    (focusout)="AssignSelectedBillItem(i)"
                                                    onclick="this.select();"
                                                    match-formatted="true"
-                                                   max-num-list="10" />
+                                                   max-num-list="10" 
+                                                   />
                             <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
                             <span class="color-red font-sm" [hidden]="row.IsValidCheck('ItemId','required') || !(row.IsDirty('ItemId'))">Select Item from the list</span>
                           </form></td>
                         <td><form [formGroup]="row.BillingPackageItemValidator" class="form-horizontal">
                             <input [(ngModel)]="row.Quantity"
+                                                   id="Quantity"
+                                                   (keyup.enter)="GoToNextInput('Discount')" 
                                                    formControlName="Quantity"
                                                    (ngModelChange)="Calculation()"
                                                    style="width:90px"
@@ -151,11 +158,11 @@
                       </tr>
                       <tr class="form-group">
                         <td>Discount % Total: </td>
-                        <td><input [(ngModel)]="CurrentBillingPackage.DiscountPercent" disabled min="0" max="100" (ngModelChange)="Calculation()" class="form-control" name="DiscountPercent" type="number"></td>
+                        <td><input  [(ngModel)]="CurrentBillingPackage.DiscountPercent" disabled min="0" max="100" (ngModelChange)="Calculation()" class="form-control" name="DiscountPercent" type="number"></td>
                       </tr>
                       <tr class="form-group">
                         <td> Discount Amt: </td>
-                        <td><input [(ngModel)]="totalDiscount" class="form-control" (ngModelChange)="Calculation()" name="DiscountAmount" value="{{0}}" type="number"></td>
+                        <td><input id="Discount" (keyup.enter)="GoToNextInput('savebtn')" [(ngModel)]="totalDiscount" class="form-control" (ngModelChange)="Calculation()" name="DiscountAmount" value="{{0}}" type="number"></td>
                       </tr>
                       <tr class="form-group">
                         <td>Total Amount: </td>
@@ -184,8 +191,8 @@
             
           </div>
 			<div class="panel-footer">
-                  <input type="button" class="btn btn-primary" *ngIf="!update" [disabled]="loading" (click)="loading=true;Submit('add')" value="Add" />
-                  <input type="button" class="btn btn-primary" *ngIf="update" [disabled]="loading" (click)="loading=true;Submit('update')" value="Update" />
+                  <input id="savebtn" type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" [disabled]="loading" (click)="loading=true;Submit('add')" value="Add" />
+                  <input id="savebtn" type="button" class="btn green btn-success margin-7-hr" *ngIf="update" [disabled]="loading" (click)="loading=true;Submit('update')" value="Update" />
                 </div>
         </div>
       </div>

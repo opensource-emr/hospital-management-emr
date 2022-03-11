@@ -27,7 +27,7 @@ export class ItemModel {
   public ItemType: string = null;
   public Description: string = null;
   public ReOrderQuantity: number = null;
-  public MinStockQuantity: number = null;
+  public MinStockQuantity: number = 0;//sud:25Sept'21--Made Zero from Null since it's mandatory.
   public BudgetedQuantity: number = null;
   public StandardRate: number = 0;
   public VAT: number = 0;
@@ -39,6 +39,12 @@ export class ItemModel {
   public IsActive: boolean = true;
   public UOMName: string = ''; //sanjit: 24 Mar'20
   public IsVATApplicable: boolean = false; //ramesh:2 Apr'20
+  public IsCssdApplicable: boolean = false;
+  public IsColdStorageApplicable: boolean = false;
+
+  public MSSNO: string = null; // Rajib:11/25/2020 for tilagnga hospital
+  public HSNCODE: string = null;// Rajib:12/5/2020 for tilagnga hospital
+  public VendorId: number = null;// Rajib:12/5/2020 for tilagnga hospital
 
   public ItemCategory: Array<ItemCategoryModel> = new Array<ItemCategoryModel>();
   public ItemSubCategory: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
@@ -47,7 +53,11 @@ export class ItemModel {
   public UnitOfMeasurement: Array<UnitOfMeasurementModel> = new Array<UnitOfMeasurementModel>();
 
   public ItemValidator: FormGroup = null;
-
+  public IsPatConsumptionApplicable: boolean = false;
+  public MaintenanceOwnerRoleId: number = null;
+  public RegisterPageNumber:number=null;
+  public SubCategoryName:string=null;
+  public StoreId: number = null;
   constructor() {
 
     var _formBuilder = new FormBuilder();
@@ -58,12 +68,12 @@ export class ItemModel {
       'ItemCategoryId': ['', Validators.compose([Validators.required])],
       //'AccountHeadId': ['', Validators.compose([Validators.required])],
       //'PackagingTypeId': ['', Validators.compose([Validators.required])],
-      //'ReOrderQuantity': ['', Validators.compose([Validators.required])],
+      'ReOrderQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
       'UnitOfMeasurementId': ['', Validators.compose([Validators.required])],
-      'MinStockQuantity': ['', Validators.compose([Validators.required])],
+      'MinStockQuantity': ['', Validators.compose([Validators.required, Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
       //'BudgetedQuantity': ['', Validators.compose([Validators.required])],
-      //'StandardRate': ['', Validators.compose([Validators.required])],
-      //'VAT': ['', Validators.compose([Validators.required])],
+      'StandardRate': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
+      'VAT': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]{0,1})(\.[0-9]{2})?$')])],
       'SubCategoryId': ['', Validators.compose([Validators.required])],
     });
   }

@@ -18,7 +18,7 @@
                                                      
  -------------------------------------------------------------------
  */
-import { Component, Input, OnInit, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, OnInit, Output, EventEmitter, ChangeDetectorRef, Renderer2 } from "@angular/core";
 import { Patient } from "../../patients/shared/patient.model";
 import { PatientService } from "../../patients/shared/patient.service";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
@@ -29,6 +29,7 @@ import * as moment from 'moment/moment';
 import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { VisitService } from "../shared/visit.service";
 import { Membership } from "../../settings-new/shared/membership.model";
+import { Municipality } from "../../shared/address-controls/municipality-model";
 //import { MembershipType } from '../../patients/shared/membership-type.model';
 @Component({
   selector: "visit-patient-info",
@@ -39,6 +40,7 @@ export class VisitPatientInfoComponent implements OnInit {
   public patient: Patient = new Patient();
 
   public countrySubDivisions: Array<CountrySubdivision> = [];
+  public municipalities: Array<Municipality> = [];
   public countries: Array<any> = [];
   public calendarType: string = "";
   public countrySubDivision: CountrySubdivision = new CountrySubdivision();
@@ -51,6 +53,9 @@ export class VisitPatientInfoComponent implements OnInit {
   public initialLoad: boolean = false; //flag added by yubraj --6th sept 2018
 
   public olderAddressList: Array<any> = [];//for Autocomplete of Address Field.
+  public isPhoneMandatory: boolean = false;
+  //public AgeUnitDisable: boolean = false;
+  public showMunicipality: boolean = false;
 
 
 
@@ -60,7 +65,8 @@ export class VisitPatientInfoComponent implements OnInit {
     public coreService: CoreService,
     public visitBLService: VisitBLService,
     public visitService: VisitService,
-    public changeDetector: ChangeDetectorRef) {
+    public changeDetector: ChangeDetectorRef,
+    public renderer2: Renderer2) {
     this.LoadCalendarTypes();
     this.GetCountries();
     //this.GetCountrySubDivision(); //this was reapting double time --yub 6th Sept
@@ -71,12 +77,16 @@ export class VisitPatientInfoComponent implements OnInit {
     if (this.coreService.Masters.UniqueDataList && this.coreService.Masters.UniqueDataList.UniqueAddressList) {
       this.olderAddressList = this.coreService.Masters.UniqueDataList.UniqueAddressList;
     }
-    this.LoadMembershipSettings()
+    this.LoadMembershipSettings();
+    this.isPhoneMandatory = this.coreService.GetIsPhoneNumberMandatory();
+    this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
   }
 
-  ngAfterViewInit() {
-    document.getElementById('aptPatFirstName').focus();
-  }
+  // ngAfterViewInit() {
+  //   if (!this.patient.PatientId) {
+  //     this.SetFocusById('aptPatFirstName');
+  //   }
+  // }
   ngAfterViewChecked() {
     this.changeDetector.detectChanges();
   }
@@ -84,6 +94,7 @@ export class VisitPatientInfoComponent implements OnInit {
   ngOnInit() {
     this.InitializeNewPatient();
     this.isPatientInfoLoaded = true;
+    this.phoneNumberMandatory();
   }
 
   public InitializeNewPatient() {
@@ -98,10 +109,8 @@ export class VisitPatientInfoComponent implements OnInit {
       let country = this.coreService.GetDefaultCountry();
       let subDivision = this.coreService.GetDefaultCountrySubDivision();
       this.patient.CountryId = country ? country.CountryId : null;
-      this.countrySubDivision.CountrySubDivisionId =
-        this.patient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
-      this.countrySubDivision.CountrySubDivisionName =
-        this.patient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
+      this.countrySubDivision.CountrySubDivisionId = this.patient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
+      this.countrySubDivision.CountrySubDivisionName = this.patient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
 
       //this.countrySubDivision["CountrySubDivisionId"] = subDivision ? subDivision.CountrySubDivisionId : null;
       //this.countrySubDivision["CountrySubDivisionName"] = subDivision ? subDivision.CountrySubDivisionName : null;
@@ -126,6 +135,7 @@ export class VisitPatientInfoComponent implements OnInit {
     this.patient.EnableControl("Address", false);
     this.patient.EnableControl("PANNumber", false);
     this.patient.EnableControl("MembershipTypeId", false);
+    //this.AgeUnitDisable = true;
   }
 
   LoadCalendarTypes() {
@@ -168,12 +178,12 @@ export class VisitPatientInfoComponent implements OnInit {
             this.countrySubDivision = new CountrySubdivision();
             this.countrySubDivision = null; //to show sub country box empty when the country selection is changed --yub 30th Aug '18
             if (this.patient.CountryId != 1) {
-                var selCountrySubDiv = this.countrySubDivisions.find(a => a.CountryId == this.patient.CountryId);
-                this.patient.CountrySubDivisionName = selCountrySubDiv.CountrySubDivisionName;
-                this.patient.CountrySubDivisionId = selCountrySubDiv.CountrySubDivisionId;
-                this.patient.CountryName = this.countries.find(a => a.CountryId == this.patient.CountryId).CountryName;
-                this.countrySubDivision["CountrySubDivisionId"] = this.patient.CountrySubDivisionId;
-               this.countrySubDivision["CountrySubDivisionName"] = this.patient.CountrySubDivisionName;
+              var selCountrySubDiv = this.countrySubDivisions.find(a => a.CountryId == this.patient.CountryId);
+              this.patient.CountrySubDivisionName = selCountrySubDiv.CountrySubDivisionName;
+              this.patient.CountrySubDivisionId = selCountrySubDiv.CountrySubDivisionId;
+              this.patient.CountryName = this.countries.find(a => a.CountryId == this.patient.CountryId).CountryName;
+              // this.countrySubDivision["CountrySubDivisionId"] = this.patient.CountrySubDivisionId;
+              // this.countrySubDivision["CountrySubDivisionName"] = this.patient.CountrySubDivisionName;
             }
           }
           this.AssignSelectedDistrict();
@@ -306,6 +316,9 @@ export class VisitPatientInfoComponent implements OnInit {
     if (this.countrySubDivision && this.countrySubDivision.CountrySubDivisionId) {
       this.patient.CountrySubDivisionId = this.countrySubDivision.CountrySubDivisionId;
       this.patient.CountrySubDivisionName = this.countrySubDivision.CountrySubDivisionName;
+    }else{
+      this.patient.CountrySubDivisionId = null;
+      this.patient.CountrySubDivisionName = null;
     }
   }
 
@@ -352,7 +365,7 @@ export class VisitPatientInfoComponent implements OnInit {
   MembershipTypeChanged(currentMembType: Membership) {
     //we need to emit even when membership type is invalid. so that visit-main component can do the check accordingly.
     if (currentMembType && this.patient.MembershipTypeId) {
-      this.visitService.TriggerBillChangedEvent({ ChangeType: "Membership", "DiscountPercent": currentMembType.DiscountPercent, MembershipTypeName: currentMembType.MembershipTypeName });
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "Membership", "DiscountPercent": currentMembType.DiscountPercent, MembershipTypeName: currentMembType.MembershipTypeName, MembershipTypeId: currentMembType.MembershipTypeId });
       this.visitService.TriggerBillChangedEvent({ ChangeType: "MembershipTypeValid", "MembershipTypeValid": this.patient.IsValidMembershipTypeName });
     }
     else {
@@ -370,4 +383,39 @@ export class VisitPatientInfoComponent implements OnInit {
 
   //end:sundeep-14nov-for membership
 
+  //Enter Key Sequence handling
+  GoToNext(nextField: HTMLInputElement) {
+    nextField.focus();
+    nextField.select();
+  }
+
+  GoToNextSelect(nextField: HTMLSelectElement) {
+    nextField.focus();
+  }
+
+  SetFocusById(IdToBeFocused: string) {
+    this.coreService.FocusInputById(IdToBeFocused);
+  }
+
+  public phoneNumberMandatory() {
+    if (!this.isPhoneMandatory) {
+      this.patient.UpdatePhoneValidator("off", "PhoneNumber");
+    }
+  }
+
+  public updateMunicipality(event) {
+    if (event) {
+      this.patient.MunicipalityId = event.data;
+    }
+  }
+
+  public transFormAddress() {
+    if (this.patient.Address) {
+      var splitStr = this.patient.Address.toLowerCase().split(" ");
+      for (var i = 0; i < splitStr.length; i++) {
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+      }
+      this.patient.Address = splitStr.join(" ");
+    }
+  }
 }

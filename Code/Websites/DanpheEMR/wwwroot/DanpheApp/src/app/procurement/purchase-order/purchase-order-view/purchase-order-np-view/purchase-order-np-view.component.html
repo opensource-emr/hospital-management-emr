@@ -1,0 +1,166 @@
+<div>
+  <div>
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1" style="background-color: white;margin-top: 30px;">
+        <!-- <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" (click)="Close()" -->
+        <!-- title="Cancel"><i class="fa fa-times"></i></a> -->
+        <!--Model Box Body Start-->
+        <div id="printpage" >
+          <div>
+            <div style="font-size: 13px !important;">
+              <div style="display: flex;justify-content: space-between;">
+                <div style="text-align: left;width:20%">
+                  <img class="img-responsive" style="max-height:12rem;"
+                    src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                </div>
+                <div style="text-align: center;width:60%;">
+
+                  <div style="font-weight: 700;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                  <div style="font-weight: 700;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                  <div style="font-weight: 700;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                  <div style="font-weight: 700;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                  <div style="font-weight: 700;">{{headerDetail.hospitalName}}</div>
+                  <div style="font-weight: 700;">{{headerDetail.address}}</div>
+                  <div style="font-weight: 700;text-decoration: underline;margin-top: 9px;">खरिद आदेश</div>
+                </div>
+                <div style="width:20%;text-align:right">
+                  <div>म.ले.प.फारम नं: ४०२ </div>
+                  <div>साबिकको फारम नं: ४५ </div>
+                </div>
+              </div>
+              <div style="display: flex;justify-content: space-between;align-items: flex-end;margin-bottom: 1rem;">
+                <div>
+                  <div>श्री {{purchaseorderDetails.VendorName}}</div>
+                  <div>ठेगाना : {{purchaseorderDetails.VendorAddress}}</div>
+                  <div>संस्था दर्ता नं: </div>
+                </div>
+                <div>
+                  <div>फोन नं: {{purchaseorderDetails.VendorNo}}</div>
+                  <div>पान नं : {{purchaseorderDetails.VendorPANNumber}}</div>
+                </div>
+                <div>
+                  <div>खरिद आदेश नं : {{purchaseorderDetails.PurchaseOrderNo}}</div>
+                  <div>खरिद आदेश मिति :<span *ngIf="purchaseorderDetails.PoDate">{{purchaseorderDetails.PoDate |
+                      nepaliDate}}</span> </div>
+                  <div>खरिद सम्वन्धि निर्णय नं : {{purchaseorderDetails.PRNumber}} </div>
+                  <div>निर्णय मिति : {{purchaseorderDetails.PRDate}}</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <table class="table table-condensed" border="1" rules="all">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="font-size: 11px;">क्र.सं.</th>
+                    <th colspan="5" style="text-align: center;font-size: 11px;">सामानको </th>
+                    <th colspan="2" style="font-size: 11px;">मूल्य</th>
+                    <th rowspan="2" style="font-size: 11px;">कैफियत</th>
+                  </tr>
+                  <tr>
+                    <th style="width:100px;font-size: 11px;width: 65px;">जिन्सी वर्गीकरण सङ्केत नं</th>
+                    <th style="font-size: 11px;">नाम</th>
+                    <th style="font-size: 11px;">स्पेसिफिकेसन</th>
+                    <th style="font-size: 11px;">इकाई </th>
+                    <th style="font-size: 11px;">परिमाण</th>
+                    <th style="font-size: 11px;">दर</th>
+                    <th style="font-size: 11px;">जम्मा</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let poitem of purchaseorderDetails.PurchaseOrderItems let i = index">
+                    <td style="font-size: 11px;">{{i+1}}</td>
+                    <td style="font-size: 11px;">{{poitem.ItemCategoryCode}}</td>
+                    <td colspan="2">
+                      <span
+                        style="text-transform: uppercase;font-size: 12px;">{{poitem.ItemName}}</span>
+                      <span *ngIf="poitem.POItemSpecification" style="font-weight:400;font-size: 11px;">
+                        <br />
+                        {{poitem.POItemSpecification}}
+                      </span>
+                    </td>
+                    <td style="font-size: 11px;">{{poitem.UOMName}}</td>
+                    <td style="font-size: 11px;">{{poitem.Quantity}}</td>
+                    <td style="font-size: 11px;">{{poitem.StandardRate}}</td>
+                    <!-- Show subtotal as ma.le.pa form does not have any field for vat and discount in item level
+                        Showing total amount can make the representation confusing.-->
+                    <td style="font-size: 11px;">{{poitem.Quantity * poitem.StandardRate | number: '1.0-2'}}</td>
+                    <td style="font-size: 11px;">{{poitem.Remark}}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="7" style="text-align: right;font-size: 11px;" class="bold">जम्मा रकम</td>
+                    <td style="font-size: 11px;">{{purchaseorderDetails.SubTotal | number : '1.0-2'}}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="7" style="text-align: right;font-size: 11px;" class="bold">मु.अ.कर (१३%)</td>
+                    <td style="font-size: 11px;">{{purchaseorderDetails.VATAmount | number : '1.0-2'}}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="6"style="text-align: left;font-size: 11px;">
+                      In Words: {{purchaseorderDetails.TotalAmount | number: "1.0-2" | NumberInWords}} ruppees only.
+                    </td>
+                    <td colspan="1" style="text-align: right;font-size: 11px;" class="bold">कुल जम्मा रकमः</td>
+                    <td style="font-size: 11px;">{{purchaseorderDetails.TotalAmount | number : '1.0-2'}}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div style="text-align: left;font-size: 12px;">
+                माथि उल्लिखित सामान मिति <span
+                  *ngIf="purchaseorderDetails.DeliveryDate">{{purchaseorderDetails.DeliveryDate |
+                  nepaliDate}}</span> भित्र यस कार्यालयमा दाखिला गरी बिल / इन्भाइस प्रस्तुत गर्नुहोला ।
+                <span *ngIf="purchaseorderDetails.POStatus=='cancelled'" class="cancelStamp">
+                  <strong>Cancelled</strong></span>
+              </div>
+
+            </div><br>
+            <div>
+              <table border="1" class="table table-condensed">
+                <div>
+                  <div>
+                    <div style="text-align: left;font-size: 12px;">उपर्युक्तअनुसार खरिद आदेश तयार गर्ने, सिफारिस गर्ने र
+                      स्वीकृत गर्नेः
+                    </div>
+                  </div>
+                  <br>
+                  <div>
+                    <div style="width: 33%;font-size: 12px;display: inline-block;">
+                      <div>फाँटवालाको दस्तखतः</div>
+                      <div>नामः</div>
+                      <div>मितिः</div>
+                    </div>
+                    <div style="width: 33%;font-size: 12px;display: inline-block;">
+                      <div>शाखा प्रमुखको दस्तखतः</div>
+                      <div>नामः</div>
+                      <div>मितिः</div>
+                    </div>
+                    <div style="width: 33%;font-size: 12px;display: inline-block;">
+                      <div>कार्लायल प्रमुखाको दस्तखतः</div>
+                      <div>नामः</div>
+                      <div>मितिः</div>
+                    </div>
+                  </div>
+                </div>
+              </table>
+            </div>
+            <div>
+              <div style="text-align: left;font-size: 12px;">माथि उल्लिखित सामानहरू मिति
+                ............भित्र............कार्यालयमा बुझाउने
+                छु भनी सहिछाप गर्ने । </div>
+            </div>
+            <br>
+            <div class="row">
+              <div class="col-sm-4" style="text-align:left;font-size: 12px;">फर्मको नाम:</div>
+              <div class="col-sm-4" style="text-align:left;font-size: 12px;">दस्तखत र छाप:</div>
+              <div class="col-sm-4" style="text-align:left;font-size: 12px;">मितिः</div>
+            </div>
+          </div>
+          <!-- </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -22,12 +22,12 @@
           <div style="padding-top:15px;">
             <h4 class="clp clp-hd" data-toggle="collapse" data-target="#totalsales" aria-expanded="true">Total Sales</h4>
             <div id="totalsales" class="collapse in clp-cntnt">
-              <div> i. Subtotal     : {{coreService.currencyUnit}} {{salesDayBook.SubTotal}}<br />
-                ii. Discount Amount : {{coreService.currencyUnit}} {{salesDayBook.DiscountAmount}}<br />
+              <div> i. Subtotal     : {{salesDayBook.SubTotal}}<br />
+                ii. Discount Amount : {{salesDayBook.DiscountAmount}}<br />
               </div>
-              <div *ngIf="showTaxLabels"> <b><i style="text-decoration:underline"> Taxable Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TaxableAmount}}</b> </div>
-              <div *ngIf="showTaxLabels"> {{coreService.taxLabel}} Collection : {{coreService.currencyUnit}} {{salesDayBook.TaxAmount}} </div>
-              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.ReturnAmount}} </div>
+              <div *ngIf="showTaxLabels"> <b><i style="text-decoration:underline"> Taxable Amount</i> : {{salesDayBook.TaxableAmount}}</b> </div>
+              <div *ngIf="showTaxLabels"> {{coreService.taxLabel}} Collection : {{salesDayBook.TaxAmount}} </div>
+              <div> Returned Amount : {{salesDayBook.ReturnAmount}} </div>
               <div> <b><i style="text-decoration:underline"> Total Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}}</b> </div>
             </div>
           </div>
@@ -38,8 +38,8 @@
               <div> Discount : {{salesDayBook.Paid_DiscountAmount}} </div>
               <div *ngIf="showTaxLabels"> Taxable Amount: {{salesDayBook.Paid_TaxableAmount}} </div>
               <div *ngIf="showTaxLabels"> {{coreService.taxLabel}}  : {{salesDayBook.Paid_TaxAmount}} </div>
-              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CashRet_TotalAmount}} </div>
-              <div> Total Amount :{{salesDayBook.Paid_TotalAmount}} </div>
+              <div> Returned Amount : {{salesDayBook.CashRet_TotalAmount}} </div>
+              <div> Total Amount : {{coreService.currencyUnit}} {{salesDayBook.Paid_TotalAmount}} </div>
             </div>
           </div>
           <div style="padding-top:7px;">
@@ -49,8 +49,8 @@
               <div> Discount : {{salesDayBook.CrSales_DiscountAmount}} </div>
               <div *ngIf="showTaxLabels"> Taxable Amount: {{salesDayBook.CrSales_TaxableAmount}} </div>
               <div *ngIf="showTaxLabels"> {{coreService.taxLabel}}  : {{salesDayBook.CrSales_TaxAmount}} </div>
-              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CrRet_TotalAmount}} </div>
-              <div> Total Amount : {{salesDayBook.CrSales_TotalAmount}} </div>
+              <div> Returned Amount : {{salesDayBook.CrRet_TotalAmount}} </div>
+              <div> Total Amount : {{coreService.currencyUnit}} {{salesDayBook.CrSales_TotalAmount}} </div>
             </div>
           </div>
           <div style="padding-top:7px;">
@@ -63,16 +63,16 @@
           <div style="padding-top:7px;">
             <h4 class="clp clp-hd" data-toggle="collapse" data-target="#receivable">Receivable Information</h4>
             <div id="receivable" class="collapse clp-cntnt">
-              <div> Credit Sales :  {{salesDayBook.CrSales_TotalAmount}} </div>
-              <div> Credit Received :   {{salesDayBook.CrReceived_TotalAmount}} </div>
-              <div> Due From Settlement :   {{salesDayBook.SettlDueAmount}} </div>
+              <div> Credit Sales : {{coreService.currencyUnit}} {{salesDayBook.CrSales_TotalAmount}} </div>
+              <div> Credit Received : {{coreService.currencyUnit}} {{salesDayBook.CrReceived_TotalAmount}} </div>
+              <div> Due From Settlement : {{coreService.currencyUnit}} {{salesDayBook.SettlDueAmount}} </div>
             </div>
           </div>
           <div style="padding-top:7px;">
             <h4 class="clp clp-hd" data-toggle="collapse" data-target="#discount">Discounts</h4>
             <div id="discount" class="collapse clp-cntnt">
-              <div> Trade :  {{salesDayBook.DiscountAmount}} </div>
-              <div> Cash :   {{salesDayBook.SettlDiscountAmount}} </div>
+              <div> Trade : {{coreService.currencyUnit}} {{salesDayBook.DiscountAmount}} </div>
+              <div> Cash : {{coreService.currencyUnit}} {{salesDayBook.SettlDiscountAmount}} </div>
             </div>
           </div>
           <div style="padding-top:7px;">
@@ -81,11 +81,11 @@
               <table class="tbl-summ" border="1">
                 <tr>
                   <td> Total Sales </td>
-                  <td> {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}} </td>
+                  <td> {{salesDayBook.TotalAmount}} </td>
                 </tr>
                 <tr>
                   <td>Less Credit Sales</td>
-                  <td>{{coreService.currencyUnit}} {{salesDayBook.CrSales_TotalAmount}}</td>
+                  <td> {{salesDayBook.CrSales_TotalAmount}}</td>
                 </tr>
                 <!--<tr>
                   <td>Less  Returned (Cash Sales)</td>
@@ -93,23 +93,23 @@
               </tr>-->
                 <tr>
                   <td>Add Credit Received</td>
-                  <td>{{coreService.currencyUnit}} {{salesDayBook.CrReceived_TotalAmount}}</td>
+                  <td> {{salesDayBook.CrReceived_TotalAmount}}</td>
                 </tr>
                 <tr>
                   <td>Add  Deposit Received </td>
-                  <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReceived}}</td>
+                  <td> {{salesDayBook.DepositReceived}}</td>
                 </tr>
                 <tr>
                   <td>Less Deposit Returned</td>
-                  <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReturn}}</td>
+                  <td> {{salesDayBook.DepositReturn}}</td>
                 </tr>
                 <tr>
                   <td>Less Cash Discount</td>
-                  <td>{{coreService.currencyUnit}} {{salesDayBook.SettlDiscountAmount}}</td>
+                  <td> {{salesDayBook.SettlDiscountAmount}}</td>
                 </tr>
                 <tr>
                   <td>Less Due From Settlement</td>
-                  <td>{{coreService.currencyUnit}}{{salesDayBook.SettlDueAmount}}</td>
+                  <td> {{salesDayBook.SettlDueAmount}}</td>
                 </tr>
                 <tr style="border: 2px solid;">
                   <td style="font-weight:bold;"> Total Collection </td>
@@ -171,11 +171,11 @@
           <table style="font-weight:bold;width:80%;color:#006687;">
             <tr>
               <td>PROVISIONAL ITEMS</td>
-              <td>Rs. {{overallBills.TotalProvisional}}</td>
+              <td>{{coreService.currencyUnit}} {{overallBills.TotalProvisional}}</td>
             </tr>
             <tr>
               <td style="padding-top:10px;">UNPAID CREDIT INVOICES</td>
-              <td style="padding-top:10px;">Rs. {{overallBills.TotalCredits}} </td>
+              <td style="padding-top:10px;">{{coreService.currencyUnit}} {{overallBills.TotalCredits}} </td>
             </tr>
           </table>
         </div>

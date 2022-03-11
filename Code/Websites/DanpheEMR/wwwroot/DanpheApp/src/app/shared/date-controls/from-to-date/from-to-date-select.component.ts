@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding, AfterViewInit } from '@angular/core';
 import * as moment from 'moment/moment';
 import { NepaliCalendarService } from '../../calendar/np/nepali-calendar.service';
 import { NepaliDate } from '../../../shared/calendar/np/nepali-dates';
@@ -16,7 +16,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       multi: true
     }]
 })
-export class FromToDateSelectComponent {
+export class FromToDateSelectComponent implements AfterViewInit {
+  showTimeOptionBtn: boolean;
+  showTimeBtn: any;
   // Required for ControlValueAccessor interface
   writeValue(value: any) {
   }
@@ -65,7 +67,8 @@ export class FromToDateSelectComponent {
   //sud:6June: below comma separated array provides list of valid date ranges
   @Input("date-range-options")
   dateRangeOptionString: string = "1W,1M,3M";//available options are: 1D,1W,1M,3M,6M. 1D means Today.
-
+  @Input("showToogleTimeBtn") showToogleTimeBtn: boolean = false;
+  showTimeField: boolean = false;
   public dateRangeOptions = {
     today: true,
     week1: true,
@@ -94,9 +97,10 @@ export class FromToDateSelectComponent {
   public isDateRangeChangeCalled: boolean = false;
   public showDatePicker: boolean = false;
   public isValidToLoad: boolean = true;
+  public showAdBsButton: boolean = true;
 
   constructor(public npCalendarService: NepaliCalendarService, private coreService: CoreService, public changeDetector: ChangeDetectorRef) {
-
+    this.showAdBsButton = this.coreService.showCalendarADBSButton;
   }
 
   ngOnInit() {
@@ -104,7 +108,20 @@ export class FromToDateSelectComponent {
     this.ConfigureDateSettings();
     this.DateRange_InitialAssign();
   }
-
+ 
+  ngAfterViewInit(){
+    let showToogleTimeBtnString = this.coreService.Parameters.find(a => a.ParameterName == 'ShowTimeOptionInFromToDatePicker' && a.ParameterGroupName == 'Common');
+    if (showToogleTimeBtnString != null) {
+      let showTimeOptionParameter = JSON.parse(showToogleTimeBtnString.ParameterValue);
+      this.showTimeOptionBtn = (showTimeOptionParameter.ShowTimeOptionInFromToDatePicker == true);
+    }
+    if ((this.showTimeOptionBtn && this.showToogleTimeBtn) == true){
+      this.showTimeBtn = true;
+    }
+    else{
+      this.showTimeBtn = false;
+    }
+  }
   assignADorBS() {
     let savedDateRange = localStorage.getItem("FromTo_DateRange");
     if (savedDateRange) {
@@ -114,7 +131,7 @@ export class FromToDateSelectComponent {
         this.showEnCalendar = this.calendarType == "en" ? true : false;//assign calendarType from here. 
         this.showNpCalendar = !this.showEnCalendar;
         return;
-      }      
+      }
     } else {
       if (!this.calendarType || !(this.calendarType.trim().length > 0)) {
         this.calendarType = this.coreService.DatePreference;
@@ -123,7 +140,7 @@ export class FromToDateSelectComponent {
         return;
       }
     }
-    
+
     this.calendarType = "np";//default is nepali calendar.. 
     this.showNpCalendar = true;
     this.showEnCalendar = !this.showNpCalendar;
@@ -185,8 +202,8 @@ export class FromToDateSelectComponent {
           }
         }
       }
-      else if (this.defaultRangeName) {        
-        this.ChangeCustomDateRange(this.defaultRangeName);        
+      else if (this.defaultRangeName) {
+        this.ChangeCustomDateRange(this.defaultRangeName);
         this.showDatePicker = true;
         return;//customdaterange automatically assigns and emits the required values.. so we can return from here.. 
       }
@@ -204,14 +221,14 @@ export class FromToDateSelectComponent {
 
     this.SetRangeDescriptions();
     this.EmitDatesAfterChange();
-    
+
   }
 
   //converting date from English date to Nepali date
   EngCalendarOnDateChange_From() {
     if (!this.isDateRangeChangeCalled) {
       this.ClearDateRange();
-      
+
       if (this.alwaysEmit_OkBtnNotRequired) {
         this.IsValidCheck();
         if (this.validationObject.isValid) {
@@ -223,8 +240,8 @@ export class FromToDateSelectComponent {
       } else {
         this.IsValidCheck();
       }
-     
-    } 
+
+    }
   }
 
   //converting date from English date to Nepali date
@@ -235,14 +252,14 @@ export class FromToDateSelectComponent {
         this.IsValidCheck();//check for validation before emitting the data.    
         if (this.validationObject.isValid) {
           this.SaveDateRangeToLocalStorage();
-          this.onDateChange.emit({ fromDate: this.enDate_from, toDate: this.enDate_to});
+          this.onDateChange.emit({ fromDate: this.enDate_from, toDate: this.enDate_to });
         } else {
-          this.onDateChange.emit({ fromDate: null, toDate: null});
+          this.onDateChange.emit({ fromDate: null, toDate: null });
         }
       } else {
         this.IsValidCheck();
       }
-    }  
+    }
   }
 
   //matches regular exprsn for : YYYY-MM-DD eg: 2060-10-18, etc.
@@ -269,7 +286,7 @@ export class FromToDateSelectComponent {
     this.SaveDateRangeToLocalStorage();
   }
 
- 
+
   //This sets the Name to be Displayed in the Dropdown & tooltip of the Range.
   SetRangeDescriptions() {
 
@@ -339,7 +356,7 @@ export class FromToDateSelectComponent {
   }
 
 
- 
+
 
   ChangeCustomDateRange(rangeName: string) {
     this.isDateRangeChangeCalled = true;
@@ -434,6 +451,11 @@ export class FromToDateSelectComponent {
     this.EmitDatesAfterChange("date");
   }
 
+
+  toogleTimeField() {
+    if (this.showToogleTimeBtn == true)
+      this.showTimeField = !this.showTimeField;
+  }
 }
 
 

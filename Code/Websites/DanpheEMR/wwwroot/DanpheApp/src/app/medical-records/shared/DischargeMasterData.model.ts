@@ -1,12 +1,3 @@
-import {
-  NgForm,
-  FormGroup,
-  FormControl,
-  Validators,
-  FormBuilder,
-  ReactiveFormsModule
-} from '@angular/forms';
-import { Employee } from '../../employee/shared/employee.model';
 import { ICD10 } from '../../clinical/shared/icd10.model';
 import { BabyBirthConditionModel } from './babyBirthConditions.model';
 import { GravitaModel } from './gravita.model';

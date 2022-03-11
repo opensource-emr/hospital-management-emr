@@ -1,0 +1,146 @@
+<style>
+  li.horizontal-bar:hover>a {
+    background: none;
+  }
+
+  li.bil-hr-bar:hover ul.dropdown-menu li a {
+    background: none;
+    color: #6f6f6f !important;
+  }
+
+  .dropdown.bil-hr-bar.open a.dropdown-toggle {
+    background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
+    border-radius: 4px !important;
+  }
+
+  .dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+    color: #6f6f6f;
+  }
+
+  .hr-ddlCstm {
+    border-bottom: 1px solid #c5cbc5;
+  }
+
+  .bil-hr-dropdown li a:hover {
+    font-weight: 700;
+  }
+
+  .p-category .span2 {
+    min-width: 20.5%;
+  }
+
+  .padder-v {
+    border: 1px solid #ddd;
+    margin: 10px 10px 0px 0px;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .b-r {
+    border-right: 1px solid #cfcfcf;
+  }
+
+  .b-light {
+    border-color: #e4e4e4;
+  }
+
+  .b-light i.text-white {
+    color: #fff;
+  }
+
+  .rpt-link-container {
+    width: 230px;
+    height: 70px;
+    background-color: white;
+  }
+
+  .rpt-link-container:hover {
+    background-color: skyblue;
+    cursor: pointer;
+  }
+
+  .bed-container {
+    height: 12rem;
+    width: 13rem;
+    float: left;
+    text-align: center;
+  }
+
+  .modal-content {
+    line-height: 2;
+    text-align: center;
+    color: #eceaea;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    left: 82%;
+    top: 90%;
+    border-radius: 4px !important;
+    z-index: 99;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf = "hasMultipleLabType">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Select your Lab Type</span></h3>
+            <a class="btn btn-danger" (click)="GoHome()" title="Close">X</a>
+          </div>
+          <div class="form-horizontal hm-form">
+            <div class="form-body">
+
+              <div class="form-group" *ngIf="showNoPermission">
+                <div class="col-md-12">
+                  <div class="row" style="margin-bottom: 50px; margin-top: 15px;">
+                    <div class="col-md-12">
+                      You do not have permission to enter the Lab
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="form-group" *ngIf="labTypes && activeLab.LabTypeId == 0">
+                <div class="col-md-12">
+                  <div class="row" style="margin-bottom: 50px; margin-top: 15px;">
+                    <div class="col-md-3" *ngFor="let lab of labTypes" rbac-permission="{{lab.PermissionInfo}}">
+                      <a class="report_list" (click)="setGlobalLab(lab.LabTypeId); ActivateLab(lab)">
+                        <div class="span2 padder-v b-r b-light rpt-link-container"
+                          style="display: flex;flex-direction: row;align-items: center;">
+                          <span class="fa-stack fa-2x report_icon">
+                            <i class="fa fa-shopping-cart fa-stack-1x text-white"></i>
+                          </span>
+                          <span class="report-name col-md-8">
+                            <i>{{lab.LabTypeName}}</i>
+                          </span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-12" *ngIf="activeLab && activeLab.LabTypeId != 0">
+                  <div class="row" style="margin-bottom: 50px; margin-top: 15px;">
+                    <div class="col-md-12">
+                      <p>You are in {{activeLab.LabTypeName}}.</p>
+                      <span>Do you want to Change the Lab?</span>
+                      <button class="btn btn-sm btn-danger" style="margin-left: 7px;"
+                        (click)="DeactivateLab()">Deactivate
+                        Lab </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

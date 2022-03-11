@@ -8,6 +8,7 @@ import { LedgerModel } from '../settings/shared/ledger.model';
 import { FiscalYearModel } from '../settings/shared/fiscalyear.model';
 import { VoucherModel } from '../settings/shared/voucher.model';
 import * as _ from 'lodash';
+import { AccountingService } from '../shared/accounting.service';
 @Component({
     templateUrl: './inventory-sync/inventory-sync-main.html',
 })
@@ -23,42 +24,24 @@ export class AccountingSyncBaseComponent<TItem> {
     public voucherList: Array<VoucherModel> = new Array<VoucherModel>();
     public currentVoucher: VoucherModel = new VoucherModel();
     constructor(public accSyncDLService: AccountingSyncDLService,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService,public accountingService: AccountingService) {
         this.GetItems();
         this.GetFiscalYearList();
         this.GetLedgers();
         this.GetVoucherList();
     }
     public GetLedgers() {
-        this.accSyncDLService.Read("/api/AccountingSettings?reqType=GetLedgers")
-            .map(res => res)
-            .subscribe(res => {
-                if (res.Results == "OK") {
-                    this.ledgerList = res.Results;
-                }
-                else {
-                    this.msgBoxServ.showMessage("failed", ["Unable to get ledger list"]);
-                    console.log(res.Errors);
-                }
-            },
-            res => this.Error(res));
+      if(!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerList = this.accountingService.accCacheData.Ledgers;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerList = this.ledgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+    }//mumbai-team-june2021-danphe-accounting-cache-change
     }
     public GetFiscalYearList() {
-        this.accSyncDLService.Read("/api/Accounting?reqType=fiscalyear-list")
-            .map(res => res)
-            .subscribe(res => {
-                if (res.Results == "OK") {
-                    if (res.Results.length) {
-                        this.fiscalYearList = res.Results;
-                        this.currentFiscalYear = this.fiscalYearList[0];
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("failed", ["Unable to get ledger list"]);
-                        console.log(res.Errors);
-                    }
-                }
-
-            });
+      if(!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.fiscalYearList = this.accountingService.accCacheData.FiscalYearList;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.fiscalYearList = this.fiscalYearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.currentFiscalYear = this.fiscalYearList[0];            //mumbai-team-june2021-danphe-accounting-cache-change
+       }
     }
     public GetItems() {
         this.accSyncDLService.Read("/api/AccountingSync?reqType=inventory")

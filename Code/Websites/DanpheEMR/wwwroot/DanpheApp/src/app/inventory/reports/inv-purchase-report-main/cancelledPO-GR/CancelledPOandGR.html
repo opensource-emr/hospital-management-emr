@@ -1,0 +1,77 @@
+
+<div>
+    <form [formGroup]="CurrentCancelledPOGR.CancelledPOGRValidator" class="form-horizontal hm-form">
+        <div class="form-body">            
+            <div class="caption lb-caption">
+                <i class="fa fa-bar-chart"></i>
+                <span class="caption-subject">Cancelled PO and GR Report</span>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-xs-12">
+                    <from-to-date-select (on-change)="OnDateRangeChange($event)">
+                    </from-to-date-select>
+                </div>     
+               
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <div class="input-group">
+                                <div class="icheck-inline">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        <input type="radio" (change)="OnChangePOGRCheckbox()" [(ngModel)]="CurrentCancelledPOGR.isGR" [ngModelOptions]="{standalone:true}" name="name" value="true" />
+                                        <span></span><b>Cancelled GR</b> 
+                                    </label>
+                                        <label class="mt-checkbox mt-checkbox-outline">
+                                            <input type="radio"(change)="OnChangePOGRCheckbox()" [(ngModel)]="CurrentCancelledPOGR.isGR" [ngModelOptions]="{standalone:true}" name="name" value="false" checked />
+                                            <span></span><b>Cancelled PO</b>
+                                            </label>                                                                              
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+                <div class="col-md-2">                   
+                    <div class="form-group">
+                        <button class="btn blue" type="button" (click)="GetReportDetails()" [disabled]="loading">
+                            <i class="fa fa-search"></i>&nbsp;
+                            <span *ngIf="!loading"> Report</span>
+                            <span *ngIf="loading"> Loading...</span>
+                        </button>
+                    </div>                    
+                </div>     
+            </div>                          
+            </div>                              
+    </form>
+</div>
+<div class="col-lg-12 col-sm-12" *ngIf="showGRGrid" >
+   
+    <div class="round-shadow-div no-padding" >   
+        <danphe-grid 
+        [grid-colDefaults]="CancelledGRColumns" 
+        [grid-data]="CancelledGRData" 
+        (grid-actions)="GridActions($event)"
+       
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" 
+        [NepaliDateInGridParams]="NepaliDateInGRGridSettings"                       
+        [fixed-height-px]="'400px'"
+        >    
+        </danphe-grid>         
+      </div>
+</div>
+<div class="col-lg-12 col-sm-12" *ngIf="showPOGrid" >
+    <danphe-grid 
+    [grid-colDefaults]="CancelledPOColumns" 
+    [grid-data]="CancelledPOData" 
+    (grid-actions)="GridActions($event)"
+
+    [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" 
+    [NepaliDateInGridParams]="NepaliDateInPOGridSettings"                   
+    [fixed-height-px]="'400px'"  >
+    </danphe-grid>
+</div>
+<div *ngIf="showPoDetail">
+    <po-view  [POId]="poId"></po-view>
+</div>
+<div *ngIf="showGrDetail">
+    <gr-view  [GRId]="grId"></gr-view>
+</div>

@@ -9,7 +9,7 @@ import {
 export class CreditOrganization {
     public OrganizationId: number = 0;
     public OrganizationName: string = null;
-    public IsActive: string = null;
+    public IsActive: boolean = true;
     public CreatedOn: string = null;
     public CreatedBy: number = null;
     public ModifiedOn: string = null;

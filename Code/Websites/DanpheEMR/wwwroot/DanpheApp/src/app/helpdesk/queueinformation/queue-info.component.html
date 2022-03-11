@@ -1,0 +1,188 @@
+  <div class="wrapper">
+        <div class="row">
+            <div class="col-md-4" style="float: right; margin-bottom: 10px;">
+                    <div *ngIf="queueLevel!='hospital'">
+                        <div class="form-group" *ngIf="queueLevel=='department'">
+                            <label class="control-label col-md-5">Department<b style="float: right;margin-right: 30px;">:</b></label>
+                            <div class="col-md-7">
+                                <input
+                                class="form-control"
+                                danphe-auto-complete
+                                [(ngModel)]="department"
+                                [ngModelOptions]="{standalone: true}"
+                                [list-formatter]="DepartmentListFormatter"
+                                [source]="DepartmentList"
+                                placeholder="Please Select Department From List"
+                                display-property-name="DepartmentName"
+                                value-property-name="null"
+                                onclick="this.select()"
+                                (focusout)="fiterByDepartment()"
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group" *ngIf="queueLevel=='doctor'">       
+                            <label class="control-label col-md-5">Doctor<b style="float: right;margin-right: 30px;">:</b></label>
+                            <div class="col-md-7">
+                                <input
+                                class="form-control"
+                                danphe-auto-complete
+                                [(ngModel)]="doctor"
+                                [ngModelOptions]="{standalone: true}"
+                                [list-formatter]="DoctorListFormatter"
+                                [source]="DoctorList"
+                                placeholder="Select Doctor"
+                                display-property-name="FullName"
+                                value-property-name="null"
+                                onclick="this.select()"
+                                (focusout)="fiterByDoctor()"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+              <div class="portlet light bordered">
+                <div class="portlet-title">
+                  <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                  </div>
+                </div>
+                <div class="portlet-body">      
+                    <div class="main-wrapper">
+                        <div class="page-header">
+                            <div class="container">
+                                <div class="inner-header">
+                                    <h1 class="logo"><img src="../../../themes/theme-default/images/lumbini-hospital.png" alt=""></h1>
+                                    <div class="top-header">
+                                        <p>{{ labelContainer.Header_Text_Nepali }}</p>
+                                        <p>{{ labelContainer.Header_Text }}</p>
+                                    </div>
+                                    <div class="blank-space">
+                                        <label  *ngIf="selectedDepartmentId>0"><span>Department:</span>{{department.DepartmentName}}</label>
+                                        <label  *ngIf="selectedDoctorId>0"><span>Doctor:</span>{{doctor.FullName}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div >
+                            <div class="inner-wrapper">               
+                                <div class="main-body" style="margin:20px;">
+                                    <div class="row">
+                                        <div class="col-md-4" *ngFor="let data of visits | slice:0:1">
+                                            <div class="patient-detail">
+                                                <div class="title"><span>{{ labelContainer.Label_Now }}<br>{{ labelContainer.Label_Now_Nepali }}</span></div>
+                                                <div class="title" style="margin-top: 5px;">{{ labelContainer.Label_Token_Number_Nepali }}</div>
+                                                <div class="patient-number success-number pulse-highlight">{{data.QueueNo}}</div>
+                                                <div class="title" style="margin-bottom: 5px;">{{ labelContainer.Label_Token_Number }}</div>
+                                                <div class="patient-info">
+                                                    <div class="footer-detail">
+                                                        <div class="footer-header">
+                                                            <h3 style="display: flex; justify-content: center; align-items: center">{{data.ShortName}}</h3>
+                                                        </div>
+                                                    </div>
+                    
+                                                </div>
+                                            </div>
+                                            <div class="clear"></div>                            
+                                        </div>
+                                        <div class="col-md-4" *ngIf="visits.length>0">                            
+                                            <div class="patient-list">                                
+                                                    <div class="subtitle">
+                                                        <h3>{{ labelContainer.Label_Next}} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Next_Nepali }}</h3>
+                                                    </div>
+                                                    <div class="patient-inner-list">
+                                                    <div class="row">
+                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<2">{{labelContainer.No_Data_Text}} {{labelContainer.English_Nepali_Separator_Text}} {{labelContainer.No_Data_Text_Nepali}}</div>
+                                                        <div class="col-md-12" *ngFor="let data of visits | slice:1:6 ; index as i">
+                                                            <div class="list-wrapper">
+                                                                <div class="patient-list-card" [ngClass] ="i==0?'next':''">
+                                                                    <div class="patient-icon">
+                                                                        <div class="patient-number warning-number">
+                                                                            {{data.QueueNo}}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="patient-detail-list-info">
+                                                                        <div class="patient-list-detail">
+                                                                            <h4 style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;"><span class="text-primary">{{data.ShortName}}</span></h4>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4" *ngIf="visits.length>0">                            
+                                            <div class="patient-list">                                
+                                                    <div class="subtitle">
+                                                        <h3>{{ labelContainer.Label_Upcoming }} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Upcoming_Nepali }}</h3>
+                                                    </div>
+                                                    <div class="patient-inner-list">
+                                                    <div class="row">
+                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<7">{{labelContainer.No_Data_Text}} {{labelContainer.English_Nepali_Separator_Text}} {{labelContainer.No_Data_Text_Nepali}}</div>
+                                                        <div class="col-md-12" *ngFor="let data of visits | slice:6:11">
+                                                            <div class="list-wrapper">
+                                                                <div class="patient-list-card">
+                                                                    <div class="patient-icon">
+                                                                        <div class="patient-number warning-number">
+                                                                            {{data.QueueNo}}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="patient-detail-list-info">
+                                                                        <div class="patient-list-detail">
+                                                                            <h4 style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;"><span class="text-primary">{{data.ShortName}}</span></h4>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                    <div class="col-md-12">
+                                        <div class="card-footer" style="display: flex;">
+                                            <h4 style="width: 300px;"><b>{{ labelContainer.Label_Notice }} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Notice_Nepali }}:</b></h4>
+                                            <marquee width="100%" direction="left" loop="infinite" scrollamount="infinite">
+                                                <ul>
+                                                    <li *ngIf=" queueLevel !='hospital' && (selectedDepartmentId==0 || (selectedDepartmentId>0 && !department.NoticeText))"><i class="fa fa-check-circle mr-1"></i>{{labelContainer.Default_Notice}}</li>
+                                                    <li *ngIf="selectedDepartmentId>0 && department.NoticeText"><i class="fa fa-check-circle mr-1"></i>{{ department.NoticeText }}</li>
+                                                    <li *ngIf="(queueLevel=='hospital' && visits.length == 0) || (queueLevel=='hospital' && !noticeText.Other_Notice)"><i class="fa fa-check-circle mr-1"></i>{{ noticeText.No_Notice }}</li>
+                                                    <li *ngIf="queueLevel=='hospital' && noticeText.Other_Notice"><i class="fa fa-check-circle mr-1"></i>{{ noticeText.Other_Notice }}</li>
+                                                </ul>
+                                            </marquee>                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+     
+                        </div>
+                        <div>
+                            <div class="container" style="display: flex; justify-content: space-between;flex-direction: row-reverse;">
+                                <div class="footer-logo">
+                                    <h5>Powered By:</h5>
+                                    <ul>
+                                        <li><img src="../../../themes/theme-default/images/imark-logo-primary.png" alt=""></li>
+                                        <li><img src="../../../themes/theme-default/images/danphecarelogo.png" alt=""></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-logo">
+                                    <h5>Copyright &copy;2021 </h5>
+                                    <ul>
+                                        <li><img src="../../../themes/theme-default/images/lumbini-hospital.png" alt="" style="height: 40px;width: auto;"></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+              </div>
+         </div>
+     </div>
+ </div>

@@ -1,0 +1,32 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="duplicateInvoiceReturnPrintGridColumns" [grid-data]="CreditNoteList"
+        [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1D,1W,1M,3M'"
+        [show-CustomDate]="true" (grid-actions)="DuplicateInvoiceReturnGridActions($event)" [show-print-button]="false"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showPrintPage">
+
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showPrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3" style="margin-top: 50px;">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="ClosePrintPage()">X</a>
+          <div *ngIf="showPrintPage">
+            <bill-print-credit-note [credit-note-number]="selCreditNote.CreditNoteNumber" [FiscalYearId]="selCreditNote.FiscalYearId">
+            </bill-print-credit-note>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

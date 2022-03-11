@@ -17,5 +17,7 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool? IsDefault { get; set; }
+        public int PermissionId { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

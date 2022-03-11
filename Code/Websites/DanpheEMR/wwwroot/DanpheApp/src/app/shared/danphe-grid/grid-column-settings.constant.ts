@@ -4,7 +4,7 @@ import { User } from "../../security/shared/user.model";
 import VerificationGridColumns from "../../verification/shared/verification-grid-column";
 import { SecurityService } from '../../security/shared/security.service';
 export default class GridColumnSettings {
-  static securityService
+  static securityService;
   constructor(private _securityService: SecurityService) {
     GridColumnSettings.securityService = this._securityService;
   }
@@ -228,8 +228,8 @@ export default class GridColumnSettings {
   ];
   static WardInfoSearch = [
     { headerName: "Ward Name", field: "WardName", width: 200 },
-    { headerName: "Total Beds", field: "TotalBeds", width: 180 },
-    { headerName: "Available", field: "Available", width: 180 },
+    { headerName: "Total Beds", field: "Total", width: 180 },
+    { headerName: "Available", field: "Vacant", width: 180 },
     { headerName: "Occupied", field: "Occupied", width: 180 },
     //{ headerName: "Maintainance", field: "", width: 180 }
   ];
@@ -259,7 +259,7 @@ export default class GridColumnSettings {
 
   // ]
 
-  static PatientSearch = [
+  PatientSearch = [
     { headerName: "Hospital Number", field: "PatientCode", width: 160 },
     { headerName: "Patient Name", field: "ShortName", width: 200 },
     {
@@ -274,19 +274,55 @@ export default class GridColumnSettings {
       headerName: "Actions",
       field: "",
       resizable: true,
-      template: `<a danphe-grid-action="edit" class="grid-action">Edit</a>
-             <a danphe-grid-action="showHistory" class="grid-action">History</a>
-                <div class="dropdown" style="display:inline-block;">
-                 <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
-                 <span class="caret"></span></button>
-                 <ul class="dropdown-menu grid-ddlCstm">
-                   <li><a danphe-grid-action="uploadfiles" >Upload Files</a></li>
-                   <li><a danphe-grid-action="showHealthCard" >Health Card</a></li>
-                   <li><a danphe-grid-action="showNeighbourCard" >Neighbour Card</a></li>
-                 </ul>
-                </div>`,
+      cellRenderer: GridColumnSettings.GetPatientActions
+
     },
   ];
+
+  static GetPatientActions() {
+    let template = "";
+
+    if (
+      GridColumnSettings.securityService.HasPermission("btn-patient-edit-view")
+    ) {
+        template = (GridColumnSettings.securityService.HasPermission("patient-pat-sticker-button") == true) ? template + `<a danphe-grid-action="edit" class="grid-action">Edit</a>
+        <a danphe-grid-action="showHistory" class="grid-action">History</a>
+           <div class="dropdown" style="display:inline-block;">
+            <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
+            <span class="caret"></span></button>
+            <ul class="dropdown-menu grid-ddlCstm">
+              <li><a danphe-grid-action="uploadfiles" >Upload Files</a></li>
+              <li><a danphe-grid-action="showHealthCard" >Health Card</a></li>
+              <li><a danphe-grid-action="showNeighbourCard" >Visitor Card</a></li>
+              <li>
+              <a danphe-grid-action="showPatientSticker" >Patient Sticker</a>
+              </li>
+            </ul>
+           </div>` : template +  `<a danphe-grid-action="showHistory" class="grid-action">History</a>
+           <div class="dropdown" style="display:inline-block;">
+            <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
+            <span class="caret"></span></button>
+            <ul class="dropdown-menu grid-ddlCstm">
+              <li><a danphe-grid-action="uploadfiles" >Upload Files</a></li>
+              <li><a danphe-grid-action="showHealthCard" >Health Card</a></li>
+              <li><a danphe-grid-action="showNeighbourCard" >Visitor Card</a></li>
+            </ul>
+           </div>`
+           ;
+    } else {
+      template += `<a danphe-grid-action="showHistory" class="grid-action">History</a>
+                  <div class="dropdown" style="display:inline-block;">
+                   <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
+                   <span class="caret"></span></button>
+                   <ul class="dropdown-menu grid-ddlCstm">
+                     <li><a danphe-grid-action="uploadfiles" >Upload Files</a></li>
+                     <li><a danphe-grid-action="showHealthCard" >Health Card</a></li>
+                     <li><a danphe-grid-action="showNeighbourCard" >Visitor Card</a></li>
+                   </ul>
+                  </div>`;
+    }
+    return template;
+  }
   //this is same to that of PatientSearch with only few fields added.
   //needs review whether it is required or not--sudarshan
 
@@ -394,7 +430,11 @@ export default class GridColumnSettings {
       width: 90,
       cellRenderer: GridColumnSettings.VisitDaysPassedRenderer,
     },
-
+    {
+      headerName: "Queue No.",
+      field: "QueueNo",
+      width: 90,
+    },
     {
       headerName: "Actions",
       field: "",
@@ -402,14 +442,6 @@ export default class GridColumnSettings {
       cellRenderer: GridColumnSettings.VisitActionsRenderer,
     },
   ];
-  static INV_STK_ActionRenderer(params) {
-    if (params.data.AvailQuantity > 0) {
-      var template = `<a danphe-grid-action="view" class="grid-action">View</a>`;
-      if (params.data.canUserManageStock)
-        template += `<a danphe-grid-action="manageStock" class="grid-action">Manage Stock</a >`;
-    }
-    return template;
-  }
 
   static VisitDaysPassedRenderer(params) {
     let date: string = params.data.VisitDate;
@@ -440,17 +472,6 @@ export default class GridColumnSettings {
       field: "",
       width: 280,
       cellRenderer: GridColumnSettings.BillingSearchActionsRenderer,
-      //template:
-      //    `<a danphe-grid-action="billingRequest" class="grid-action">
-      //    Billing Request
-      // </a>
-      // <a danphe-grid-action="deposit" class="grid-action">
-      //    Deposit
-      // </a>
-      // <a danphe-grid-action="bill-history" class="grid-action">
-      //               Bill History
-      //   </a>
-      //`
     },
   ];
 
@@ -538,7 +559,6 @@ export default class GridColumnSettings {
       width: 160,
       pinned: true,
     },
-    { headerName: "Contact No.", field: "PhoneNumber", width: 100, pinned: true },
     {
       headerName: "Age/Sex",
       field: "",
@@ -547,7 +567,14 @@ export default class GridColumnSettings {
       pinned: true,
     },
     {
-      headerName: "Date",
+      headerName: "Contact No.",
+      field: "PhoneNumber",
+      width: 100,
+      pinned: true,
+    },
+
+    {
+      headerName: "Last Bill Date",
       field: "LastCreditBillDate",
       width: 180,
       pinned: true,
@@ -644,28 +671,36 @@ export default class GridColumnSettings {
   ];
 
   static IPBillItemGridCol = [
-
     { headerName: "Date", field: "CreatedOn", width: 90 },
     { headerName: "Department", field: "ServiceDepartmentName", width: 100 },
     { headerName: "ItemName", field: "ItemName", width: 160 },
-    { headerName: "Qty.", field: "Quantity", width: 60, },
+    { headerName: "Qty.", field: "Quantity", width: 60 },
     { headerName: "Sub Total", field: "SubTotal", width: 85 },
-    { headerName: "Disc%", field: "DiscountPercent", width: 70 },
-    { headerName: "Total Amount", field: "TotalAmount", width: 85 },
+    // { headerName: "Disc%", field: "DiscountPercent", width: 70 },
+    // { headerName: "Total Amount", field: "TotalAmount", width: 85 },
     { headerName: "AssignedTo Dr.", field: "ProviderName", width: 100 },
     {
       headerName: "Action",
       field: "",
       width: 70,
-      template:
-        `<a danphe-grid-action="edit" class="grid-action fa fa-pencil" title="click to edit this item">
+      template: `<a danphe-grid-action="edit" class="grid-action fa fa-pencil" title="click to edit this item">
                Edit
              </a>
           `,
     },
-    { headerName: "User", field: "CreatedBy", width: 70, cellRenderer: GridColumnSettings.IPBillItemRenderer_CreatedBy },
-    { headerName: "Modified By", field: "", width: 110, cellRenderer: GridColumnSettings.IPBillItemRenderer_ModifiedBy }
-  ]
+    {
+      headerName: "User",
+      field: "CreatedBy",
+      width: 70,
+      cellRenderer: GridColumnSettings.IPBillItemRenderer_CreatedBy,
+    },
+    {
+      headerName: "Modified By",
+      field: "",
+      width: 110,
+      cellRenderer: GridColumnSettings.IPBillItemRenderer_ModifiedBy,
+    },
+  ];
 
   static SettlementBalanceRenderer(params) {
     let data = params.data;
@@ -730,7 +765,7 @@ export default class GridColumnSettings {
       headerName: "Status",
       field: "BilStatus",
       width: 100,
-      cellRenderer: GridColumnSettings.BillStatus
+      cellRenderer: GridColumnSettings.BillStatus,
     },
     {
       headerName: "Action",
@@ -798,24 +833,22 @@ export default class GridColumnSettings {
     return moment(params.data.DepositDate).format("YYYY-MM-DD HH:mm");
   }
   static BillStatus(params) {
-    if (params.data.BilStatus == 'unpaid') {
+    if (params.data.BilStatus == "unpaid") {
       return `<span style="color: red;"><b><b>Unpaid</b></span>`;
-    }
-    else {
+    } else {
       return `<span style="color: green;"><b><b>Paid</b></span>`;
     }
   }
 
   static settlementAction(params) {
-    if (params.data.DepositBalance > 0 || params.data.BilStatus == 'unpaid') {
+    if (params.data.DepositBalance > 0 || params.data.BilStatus == "unpaid") {
       let template = `<a danphe-grid-action="showDetails" class="grid-action">
                     Show Details
                     </a>
                     <a danphe-grid-action="print" class="grid-action">
                     Print
                     </a>
-                    `
-        ;
+                    `;
       return template;
     } else {
       let template = `<a danphe-grid-action="print" class="grid-action">
@@ -906,7 +939,12 @@ export default class GridColumnSettings {
     { headerName: "Status", field: "OrderStatus", width: 80 },
     { headerName: "Total Amount", field: "TotalAmount", width: 75 },
     { headerName: "IP/OP", field: "VisitType", width: 80 },
-    { headerName: "AssignedTo Dr.", field: "ProviderName", cellRenderer: GridColumnSettings.DrRenderer, width: 110 },
+    {
+      headerName: "AssignedTo Dr.",
+      field: "ProviderName",
+      cellRenderer: GridColumnSettings.DrRenderer,
+      width: 110,
+    },
     {
       headerName: "Action",
       field: "",
@@ -916,8 +954,6 @@ export default class GridColumnSettings {
              </a>`,
     },
   ];
-
-
 
   static ImagingRequisitionListSearch = [
     {
@@ -964,13 +1000,21 @@ export default class GridColumnSettings {
   }
 
   static parseTemplateForRADReportList(params) {
-    if (params.data.IsScanned) {
+    console.log(params.data);
+    if (params.data.IsScanned && !(params.data.IsReportSaved)) {
       let template = `<a danphe-grid-action="show-add-report" class="grid-action">
                 Add Report
              </a>
             `;
       return template;
-    } else {
+    }else if(params.data.IsScanned && params.data.IsReportSaved){
+      let template = `<a danphe-grid-action="show-edit-report" class="grid-action">
+      Edit Report
+   </a>
+  `;
+return template;
+    }
+     else {
       let template = `<a danphe-grid-action="scan-done" class="grid-action">
                 Scan Done
              </a>
@@ -996,7 +1040,6 @@ export default class GridColumnSettings {
     //       `;
     //  return template;
     //}
-
   }
 
   static parseTemplateForFractionApplicable(params) {
@@ -1272,7 +1315,12 @@ export default class GridColumnSettings {
   ];
   static DispatchList = [
     { headerName: "Dispatch Id", field: "DispatchId", width: 50 },
-    { headerName: "Dispatch Date", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.DateTimeRenderer },
+    {
+      headerName: "Dispatch Date",
+      field: "CreatedOn",
+      width: 100,
+      cellRenderer: GridColumnSettings.DateTimeRenderer,
+    },
     { headerName: "Received By", field: "ReceivedBy", width: 100 },
     { headerName: "Dispatched By", field: "DispatchedByName", width: 150 },
     {
@@ -1308,7 +1356,12 @@ export default class GridColumnSettings {
 
   static PHRMDispatchList = [
     { headerName: "Dispatch Id", field: "DispatchId", width: 50 },
-    { headerName: "Dispatch Date", field: "CreatedOn", width: 100 },
+    {
+      headerName: "Dispatch Date",
+      field: "CreatedOn",
+      cellRenderer: GridColumnSettings.DispatchDateRender,
+      width: 100,
+    },
     { headerName: "Received By", field: "ReceivedBy", width: 100 },
     { headerName: "Dispatched By", field: "DispatchedByName", width: 150 },
     {
@@ -1320,6 +1373,11 @@ export default class GridColumnSettings {
              </a>`,
     },
   ];
+  static DispatchDateRender(params) {
+    let dispatchDate: string = params.data.CreatedOn;
+    if (dispatchDate) return moment(dispatchDate).format("YYYY-MM-DD");
+    else return null;
+  }
 
   //remove text-transform for username and email since those might be case sensitive.
   static UserGridCellStyle(params) {
@@ -1329,9 +1387,22 @@ export default class GridColumnSettings {
   static StockList = [
     { headerName: "Item Type", field: "ItemType", width: 150 },
     { headerName: "Sub Category", field: "SubCategoryName", width: 150 },
+    {
+      headerName: "",
+      field: "",
+      width: 22,
+      cellRenderer: GridColumnSettings.ColdStorageIconRenderer,
+    },
     { headerName: "Item Name", field: "ItemName", width: 150 },
     { headerName: "Item Code", field: "ItemCode", width: 100 },
     { headerName: "Unit", field: "UOMName", width: 100 },
+    { headerName: "Batch No", field: "BatchNo", width: 100 },
+    {
+      headerName: "Expiry Date",
+      //field: "ExpiryDate",
+      cellRenderer: GridColumnSettings.StockExpiryDateRender,
+      width: 150,
+    },
     {
       headerName: "Available Quantity",
       field: "AvailQuantity",
@@ -1346,6 +1417,21 @@ export default class GridColumnSettings {
       cellRenderer: GridColumnSettings.INV_STK_ActionRenderer,
     },
   ];
+  static ColdStorageIconRenderer(params) {
+    var template =
+      params.data.IsColdStorageApplicable == true
+        ? `<b title="Cold Storage Item" style="background: #0773bc;border: 1px solid blue;border-radius: 60%;padding: 2px 4px;color: #f8f8f8;">C</b>`
+        : "";
+    return template;
+  }
+  static INV_STK_ActionRenderer(params) {
+    if (params.data.AvailQuantity > 0) {
+      var template = `<a danphe-grid-action="view" class="grid-action">View</a>`;
+      if (params.data.canUserManageStock)
+        template += `<a danphe-grid-action="manageStock" class="grid-action">Manage Stock</a >`;
+    }
+    return template;
+  }
   static StockDetails = [
     { headerName: "GR No", field: "GoodsReceiptNo", width: 150 },
     { headerName: "Bill Date", field: "GoodsReceiptDate", width: 150 },
@@ -1354,8 +1440,9 @@ export default class GridColumnSettings {
     { headerName: "Unit Price", field: "ItemRate", width: 150 },
     {
       headerName: "Expiry Date",
-      cellRenderer: GridColumnSettings.ExpiryDateRender,
-      width: 150
+      // field: "ExpiryDate",
+      cellRenderer: GridColumnSettings.StockExpiryDateRender,
+      width: 150,
     },
   ];
   static POlistVendorwise = [
@@ -1388,7 +1475,11 @@ export default class GridColumnSettings {
     },
     { headerName: "Total Amount", field: "TotalAmount", width: 80 },
     { headerName: "PO Status", field: "POStatus", width: 110 },
-    { headerName: "Verification Status", width: 120, cellRenderer: VerificationGridColumns.VerificationStatusRenderer },
+    {
+      headerName: "Verification Status",
+      width: 120,
+      cellRenderer: VerificationGridColumns.VerificationStatusRenderer,
+    },
     {
       headerName: "Actions",
       field: "",
@@ -1426,7 +1517,7 @@ export default class GridColumnSettings {
     { headerName: "Vendor Contact", field: "ContactNo", width: 80 },
     { headerName: "Bill No.", field: "BillNo", width: 50 },
     { headerName: "Total Amount", field: "TotalAmount", width: 75 },
-    { headerName: "Pay. Mode", field: "PaymentMode", width: 60 },//sud:4May'20--needed this to distinguish between cash and credit in frontend.
+    { headerName: "Pay. Mode", field: "PaymentMode", width: 60 }, //sud:4May'20--needed this to distinguish between cash and credit in frontend.
     { headerName: "Remarks", field: "Remarks", width: 100 },
     {
       headerName: "Entry Date",
@@ -1434,7 +1525,11 @@ export default class GridColumnSettings {
       width: 60,
       cellRenderer: GridColumnSettings.CreatedOnDateRenderer,
     },
-    { headerName: "Verification Status", width: 100, cellRenderer: VerificationGridColumns.VerificationStatusRenderer },
+    {
+      headerName: "Verification Status",
+      width: 100,
+      cellRenderer: VerificationGridColumns.VerificationStatusRenderer,
+    },
     {
       headerName: "Action",
       field: "",
@@ -1445,7 +1540,7 @@ export default class GridColumnSettings {
 
   static SubstoreRequisitionList = [
     { headerName: "Req.No", field: "RequisitionNo", width: 35 },
-    { headerName: "StoreName", field: "StoreName", width: 80 },
+    { headerName: "Requested To", field: "StoreName", width: 80 },
     {
       headerName: "Date",
       field: "RequisitionDate",
@@ -1453,15 +1548,19 @@ export default class GridColumnSettings {
       cellRenderer: GridColumnSettings.RequisitionDateOnlyRenderer,
     },
     { headerName: "Status", field: "RequisitionStatus", width: 80 },
-    { headerName: "Verification Status", width: 120, cellRenderer: VerificationGridColumns.VerificationStatusRenderer },
+    {
+      headerName: "Verification Status",
+      width: 120,
+      cellRenderer: VerificationGridColumns.VerificationStatusRenderer,
+    },
     {
       headerName: "Action",
       field: "",
       width: 200,
-      cellRenderer: GridColumnSettings.ShowActionForInventoryRequisitionList
-      //template: '<a danphe-grid-action="view" class="grid-action">View</a>' 
-    }
-  ]
+      cellRenderer: GridColumnSettings.ShowActionForInventoryRequisitionList,
+      //template: '<a danphe-grid-action="view" class="grid-action">View</a>'
+    },
+  ];
   static DepartmentwiseRequisitionList = [
     { headerName: "Req.No", field: "RequisitionNo", width: 80 },
     { headerName: "StoreName", field: "StoreName", width: 160 },
@@ -1485,23 +1584,48 @@ export default class GridColumnSettings {
     },
   ];
   static PHRMStoreRequisitionList = [
-    { headerName: "Req.Id", field: "RequistionId", width: 35 },
+    { headerName: "Req.No", field: "RequisitionNo", width: 50 },
     { headerName: "RequestedBy", field: "CreatedByName", width: 120 },
+    { headerName: "RequestedFrom", field: "RequistingStore", width: 120 },
     {
       headerName: "Date",
       field: "RequisitionDate",
-      width: 150,
+      width: 120,
       cellRenderer: GridColumnSettings.RequisitionDateOnlyRenderer,
     },
-    { headerName: "Status", field: "RequisitionStatus", width: 150 },
+    { headerName: "Status", field: "RequisitionStatus", width: 120 },
     {
       headerName: "Actions",
       field: "",
       width: 230,
-      cellRenderer: GridColumnSettings.ShowActionForRequisitionList,
+      cellRenderer: GridColumnSettings.PHRMStoreRequisitionActionRenderer,
     },
   ];
-
+  static PHRMStoreRequisitionActionRenderer(params) {
+    let template = ``;
+    if (params.data.CanApproveTransfer == true) {
+      template += `<a danphe-grid-action="approveTransfer" class="grid-action animated-btn blinking-btn-warning" title="Approve Dispensary to Dispensary Transfer">
+                  Approve Transfer
+                  </a>`;
+    }
+    if (
+      ["active", "partial"].includes(params.data.RequisitionStatus) &&
+      params.data.CanDispatchItem == true
+    ) {
+      template += `<a danphe-grid-action="requisitionDispatch" class="grid-action">
+      Dispatch Requisition
+      </a>`;
+    }
+    if (["partial", "complete"].includes(params.data.RequisitionStatus)) {
+      template += `<a danphe-grid-action="dispatchList" class="grid-action">
+                  Dispatch List
+                </a>`;
+    }
+    template += `<a danphe-grid-action="view" class="grid-action">
+                    Requisition View
+                </a>`;
+    return template;
+  }
   static AppointmentPatientSearch = [
     { headerName: "Hospital Number", field: "PatientCode", width: 160 },
     { headerName: "Patient Name", field: "ShortName", width: 200 },
@@ -1630,7 +1754,7 @@ export default class GridColumnSettings {
     {
       headerName: "Date",
       field: "Date",
-      width: 80
+      width: 80,
     },
     { headerName: "Invoice No", field: "ReceiptNo", width: 60 },
     { headerName: "Hospital No", field: "PatientCode", width: 70 },
@@ -1650,7 +1774,7 @@ export default class GridColumnSettings {
       headerName: "Imaging Name",
       field: "ItemName",
       width: 150,
-      cellRenderer: GridColumnSettings.RadImagingNameRenderer
+      cellRenderer: GridColumnSettings.RadImagingNameRenderer,
     },
     {
       headerName: "Referred By",
@@ -1751,10 +1875,75 @@ export default class GridColumnSettings {
     if (expiryDate) return moment(expiryDate).format("YYYY-MM-DD");
     else return null;
   }
+  public static StockExpiryDateRender(params) {
+    if (!params.data.ExpiryDate) {
+      return "";
+    }
+    let expiryDate: Date = params.data.ExpiryDate;
+    let expiryDate1 = new Date(params.data.ExpiryDate);
+    let date = new Date();
+    let datenow = date.setMonth(date.getMonth() + 0);
+    let datePlusThreeMonth = date.setMonth(date.getMonth() + 3);
+    let expDate = expiryDate1.setMonth(expiryDate1.getMonth() + 0);
+
+    if (expDate <= datenow) {
+      return (
+        "<span style='background-color:red;color:white'>" +
+        moment(expiryDate).format("YYYY-MM-DD") +
+        "(" +
+        "Exp" +
+        ")"
+      ); //Without moment it seperate Date and Time with Letter T
+    }
+    if (expDate < datePlusThreeMonth && expDate > datenow) {
+      return (
+        "<span style='background-color:yellow;color:black'>" +
+        moment(expiryDate).format("YYYY-MM-DD") +
+        "(" +
+        "N. Exp" +
+        ")"
+      );
+    }
+    if (expDate > datePlusThreeMonth) {
+      return (
+        "<span style='background-color:white;color:black'>" +
+        moment(expiryDate).format("YYYY-MM-DD") +
+        "</span>"
+      );
+    }
+  }
+  // if(!params.data.ExpiryDate){
+  //   return '';
+  // }
+  // let currentDate = moment();
+  // let currentDatePlus6months = moment().add(6, 'M');
+  // let expiryDate = moment(params.data.ExpiryDate);
+  //   if (expiryDate < currentDate) {
+  //     return (
+  //       `<div style='width:70%;background-color:red;'>
+  //       <b>${expiryDate.format('YYYY-MM-DD')}</b>
+  //     </div>`
+  //     );
+  //   } else if (expiryDate <= currentDatePlus6months) {
+  //     return (
+  //       `<div style='width:70%;background-color:yellow;'>
+  //       <b>${expiryDate.format('YYYY-MM-DD')}</b>
+  //     </div>`
+  //     );
+  //   } else {
+  //     return (
+  //       `<b>${expiryDate.format('YYYY-MM-DD')}</b>`
+  //     );
+  //   }
   static returnToVendorItemList = [
     { headerName: "Vendor Name", field: "VendorName", width: 150 },
     { headerName: "Credit Note No", field: "CreditNoteNo", width: 150 },
-    { headerName: "Returned On", field: "CreatedOn", width: 150, cellRenderer: GridColumnSettings.DateTimeRenderer, },
+    {
+      headerName: "Returned On",
+      field: "CreatedOn",
+      width: 150,
+      cellRenderer: GridColumnSettings.DateTimeRenderer,
+    },
     {
       headerName: "Actions",
       field: "",
@@ -1819,16 +2008,18 @@ export default class GridColumnSettings {
   ];
 
   static ItemList = [
+    { headerName: "Item Type", field: "ItemType", width: 120 },
+    { headerName: "Subcategory Name", field: "SubCategoryName", width: 150 },
+    { headerName: "Register Page No", field: "RegisterPageNumber", width: 100 }, // this is dynamically changed later in item-list, must be in-sync with item-list component
     { headerName: "Item Name", field: "ItemName", width: 150 },
     { headerName: "Item Code", field: "Code", width: 100 },
-    { headerName: "Item Type", field: "ItemType", width: 120 },
     { headerName: "Unit", field: "UOMName", width: 100 },
-    { headerName: "Subcategory Name", field: "SubCategoryName", width: 90 },
     { headerName: "Description", field: "Description", width: 150 },
-    { headerName: "MinStock Quantity", field: "MinStockQuantity", width: 150 },
-    { headerName: "Standard Rate", field: "StandardRate", width: 150 },
+    { headerName: "MinStock Qty", field: "MinStockQuantity", width: 100 },
+    { headerName: "Standard Rate", field: "StandardRate", width: 100 },
     { headerName: "Is VAT Applicable", field: "IsVATApplicable", width: 100 },
     { headerName: "Is Active", field: "IsActive", width: 90 },
+    { headerName: "Inventory", field: "StoreName", width: 90 },
 
     {
       headerName: "Action",
@@ -1892,7 +2083,11 @@ export default class GridColumnSettings {
   static ItemSubCategoryList = [
     { headerName: "Sub Category Name", field: "SubCategoryName", width: 150 },
     { headerName: "Code", field: "Code", width: 150 },
-    { headerName: "Category", cellRenderer: GridColumnSettings.GetIsconsumableOrCapital, width: 150 },
+    {
+      headerName: "Category",
+      cellRenderer: GridColumnSettings.GetIsconsumableOrCapital,
+      width: 150,
+    },
     { headerName: "Description", field: "Description", width: 150 },
     { headerName: "Ledger Name", field: "LedgerName", width: 150 },
     { headerName: "Is Active", field: "IsActive", width: 100 },
@@ -1974,8 +2169,8 @@ export default class GridColumnSettings {
   static sectionList = [
     { headerName: "SectionId", field: "SectionId", width: 150 },
     { headerName: "Section Name", field: "SectionName", width: 150 },
-    { headerName: "Section Code", field: "SectionCode", width: 100 }
-  ]
+    { headerName: "Section Code", field: "SectionCode", width: 100 },
+  ];
   static coaList = [
     { headerName: "COA Name", field: "ChartOfAccountName", width: 150 },
     { headerName: "COA Code", field: "COACode", width: 100 },
@@ -1999,14 +2194,14 @@ export default class GridColumnSettings {
       headerName: "Closed Status",
       field: "IsClosed",
       width: 100,
-      cellRenderer: GridColumnSettings.GetActiveFiscalYearClosedStatus
+      cellRenderer: GridColumnSettings.GetActiveFiscalYearClosedStatus,
     },
     {
       headerName: "Action",
       field: "showreopen",
       width: 100,
-      cellRenderer: GridColumnSettings.GetActiveFiscalYear
-    }
+      cellRenderer: GridColumnSettings.GetActiveFiscalYear,
+    },
   ];
 
   static AccDailyTxnReport = [
@@ -2119,29 +2314,72 @@ export default class GridColumnSettings {
     },
   ];
 
+  static TransferRules = [
+    { headerName: "Module Name", field: "SectionName", width: 100 },
+    { headerName: "Voucher Name", field: "VoucherName", width: 100 },
+    { headerName: "Custom Voucher Name", field: "customVoucherName", width: 100 },
+    { headerName: "Rule Name", field: "ruleName", width: 100 },
+    { headerName: "Is Active", field: "IsActive", width: 80 },
+    {
+      headerName: "Action",
+      field: "",
+      width: 100,
+      cellRenderer: GridColumnSettings.ManageTransferRules,
+    },
+  ];
   //START: System audit Reports
   static EditVoucherLogReport = [
     { headerName: "Fiscal Year Name", field: "FiscalYearName", width: 100 },
     { headerName: "Section Name", field: "SectionName", width: 100 },
-    { headerName: "Transaction Date", field: "TransactionDate", width: 100, cellRenderer: GridColumnSettings.AccTransactionDateRenderer },
+    {
+      headerName: "Transaction Date",
+      field: "TransactionDate",
+      width: 100,
+      cellRenderer: GridColumnSettings.AccTransactionDateRenderer,
+    },
     { headerName: "Voucher Number", field: "VoucherNumber", width: 100 },
     { headerName: "Reason", field: "Reason", width: 100 },
-    { headerName: "Created Date", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer },
-    { headerName: "Created By", field: "FullName", width: 100 }
+    {
+      headerName: "Created Date",
+      field: "CreatedOn",
+      width: 100,
+      cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer,
+    },
+    { headerName: "Created By", field: "FullName", width: 100 },
   ];
   static BackDateEnrtyLogReport = [
     { headerName: "Section Name", field: "SectionName", width: 100 },
-    { headerName: "Transaction Date", field: "TransactionDate", width: 100, cellRenderer: GridColumnSettings.AccTransactionDateRenderer },
+    {
+      headerName: "Transaction Date",
+      field: "TransactionDate",
+      width: 100,
+      cellRenderer: GridColumnSettings.AccTransactionDateRenderer,
+    },
     { headerName: "Voucher Number", field: "VoucherNumber", width: 100 },
-    { headerName: "Created Date", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer },
-    { headerName: "Created By", field: "FullName", width: 100 }
+    {
+      headerName: "Created Date",
+      field: "CreatedOn",
+      width: 100,
+      cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer,
+    },
+    { headerName: "Created By", field: "FullName", width: 100 },
   ];
   static VoucherReversalLogReport = [
     { headerName: "Section Name", field: "SectionName", width: 80 },
     { headerName: "Fiscal Year Name", field: "FiscalYearName", width: 80 },
-    { headerName: "Transaction Date", field: "TransactionDate", width: 80, cellRenderer: GridColumnSettings.AccTransactionDateRenderer },
+    {
+      headerName: "Transaction Date",
+      field: "TransactionDate",
+      width: 80,
+      cellRenderer: GridColumnSettings.AccTransactionDateRenderer,
+    },
     { headerName: "Reason", field: "Reason", width: 150 },
-    { headerName: "Reversed Date", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer },
+    {
+      headerName: "Reversed Date",
+      field: "CreatedOn",
+      width: 100,
+      cellRenderer: GridColumnSettings.AccCreatedOnDateRenderer,
+    },
     { headerName: "Reversed By", field: "FullName", width: 100 },
     {
       headerName: "Action",
@@ -2212,16 +2450,29 @@ export default class GridColumnSettings {
                  <i class="fa fa-eye"></i>View Detail
              </a>`,
     },
-
-  ]
+  ];
   static PurchaseRequestList = [
     { headerName: "PR No.", field: "PRNumber", width: 30 },
-    { headerName: "Request Date", field: "RequestDate", width: 100, cellRenderer: GridColumnSettings.DateTimeRendererForPurchaseRequest },
+    {
+      headerName: "Request Date",
+      field: "RequestDate",
+      width: 100,
+      cellRenderer: GridColumnSettings.DateTimeRendererForPurchaseRequest,
+    },
     { headerName: "Vendor", field: "VendorName", width: 100 },
     { headerName: "Status", field: "RequestStatus", width: 60 },
-    { headerName: "Verification Status", width: 100, cellRenderer: VerificationGridColumns.VerificationStatusRenderer },
+    {
+      headerName: "Verification Status",
+      width: 100,
+      cellRenderer: VerificationGridColumns.VerificationStatusRenderer,
+    },
     { headerName: "RequestedBy", field: "RequestedByName", width: 100 },
-    { headerName: "PO Created", field: "IsPOCreated", width: 60, cellRenderer: VerificationGridColumns.YesNoViewerforPurchaseRequest },
+    {
+      headerName: "PO Created",
+      field: "IsPOCreated",
+      width: 60,
+      cellRenderer: VerificationGridColumns.YesNoViewerforPurchaseRequest,
+    },
     {
       headerName: "Actions",
       field: "",
@@ -2231,17 +2482,31 @@ export default class GridColumnSettings {
   ];
   static InternalPRList = [
     { headerName: "PR No.", field: "PRNumber", width: 30 },
-    { headerName: "Request Date", field: "RequestDate", width: 100, cellRenderer: GridColumnSettings.DateTimeRendererForPurchaseRequest },
+    {
+      headerName: "Request Date",
+      field: "RequestDate",
+      width: 100,
+      cellRenderer: GridColumnSettings.DateTimeRendererForPurchaseRequest,
+    },
     { headerName: "Vendor", field: "VendorName", width: 100 },
     { headerName: "Status", field: "RequestStatus", width: 60 },
-    { headerName: "Verification Status", width: 100, cellRenderer: VerificationGridColumns.VerificationStatusRenderer },
+    {
+      headerName: "Verification Status",
+      width: 100,
+      cellRenderer: VerificationGridColumns.VerificationStatusRenderer,
+    },
     { headerName: "RequestedBy", field: "RequestedByName", width: 100 },
-    { headerName: "PO Created", field: "IsPOCreated", width: 60, cellRenderer: VerificationGridColumns.YesNoViewerforPurchaseRequest },
+    {
+      headerName: "PO Created",
+      field: "IsPOCreated",
+      width: 60,
+      cellRenderer: VerificationGridColumns.YesNoViewerforPurchaseRequest,
+    },
     {
       headerName: "Actions",
       field: "",
       width: 150,
-      template: `<a danphe-grid-action="view" class="grid-action">View</a>`
+      template: `<a danphe-grid-action="view" class="grid-action">View</a>`,
     },
   ];
 
@@ -2261,19 +2526,15 @@ export default class GridColumnSettings {
   static DrCrRenderer(params) {
     if (params.data.IsDebit) {
       return "Dr.";
-    }
-    else
-      return "Cr.";
+    } else return "Cr.";
   }
 
   static GetIsconsumableOrCapital(params) {
     if (params.data.IsConsumable) {
-      return 'Consumable';
+      return "Consumable";
     } else {
-
-      return 'Capital';
+      return "Capital";
     }
-
   }
 
   public static ManageUsesActionTemplate(params) {
@@ -2287,10 +2548,6 @@ export default class GridColumnSettings {
                 Activate
                </a>`;
     }
-    template =
-      template +
-      `&nbsp;<a danphe-grid-action="edit" class="grid-action">
-                                Edit</a>`;
     return template;
   }
 
@@ -2365,6 +2622,19 @@ export default class GridColumnSettings {
       return template;
     }
   }
+  public static ManageTransferRules(params) {
+    if (params.data.IsActive == true) {
+      let template = `
+            <a danphe-grid-action="ActivateDeactivateTransferRules" class="grid-action">Deactivate</a>
+            `;
+      return template;
+    } else {
+      let template = `
+            <a danphe-grid-action="ActivateDeactivateTransferRules" class="grid-action">Activate</a>
+            `;
+      return template;
+    }
+  }
   // ------End: Accounting Grid Data ----------------
   static PackagingTypeList = [
     {
@@ -2409,7 +2679,7 @@ export default class GridColumnSettings {
       headerName: "Date",
       field: "VisitDate",
       width: 80,
-      sort: "desc"
+      sort: "desc",
       //cellRenderer: GridColumnSettings.VisitDateOnlyRenderer,
     },
     {
@@ -2420,7 +2690,9 @@ export default class GridColumnSettings {
     },
     { headerName: "Hospital Number", field: "PatientCode", width: 120 },
     {
-      headerName: "Patient Name", field: "ShortName", width: 160,
+      headerName: "Patient Name",
+      field: "ShortName",
+      width: 160,
       //cellRenderer: GridColumnSettings.NursingOpdPatNameRenderer,
     },
     {
@@ -2445,7 +2717,6 @@ export default class GridColumnSettings {
     },
   ];
 
-
   static NursingOpdPatNameRenderer(params) {
     return `<b>` + params.data.Patient.ShortName + `</b>`;
     //let date: string = params.data.VisitDate;
@@ -2459,7 +2730,6 @@ export default class GridColumnSettings {
       return "";
     }
   }
-
 
   static NurNEPHList = [
     { headerName: "Hospital Number", field: "PatientCode", width: 120 },
@@ -2526,14 +2796,14 @@ export default class GridColumnSettings {
     {
       headerName: "Age/Sex",
       field: "",
-      width: 120,
+      width: 100,
       cellRenderer: GridColumnSettings.AgeSexRendererPatient,
     },
-    { headerName: "Contacts", field: "PhoneNumber", width: 120 },
+    { headerName: "Contacts", field: "PhoneNumber", width: 100 },
     {
       headerName: "Admitted On",
       field: "AdmittedDate",
-      width: 150,
+      width: 120,
       cellRenderer: GridColumnSettings.AdmissionDateRenderer,
     },
     {
@@ -2544,9 +2814,47 @@ export default class GridColumnSettings {
     },
     {
       headerName: "Ward/Bed",
+      field: "WardBedInfo",
+      width: 180
+    },
+    {
+      headerName: "Actions",
       field: "",
+      width: 120,
+      template: `<a danphe-grid-action="view-summary" class="grid-action">
+                        <i class="fa fa-eye"></i>View Details
+                 </a>`,
+    },
+  ];
+
+  //Pramod
+  //START: ins-Inpatient Billing
+  static insIpBillPatientSearch = [
+    { headerName: "Hospital No.", field: "PatientNo", width: 120 },
+    { headerName: "Patient Name", field: "PatientName", width: 200 },
+    {
+      headerName: "Age/Sex",
+      field: "",
+      width: 120,
+      cellRenderer: GridColumnSettings.AgeSexRendererPatient,
+    },
+    { headerName: "NSHI No", field: "Ins_NshiNumber", width: 120 },
+    { hederName: "Claim Code", field: "ClaimCode", width: 120 },
+    { headerName: "IP Number", field: "IpNumber", width: 120 },
+
+    { headerName: "Contacts", field: "PhoneNumber", width: 120 },
+    {
+      headerName: "Admitted On",
+      field: "AdmittedDate",
       width: 150,
-      cellRenderer: GridColumnSettings.ADTBedRenderer,
+      cellRenderer: GridColumnSettings.AdmissionDateRenderer,
+    },
+
+    {
+      headerName: "Ward/Bed",
+      field: "WardBedInfo",
+      width: 150,
+     // cellRenderer: GridColumnSettings.ADTBedRenderer,
     },
     {
       headerName: "Actions",
@@ -2563,9 +2871,7 @@ export default class GridColumnSettings {
   }
   static ADTBedRenderer(params) {
     return (
-      params.data.BedInformation.Ward +
-      "/" +
-      params.data.BedInformation.BedCode
+      params.data.BedInformation.Ward + "/" + params.data.BedInformation.BedCode
     );
   }
   //END: Inpaient Billing
@@ -2611,28 +2917,24 @@ export default class GridColumnSettings {
   //    { headerName: "Is_Active", field: "Is_Active", Width: 100 }
   //]
 
-  public static BillingInvoiceDetailsColFilter(
-    columnArr: Array<any>
-  ): Array<any> {
+  public static BillingInvoiceDetailsColFilter(columnArr: Array<any>): Array<any> {
     var filteredColumns = [];
     if (columnArr && columnArr.length) {
       for (var i = 0; i < columnArr.length; i++) {
         var headername: string = columnArr[i];
-        var ind = this.BillingInvoiceDetails.find(
-          (val) =>
-            val.headerName.toLowerCase().replace(/ +/g, "") ==
-            headername.toLowerCase().replace(/ +/g, "")
-        );
+        var ind = this.BillingInvoiceDetails.find((val) => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
         if (ind) {
           filteredColumns.push(ind);
         }
       }
       if (filteredColumns.length) {
         return filteredColumns;
-      } else {
+      }
+      else {
         return this.BillingInvoiceDetails;
       }
-    } else {
+    }
+    else {
       return this.BillingInvoiceDetails;
     }
   }
@@ -2640,25 +2942,28 @@ export default class GridColumnSettings {
   //BillingInvoiceDetails
   //Column setting for SystemAdmin module Billing Invoice details--for
   static BillingInvoiceDetails = [
-    { headerName: "Fiscal_Year", field: "Fiscal_Year", width: 150 },
-    { headerName: "Bill_No", field: "Bill_No", width: 150 },
-    { headerName: "Customer Name", field: "Customer_name", Width: 120 },
-    { headerName: "Customer_PAN", field: "PANNumber", Width: 100 },
-    { headerName: "BillDate", field: "BillDate", Width: 80 },
-    { headerName: "BillDate(BS)", field: "BillDate_BS", Width: 80 },
+    { headerName: "Fiscal Year", field: "Fiscal_Year", width: 150 },
+    { headerName: "Bill_no", field: "Bill_No", width: 150 },
+    { headerName: "Customer_name", field: "Customer_name", Width: 120 },
+    { headerName: "Customer_Pan", field: "PANNumber", Width: 100 },
+    { headerName: "Bill_Date", field: "BillDate", Width: 80 },
+    // { headerName: "BillDate(BS)", field: "BillDate_BS", Width: 80 },
     { headerName: "Amount", field: "Amount", Width: 50 },
-    { headerName: "DiscountAmount", field: "DiscountAmount", Width: 50 },
+    { headerName: "Discount", field: "DiscountAmount", Width: 50 },
     { headerName: "Taxable_Amount", field: "Taxable_Amount", Width: 50 },
     { headerName: "Tax_Amount", field: "Tax_Amount", Width: 50 },
     { headerName: "Total_Amount", field: "Total_Amount", Width: 50 },
-    { headerName: "Synced With IRD", field: "SyncedWithIRD", Width: 50 },
-    { headerName: "Is_Printed", field: "Is_Printed", Width: 50 },
-    { headerName: "Printed_Time", field: "Printed_Time", Width: 50 },
-    { headerName: "Entered_by", field: "Entered_by", Width: 100 },
-    { headerName: "Printed_by", field: "Printed_by", Width: 100 },
-    { headerName: "Print_Count", field: "Print_Count", Width: 100 },
-    { headerName: "Is_RealTime", field: "Is_Realtime", Width: 100 },
+    { headerName: "Sync with IRD", field: "SyncedWithIRD", Width: 50 },
+    { headerName: "IS_Bill_Printed", field: "Is_Printed", Width: 50 },
     { headerName: "Is_bill_Active", field: "Is_Bill_Active", Width: 100 },
+    { headerName: "Printed_Time", field: "Printed_Time", Width: 50 },
+    { headerName: "Entered_By", field: "Entered_by", Width: 100 },
+    { headerName: "Printed_by", field: "Printed_by", Width: 100 },
+    // { headerName: "Print_Count", field: "Print_Count", Width: 100 },
+    { headerName: "Is_realtime", field: "Is_Realtime", Width: 100 },
+    { headerName: "Payment_Method", field: "Payment_Method", Width: 100 },
+    { headerName: "VAT_Refund_Amount", field: "VAT_Refund_Amount", Width: 100 },  
+    { headerName: "Transaction Id", field: "TransactionId", Width: 100 }
   ];
   //This for createdOn date format rendering
   static DBBakupDateRender(params) {
@@ -2691,8 +2996,8 @@ export default class GridColumnSettings {
   ];
 
   //start: doctor's module//
-  static DoctorOPNewPatientList = [
-    { headerName: "OPD No.", width: 100, field: "Patient.PatientCode" },
+  static DoctorAppointmentList = [
+    { headerName: "Hospital No.", width: 100, field: "Patient.PatientCode" },
     { headerName: "Name", field: "Patient.ShortName", width: 200 },
     {
       headerName: "Age/Sex",
@@ -2702,48 +3007,24 @@ export default class GridColumnSettings {
     },
     { headerName: "VisitType", field: "VisitType", width: 150 },
     {
-      headerName: "Visit Date",
+      headerName: "Admitted On",
       width: 120,
       field: "",
       cellRenderer: GridColumnSettings.DoctorAppointmentDateRenderer,
     },
-    { headerName: "Department Name", field: "Department.DepartmentName", width: 100 },
     { headerName: "Provider Name", field: "ProviderName", width: 100 },
     {
       headerName: "Actions",
       field: "",
       width: 200,
-      cellRenderer: GridColumnSettings.OPDPatientActionRenderer,
-
+      template: `<a danphe-grid-action="preview" class="d-icon icon-user" title="Preview" style="display: inherit; float:left;"></a>
+             <a danphe-grid-action="notes" class="d-icon icon-note hidden" title="Notes""></a>
+             <a danphe-grid-action="medication" class="d-icon icon-medication hidden" title="Medication""></a>
+             <a danphe-grid-action="labs" class="d-icon icon-lab" title="Labs""></a>
+             <a danphe-grid-action="imaging" class="d-icon icon-imaging" title="Imaging""></a>
+             <a danphe-grid-action="Examination" class="d-icon icon-examination" title="Examination""></a>`,
     },
   ];
-
-  static DoctorOPDRecords = [
-    { headerName: "OPD No.", width: 100, field: "Patient.PatientCode" },
-    { headerName: "Name", field: "Patient.ShortName", width: 200 },
-    {
-      headerName: "Age/Sex",
-      field: "",
-      width: 100,
-      cellRenderer: GridColumnSettings.AgeSexRenderer,
-    },
-    { headerName: "VisitType", field: "VisitType", width: 150 },
-    {
-      headerName: "Visit Date",
-      width: 120,
-      field: "",
-      cellRenderer: GridColumnSettings.DoctorAppointmentDateRenderer,
-    },
-    { headerName: "Department Name", field: "Department.DepartmentName", width: 100 },
-    { headerName: "Provider Name", field: "ProviderName", width: 100 },
-    {
-      headerName: "Actions",
-      field: "",
-      width: 200,
-      cellRenderer: GridColumnSettings.OPDPatientActionRenderer,
-    },
-  ];
-
   //View Clinical-notes Template
   static ViewTemplateGridList = [
     {
@@ -2938,7 +3219,31 @@ export default class GridColumnSettings {
     { headerName: "FiscalYear", field: "FiscalYear" },
     //{ headerName: "Invoice No.", field: "InvoiceNumber" },
     { headerName: "Invoice No.", width: 120, field: "InvoiceNumFormatted" },
-    //{ headerName: "Invoice No.", field: "", width: 110, cellRenderer: GridColumnSettings.DupInv_InvCodeRenderer }, doesn't work: won't be able to search with invoice number.
+    { headerName: "PayMode", width: 120, field: "PaymentMode" },
+    {
+      headerName: "Action",
+      field: "",
+      template: `<a danphe-grid-action="showDetails" class="grid-action">
+                Show Details
+             </a>`,
+    },
+  ];
+
+  static DuplicateInvoiceReturnList = [
+    { headerName: "Date", field: "CRNDate" },
+    { headerName: "Ref. Invoice No.", field: "RefInvoiceNum" },
+    { headerName: "Hospital No.", field: "PatientCode" },
+    { headerName: "Patient Name", field: "ShortName" },
+    {
+      headerName: "Age/Sex",
+      field: "",
+      width: 120,
+      cellRenderer: GridColumnSettings.AgeSexRendererPatient,
+    },
+
+    { headerName: "FiscalYear", field: "FiscalYear" },
+    { headerName: "Credit Note No.", field: "CreditNoteNumber" },
+    { headerName: "Return Amount", field: "TotalAmount" },
     {
       headerName: "Action",
       field: "",
@@ -2961,20 +3266,13 @@ export default class GridColumnSettings {
   //start: billing provisional duplicate prints
   static DuplicateProvisionalReceiptList = [
     {
-      headerName: "Date",
-      field: "CreatedOn",
+      headerName: "Last Billing Date",
+      field: "LastBillDate",
       cellRenderer: GridColumnSettings.BilProvisionalDate,
     },
     { headerName: "Hospital No.", field: "PatientCode" },
-    { headerName: "Patient Name", field: "ShortName" },
-    //{ headerName: "Age/Sex", field: "", width: 120, cellRenderer: GridColumnSettings.AgeSexRendererPatient },
-    //{ headerName: "Phone", field: "PhoneNumber", width: 110 },
-    { headerName: "Total Amount", field: "Total" },
-    { headerName: "Current Status", field: "CurrentBillStatus" },
-    { headerName: "FiscalYear", field: "FiscalYear" },
-    { headerName: "Receipt No.", field: "ProvReceiptNumFormatted" },
-    //{ headerName: "Receipt No.", field: "", cellRenderer: GridColumnSettings.ProvFiscalYearFormat },
-    //{ headerName: "Is Insurance", field: "IsInsurance" },
+    { headerName: "Patient Name", field: "PatientName" },
+    { headerName: "Total Amount", field: "TotalAmount" },
     {
       headerName: "Action",
       field: "",
@@ -3032,18 +3330,27 @@ export default class GridColumnSettings {
       cellRenderer: GridColumnSettings.DepositDateTimeRenderer,
     },
     { headerName: "Status", field: "Status", width: 100 },
-    { headerName: "Action", field: "", width: 180, cellRenderer: GridColumnSettings.ShowActionForRFQList },
-
-  ]
+    {
+      headerName: "Action",
+      field: "",
+      width: 180,
+      cellRenderer: GridColumnSettings.ShowActionForRFQList,
+    },
+  ];
   static ShowActionForInventoryRequisitionList(params) {
-    let template =
-      `<a danphe-grid-action="view" class="grid-action">
+    let template = `<a danphe-grid-action="view" class="grid-action">
         View
       </a>`;
-    if (['partial', 'complete'].includes(params.data.RequisitionStatus) && params.data.isReceiveItemsEnabled == true) {
+    if (
+      ["partial", "complete"].includes(params.data.RequisitionStatus) &&
+      params.data.isReceiveItemsEnabled == true
+    ) {
       template += `
         <a danphe-grid-action="receiveDispatchedItems" title="Receive Dispatched Items" 
-        class="grid-action ${(params.data.NewDispatchAvailable) ? "animated-btn blinking-btn-warning grid-action" : ""}">
+        class="grid-action ${params.data.NewDispatchAvailable
+          ? "animated-btn blinking-btn-warning grid-action"
+          : ""
+        }">
           Receive Items
         </a>`;
     }
@@ -3069,7 +3376,7 @@ export default class GridColumnSettings {
                  <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
                  <span class="caret"></span></button>
                  <ul class="dropdown-menu grid-ddlCstm">
-                     <li><a danphe-grid-action="AddQuotationDetails" class="grid-action">Add Supp Quotation</a></li>
+                     <li><a danphe-grid-action="AddQuotationDetails" class="grid-action">Add Vendor Quot.</a></li>
                     <li><a danphe-grid-action="AnalyseQuotation" class="grid-action">Analyse Quotation</a></li>
 
                  </ul>
@@ -3088,12 +3395,15 @@ export default class GridColumnSettings {
       params.data.CreatedBy == params.data.LoggedInEmployeeId &&
       params.data.IsPending == true
     ) {
-      let template = `<a danphe-grid-action="view" class="grid-action" >
-              View
-            </a>
-              <a danphe-grid-action="edit" class="grid-action">
-              Edit
-           </a>`;
+      // let template = `<a danphe-grid-action="view" class="grid-action" >
+      //         View
+      //       </a>
+      //         <a danphe-grid-action="edit" class="grid-action">
+      //         Edit
+      //      </a>`;
+           let template = `<a danphe-grid-action="view" class="grid-action" >
+           View
+         </a>`;
       return template;
     } else {
       let template = `<a danphe-grid-action="view" class="grid-action" >
@@ -3187,14 +3497,22 @@ export default class GridColumnSettings {
   ];
 
   static fsyearactivity = [
-    { headerName: "Sr No.", width: 100, cellRenderer: GridColumnSettings.SerialNumberRenderer },
+    {
+      headerName: "Sr No.",
+      width: 100,
+      cellRenderer: GridColumnSettings.SerialNumberRenderer,
+    },
     { headerName: "Fiscal Year", field: "FiscalYearName", width: 150 },
-    { headerName: "Date", field: "CreatedOn", width: 150, cellRenderer: GridColumnSettings.CreatedDateTimeRenderer },
+    {
+      headerName: "Date",
+      field: "CreatedOn",
+      width: 150,
+      cellRenderer: GridColumnSettings.CreatedDateTimeRenderer,
+    },
     { headerName: "Action", field: "LogType", width: 100 },
     { headerName: "By", field: "FirstName", width: 100 },
-    { headerName: "Detail", field: "LogDetails", width: 200 }
-
-  ]
+    { headerName: "Detail", field: "LogDetails", width: 200 },
+  ];
 
   static DateRenderer_Settlmnt(params) {
     return moment(params.data.SettlementDate).format("YYYY-MM-DD HH:mm");
@@ -3365,14 +3683,13 @@ Cancelled By: ${CancelledBy} ">Details
   static GetPOActions(params) {
     if (params.data.IsPOCreated) {
       return `<a danphe-grid-action="view" class="grid-action">
-            View </a>`
-    }
-    else {
+            View </a>`;
+    } else {
       if (params.data.IsActive == true) {
         return `<a danphe-grid-action="view" class="grid-action">
             View </a>
             <a danphe-grid-action="addPO" class="grid-action">
-            Add Purchase Order </a>`
+            Add Purchase Order </a>`;
       }
     }
   }
@@ -3389,17 +3706,20 @@ Cancelled By: ${CancelledBy} ">Details
     }
   }
   static GetActiveFiscalYear(params) {
-
-    if ((params.data.showreopen == true) && GridColumnSettings.securityService.HasPermission('accounting-fiscal-year-reopen-button-permission')) {
-      return `<a danphe-grid-action="edit" class="grid-action"> Re-Open </a>`
+    if (
+      params.data.showreopen == true &&
+      GridColumnSettings.securityService.HasPermission(
+        "accounting-fiscal-year-reopen-button-permission"
+      )
+    ) {
+      return `<a danphe-grid-action="edit" class="grid-action"> Re-Open </a>`;
     }
   }
   static GetActiveFiscalYearClosedStatus(params) {
     if (params.data.IsClosed == true) {
-      return `<span> Closed </span>`
-    }
-    else {
-      return `<span> Open </span>`
+      return `<span> Closed </span>`;
+    } else {
+      return `<span> Open </span>`;
     }
   }
   //makes use of commonfunction to get the formatted value.
@@ -3614,37 +3934,29 @@ Cancelled By: ${CancelledBy} ">Details
 
   //template return for Department wise requisition list
   static ShowActionForRequisitionList(params) {
+    let template = ``;
+    if (params.data.CanApproveTransfer == true) {
+      template += `<a danphe-grid-action="approveTransfer" class="grid-action animated-btn blinking-btn-warning" title="Approve Dispensary to Dispensary Transfer">
+                  Approve Transfer
+                  </a>`;
+    }
     if (
-      (params.data.RequisitionStatus == "active" ||
-        params.data.RequisitionStatus == "partial" ||
-        params.data.RequisitionStatus == "approved") &&
+      ["active", "partial"].includes(params.data.RequisitionStatus) &&
       params.data.canDispatchItem == true
     ) {
-      let template = `<a danphe-grid-action="view" class="grid-action">
-                    View
-                 </a>
-                  <a danphe-grid-action="requisitionDispatch" class="grid-action">
-                  Dispatch Requisition
-                 </a>
-                <a danphe-grid-action="dispatchList" class="grid-action">
-                  Dispatch List
-                 </a> 
-                 <a danphe-grid-action="cancelList" class="grid-action">
-                  Cancel Detail
-                 </a> `;
-      return template;
-    } else {
-      let template = `<a danphe-grid-action="view" class="grid-action">
-                    View
-                 </a>
-       <a danphe-grid-action="dispatchList" class="grid-action">
-                  Dispatch List
-                 </a>
-                 <a danphe-grid-action="cancelList" class="grid-action">
-                 Cancel Detail
-                </a>`;
-      return template;
+      template += `<a danphe-grid-action="requisitionDispatch" class="grid-action">
+      Dispatch Requisition
+      </a>`;
     }
+    if (["partial", "complete"].includes(params.data.RequisitionStatus)) {
+      template += `<a danphe-grid-action="dispatchList" class="grid-action">
+                  Dispatch List
+                </a>`;
+    }
+    template += `<a danphe-grid-action="view" class="grid-action">
+                    Requisition View
+                </a>`;
+    return template;
   }
 
   //moved to adt-grid-column-settings inside adt module.:sud- 10Jan'19
@@ -3687,11 +3999,12 @@ Cancelled By: ${CancelledBy} ">Details
         moment(todaysdate).diff(visitdate) == 0 &&
         !currVisit.IsVisitContinued
       ) {
-        //Transfer Option not required for Followup Visits.: Sud-26June'19:[EMR-450]
-        if (currVisit.AppointmentType != "followup") {
-          templateHtml += `<a danphe-grid-action="transfer" class="grid-action">
-                               transfer </a>`;
-        }
+        //Sud:3May'21--Hiding Transfer Action from List Visit, after Credit Note is introduced in Billing.
+        // //Transfer Option not required for Followup Visits.: Sud-26June'19:[EMR-450]
+        // if (currVisit.AppointmentType != "followup") {
+        //   templateHtml += `<a danphe-grid-action="transfer" class="grid-action">
+        //                        transfer </a>`;
+        // }
 
         templateHtml += `<a danphe-grid-action="referral" class="grid-action">
                                refer </a>`;
@@ -3882,7 +4195,6 @@ Cancelled By: ${CancelledBy} ">Details
     }
   }
 
-
   static LeaveEquestDateOnlyRenderer(params) {
     let date: string = params.data.RequestedLeaveDate;
     return moment(date).format("YYYY-MM-DD");
@@ -3896,11 +4208,9 @@ Cancelled By: ${CancelledBy} ">Details
     return moment(date).format("YYYY-MM-DD");
   }
 
-
-
   //this formatter will useful for all report data
   //it's check is it number or not if number then it format with 2 decimal point value and send back
-  //if values like 453.659865 , here after decimal we have 6 digit . it's not good for end user so this formatter will send 
+  //if values like 453.659865 , here after decimal we have 6 digit . it's not good for end user so this formatter will send
   // back 453.65 value
   static decimalValueFormatter(params) {
     let checkIsNum = isNaN(params.value);
@@ -3910,7 +4220,6 @@ Cancelled By: ${CancelledBy} ">Details
       return CommonFunctions.parseAmount(params.value);
     }
   }
-
 
   static ItemSummaryReportGridCol = [
     {
@@ -3929,9 +4238,16 @@ Cancelled By: ${CancelledBy} ">Details
     if (params.data) {
       let CreatedDocObj = params.data.CreatedByObj;
       if (CreatedDocObj) {
-        return `<span  title='`
-          + CreatedDocObj.FullName + ` 
-  Department:`+ CreatedDocObj.DepartmentName + `'>` + CreatedDocObj.FirstName + `</span>`;
+        return (
+          `<span  title='` +
+          CreatedDocObj.FullName +
+          ` 
+Department:` +
+          CreatedDocObj.DepartmentName +
+          `'>` +
+          CreatedDocObj.FirstName +
+          `</span>`
+        );
       }
     }
   }
@@ -3940,9 +4256,16 @@ Cancelled By: ${CancelledBy} ">Details
     if (params.data) {
       let ModifiedDocObj = params.data.ModifiedByObj;
       if (ModifiedDocObj) {
-        return `<span style="background-color:yellow;"  title='`
-          + ModifiedDocObj.FullName + ` 
-  Department:`+ ModifiedDocObj.DepartmentName + `'>` + ModifiedDocObj.FirstName + `</span>`;
+        return (
+          `<span style="background-color:yellow;"  title='` +
+          ModifiedDocObj.FullName +
+          ` 
+Department:` +
+          ModifiedDocObj.DepartmentName +
+          `'>` +
+          ModifiedDocObj.FirstName +
+          `</span>`
+        );
       }
     }
   }
@@ -3955,7 +4278,11 @@ Cancelled By: ${CancelledBy} ">Details
     { headerName: "PAN", field: "PAN" },
     { headerName: "DDA", field: "DDA" },
     { headerName: "Header Description", field: "HeaderDescription" },
-    { headerName: "Created Date", field: "CreatedOn", cellRenderer: GridColumnSettings.DateTimeRenderer },
+    {
+      headerName: "Created Date",
+      field: "CreatedOn",
+      cellRenderer: GridColumnSettings.DateTimeRenderer,
+    },
     { headerName: "Is Active", field: "IsActive" },
     {
       headerName: "Action",
@@ -3973,124 +4300,490 @@ Cancelled By: ${CancelledBy} ">Details
     },
   ];
 
-  static OPDPatientActionRenderer(params) {
-    let currPatient = params.data;
-
-    //by default: print sticker wil be there in the action.
-    let templateHtml = `<a danphe-grid-action="preview" class="d-icon icon-user" title="Preview" style="display: inherit; float:left;"></a>
-             
-    `;
-
-    if (currPatient.IsFollowUp) {
-      templateHtml +=
-        '<a danphe-grid-action="removefollowup" class="fa fa-file-text" style="font-size:15px;position:relative;top:-5px; margin-right:10px;;" title="remove follow up""></a>';
-    } else {
-      templateHtml +=
-        '<a danphe-grid-action="addfollowup" class="fa fa-file-text-o" style="font-size:15px;position:relative;top:-5px; margin-right:10px;" title="add follow up""></a>';
-    }
-
-    if (currPatient.IsFavorite) {
-      templateHtml +=
-        '<a danphe-grid-action="removefavorite" class="fa fa-heart" style="font-size:17px;position:relative;top:-3px;" title="remove favorite""></a>';
-    } else {
-      templateHtml +=
-        '<a danphe-grid-action="addfavorite" class="fa fa-heart-o" style="font-size:17px;position:relative;top:-3px;" title="add favorite""></a>';
-    }
-
-
-    return templateHtml;
-  }
-
-  static OPFollowUpPatientList = [
-    { headerName: "OPD No.", width: 100, field: "Patient.PatientCode" },
-    { headerName: "Name", field: "Patient.ShortName", width: 200 },
+  static SSU_PatientSearch = [
+    { headerName: "Hospital Number", field: "PatientCode", width: 160 },
+    { headerName: "Patient Name", field: "ShortName", width: 200 },
     {
       headerName: "Age/Sex",
       field: "",
-      width: 100,
-      cellRenderer: GridColumnSettings.AgeSexRenderer,
+      width: 110,
+      cellRenderer: GridColumnSettings.AgeSexRendererPatient,
     },
-    { headerName: "VisitType", field: "VisitType", width: 150 },
-    {
-      headerName: "Visit Date",
-      width: 120,
-      field: "",
-      cellRenderer: GridColumnSettings.DoctorAppointmentDateRenderer,
-    },
-    { headerName: "Department Name", field: " ", width: 100 },
-    { headerName: "Provider Name", field: "ProviderName", width: 100 },
+    { headerName: "Address", field: "Address", width: 110 },
+    { headerName: "Phone", field: "PhoneNumber", width: 110 },
     {
       headerName: "Actions",
       field: "",
-      width: 200,
-      cellRenderer: GridColumnSettings.OPFollowUpActionRenderer,
-
+      resizable: true,
+      cellRenderer: GridColumnSettings.PatientListActionTemplate,
     },
   ];
 
-  static OPFollowUpActionRenderer(params) {
-    let currPatient = params.data;
+  static PatientListActionTemplate(params) {
+    if (!params.data.IsActive) {
+      let template = "";
+      template += `<a danphe-grid-action="edit" class="grid-action">
+               Edit
+            </a>`;
 
-    //by default: print sticker wil be there in the action.
-    let templateHtml = `<a danphe-grid-action="preview" class="d-icon icon-user" title="Preview" style="display: inherit; float:left;"></a>
-            
-    `;
-
-    if (currPatient.IsFollowUp) {
-      templateHtml +=
-        '<a danphe-grid-action="removefollowup" class="fa fa-file-text" style="font-size:15px;position:relative;top:-5px" title="remove follow up""></a>';
+      template += `<a danphe-grid-action="activateDeactivatePatient" class="grid-action"  style="background-color: #afb8af;color: black;">
+              Activate
+             </a>`;
+      return template;
     } else {
-      templateHtml +=
-        '<a danphe-grid-action="addfollowup" class="fa fa-file-text-o" style="font-size:15px;position:relative;top:-5px" title="add follow up""></a>';
+      let template = "";
+      template += `<a danphe-grid-action="edit" class="grid-action">
+               Edit
+            </a>`;
+      template += `<a danphe-grid-action="activateDeactivatePatient" class="grid-action"  style="background-color: orange;color: black;">
+             Deactivate
+           </a>`;
+      return template;
     }
-
-    return templateHtml;
   }
 
-  static OPFavoritePatientList = [
-    { headerName: "OPD No.", width: 100, field: "Patient.PatientCode" },
-    { headerName: "Name", field: "Patient.ShortName", width: 200 },
+  static AssetsFixedStockList = [
+    // { headerName: "S.N", field: "SN", cellRenderer: GridColumnSettings.SerialNumberRenderer, width: 95 },
+    // { headerName: "Item Code", field: "ItemCode" },
+    { headerName: "Bar Code", field: "BarCodeNumber" },
+    { headerName: "Asset Code", field: "AssetCode" },
+    { headerName: "Item Name", field: "ItemName" },
+    { headerName: "Total life In Year", field: "TotalLife" },
+    { headerName: "Year Of Use", field: "YearOfUse" },
     {
-      headerName: "Age/Sex",
+      headerName: "Remaining Life",
       field: "",
-      width: 100,
-      cellRenderer: GridColumnSettings.AgeSexRenderer,
+      cellRenderer: GridColumnSettings.AssetRemainingLife,
     },
-    { headerName: "VisitType", field: "VisitType", width: 150 },
+    { headerName: "Performance", field: "Performance" },
     {
-      headerName: "Visit Date",
-      width: 120,
-      field: "",
-      cellRenderer: GridColumnSettings.DoctorAppointmentDateRenderer,
+      headerName: "Manufacture Date",
+      field: "ManufactureDate",
+      cellRenderer: GridColumnSettings.ManufactureDate,
     },
-    { headerName: "Department Name", field: " ", width: 100 },
-    { headerName: "Provider Name", field: "ProviderName", width: 100 },
     {
-      headerName: "Actions",
+      headerName: "Warranty",
+      field: "WarrantyExpiryDate",
+      cellRenderer: GridColumnSettings.WarrantyExpiryDateAsstestMaintence,
+    },
+    {
+      headerName: "Remaining Days For Service",
+      field: "RemainingDaysForService",
+      cellRenderer: GridColumnSettings.RemainingDaysForServiceRenderer,
+    },
+    {
+      headerName: "Action",
+      width: 340,
       field: "",
-      width: 200,
-      cellRenderer: GridColumnSettings.OPFavoriteActionRenderer,
-
+      cellRenderer: GridColumnSettings.FixedAssetMaintenanceCellRenderer,
+      //     template: `<a danphe-grid-action="edit" class="grid-action">
+      //    Edit
+      //  </a>
+      //  <a danphe-grid-action="contract" class="grid-action">
+      //               View Contract
+      //              </a>
+      //  <a danphe-grid-action="checkilst-view" class="grid-action">
+      //  Checkilst View
+      //  </a>
+      //  <a danphe-grid-action="maintenance-view" class="grid-action">
+      //  Maintenance View
+      //  </a> `
     },
   ];
 
-  static OPFavoriteActionRenderer(params) {
-    let currPatient = params.data;
-
-    //by default: print sticker wil be there in the action.
-    let templateHtml = `<a danphe-grid-action="preview" class="d-icon icon-user" title="Preview" style="display: inherit; float:left;"></a>
+  static FixedAssetMaintenanceCellRenderer(params) {
+    var action = `
+    <a danphe-grid-action="edit" class="grid-action-icon fa fa-edit" title = "Edit"></a>
+    <a danphe-grid-action="service" class="grid-action-icon fa fa-cogs" title ="Service History"> </a>
+    <a danphe-grid-action="contract" class="grid-action-icon fa fa-file-text" title ="Contract Details"> </a> 
+    <a danphe-grid-action="checkilst-view" class="grid-action-icon fa fa-tasks" title ="Environment Condition Checkilst"></a>
+    <a danphe-grid-action="vendor-details" class="grid-action-icon fa fa-book" title ="Vendor Contact Details"> </a>
     `;
-
-    if (currPatient.IsFavorite) {
-      templateHtml +=
-        '<a danphe-grid-action="removefavorite" class="fa fa-heart" style="font-size:17px;position:relative;top:-3px" title="remove favorite""></a>';
+    if (params.data.Performance == "Not Working") {
+      return `${action}<a danphe-grid-action="fault-update" class="grid-action-icon fa fa-exclamation-circle" title ="Fault History"></a> `;
     } else {
-      templateHtml +=
-        '<a danphe-grid-action="addfavorite" class="fa fa-heart-o" style="font-size:17px;position:relative;top:-3px" title="add favorite""></a>';
+      return action;
+    }
+  }
+
+  static AssetDepreciationColumns = [
+    // { headerName: "S.N", field: "SN", cellRenderer: GridColumnSettings.SerialNumberRenderer, width:95},
+    { headerName: "Item Code", field: "ItemCode" },
+    { headerName: "Bar Code", field: "BarCodeNumber" },
+    { headerName: "Asset Code", field: "AssetCode" },
+    { headerName: "Item Name", field: "ItemName" },
+    // { headerName: "Depreciation Method", field: "DepreciationMethod" },
+    // { headerName: "Rate", field: "Rate" },
+    // // { headerName: "Started Date", field: "" }, // , cellRenderer: GridColumnSettings.DepreciationStartDateRenderer
+    // { headerName: "Fiscal Year", field: "" },
+    // { headerName: "Depreciation Amount", field: "DepreciationAmount" },
+    // { headerName: "Expected Value After Useful Life", field: "" }, //ExpectedValueAfterUsefulLife
+    {
+      headerName: "Action",
+      field: "",
+      cellRenderer: GridColumnSettings.DepreciationActionRenderer,
+      //  `<a danphe-grid-action="view" class="grid-action"> View </a>  `
+    },
+  ];
+
+  static DepreciationActionRenderer(params) {
+    var action = `<a danphe-grid-action="view-deprn" class="grid-action">
+      View Depreciation
+      </a>     
+    `;
+    if (params.data.IsAssetScraped == false) {
+      action = `${action} 
+                <a danphe-grid-action="scrap-asset" class="grid-action" style="background-color: #696969!important;">
+                Scrap Asset
+                </a>
+              `;
+    } else {
+      action = `${action} 
+                <a danphe-grid-action="scrap-asset" class="grid-action" style="background-color: #FF8C00!important;">
+                Undo Asset Scrap
+                </a>
+              `;
+    }
+    return action;
+  }
+
+  AssestGRlist = [
+    { headerName: "Bar Code", field: "BarCodeNumber" },
+    {
+      headerName: "",
+      field: "",
+      width: 80,
+      cellRenderer: GridColumnSettings.ColdStorageIconRenderer,
+    },
+    { headerName: "Item Name", field: "ItemName" },
+    { headerName: "Vendor Name", field: "VendorName" },
+    { headerName: "Specification", field: "StockSpecification" },
+    { headerName: "Model No", field: "ModelNo" },
+    {
+      headerName: "Asset Location",
+      field: "AssetsLocation",
+      cellRenderer: GridColumnSettings.LocationHistory,
+    },
+    { headerName: "SubStore", field: "SubStoreName" },
+    { headerName: "Asset Holder", field: "AssetHolderName" },
+    {
+      headerName: "Action",
+      field: "",
+      width: 380,
+      cellRenderer: GridColumnSettings.FixedAssetCellRenderer,
+    },
+  ];
+
+  static FixedAssetCellRenderer(params) {
+    var asset = params.data;
+    let template = `<a danphe-grid-action="print-barcode" class="grid-action-icon fixed-asset-action fa fa-barcode" title="Print Barcode"></a>`;
+    if (
+      GridColumnSettings.securityService.HasPermission(
+        "fixed-asset-management-edit-button"
+      )
+    )
+      template += ` <a danphe-grid-action="edit" class="grid-action-icon fixed-asset-action fa fa-edit" title="Edit"></a>`;
+    if (
+      GridColumnSettings.securityService.HasPermission(
+        "fixed-asset-insurance-button"
+      )
+    )
+      template += `<a danphe-grid-action="insurance-view" class="grid-action-icon fixed-asset-action fa fa-heartbeat" title="Insurance Details"></a>`;
+
+    // var action: string = `
+    //         <a danphe-grid-action="edit" class="grid-action-icon fa fa-edit" title="Edit"></a>
+    //         <a danphe-grid-action="insurance-view" class="grid-action-icon fa fa-heartbeat" title="Insurance Details"></a>
+    //         <a danphe-grid-action="print-barcode" class="grid-action-icon fa fa-barcode" title="Print Barcode"></a>
+    //         `;
+
+    if (
+      asset.IsMaintenanceRequired &&
+      GridColumnSettings.securityService.HasPermission(
+        "fixed-asset-send-to-maintaineance-button"
+      )
+    ) {
+      // template = `
+      // <a danphe-grid-action="remove-from-maintenance" class="fa fa-wrench" title="Remove from Maintenance Secition" aria-hidden="true" style="color: Black!important; font-size: 18px;"></a>
+      // ` + template;
+      // <a danphe-grid-action="remove-from-maintenance" class="grid-action" style="background-color:White!important;">
+      // </a>
+    } else {
+      template =
+        `      
+      <a danphe-grid-action="send-to-maintenance" class="fa fa-wrench" title="Send to Maintenance Secition" aria-hidden="true" style="color: #0773bc!important; font-size: 18px;"></a>
+      ` + template;
+      // <a  class="grid-action" style="background-color:White!important;"></a>
+    }
+    if (asset.IsAssetDamaged == true && asset.IsAssetDamageConfirmed == false) {
+      template = ` ${template} 
+                <a danphe-grid-action="confirm-damage" class="grid-action-icon fa fa-check-circle" title="Confirm Damage" style="background-color: #42ba96 !important;"></a>
+                <a danphe-grid-action="undo-damage" class="grid-action-icon fa fa-times" title="Undo Damage" style="background-color: #FF8C00!important;"></a> 
+             `;
     }
 
-    return templateHtml;
+    return template;
+  }
+
+  static GRSList = [
+    { headerName: "GR No.", field: "GoodsReceiptNo", width: 50 },
+    { headerName: "GR Date", field: "GoodsReceiptDate", width: 60 },
+    { headerName: "PO No.", field: "PurchaseOrderId", width: 40 },
+    { headerName: "Vendor Bill Date", field: "VendorBillDate", width: 60 },
+    { headerName: "Vendor Name", field: "VendorName", width: 150 },
+    { headerName: "Vendor Contact", field: "ContactNo", width: 60 },
+    { headerName: "Bill No.", field: "BillNo", width: 80 },
+    { headerName: "Total Amount", field: "TotalAmount", width: 90 },
+    { headerName: "Pay. Mode", field: "PaymentMode", width: 60 }, //sud:4May'20--needed this to distinguish between cash and credit in frontend.
+    { headerName: "Remarks", field: "Remarks", width: 100 },
+    {
+      headerName: "Action",
+      field: "",
+      width: 80,
+      cellRenderer: GridColumnSettings.ShowActionForGoodsReceiptList,
+      //template: '<a danphe-grid-action="view" class="grid-action">View</a>',
+    },
+  ];
+  static FixedAssetRequestList = [
+    { headerName: "Req.No", field: "RequisitionNo", width: 45 },
+    { headerName: "StoreName", field: "StoreName", width: 80 },
+    { headerName: "Sub-StoreName", field: "SubStoreName", width: 80 },
+    {
+      headerName: "Request Date",
+      field: "RequisitionDate",
+      width: 80,
+      cellRenderer: GridColumnSettings.RequisitionDateOnlyRenderer,
+    },
+    { headerName: "Request By", field: "EmpFullName", width: 100 },
+    { headerName: "Status", field: "RequisitionStatus", width: 80 },
+    {
+      headerName: "Action",
+      field: "",
+      width: 200,
+      cellRenderer: GridColumnSettings.ShowActionRequisitionList,
+      // template:
+      //   `<a danphe-grid-action="view" class="grid-action">
+      //   View
+      // </a>
+      // <a danphe-grid-action="dispatch" class="grid-action">
+      //   Dispatch
+      // </a>
+      // <a danphe-grid-action="dispatchList" class="grid-action"> Dispatch List</a>
+      // `
+    },
+  ];
+  static ShowActionRequisitionList(params) {
+    let template = `<a danphe-grid-action="view" class="grid-action">
+    View
+  </a>
+  `;
+    if (["active", "partial"].includes(params.data.RequisitionStatus)) {
+      template += ` <a danphe-grid-action="dispatch" 
+        class="grid-action">
+         Dispatch
+        </a>
+        <a danphe-grid-action="dispatchList" class="grid-action">
+          Dispatch List
+        </a>`;
+    }
+    return template;
+  }
+  static GRSDateTimeRenderer(params) {
+    let date: string = params.data.GoodReceiptDate;
+    return moment(date).format("YYYY-MM-DD");
+  }
+
+  static StockCreatedOnDateRenderer(params) {
+    let date: string = params.data.CreatedOn;
+    return moment(date).format("YYYY-MM-DD");
+  }
+
+  static ShowActionForGoodsReceiptList(params) {
+    let template = `
+        <a danphe-grid-action="view" title="View" 
+        class="grid-action ${params.data.GRStatus == "verified"
+        ? "animated-btn blinking-btn-warning grid-action"
+        : ""
+      }">
+        ${params.data.GRStatus == "verified" ? "(Receive)" : ""} View
+        </a>`;
+    return template;
+  }
+
+  static AssetRemainingLife(params) {
+    if (params.data.TotalLife && params.data.YearOfUse) {
+      return params.data.TotalLife - params.data.YearOfUse;
+    }
+    return "";
+  }
+
+  static ManufactureDate(params) {
+    if (params.data.ManufactureDate == null) {
+      return "No Date";
+    } else {
+      let date: string = params.data.ManufactureDate;
+      return moment(date).format("YYYY-MM-DD");
+    }
+  }
+
+  static WarrantyExpiryDateAsstestMaintence(params) {
+    let date: string = params.data.WarrantyExpiryDate;
+    return moment(date).format("YYYY-MM-DD");
+  }
+
+  static InstallationOfDate(params) {
+    let date: string = params.data.InstallationOfDate;
+    return moment(date).format("YYYY-MM-DD");
+  }
+  static LocationHistory(params) {
+    if (params.data.AssetsLocation == null) {
+      return "No Location";
+    } else {
+      return params.data.AssetsLocation;
+    }
+  }
+
+  static WarrantyExpiryDate(params) {
+    if (params.data.WarrantyExpiryDate) {
+      let expiryDate: any = new Date(params.data.WarrantyExpiryDate);
+      let date: any = new Date();
+      let datenow = date.setHours(0, 0, 0, 0);
+      let datePlusThreeMonth = date.setMonth(date.getMonth() + 3);
+
+      let stringExpiry: string = params.data.WarrantyExpiryDate;
+      let formattedWExpiry = moment(stringExpiry).format("YYYY-MM-DD");
+      // return expiryDate;
+
+      if (expiryDate < datenow) {
+        // if warraty expiry is less than today then asset is expired color will be red
+        return `<span style="background-color:#FA8072;"> ${formattedWExpiry}</span>`;
+      }
+      // if warraty expiry is less than 3 months then asset is near expired and color will be yellow
+      else if (expiryDate >= datenow && expiryDate <= datePlusThreeMonth) {
+        return `<span style="background-color:yellow;"> ${formattedWExpiry} </span>`;
+      }
+      // if warraty expiry is more than 3 months then color will be white
+      else if (expiryDate > datePlusThreeMonth) {
+        return `<span style="background-color:white;"> ${formattedWExpiry} </span>`;
+      } else {
+        return "";
+      }
+    }
+    return "";
+  }
+
+  static RemainingDaysForServiceRenderer(params) {
+    let template: string;
+    let periodicServiceDays: any = params.data.PeriodicServiceDays; // periodic service with this certain period (days)
+    let installationDate: any;
+
+    let CommingServiceDate: any;
+    let LastServiceDate: any;
+    let RemainingDaysForService: any;
+    let today: any = new Date().setHours(0, 0, 0, 0);
+
+    if (params.data.InstallationDate) {
+      installationDate = new Date(params.data.InstallationDate);
+    } else {
+      installationDate = null;
+    }
+    if (params.data.ServiceDate) {
+      LastServiceDate = new Date(params.data.ServiceDate);
+    } else {
+      LastServiceDate = null;
+    }
+
+    if (periodicServiceDays) {
+      if (LastServiceDate) {
+        //case: when service has been done earlier
+
+        CommingServiceDate = LastServiceDate.setDate(
+          LastServiceDate.getDate() + periodicServiceDays
+        );
+      } else if (installationDate) {
+        // case: when no any service been done till date
+        // refer Installation date for calcuating comming service date
+        CommingServiceDate = installationDate.setDate(
+          installationDate.getDate() + periodicServiceDays
+        );
+      }
+
+      if (CommingServiceDate) {
+        let diffTime = Math.abs(CommingServiceDate - today); // we get difference of two dates
+        RemainingDaysForService = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // converting difference in Days
+        if (today > CommingServiceDate) {
+          // knowing, if difference day is negative or positive
+          RemainingDaysForService = RemainingDaysForService * -1;
+        }
+      }
+    }
+
+    if (RemainingDaysForService) {
+      if (RemainingDaysForService < 31 && RemainingDaysForService > 0) {
+        template = `<span style="background-color:yellow;"> ${RemainingDaysForService}</span>`;
+      } else if (RemainingDaysForService < 0) {
+        template = `<span style="background-color:#FA8072;"> ${RemainingDaysForService}</span>`;
+      } else if (RemainingDaysForService > 31) {
+        template = RemainingDaysForService;
+      }
+    }
+
+    return template;
+  }
+  static ReqDispatchList = [
+    { headerName: "Dispatch Id", field: "DispatchId", width: 50 },
+    { headerName: "Requisition No", field: "RequisitionId", width: 150 },
+    { headerName: "Store Name", field: "StoreName", width: 150 },
+    { headerName: "SubStore Name", field: "SubStoreName", width: 150 },
+    {
+      headerName: "Dispatch Date",
+      field: "Dispatchdate",
+      width: 150,
+      cellRenderer: GridColumnSettings.DispatchDateRender,
+    },
+    { headerName: "Received By", field: "ReceivedBy", width: 100 },
+    { headerName: "Dispatched By", field: "DispatcheBy", width: 150 },
+
+    {
+      headerName: "Action",
+      field: "",
+      width: 120,
+      template: `<a danphe-grid-action="view" class="grid-action">
+               View
+             </a>`,
+    },
+  ];
+  static VendorList = [
+    { headerName: "GR Date", field: "GRDate", width: 150, cellRenderer: GridColumnSettings.PaymentDateRender },
+    { headerName: "GR Number", field: "GRNo", width: 150 },
+    { headerName: "Vendor Name", field: "VendorName", width: 200 },
+    { headerName: "Total Amount", field: "TotalAmount", width: 150 },
+    { headerName: "Paid Amount", field: "PaidAmount", width: 150 },
+    { headerName: "Due Amount", field: "DueAmount", width: 150 },
+    {
+      headerName: "Action",
+      field: "",
+      width: 150,
+      template: "<a danphe-grid-action='view' class='grid-action'> <i class='fa fa-eye'></i>View</a>"
+    },
+  ];
+  static SupplierList = [
+    { headerName: "GR Date", field: "GRDate", width: 150, cellRenderer: GridColumnSettings.PaymentDateRender },
+    { headerName: "Invoice Number", field: "InvoiceNo", width: 150 },
+    { headerName: "Supplier Name", field: "SupplierName", width: 200 },
+    { headerName: "Total Amount", field: "TotalAmount", width: 150 },
+    { headerName: "Paid Amount", field: "PaidAmount", width: 150 },
+    { headerName: "Due Amount", field: "DueAmount", width: 150 },
+    {
+      headerName: "Action",
+      field: "",
+      width:150,
+      template: "<a danphe-grid-action='view' class='grid-action'> <i class='fa fa-eye'></i>View</a>"
+    },
+  ];
+  static PaymentDateRender(params) {
+    let paymentDate: string = params.data.GRDate;
+    if (paymentDate) return moment(paymentDate).format("YYYY-MM-DD");
+    else return null;
   }
 
 }
-

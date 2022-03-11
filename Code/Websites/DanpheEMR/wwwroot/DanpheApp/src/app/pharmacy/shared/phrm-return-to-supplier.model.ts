@@ -23,28 +23,27 @@ export class PHRMReturnToSupplierModel {
     public CreatedBy: number = 0;
     public CreateOn: string = "";
     public Remarks: string = "";
-    public ReturnStatus:number;
+    public ReturnStatus: number;
     public ReturnToSupplierValidator: FormGroup = null;
     public Adjustment: number = 0;
     public returnToSupplierItems: Array<PHRMReturnToSupplierItemModel> = new Array<PHRMReturnToSupplierItemModel>();
     public DiscountAmount: number = 0;
-    public DiscountPercentage:number = 0;
-    public userName:any; //for view in report to known user  who generate it
-    public ReferenceNo:any;
-    public GoodReceiptId:number;
+    public DiscountPercentage: number = 0;
+    public userName: any; //for view in report to known user  who generate it
+    public ReferenceNo: any;
+    public GoodReceiptId: number;
     constructor() {
-       
+
         var _formBuilder = new FormBuilder();
         this.ReturnToSupplierValidator = _formBuilder.group({
-            'SupplierId': ['', Validators.compose([Validators.required])],
             'ReturnDate': ['', Validators.compose([Validators.required])],
             'CreditNoteId': ['', Validators.compose([Validators.required])],
-            'ReturnStatus':['',Validators.compose([Validators.required])]
+            'ReturnStatus': ['', Validators.compose([Validators.required])]
         });
 
         ///this.ReturnDate = moment().format("YYYY-MM-DD");
     }
-    public IsValid():boolean{if(this.ReturnToSupplierValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.ReturnToSupplierValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.ReturnToSupplierValidator.valid;
         }
@@ -58,5 +57,5 @@ export class PHRMReturnToSupplierModel {
             return this.ReturnToSupplierValidator.controls[fieldName].dirty;
     }
 
- 
+
 }

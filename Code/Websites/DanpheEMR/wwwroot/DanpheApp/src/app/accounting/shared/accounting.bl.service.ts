@@ -8,6 +8,7 @@ import { LedgerModel } from "./../settings/shared/ledger.model"
 import { FiscalYearModel } from '../settings/shared/fiscalyear.model';
 import { AccountingInvoiceDataModel } from '../shared/accounting-invoice-data.model';
 import { ReverseTransactionModel } from "../settings/shared/reverse-transaction.model";
+import { Payment } from '../transactions/payment/account-payment.model';
 
 
 
@@ -299,6 +300,40 @@ export class AccountingBLService {
         }
     }
 
+    //Get inventory ledgers
+    GetInvVendorList(){
+        try{
+            return this.accountDlService.GetInvVendorList()
+                .map((responseData) =>{
+                    return responseData;
+                });
+        }
+        catch (ex){
+            throw ex;
+        }
+    }
+     //get pharmacy supplier
+     GetPharmacySupplier() {
+        try {
+            return this.accountDlService.GetPharmacySupplier()
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    //get good receipt list 
+     GetGRList(vendorId: number,sectionId:number,number:any,date:string) {
+        try {
+            return this.accountDlService.GetGRList(vendorId,sectionId,number,date)
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
     PostToTransaction(transaction: TransactionModel) {
         try {
             var newTxn: any = _.omit(transaction, ['TransactionValidator']);
@@ -451,5 +486,35 @@ export class AccountingBLService {
     }
 
     //END: PUT
+
+    //post payment to accounting Payment table
+    public PostPayment(payment:Payment,transaction:TransactionModel) {
+        //var temp: any = _.omit(fiscalYear, ['FiscalYearValidator']);
+        var temp = _.omit(payment, ['PaymentValidator']);
+        var newTxn: any = _.omit(transaction, ['TransactionValidator']);
+      var newTxnItems: any = newTxn.TransactionItems.map(item => {
+        return _.omit(item, ['TransactionItemValidator', 'LedgerList', 'SelectedInvItems', 'SelectedCstCntItems']);
+      });
+      newTxnItems.forEach(txnItem => {
+        if (txnItem.HasInventoryItems) {
+          var invItems: any = txnItem.InventoryItems.map(invItm => {
+            return _.omit(invItm, ['TxnInvItemValidator']);
+          });
+          txnItem.InventoryItems = invItems;
+        }
+        if (txnItem.HasCostCenterItems) {
+          var cstItems: any = txnItem.CostCenterItems.map(cstItm => {
+            return _.omit(cstItm, ['TxnCstItemValidator']);
+          });
+          txnItem.CostCenterItems = cstItems;
+        }
+      });
+      newTxn.TransactionItems = newTxnItems;
+        var txnData = JSON.stringify(newTxn);
+        let data = JSON.stringify(temp);
+        return this.accountDlService.PostPayment(data,txnData).map(res => {
+            return res;
+        });
+    }
 
 }

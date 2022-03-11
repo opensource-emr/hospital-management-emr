@@ -172,7 +172,7 @@ export class InternalConsumptionDetailsComponent {
 
 
     GetInventoryBillingHeaderParameter() {
-        var paramValue = this.coreService.Parameters.find(a => a.ParameterGroupName == 'Inventory' && a.ParameterName == 'Inventory BillingHeader');
+        var paramValue = this.coreService.Parameters.find(a => a.ParameterGroupName == 'Inventory' && a.ParameterName == 'Inventory Receipt Header');
         if (paramValue && paramValue.ParameterValue)
             this.headerDetail = JSON.parse(paramValue.ParameterValue);
         else

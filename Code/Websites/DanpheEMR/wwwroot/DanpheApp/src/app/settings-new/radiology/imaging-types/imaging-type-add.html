@@ -13,7 +13,7 @@
                 <div class="col-md-8">
                   <input type="text" required value="" class="form-control" maxlength="50"
                                                [(ngModel)]="CurrentImagingType.ImagingTypeName" formControlName="ImagingTypeName" id="ImagingTypeName" [attr.disabled]="update ? '' : null"
-                                               placeholder="Enter Type Name" />
+                                               placeholder="Enter Type Name" (keyup.enter)="FocusElementById('addBtn')"/>
                   <br />
                   <span class="color-red font-sm" [hidden]="CurrentImagingType.IsValidCheck('ImagingTypeName','required') || !(CurrentImagingType.IsDirty('ImagingTypeName'))">Enter Imaging Type Name</span> </div>
               </div>
@@ -39,8 +39,8 @@
               
             </div>
 			  <div class="panel-footer">
-                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddImagingType()" value="Add" />
-                <input type="button" class="btn btn-primary" *ngIf="update" (click)="UpdateImagingType()" value="Update" />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddImagingType()" value="Add" id="addBtn"/>
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateImagingType()" value="Update" />
               </div>
           </form>
         </div>

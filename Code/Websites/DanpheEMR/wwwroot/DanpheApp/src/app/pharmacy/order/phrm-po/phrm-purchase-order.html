@@ -2,58 +2,51 @@
     <div class="col-md-12">
         <form [formGroup]="currentPO.PurchaseOrderValidator" class="form-horizontal hm-form border-bottom">
             <div class="form-group ph-title">
-                <div class="caption lb-caption col-md-4">
+                <div class="caption lb-caption col-md-3" *ngIf="!editPO">
                     <h3>
                         <i class="fa fa-shopping-cart"></i>
                         <span class="caption-subject">Add Purchase Order Of Pharmacy</span>
-                    </h3>                    
+                    </h3>
+                </div>
+                <div class="caption lb-caption col-md-4" *ngIf="editPO">
+                    <h3>
+                        <i class="glyphicon glyphicon-edit"></i>
+                        <span class="caption-subject">Edit Purchase Order of Pharmacy</span>
+                    </h3>
                 </div>
                 <div class="col-md-4 padding-set">
                     <label class="control-label col-md-3 col-sm-3">Supplier<b>:</b></label>
                     <div class="col-md-9 col-sm-9">
-                        <select class="form-control" style="float:left" [(ngModel)]="currentPO.SupplierId" formControlName="SupplierId" (ngModelChange)="GetSupplierDetails(currentPO.SupplierId)">
-                            <option *ngFor="let suplist of supplierList" value="{{suplist.SupplierId}}">{{suplist.SupplierName}}</option>
-                        </select>
+                        <input danphe-auto-complete class="form-control left" id="SupplierName" formControlName="SupplierId" [(ngModel)]="SelectedSupplier" [source]="supplierList" [list-formatter]="SupplierListFormatter" placeholder="Select Supplier" display-property-name="SupplierName" value-property-name=null min-chars="0" max-num-list="20" onClick="this.select();" (keyup.enter)="SetFocusById('ItemName0')" match-formatted="true" [grid-sort]="'SupplierName'" (ngModelChange)="OnSupplierChanged()" />
                         <span style="color:red" *ngIf="currentPO.IsDirty('SupplierId')" [hidden]="currentPO.IsValidCheck('SupplierId','required')"> Supplier is required</span>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <span *ngIf="ShowSupplierDetails== true" style="font-size:small;">Supplier ContactNo :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactNo}}</b></span> &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
-
+                <div class="col-md-2" *ngIf="SelectedSupplier">
+                    <span *ngIf="SelectedSupplier.SupplierId" style="font-size:small;">Supplier ContactNo
+                        :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactNo}}</b></span> &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
                 </div>
-                <div class="col-md-2">
-                    <span *ngIf="ShowSupplierDetails== true" style="font-size:small;">Supplier Address :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactAddress}}</b></span>
+                <div class="col-md-2" *ngIf="SelectedSupplier">
+                    <span *ngIf="SelectedSupplier.SupplierId" style="font-size:small;">Supplier Address
+                        :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactAddress}}</b></span>
+                </div>
+                <div class="col-md-1">
+                    <div class="pull-right">
+                        <div class="shortcut-key shortkey-right " title="Shortcut Keys">
+                            <a href="#"><img src="../../../themes/theme-default/images/Keyboard-icon.svg" alt=""></a>
+                            <div class="keydropdown">
+                                <ul>
+                                    <li><kbd>ALT</kbd> + <kbd>P</kbd> = <samp> <span *ngIf="editPO; else updateshortcut">Update</span>Order
+                                            <ng-template #updateshortcut> <span> Print </span> </ng-template>
+                                        </samp> </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>        
+        </form>
     </div>
 </div>
-
-<!-- <div class="row" style="padding-top:10px">
-    <form [formGroup]="currentPO.PurchaseOrderValidator" class="form-horizontal hm-form">
-        <div class="col-md-12">
-            <div class="form-group">
-                <label class="control-label col-md-2 col-sm-2">Supplier<b>:</b></label>
-                <div class="col-md-3 col-sm-3">
-                    <select class="form-control" style="float:left" [(ngModel)]="currentPO.SupplierId" formControlName="SupplierId" (ngModelChange)="GetSupplierDetails(currentPO.SupplierId)">
-                        <option *ngFor="let suplist of supplierList" value="{{suplist.SupplierId}}">{{suplist.SupplierName}}</option>
-                    </select>
-                    <span style="color:red" *ngIf="currentPO.IsDirty('SupplierId')" [hidden]="currentPO.IsValidCheck('SupplierId','required')"> Supplier is required</span>
-                </div>
-                <div class="col-md-3 col-sm-3">
-                    <span *ngIf="ShowSupplierDetails== true" style="font-size:small;background-color:whitesmoke;">Supplier ContactNo :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactNo}}</b></span> &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
-
-                </div>
-                <div class="col-md-3 col-sm-3">
-                    <span *ngIf="ShowSupplierDetails== true" style="font-size:small;background-color:whitesmoke;">Supplier Address :<b>&nbsp;&nbsp;{{SelectedSupplier.ContactAddress}}</b></span>
-                </div>
-            </div>
-
-        </div>
-    </form>
-</div> -->
-
-
 
 <div class="row">
     <div class="col-md-12">
@@ -63,7 +56,6 @@
                     <tr>
                         <th></th>
                         <th sortable-header col="itemnames"><b>ItemName</b></th>
-                        <th><b>Packing</b></th>
                         <th sortable-header col="quantity"><b>Quantity</b></th>
                         <th></th>
                         <th><b>Standard Rate</b></th>
@@ -75,46 +67,28 @@
                 <tbody>
                     <tr *ngFor="let row of currentPO.PHRMPurchaseOrderItems; let i = index">
                         <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
-                          <td>
+                        <td>
                             <form [formGroup]="row.PurchaseOrderItemValidator">
-                                <input danphe-auto-complete class="form-control "
-                                       [(ngModel)]="row.SelectedItem"
-                                       [source]="ItemList"
-                                       [list-formatter]="myListFormatter"
-                                       placeholder="Item Name"
-                                       display-property-name="ItemName"
-                                       value-property-name=null
-                                       min-chars="0"
-                                       max-num-list="20"
-                                       (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)"
-                                       formControlName="ItemId"
-                                       onClick="this.select();"
-                                       style="width:250px " />
+                                <input danphe-auto-complete id="ItemName{{i}}" class="form-control" [(ngModel)]="row.SelectedItem" [source]="ItemList" [list-formatter]="ItemListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null min-chars="1" max-num-list="20" (valueChanged)="OnItemSelected(row.SelectedItem,i)" formControlName="ItemId" onClick="this.select();" style="width:250px " (keyup.enter)="OnPressedEnterKeyInItemField(i)"  match-formatted="true" [grid-sort]="'ItemName'"/>
                                 <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
                             </form>
 
                         </td>
                         <td>
-                            <input danphe-auto-complete class="" [(ngModel)]="row.Packing"
-                          [source]="packingtypeList" [list-formatter]="PackingListsFormatter"
-                          display-property-name="PackingName" value-property-name=null min-chars="0" max-num-list="30"
-                          (valueChanged)="AssignPackingQty(row,i)" onClick="this.select();" match-formatted="true"
-                          [ngModelOptions]="{standalone:true}" id="ddl_packing"/>
-                        </td>
-                        <td>
                             <form [formGroup]="row.PurchaseOrderItemValidator">
-                                <input style="width:100px;" [(ngModel)]="row.Quantity"  (ngModelChange)="CalculationForPOItem()" class="form-control" min="1" formControlName="Quantity" name="quantity" type="number">
+                                <input style="width:100px;" [(ngModel)]="row.Quantity" (ngModelChange)="CalculationForPOItem()" class="form-control" id="QuantityAt{{i}}" min="1" formControlName="Quantity" name="quantity" type="number" onClick="this.select();" onfocus="this.select();" (keyup.enter)="SetFocusById('PriceAt' + i)">
                                 <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
-                                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','wrongDecimalValue')">required whole number</div>
+                                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','wrongDecimalValue')">required whole number
+                                </div>
                             </form>
                         </td>
                         <td>
                             <a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success"></i></a>
                         </td>
                         <td>
-                            <input style="width:100px;" [(ngModel)]="row.StandaredPrice" (ngModelChange)="CalculationForPOItem()" class="form-control" name="price" type="number">
+                            <input style="width:100px;" [(ngModel)]="row.StandaredPrice" (ngModelChange)="CalculationForPOItem()" class="form-control" id="PriceAt{{i}}" name="price" type="number" onfocus="this.select();" (keyup.enter)="OnPressedEnterKeyInPrice(i)">
                         </td>
-                        <td><input style="width:80px;" [(ngModel)]="row.VatPercentage" disabled class="form-control" max="100" name="vatpercent" type="number"></td>
+                        <td><input style="width:80px;" [(ngModel)]="row.VatPercentage" (ngModelChange)="CalculationForPOItem()" max="100" name="vatpercent" type="number" (keyup.enter)="OnPressedEnterKeyInPrice(i)"></td>
                         <td><input style="width:110px;" [(ngModel)]="row.TotalAmount" disabled class="form-control" name="total" type="number"></td>
                         <td> <input style="width:100px;" [(ngModel)]="row.DeliveryDays" class="form-control" name="deliverydays" type="number"> </td>
                     </tr>
@@ -123,72 +97,66 @@
             <div class="col-md-5 col-md-offset-7">
                 <div class="mt20 t-wrap">
                     <table class="inv_table">
-                        <tr>                           
+                        <tr>
                             <td class="text-right"><b>SubTotal:</b></td>
                             <td>
                                 <div class="form-group">
                                     <input class="form-control" [(ngModel)]="currentPO.SubTotal" disabled id="subtotal" name="subtotal" type="number">
                                 </div>
                             </td>
-                        </tr>       
+                        </tr>
                         <tr class="form-group">
                             <td class="text-right"><b>VAT Amount:</b></td>
-                            <td> 
+                            <td>
                                 <div class="form-group">
                                     <input [(ngModel)]="currentPO.VATAmount" disabled class="form-control" name="DiscountPercent" type="number">
                                 </div>
-                               </td>       
-                        </tr>        
+                            </td>
+                        </tr>
                         <tr class="form-group">
                             <td class="text-right"><b>Total Amount:</b></td>
                             <td>
                                 <div class="form-group">
                                     <input [(ngModel)]="currentPO.TotalAmount" disabled class="form-control" name="TotalAmount" type="number">
                                 </div>
-                                </td>
-                        </tr>        
+                            </td>
+                        </tr>
                         <tr class="form-group">
-                            <td class="text-right"><b>Remarks:</b></td>        
+                            <td class="text-right"><b>Remarks:</b></td>
                             <td>
                                 <div class="form-group">
                                     <input [(ngModel)]="currentPO.Remarks" class="form-control" name="Remarks" type="text">
                                 </div>
-                               </td>        
-                        </tr><tr>
+                            </td>
+                        </tr>
+                        <tr>
                             <td class="text-right"><b>Select Terms & Conditions:</b></td>
                             <td>
-                              <div class="form-group div-relative">
-                                <select [(ngModel)]="currentPO.TermsId"
-                                    class="form-control">
-                                    <option value="null">-- Select Terms --</option>
-                                    <option *ngFor="let term of termsList"
-                                        title="{{ term.Text }}"
-                                        value="{{ term.TermsId }}">
-                                        {{ term.ShortName }}</option>
-                                </select>
-                               
-                              </div>
+                                <div class="form-group div-relative">
+                                    <select [(ngModel)]="currentPO.TermsId" class="form-control">
+                                        <option value="null">-- Select Terms --</option>
+                                        <option *ngFor="let term of termsList" title="{{ term.Text }}" value="{{ term.TermsId }}">
+                                            {{ term.ShortName }}
+                                        </option>
+                                    </select>
+
+                                </div>
                             </td>
-                          </tr>
+                        </tr>
                         <tr class="dot">
-                            <td class="text-capitalize" colspan="2"> <b>In Words : </b><b>{{currentPO.TotalAmount | NumberInWords}} </b> Only.</td>
-                            <!-- <td class="text-capitalize"></td> -->
-                        </tr>                       
-                     </table>
-                </div> 
-                <div class="text-right mt20">
-                    <input type="button" class="btn btn-success" value="Request" (click)="AddPurchaseOrder()" [disabled]="loading" />
-                    <span></span>
-                    <input type="button" class="btn btn-danger" value="Cancel">
-                    <span></span>            
+                            <td class="text-capitalize" colspan="2"> <b>In Words : </b><b>{{currentPO.TotalAmount |
+                                    NumberInWords}} </b> Only.</td>
+                        </tr>
+                    </table>
                 </div>
-            </div>     
+                <div class="text-right mt20">
+                    <button type="button" *ngIf="!editPO" class="btn green btn-success tooltip" id="PrintButton" title="ALT + P" (click)="AddPurchaseOrder()" [disabled]="loading"> <u>P</u>rint Order</button>
+                    <button type="button" *ngIf="editPO" class="btn green btn-success tooltip" id="PrintButton" title="ALT + P" (click)="UpdatePurchaseOrder()" [disabled]="loading"> U<u>p</u>date Order</button>
+                    <span></span>
+                    <button type="button" class="btn btn-danger" (click)="DiscardPurchaseOrder()">Discard</button>
+                    <span></span>
+                </div>
+            </div>
         </div>
-    </div>    
+    </div>
 </div>
-
-
-
-
-
-

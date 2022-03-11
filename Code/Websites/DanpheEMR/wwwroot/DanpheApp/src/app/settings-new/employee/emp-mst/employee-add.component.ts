@@ -45,7 +45,8 @@ export class OpdItemDetailVM {
 
 @Component({
   selector: "employee-add",
-  templateUrl: "./employee-add.html"
+  templateUrl: "./employee-add.html",
+  host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class EmployeeAddComponent {
@@ -152,6 +153,7 @@ export class EmployeeAddComponent {
       this.CurrentEmployee.DateOfBirth = moment().format('YYYY-MM-DD');
       this.update = false;
     }
+    this.FocusElementById('Salutation');
   }
 
   public GetEmpRoleList() {
@@ -241,7 +243,6 @@ export class EmployeeAddComponent {
     if (!this.deptList || this.deptList.length == 0) {
       return;
     }
-
     let currDeptId = this.CurrentEmployee.DepartmentId;
 
     let currDept = this.deptList.find(dept => dept.DepartmentId == currDeptId);
@@ -276,7 +277,6 @@ export class EmployeeAddComponent {
 
       this.ApptApplicableChkOnChange();
     }
-
   }
 
   //this is common function to check whether normal price is valid or not for current row.
@@ -314,6 +314,7 @@ export class EmployeeAddComponent {
     for (var i in this.CurrentEmployee.EmployeeValidator.controls) {
       this.CurrentEmployee.EmployeeValidator.controls[i].markAsDirty();
       this.CurrentEmployee.EmployeeValidator.controls[i].updateValueAndValidity();
+      this.FocusElementById('Salutation');
     }
     if (this.CurrentEmployee.IsValidCheck(undefined, undefined)) {
 
@@ -332,16 +333,19 @@ export class EmployeeAddComponent {
             else {
               this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
               this.loading = false;
+              this.FocusElementById('Salutation');
             }
           },
           err => {
             this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
             this.loading = false;
+            this.FocusElementById('Salutation');
           });
     }
     else {
       this.msgBoxServ.showMessage("failed", ["Please check all mandatory fields."]);
       this.loading = false;
+      this.FocusElementById('Salutation');
     }
   }
 
@@ -758,5 +762,18 @@ export class EmployeeAddComponent {
   }
   //End: Employee Digital Signature Section
 
-
+  FocusElementById(id: string) {
+    this.openPhotoCropper=false;
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 10);
+  }
+  hotkeys(event){
+    if(event.keyCode==27){
+        this.Close()
+    }
+}
 }

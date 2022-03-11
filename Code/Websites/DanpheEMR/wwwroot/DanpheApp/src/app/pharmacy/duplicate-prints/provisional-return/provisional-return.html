@@ -34,15 +34,10 @@
 
     <div class="row">
       <div class="col-lg-12 col-sm-12">
-        <danphe-grid [grid-colDefaults]="ProvisionalReturnListGrid"
-                     [grid-data]="provisionalBillFiltered"
-                     [rangeType]="dateRange" 
-                      [date-range-options]="'1W,1M,3M'"
-                      [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                      (onDateChange)="onGridDateChange($event)"
-                     (grid-actions)="CreditBillGridActions($event)"
-                     [show-CustomDate]="true"
-                     >
+        <danphe-grid [grid-colDefaults]="ProvisionalReturnListGrid" [grid-data]="provisionalBillFiltered"
+          [rangeType]="dateRange" [date-range-options]="'1W,1M,3M'" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+          (onDateChange)="onGridDateChange($event)" (grid-actions)="CreditBillGridActions($event)"
+          [show-CustomDate]="true">
         </danphe-grid>
       </div>
     </div>
@@ -70,7 +65,8 @@
             <div class="col-md-12">
               <div class="caption" style="color:blue; margin-top:10px;">
               </div>
-              <a style="float:right;  margin-top: -11px; margin-right: -31px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <a style="float:right;  margin-top: -11px; margin-right: -31px;" class="btn btn-danger" (click)="Close()"
+                title="Cancel">X</a>
             </div>
             <br />
             <div class="col-md-12" style="margin-right: 24px;">
@@ -98,7 +94,7 @@
 
                       <div class="left" style="width:69%" id="pat-name">
                         <div class="no-margin"
-                             style="text-align: left;display: inline-block;float: left;font-size:11px;/*width: 31%;*/">
+                          style="text-align: left;display: inline-block;float: left;font-size:11px;/*width: 31%;*/">
                           Patient's Name:&nbsp;
                         </div>
                         <div style="display: inline-block;width: 69%;text-align: left;font-size:11px;">
@@ -116,7 +112,7 @@
                       <div class="right" style="width:31%">
                         <p class="no-margin" style="text-align:right;font-size:11px;">
                           Age/Sex :
-                          {{currentPatient.DateOfBirth | DanpheDateTime:'age'  }}/{{currentPatient.Gender}}
+                          {{currentPatient.DateOfBirth | DanpheDateTime:'age' }}/{{currentPatient.Gender}}
                         </p>
                       </div>
                     </div>
@@ -177,6 +173,9 @@
                   </div>
                 </div>
               </div>
+              <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-retinvoice'"
+                (on-printer-change)="OnPrinterChanged($event)">
+              </select-printer>
               <p style="text-align:center; z-index: 4; position: relative;">
                 <button class="btn blue" (click)="print()">
                   Print
@@ -194,3 +193,5 @@
     <!--Model Box Body End-->
   </div>
 </div>
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj" (print-sucess)="Close()">
+</app-print-page>

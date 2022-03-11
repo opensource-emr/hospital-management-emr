@@ -9,6 +9,7 @@ import { MessageboxService } from "../../shared/messagebox/messagebox.service"
 import { PharmacyBLService } from "../../pharmacy/shared/pharmacy.bl.service";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { CommonFunctions } from "../../shared/common.functions";
+import { CoreService } from "../../core/shared/core.service";
 @Component({
     templateUrl: "./pharmacy-dashboard.html"
 })
@@ -45,7 +46,8 @@ export class PharmacyDashboardComponent {
         public danpheCharts: DanpheChartsService,
         public dlService: DLService,
         public msgserv: MessageboxService,
-        public messageboxService: MessageboxService,) {
+        public messageboxService: MessageboxService,
+        public coreService: CoreService) {
         this.salePurchaseFromDate = moment().format("YYYY-MM-DD");
         this.salePurchaseToDate = moment().format("YYYY-MM-DD");
         this.counterDayDate = moment().format("YYYY-MM-DD");
@@ -53,7 +55,7 @@ export class PharmacyDashboardComponent {
         this.LoadStatus('sales'); ///By Default Pass Status to sales
         this.LoadAllSaleRecord();
         this.checkSelectedItem = false;
-        this.LoadOverallPendingBillStatus();
+        //this.LoadOverallPendingBillStatus();//sud:4Sept'21--This report was showing incorrect data, hence hiding..
     }
     ngOnInit() {
         

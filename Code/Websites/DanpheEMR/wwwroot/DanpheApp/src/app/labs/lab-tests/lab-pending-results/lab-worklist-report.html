@@ -1,0 +1,70 @@
+<style>
+  .worklistHeader div[class*="col-"] {
+    height: 100%;
+    min-height: 67px;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    border: none;
+  }
+</style>
+<div id="labWorkBook" class="lab-workbook" *ngIf="pendingResultData && !loading">
+
+  <table class="table table-bordered lab-worklist-table">
+    <thead *ngIf="workListHeader">
+      <tr>
+        <th colspan="6" style="text-align: center;" class="worklistHeader">
+          <div class="row">
+            <div class="col-md-3 headerDate">
+              <span class="text-left">From: {{fromDate | nepaliDate:'format':'YYYY-MM-DD'}} BS ({{fromDate}})
+              </span><span class="text-left">To: {{toDate | nepaliDate:'format':'YYYY-MM-DD'}} BS ({{toDate}})
+              </span>
+            </div>
+            <div class="col-md-6 headerHospName" style="width: 50%;">
+              <span>{{this.workListHeader.hospitalName}}</span>
+              <span>{{this.workListHeader.address}}</span>
+              <span> Work List Report</span>
+              <span>Department: {{departmentName}}</span>
+            </div>
+            <div class="col-md-3 headerPrintDate">
+              <span class="text-right"> Print Date: {{printDate | nepaliDate:'format':'YYYY-MM-DD'}}</span>
+            </div>
+          </div>
+
+        </th>
+
+      </tr>
+      <tr>
+        <th>S.N.</th>
+        <th>Lab No.</th>
+        <th>Patient Name</th>
+        <th>Patient Code</th>
+        <th>Age/Sex</th>
+        <th>Test Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let res of pendingResultData; let i=index;">
+        <tr>
+          <td>
+            <span>{{i+1}}</span>
+          </td>
+          <td>{{res.SampleCodeFormatted}}</td>
+          <td><span>{{res.PatientName}}</span></td>
+          <td><span>{{res.PatientCode}}</span></td>
+          <td><span> {{res.AgeSex}} </span></td>
+          <td>{{res.LabTestCSV}}</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+
+</div>
+
+<div class="lab-workbook" style="text-align: center;" *ngIf="loading">
+  <p>Please wait.</p>
+</div>
+
+<div style="margin-top: 20px; text-align: center;" *ngIf="!loading">
+  <button (click)="Print()" class="btn btn-primary no-print"><i class="fa fa-print"></i> &nbsp;Print</button>
+</div>

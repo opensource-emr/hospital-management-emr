@@ -1,7 +1,22 @@
+<style>
+  .lbl-INSPatient{
+    color: rgb(24, 22, 22);
+    font-weight: bold;
+    vertical-align: bottom;
+    margin-left: 15px;
+  }
+</style>
 <div class="wrapper">
   <div class="row">
     <div class="col-lg-12 col-sm-12">
-      <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patients" (grid-actions)="AdmissionGridActions($event)"
+     <div style="float:right">
+        <label class="lbl-INSPatient" for="isINSPatient">Insurance Patient<b>:</b> </label>
+        <input id="isINSPatient" name="isINSPatient" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+        (change)="FilterGridItems(govPatientShow)" [(ngModel)]="govPatientShow" [ngModelOptions]="{standalone: true}" />
+      </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="filteredPatientList" (grid-actions)="AdmissionGridActions($event)"
         (serverSearchText)="serverSearchTxt($event)"
         [customServerSearch]="enableServerSideSearch"
         > </danphe-grid>

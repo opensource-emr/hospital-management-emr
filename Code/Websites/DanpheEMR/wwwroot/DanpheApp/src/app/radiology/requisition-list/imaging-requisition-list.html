@@ -118,6 +118,48 @@
                 </div>
               </div>              
             </div>
+            <div *ngIf="filteredFilmTypeList && filteredFilmTypeList.length">
+              <form [formGroup]="filmTypeValidatorModel.FilmTypeValidator">
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="row">
+                      <br/>
+                      <div class="col-md-5">Film Type<b class="color-red"> *</b></div>
+                      <div class="col-md-7">
+                        <input class="form-control"
+                        danphe-auto-complete
+                               [(ngModel)]="selectedFilmType"
+                               [list-formatter]="FilmTypeListFormatter"
+                               [source]="filmList"
+                               placeholder="Select The Film Type"
+                               display-property-name="FilmTypeDisplayName"
+                               value-property-name=null
+                               formControlName="FilmType"
+                               onclick="this.select()"
+                               (valueChanged)="loadFilmType()"
+                               max-num-list="10">  
+                               <span class="color-red" *ngIf="filmTypeValidatorModel.IsDirty('FilmType')" [hidden]="filmTypeValidatorModel.IsValidCheck('FilmType','required')">FilmType Is Required</span>
+                      </div>
+                    </div>
+                  </div>              
+                </div>
+              </form>
+             
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="row">
+                    <br/>
+                    <div class="col-md-5">Quantity</div>
+                    <div class="col-md-7">
+                      <input class="form-control"
+                      [(ngModel)]="scanDetail.FilmQuantity"
+                      type="number">  
+                    </div>
+                  </div>
+                </div>              
+              </div>
+            </div>
+            
             <div class="row">
               <div class="col-md-8">
                 <div class="row">

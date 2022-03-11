@@ -19,6 +19,10 @@ namespace DanpheEMR.ServerModel
         public bool IsActive { get; set; }
         public string VoucherCode { get; set; }
         public bool ISCopyDescription { get; set; }
+        public bool ShowPayeeName { get; set; }
+        public bool ShowChequeNumber { get; set; }
+
+
 
     }
 }

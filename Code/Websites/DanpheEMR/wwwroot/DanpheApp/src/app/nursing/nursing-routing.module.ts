@@ -24,7 +24,6 @@ import { ResetNursingContextGuard } from "../shared/reser-nursingcontext-guard";
 import { TransferComponent } from "../adt/transfer/transfer.component";
 import { NursingTransferComponent } from "./nursing-transfer/nursing-transfer.component";
 import { DischargeSummaryListComponent } from "./nursing-discharge-summary/discharge-summary-list.component";
-import { PatientScannedImages } from "../clinical/scanned-images/patient-scanned-images.component";
 
 @NgModule({
   imports: [
@@ -84,11 +83,6 @@ import { PatientScannedImages } from "../clinical/scanned-images/patient-scanned
                 canActivate: [AuthGuardService],
               },
               {
-                path: "ScannedImages",
-                component: PatientScannedImages,
-                canActivate: [AuthGuardService],
-              },
-              {
                 path: "Clinical",
                 loadChildren: "../clinical/clinical.module#ClinicalModule",
                 canActivate: [AuthGuardService, SelectVisitCanActivateGuard],
@@ -112,7 +106,7 @@ import { PatientScannedImages } from "../clinical/scanned-images/patient-scanned
                 path: "Notes",
                 loadChildren: "../clinical-notes/notes.module#NotesModule",
                 canActivate: [SelectVisitCanActivateGuard],
-              },
+              },              
               { path: "**", component: PageNotFound },
             ],
           },

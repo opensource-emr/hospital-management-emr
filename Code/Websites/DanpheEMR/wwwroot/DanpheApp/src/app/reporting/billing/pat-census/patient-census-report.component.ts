@@ -28,17 +28,23 @@ export class RPT_BIL_PatientCensusReportComponent {
   public doctorList: any;
   public departmentList: any;
   public depositsummary: any = null;
+  public headerDetailParam = { "showPANNo": false, "showPhoneNumber": false };
+  public headerProperties: any;
+  public paramData = null;
+  public paramExportToExcelData = null;
   public summary: any = {
     tot_Count: 0, tot_Amount: 0, tot_UnConfCount: 0, tot_UnConfAmt: 0,
     tot_ConfCount: 0, tot_ConfAmt: 0, tot_TotalCount: 0, tot_TotalAmount: 0
   };
   public currentPatCensusReport: RPT_BIL_PatientCensusReport = new RPT_BIL_PatientCensusReport();
+  public loading: boolean = false;
 
   constructor(
     _http: HttpClient,
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
     public reportServ: ReportingService,
+    public coreService: CoreService,
     public coreservice: CoreService) {
     this.http = _http;
     this.dlService = _dlService;
@@ -48,6 +54,10 @@ export class RPT_BIL_PatientCensusReportComponent {
     this.currentPatCensusReport.fromDate = moment().format('YYYY-MM-DD');
     this.currentPatCensusReport.toDate = moment().format('YYYY-MM-DD');
     this.currentDate = moment().format('YYYY-MM-DD');
+  }
+
+  ngAfterViewInit() {
+    //this.GridPrintAndExportSetting();
   }
 
   LoadDoctorList() {
@@ -82,6 +92,7 @@ export class RPT_BIL_PatientCensusReportComponent {
       this.departmentId = this.currentPatCensusReport.departmentId;
       this.dlService.Read("/BillingReports/PatientCensusReport?FromDate=" + this.fromDate + "&ToDate=" + this.toDate + "&ProviderId=" + this.providerId + "&DepartmentId=" + this.departmentId)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => this.Success(res),
           err => this.Error(err));
     }
@@ -123,6 +134,10 @@ export class RPT_BIL_PatientCensusReportComponent {
       let HeaderParms = allParams.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader");
       if (HeaderParms) {
         this.headerDetail = JSON.parse(HeaderParms.ParameterValue);
+        let header = allParams.find(a => a.ParameterGroupName == 'BillingReport' && a.ParameterName == 'TableExportSetting');
+        if (header) {
+          this.headerProperties = JSON.parse(header.ParameterValue)["PatientCensusReport"];
+        }
       }
     }
   }
@@ -179,21 +194,58 @@ export class RPT_BIL_PatientCensusReportComponent {
     popupWinindow.document.close();
   }
 
-  ExportToExcel() {
-    let summaryData = JSON.stringify(this.depositsummary);
-    this.dlService.ReadExcel("/ReportingNew/ExportToExcelPatientCensus?FromDate=" + this.fromDate + "&ToDate=" + this.toDate
-      + "&providerId=" + this.providerId)
-      .map(res => res)
-      .subscribe(data => {
-        let blob = data;
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "PatientCensusReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
-        document.body.appendChild(a);
-        a.click();
-      },
-        err => this.ErrorMsg(err));
+  // ExportToExcel() {
+  //   let summaryData = JSON.stringify(this.depositsummary);
+  //   this.dlService.ReadExcel("/ReportingNew/ExportToExcelPatientCensus?FromDate=" + this.fromDate + "&ToDate=" + this.toDate
+  //     + "&providerId=" + this.providerId)
+  //     .map(res => res)
+  //     .subscribe(data => {
+  //       let blob = data;
+  //       let a = document.createElement("a");
+  //       a.href = URL.createObjectURL(blob);
+  //       a.download = "PatientCensusReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+  //       document.body.appendChild(a);
+  //       a.click();
+  //     },
+  //       err => this.ErrorMsg(err));
+  // }
+
+  ExportToExcel(tableId) {
+    if (tableId) {
+      let workSheetName = 'Patient Census Report';
+      var Heading;
+      var phoneNumber;
+      if (this.headerProperties.HeaderTitle != null) {
+        Heading = this.headerProperties.HeaderTitle;
+      } else {
+        Heading = 'PATIENT CENSUS REPORT';
+      }
+
+      let filename = 'PatinetCensusReport';
+      var hospitalName;
+      var address;
+      if (this.headerProperties.ShowHeader == true) {
+        hospitalName = this.headerDetail.hospitalName;
+        address = this.headerDetail.address;
+      } else {
+        hospitalName = null;
+        address = null;
+      }
+
+      if (this.headerProperties.ShowPhone == true) {
+        phoneNumber = this.headerDetail.tel;
+      } else {
+        phoneNumber = null;
+      }
+      //NBB-send all parameters for now 
+      //need enhancement in this function 
+      //here from date and todate for show date range for excel sheet data
+      CommonFunctions.ConvertHTMLTableToExcelForBilling(tableId, this.fromDate, this.toDate, workSheetName,
+        Heading, filename, hospitalName, address, phoneNumber, this.headerProperties.ShowHeader, this.headerProperties.ShowDateRange);
+    }
+
   }
+
 
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
@@ -208,4 +260,35 @@ export class RPT_BIL_PatientCensusReportComponent {
     this.currentPatCensusReport.fromDate = this.fromDate;
     this.currentPatCensusReport.toDate = this.toDate;
   }
+
+  // private GridPrintAndExportSetting(){
+  //   var x=this.coreservice.Parameters.find(p => p.ParameterGroupName == "BillingReport" && p.ParameterName == "BillingReportPrintSetting");
+  //   if(x!=null)
+  //   var printSettingParameter = JSON.parse(x.ParameterValue);
+
+  //       var y=this.coreservice.Parameters.find(p => p.ParameterGroupName == "BillingReport" && p.ParameterName == "BillingReportGridExportToExcelSetting");
+  // 	if(y!=null)
+  // 	var exportToExcelSettingParameter = JSON.parse(y.ParameterValue);
+
+  // 	if(!!printSettingParameter || !!exportToExcelSettingParameter){
+  //        this.paramData=null;
+  //        this.paramExportToExcelData=null;
+  // 	  if(!!printSettingParameter) 
+  // 	  this.paramData=printSettingParameter["BillItemSummaryReport"];
+  //           if(exportToExcelSettingParameter)
+  //           this.paramExportToExcelData = exportToExcelSettingParameter["BillItemSummaryReport"];
+  //   }
+  // }
+
+  // private GetHeaderDetailsParam(){
+  //         var headerParamValue = this.coreService.Parameters.find(a => a.ParameterGroupName == "BillingReport" && a.ParameterName == "BillingReportHeader");
+  //         if(headerParamValue!=null){
+  //           var paramValue = headerParamValue.ParameterValue;
+  //           if(paramValue){
+  //             var headerParams = JSON.parse(paramValue);
+  //             this.headerDetailParam.showPANNo = headerParams.showPan;
+  //             this.headerDetailParam.showPhoneNumber = headerParams.showPhoneNumber;
+  //           }
+  //         }
+  //       }
 }

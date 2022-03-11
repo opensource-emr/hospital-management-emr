@@ -61,12 +61,14 @@ import { isEmpty } from 'rxjs/operator/isEmpty';
 import { Patient } from '../../patients/shared/patient.model';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { Subscription } from 'rxjs';
-import { ENUM_VisitType, ENUM_OrderStatus } from '../../shared/shared-enums';
+import { ENUM_VisitType, ENUM_OrderStatus, ENUM_InvoiceType } from '../../shared/shared-enums';
 import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   selector: "visit-main",
-  templateUrl: "./visit-main.html"
+  templateUrl: "./visit-main.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
+
 })
 export class VisitMainComponent {
 
@@ -92,6 +94,23 @@ export class VisitMainComponent {
   public doctorChangedSubscription: Subscription;
   public MembershipTypeValid: boolean;
   public CreditOrganizationMandatory: boolean = false;
+  public isPhoneMandatory: boolean = true;
+  public restrictApptOnDepartmentLevel: boolean;
+  public allBillItms: Array<any> = [];//pratik: 16March;21
+  //public showInvoicePrintPage: boolean = false;//sud:16May'21--to print from same page.
+
+  public selectedVisit: Visit = new Visit();
+
+  //sud:19May'21-- We now have 3 variables to manage the printing.
+  //below is the structure..
+  //<printPopup><billingreceipt/><opdSticker/></printPopup>
+  public showPrintingPopup: boolean = false;
+  public showbillingReceipt: boolean = false;
+  public showOpdSticker: boolean = false;
+
+  public showSticker: boolean = false;
+  public showInvoice: boolean = false;
+  public printInvoice: boolean = false;
 
   constructor(public patientService: PatientService,
     public securityService: SecurityService,
@@ -108,7 +127,7 @@ export class VisitMainComponent {
     public coreService: CoreService) {
     this.CheckAndSetCounter();
     this.Initialize();
-    
+    this.restrictApptOnDepartmentLevel = this.coreService.EnableDepartmentLevelAppointment();
     this.CreditOrganizationMandatory = this.coreService.LoadCreditOrganizationMandatory();
     this.doctorChangedSubscription = visitService.ObserveBillChanged.subscribe(
       newBill => {
@@ -119,6 +138,24 @@ export class VisitMainComponent {
           this.MembershipTypeValid = newBill.MembershipTypeValid;
         }
       });
+
+    this.isPhoneMandatory = this.coreService.GetIsPhoneNumberMandatory();
+    this.allBillItms = this.visitService.allBillItemsPriceList;
+  }
+
+  ngOnInit() {
+    let val = this.coreService.Parameters.find(p => p.ParameterGroupName == 'Appointment' && p.ParameterName == 'VisitPrintSettings').ParameterValue;
+    let param = JSON.parse(val);
+    console.log(param)
+    if (param) {
+      this.showSticker = param.ShowStickerPrint;
+      this.showInvoice = param.ShowInvoicePrint;
+      if (param.DefaultFocus.toLowerCase() == "invoice") {
+        this.printInvoice = true;
+      }
+
+    }
+    console.log(this.printInvoice)
   }
 
   CheckAndSetCounter() {
@@ -127,8 +164,9 @@ export class VisitMainComponent {
       this.router.navigate(['/Billing/CounterActivate']);
     }
   }
+
   CheckPreviousClaimCodeandSubmit() {
-    this.visitBLService.GetVisitList(this.quickVisit.Visit.ClaimCode)
+    this.visitBLService.GetVisitList(this.quickVisit.Visit.ClaimCode, this.quickVisit.Patient.PatientId)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.prevVisitList = res.Results;
@@ -143,6 +181,8 @@ export class VisitMainComponent {
         }
         else {
           this.msgBoxServ.showMessage('Failed', [res.ErrorMessage]);
+          this.loading = false;
+          return;
         }
       });
   }
@@ -229,8 +269,22 @@ export class VisitMainComponent {
   //start: Post Visit
   //if patientId=0, check if there is existing patient with similar properties.
   CheckExistingPatientsAndSubmit() {
-    let valSummary = this.CheckValidations();
+    if (this.loading) {
+      this.visitBLService.GetApptForDeptOnSelectedDate(this.quickVisit.Visit.DepartmentId, this.quickVisit.Visit.VisitDate, this.quickVisit.Patient.PatientId)
+        .subscribe(res => {
+          if ((res.Status == "OK") && res.Results && this.restrictApptOnDepartmentLevel) {
+            this.msgBoxServ.showMessage("failed", ['Patient has already appointment for this department on selected date.']);
+            this.loading = false;
+          } else {
+            this.ValidatePatientVisitData();
+            //this.loading = false;
+          }
+        });
+    }
+  }
 
+  ValidatePatientVisitData() {
+    let valSummary = this.CheckValidations();
     if (valSummary.isValid) {
       //check if middlename exists or not to append to Shortname 
       var midName = this.quickVisit.Patient.MiddleName;
@@ -244,31 +298,24 @@ export class VisitMainComponent {
       this.quickVisit.Patient.MiddleName = this.quickVisit.Patient.MiddleName ? this.quickVisit.Patient.MiddleName.trim() : null;
       this.quickVisit.Patient.LastName = this.quickVisit.Patient.LastName.trim();
       this.quickVisit.Patient.ShortName = this.quickVisit.Patient.FirstName + " " + midName + this.quickVisit.Patient.LastName;
-
-      this.loading = false;
-      if (!this.loading) {
-        this.loading = true;
-        if (this.quickVisit.BillingTransaction.IsInsuranceBilling) {
-          this.CheckPreviousClaimCodeandSubmit();
-        }
-        else {
-          this.submitVisitDetails();
-        }
-      }
+      this.submitVisitDetails();
     }
     else {
       this.msgBoxServ.showMessage("failed", valSummary.message);
+      this.loading = false;
       //this.msgBoxServ.showMessage("failed", ["Please check all mandatory fields again."]);
     }
   }
 
   public submitVisitDetails() {
+    //This is for New Patient which doesn't have PatientId
     if (!this.quickVisit.Patient.PatientId) {
-      this.visitBLService.GetExistedMatchingPatientList(this.quickVisit.Patient.FirstName, this.quickVisit.Patient.LastName, this.quickVisit.Patient.PhoneNumber, this.quickVisit.Patient.Age, this.quickVisit.Patient.Gender)
+      let age = this.quickVisit.Patient.Age + this.quickVisit.Patient.AgeUnit;
+      this.visitBLService.GetExistedMatchingPatientList(this.quickVisit.Patient.FirstName, this.quickVisit.Patient.LastName, this.quickVisit.Patient.PhoneNumber, age, this.quickVisit.Patient.Gender)
         .subscribe(res => {
           if (res.Status == "OK" && res.Results.length) {
             this.matchedPatientList = res.Results;
-            this.showExstingPatientListPage = true;
+            this.showExstingPatientListPage = true;//re-enable the button if there are duplicate patients.. 
             this.loading = false;
           }
           else {
@@ -294,6 +341,11 @@ export class VisitMainComponent {
   //it is the centralized function to check validations.
   //if any of the validation fails then isValid=false, error messages are pushed for each validations. 
   CheckValidations(): { isValid: boolean, message: Array<string> } {
+    console.log(this.quickVisit.Patient)
+    if (this.quickVisit.Patient.AgeUnit == null) {
+      this.msgBoxServ.showMessage("error", ["Please select, Patient Age Unit"]);
+      return;
+    }
     if (!this.quickVisit.BillingTransaction.IsInsuranceBilling) {
       this.quickVisit.Visit.UpdateValidator("off", "ClaimCode", null);
     }
@@ -304,7 +356,6 @@ export class VisitMainComponent {
     //if (!val) {
     //  this.quickVisit.Visit.UpdateValidator("off", "Doctor", null);
     //}
-
     for (var i in this.quickVisit.Patient.PatientValidator.controls) {
       this.quickVisit.Patient.PatientValidator.controls[i].markAsDirty();
       this.quickVisit.Patient.PatientValidator.controls[i].updateValueAndValidity();
@@ -318,6 +369,10 @@ export class VisitMainComponent {
       || !this.quickVisit.Visit.IsValidCheck(undefined, undefined) || !this.quickVisit.Visit.IsValidSelProvider) {
       validationSummary.isValid = false;
       validationSummary.message.push("Check all mandatory fields");
+    }
+    if(this.quickVisit.Patient.CountrySubDivisionId == null || this.quickVisit.Patient.CountrySubDivisionId == undefined){
+      validationSummary.isValid = false;
+      validationSummary.message.push("please select valid district");
     }
 
     if (this.quickVisit.BillingTransaction.IsInsuranceBilling
@@ -340,17 +395,31 @@ export class VisitMainComponent {
       if (this.quickVisit.BillingTransaction.Remarks == null) {
         validationSummary.isValid = false;
         validationSummary.message.push("Remarks is Mandatory for Credit Payment Mode.");
-      }else if(this.CreditOrganizationMandatory && this.quickVisit.BillingTransaction.OrganizationId == 0) {
+      } else if (this.CreditOrganizationMandatory && this.quickVisit.BillingTransaction.OrganizationId == 0) {
         validationSummary.isValid = false;
         validationSummary.message.push("Credit Orgainzation is mandatory for Credit Payment mode")
       }
     }
-    //if (!val) {
-    if (!(this.quickVisit.BillingTransaction.BillingTransactionItems.every(a => a.Price != null && a.Price > 0))) {
-      validationSummary.isValid = false;
-      validationSummary.message.push("Price of Item cannot be zero (0)");
+
+    for (var j = 0; j < this.quickVisit.BillingTransaction.BillingTransactionItems.length; j++) {
+      var itm = this.allBillItms.find(b => this.quickVisit.BillingTransaction.BillingTransactionItems[j].ItemId == b.ItemId && this.quickVisit.BillingTransaction.BillingTransactionItems[j].ServiceDepartmentId == b.ServiceDepartmentId);
+      if (itm) {
+        this.quickVisit.BillingTransaction.BillingTransactionItems[j].IsZeroPriceAllowed = itm.IsZeroPriceAllowed;
+        if (itm.IsZeroPriceAllowed) {
+          this.quickVisit.BillingTransaction.BillingTransactionItems[j].UpdateValidator("off", "Price", "positiveNumberValdiator");
+        }
+      }
+
+      if (!this.quickVisit.BillingTransaction.BillingTransactionItems[j] || (this.quickVisit.BillingTransaction.BillingTransactionItems[j].Price <= 0 && !this.quickVisit.BillingTransaction.BillingTransactionItems[j].IsZeroPriceAllowed)) {
+        validationSummary.isValid = false;
+        validationSummary.message.push("Price of Item cannot be zero (0)");
+      }
     }
-    //    }
+    // if (!(this.quickVisit.BillingTransaction.BillingTransactionItems.every(a => a.Price != null && a.Price > 0))) {
+    //   validationSummary.isValid = false;
+    //   validationSummary.message.push("Price of Item cannot be zero (0)");
+    // }
+    // //    }
 
     if (this.quickVisit.BillingTransaction.DiscountPercent > 100 || this.quickVisit.BillingTransaction.DiscountPercent < 0) {
       validationSummary.isValid = false;
@@ -367,7 +436,6 @@ export class VisitMainComponent {
     if (this.visitService.HasDuplicateVisitToday(patId, deptId, doctId, this.visitService.PatientTodaysVisitList)) {
       validationSummary.isValid = false;
       validationSummary.message.push("Patient already has appointment with same Doctor today.");
-
     }
     //end: sud:13Jul'19--Check if this patient already has visit with same Doctor/Department on today.
 
@@ -380,6 +448,8 @@ export class VisitMainComponent {
       validationSummary.isValid = false;
       validationSummary.message.push("Change/Return cannot be less than zero");
     }
+
+    return validationSummary;
 
     //this.quickVisit.BillingTransaction.BillingTransactionItems.reduce((acc, obj) => {
     //  var existItem = acc.find(item => item.ItemId === obj.ItemId && item.ItemName === obj.ItemName);
@@ -399,7 +469,7 @@ export class VisitMainComponent {
     //  validationSummary.message.push("Dublicate Additional bill Item");
     //}
 
-    return validationSummary;
+
   }
   //handles appointment type differently.
   //in case of transfer, first return last visit's billing info, make the last visit's IsActive=false.
@@ -532,69 +602,57 @@ export class VisitMainComponent {
       });
   }
   CreateVisit() {
-    this.ConcatinateAgeAndUnit();
-    this.AssignInsuranceBillingRemarksToVisit();//need to check here.. sud: 13Jul'19
-    this.quickVisit.BillingTransaction.BillingTransactionItems.forEach(a => {
-      a.OrderStatus = ENUM_OrderStatus.Active;
-    });
-    
-    this.visitBLService.PostVisitToDB(this.quickVisit)
-      .subscribe(
-        (res: DanpheHTTPResponse) => {
-          if (res.Status == "OK") {
+    this.loading = true;
+    if (this.loading) {
+      this.ConcatinateAgeAndUnit();
+
+      this.quickVisit.BillingTransaction.BillingTransactionItems.forEach(a => {
+        a.OrderStatus = ENUM_OrderStatus.Active;
+      });
+      this.quickVisit.BillingTransaction.InvoiceType = ENUM_InvoiceType.outpatient;
+      this.visitBLService.PostVisitToDB(this.quickVisit)
+        .subscribe(
+          (res: DanpheHTTPResponse) => {
+            if (res.Status == "OK") {
+              this.CallBackCreateVisit(res);
+            }
+            else {
+              this.loading = false;
+              this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+            }
+          },
+          err => {
             this.loading = false;
-            this.CallBackCreateVisit(res);
-          }
-          else {
+            this.msgBoxServ.showMessage("failed", ["Unable to create visit"]);
 
-            this.loading = false;
-            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-          }
-
-        },
-        err => {
-          this.loading = false;
-          this.msgBoxServ.showMessage("failed", ["Unable to create visit"]);
-
-        });
-  }
-  AssignInsuranceBillingRemarksToVisit() {
-    if (this.quickVisit.BillingTransaction.IsInsuranceBilling) {
-      this.quickVisit.Visit.Remarks = this.quickVisit.BillingTransaction.Remarks;
+          });
     }
   }
+
+
   /**
    During call back, 
-   Map current BillingTransaction to BillingReceiptModel and navigate to Billing/ReceiptPrint
+   Map current BillingTransaction to BillingReceiptModel and navigate to Billing>ReceiptPrint
    Update Appointment Status if the flow is from appointment.
    */
+
+
+  //sud:18May'21--To display Invoice from here
+  public bil_InvoiceNo: number = 0;
+  public bil_FiscalYrId: number = 0;
+  public bil_BilTxnId: number = null;//sud:15Sept--For BillingInvoice Print Correction
+
   CallBackCreateVisit(res) {
     if (res.Status == "OK" && res.Results) {
-
       let bilTxn = res.Results.BillingTransaction;
-      let opdReceipt = BillingReceiptModel.GetReceiptForTransaction(bilTxn);
-      opdReceipt.IsValid = true;
-      opdReceipt.Patient = res.Results.Patient;
-      opdReceipt.VisitId = res.Results.Visit.PatientVisitId;
-      opdReceipt.QueueNo = res.Results.Visit.QueueNo;
-      opdReceipt.Remarks = res.Results.BillingTransaction.Remarks;
-      opdReceipt.CurrentFinYear = res.Results.BillingTransaction.FiscalYear;//this comes from server side. 
-      //opdReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-      opdReceipt.BillingUser = res.Results.BillingTransaction.BillingUserName; //Yubraj 28th June '19
-      opdReceipt.BillingType = "opd-billing";
-      let visitType = res.Results.Visit.VisitType;
-      this.routeFromService.RouteFrom = (visitType == "emergency" ? "ER-Sticker" : "OPD");
-      opdReceipt.OrganizationId = res.Results.BillingTransaction.OrganizationId;
-      opdReceipt.OrganizationName = this.quickVisit.BillingTransaction.OrganizationName;
-      opdReceipt.AppointmentType = this.quickVisit.Visit.AppointmentType;
-      if (opdReceipt.IsInsuranceBilling) {
-        opdReceipt.IMISCode = this.billingService.Insurance.IMISCode;
-      }
-
-      this.billingService.globalBillingReceipt = opdReceipt;
-      this.visitService.ClaimCode = this.quickVisit.Visit.ClaimCode;
+      this.bil_InvoiceNo = bilTxn.InvoiceNo;
+      this.bil_FiscalYrId = bilTxn.FiscalYearId;
+      this.bil_BilTxnId = bilTxn.BillingTransactionId;
+      this.showbillingReceipt = true;
       this.UpdateAppointmentStatus();
-      this.router.navigate(['/Billing/ReceiptPrint']);
+      this.selectedVisit = res.Results.Visit;
+      this.showOpdSticker = true;
+      this.showPrintingPopup = true;
     }
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -625,7 +683,7 @@ export class VisitMainComponent {
       }
     }
   }
- 
+
   //End: Post Visit
 
 
@@ -675,5 +733,35 @@ export class VisitMainComponent {
       this.showExstingPatientListPage = false;
     }
     this.loading = false;
+  }
+
+  //this function is hotkeys when pressed by user
+  hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.router.navigate(["/Appointment/PatientSearch"]);
+      this.showPrintingPopup = false;
+      this.router.navigate(["/Appointment/PatientSearch"]);
+    }
+
+    if (event.altKey) {
+      switch (event.keyCode) {
+        case 80: {// => ALT+P comes here
+          if (!this.loading) {
+            this.loading = true;
+            this.CheckExistingPatientsAndSubmit();
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+
+
+  //sud:16May'21--Moving Invoice Printing as Popup
+  public CloseInvoicePrint() {
+    this.showPrintingPopup = false;
+    this.router.navigate(["/Appointment/PatientSearch"]);
   }
 }

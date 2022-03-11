@@ -62,5 +62,7 @@ namespace DanpheEMR.ServerModel
         public string PresentingIllness { get; set; }
         public string ProcedureNts { get; set; }
         public string SelectedImagingItems { get; set; }
+        public string DiagnosisFreeText { get; set; }
+        public string ProvisionalDiagnosis { get; set; }
     }
 }

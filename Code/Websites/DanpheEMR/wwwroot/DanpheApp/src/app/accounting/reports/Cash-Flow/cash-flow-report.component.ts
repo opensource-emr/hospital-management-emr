@@ -7,6 +7,7 @@ import * as moment from 'moment/moment';
 import { CommonFunctions } from '../../../shared/common.functions';
 import { style } from "@angular/animations";
 import { CoreService } from '../../../core/shared/core.service';
+import { AccountingService } from '../../shared/accounting.service';
 @Component({
     selector: 'my-app',
     templateUrl: "./cashflow-report.html"
@@ -23,12 +24,13 @@ export class CashFlowReportComponent {
     public IsLedgerLevel: boolean = true;
     public showExportbtn : boolean=false;
     //public data = new ModelData();
-    
+    btndisabled=false;
     public showPrint: boolean = false;
     public printDetaiils: any;
-    
+    public dateRange : string  = null;
     constructor(
         public coreservice : CoreService,
+        public accountingService: AccountingService,
         public messageBoxService: MessageboxService,
         public accReportBLService: AccountingReportsBLService,
         private changeDetector:ChangeDetectorRef ) {
@@ -38,6 +40,7 @@ export class CashFlowReportComponent {
         this.showExport();   
         //this.LoadCalendarTypes();         
         this.calType = this.coreservice.DatePreference;
+        this.accountingService.getCoreparameterValue();
     }
     public fiscalYearId:number=null;    
     public validDate:boolean=true;
@@ -47,6 +50,7 @@ export class CashFlowReportComponent {
             this.toDate = event.toDate;
             this.fiscalYearId = event.fiscalYearId;
             this.validDate = true;
+            this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
           } 
           else {
             this.validDate =false;
@@ -62,18 +66,21 @@ export class CashFlowReportComponent {
      }
     //Load cash flow data
     LoadData() {
+        this.btndisabled=true;
         if (this.ValidDateCheck()) {
             try {                
                 this.accReportBLService.GetCashFlowReportData(this.fromDate, this.toDate,this.fiscalYearId)               
                 .subscribe( res=> {
                         //this.data=Object.assign(this.data,res);                                       
                         if (res.Status == 'OK') {
+                            this.btndisabled = false;
                             this.cashflowData = res.Results;
                             this.CalculateTotalAmounts();
                             this.formatDataforDisplay();
                             this.showResult = true;
                         }
                         else {
+                            this.btndisabled=false;
                             this.messageBoxService.showMessage("failed", [res.ErrorMessage])
                         }
                     }
@@ -84,6 +91,7 @@ export class CashFlowReportComponent {
             }
         }
         else {
+            this.btndisabled=false;
             this.messageBoxService.showMessage("notice", ["fromDate, toDate not proper"]);
         }
 
@@ -162,14 +170,10 @@ export class CashFlowReportComponent {
     }
 
     loadFiscalYearList() {
-        this.accReportBLService.GetFiscalYearsList().subscribe(res => {
-            if (res.Status == "OK") {
-                this.fiscalYears = res.Results;
-            }
-            else {
-                this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
-            }
-        });
+        if(!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.fiscalYears = this.accountingService.accCacheData.FiscalYearList;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.fiscalYears = this.fiscalYears.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        }
     }
 
     formatDataforDisplay() {
@@ -209,29 +213,30 @@ export class CashFlowReportComponent {
         this.OutflowData = this.pushToList(this.OutflowData, "Total", this.cashflowData.OutTotalAmt, "BoldTotal",0);
 
     }
-    Print() {
+    Print(tableId) {
 
-        var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
-        printContents += document.getElementById("printpage").innerHTML;
-        this.showPrint = false;
-        this.printDetaiils = null;
-        this.changeDetector.detectChanges();
-        this.showPrint = true;
-        this.printDetaiils =  printContents ; //document.getElementById("printpage");
-    
+        // var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+        // printContents += document.getElementById("printpage").innerHTML;
+        // this.showPrint = false;
+        // this.printDetaiils = null;
+        // this.changeDetector.detectChanges();
+        // this.showPrint = true;
+        // this.printDetaiils =  printContents ; //document.getElementById("printpage");
+    this.accountingService.Print(tableId,this.dateRange);
     }
 
     ExportToExcel(tableId) {
-        if (tableId) {
-            let workSheetName = 'Cash Flow Report';
-            let Heading = 'Cash Flow Report';
-            let filename = 'CashFlowReport';
-            //NBB-send all parameters for now 
-            //need enhancement in this function 
-            //here from date and todate for show date range for excel sheet data
-            CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
-                Heading, filename);
-        }
+        // if (tableId) {
+        //     let workSheetName = 'Cash Flow Report';
+        //     let Heading = 'Cash Flow Report';
+        //     let filename = 'CashFlowReport';
+        //     //NBB-send all parameters for now 
+        //     //need enhancement in this function 
+        //     //here from date and todate for show date range for excel sheet data
+        //     CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+        //         Heading, filename);
+        // }
+        this.accountingService.ExportToExcel(tableId,this.dateRange);
     }
     //common function for foramtting
     //it takes source list, name, amount and style string then return by attaching obj to it.

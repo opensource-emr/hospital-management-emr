@@ -23,6 +23,7 @@ namespace DanpheEMR.ServerModel
         public double? Tds { get; set; }
         public double? CreditPeriod { get; set; }
         public string PanNo { get; set; }
+        public string SARFNo { get; set; }
         public DateTime? GovtRegDate { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
@@ -36,5 +37,17 @@ namespace DanpheEMR.ServerModel
         public int LedgerId { get; set; }
         [NotMapped]
         public string LedgerType { get; set; }
+        public string CompanyPosition { get; set; }
+        public string Name { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public string CompanyPosition2 { get; set; }
+        public string Name2 { get; set; }
+        public string PhoneNumber2{ get; set; }
+
+        public string BankDetails { get; set; }
+
+
+
     }
 }

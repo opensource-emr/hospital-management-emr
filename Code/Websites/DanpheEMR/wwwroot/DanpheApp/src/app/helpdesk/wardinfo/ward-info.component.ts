@@ -12,7 +12,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 
 export class HlpDskWardInfoComponent {
 
-  wardinfo: Array<HlpDskWardInfo> = new Array<HlpDskWardInfo>();
+  wardinfo: Array<any> = new Array<any>();
   wardinfoGridColumns: Array<any> = null;
 
   constructor(public helpDeskBLService: HelpDeskBLService,
@@ -27,6 +27,7 @@ export class HlpDskWardInfoComponent {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.wardinfo = res.Results;
+          // this.wardinfo = this.wardinfo.filter(a=>a.Total>0);
         }
         else {
           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);

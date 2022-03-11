@@ -201,13 +201,13 @@ namespace DanpheEMR.Controllers.Reporting
         public string GetInpatientOutcome(DateTime FromDate, DateTime ToDate)
         {
 
-            InpatientOutcome inpatientcome = new InpatientOutcome();
-            DanpheHTTPResponse<InpatientOutcome> responseData = new DanpheHTTPResponse<InpatientOutcome>();
+            InpatientServiceReportModel inpatientcome = new InpatientServiceReportModel();
+            DanpheHTTPResponse<InpatientServiceReportModel> responseData = new DanpheHTTPResponse<InpatientServiceReportModel>();
             try
             {
                 GovernmentReportDbContext govreportingDbContext = new GovernmentReportDbContext(connString);
-                InpatientOutcome InpatientOutcomeResult = govreportingDbContext.GetInpatientOutcome(FromDate, ToDate);
-                inpatientcome.InpatientoutcomeModel = InpatientOutcomeResult.InpatientoutcomeModel;
+                InpatientServiceReportModel InpatientOutcomeResult = govreportingDbContext.GetInpatientOutcome(FromDate, ToDate);
+                inpatientcome = InpatientOutcomeResult;
 
                 responseData.Status = "OK";
                 responseData.Results = inpatientcome;
@@ -220,15 +220,37 @@ namespace DanpheEMR.Controllers.Reporting
             }
             return DanpheJSONConvert.SerializeObject(responseData);
         }
+        #endregion
+
+        #region Inpatient Morbidity
+        public string GetInpatientMorbidityReportData(DateTime FromDate, DateTime ToDate)
+        {
+
+            InpatientMorbidityReportModel inpatientMorbidity = new InpatientMorbidityReportModel();
+            DanpheHTTPResponse<InpatientMorbidityReportModel> responseData = new DanpheHTTPResponse<InpatientMorbidityReportModel>();
+            try
+            {
+                GovernmentReportDbContext govreportingDbContext = new GovernmentReportDbContext(connString);
+                InpatientMorbidityReportModel InpatientMorbidityResult = govreportingDbContext.GetInpatientMorbidity(FromDate, ToDate);
+                inpatientMorbidity = InpatientMorbidityResult;
+
+                responseData.Status = "OK";
+                responseData.Results = inpatientMorbidity;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
         public IActionResult InpatientOutcomeView()
         {
             return View("InpatientOutcome");
         }
-        #endregion
-
-
-
-
+        
 
     }
 }

@@ -15,7 +15,7 @@ namespace DanpheEMR.ServerModel.LabModels
         public int LabItemId { get; set; }
         public bool? IsActive { get; set; }
         public bool? IsComponentBased { get; set; }
-        public string ComponentName { get; set; }
+        public int? ComponentId { get; set; }
         public bool? IsResultCount { get; set; }
         public string PositiveIndicator { get; set; }
     }

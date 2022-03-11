@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 
 import { RequisitionItems } from "../shared/requisition-items.model";
-import { ItemMaster } from "../shared/item-master.model";
 import { InventoryBLService } from "../shared/inventory.bl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from "../../shared/routefrom.service";
@@ -30,9 +29,9 @@ import { VerificationActor } from '../../verification/inventory/requisition-deta
     ]
     )
   ],
-  templateUrl: "../../view/inventory-view/RequisitionDetails.html"  // "/InventoryView/RequisitionDetails"
+  templateUrl: "./requisition-details.html"
 })
-export class RequisitionDetailsComponent {
+export class RequisitionDetailsComponent implements OnInit {
   //public requisitionItemsDetails: Array<RequisitionItems> = new Array<RequisitionItems>();
   public requisition: Requisition = new Requisition();
 
@@ -56,6 +55,9 @@ export class RequisitionDetailsComponent {
 
   public requestingStoreName: string = null;
   public requestingQRCodeInfo: string = "";
+  public showNepaliReceipt: boolean;
+  public printDetaiils: HTMLElement;
+  public showPrint: boolean;
 
 
 
@@ -73,14 +75,24 @@ export class RequisitionDetailsComponent {
     this.requestingStoreName = this.inventoryService.StoreName;
     //set properties to requisition variable from service.// These should mandatorily be assigned from earlier page.
     this.requisition.RequisitionId = this.inventoryService.RequisitionId;
-    this.requisition.StoreId = this.inventoryService.StoreId;
+    this.requisition.RequestFromStoreId = this.inventoryService.StoreId;
 
 
 
-    this.LoadRequisitionDetails(this.inventoryService.RequisitionId);//sud:3Mar'20
     this.GetInventoryBillingHeaderParameter();;
   }
+  ngOnInit() {
+    //check for english or nepali receipt style
+    let receipt = this.coreservice.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;
+    this.showNepaliReceipt = (receipt == "true");
+    this.requisitionId = this.inventoryService.RequisitionId;
+    if (this.showNepaliReceipt == false) {
+      this.LoadRequisitionDetails(this.inventoryService.RequisitionId);//sud:3Mar'20
+    }
+    document.getElementById('printButton').focus();
 
+
+  }
   LoadRequisitionDetails(RequisitionId: number) {
     if (RequisitionId != null) {
       this.requisitionId = RequisitionId;
@@ -117,11 +129,8 @@ Request From : ` + this.requestingStoreName;
         this.reqItemsDetail.RequisitionItemsInfo.forEach(itm => {
           itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD');
         });
-        if(this.inventoryService.RequestedOn == null){
-          this.requisitionDate = this.reqItemsDetail.RequisitionItemsInfo[0].CreatedOn;
-        }else {
-          this.requisitionDate = moment(this.inventoryService.RequestedOn).format('YYYY-MM-DD');
-        }        
+
+        this.requisitionDate = this.reqItemsDetail.RequisitionItemsInfo[0].CreatedOn;
         this.requisitionNo = this.reqItemsDetail.RequisitionItemsInfo[0].RequisitionNo;
         this.issueNo = this.reqItemsDetail.RequisitionItemsInfo[0].IssueNo;
         this.createdby = this.reqItemsDetail.RequisitionItemsInfo[0].CreatedByName;
@@ -186,32 +195,12 @@ Request From : ` + this.requestingStoreName;
 
   //this is used to print the receipt
   print() {
-    let popupWinindow;
-    var printContents = document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    popupWinindow.document.write(
-      `<html>
-      <head>
-      <style>
-        .img-responsive{ position: relative;left: -65px;top: 10px;}
-        .qr-code{position: absolute; left: 1001px;top: 9px;}
-      </style>
-      <link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" />
-      </head>
-      <style>
-        .printStyle {border: dotted 1px;margin: 10px 100px;}
-        .print-border-top {border-top: dotted 1px;}
-        .print-border-bottom {border-bottom: dotted 1px;}
-        .print-border {border: dotted 1px;}
-        .center-style {text-align: center;}
-        .border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}
-        .hidden-in-print { display:none !important}
-      </style>
-      <body onload="window.print()">`
-      + printContents +
-      "</html>");
-    popupWinindow.document.close();
+    this.printDetaiils = document.getElementById("printpage");
+    this.showPrint = true;
+  }
+  callBackPrint() {
+    this.printDetaiils = null;
+    this.showPrint = false;
   }
   //route back
   requisitionList() {
@@ -219,11 +208,11 @@ Request From : ` + this.requestingStoreName;
     this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
   }
 
-  public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName, address, email, PANno, tel, DDA };
 
   //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+    var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'Inventory Receipt Header').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     else

@@ -59,6 +59,8 @@ namespace DanpheEMR.ServerModel
         public bool? AllowMultipleQty { get; set; } //pratik 18th oct '19
         public string DefaultDoctorList { get; set; }
         public bool? IsValidForReporting { get; set; }//pratik:7Aug2020
+        public bool? IsZeroPriceAllowed { get; set; }//pratik:28Jan'21
+        public bool? IsErLabApplicable { get; set; }//pratik:9Feb'21
 
 
         [NotMapped]

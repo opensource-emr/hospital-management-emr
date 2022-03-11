@@ -10,6 +10,7 @@ import { Voucher } from "../../transactions/shared/voucher"
 import { AccountingBLService } from "../../shared/accounting.bl.service"
 import { CoreService } from "../../../core/shared/core.service";
 import { SecurityService } from "../../../security/shared/security.service";
+import { AccountingService } from '../../shared/accounting.service';
 
 @Component({
     selector: 'daywise-voucher-report',
@@ -29,7 +30,7 @@ export class DaywiseVoucherReportComponent {
     public sectionId: number = 0;
     public sectionList = Array<{ SectionId: number, SectionName: string }>();
     constructor(public accReportBLService: AccountingReportsBLService, public msgBoxServ: MessageboxService,
-        public accountingBLService: AccountingBLService,
+        public accountingBLService: AccountingBLService,public accountingService: AccountingService,
         public changeDetector: ChangeDetectorRef, public coreService: CoreService,private securityServ:SecurityService) {
         this.txnGridColumns = GridColumnSettings.DaywiseVoucherTransactionList;
         this.fromDate = moment().format("YYYY-MM-DD");
@@ -48,13 +49,13 @@ export class DaywiseVoucherReportComponent {
     }
     GetVoucher() {
         try {
-            this.accountingBLService.GetVoucher()
-                .subscribe(res => {
-                    this.voucherList = res.Results;
-                    this.selVoucher.VoucherId = -1;
-                    //this.selVoucher = Object.assign(this.selVoucher, this.voucherList.find(v => v.VoucherName == "Journal Voucher"));//most used voucher
-                    this.AssignVoucher();
-                });
+            if (!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.accountingService.accCacheData.VoucherType; //mumbai-team-june2021-danphe-accounting-cache-change
+                this.voucherList = this.voucherList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+                this.AssignVoucher();
+                this.selVoucher.VoucherId = -1;
+            }
+
         } catch (ex) {
             this.msgBoxServ.showMessage("error", ['error ! console log for details.']);
             console.log(ex);
@@ -120,11 +121,10 @@ export class DaywiseVoucherReportComponent {
     }
     public GetSection() {
         try {
-           // let sectionListData = this.coreService.Parameters.filter(p => p.ParameterGroupName == "Accounting" && p.ParameterName == "SectionList");
-              let sectionListData = this.securityServ.AccHospitalInfo.SectionList;
+              let sectionListData = this.accountingService.accCacheData.Sections; //mumbai-team-june2021-danphe-accounting-cache-change
            if (sectionListData.length > 0) {
-            //    this.sectionList = JSON.parse(sectionListData[0].ParameterValue).SectionList;
             this.sectionList = sectionListData;
+            this.sectionList = this.sectionList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
                 this.sectionId = this.sectionList[1].SectionId;
             } else {
                 this.msgBoxServ.showMessage("error", ['Please provide section (Module) name(s) !']);

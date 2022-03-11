@@ -110,11 +110,7 @@
                                             [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Unknown
                                     </label>
                                 </div>
-                            </div>
-                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')"
-                                [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy
-                                Type</span>                    
-
+                            </div>              
                     </div>
                 </div>
             </div>
@@ -136,10 +132,7 @@
                                             [ngModelOptions]="{standalone: true}"><span class="white"></span> No
                                     </label>
                                 </div>
-                            </div>
-                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')"
-                                [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy
-                                Type</span>                      
+                            </div>            
                     </div>
                 </div>
             </div>

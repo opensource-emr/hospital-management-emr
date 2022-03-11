@@ -354,5 +354,15 @@ export class DischargeSummaryListComponent {
     this.HideDischargeSummary();
   }
 
+  public CallbackFromViewPage(data) {
+    this.showSummaryView = false;
+    this.showDischargeSummaryAdd = true;
+  }
+
+  public CallBackFromAddEdit(data){
+    this.showDischargeSummaryAdd = false;
+    this.showSummaryView = true;   
+  }
+
 }
 

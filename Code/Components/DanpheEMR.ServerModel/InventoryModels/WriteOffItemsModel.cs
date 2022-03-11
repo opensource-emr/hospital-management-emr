@@ -21,11 +21,12 @@ namespace DanpheEMR.ServerModel
         public string Remark { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
-        public int GoodsReceiptItemId { get; set; }
         public bool? IsTransferredToACC { get; set; }
         public string BatchNO { get; set; }
         [NotMapped]
         public string ItemName { get; set; }
+
+        public int StoreId { get; set; }
         
 
     }

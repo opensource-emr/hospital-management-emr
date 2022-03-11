@@ -1,0 +1,203 @@
+<style>
+    #printpage table tr td,
+    #printpage table th {
+        border-color: #000
+    }
+</style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPopUp">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix" style="zoom: 0.9;">
+                    <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel">
+                        <i class="fa fa-times"></i>
+                    </a>
+                    <!--Model Box Body Start-->
+                    <div id="printpage">
+                        <div>
+                            <div style="display: flex;justify-content: space-between;">
+                                <div style="text-align: left;width:33%">
+                                    <img class="img-responsive" style="max-height:12rem;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+                                </div>
+                                <div style="text-align: center;width:33%">
+                                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px">{{headerDetail.hospitalName}}</div>
+                                    <div style="font-size:1rem; font-weight: 700;">{{headerDetail.address}}</div>
+                                    <div style="font-size:1rem; font-weight: 700; text-decoration: underline;">दाखिला प्रतिवेदन फाराम </div>
+                                </div>
+                                <div style="text-align: right;width:33%">
+                                    <div>म.ले.प.फारम नं: ४०३ </div>
+                                    <div>साबिकको फारम नं: ४६ </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; margin-bottom:2rem;">
+                                <div>दाखिला मितिः <span *ngIf="currentGR.GoodReceiptDate">{{currentGR.GoodReceiptDate | nepaliDate }}</span></div>
+                                <div>दाखिला प्रतिवेदन नम्बरः {{currentGR.GoodReceiptPrintId}} </div>
+                            </div>
+                        </div>
+                        <div>
+                            <table class="table table-condensed" style="width: 100%;table-layout: fixed;margin-bottom: 0;border:1px solid;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">क्र.सं.</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जिन्सी करण सङ्केत न.</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जिन्सी खाता पाना.नं.</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">सामानको नाम</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">स्पेसिफि-<br />केसन</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">सामानको पहिचान नं.</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">मोडल नं.</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" colspan="4">मूल्य (विल विजक अनुसार ) </th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">अन्य खर्च</th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जम्मा </th>
+                                        <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">कैफियत</th>
+                                    </tr>
+                                    <tr>
+                                        <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">इकाई </th>
+                                        <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">परिमाण</th>
+                                        <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">दर</th>
+                                        <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">मु. अ. कर</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let gritem of currentGR.GoodsReceiptItems let i = index">
+                                        <td style="border-bottom:1px solid; border-right: 1px solid; padding: 5px 2.5px;">{{i+1}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">४०७/५२</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all; text-align: center;" colspan="3">{{gritem.GenericName}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.BatchNo}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;"></td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.UOMName}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.ReceivedQuantity}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.GRItemPrice}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.VATAmt}}</td>
+                                        <td style="border-bottom:1px solid; border-right: 1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{0}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{gritem.TotalAmount}}</td>
+                                        <td style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">{{currentGR.Remarks}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid;padding: 5px 2.5px; font-size: 1rem; font-weight: bold; text-align: right;" colspan="12">जम्मा रकम</td>
+                                        <td style="border: 1px solid;padding: 5px 2.5px; font-size: 1rem;" colspan="2">{{currentGR.SubTotal}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem; font-weight: bold; text-align: right;" colspan="12">मु.अ.कर (१३%)</td>
+                                        <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem;" colspan="2">{{currentGR.VATAmount}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1.3rem;" colspan="8">{{currentGR.TotalAmount | number: "1.0-2" | NumberInWords}} ruppees only.</td>
+                                        <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem; font-weight: bold; text-align: right;" colspan="4">कुल जम्मा रकम</td>
+                                        <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem;" colspan="2">{{currentGR.TotalAmount}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div style="border: 1px solid; padding: 2rem;">
+                                <div style="margin-bottom: 1.3rem;line-height: 3.5rem;font-size: 1.3rem;">माथि उल्लेखित मालसामान खरिद आदेशनम्बर / हस्तान्तरन फारम नम्बर <b>{{currentGR.InvoiceNo}}</b> मिति <span *ngIf="currentGR.GoodReceiptDate"><b>{{currentGR.GoodReceiptDate | nepaliDate }}</b></span> अनुसार श्री <b>{{currentGR.SupplierName}}</b>                                    बाट प्राप्त हुन आएको हुदा जाची गन्ती गरी हेर्दा ठिक दुरुस्त भएकोले खातामा आम्दानी बाधेको प्रमाणित गर्दछु ।
+                                </div>
+                                <div style="margin-bottom: 3rem;line-height: 1.3rem;font-size: 1.3rem;">उपर्युक्तअनुसार दाखिला प्रतिवेदन तयार गर्ने, जाँच गर्ने र स्वीकृत गर्नेः </div>
+                                <div style="display: flex; justify-content: space-around;font-weight: 500;">
+                                    <div>
+                                        <div style="font-size: 1.3rem;"><strong>फाँटवालाको दस्तखतः</strong></div>
+                                        <div style="font-size: 1.3rem;">नामः</div>
+                                        <div style="font-size: 1.3rem;">पदः</div>
+                                        <div style="font-size: 1.3rem;">मितिः</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1.3rem;"><strong>भण्डार प्रमुखको दस्तखतः</strong></div>
+                                        <div style="font-size: 1.3rem;">नामः</div>
+                                        <div style="font-size: 1.3rem;">पदः</div>
+                                        <div style="font-size: 1.3rem;">मितिः</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1.3rem;"><strong>प्रमाणित गर्नेको दस्तखतः</strong></div>
+                                        <div style="font-size: 1.3rem;">नामः</div>
+                                        <div style="font-size: 1.3rem;">पदः</div>
+                                        <div style="font-size: 1.3rem;">मितिः</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <p *ngIf="currentGR.IsCancel" class="cancelStamp"><b style="font-size: 22px;">Cancelled</b></p>
+          <div class="row" *ngIf="canUserModify  && !currentGR.IsCancel">
+            <div class="col-md-12 hidden-in-print" style="margin:10px 0">
+              <form [formGroup]="cancelForm" class="form-horizontal hm-form">
+                <div class="col-md-12">
+                  <span class="col-md-2">Remarks<sup style="color: red;">*</sup><span class="right">:</span></span>
+                  <span class="col-md-10">
+                    <textarea name="CancelRemarks" id="CancelRemarks" formControlName="CancelRemarks" cols="10" rows="3"></textarea>
+                    <div *ngIf="cancelForm.get('CancelRemarks').invalid && (cancelForm.get('CancelRemarks').dirty || cancelForm.get('CancelRemarks').touched)" class="error-message">
+                      <div *ngIf="cancelForm.get('CancelRemarks').errors.required">
+                        Remarks is required
+                      </div>
+                    </div>
+                  </span>
+                </div>
+              </form>
+            </div>
+          </div> -->
+
+                    <p style="text-align:center;z-index: 4;position: relative;">
+                        <button class="btn green btn-success" (click)="print()" id="btnPrintRecipt">
+              <span> <i class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print Receipt</span>
+            </button>
+                        <button *ngIf="canUserModify  && !currentGR.IsCancel" class="btn  btn-small btn-danger" (click)="cancelGoodsReciept()" title="Cancel Goods Receipt">
+              <span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Goods Receipt</span>
+            </button>
+                        <button *ngIf="canUserModify  && !currentGR.IsCancel" id="editGR" (click)="editReceipt()" class="btn  btn-small btn-info">
+              <span><i class="glyphicon glyphicon-edit">&nbsp;&nbsp;</i>Edit GR</span>
+            </button>
+                    </p>
+                    <!--Model Box Body END-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationPopUp">
+    <div class="portlet-body form">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="modelbox-div">
+                <div class="modelbox-header">
+                    <h4 class="margin-0-vr text-danger text-center">
+                        <strong><span>!!! Are you sure you want to cancel Good Receipt?</span><span>This can't be reverted after
+                Cancellation.</span> </strong>
+                    </h4>
+                </div>
+                <div class="modelbox-body">
+                    <div>
+                        <form [formGroup]="cancelForm" class="form-horizontal hm-form">
+                            Cancel Remarks:&nbsp;<sup>*</sup>
+                            <textarea name="CancelRemarks" id="CancelRemarks" formControlName="CancelRemarks" class="form-control"></textarea>
+                            <div *ngIf="cancelForm.get('CancelRemarks').invalid && (cancelForm.get('CancelRemarks').dirty || cancelForm.get('CancelRemarks').touched)" class="error-message">
+                                <div *ngIf="cancelForm.get('CancelRemarks').errors.required">
+                                    Remarks is required for cancelling GR.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modelbox-footer">
+                    <div class="all-buttons text-right">
+                        <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="cancelGR()">
+              Proceed
+            </button>
+                    </div>
+                </div>
+                <div class="close-modelbox">
+                    <button class="btn btn-danger" (click)="showConfirmationPopUp=false">
+            X
+          </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <router-outlet></router-outlet>
+</div>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

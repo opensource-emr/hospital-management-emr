@@ -53,6 +53,7 @@ export default class EmergencyGridColumnSettings {
                     <li><a danphe-grid-action="lama" class="grid-action">LAMA</a></li>
                     <li><a danphe-grid-action="death" class="grid-action">Death</a></li>
                     <li><a danphe-grid-action="dor" class="grid-action">DOR</a></li>  
+                    <li><a danphe-grid-action="dor" class="grid-action">Upload Consent</a></li>  
                     </ul> 
                 </div> 
                 `
@@ -231,7 +232,67 @@ export default class EmergencyGridColumnSettings {
   }
 
   static SelectButtonsToBeDisplayed(params){
-      if(params.data.IsAddVitalBeforeTriage == "true" && params.data.vitals != null){
+      if(params.data.IsAddVitalBeforeTriage == "true" && params.data.vitals != null 
+      && params.data.PatientCases.MainCase !="1"&& params.data.uploadedfiles !=null){
+        let template = `
+        <a danphe-grid-action="edit" class="grid-action">
+          Edit
+        </a>
+        <a danphe-grid-action="triage" class="grid-action">
+          Triage
+        </a>
+        <a danphe-grid-action="add-vitals" class="grid-action">
+            Add Vitals
+         </a>
+         <a danphe-grid-action="consent" class="grid-action">
+           View Consent
+         </a>`;
+        return template;
+      }else if(params.data.IsAddVitalBeforeTriage == "false" && params.data.PatientCases.MainCase !="1" && params.data.uploadedfiles !=null){
+        let template =`<a danphe-grid-action="edit" class="grid-action">
+            Edit
+         </a>
+         <a danphe-grid-action="triage" class="grid-action">
+          Triage
+        </a>
+         <a danphe-grid-action="add-vitals" class="grid-action">
+            Add Vitals
+         </a>
+         <a danphe-grid-action="consent" class="grid-action">
+        View Consent
+         </a>`;
+         return template;
+      }
+      else if(params.data.IsAddVitalBeforeTriage == "true" && params.data.PatientCases.MainCase !="1" && params.data.uploadedfiles !=null){
+        let template =`<a danphe-grid-action="edit" class="grid-action">
+            Edit
+         </a>
+         
+         <a danphe-grid-action="add-vitals" class="grid-action">
+            Add Vitals
+         </a>
+         <a danphe-grid-action="consent" class="grid-action">
+         View Consent
+         </a>`;
+         return template;
+      }
+      else if(params.data.IsAddVitalBeforeTriage == "true" && params.data.PatientCases.MainCase !="1" ){
+        let template = `
+        <a danphe-grid-action="edit" class="grid-action">
+          Edit
+        </a>
+        <a danphe-grid-action="triage" class="grid-action">
+          Triage
+        </a>
+        <a danphe-grid-action="add-vitals" class="grid-action">
+            Add Vitals
+         </a>
+         <a danphe-grid-action="consent" class="grid-action">
+         Upload Consent
+         </a>`;
+         return template;
+      }
+      else if(params.data.IsAddVitalBeforeTriage == "true" && params.data.PatientCases.MainCase =="1" ){
         let template = `
         <a danphe-grid-action="edit" class="grid-action">
           Edit
@@ -242,28 +303,8 @@ export default class EmergencyGridColumnSettings {
         <a danphe-grid-action="add-vitals" class="grid-action">
             Add Vitals
          </a>`;
-        return template;
-      }else if(params.data.IsAddVitalBeforeTriage == "false"){
-        let template =`<a danphe-grid-action="edit" class="grid-action">
-            Edit
-         </a>
-         <a danphe-grid-action="triage" class="grid-action">
-          Triage
-        </a>
-         <a danphe-grid-action="add-vitals" class="grid-action">
-            Add Vitals
-         </a>`;
-         return template;
-      }
-      else if(params.data.IsAddVitalBeforeTriage == "true" ){
-        let template =`<a danphe-grid-action="edit" class="grid-action">
-            Edit
-         </a>
-         
-         <a danphe-grid-action="add-vitals" class="grid-action">
-            Add Vitals
-         </a>`;
          return template;
       }
     }
+     
 }

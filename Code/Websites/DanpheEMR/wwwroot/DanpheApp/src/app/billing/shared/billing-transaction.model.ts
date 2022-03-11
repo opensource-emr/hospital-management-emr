@@ -8,6 +8,9 @@ import {
   FormBuilder,
   ReactiveFormsModule
 } from '@angular/forms'
+import { LabTestRequisition } from '../../labs/shared/lab-requisition.model';
+import { ImagingItemRequisition } from '../../radiology/shared/imaging-item-requisition.model';
+import { Visit } from '../../appointments/shared/visit.model';
 
 export class BillingTransaction {
   public BillingTransactionId: number = 0;
@@ -28,6 +31,8 @@ export class BillingTransaction {
   public TotalAmount: number = 0;
   public PaidAmount: number = 0;
   public DepositAmount: number = 0;
+  public DepositAvailable: number = 0;
+  public DepositUsed: number = 0;
   public DepositReturnAmount: number = 0;
   public DepositBalance: number = 0;
   public Remarks: string = null;
@@ -79,6 +84,14 @@ export class BillingTransaction {
   public InsTransactionDate: string = null;//sud:19Jul'19--For MNK Insurance Transaction Date..
   public AdjustmentTotalAmount: number = 0;
   public ReturnedItems: any;
+  public Ins_NshiNumber: string = '';
+
+  public LabTypeName: string = ''; 
+  public ClaimCode: number = null;//sud:1-oct'21: Changed datatype from String to Number in all places
+
+  public NetAmount:number = 0;//for bill settlement
+  public isSelected:boolean = true; //for bill settlement
+  public BillReturnIdsCSV:any[] = [];
 
   constructor() {
     var _formBuilder = new FormBuilder();
@@ -105,4 +118,10 @@ export class BillingTransaction {
   //        return !(this.BillingTransactionValidator.hasError(validator, fieldName));
   //}
 
+}
+export class BillingTransactionPost{
+  public LabRequisition: Array<LabTestRequisition> = new Array<LabTestRequisition>();
+  public ImagingItemRequisition: Array<ImagingItemRequisition> = new Array<ImagingItemRequisition>();
+  public VisitItems: Array<Visit> = new Array<Visit>();
+  public Txn :BillingTransaction = new BillingTransaction();
 }

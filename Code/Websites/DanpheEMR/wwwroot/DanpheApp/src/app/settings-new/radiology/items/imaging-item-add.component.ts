@@ -15,8 +15,8 @@ import { CommonFunctions } from "../../../shared/common.functions";
 
 @Component({
   selector: "img-item-add",
-  templateUrl: "./imaging-item-add.html"
-
+  templateUrl: "./imaging-item-add.html",
+  host: { '(window:keyup)': 'hotkeys($event)' }
 })
 
 export class ImagingItemAddComponent {
@@ -131,6 +131,7 @@ export class ImagingItemAddComponent {
       this.settingsBLService.AddImagingItem(this.CurrentImagingItem)
         .subscribe(res => {
           this.showMessageBox("success", "Item Added");
+          this.Close();
           this.CallBackAddUpdate(res);
 
         },
@@ -271,4 +272,18 @@ export class ImagingItemAddComponent {
       console.log("Stack Details =>   " + ex.stack);
     }
   }
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  hotkeys(event){
+    if(event.keyCode==27){
+        this.Close()
+    }
+}
+
 }

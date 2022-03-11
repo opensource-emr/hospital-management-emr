@@ -14,6 +14,7 @@ export class RPT_BIL_DialysisPatientDetailsComponent {
 
   public FromDate: string = null;
   public ToDate: string = null;
+  public dateRange:string="";	
 
   DialysisPatientDetailsColumns: Array<any> = null;
   DialysisPatientDetailsData: Array<any> = new Array<RPT_BIL_DialysisReportsModel>();
@@ -96,5 +97,6 @@ export class RPT_BIL_DialysisPatientDetailsComponent {
 
     this.current.FromDate = this.FromDate;
     this.current.ToDate = this.ToDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.FromDate+"&nbsp;<b>To</b>&nbsp;"+this.ToDate;
   }
 }

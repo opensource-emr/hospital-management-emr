@@ -5,7 +5,8 @@ import { MessageboxService } from "../../../shared/messagebox/messagebox.service
 import { CoreService } from "../../../core/shared/core.service";
 import { Router } from "@angular/router";
 import { RouteFromService } from "../../../shared/routefrom.service";
-import { PurchaseRequestVM } from "../../procurement/purchase-request/purchase-request-detail.component";
+import { PurchaseRequestVM } from "../../../procurement/purchase-request/purchase-request-view/purchase-request-view.component";
+
 
 @Component({
   selector: 'app-internalmain-purchase-request-detail',
@@ -15,9 +16,12 @@ import { PurchaseRequestVM } from "../../procurement/purchase-request/purchase-r
 export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDestroy {
 
 
-  public headerDetail: { hospitalName; address; email; PANno; tel; DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public PurchaseRequestVM: PurchaseRequestVM = new PurchaseRequestVM();
   public isModificationApplicable: boolean = false;
+  public printDetaiils: HTMLElement;
+  public showPrint: boolean;
+  CancelRemarksVar: any;
 
   constructor(public inventoryService: InventoryService,
     public inventoryBLService: InventoryBLService, public coreService: CoreService,
@@ -33,7 +37,7 @@ export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDes
   }
   GetInventoryBillingHeaderParameter() {
     var paramValue = this.coreService.Parameters.find(
-      a => a.ParameterName == "Inventory BillingHeader"
+      a => a.ParameterName == "Inventory Receipt Header"
     ).ParameterValue;
     if (paramValue) this.headerDetail = JSON.parse(paramValue);
     else
@@ -49,6 +53,7 @@ export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDes
         .subscribe(res => {
           if (res.Status == "OK") {
             this.PurchaseRequestVM = res.Results;
+            document.getElementById("printBtn").focus();
             this.CheckForActionsAvailable();
           }
           else {
@@ -80,7 +85,12 @@ export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDes
     this.router.navigate(["/Inventory/InternalMain/PurchaseRequest/PurchaseRequestAdd"])
   }
   WithdrawPurchaseRequest() {
-    this.inventoryBLService.WithdrawPurchaseRequestById(this.PurchaseRequestVM.PurchaseRequest.PurchaseRequestId, this.PurchaseRequestVM.PurchaseRequest.CancelRemarks)
+    this.CancelRemarksVar=this.PurchaseRequestVM.PurchaseRequest.CancelRemarks;
+    if(this.CancelRemarksVar.trim()== null){
+      this.messageBoxService.showMessage("Failed", ["Remarks is required."]);
+    }
+    else{
+      this.inventoryBLService.WithdrawPurchaseRequestById(this.PurchaseRequestVM.PurchaseRequest.PurchaseRequestId, this.PurchaseRequestVM.PurchaseRequest.CancelRemarks)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.messageBoxService.showMessage("Success", ["Purchase Request " + this.PurchaseRequestVM.PurchaseRequest.PRNumber + " is successfully withdrawn."]);
@@ -91,43 +101,18 @@ export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDes
         }
       });
     this.RouteBack();
+    }
+    
   }
   RouteBack() {
     this.router.navigate([this.routeFromService.RouteFrom]);
   }
-
-  Print() {
-    //this is used to print the receipt
-
-    let popupWinindow;
-    var printContents = document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open(
-      "",
-      "_blank",
-      "width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no"
-    );
-    popupWinindow.document.open();
-    popupWinindow.document.write(
-      `<html>
-            <head>
-              <style>
-                .img-responsive{ position: relative;left: -65px;top: 10px;}
-                .qr-code{position: absolute; left: 1001px;top: 9px;}
-              </style>
-              <link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" />
-            </head>
-            <style>
-              .printStyle {border: dotted 1px;margin: 10px 100px;}
-              .print-border-top {border-top: dotted 1px;}
-              .print-border-bottom {border-bottom: dotted 1px;}
-              .print-border {border: dotted 1px;}.center-style {text-align: center;}
-              .border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}
-              .hidden-in-print { display:none !important}
-            </style>
-            <body onload="window.print()">` +
-      printContents +
-      "</html>"
-    );
-    popupWinindow.document.close();
+  print() {
+    this.printDetaiils = document.getElementById("printpage");
+    this.showPrint = true;
+  }
+  callBackPrint() {
+    this.printDetaiils = null;
+    this.showPrint = false;
   }
 }

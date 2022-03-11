@@ -7,15 +7,20 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
-     public class PHRMStoreRequisitionModel
+    public class PHRMStoreRequisitionModel
     {
         [Key]
         public int RequisitionId { get; set; }
+        public int FiscalYearId { get; set; }
+        public int RequisitionNo { get; set; }
+        public int StoreId { get; set; }
         public DateTime? RequisitionDate { get; set; }
+        public string RequisitionStatus { get; set; }
         public int? CreatedBy { get; set; }
-        public string  RequisitionStatus { get; set; }
         public DateTime? CreatedOn { get; set; }
-        
+
+        public int? ApprovedBy { get; set; }
+        public DateTime? ApprovedOn { get; set; }
         public virtual List<PHRMStoreRequisitionItemsModel> RequisitionItems { get; set; }
     }
 }

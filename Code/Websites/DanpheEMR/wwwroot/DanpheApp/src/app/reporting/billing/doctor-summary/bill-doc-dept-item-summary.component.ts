@@ -28,12 +28,15 @@ export class RPT_BIL_DocDeptItemComponent {
     @Output("callback")
     callback: EventEmitter<Object> = new EventEmitter<Object>();
     public currentDate: string = "";
+    public headerDetail:any;
+    public headerProperties:any;
 
     constructor(
         public msgBoxServ: MessageboxService,
         public dlService: DLService,
         public coreService: CoreService) {
         this.currentDate = moment().format('YYYY-MM-DD');
+        this.LoadHeaderDetailsCalenderTypes();
     }
 
     @Input("showDocDeptItemSummary")
@@ -96,17 +99,70 @@ export class RPT_BIL_DocDeptItemComponent {
                 err => this.ErrorMsg(err));
     }
 
-    ExportToExcel(tableId) {
-        if (tableId) {
-            let workSheetName = 'Doctor Summary Details';
-            let Heading = 'Doctor Summary Details';
-            let filename = 'doctorsummarydetails';
+    // ExportToExcel(tableId) {
+    //     if (tableId) {
+    //         let workSheetName = 'Doctor Summary Details';
+    //         let Heading = 'Doctor Summary Details';
+    //         let filename = 'doctorsummarydetails';
+    //         //NBB-send all parameters for now 
+    //         //need enhancement in this function 
+    //         //here from date and todate for show date range for excel sheet data
+    //         CommonFunctions.ConvertHTMLTableToExcel(tableId, this.FromDate, this.ToDate, workSheetName,
+    //             Heading, filename);
+    //     }
+    // }
+
+    LoadHeaderDetailsCalenderTypes() {
+        let allParams = this.coreService.Parameters;
+        if (allParams.length) {
+    
+          let HeaderParms = allParams.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader");
+          if (HeaderParms) {
+            this.headerDetail = JSON.parse(HeaderParms.ParameterValue);
+            let header = allParams.find(a => a.ParameterGroupName == 'BillingReport' && a.ParameterName == 'TableExportSetting');
+            if(header){
+                this.headerProperties = JSON.parse(header.ParameterValue)["DoctorSummary"];
+            }
+          }
+        }
+      }
+
+    public ExportToExcel(tableId){
+        if(tableId){
+            let workSheetName = 'Doctor Department Item Summary Report';
+            //let Heading = 'DOCTOR DEPARTMENT SUMMARY REPORT';
+            let filename = 'DoctorDepartmentItemSummaryReport';
+            var Heading;
+            var phoneNumber;
+            var hospitalName;
+            var address;
+            if(this.headerProperties.HeaderTitle!=null){
+              Heading = this.headerProperties.HeaderTitle;
+            }else{
+              Heading = 'DOCTOR DEPARTMENT SUMMARY REPORT';
+            }
+      
+            if(this.headerProperties.ShowHeader == true){
+               hospitalName = this.headerDetail.hospitalName;
+               address = this.headerDetail.address;
+            }else{
+              hospitalName = null;
+              address = null;
+            }
+      
+            if(this.headerProperties.ShowPhone == true){
+              phoneNumber = this.headerDetail.tel; 
+            }else{
+              phoneNumber = null;
+            }
+            // let hospitalName = this.headerDetail.hospitalName;
+            // let address = this.headerDetail.address;
             //NBB-send all parameters for now 
             //need enhancement in this function 
             //here from date and todate for show date range for excel sheet data
-            CommonFunctions.ConvertHTMLTableToExcel(tableId, this.FromDate, this.ToDate, workSheetName,
-                Heading, filename);
-        }
+            CommonFunctions.ConvertHTMLTableToExcelForBilling(tableId, this.FromDate, this.ToDate, workSheetName,
+              Heading, filename, hospitalName,address,phoneNumber,this.headerProperties.ShowHeader,this.headerProperties.ShowDateRange);
+          }
     }
 
     public ErrorMsg(err) {

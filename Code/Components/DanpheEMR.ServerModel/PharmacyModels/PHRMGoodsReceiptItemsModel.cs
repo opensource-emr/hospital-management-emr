@@ -13,6 +13,8 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int GoodReceiptItemId { get; set; }
         public int GoodReceiptId { get; set; }
+        public int StockId { get; set; }
+        public int StoreStockId { get; set; }
         public string CompanyName { get; set; }
         public string SupplierName { get; set; }
         public int ItemId { get; set; }
@@ -26,17 +28,13 @@ namespace DanpheEMR.ServerModel
         public decimal SellingPrice { get; set; }
         public decimal GRItemPrice { get; set; }
         public decimal SubTotal { get; set; }
-        public double VATPercentage { get; set; }
+        public double? VATPercentage { get; set; }
         public double? CCCharge { get; set; }
         public double DiscountPercentage { get; set; }
         public decimal TotalAmount { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public decimal MRP { get; set; }
-        public bool? IsPacking { get; set; }
-        public  int? PackingQty { get; set; }
-        public bool? IsItemDiscountApplicable { get; set; }
-        public decimal? StripMRP { get; set; }
         public int CounterId { get; set; }
         public double AvailableQuantity { get; set; }
         public decimal? GrPerItemDisAmt { get; set; }
@@ -49,6 +47,17 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string StkManageInOut { get; set; }
         public decimal? StripRate { get; set; }
+        public bool? IsPacking { get; set; }
+        public bool? IsItemDiscountApplicable { get; set; }
+        public double? PackingQty { get; set; }
+        public decimal? StripMRP { get; set; }
         public int? PackingTypeId { get; set; }
+        public bool? IsCancel { get; set; }
+        [NotMapped]
+        public decimal? VATAmount { get; set; }
+        [NotMapped]
+        public decimal? DiscountAmount { get; set; }
+        [NotMapped]
+        public bool IsItemAltered { get; set; }
     }
 }

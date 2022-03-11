@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding, OnChanges } from '@angular/core';
 import { NepaliCalendarService } from '../calendar/np/nepali-calendar.service';
 import { NepaliDate, NepaliYear, NepaliMonth } from '../../shared/calendar/np/nepali-dates';
 import { CoreService } from '../../core/shared/core.service';
@@ -21,7 +21,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       multi: true
     }]
 })
-export class DatePickerComponent implements ControlValueAccessor {
+export class DatePickerComponent implements ControlValueAccessor,OnChanges {
   public dateModel: string = null;
   public isInitialLoad: boolean = true;
 
@@ -92,6 +92,16 @@ export class DatePickerComponent implements ControlValueAccessor {
     this.showmonthCalendar = value;      
   }
 
+  @Input("input-focus") //coming from parent form
+  public inputFocus:boolean=null;
+
+  public inputFocusToEnCalendar:boolean= null;
+  public inputFocusToNpCalendar:boolean= null;
+
+  public outputToParent:boolean = null;
+
+  @Output('output-focus') outputFocus:EventEmitter<boolean> = new EventEmitter<boolean>();
+
   @Input("showFiscalYear")
   public showFiscalYear:boolean =false;
 
@@ -155,9 +165,28 @@ export class DatePickerComponent implements ControlValueAccessor {
 
   public nepYears: Array<NepaliYear> = [];
   public todayDateString: string = "";
+  public showAdBsButton:boolean =true;
 
   constructor(public npCalendarService: NepaliCalendarService, private coreService: CoreService, public changeDetector: ChangeDetectorRef) {
     this.nepYears = NepaliYear.GetAllNepaliYears();
+    this.showAdBsButton=this.coreService.showCalendarADBSButton;
+  }
+
+  ngOnChanges(){
+      if(this.inputFocus){
+          if(this.showEnCalendar){
+          this.inputFocusToEnCalendar = false;
+          this.changeDetector.detectChanges();
+          this.inputFocusToEnCalendar = true;
+          this.changeDetector.detectChanges();
+      }
+      else if(this.showNpCalendar){
+          this.inputFocusToNpCalendar = false;
+          this.changeDetector.detectChanges();
+          this.inputFocusToNpCalendar = true;
+          this.changeDetector.detectChanges();
+      }
+    }
   }
 
   ngOnInit() {
@@ -339,4 +368,26 @@ export class DatePickerComponent implements ControlValueAccessor {
     }
     return this.defaultCalenderTypes;
   }
+
+  FocusOutFromCalender(event:any){
+    if(event){
+      this.inputFocusToEnCalendar = false;
+      this.inputFocusToNpCalendar = false;
+      this.outputFocus.emit(this.outputToParent=true);
+    }
+    else{
+      return;
+    }
+  }
+
+    //common function to set focus on  given Element. 
+    setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+      var timer = window.setTimeout(function () {
+        let htmlObject = document.getElementById(targetId);
+        if (htmlObject) {
+          htmlObject.focus();
+        }
+        clearTimeout(timer);
+      }, waitingTimeinMS);
+    }
 }

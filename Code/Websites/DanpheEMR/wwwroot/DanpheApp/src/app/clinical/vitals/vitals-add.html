@@ -33,7 +33,7 @@
   }
 </style>
 
-<div class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687; width: 100%; display: table;">
+<div class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687; width: 100%; display: table; height: 100px;">
   <div class="cstm-close" (click)="closeAddBox()" style="z-index: 111;">
     <a><i class="fa fa-close"></i> </a>
   </div>
@@ -103,7 +103,7 @@
                     </div>
                   </td>
                 </tr>
-
+              
 
                 <tr>
                   <th class="headcol">Action</th>
@@ -222,7 +222,7 @@
                    formControlName="diastolic">
           </div>
 
-          <span class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsValid()">
+          <span class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsValidCheck()">
             bpsystolic
             should be greater than bpdiastolic
           </span>
@@ -317,6 +317,125 @@
         </div>
       </div>
 
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Nadi<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="number" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Nadi">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Mala<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Mala" placeholder="Mala">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Mutra<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Mutra" placeholder="Mutra">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Jivha<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Jivha" placeholder="Jivha">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Shabda<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Shabda" placeholder="Shabda">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Sparsha<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Sparsha" placeholder="Sparsha">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Drik<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Drik" placeholder="Drik">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Akriti<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Akriti" placeholder="Akriti">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Lung field<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.LungField" placeholder="LungField">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Heart Sound<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.HeartSounds" placeholder="HeartSound">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">PA_Tenderness<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.PA_Tenderness" placeholder="PA_Tenderness">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Organomegaly<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Organomegaly" placeholder="Organomegaly">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">CNS_Consiousness<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.CNS_Consiousness" placeholder="CNS_Consiousness">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Power<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Power" placeholder="Power">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Reflexes<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Reflexes" placeholder="Reflexes">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Tone<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Tone" placeholder="Tone">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Others<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="text" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+                [(ngModel)]="CurrentVital.Others" placeholder="Others">
+      </div>
     </div>
     <div class="cstm-form-group">
       <button type="button" style="background: #374150;margin-left:15px;" class="btn btn-primary" *ngIf="!updateButton"

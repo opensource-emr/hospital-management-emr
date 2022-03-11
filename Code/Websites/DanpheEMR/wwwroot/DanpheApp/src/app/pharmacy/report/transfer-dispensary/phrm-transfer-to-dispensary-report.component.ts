@@ -17,7 +17,8 @@ export class PHRMTransferToDispensaryReportComponent {
     PHRMTransferToDispensaryReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+    public pharmacy:string = "pharmacy";
+    
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
         this.PHRMTransferToDispensaryReportColumn = PHRMReportsGridColumns.PHRMTransferToDispensaryReport;
         this.phrmReports.FromDate = moment().format('YYYY-MM-DD');

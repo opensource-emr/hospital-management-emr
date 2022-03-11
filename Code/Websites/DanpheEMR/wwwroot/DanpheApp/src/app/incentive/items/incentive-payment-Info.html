@@ -1,5 +1,10 @@
 <style>
-  .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+  .table>tbody>tr>td,
+  .table>tbody>tr>th,
+  .table>tfoot>tr>td,
+  .table>tfoot>tr>th,
+  .table>thead>tr>td,
+  .table>thead>tr>th {
     padding: 10px !important;
   }
 
@@ -7,7 +12,8 @@
     margin: 0;
   }
 
-  .padLess_table th, .padLess_table td {
+  .padLess_table th,
+  .padLess_table td {
     padding: 8px 10px !important;
   }
 </style>
@@ -54,9 +60,9 @@
                   </option>
                 </select>-->
                 <input danphe-auto-complete [(ngModel)]="DocObj" [list-formatter]="EmployeeListFormatter"
-                       [source]="allDocterList" placeholder="Search Doctor Name" display-property-name="FullName"
-                       value-property-name=null onclick="this.select()" [ngModelOptions]="{standalone: true}"
-                       max-num-list="10" (ngModelChange)="ChangeDocter(DocObj)" />
+                  [source]="allDocterList" placeholder="Search Doctor Name" display-property-name="FullName"
+                  value-property-name=null onclick="this.select()" [ngModelOptions]="{standalone: true}"
+                  max-num-list="10" (ngModelChange)="ChangeDocter(DocObj)" />
               </div>
               <div>
                 <p *ngIf="selectedEmpLedger && selectedEmpLedger.LedgerId">
@@ -64,8 +70,10 @@
                 </p>
                 <p *ngIf="!(selectedEmpLedger && selectedEmpLedger.LedgerId) && employeeId ">
                   <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
-                     style="color: blue;cursor: pointer;">
-                    <strong style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create ledger for selected doctor</strong>
+                    style="color: blue;cursor: pointer;">
+                    <strong
+                      style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create
+                      ledger for selected doctor</strong>
                   </i>
                 </p>
               </div>
@@ -101,7 +109,8 @@
             <div class="row">
               <div class="col-md-3"><span>From Date: {{FromDate}} &nbsp; to &nbsp; {{ToDate}}</span></div>
               <div class="col-md-6 text-right">
-                <span>Doctor Name: <b *ngIf="allReportData && allReportData[0]">{{allReportData[0].IncentiveReceiverName}} </b></span>
+                <span>Doctor Name: <b
+                    *ngIf="allReportData && allReportData[0]">{{allReportData[0].IncentiveReceiverName}} </b></span>
               </div>
 
             </div>
@@ -110,7 +119,8 @@
         <div class="row">
           <div class="col-md-12">
             <div class="doc-inctv-tblholder table-wrapper">
-              <table class="inctv-table table-striped table-hover table-bordered custom_table padLess_table table-bordered">
+              <table
+                class="inctv-table table-striped table-hover table-bordered custom_table padLess_table table-bordered">
                 <thead style="background-color:whitesmoke">
                   <tr>
                     <th width="8%"><b>Date</b></th>
@@ -158,9 +168,12 @@
       </div>
       <hr />
       <div class="row margin-15-bt">
+        <div class="col-md-4"></div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4"><span>Voucher Date: {{currentDate}}</span></div><br><br>
         <div class="col-md-4"><span><b>Payment Voucher</b></span></div>
         <div class="col-md-4"></div>
-        <div class="col-md-4"><span>Voucher Date: {{currentDate}}</span></div>
+        <div class="col-md-4"><span>Previous Adjustable Amt.: {{summary.tot_PreviousAdjAmt}}</span></div>
       </div>
       <div class="row margin-8-bt">
         <div class="col-md-6">
@@ -168,14 +181,9 @@
             <div class="col-md-4 cstm-amt-label">Payment From: <span style="color: red;">*</span></div>
             <div class="col-md-8">
               <input class="form-control cstm-form-control" danphe-auto-complete [(ngModel)]="selectedLedger"
-                     [source]="allLedgerList"
-                     placeholder="Ledger Name"
-                     display-property-name="LedgerName"
-                     value-property-name="LedgerName"
-                     [list-formatter]="LedgerListFormatter"
-                     max-num-list="15"
-                     [grid-sort]="'LedgerName'"
-                     onClick="this.select();" />
+                [source]="allLedgerList" placeholder="Ledger Name" display-property-name="LedgerName"
+                value-property-name="LedgerName" [list-formatter]="LedgerListFormatter" max-num-list="15"
+                [grid-sort]="'LedgerName'" onClick="this.select();" />
             </div>
           </div>
         </div>
@@ -183,8 +191,8 @@
           <div class="row">
             <div class="col-md-5 cstm-amt-label">Voucher Amount:</div>
             <div class="col-md-7">
-              <input (wheel)="coreService.PreventNumberChangeOnScroll($event)" [(ngModel)]="totalAmt"
-                     class="form-control cstm-amt-input" type="number" name="txtAmount" style="font-weight:bold;" />
+              <input (wheel)="coreService.PreventNumberChangeOnScroll($event)" [(ngModel)]="totalAmt" (input)="OnVoucherAmountChange()"
+                class="form-control cstm-amt-input" type="number" name="txtAmount" style="font-weight:bold;" />
             </div>
             <div class="col-md-12" *ngIf="totalAmt" style="color:green;">
               ( In Words: {{totalAmt | NumberInWords | CapitalFirstLetter}} )
@@ -204,11 +212,16 @@
         </div>
         <div class="col-md-4 col-md-offset-2">
           <div class="row">
-            <div class="col-md-5"><p>Adjustable Amount</p></div>
-            <div class="col-md-7"><p>{{totalAmt - summary.tot_NetPayable | number}}</p></div>
+            <div class="col-md-5">
+              <p>Adjustable Amount</p>
+            </div>
+            <div class="col-md-7">
+              <p>{{adjustedAmount | number}}</p>
+            </div>
           </div>
           <div class="row">
-            <div class="col-md-12 text-right"><button class="btn blue" (click)="loading=true;MakePayment()" [disabled]="loading">Make Payment</button></div>
+            <div class="col-md-12 text-right"><button class="btn blue" (click)="loading=true;MakePayment()"
+                [disabled]="loading || totalAmt<1">Make Payment</button></div>
           </div>
         </div>
       </div>
@@ -256,6 +269,6 @@
 
 <ng-container *ngIf="showAddLedgerBox">
 
-  <ledger-create-shared [show-add-ledger-page]="showAddLedgerBox" [ledger-type]="ledgerType" [reference-id]="ledReferenceId"
-                        (callback-add)="OnNewLedgerAdded($event)"></ledger-create-shared>
+  <ledger-create-shared [show-add-ledger-page]="showAddLedgerBox" [ledger-type]="ledgerType"
+    [reference-id]="ledReferenceId" (callback-add)="OnNewLedgerAdded($event)"></ledger-create-shared>
 </ng-container>

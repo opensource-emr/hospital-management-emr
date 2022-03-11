@@ -3,6 +3,7 @@ import * as moment from 'moment/moment';
 import { AccountingReportsBLService } from "../../shared/accounting-reports.bl.service";
 import { FiscalYearModel } from "../../../settings/shared/fiscalyear.model";
 import { CoreService } from '../../../../core/shared/core.service';
+import { AccountingService } from '../../../shared/accounting.service';
 @Component({
     selector: "danphe-cust-date-reusable",
     templateUrl: "./custom-date-reusable.html"
@@ -20,7 +21,8 @@ export class CustomDateReusableComponent {
     @Output("onDateChange")
     event: EventEmitter<Object> = new EventEmitter<Object>();
 
-  constructor(public accReportBLServ: AccountingReportsBLService, public coreService:CoreService ) {
+  constructor(public accReportBLServ: AccountingReportsBLService, public coreService:CoreService,
+    public accountingService: AccountingService ) {
     this.GetFiscalYear();   
     //this.LoadCalendarTypes(); 
     this.calType= coreService.DatePreference;
@@ -147,11 +149,10 @@ export class CustomDateReusableComponent {
     this.event.emit({ fromDate: this.fromDate, toDate: this.toDate,fiscalYearId:this.fiscalYearId  });
 	}
   GetFiscalYear() {
-      this.accReportBLServ.GetFiscalYearsList().subscribe(res => {
-        if (res.Status == "OK") {
-          this.fiscalYearList = res.Results;
-          this.currentFiscalYear = this.fiscalYearList.find(x => x.IsActive == true);
-        }
-      });
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYearList = this.accountingService.accCacheData.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYearList = this.fiscalYearList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
+      this.currentFiscalYear = this.fiscalYearList.find(x => x.IsActive == true);
+    }
   }
 }

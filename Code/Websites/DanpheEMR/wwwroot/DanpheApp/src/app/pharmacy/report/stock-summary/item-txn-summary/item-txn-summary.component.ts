@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { PharmacyBLService } from '../../../shared/pharmacy.bl.service';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { ItemTxnSummaryReportModel } from './item-txn-summary-report-model';
@@ -6,13 +6,17 @@ import * as moment from 'moment';
 import PHRMReportsGridColumns from '../../../shared/phrm-reports-grid-columns';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { GridEmitModel } from '../../../../shared/danphe-grid/grid-emit.model';
+import { CoreService } from '../../../../core/shared/core.service';
+import { CFGParameterModel } from '../../../../settings-new/shared/cfg-parameter.model';
+import { SalesReturnComponent } from '../../../../dispensary/dispensary-main/sales-main/sales-return/sales-return.component';
 
 @Component({
   selector: 'app-item-txn-summary-report',
   templateUrl: './item-txn-summary.component.html',
   styles: []
 })
-export class ItemTxnSummaryComponent implements OnInit, OnChanges {
+export class ItemTxnSummaryComponent implements OnInit {
+  salesReturnComponent : SalesReturnComponent;
 
   @Input("fromDate") public FromDate: string = '2016-01-01';
   @Input("toDate") public ToDate: string = moment().format('YYYY-MM-DD');
@@ -23,20 +27,32 @@ export class ItemTxnSummaryComponent implements OnInit, OnChanges {
   showGRPopUp: boolean;
   selectedGRId: number;
   showInvoicePopUp: boolean;
+  showInvoiceReturnPopUp: boolean;
   selectedInvoiceId: number;
+  selectedInvoiceReturnId: number;
+  showDispatchPopUp: boolean;
+  selectedDispatchId: number;
 
   ///ItemTxn Summary Report Columns variable
   ItemTxnSummaryReportColumns: Array<any> = null;
   ///ItemTxn Summary Report Data variable
   ItemTxnSummaryReportData: Array<ItemTxnSummaryReportModel> = new Array<ItemTxnSummaryReportModel>();
   NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public pharmacy: string = "pharmacy";
+  showNepaliReceipt: boolean = false;
+  showNepaliGRPopUp: boolean = false;
 
-  constructor(private _pharmacyBLService: PharmacyBLService, private msgBox: MessageboxService) {
+  constructor(private _pharmacyBLService: PharmacyBLService, private msgBox: MessageboxService, public coreService: CoreService) {
     this.ItemTxnSummaryReportColumns = PHRMReportsGridColumns.PHRMItemTxnSummaryReport;
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail("Date", false), new NepaliDateInGridColumnDetail("ExpiryDate", false)]);
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("TransactionDate", true));
+    var showNpReceiptParams = this.coreService.Parameters.find(a => a.ParameterGroupName == 'Common' && a.ParameterName == 'NepaliReceipt');
+    this.checkForNepaliReceiptParameter(showNpReceiptParams);
   }
-  ngOnChanges(changes: SimpleChanges): void {
-    this.GetItemTxnData();
+  private checkForNepaliReceiptParameter(showNpReceiptParams: CFGParameterModel) {
+    if (!!showNpReceiptParams) {
+      if (showNpReceiptParams.ParameterValue == true || showNpReceiptParams.ParameterValue == 'true')
+        this.showNepaliReceipt = true;
+    }
   }
   ngOnInit() {
     this.GetItemTxnData();
@@ -74,7 +90,12 @@ export class ItemTxnSummaryComponent implements OnInit, OnChanges {
     switch (selectedItemTxnData.ReferenceNoPrefix) {
       case 'GR': {
         this.selectedGRId = selectedItemTxnData.ReferenceNo;
-        this.showGRPopUp = true;
+        if (this.showNepaliReceipt) {
+          this.showNepaliGRPopUp = true;
+        }
+        else {
+          this.showGRPopUp = true;
+        }
         break;
       }
       case 'CGR': {
@@ -82,10 +103,21 @@ export class ItemTxnSummaryComponent implements OnInit, OnChanges {
         this.showGRPopUp = true;
         break;
       }
-      case 'PHRMS': {
+      case 'PH': {
         this.selectedInvoiceId = selectedItemTxnData.ReferenceNo;
         this.showInvoicePopUp = true;
         break;
+      }
+      case 'CR-PH': {
+        this.selectedInvoiceReturnId = selectedItemTxnData.ReferenceNo;
+        this.showInvoiceReturnPopUp = true;
+        break;
+      }
+      case 'TR': {
+        this.selectedDispatchId = selectedItemTxnData.ReferencePrintNo;
+        if (this.showNepaliReceipt == true) {
+          this.showDispatchPopUp = true;
+        }
       }
       default:
         break;
@@ -96,5 +128,12 @@ export class ItemTxnSummaryComponent implements OnInit, OnChanges {
   }
   OnInvoicePopUpClose() {
     this.showInvoicePopUp = false;
+  }
+
+  OnInvoiceReturnPopUpClose() {
+    this.showInvoiceReturnPopUp = false;
+  }
+  OnDispatchPopUpClose() {
+    this.showDispatchPopUp = false;
   }
 }

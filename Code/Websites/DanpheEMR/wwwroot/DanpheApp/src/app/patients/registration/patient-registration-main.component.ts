@@ -19,6 +19,7 @@ import { SecurityService } from '../../security/shared/security.service';
 //Parse, validate, manipulate, and display dates and times in JS.
 import * as moment from 'moment/moment';
 import { PatientFilesModel } from '../shared/patient-files.model';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   templateUrl: "./patient-registration-main.html"
@@ -39,6 +40,7 @@ export class PatientRegistrationMainComponent {
   callbackserv: CallbackService = null;
 
   public currPatient: Patient = null;
+  public isPhoneMandatory: boolean = false;
 
 
 
@@ -54,7 +56,8 @@ export class PatientRegistrationMainComponent {
     _callBackServ: CallbackService,
     public patientBLService: PatientsBLService,
     public msgBoxServ: MessageboxService,
-    public securityService: SecurityService
+    public securityService: SecurityService,
+    public coreService: CoreService
   ) {
     //get the chld routes of Patient registration main from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Patient/RegisterPatient");
@@ -72,6 +75,8 @@ export class PatientRegistrationMainComponent {
       this.UpdateFromAppointment();
     else
       this.appointmentService.CreateNewGlobal();
+
+      this.isPhoneMandatory = this.coreService.GetIsPhoneNumberMandatory();
   }
 
   UpdateFromAppointment(): void {
@@ -217,9 +222,9 @@ export class PatientRegistrationMainComponent {
         this.Patient.Age = splitted[0];
       }
     }
-
+    let actualAge = this.Patient.Age + this.Patient.AgeUnit;
     this.patientBLService.GetExistedMatchingPatientList(this.Patient.FirstName, this.Patient.LastName,
-      this.Patient.PhoneNumber, this.Patient.Age, this.Patient.Gender)
+      this.Patient.PhoneNumber, actualAge, this.Patient.Gender)
       .subscribe(
         res => {
           if (res.Status == "OK" && res.Results.length > 0) {

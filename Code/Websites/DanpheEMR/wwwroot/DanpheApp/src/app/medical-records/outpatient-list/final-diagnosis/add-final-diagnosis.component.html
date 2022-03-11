@@ -1,0 +1,98 @@
+<!-- Start: Birth Certificate -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Add Final Diagnosis</span></h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <!-- [formGroup]="BirthDetail.BabyBirthDetailsValidator"                     -->
+                    <!-- <form class="form-horizontal hm-form">
+                        
+                    </form> -->
+
+                    <div class="form-body" style="padding-top: 0px;">
+                        <div class="left-panel view">
+                            <div>
+                                <h1 class="panel-heading">
+                                    <i class="fa fa-user"></i>{{SelectedPatient.PatientName}}
+                                    ({{SelectedPatient.PatientCode}})
+                                </h1>
+                            </div>
+                            <div style="border-style: groove;border: 1px solid #c8c9c8;padding: 0px 5px;">
+                                <p class="patient-hdr-label"><b>Outpatient No</b>: &nbsp;{{SelectedPatient.VisitCode}}
+                                </p>
+                                <p class="patient-hdr-label"><b>Age</b>: &nbsp;
+                                    {{SelectedPatient.Age}}/{{SelectedPatient.Gender}}</p>
+                                <p class="patient-hdr-label"><b>Address</b>: &nbsp;{{SelectedPatient.Address}}</p>
+                                <p class="patient-hdr-label"><b>Visit Date</b>: &nbsp;{{SelectedPatient.VisitDate |
+                                    DanpheDateTime:'format':'YYYY-MM-DD' }} </p>
+                                <p *ngIf="SelectedPatient.VisitType" class="patient-hdr-label"> <b>Visit
+                                        Type</b>: &nbsp; {{SelectedPatient.VisitType}} </p>
+                                <p class="patient-hdr-label"><b>Contact No</b>: &nbsp;{{SelectedPatient.PhoneNumber}}
+                                <p class="patient-hdr-label"><b>Department</b>: &nbsp;{{SelectedPatient.DepartmentName}}
+                                <p class="patient-hdr-label"><b>Doctor Name</b>: &nbsp;{{SelectedPatient.ProviderName}}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+
+                            <div class="form-group ">
+                                <label class="control-label col-md-5">
+                                    Select Disease Category<b style="float: right">:</b>
+                                </label>
+                                <div class="col-md-7">
+                                    <select [ngModel]="SelectedReportingGroupId"
+                                        (ngModelChange)="OnReportingGroupChange($event)">
+                                        <option [value]="0">All</option>
+                                        <option *ngFor="let dep of ICD10ReportingGroupList; let i = index;"
+                                            [value]="dep.ReportingGroupId">{{dep.ReportingGroupName}} </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-5">
+                                    Select Diagnosis<b style="float: right">:</b>
+                                </label>
+                                <div class="col-md-7">
+                                    <!-- <div class="form-group" style="padding:10px;"> -->
+                                    <input danphe-auto-complete autocomplete="off" class="form-control"
+                                        [(ngModel)]="diagnosis" [source]="icd10List"
+                                        [list-formatter]="DignosisFormatter" placeholder="Select ICD10(s)"
+                                        display-property-name="ICD10Description" value-property-name="ICD10Code"
+                                        (valueChanged)="MakeDiagnosisList()" min-chars="0" max-num-list="10"
+                                        [ngModelOptions]="{standalone: true}" />
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Start: Selected Diagnosis List  -->
+                        <div class="form-group" *ngIf="SelectedICD10List.length>0">
+                            <ol>
+                                <li *ngFor="let data of SelectedICD10List; let i = index;">
+                                    &nbsp; {{data.ICD10Description}} &nbsp;
+                                    <i class="fa fa-times" style="color: #000 !important"
+                                        (click)="RemoveDiagnosis(i)"></i> <br>
+
+                                </li>
+                            </ol>
+
+                        </div>
+                        <!-- End: Selected Diagnosis List  -->
+
+                    </div>
+                    <div class="panel-footer" style="height: 50px;margin-top: 70px;">
+                        <button (click)="Close()" class="cancel-cert btn-pd btn btn-sm btn-danger right"
+                            style="margin-right:3px;">Cancel</button>
+                        <button style="margin-right:10px;" (click)="Submit()"
+                            class="add-cert btn-pd btn btn-sm btn-primary right"
+                            [disabled]="SelectedICD10List.length==0||loading">{{!IsEditMode?'Submit':'Update'}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Birth Certificate -->

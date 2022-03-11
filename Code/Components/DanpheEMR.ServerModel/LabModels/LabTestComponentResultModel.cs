@@ -17,6 +17,7 @@ namespace DanpheEMR.ServerModel
         public string Unit { get; set; }
         public string Range { get; set; }
         public string ComponentName { get; set; }
+        public int? ComponentId { get; set; }
         public string Method { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }

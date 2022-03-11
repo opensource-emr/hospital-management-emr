@@ -1,0 +1,117 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="left">
+        <button class="btn btn-primary btn-sm" (click)="RouteBack()">
+          <i class="fa fa-backward"></i>
+          Back&nbsp;to&nbsp;Requisition&nbsp;List
+        </button>
+      </div>
+      <div class="right">
+        <button class="btn btn-primary btn-sm" (click)="Print()">
+          <i class="fa fa-print"></i>
+          Print
+        </button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div id="printpage" class="row printStyle print-border">
+            <div>
+              <div class="media receiveContainer" style="display: flex;justify-content: space-between;" *ngIf="!!Requisition">
+                <p class="media-body small border-bottom border-gray">
+                  <strong>Requisition No:</strong>
+                  {{Requisition.RequisitionNo}}
+                </p>
+                <p class="media-body small border-bottom border-gray">
+                  <strong>Requisition Date:</strong>
+                  {{Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
+                  <i *ngIf="Requisition.RequisitionDate">({{Requisition.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                </p>
+                <p class="media-body small border-bottom border-gray">
+                  <strong>Requisition Status:</strong>
+                  {{Requisition.RequisitionStatus}}
+                </p>
+              </div>
+              <div *ngIf="!!DispatchList">
+                <div class="media text-muted receiveContainer" *ngFor="let dispatch of DispatchList">
+                  <div style="display: flex; justify-content: space-between;">
+                    <div class="small">
+                      <strong>Dispatch Id:</strong>
+                      {{dispatch.DispatchId}}
+                    </div>
+                    <div class="small">
+                      <strong>Received By:</strong>
+                      <div *ngIf="!!dispatch.ReceivedBy; else elseBlockOne">{{dispatch.ReceivedBy}}</div>
+                      <ng-template #elseBlockOne>Not Received</ng-template>
+                    </div>
+                    <div class="small">
+                      <strong>Received On:</strong>
+                      <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
+                        {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
+                        <i *ngIf="dispatch.ReceivedOn">({{dispatch.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                      </div>
+                      <ng-template #elseBlockTwo>Not Received</ng-template>
+                    </div>
+                  </div>
+                  <div>
+                    <table class="table table-striped table-condensed">
+                      <thead>
+                        <tr>
+                          <th>Medicine Name</th>
+                          <th>Requested Qty</th>
+                          <th>Pending Qty</th>
+                          <th>Batch No</th>
+                          <th>Expiry Date</th>
+                          <th>Dispatched Qty</th>
+                          <th>Item Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let reqItem of dispatch.RequisitionItems">
+                          <td>{{reqItem.ItemName}}(<i style="color: blue;">{{reqItem.GenericName}}</i>)</td>
+                          <td>{{reqItem.RequestedQuantity}}</td>
+                          <td>{{reqItem.PendingQuantity}}</td>
+                          <td colspan="4">
+                            <table class="table table-striped table-condensed">
+                              <tr *ngFor="let dispatchedItem of reqItem.DispatchedItems; let j = index">
+                                <td>{{dispatchedItem.BatchNo}}</td>
+                                <td>{{dispatchedItem.ExpiryDate | date : "yyyy-MM-dd"}}</td>
+                                <td><b>{{dispatchedItem.DispatchedQuantity}}</b></td>
+                                <td>{{dispatchedItem.ItemRemarks}}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="media-body small border-bottom border-gray">
+                    <div>
+                      <strong class="col-md-2">Dispatched Remarks:</strong>
+                      <span class="media-body" style="text-align: left;">{{dispatch.DispatchedRemarks}}</span>
+                    </div><br />
+                    <div>
+                      <strong class="col-md-2">Receiving Remarks :</strong>
+                      <span *ngIf="!!dispatch.ReceivedBy; else elseBlockThree">{{dispatch.ReceivedRemarks}}</span>
+                      <ng-template #elseBlockThree>
+                        <textarea class="col-md-7 noPrint" id="remarks" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3" (keyup.enter)="setFocusById('btn_Add')"></textarea>
+                      </ng-template>
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <button class="btn green btn-success noPrint" id="btn_Add" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour" [disabled]="loading == true" (click)="ReceiveDispatchById(dispatch.DispatchId,dispatch.ReceivedRemarks)">Receive</button>
+                    <ng-template #elseBlockFour>
+                      <div class="receiveStamp"> Received </div>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

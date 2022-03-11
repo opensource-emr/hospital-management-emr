@@ -30,7 +30,8 @@ export class RPT_LAB_TotalCategogyAndItemCountComponent {
   showReportCategoryWise: boolean = false;
   showReportItemWise: boolean = false;
   public selectedCategoryId: number = null;
-
+  public statusAbove:number =0;
+  public orderStatus={statusList: ''};
   constructor(
     public dlService: DLService,
     public msgBoxServ: MessageboxService,

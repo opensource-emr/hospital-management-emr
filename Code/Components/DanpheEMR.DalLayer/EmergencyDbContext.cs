@@ -32,8 +32,10 @@ namespace DanpheEMR.DalLayer
         public DbSet<PatientMembershipModel> PatientMemberships { get; set; }
         public DbSet<AdminParametersModel> AdminParameters { get; set; }
         public DbSet<ModeOfArrival> ModeOfArrival { get; set; }
+        public DbSet<EmergencyPatientCases> PatientCases { get; set; }
+        public DbSet<UploadConsentForm> Consentform { get; set; }
 
-
+        public DbSet<MunicipalityModel> Municipalities { get; set; }
         public EmergencyDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -68,6 +70,9 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<ImagingRequisitionModel>().ToTable("RAD_PatientImagingRequisition");
             modelBuilder.Entity<MembershipTypeModel>().ToTable("PAT_CFG_MembershipType");
             modelBuilder.Entity<PatientMembershipModel>().ToTable("PAT_PatientMembership");
+            modelBuilder.Entity<EmergencyPatientCases>().ToTable("ER_Patient_Cases");
+            modelBuilder.Entity<UploadConsentForm>().ToTable("ER_FileUploads");
+            modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
         }
     }
 }

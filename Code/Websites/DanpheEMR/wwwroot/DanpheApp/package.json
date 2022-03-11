@@ -41,18 +41,20 @@
     "dicom-parser": "1.8.3",
     "hammerjs": "2.0.8",
     "html2canvas": "^1.0.0-rc.5",
+    "js-base64": "^3.7.2",
     "jsbarcode": "3.11.0",
     "json-to-pivot-json": "^1.0.1",
     "jspdf": "1.4.1",
+    "jsrsasign": "10.1.13",
     "moment": "2.24.0",
     "ng2-ckeditor": "1.2.2",
-    "ng2-pdf-viewer": "^5.3.4",
     "ng2-search-filter": "^0.5.1",
     "ng2-tab": "0.4.0",
     "ngx-image-cropper": "1.3.8",
-    "ngx-pagination": "^3.2.1",
+    "ngx-pagination": "^3.3.1",
     "ngx-webcam": "0.2.2",
-    "pdfjs-dist": "2.5.207",
+    "path": "0.12.7",
+    "qz-tray": "2.1.2",
     "rxjs": "6.4.0",
     "rxjs-compat": "6.4.0",
     "tslib": "1.9.0",
@@ -81,6 +83,6 @@
     "protractor": "5.4.0",
     "ts-node": "7.0.0",
     "tslint": "5.11.0",
-    "typescript": "^3.1.8"
+    "typescript": "3.1.6"
   }
 }

@@ -32,7 +32,8 @@ namespace DanpheEMR.Controllers.Pharmacy.Credit
           //send current patient record of credit
             try
             {
-                IEnumerable<PHRMInvoiceTransactionItemsModel> TotalItems = phrmDbContext.PHRMInvoiceTransactionItems.ToList().Where(a => a.PatientId == id && a.InvoiceId== null);
+                //sud:9Oct'21--Applying WhereClause before Doing ToList() so that we filter the data in SQL itself rather than bringing all data to C# and filtering..
+                IEnumerable<PHRMInvoiceTransactionItemsModel> TotalItems = phrmDbContext.PHRMInvoiceTransactionItems.Where(a => a.PatientId == id && a.InvoiceId == null).ToList();
                 decimal TotalCreditAmount = TotalItems.Sum(s => s.TotalAmount).Value;
 
                 //map credit value to ViewModel

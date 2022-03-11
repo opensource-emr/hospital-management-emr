@@ -1,0 +1,345 @@
+<style type="text/css">
+  .Selected {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  .float-left {
+    float: left !important;
+    margin-right: 10px;
+  }
+
+  table tr,
+  table td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row">
+
+    <div class="caption custom-caption">
+      <i class="glyphicon glyphicon-asterisk"></i><span class="caption-subject">Hospital Service Summary Report</span>
+    </div>
+
+    <div class="col-md-6 col-xs-12">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+    </div>
+
+    <div class="col-md-2 col-xs-12">
+      <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+    </div>
+
+  </div>
+
+  <!-- Report Section Starts Here -->
+  <section *ngIf="displayReport">
+    <div id="govReport">
+
+      <!-- START: Hospital Logo and Header Information -->
+      <div style="border: 1px solid black;width: 100%;display: flex;align-items: flex-end;">
+        <div style="width:20%;">
+          <img style="margin: 1.5rem;" src="../../../themes/theme-default/images/hospital-logo.png" width="70"
+            height="70" />
+        </div>
+        <div style="width: 50%; text-align: center;">
+          <b> Health Management Information System <br /> {{GovTemplate1Data.hospitalName}} </b>
+        </div>
+        <div style="width:20%;">
+        </div>
+      </div>
+      <!-- END: Hospital Logo and Header Information -->
+      <div id="govReportWithoutHeader">
+      <div style="display: flex;">
+        <div style="width: 65%;">
+          <div style="width: 30%;">
+            <table>
+              <tr>
+                <td style="padding-right: 2.5rem;">Fiscal Year</td>
+                <td style="padding-right: 2.5rem;">2077/78</td>
+              </tr>
+              <tr>
+                <td style="padding-right: 2.5rem;">Reference No:</td>
+                <td style="padding-right: 2.5rem;"></td>
+              </tr>
+            </table>
+          </div>
+          <div style="width: 30%;">
+            <p>
+              To..............................................................<br />
+              .................................................................<br />
+            </p>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <b>
+              Subject: Submission of Monthly Report on Hospital Services : ............ Month, 20.... Year.
+            </b>
+          </div>
+
+          <div style="display: flex; margin: 0 0.5rem 0.5rem 0;">
+            <div style="width: 98%;  margin: 0 0.5rem 0 0;">
+              <table border="1" class="Selected" align="center" style="width:100%">
+                <tr>
+                  <td colspan="5" align="center"><b>Hospital Services</b></td>
+                  <td style="width:10px !important;"></td>
+                  <td colspan="2" align="center"><b>Emergency Services</b>
+
+                </tr>
+                <tr>
+                  <td class="Selected" rowspan="2">Age Group</td>
+                  <td class="Selected" colspan="2" align="center">New Client Serviced</td>
+                  <td class="Selected" colspan="2" align="center">Total Clients Served</td>
+                  <td style="width:10px !important;"></td>
+                  <td class="Selected" colspan="2" align="center">Total Clients Served</td>
+                </tr>
+                <tr>
+                  <td class="Selected" width="80px">Female</td>
+                  <td class="Selected" width="80px">Male</td>
+                  <td class="Selected" width="80px">Female</td>
+                  <td class="Selected" width="80px">Male</td>
+                  <td style="width:10px !important;"></td>
+                  <td class="Selected" width="80px">Female</td>
+                  <td class="Selected" width="80px">Male</td>
+                </tr>
+                <tr *ngFor="let o of outPatientServices">
+                  <td class="Selected"> {{o.AgeRange}} </td>
+                  <td class="Selected"> {{o.FemaleNew_Out}} </td>
+                  <td class="Selected"> {{o.MaleNew_Out}} </td>
+                  <td class="Selected"> {{o.FemaleTotal_Out}} </td>
+                  <td class="Selected"> {{o.MaleTotal_Out}} </td>
+                  <td style="width:10px !important;"></td>
+                  <td class="Selected" align="center"> {{o.Female_ER}} </td>
+                  <td class="Selected" align="center"> {{o.Male_ER}} </td>
+                </tr>
+              </table>
+            </div>            
+          </div>
+
+          <div style="display: flex; margin-right: 0.5rem;">
+            <div style="width: 40%; margin: 0 0.5rem 0 0;">
+              <table cborder="1" class="Selected" align="center" style="width:100%">
+                <tr>
+                  <td class="Selected"> <b>Free Service Received</b> <br />
+                    <b>by Impoverished Citizen</b>
+                  </td>
+                  <td class="Selected" width="80px" align="center"><b>Female</b></td>
+                  <td class="Selected" width="80px" align="center"><b>Male</b></td>
+                </tr>
+                <tr>
+                  <td class="Selected" align="center">1</td>
+                  <td class="Selected" align="center">2</td>
+                  <td class="Selected" align="center">3</td>
+                </tr>
+                <tr *ngFor="let f of freeServices">
+                  <td class="Selected">{{f.ReportingItemName}}</td>
+                  <td class="Selected">{{f.FemaleCount}}</td>
+                  <td class="Selected">{{f.MaleCount}}</td>
+                </tr>
+              </table>
+            </div>
+            <div style="width: 60%;">
+              <div>
+                <table border="1" class="Selected" align="center" style="width:100%; margin-bottom: 15px;">
+                  <tr>
+                    <td class="Selected" width="180"><b>ORC Clinics / FCHV</b></td>
+                    <td class="Selected" width="80px" align="center"><b>Planned / Total No.</b></td>
+                    <td class="Selected" width="80px" align="center"><b>Conducted / Report Received.</b>
+                    </td>
+                    <td class="Selected" width="80px" align="center"><b>No of Clients Served.</b></td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">PHC Outreach Clinic </td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">Immunization Clinic</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">Immunization Services</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">
+                      {{immunizationServices[0]?.TotalVaccinationClientServed}}</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">FCHV</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                    <td class="Selected" width="80px">-</td>
+                  </tr>
+                </table>
+              </div>
+              <div>
+                <table border="1" class="Selected" align="left" style="width:90%; font-size: small;">
+                  <tr>
+                    <td class="Selected" rowspan="2" align="center"><b>Referrals</b></td>
+                    <td class="Selected" rowspan="2"><b>Referral In</b></td>
+                    <td class="Selected" colspan=3><b>Referred Out</b></td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">Outpatient</td>
+                    <td class="Selected">Inpatient</td>
+                    <td class="Selected">Emergency</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">Female</td>
+                    <td class="Selected">-</td>
+                    <td class="Selected">-</td>
+                    <td class="Selected">{{HospitalServiceSummaryReport?.InpatientReferredOut[0]?.IpRO_FemaleCount}}
+                    </td>
+                    <td class="Selected">-</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected">Male</td>
+                    <td class="Selected">-</td>
+                    <td class="Selected">-</td>
+                    <td class="Selected">{{HospitalServiceSummaryReport?.InpatientReferredOut[0]?.IpRO_MaleCount}}</td>
+                    <td class="Selected">-</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="width: 35%;font-size: 1.2rem;position: relative;top: -29px;">
+          <div style="margin-bottom: 1rem;">
+            <table class="Selected" style="width:100%">
+              <tr>
+                <td class="Selected">Health Facility Code : </td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+                <td class="Selected"></td>
+              </tr>
+              <tr>
+                <td class="Selected">OWNERSHIP TYPE</td>
+                <td class="Selected" colspan="7"></td>
+              </tr>
+              <tr>
+                <td class="Selected">FACILITY TYPE</td>
+                <td class="Selected" colspan="7"></td>
+              </tr>
+              <tr>
+                <td class="Selected">VAT/PAN No.</td>
+                <td class="Selected" colspan="7"></td>
+              </tr>
+              <tr>
+                <td class="Selected">Dispatched Date : </td>
+                <td class="Selected" colspan="7">&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  /&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 207...</td>
+              </tr>
+              <tr>
+                <td class="Selected">Received Date : </td>
+                <td class="Selected" colspan="7">&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;/&nbsp;&nbsp;
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp;207...</td>
+              </tr>
+
+              <tr>
+                <td class="Selected" rowspan="2">Number of Beds</td>
+                <td class="Selected" colspan="3">Sanctioned</td>
+                <td class="Selected" colspan="4"></td>
+              </tr>
+              <tr>
+                <td class="Selected" colspan="3">Operational</td>
+                <td class="Selected" colspan="4"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <table style="width: 100%;">
+              <tr>
+                <td class="Selected" colspan="2">
+                  <b>Total Patients Admitted</b>
+                </td>
+                <td class="Selected">
+                  {{totalPatientAdmitted != null && totalPatientAdmitted.length>0 &&
+                  !!totalPatientAdmitted[0].TotalPatientsAdmitted ? totalPatientAdmitted[0].TotalPatientsAdmitted : 0}}
+                </td>
+              </tr>
+              <tr>
+                <td class="Selected" colspan="2">
+                  <b>Total Inpatient Service Days</b>
+                </td>
+                <td class="Selected">
+                  {{totalInpatientDays != null && totalInpatientDays.length>0 &&
+                  !!totalInpatientDays[0].TotalInpatientDays ? totalInpatientDays[0].TotalInpatientDays : 0}}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+
+          <div>
+            <table class="Selected" style="width:100%">
+              <tr>
+                <th class="Selected" height="20px" align="center">Diagnostic / Other Services</th>
+                <th class="Selected" width="70px" align="center">Unit</th>
+                <th class="Selected" align="center">Number</th>
+              </tr>
+              <tr *ngFor="let d of diagServices">
+                <td class="Selected" height="20px"> {{d.ReportingItemName}} </td>
+                <td class="Selected" height="20px"> {{d.Unit}} </td>
+                <td class="Selected" height="20px"> {{d.TotalCount}} </td>
+              </tr>
+              <tr>
+                <td class="Selected" height="20px">Total Preventive Service Provided</td>
+                <td class="Selected" height="20px">Person</td>
+                <td class="Selected" height="20px">-</td>
+              </tr>
+              <tr>
+                <td class="Selected" height="20px">Total Laboratory Service Provided</td>
+                <td class="Selected" height="20px">Person</td>
+                <td class="Selected" height="20px">{{TotlLabServiceProvidedPersonCount}}</td>
+              </tr>
+              <tr>
+                <td class="Selected" height="20px">Other Service Provided (If any)</td>
+                <td class="Selected" height="20px">Person</td>
+                <td class="Selected" height="20px">-</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <div style="width: 20%; text-align: left;">
+          <b><u>Prepared By</u>:</b>
+          <p>Signature:</p>
+          <p>Name of Medical Recorder:</p>
+        </div>
+        <div style="width: 50%"></div>
+        <div style="width: 30%; text-align: left;">
+          <b><u>Approved By</u>:</b>
+          <p>Signature:</p>
+          <p>Name of Hospital Superintendent/Director:</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top: 25px;">
+      <p style="text-align:center;">
+        <button class="btn blue" (click)="Print()"> Print Report <i class="glyphicon glyphicon-print"></i> </button>
+        <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('govReportWithoutHeader')"> <i
+          class="fa fa-file-excel-o"></i> Export</button>
+      </p>
+    </div>
+  </section>
+</div>
+
+
+<!-- for print window -->
+<!-- <app-print-page *ngIf="showPrint" [print-data]="printDetails" (print-sucess)="callBackPrint()"></app-print-page> -->

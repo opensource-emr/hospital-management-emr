@@ -39,6 +39,7 @@ export class AddressComponent implements IRouteGuard {
         this.currentAddress.CountryId = this.currentPatient.CountryId;
         this.currentAddress.CountrySubDivisionId = this.currentPatient.CountrySubDivisionId;
         this.GetCountry();
+        this.GoToNextInput("inputId");
 
     }
     public Edit(selectedAddress: Address) {
@@ -151,6 +152,14 @@ export class AddressComponent implements IRouteGuard {
         this.currentAddress.CountryName = countryName;
 
     }
+    GoToNextInput(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 
     GetCountry() {
 			this.Countries = DanpheCache.GetData(MasterType.Country,null);

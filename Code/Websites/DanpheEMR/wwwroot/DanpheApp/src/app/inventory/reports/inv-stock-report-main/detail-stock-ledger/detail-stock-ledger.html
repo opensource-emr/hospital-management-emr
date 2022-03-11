@@ -1,0 +1,43 @@
+<style>
+    .dep-flex {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<form class="form-horizontal hm-form">
+    <div class="form-body">
+        <div class="caption lb-caption">
+            <i class="fa fa-money"></i>
+            <span class="caption-subject">Detail Stock Ledger </span>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group row">
+                    <label class="control-label col-md-4">Item Name<b style="float:right;">:</b></label>
+                    <div class="col-md-6 autocomplete-item">
+                        <input danphe-auto-complete class="form-control" (valueChanged)="onItemChange()" placeholder="Select ItemName" [(ngModel)]="selecteditem" [list-formatter]="ItemListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="ItemName" [source]="itemList" [match-formatted]="true" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="GetReportData()"[disabled]="loading">
+                        <span *ngIf="!loading">Show Report</span>
+                        <span *ngIf="loading">Loading...</span>
+                     </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <danphe-grid [grid-colDefaults]="DetailStockLedgerColumn" [grid-data]="DetailStockLedgerData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+                </danphe-grid>
+            </div>
+        </div>
+    </div>
+</form>

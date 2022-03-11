@@ -45,7 +45,7 @@ export class CostCenterItemListComponent {
     }
 
     CallBackAdd($event) {
-        let curtFiscalLen = $event.costCenterItem[0];
+        let curtFiscalLen = $event.costCenterItem;//mumbai-team-june2021-danphe-accounting-cache-change
         this.costCenterItemsList.push(curtFiscalLen);
         if (this.index)
             this.costCenterItemsList.splice(this.index, 1);

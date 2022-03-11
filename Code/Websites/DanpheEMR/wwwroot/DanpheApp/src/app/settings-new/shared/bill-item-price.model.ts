@@ -58,6 +58,9 @@ export class BillItemPriceModel {
   public IsInsForeignerPriceApplicable: boolean = false;
   public IsSAARCPriceApplicable: boolean = false;
 
+  public IsZeroPriceAllowed: boolean = false;//pratik:28Jan'21 -as per LPH requirement
+  public IsErLabApplicable: boolean = false;//pratik:09Feb'21 -as per LPH requirement
+
   public IsOT: boolean = false;
   public IsProc: boolean = false;
   public Category: string = null;

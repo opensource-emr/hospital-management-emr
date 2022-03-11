@@ -12,7 +12,7 @@ namespace DanpheEMR.ServerModel
    public class PHRMGoodsReceiptViewModel
     {
         public PHRMGoodsReceiptModel goodReceipt = new PHRMGoodsReceiptModel();
-        public PHRMPurchaseOrderModel purchaseOrder = new PHRMPurchaseOrderModel();
+        public  PHRMPurchaseOrderModel purchaseOrder = new PHRMPurchaseOrderModel();
     }
 }
     

@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { LabSticker } from '../shared/lab-sticker.model';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { LabTestRequisition } from './lab-requisition.model';
@@ -7,6 +7,8 @@ import { LabsBLService } from './labs.bl.service';
 import { CoreService } from '../../core/shared/core.service';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { LabService } from './lab.service';
+import { PrinterSettingsModel, ENUM_PrintingType } from '../../settings-new/printers/printer-settings.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'lab-sticker',
@@ -43,7 +45,11 @@ export class LabStickerComponent {
   public printerName: string = null;
   public printerNameSelected: any = null;
   public showStickerChange: boolean = false;
-  public showLabStickerPrintOption: boolean = false;
+  public printOptionParam: any = false;
+  public serverPrintFolderPath: any;
+  public openBrowserPrintWindow: boolean = false;
+  public browserPrintContentObj: any;
+  public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
 
   //public CloseSticker() {
   //    this.requisitionIdList = [];
@@ -52,7 +58,7 @@ export class LabStickerComponent {
   //}
 
   constructor(public msgBoxServ: MessageboxService, public coreService: CoreService,
-    public labBLService: LabsBLService, public labService: LabService) {
+    public labBLService: LabsBLService, public labService: LabService, public changeDetector: ChangeDetectorRef, public router: Router) {
     this.name = this.patientinfos.PatientName;
     this.barcode = this.patientinfos.BarCodeNumber;
     this.showServerSidePrinting = this.IsPrintFromServer();
@@ -64,19 +70,22 @@ export class LabStickerComponent {
         this.showStickerChange = true;
       }
     }
-    this.showLabStickerPrintOption = this.coreService.ShowLabStickerPrintOption();
+    this.printOptionParam = this.coreService.ShowLabStickerPrintOption();
   }
 
 
   ngAfterViewInit() {
     if (document.getElementById('numberOfPrint')) {
-      document.getElementById('numberOfPrint').focus();
+      this.coreService.FocusInputById("numberOfPrint");
     }
   }
 
   ngOnInit() {
     if (this.requisitionIdList && this.requisitionIdList.length > 0) {
       this.GetAllRequisitionsFromIdList(this.requisitionIdList);
+    }
+    if (document.getElementById('numberOfPrint')) {
+      this.coreService.FocusInputById("numberOfPrint");
     }
   }
 
@@ -91,10 +100,15 @@ export class LabStickerComponent {
   }
 
   PrintLabSticker_Client(numberOfPrint: number) {
-    if (numberOfPrint > 5) {
-      this.msgBoxServ.showMessage('Failed', ["Unable to Print.. Print Count cannot be more than 5 !"]);
+    let limit = this.printOptionParam.maximumPrintCount ? this.printOptionParam.maximumPrintCount : 5;
+    if (numberOfPrint > limit) {
+      this.msgBoxServ.showMessage('Failed', ["Unable to Print.. Print Count cannot be more than " + limit + "!"]);
     }
     else {
+      if (!(numberOfPrint > 0)) {
+        this.msgBoxServ.showMessage('Failed', ["Unable to Print.. Please provide Print Count greater than 0."]);
+        return;
+      }
       let popupWinindow;
       var printContents = document.getElementById("LabSticker").innerHTML;
       popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
@@ -102,20 +116,32 @@ export class LabStickerComponent {
       let documentContent = '<html><head>';
       documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
       documentContent += '<style>@media print {@page { size: 2 in 1 in;}} .labBarCodeSticker{border: none !important;marging-top: 10px;} .lbl-rotate {height: 20px;width: 70px;transform: translateX(25%) translateY(-50%) rotate(90deg);font-weight: bold;float: right;font-size: 14px;line-height: 0.8;position: absolute;right: 0;top: 50%;z-index: 2;text-align: center;}</style></head>';
-      documentContent += '<body style="margin: 0;" onload="window.print()">' + printContents + '</body></html>';
+      documentContent += '<body style="margin: 0;">';
+      for (let index = 0; index < numberOfPrint; index++) {
+        documentContent += printContents;
+      }
+      documentContent += '</body></html>';
+
       popupWinindow.document.write(documentContent);
       popupWinindow.document.close();
+
+      let tmr = setTimeout(function () {
+        popupWinindow.print();
+        popupWinindow.close();
+      }, 300);
+      this.sendDataBack.emit({ exit: true });
     }
   }
 
   PrintLabSticker_Server(numberOfPrint: number) {
-    if (!this.printerName || this.printerName.trim() == '') {
-      this.msgBoxServ.showMessage('error', ["Please select your printer "]);
-      this.loading = false;
-      return;
-    }
-    if (numberOfPrint > 5) {
-      this.msgBoxServ.showMessage('Failed', ["Unable to Print.. Print Count cannot be more than 5 !"]);
+    // if (!this.printerName || this.printerName.trim() == '') {
+    //   this.msgBoxServ.showMessage('error', ["Please select your printer "]);
+    //   this.loading = false;
+    //   return;
+    // }
+    let limit = this.printOptionParam.maximumPrintCount ? this.printOptionParam.maximumPrintCount : 5;
+    if (numberOfPrint > limit) {
+      this.msgBoxServ.showMessage('Failed', ["Unable to Print.. Print Count cannot be more than " + limit + "!"]);
       this.loading = false;
     }
     else {
@@ -129,10 +155,14 @@ export class LabStickerComponent {
 
       let fileName = "LabStickerPrinter_" + this.patientinfos.HospitalNumber + "_";///not sure if we need it..
 
-
+      var filePath = this.coreService.AllPrinterSettings.find(a => a.PrintingType == 'server' && a.GroupName == 'lab-sticker').ServerFolderPath;
+      var lastCharacter = filePath.substr(filePath.length - 1);
+      if (lastCharacter != '\\') {
+        filePath += '\\';
+      }
       //below code sends the sticker content to server, it'll there create a file and store to the required location.
       //from there our printer application will send the file to required printer. 
-      this.labBLService.SaveLabStickersHTML(this.printerName, fileName, printableHTML, numberOfPrint)
+      this.labBLService.SaveLabStickersHTML(this.printerName, filePath, printableHTML, numberOfPrint)
         .subscribe((res: DanpheHTTPResponse) => {
           console.log("lab sticker printed successfully.. ");
           this.loading = false;
@@ -143,6 +173,22 @@ export class LabStickerComponent {
 
     }
 
+  }
+
+  public print(numberOfPrint) {
+    if (!this.selectedPrinter || this.selectedPrinter.PrintingType == ENUM_PrintingType.browser) {
+      this.browserPrintContentObj = document.getElementById("LabSticker");
+      this.PrintLabSticker_Client(numberOfPrint);
+      //this.openBrowserPrintWindow = true;
+      this.changeDetector.detectChanges();
+      this.router.navigate(['Lab/PendingLabResults']);
+    } else if (this.selectedPrinter.PrintingType == ENUM_PrintingType.server) {
+      this.PrintLabSticker_Server(numberOfPrint);
+    }
+    else {
+      this.msgBoxServ.showMessage('error', ["Printer Not Supported."]);
+      return;
+    }
   }
 
 
@@ -162,7 +208,7 @@ export class LabStickerComponent {
     if (this.printerNameSelected) {
       if (localStorage.getItem('Danphe_LAB_Default_PrinterName')) {
         localStorage.removeItem('Danphe_LAB_Default_PrinterName');
-      }      
+      }
       localStorage.setItem('Danphe_LAB_Default_PrinterName', this.printerNameSelected);
       this.labService.defaultPrinterName = this.printerNameSelected;
       this.printerName = this.printerNameSelected;
@@ -175,6 +221,19 @@ export class LabStickerComponent {
   public ShowStickerLocationChange() {
     this.printerNameSelected = this.printerName;
     this.showStickerChange = true;
+  }
+
+  SetFocusById(IdToBeFocused: string) {
+    window.setTimeout(function () {
+      if (document.getElementById(IdToBeFocused)) {
+        document.getElementById(IdToBeFocused).focus();
+      }
+    }, 100);
+  }
+
+
+  OnPrinterChanged($event) {
+    this.selectedPrinter = $event;
   }
 
 }

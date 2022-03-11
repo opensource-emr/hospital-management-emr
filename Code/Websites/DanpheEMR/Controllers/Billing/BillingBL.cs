@@ -9,6 +9,7 @@ using DanpheEMR.Sync.IRDNepal.Models;
 using Newtonsoft.Json;
 using System.Configuration;
 using System.Data.Entity;
+using System.Transactions;
 
 namespace DanpheEMR.Controllers.Billing
 {
@@ -45,37 +46,53 @@ namespace DanpheEMR.Controllers.Billing
             return billingDbContext.BillingFiscalYears.Where(fsc => fsc.StartYear <= currentDate && fsc.EndYear >= currentDate).FirstOrDefault();
         }
 
-        public static int? GetInvoiceNumber(string connString, bool? isInsuranceBIlling)
-        {
-            int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
-            DanpheEMR.DalLayer.BillingDbContext billDbContext = new DalLayer.BillingDbContext(connString);
-            int? invoiceNumber = (from txn in billDbContext.BillingTransactions
-                                  where txn.FiscalYearId == fiscalYearId
-                                  where txn.IsInsuranceBilling == isInsuranceBIlling
-                                  select txn.InvoiceNo).DefaultIfEmpty(0).Max();
+        //public static int? GetInvoiceNumber(string connString, bool? isInsuranceBIlling)
+        //{
+        //    int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
+        //    DanpheEMR.DalLayer.BillingDbContext billDbContext = new DalLayer.BillingDbContext(connString);
+        //    int? invoiceNumber = (from txn in billDbContext.BillingTransactions
+        //                          where txn.FiscalYearId == fiscalYearId
+        //                          where (txn.IsInsuranceBilling ?? false) == (isInsuranceBIlling ?? false)
+        //                          select txn.InvoiceNo).DefaultIfEmpty(0).Max();
 
-            return invoiceNumber + 1;
-        }
+        //    return invoiceNumber + 1;
+        //}
 
         public static int? GetInvoiceNumber(string connString)
         {
-            int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
-            DanpheEMR.DalLayer.BillingDbContext billDbContext = new DalLayer.BillingDbContext(connString);
-            int? invoiceNumber = (from txn in billDbContext.BillingTransactions
-                                  where txn.FiscalYearId == fiscalYearId
-                                  select txn.InvoiceNo).DefaultIfEmpty(0).Max();
+            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted }))
+            {
+                int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
+                DanpheEMR.DalLayer.BillingDbContext billDbContext = new DalLayer.BillingDbContext(connString);
+                int? invoiceNumber = (from txn in billDbContext.BillingTransactions
+                                      where txn.FiscalYearId == fiscalYearId
+                                      select txn.InvoiceNo).DefaultIfEmpty(0).Max();
 
-            return invoiceNumber + 1;
+                return invoiceNumber + 1;
+            }
         }
         public static int? GetDepositReceiptNo(string connString)
         {
-            int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
+
+            //This is to get the uncommited row data (ReceiptNo).
+            using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions{IsolationLevel = IsolationLevel.ReadUncommitted}))
+            {
+                                    int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
+                                    BillingDbContext billDbContext = new BillingDbContext(connString);
+                                    int? receiptNo = (from depTxn in billDbContext.BillingDeposits
+                                                      where depTxn.FiscalYearId == fiscalYearId
+                                                      select depTxn.ReceiptNo).DefaultIfEmpty(0).Max();
+
+                                    return receiptNo + 1;
+            }
+
+            /*int fiscalYearId = GetFiscalYear(connString).FiscalYearId;
             BillingDbContext billDbContext = new BillingDbContext(connString);
             int? receiptNo = (from depTxn in billDbContext.BillingDeposits
                               where depTxn.FiscalYearId == fiscalYearId
                               select depTxn.ReceiptNo).DefaultIfEmpty(0).Max();
 
-            return receiptNo + 1;
+            return receiptNo + 1;*/
         }
 
         public static int? GetProvisionalReceiptNo(string connString)
@@ -150,11 +167,12 @@ namespace DanpheEMR.Controllers.Billing
                     irdLog.Status = "failed";
                 }
 
-                dbContext.BillReturns.Attach(billRet);
+                dbContext.BillInvoiceReturns.Attach(billRet);
                 if (responseMsg == "200")
                 {
                     billRet.IsRealtime = true;
                     billRet.IsRemoteSynced = true;
+                    irdLog.Status = "success";
                 }
                 else
                 {
@@ -203,35 +221,35 @@ namespace DanpheEMR.Controllers.Billing
             }
         }
 
-        public static void UpdateInsuranceCurrentBalance(string connString,
-                int patientId,
-                int insuranceProviderId,
-                 int currentUserId,
-                 double amount,
-                 bool isDeduct = false)
-        {
-            BillingDbContext dbContext = new BillingDbContext(connString);
-            try
-            {
-                InsuranceModel insurance = dbContext.Insurances.Where(ins => ins.PatientId == patientId && ins.InsuranceProviderId == insuranceProviderId).FirstOrDefault();
-                if (insurance != null)
-                {
-                    insurance.CurrentBalance = isDeduct ? insurance.CurrentBalance - amount : amount;
-                    insurance.ModifiedOn = DateTime.Now;
-                    insurance.ModifiedBy = currentUserId;
-                    dbContext.Entry(insurance).State = EntityState.Modified;
-                    dbContext.SaveChanges();
-                }
-                else
-                {
-                    throw new Exception("Unable to update Insurance Balance. Detail: Insurance object is null.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to update Insurance Balance. Detail:" + ex.ToString());
-            }
-        }
+        //public static void UpdateInsuranceCurrentBalance_NotRequired(string connString,
+        //        int patientId,
+        //        int insuranceProviderId,
+        //         int currentUserId,
+        //         double amount,
+        //         bool isDeduct = false)
+        //{
+        //    BillingDbContext dbContext = new BillingDbContext(connString);
+        //    try
+        //    {
+        //        InsuranceModel insurance = dbContext.Insurances.Where(ins => ins.PatientId == patientId && ins.InsuranceProviderId == insuranceProviderId).FirstOrDefault();
+        //        if (insurance != null)
+        //        {
+        //            insurance.CurrentBalance = isDeduct ? insurance.CurrentBalance - amount : amount;
+        //            insurance.ModifiedOn = DateTime.Now;
+        //            insurance.ModifiedBy = currentUserId;
+        //            dbContext.Entry(insurance).State = EntityState.Modified;
+        //            dbContext.SaveChanges();
+        //        }
+        //        else
+        //        {
+        //            throw new Exception("Unable to update Insurance Balance. Detail: Insurance object is null.");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("Unable to update Insurance Balance. Detail:" + ex.ToString());
+        //    }
+        //}
 
         public static void AddPatientInsurancePackage(BillingDbContext dbContext, int packageId, int patientId, int currentUserId)
         {
@@ -264,5 +282,147 @@ namespace DanpheEMR.Controllers.Billing
             return currentEx.Message;
         }
 
+
+        public static void AddEmpCashTransaction(BillingDbContext dbContext, EmpCashTransactionModel empCashTransaction)
+        {
+            try
+            {
+                EmpCashTransactionModel empCashTxn = new EmpCashTransactionModel();
+                empCashTxn.TransactionType = empCashTransaction.TransactionType;
+                empCashTxn.ReferenceNo = empCashTransaction.ReferenceNo;
+                empCashTxn.EmployeeId = empCashTransaction.EmployeeId;
+                empCashTxn.InAmount = empCashTransaction.InAmount;
+                empCashTxn.OutAmount = empCashTransaction.OutAmount;
+                empCashTxn.Description = empCashTransaction.Description;
+                empCashTxn.TransactionDate = empCashTransaction.TransactionDate;
+                empCashTxn.CounterID = empCashTransaction.CounterID;
+                empCashTxn.IsActive = true;
+                dbContext.EmpCashTransactions.Add(empCashTxn);
+                dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unable to Add Cash Transaction Detail:" + ex.ToString());
+            }
+        }
+
+        //Recalulate Due amount After Handover
+        public static void ReCalculateEmployeeDueAmount(BillingDbContext dbContext, int empId, DateTime lastTxnDateTime)
+        {
+            try
+            {
+                var empDueAmt = dbContext.EmpDueAmounts.Where(txn => txn.EmployeeId == empId).FirstOrDefault();
+                double OutAmt = 0;
+                double InAmt = 0;
+
+                //If Due Amount is already found Update the same Amount Else Add New De amount
+                if (empDueAmt != null)
+                {
+                    var latestTxnDate = empDueAmt.LatestTransactionDate;
+                    var latestDueAmount = empDueAmt.LatestDueAmount;
+
+                    var empCashTxnList = dbContext.EmpCashTransactions.Where(txn => txn.EmployeeId == empId && txn.TransactionDate > latestTxnDate).ToList();
+
+                    for (int i = 0; i < empCashTxnList.Count; i++)
+                    {
+                        OutAmt += empCashTxnList[i].OutAmount ?? 0;
+                        InAmt += empCashTxnList[i].InAmount ?? 0;
+                    }
+                    var newDueAmount = latestDueAmount + (InAmt - OutAmt);
+
+                    dbContext.EmpDueAmounts.Attach(empDueAmt);
+                    empDueAmt.LatestDueAmount = newDueAmount;
+                    empDueAmt.LatestTransactionDate = lastTxnDateTime;
+                    dbContext.Entry(empDueAmt).Property(a => a.LatestDueAmount).IsModified = true;
+                    dbContext.Entry(empDueAmt).Property(a => a.LatestTransactionDate).IsModified = true;
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    var empCashTxnList = dbContext.EmpCashTransactions.Where(txn => txn.EmployeeId == empId).ToList();
+
+                    for (int i = 0; i < empCashTxnList.Count; i++)
+                    {
+                        OutAmt += empCashTxnList[i].OutAmount ?? 0;
+                        InAmt += empCashTxnList[i].InAmount ?? 0;
+                    }
+
+                    EmpDueAmountModel empDueAmount = new EmpDueAmountModel();
+                    empDueAmount.EmployeeId = empId;
+                    empDueAmount.LatestTransactionDate = lastTxnDateTime;
+                    empDueAmount.LatestDueAmount = InAmt - OutAmt;
+                    dbContext.EmpDueAmounts.Add(empDueAmount);
+                    dbContext.SaveChanges();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unable to Add Cash Transaction Detail:" + ex.ToString());
+            }
+        }
+
+        //Get Due Amount after calulation
+        public static EmpDueAmountModel GetEmpDueAmount(BillingDbContext dbContext, int empId)
+        {
+            var empDueAmt = dbContext.EmpDueAmounts.Where(txn => txn.EmployeeId == empId).FirstOrDefault();
+            var empPendingReceive = dbContext.HandoverTransaction.Where(txn => txn.ReceivedById == null && txn.HandoverByEmpId == empId).ToList();
+            double OutAmt = 0;
+            double InAmt = 0;
+            double TotalPendingReceive = 0;
+
+            EmpDueAmountModel empDueAmountObj = new EmpDueAmountModel();
+
+            if (empPendingReceive !=null)
+            {
+                for(int i = 0; i< empPendingReceive.Count; i++)
+                {
+                    TotalPendingReceive += empPendingReceive[i].HandoverAmount ?? 0;
+                }
+
+                empDueAmountObj.PendingReceiveAmount = TotalPendingReceive;
+            }
+
+
+            //If Due Amount is already found Then recalulate from latest Transaction Date Else calculate from the begining
+            if (empDueAmt != null)
+            {
+                DateTime latestTxnDate = empDueAmt.LatestTransactionDate;
+                var latestDueAmount = empDueAmt.LatestDueAmount;
+
+                var empCashTxnList = dbContext.EmpCashTransactions.Where(txn => txn.EmployeeId == empId && txn.TransactionDate > latestTxnDate).ToList();
+
+                for (int i = 0; i < empCashTxnList.Count; i++)
+                {
+                    OutAmt += empCashTxnList[i].OutAmount ?? 0;
+                    InAmt += empCashTxnList[i].InAmount ?? 0;
+                }
+                var newDueAmount = latestDueAmount + (InAmt - OutAmt);
+
+
+                empDueAmountObj.EmployeeDueId = empDueAmt.EmployeeDueId;
+                empDueAmountObj.EmployeeId = empId;
+                empDueAmountObj.LatestDueAmount = newDueAmount;
+                empDueAmountObj.LatestTransactionDate = DateTime.Now;
+ 
+
+            }
+            else
+            {
+                var empCashTxnList = dbContext.EmpCashTransactions.Where(txn => txn.EmployeeId == empId).ToList();
+
+                for (int i = 0; i < empCashTxnList.Count; i++)
+                {
+                    OutAmt += empCashTxnList[i].OutAmount ?? 0;
+                    InAmt += empCashTxnList[i].InAmount ?? 0;
+                }
+
+                empDueAmountObj.EmployeeId = empId;
+                empDueAmountObj.LatestTransactionDate = DateTime.Now;
+                empDueAmountObj.LatestDueAmount = InAmt - OutAmt;
+            }
+
+            return empDueAmountObj;
+        }
     }
 }

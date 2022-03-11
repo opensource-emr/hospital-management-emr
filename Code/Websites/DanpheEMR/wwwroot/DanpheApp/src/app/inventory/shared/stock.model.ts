@@ -7,6 +7,7 @@
     public ExpiryDate: string = null;
     public ReceivedQuantity: number = 0;
     public AvailableQuantity: number = 0;
+    public AvailQuantity:number= 0;
     public ReceiptDate: Date = null;
     public CreatedBy: number = 0;
     public CreatedOn: Date = null;
@@ -19,4 +20,5 @@
     public ModQuantity: number = 0;
     public BatchNo: string = "";
     public canUserManageStock: boolean;
+    public IsColdStorageApplicable: boolean;
 }

@@ -21,6 +21,7 @@ import { QuotationItemsModel } from './quotation-items.model';
 import { QuotationUpLoadFileModel } from './quotation-upload-file.model';
 import { PurchaseRequestModel } from './purchase-request.model';
 import { ReturnToVendorModel } from './return-to-vendor.model';
+import { GoodsReceiptItems } from './goods-receipt-item.model';
 @Injectable()
 export class InventoryBLService {
   public PurchaseOrderItems: PurchaseOrderItems = null;
@@ -68,9 +69,9 @@ export class InventoryBLService {
         return responseData;
       });
   }
-  public GetAllPOVerifiers(){
+  public GetAllPOVerifiers() {
     return this.inventoryDLService.GetAllPOVerifiers()
-      .map(res => {return res;});
+      .map(res => { return res; });
   }
   //GET: External PO vendor wise
   public GetPOlistVendorwise() {
@@ -86,25 +87,8 @@ export class InventoryBLService {
         return responseData;
       });
   }
-
-  //get item list
-  public GetRFQItemsList() {
-    return this.inventoryDLService.GetRFQItemsList()
-      .map((responseData) => {
-        return responseData;
-      });
-  }
-  //get view files list
-  public GetViewFilesList(VendorId) {
-    return this.inventoryDLService.GetViewFilesList(VendorId)
-      .map((responseData) => {
-        return responseData;
-      });
-  }
-
-  //get view files list
-  public GetQuotationItemsListList(VendorId) {
-    return this.inventoryDLService.GetQuotationItemsListList(VendorId)
+  public GetItemListByStoreId(StoreId: number) {
+    return this.inventoryDLService.GetItemListByStoreId(StoreId)
       .map((responseData) => {
         return responseData;
       });
@@ -124,7 +108,7 @@ export class InventoryBLService {
       });
   }
   //get terms list
-  public GetTermsList(TermsApplicationId:number) {
+  public GetTermsList(TermsApplicationId: number) {
     return this.inventoryDLService.GetTermsList(TermsApplicationId)
       .map((responseData) => {
         return responseData;
@@ -169,8 +153,8 @@ export class InventoryBLService {
   }
 
   //GET Get GetAvailableQtyItemList Item List which has Available Quntity >0 from Stock
-  public GetAvailableQtyItemList() {
-    return this.inventoryDLService.GetAvailableQtyItemList()
+  public GetAvailableQtyItemList(storeId: number) {
+    return this.inventoryDLService.GetAvailableQtyItemList(storeId)
       .map((responseData) => {
         return responseData;
       });
@@ -225,24 +209,39 @@ export class InventoryBLService {
     return this.inventoryDLService.GetStockList()
       .map(res => { return res });
   }
+  public GetStockListForDirectDispatch(storeId: number) {
+    return this.inventoryDLService.GetStockListForDirectDispatch(storeId).map(res => res);
+  }
   //GET: STOCK : get stock details by ItemId
-  public GetStockDetailsByItemId(ItemId) {
-    return this.inventoryDLService.GetStockDetailsByItemId(ItemId)
+  public GetStockDetailsByItemId(ItemId, StoreId) {
+    return this.inventoryDLService.GetStockDetailsByItemId(ItemId, StoreId)
       .map(res => { return res });
   }
   //GET: STOCK : get stock manage by ItemId
-  public GetStockManageByItemId(ItemId) {
-    return this.inventoryDLService.GetStockManageByItemId(ItemId)
+  public GetStockManageByItemId(ItemId, StoreId) {
+    return this.inventoryDLService.GetStockManageByItemId(ItemId, StoreId)
       .map(res => { return res });
   }
   //GET: Internal : get item list by VendorId for ReturnToVendor
-    public GetItemListbyVendorId(VendorId, GoodsReceiptNo, FiscYrId) {
-    return this.inventoryDLService.GetItemListbyVendorId(VendorId, GoodsReceiptNo,FiscYrId)
+  public GetItemListForReturnToVendor(VendorId, GoodsReceiptNo, FiscYrId, StoreId) {
+    return this.inventoryDLService.GetItemListForReturnToVendor(VendorId, GoodsReceiptNo, FiscYrId, StoreId)
       .map(res => { return res });
   }
   //GET: External : get all goods receipt list
   public GetGoodsReceiptList(fromDate, toDate) {
     return this.inventoryDLService.GetGoodsReceiptList(fromDate, toDate)
+      .map(res => { return res });
+  }
+
+  //GET: External : get all goods receipt list
+  public GetGoodsReceiptStockList(fromDate, toDate) {
+    return this.inventoryDLService.GetGoodsReceiptStockList(fromDate, toDate)
+      .map(res => { return res });
+  }
+
+  //GET: External : get all  fixed asset donation list
+  public GetFixedAssetDonationList() {
+    return this.inventoryDLService.GetFixedAssetDonationList()
       .map(res => { return res });
   }
 
@@ -352,8 +351,13 @@ export class InventoryBLService {
       });
   }
   //GET PO requisition
-  GetPORequisition(fromDate,toDate) {
-    return this.inventoryDLService.GetPORequisition(fromDate,toDate)
+  GetPORequisition(fromDate, toDate) {
+    return this.inventoryDLService.GetPORequisition(fromDate, toDate)
+      .map(res => { return res });
+  }
+  //Get Active Inventory List
+  GetActiveInventoryList() {
+    return this.inventoryDLService.GetActiveInventoryList()
       .map(res => { return res });
   }
   //GET PO requisition
@@ -384,8 +388,11 @@ export class InventoryBLService {
     return this.inventoryDLService.GetAllFiscalYears()
       .map(res => res);
   }
-  
 
+  public GetAvailableQuantityByItemId(ItemId: number) {
+    return this.inventoryDLService.GetAvailableQuantityByItemId(ItemId)
+      .map(res => res);
+  }
 
   //POST:posting the requisitions in requistion table..(tests-order.component)
   PostToPurchaseOrder(PO: PurchaseOrder) {
@@ -406,7 +413,7 @@ export class InventoryBLService {
   //POST: posting the purchase order cancel
   PostPurchaseOrderCancelDetail(selectedPoId, cancelationRemarks) {
     try {
-      return this.inventoryDLService.PostPurchaseOrderCancelDetail(selectedPoId,cancelationRemarks)
+      return this.inventoryDLService.PostPurchaseOrderCancelDetail(selectedPoId, cancelationRemarks)
         .map(res => { return res });
     } catch (ex) {
       throw ex;
@@ -487,30 +494,16 @@ export class InventoryBLService {
     return this.inventoryDLService.PostToReqForQuotation(data)
       .map(res => { return res })
   }
-  //POST:Posting the Goods receipt data in Goods Receipt,Goods Receipt Items, Stock table
-  PostToGoodsReceipt(goodsReceipt: GoodsReceipt) {
-    let newGR: any = _.omit(goodsReceipt, ['GoodsReceiptValidator']);
-    let newGrItems = goodsReceipt.GoodsReceiptItem.map(item => {
-      return _.omit(item, ['GoodsReceiptItemValidator']);
-    });
-
-    newGR.GoodsReceiptItem = newGrItems;
-
-    let data = JSON.stringify(newGR);
-    return this.inventoryDLService.PostToGoodsReceipt(data)
-      .map(res => { return res })
-  }
   //POST: Posting Dispatched Items
-  PostToDispatchItems(requisitionStockVM: RequisitionStockVMModel) {
+  PostToDispatchItems(dispatchItems: Array<DispatchItems>) {
 
-    let newRequisitionSVM: any = requisitionStockVM;
 
-    let dispatchItemsTemp = requisitionStockVM.dispatchItems.map(function (item) {
+    let dispatchItemsTemp = dispatchItems.map(function (item) {
       var temp = _.omit(item, ['DispatchItemValidator']);
       return temp;
     });
-    newRequisitionSVM.dispatchItems = dispatchItemsTemp;
-    let data = JSON.stringify(newRequisitionSVM);
+    dispatchItems = dispatchItemsTemp;
+    let data = JSON.stringify(dispatchItems);
     return this.inventoryDLService.PostToDispatchItems(data)
       .map(res => { return res })
 
@@ -540,23 +533,13 @@ export class InventoryBLService {
       .map(res => { return res })
   }
   //Posting the Requisiton and requisitionItems table
-  PostDirectDispatch(requisitionStockVM: RequisitionStockVMModel) {
-    let newRequ: any = _.omit(requisitionStockVM.requisition, ['RequisitionValidator']);
-
-    let newRequItems = requisitionStockVM.requisition.RequisitionItems.map(item => {
-      return _.omit(item, ['RequisitionItemValidator']);
-    });
-    newRequ.RequisitionItems = newRequItems;
-    
-    let newRequisitionSVM: any = requisitionStockVM;
-
-    let dispatchItemsTemp = requisitionStockVM.dispatchItems.map(function (item) {
+  PostDirectDispatch(dispatchItems: DispatchItems[]) {
+    let dispatchItemsTemp = dispatchItems.map(function (item) {
       var temp = _.omit(item, ['DispatchItemValidator']);
       return temp;
     });
-    newRequisitionSVM.requisition = newRequ;
-    newRequisitionSVM.dispatchItems = dispatchItemsTemp;
-    let data = JSON.stringify(newRequisitionSVM);
+    dispatchItems = dispatchItemsTemp;
+    let data = JSON.stringify(dispatchItems);
     return this.inventoryDLService.PostDirectDispatch(data)
       .map(res => { return res })
   }
@@ -702,4 +685,15 @@ export class InventoryBLService {
     return this.inventoryDLService.GetGRVendorBillingHistory()
       .map(res => { return res });
   }
+
+  //POST: Add GR in Stock
+  ReceiveGR(grId: number, receivedRemarks: string) {
+    return this.inventoryDLService.ReceiveGR(grId, receivedRemarks)
+      .map(res => { return res })
+  }
+  //GET: External : get all  fixed asset location list
+  // public GetFixedAssetLocationList() {
+  //   return this.inventoryDLService.GetFixedAssetLocationList()
+  //     .map(res => { return res });
+  // }
 }

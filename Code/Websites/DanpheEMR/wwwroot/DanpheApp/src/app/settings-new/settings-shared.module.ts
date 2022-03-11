@@ -10,6 +10,9 @@ import { SettingsDLService } from './shared/settings.dl.service';
 import { SettingsService } from './shared/settings-service';
 import { SelectReferrerComponent } from './ext-referral/select-referrer/select-referrer.component';
 import { MembershipSelectComponent } from './billing/memberships/select-membership-scheme/membership-select.component';
+import { PrinterSelectComponent } from './printers/select-printer/printer-select.component';
+import { AddPrinterSettingsComponent } from './printers/add-new/add-printer-setting.component';
+import { ListPrinterSettingsComponent } from './printers/list/list-printer-settings.component';
 
 
 @NgModule({
@@ -29,7 +32,10 @@ import { MembershipSelectComponent } from './billing/memberships/select-membersh
   declarations: [
     AddExternalReferralComponent,
     SelectReferrerComponent,
-    MembershipSelectComponent
+    MembershipSelectComponent,
+    PrinterSelectComponent,
+    AddPrinterSettingsComponent,
+    //ListPrinterSettingsComponent
   ],
 
   exports: [
@@ -38,7 +44,10 @@ import { MembershipSelectComponent } from './billing/memberships/select-membersh
     RouterModule,
     SelectReferrerComponent,
     AddExternalReferralComponent,
-    MembershipSelectComponent
+    MembershipSelectComponent,
+    PrinterSelectComponent,
+    AddPrinterSettingsComponent,
+    //ListPrinterSettingsComponent
 
   ]
 })

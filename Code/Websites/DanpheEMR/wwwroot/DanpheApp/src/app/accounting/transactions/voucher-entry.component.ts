@@ -37,8 +37,6 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { FiscalYearModel } from "../settings/shared/fiscalyear.model";
 import { CommonFunctions } from "../../shared/common.functions";
 import { VoucherHeadModel } from '../settings/shared/voucherhead.model';
-import { NepaliDate } from "../../shared/calendar/np/nepali-dates";
-import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
 import { CoreService } from "../../core/shared/core.service";
 import { Router } from '@angular/router';
 import { AccountingService } from '../shared/accounting.service';
@@ -46,6 +44,7 @@ import { RouteFromService } from '../../shared/routefrom.service';
 import * as _ from 'lodash';
 import { VoucherHead } from './shared/VoucherHead';
 import { SecurityService } from '../../security/shared/security.service';
+import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 @Component({
   host: { '(window:keydown)': 'hotkeys($event)' },
   templateUrl: "./voucher-entry.html"
@@ -63,7 +62,7 @@ export class VoucherEntryComponent {
   public todaysDate: string = null;
   public TransactionDate: string = null;
 
-  public selLedgerArr: Array<LedgerModel> = null;//this keeps tracks of seleted ledgers in this page only.
+  public selLedgerArr: Array<LedgerModel> = new Array<LedgerModel>();//this keeps tracks of seleted ledgers in this page only.
   public allLedgerList: Array<LedgerModel> = [];//these are all available ledgers for current hospital.
 
   public totalDebit: number = 0;
@@ -86,6 +85,7 @@ export class VoucherEntryComponent {
   public IsAllowDuplicateVoucherEntry: boolean;
   public curIndex: any;
   public fiscalYId: any;
+  public showPayeeAndCheque = false;
 
   constructor(
     public accountingBLService: AccountingBLService,
@@ -103,13 +103,12 @@ export class VoucherEntryComponent {
     this.GetFiscalYearList();
     this.GetLedgerList();
     this.setParameterValues();
-    this.coreService.GetCodeDetails().subscribe(res => {      
-      this.coreService.SetCodeDetails(res);
-    });
-   
-    this.coreService.GetFiscalYearList().subscribe(res => {      
-      this.coreService.SetFiscalYearList(res);
-    });
+    if (!!this.accountingService.accCacheData.CodeDetails && this.accountingService.accCacheData.CodeDetails.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+      this.coreService.SetCodeDetails(this.accountingService.accCacheData.CodeDetails);//mumbai-team-june2021-danphe-accounting-cache-change
+    }
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+      this.coreService.SetFiscalYearList(this.accountingService.accCacheData.FiscalYearList);//mumbai-team-june2021-danphe-accounting-cache-change
+    }
   }
 
   ngOnInit() {
@@ -182,32 +181,33 @@ export class VoucherEntryComponent {
 
   GetVoucher() {
     try {
-      this.accountingBLService.GetVoucher()
-        .subscribe(res => {
-          this.voucherTypeList = res.Results;
-          //JV (Journal Voucher) should always be there, so we can be 100% sure that this shouldn't crash.
-          this.selVoucherTypeId = this.voucherTypeList.find(v => v.VoucherCode == "JV").VoucherId;
-
-
-          this.AssignVoucher();
-        });
+      if (!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherTypeList = this.accountingService.accCacheData.VoucherType;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherTypeList = this.voucherTypeList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        //JV (Journal Voucher) should always be there, so we can be 100% sure that this shouldn't crash.
+        this.selVoucherTypeId = this.voucherTypeList.find(v => v.VoucherCode == "JV").VoucherId;
+        this.AssignVoucher();
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
   }
   GetVoucherHead() {
     try {
-      this.accountingBLService.GetVoucherHead()
-        .subscribe(res => {
-          this.voucherHeadList = res.Results;
-        });
+      if (!!this.accountingService.accCacheData.VoucherHead && this.accountingService.accCacheData.VoucherHead.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherHeadList = this.accountingService.accCacheData.VoucherHead;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherHeadList = this.voucherHeadList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
   }
 
   GetFiscalYearList() {
-    this.fiscalYearList = this.securityService.AccHospitalInfo.FiscalYearList;    
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYearList = this.securityService.AccHospitalInfo.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalYearList = this.fiscalYearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+    }
     this.currFiscalYear = new FiscalYearModel();
     this.currFiscalYear=this.securityService.AccHospitalInfo.CurrFiscalYear;
   }
@@ -231,28 +231,25 @@ export class VoucherEntryComponent {
   //get all Ledger
   GetLedgerList() {
     try {
-      this.accountingBLService.GetLedgers()
-        .subscribe(res => {
-          if (res.Results) {
-            this.allLedgerList = res.Results;
-            this.allLedgerList.forEach(a => {
-              if (a.ClosingBalance > 0) {
-                a.ClosingBalwithDrCr = "Dr" + a.ClosingBalance;
-              }
-              else if (a.ClosingBalance == 0) {
-                a.ClosingBalwithDrCr = "0";
-              }
-              else {
-                a.ClosingBalwithDrCr = "Cr" + -a.ClosingBalance;
-              }
-            });
-            this.SetDefaultVoucherHead();
-            if (this.transaction.TransactionItems.length == 1) {
-              this.ChangeFocus("Ledger_" + 1);
+      if(!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+          this.allLedgerList = this.accountingService.accCacheData.Ledgers.filter(x => x.IsActive != false);//mumbai-team-june2021-danphe-accounting-cache-change          
+          this.allLedgerList = this.allLedgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+          this.allLedgerList.forEach(a => {
+            if (a.ClosingBalance > 0) {
+              a.ClosingBalwithDrCr = "Dr" + a.ClosingBalance;
             }
-
+            else if (a.ClosingBalance == 0) {
+              a.ClosingBalwithDrCr = "0";
+            }
+            else {
+              a.ClosingBalwithDrCr = "Cr" + -a.ClosingBalance;
+            }
+          });
+          this.SetDefaultVoucherHead();
+          if (this.transaction.TransactionItems.length == 1) {
+            this.ChangeFocus("Ledger_" + 1);
           }
-        });
+      } 
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -268,15 +265,15 @@ export class VoucherEntryComponent {
         if (temp <= 0) {
           temp = 0;
         }
-        currentTxnItem.Amount = temp;
+        currentTxnItem.Amount =  CommonFunctions.parseDecimal(temp);
       }
       else {
         currentTxnItem.DrCr = true;
-        var temp = this.totalCredit - this.totalDebit
+        var temp = this.totalCredit - this.totalDebit;
         if (temp <= 0) {
           temp = 0;
         }
-        currentTxnItem.Amount = temp;
+        currentTxnItem.Amount =CommonFunctions.parseDecimal(temp);
       }
       this.transaction.TransactionItems.push(currentTxnItem);
       //here we need to pass index of newly created ledger. Index will always be length-1
@@ -299,6 +296,8 @@ export class VoucherEntryComponent {
   }
   //POST the txn to Database 
   SaveVoucherToDb() {
+    this.transaction.UpdateValidator("off", "PayeeName", "required");
+    this.transaction.UpdateValidator("off", "ChequeNumber", "");
     if (!this.CheckCalculations()) {
       return;
     }
@@ -314,6 +313,7 @@ export class VoucherEntryComponent {
           return;
         }
         else {
+
           this.CheckBackDateEntryValidation();
           for (var a in this.transaction.TransactionValidator.controls) {
             this.transaction.TransactionValidator.controls[a].markAsDirty();
@@ -332,7 +332,6 @@ export class VoucherEntryComponent {
               }
             };
           }
-
 
           else
             txnValidation = false;
@@ -410,7 +409,7 @@ export class VoucherEntryComponent {
   ViewTransactionDetails(resultdata) {
     try {
       localStorage.setItem("SectionId", this.sectionId.toString());
-      this.changeDetectorRef.detectChanges();
+      //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
       this.voucherNumber = resultdata.VoucherNumber;
       this.fiscalYId =resultdata.FiscalyearId;    //pass fsYid with voucher number 
       this.showVoucherPopup = true;
@@ -440,26 +439,26 @@ export class VoucherEntryComponent {
             this.transaction.TransactionItems[index].LedgerId = this.selLedgerArr[index].LedgerId;
             this.transaction.TransactionItems[index].LedgerName = this.selLedgerArr[index].LedgerName;
             this.transaction.TransactionItems[index].ChartOfAccountName = this.selLedgerArr[index].ChartOfAccountName;
-            this.ChangeFocus("Amount_" + (index + 1));
             this.transaction.TransactionItems[index].Code = this.selLedgerArr[index].Code;
+            this.ChangeFocus("Amount_" + (index + 1));
           }
           else {
             let extItem = this.transaction.TransactionItems.find(a => a.LedgerId == this.selLedgerArr[index].LedgerId);
             let extItemIndex = this.transaction.TransactionItems.findIndex(a => a.LedgerId == this.selLedgerArr[index].LedgerId);
             if (extItem && extItemIndex != index) {
               this.msgBoxServ.showMessage("failed", ["Voucher for " + this.selLedgerArr[index].LedgerName + " already entered."]);
-              this.changeDetectorRef.detectChanges();
+              //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
               this.selLedgerArr[index] = null;
               this.transaction.TransactionItems[index].ChartOfAccountName = "";
-              this.ChangeFocus("Ledger_" + (index + 1));
               this.transaction.TransactionItems[index].Code = "";
+              this.ChangeFocus("Ledger_" + (index + 1));
             }
             else {
               this.transaction.TransactionItems[index].LedgerId = this.selLedgerArr[index].LedgerId;
               this.transaction.TransactionItems[index].LedgerName = this.selLedgerArr[index].LedgerName;
               this.transaction.TransactionItems[index].ChartOfAccountName = this.selLedgerArr[index].ChartOfAccountName;
-              this.ChangeFocus("Amount_" + (index + 1));
               this.transaction.TransactionItems[index].Code = this.selLedgerArr[index].Code;
+              this.ChangeFocus("Amount_" + (index + 1));
             }
           }
         }
@@ -494,8 +493,8 @@ export class VoucherEntryComponent {
     try {
       let valid = true;
       //parse to same format before comparison..
-      this.totalDebit = CommonFunctions.parseAmount(this.totalDebit);
-      this.totalCredit = CommonFunctions.parseAmount(this.totalCredit);
+      // this.totalDebit = CommonFunctions.parseAmount(this.totalDebit);
+      // this.totalCredit = CommonFunctions.parseAmount(this.totalCredit);
 
       if (this.totalDebit && this.totalCredit) {
         if (this.totalDebit != this.totalCredit) {
@@ -518,7 +517,7 @@ export class VoucherEntryComponent {
 
   public Reset() {
     try {
-      this.changeDetectorRef.detectChanges();
+      //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
       this.transaction = new TransactionModel();
       this.selectedVoucherHead = new VoucherHead();
       this.selLedgerArr = [];
@@ -536,7 +535,7 @@ export class VoucherEntryComponent {
       this.totalDebit = this.totalAmount = 0;
       this.totalCredit = 0;
       this.transaction.TransactionItems.forEach(a => {
-        a.Amount = CommonFunctions.parseAmount(a.Amount);
+       // a.Amount = CommonFunctions.parseAmount(a.Amount);
         if (a.DrCr === true || a.DrCr.toString() == "true") {
           this.totalDebit += a.Amount;
         }
@@ -547,6 +546,9 @@ export class VoucherEntryComponent {
           this.totalAmount = this.totalDebit;
         }
       });
+      this.totalDebit =  CommonFunctions.parseDecimal(this.totalDebit);
+      this.totalCredit =  CommonFunctions.parseDecimal(this.totalCredit);
+      this.totalAmount = this.totalDebit;
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -558,7 +560,7 @@ export class VoucherEntryComponent {
     let check = confirm("Do you want to create new Ledger?");
     if (check) {
       this.showAddNewLedgerPage = false;
-      this.changeDetectorRef.detectChanges();
+      //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
       this.showAddNewLedgerPage = true;
     }
   }
@@ -638,6 +640,14 @@ export class VoucherEntryComponent {
   }
 
   onVoucherTypeChange() {
+    if(this.selVoucherTypeId == this.voucherTypeList.find(v => v.VoucherCode == "PMTV").VoucherId ){
+      if((this.voucherTypeList.find(v => v.VoucherCode == "PMTV").ShowPayeeName)== true && (this.voucherTypeList.find(v => v.VoucherCode == "PMTV").ShowChequeNumber== true)){
+        this.showPayeeAndCheque = true;
+      }
+    }
+    else{
+      this.showPayeeAndCheque = false;
+    }
     //if no txn item then assign voucher, else confirm and change voucher type
     if (this.transaction.TransactionItems.length == 0) {
       this.AssignVoucher();
@@ -651,7 +661,7 @@ export class VoucherEntryComponent {
         this.GettempVoucherNumber(this.transaction.VoucherId, this.sectionId,this.TransactionDate);
       }
       else { //set to old one if user chooses 'NO' from confirmbox.
-        this.changeDetectorRef.detectChanges();
+        //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
         this.selVoucherTypeId = oldVoucherTypeId;//detect change should be above this else it won't work.. :(
       }
     }
@@ -688,26 +698,29 @@ export class VoucherEntryComponent {
 
   //this comes from add-new ledger popup
   //modified: sud/nagesh: 21Jun'20--refactoring.
-  CallBackAddNewLedger($event) {
+   async CallBackAddNewLedger($event) {
     if ($event && $event.action == "add") {
       var temp = $event.data;
       //push newly created ledger to the list and slice it to refresh the Array object
-      this.allLedgerList.push(temp);
-      this.allLedgerList = this.allLedgerList.slice();
+      // this.allLedgerList.push(temp);
+      // this.allLedgerList = this.allLedgerList.slice();
+     
+      await this.UpdateLedgers();
       ///to automatically assign newly created ledger, we've to assingn the name then call AssignSelectedLedgerFunction.
       //so that it can check by the name and assign object property from the list.
       this.selLedgerArr[this.curIndex] = temp.LedgerName;
-      this.AssignSelectedLedger(this.curIndex);
+      this.GetLedgerList();
+      //this.AssignSelectedLedger(this.curIndex);
     }
 
-    this.changeDetectorRef.detectChanges();
+    //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
     this.showAddNewLedgerPage = false;
 
   }
 
 
   SetDefaultVoucherHead() {
-    this.changeDetectorRef.detectChanges();
+    //this.changeDetectorRef.detectChanges(); //mumbai-team-june2021-danphe-accounting-cache-change
     if (this.voucherHeadList && this.voucherHeadList.length > 0) {
       this.selectedVoucherHead = new VoucherHead();
       var defaultVH = this.voucherHeadList.filter(vh => vh.IsDefault == true);
@@ -764,4 +777,13 @@ export class VoucherEntryComponent {
     //console.log(this.IsBackDateEntry);
   }
 
+  public async UpdateLedgers() {
+    try {
+      DanpheCache.clearDanpheCacheByType(MasterType.LedgersAll);
+      await this.accountingService.RefreshAccCacheData();
+    }
+    catch (ex) {
+      console.log(ex);
+    }
+  }
 }

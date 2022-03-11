@@ -11,6 +11,7 @@ import { SecurityService } from "../../security/shared/security.service";
 import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
 import { CoreService } from '../../core/shared/core.service';
 import { DanpheHTTPResponse } from "../../shared/common-models";
+import { AccountingService } from "../shared/accounting.service";
 @Component({
     templateUrl: './account-closure.html',
 })
@@ -29,7 +30,7 @@ export class AccountClosureComponent {
     constructor(
         public msgBoxServ: MessageboxService,
         public accBLService: AccountingBLService, public nepaliCalendarServ: NepaliCalendarService,
-        public securityService: SecurityService, public changeDetRef: ChangeDetectorRef, public coreService: CoreService) {
+        public securityService: SecurityService, public changeDetRef: ChangeDetectorRef, public coreService: CoreService,public accountingService:AccountingService) {
         this.getActiveFiscalYear();
         this.showAccountClosureUI = true;        
         this.calType = coreService.DatePreference;
@@ -38,31 +39,32 @@ export class AccountClosureComponent {
 
     getActiveFiscalYear() {
         try {
-            this.accBLService.GetFiscalYearList()
-                .subscribe(res => {
-                    if (res.Results.length) {
-                        this.FiscalYearList = res.Results;
-                        var today = new Date();
-                        var currentData = moment(today).format('YYYY-MM-DD');
-                        var currfiscyear = this.FiscalYearList.filter(f=> f.FiscalYearId==this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId);
-                        //var currfiscyear = this.FiscalYearList.filter(f => f.StartDate <= currentData && f.EndDate >= currentData);
-                        if (currfiscyear.length > 0) {
-                            this.fiscalYearId = currfiscyear[0].FiscalYearId;
-                            this.activeFiscalYear = currfiscyear[0];
-                            if (this.fiscalYearId != null) {
-                                //this.disablebtn = (this.activeFiscalYear.IsClosed == true) ? true : false;   //old code
-                                this.disablebtn = (this.activeFiscalYear.IsClosed == false && this.activeFiscalYear.EndDate > currentData) ? true : false;
-                            }
-                            else {
-                                this.disablebtn = true;
-                            }
+            if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+                if (this.accountingService.accCacheData.FiscalYearList.length) {//mumbai-team-june2021-danphe-accounting-cache-change
+                    this.FiscalYearList = this.accountingService.accCacheData.FiscalYearList;//mumbai-team-june2021-danphe-accounting-cache-change
+                    this.FiscalYearList = this.FiscalYearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+                    var today = new Date();
+                    var currentData = moment(today).format('YYYY-MM-DD');
+                    var currfiscyear = this.FiscalYearList.filter(f => f.FiscalYearId == this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId);
+                    //var currfiscyear = this.FiscalYearList.filter(f => f.StartDate <= currentData && f.EndDate >= currentData);
+                    if (currfiscyear.length > 0) {
+                        this.fiscalYearId = currfiscyear[0].FiscalYearId;
+                        this.activeFiscalYear = currfiscyear[0];
+                        if (this.fiscalYearId != null) {
+                            //this.disablebtn = (this.activeFiscalYear.IsClosed == true) ? true : false;   //old code
+                            this.disablebtn = (this.activeFiscalYear.IsClosed == false && this.activeFiscalYear.EndDate > currentData) ? true : false;
                         }
-                        this.coreService.GetFiscalYearList().subscribe(res => {      
-                            this.coreService.SetFiscalYearList(res);
-                          });                         
+                        else {
+                            this.disablebtn = true;
+                        }
                     }
-                });
-        } catch (ex) {
+                    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+                        this.coreService.SetFiscalYearList(this.accountingService.accCacheData.FiscalYearList);//mumbai-team-june2021-danphe-accounting-cache-change
+                    }
+                }
+            }
+        }
+        catch (ex) {
             console.log(ex);
         }
     }
@@ -75,6 +77,15 @@ export class AccountClosureComponent {
                         this.securityService.SetAccHospitalInfo(res.Results);
                           this.coreService.GetFiscalYearList().subscribe(res => {      
                             this.coreService.SetFiscalYearList(res);
+                            this.FiscalYearList = res.Results;
+                            for (var i = 0; i < this.FiscalYearList.length; i++) {
+                                this.FiscalYearList[i].showreopen = (this.FiscalYearList[i].IsClosed == true) ? true : false;
+                            }
+                            this.accountingService.accCacheData.FiscalYearList.forEach(fy =>{
+                            let fiscalyear = this.FiscalYearList.filter(f => f.FiscalYearId == fy.FiscalYearId);
+                            fy.IsClosed = (fiscalyear.length > 0) ? fiscalyear[0].IsClosed : true;
+                            fy.showreopen = fy.IsClosed;
+                            });
                           });         
                     }
                    
@@ -120,6 +131,7 @@ export class AccountClosureComponent {
     }
     postAccountClosure() {
         this.disablebtn = true;
+        this.loadDetail = false;
         this.accBLService.PostAccountClosure(this.activeFiscalYear).subscribe(res => {
             if (res.Status == "OK") {
                 this.activeFiscalYear = res.Results;

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, Output, EventEmitter, Input, OnDestroy } from "@angular/core";
+import { Component, ChangeDetectorRef, Output, EventEmitter, Input, OnDestroy, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -59,7 +59,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
   public ccChargelist: any;
   public ccchargeData: any;
   // for cccharges popup
-  public showAddCCcharge: boolean = false;  
+  public showAddCCcharge: boolean = false;
   public update: boolean = false;
   public index: number;
   public selCompany: PHRMCompanyModel = new PHRMCompanyModel();
@@ -68,8 +68,8 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
   public selGenName: PHRMGenericModel = new PHRMGenericModel();
   public selUOM: PHRMUnitOfMeasurementModel = new PHRMUnitOfMeasurementModel();
 
- //for show and hide packing features
-   IsPkgitem: boolean = false;
+  //for show and hide packing features
+  IsPkgitem: boolean = false;
   public selectedItemId: number = null;
   public showAddToRackPage: boolean = false;
   public DispensaryRackList: Array<PhrmRackModel> = new Array<PhrmRackModel>();
@@ -79,9 +79,12 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
   public selectedPacking: PHRMPackingTypeModel = new PHRMPackingTypeModel();
   public selectedGeneric: PHRMGenericModel = new PHRMGenericModel();
   public rackId: number = null;
+  public globalListenFunc: Function;
+  public ESCAPE_KEYCODE = 27;   //to close the window on click of ESCape.
 
   @Output("callback-add")
   callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
+  showCompanyAddPopUp: boolean;
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showItemAddPage = val;
@@ -92,7 +95,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     public pharmacyBLService: PharmacyBLService,
     public securityService: SecurityService,
     public changeDetector: ChangeDetectorRef,
-    public msgBoxServ: MessageboxService,) {
+    public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
     this.itemGridColumns = PHRMGridColumns.PHRMItemList;
     this.getItemList();
     this.getSuppliers();
@@ -105,6 +108,13 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     this.GetRack();
     this.GetPackingTypeList();
     this.showpacking();
+  }
+  ngOnInit() {
+    this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+      if (e.keyCode == this.ESCAPE_KEYCODE) {
+        this.Close()
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -132,7 +142,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
   }
   showpacking() {
     this.IsPkgitem = true;
-    let pkg = this.coreService.Parameters.find((p) =>p.ParameterName == "PharmacyGRpacking" && p.ParameterGroupName == "Pharmacy").ParameterValue;
+    let pkg = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyGRpacking" && p.ParameterGroupName == "Pharmacy").ParameterValue;
     if (pkg == "true") {
       this.IsPkgitem = true;
     } else {
@@ -247,6 +257,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
         this.selectedItem = $event.Data;
         this.CurrentItem.ItemId = this.selectedItem.ItemId;
         this.CurrentItem.ItemName = this.selectedItem.ItemName;
+        this.CurrentItem.GenericName = this.selectedItem.GenericName;
         this.CurrentItem.ItemCode = this.selectedItem.ItemCode;
         this.CurrentItem.CompanyId = this.selectedItem.CompanyId;
         this.selCompany.CompanyName = $event.Data.CompanyName;
@@ -259,18 +270,21 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
         this.CurrentItem.ReOrderQuantity = this.selectedItem.ReOrderQuantity;
         this.CurrentItem.MinStockQuantity = this.selectedItem.MinStockQuantity;
         this.CurrentItem.BudgetedQuantity = this.selectedItem.BudgetedQuantity;
-        this.CurrentItem.VATPercentage = this.selectedItem.VATPercentage;
+        this.CurrentItem.PurchaseVATPercentage = this.selectedItem.PurchaseVATPercentage;
+        this.CurrentItem.SalesVATPercentage = this.selectedItem.SalesVATPercentage;
         this.CurrentItem.IsVATApplicable = this.selectedItem.IsVATApplicable;
         this.CurrentItem.IsActive = this.selectedItem.IsActive;
         this.CurrentItem.GenericId = this.selectedItem.GenericId;
         this.selGenName.GenericName = this.genericList.find(a => a.GenericId == this.CurrentItem.GenericId).GenericName;
+        this.CurrentItem.IsInsuranceApplicable = this.selectedItem.IsInsuranceApplicable;
+        this.CurrentItem.GovtInsurancePrice = this.selectedItem.GovtInsurancePrice;
 
         this.CurrentItem.IsInternationalBrand = this.selectedItem.IsInternationalBrand;
-        this.CurrentItem.CCCharge = this.selectedItem.CCCharge; 
-        if(this.CurrentItem.CCCharge == null){
-          this.CurrentItem.CCCharge  =0;
-        }  
-        this.ccchargeData = this.ccChargelist.find( c => c.CCChargevalue == this.CurrentItem.CCCharge);            // on valueChanged of cccharge there check id and geting error 
+        this.CurrentItem.CCCharge = this.selectedItem.CCCharge;
+        if (this.CurrentItem.CCCharge == null) {
+          this.CurrentItem.CCCharge = 0;
+        }
+        this.ccchargeData = this.ccChargelist.find(c => c.CCChargevalue == this.CurrentItem.CCCharge);            // on valueChanged of cccharge there check id and geting error 
         this.CurrentItem.IsNarcotic = this.selectedItem.IsNarcotic;
         this.CurrentItem.ABCCategory = this.selectedItem.ABCCategory;
         this.CurrentItem.PackingTypeId = this.selectedItem.PackingTypeId;
@@ -280,7 +294,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
         this.CurrentItem.Dosage = this.selectedItem.Dosage;
         this.CurrentItem.CCCharge = $event.Data.CCCharge;
         this.showItemAddPage = true;
-
+        this.setFocusById('category');
         break;
       }
       case "activateDeactivateIsActive": {
@@ -315,47 +329,62 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     this.showItemAddPage = false;
     this.changeDetector.detectChanges();
     this.showItemAddPage = true;
+    this.setFocusById("category");
   }
   Add() {
     for (var i in this.CurrentItem.ItemValidator.controls) {
       this.CurrentItem.ItemValidator.controls[i].markAsDirty();
       this.CurrentItem.ItemValidator.controls[i].updateValueAndValidity();
     }
-    if(this.CurrentItem.CCCharge == null)
-    {
+    if (this.CurrentItem.CCCharge == null) {
       this.CurrentItem.CCCharge = 0;
     }
-    if(this.CurrentItem.PackingTypeId !=null){
+    if (this.CurrentItem.PackingTypeId != null) {
       this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
     }
-    if(this.IsPkgitem == false){
-      this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable(); 
+    if (this.IsPkgitem == false) {
+      this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
     }
-    
+    else {
+      if (this.CurrentItem.PackingTypeId == null) {
+        this.msgBoxServ.showMessage("error", ["Packaging Type is required"])
+      }
+      else {
+        this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
+      }
+
+    }
+
     if (this.CurrentItem.GenericId == 0 || this.CurrentItem.ItemTypeId == 0 || this.CurrentItem.CompanyId == 0) {
       this.msgBoxServ.showMessage("error", ["Generic name or type or company is missing "]);
 
     }
     else {
       if (this.CurrentItem.IsValidCheck(undefined, undefined)) {
-        this.CurrentItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        this.pharmacyBLService.AddItem(this.CurrentItem)
-          .finally(() => { this.ClearItemData() })
-          .subscribe(
-            res => {
-              if (res.Status == "OK") {
-                this.msgBoxServ.showMessage("success", ["Item Added."]);
-                this.CallBackAddUpdate(res)
-                this.CurrentItem = new PHRMItemMasterModel();
-              }
-              else {
-                this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
-              }
-            },
-            err => {
-              this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-            });
+        if (this.checkGovtInsurancePrice()) {
+          this.CurrentItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+          this.pharmacyBLService.AddItem(this.CurrentItem)
+            .finally(() => { this.ClearItemData() })
+            .subscribe(
+              res => {
+                if (res.Status == "OK") {
+                  this.msgBoxServ.showMessage("success", ["Item Added."]);
+                  this.CallBackAddUpdate(res)
+                  this.CurrentItem = new PHRMItemMasterModel();
+                }
+                else {
+                  this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
+                }
+              },
+              err => {
+                this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+              });
+        }
+        else {
+          this.msgBoxServ.showMessage("error", ["Please Add Valid Insurance Price."])
+        }
       }
+
     }
   }
   Update() {
@@ -363,31 +392,49 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
       this.CurrentItem.ItemValidator.controls[i].markAsDirty();
       this.CurrentItem.ItemValidator.controls[i].updateValueAndValidity();
     }
-    if(this.CurrentItem.PackingTypeId !=null){
+    // if (this.CurrentItem.PackingTypeId != null) {
+    //   this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
+    // }
+    if (this.IsPkgitem == false) {
       this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
     }
-    if(this.IsPkgitem == false){
-      this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable(); 
+    else {
+      if (this.CurrentItem.PackingTypeId == null)
+        this.msgBoxServ.showMessage("error", ["Packaging Type is required"])
+      else {
+        this.CurrentItem.ItemValidator.controls['PackingTypeId'].disable();
+      }
     }
     if (this.CurrentItem.IsValidCheck(undefined, undefined)) {
-      this.CurrentItem.ModifiedOn = moment().format('YYYY-MM-DD HH:mm');
-      this.CurrentItem.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      this.pharmacyBLService.UpdateItem(this.CurrentItem)
-        .finally(() => { this.ClearItemData() })
-        .subscribe(
-          res => {
-            if (res.Status == "OK") {
-              this.msgBoxServ.showMessage("success", ['Item Type Details Updated.']);
-              this.CallBackAddUpdate(res);
-            }
-            else {
-              this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
-            }
-          },
-          err => {
-            this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-          });
+      if (this.checkGovtInsurancePrice()) {
+        this.CurrentItem.ModifiedOn = moment().format('YYYY-MM-DD HH:mm');
+        this.CurrentItem.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
+        this.pharmacyBLService.UpdateItem(this.CurrentItem)
+          .finally(() => { this.ClearItemData() })
+          .subscribe(
+            res => {
+              if (res.Status == "OK") {
+                this.msgBoxServ.showMessage("success", ['Item  Details Updated.']);
+                this.CallBackAddUpdate(res);
+                this.CurrentItem = new PHRMItemMasterModel();
+              }
+              else {
+                this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
+              }
+            },
+            err => {
+              this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+            });
+      }
+      else {
+        this.msgBoxServ.showMessage("error", ["Please Add Valid Insurance Price."])
+      }
     }
+  }
+  checkGovtInsurancePrice() {
+    if (this.CurrentItem.IsInsuranceApplicable == true && this.CurrentItem.GovtInsurancePrice <= 0) return false;
+    if (this.CurrentItem.IsInsuranceApplicable == true && this.CurrentItem.GovtInsurancePrice == null) return false;
+    return true;
   }
   CallBackAddUpdate(res) {
     if (res.Status == "OK") {
@@ -404,12 +451,13 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
       item.ReOrderQuantity = res.Results.ReOrderQuantity;
       item.MinStockQuantity = res.Results.MinStockQuantity;
       item.BudgetedQuantity = res.Results.BudgetedQuantity;
-      item.VATPercentage = res.Results.VATPercentage;
+      item.PurchaseVATPercentage = res.Results.PurchaseVATPercentage;
+      item.SalesVATPercentage = res.Results.SalesVATPercentage;
       item.IsVATApplicable = res.Results.IsVATApplicable;
       item.PackingTypeId = res.Results.PackingTypeId;
       item.IsActive = res.Results.IsActive;
       item.IsInternationalBrand = res.Results.IsInternationalBrand;
-      item.CCCharge = res.Results.CCCharge;      
+      item.CCCharge = res.Results.CCCharge;
       item.Duration = res.Results.Duration;
       item.Frequency = res.Results.Frequency;
       item.Dosage = res.Results.Dosage;
@@ -419,46 +467,48 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
       item.VED = res.Results.VED;
       item.Rack = res.Results.Rack;
       item.GenericId = res.Results.GenericId;
-      for (let compny of this.companyList) {
-        if (compny.CompanyId == res.Results.CompanyId) {
-          item.CompanyName = compny.CompanyName;
-          break;
-        }
-      };
-      for (let sup of this.supplierList) {
-        if (sup.SupplierId == res.Results.SupplierId) {
-          item.SupplierName = sup.SupplierName;
-          break;
-        }
-      };
-      for (let unit of this.uomList) {
-        if (unit.UOMId == res.Results.UOMId) {
-          item.UOMName = unit.UOMName;
-          break;
-        }
-      };
-      for (let itmtype of this.itemtypeList) {
-        if (itmtype.ItemTypeId == res.Results.ItemTypeId) {
-          item.ItemTypeName = itmtype.ItemTypeName;
-          break;
-        }
-      };
-      this.callbackAdd.emit({ item: item });
+      item.GenericName = this.selGenName.GenericName;
+      item.IsInsuranceApplicable = res.Results.IsInsuranceApplicable;
+      item.GovtInsurancePrice = res.Results.GovtInsurancePrice;
+
+      let newCompany = this.companyList.find(c => c.CompanyId == res.Results.CompanyId);
+      item.CompanyName = (newCompany != null) ? newCompany.CompanyName : null;
+
+      let newSupplier = this.supplierList.find(c => c.SupplierId == res.Results.SupplierId)
+      item.SupplierName = (newSupplier != null) ? newSupplier.SupplierName : null;
+
+
+      let newUom = this.uomList.find(c => c.UOMId == res.Results.UOMId);
+      item.UOMName = (newUom != null) ? newUom.UOMName : null;
+
+      let newItemType = this.itemtypeList.find(c => c.ItemTypeId == res.Results.ItemTypeId);
+      item.ItemTypeName = (newItemType != null) ? newItemType.ItemTypeName : null;
+      //this.getItemList();
+      this.CallBackAdd(item);
     }
     else {
       this.msgBoxServ.showMessage("error", ['some error ' + res.ErrorMessage]);
     }
   }
   CallBackAdd(itm: PHRMItemMasterModel) {
-    this.itemList.push(itm);
     if (this.index != null)
-      this.itemList.splice(this.index, 1);
+      this.itemList.splice(this.index, 1, itm);
+    else
+      this.itemList.unshift(itm);
     this.itemList = this.itemList.slice();
     this.changeDetector.detectChanges();
     this.showItemAddPage = false;
-    this.itemList.unshift(itm);
     this.selectedItem = null;
     this.index = null;
+    this.callbackAdd.emit({ item: itm });
+  }
+  AddOrUpdate() {
+    if (this.update == false) {
+      this.setFocusById('save')
+    }
+    else {
+      this.setFocusById('update')
+    }
   }
   ActivateDeactivateStatus(currItem: PHRMItemMasterModel) {
     if (currItem != null) {
@@ -694,7 +744,7 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     }
     else {
       this.ccchargeData = 0;
-      this.CurrentItem.CCCharge = 0;      
+      this.CurrentItem.CCCharge = 0;
     }
   }
   // add cccharge  
@@ -741,11 +791,12 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     }
   }
   AddPackingTypePopUp(i) {
-    this.showPackingTypeAddPopUp = false;
+    this.showCompanyAddPopUp = false;
     this.index = i;
     this.changeDetector.detectChanges();
-    this.showPackingTypeAddPopUp = true;
+    this.showCompanyAddPopUp = true;
   }
+
 
   OnNewPackingTypeAdded($event) {
 
@@ -753,67 +804,88 @@ export class PHRMItemMasterManageComponent implements OnDestroy {
     var packingType = $event.packingType;
     this.packingtypeList.unshift(packingType);
   }
+  // AddCompanyPopUp(i) {
+  //   this.showCompanyAddPopUp = false;
+  //   this.index = i;
+  //   this.changeDetector.detectChanges();
+  //   this.showCompanyAddPopUp = true;
+  // }
+  // OnNewCompanyAdded($event) {
 
-  AddGenericTypePopUp(i){
+  //   this.showCompanyAddPopUp = false;
+  //   var company = $event.company;
+  //   this.companyList.unshift(company);
+  // }
+
+  AddGenericTypePopUp(i) {
     this.showGenericTypeAddPopUp = false;
     this.index = i;
     this.changeDetector.detectChanges();
     this.showGenericTypeAddPopUp = true;
   }
 
-  OnNewGenericTypeAdded($event){
+  OnNewGenericTypeAdded($event) {
     this.showGenericTypeAddPopUp = false;
     var generic = $event.generic;
     this.genericList.push(generic);
     this.genericList.slice();
     this.CurrentItem.GenericId = generic.GenericId;
+    this.CurrentItem.ItemValidator.get("GenericId").setValue(generic.GenericName)
+
   }
 
-  AddUomTypePopUp(i){
+  AddUomTypePopUp(i) {
     this.showUOMTypeAddPopUp = false;
     this.index = i;
     this.changeDetector.detectChanges();
     this.showUOMTypeAddPopUp = true;
   }
 
-  OnNewUomTypeAdded($event){
+  OnNewUomTypeAdded($event) {
     this.showUOMTypeAddPopUp = false;
     var uom = $event.uom;
     this.uomList.push(uom);
     this.uomList.slice();
     this.CurrentItem.UOMId = uom.UOMId;
+    this.CurrentItem.ItemValidator.get("UOMId").setValue(uom.UOMName)
   }
 
-  AddItemTypePopUp(i){
+  AddItemTypePopUp(i) {
     this.showItemTypeAddPopUp = false;
     this.index = i;
     this.changeDetector.detectChanges();
     this.showItemTypeAddPopUp = true;
   }
 
-  OnNewItemTypeAdded($event){
+  OnNewItemTypeAdded($event) {
     this.showItemTypeAddPopUp = false;
     var itemtype = $event.itemtype;
     this.itemtypeList.push(itemtype);
     this.itemtypeList.slice();
     this.CurrentItem.ItemTypeId = itemtype.ItemTypeId;
+    this.CurrentItem.ItemValidator.get("ItemTypeId").setValue(itemtype.ItemTypeName)
   }
 
-  AddSelectCompanyTypePopUp(){
-    this.showSelectcompanyTypeAddPopUp = false;
+  AddCompanyPopUp() {
+    this.showCompanyAddPopUp = false;
     this.changeDetector.detectChanges();
-    this.showSelectcompanyTypeAddPopUp = true;
+    this.showCompanyAddPopUp = true;
   }
 
-  OnNewSelectCompanyTypeAdded($event){
-    this.showSelectcompanyTypeAddPopUp = false;
+  OnNewComapnyAdded($event) {
+    this.showCompanyAddPopUp = false;
     var company = $event.company;
     this.companyList.push(company);
     this.companyList.slice();
     this.CurrentItem.CompanyId = company.CompanyId;
+    this.CurrentItem.ItemValidator.get("CompanyId").setValue(company.CompanyName)
   }
- 
- 
+
+  setFocusById(IdToBeFocused) {
+    window.setTimeout(function () {
+      document.getElementById(IdToBeFocused).focus();
+    }, 20);
+  }
 }
 
 

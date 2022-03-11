@@ -65,8 +65,10 @@ namespace DanpheEMR.Controllers
                 }
                 if (reqType == "phrm-store")
                 {
+                    var substoreType = Enums.ENUM_StoreCategory.Substore;
                     List<PHRMStoreModel> storeList = (from s in masterDbContext.Store
-                                                      select s).ToList();
+                                                      where s.Category == substoreType
+                                                      select s).OrderBy(s => s.Name).ToList();
                     responseData.Status = "OK";
                     responseData.Results = storeList;
                 }
@@ -95,6 +97,26 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = subDivisionList;
                 }
+                else if (reqType == "municipalities")
+                {
+                    var data = (from c in masterDbContext.Country
+                                join d in masterDbContext.CountrySubDivision on c.CountryId equals d.CountryId
+                                join m in masterDbContext.Municipalities on d.CountrySubDivisionId equals m.CountrySubDivisionId
+                                select new
+                                {
+                                    MunicipalityName = m.MunicipalityName,
+                                    MunicipalityId = m.MunicipalityId,
+                                    CountryId = m.CountryId,
+                                    CountryName = c.CountryName,
+                                    CountrySubDivisionName = d.CountrySubDivisionName,
+                                    CountrySubDivisionId = d.CountrySubDivisionId,
+                                    Type = m.Type,
+                                    IsActive = m.IsActive
+                                }).ToList();
+
+                    responseData.Status = "OK";
+                    responseData.Results = data;
+                }
                 else if (reqType == "reactions")
                 {
                     List<ReactionModel> reactioinList = (from rxn in masterDbContext.Reactions
@@ -109,6 +131,13 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = parameterList;
                 }
+                else if (reqType == "get-print-export-configuration")
+                {
+                    List<PrintExportConfigModel> data = (from config in masterDbContext.PrintExportConfig
+                                                         select config).OrderBy(b => b.PrintExportSettingsId).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = data;
+                }
 
             }
             catch (Exception ex)
@@ -118,10 +147,45 @@ namespace DanpheEMR.Controllers
             }
             return DanpheJSONConvert.SerializeObject(responseData, true);
         }
+        [HttpGet("GetICD10Groups")]
+        public IActionResult GetICD10Groups()
+        {
+            var context = new MasterDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+
+
+            try
+            {
+                var ResultList = (from rptGrp in context.ICD10ReportingGroups
+                                  join dGrp in context.ICD10DiseaseGroups on rptGrp.ReportingGroupId equals dGrp.ReportingGroupId into dg
+                                  from diseaseGrp in dg.DefaultIfEmpty()
+                                  select new
+                                  {
+                                      rptGrp.ReportingGroupId,
+                                      ReportingGroup_SN = rptGrp.SerialNumber,
+                                      rptGrp.ReportingGroupName,
+                                      DiseaseGroup_SN = diseaseGrp.SerialNumber,
+                                      DiseaseGroup_ICD = diseaseGrp.ICDCode,
+                                      diseaseGrp.DiseaseGroupName,
+                                      //ICD10_Code='',
+                                      //ICD10_Name = ''
+
+                                  });
+
+
+                responseData.Status = "OK";
+                responseData.Results = ResultList;
+            }
+            catch (Exception)
+            {
+                responseData.Status = "Failed";
+            }
+            return Ok(responseData);
+        }
 
         [HttpGet]
         [Route("~/api/Settings/GetStoreVerifiers/{StoreId}")]
-        public IActionResult GetStoreVerifiers([FromRoute]int StoreId)
+        public IActionResult GetStoreVerifiers([FromRoute] int StoreId)
         {
             var context = new RbacDbContext(connString);
             var responseData = new DanpheHTTPResponse<object>();
@@ -130,7 +194,7 @@ namespace DanpheEMR.Controllers
             try
             {
                 var StoreVerificationMapList = context.StoreVerificationMapModel.Where(svm => svm.StoreId == StoreId && svm.IsActive == true).OrderBy(svmf => svmf.VerificationLevel).ToList();
-                if(StoreVerificationMapList != null)
+                if (StoreVerificationMapList != null)
                 {
                     foreach (StoreVerificationMapModel StoreVerifier in StoreVerificationMapList)
                     {
@@ -189,11 +253,12 @@ namespace DanpheEMR.Controllers
                         try
                         {
                             PHRMStoreModel storeModel = DanpheJSONConvert.DeserializeObject<PHRMStoreModel>(str);
-                            storeModel = SubstoreBL.CreateStore(storeModel, rbacDbContext);
                             //create permission so that admin can create substore access right to the user
 
                             //add permission in store table
                             storeModel.PermissionId = SubstoreBL.CreatePermissionForStore(storeModel.Name, currentUser, rbacDbContext);
+                            //create store after creating permission
+                            storeModel = SubstoreBL.CreateStore(storeModel, rbacDbContext);
 
                             //create permission for each verifier
                             if (storeModel.StoreVerificationMapList != null)
@@ -202,7 +267,7 @@ namespace DanpheEMR.Controllers
                                 int MaxVerificationLevel = storeModel.MaxVerificationLevel;
                                 foreach (var storeVerificationMap in storeModel.StoreVerificationMapList)
                                 {
-                                    SubstoreBL.CreateAndMapVerifiersWithStore(storeVerificationMap, storeModel, CurrentVerificationLevel,MaxVerificationLevel, currentUser, rbacDbContext);
+                                    SubstoreBL.CreateAndMapVerifiersWithStore(storeVerificationMap, storeModel, CurrentVerificationLevel, MaxVerificationLevel, currentUser, rbacDbContext);
                                     CurrentVerificationLevel++;
                                 }
                             }
@@ -234,6 +299,36 @@ namespace DanpheEMR.Controllers
                     masterDbContext.CountrySubDivision.Add(subDivisionModel);
                     masterDbContext.SaveChanges();
                     responseData.Results = subDivisionModel;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "municipality")
+                {
+                    MunicipalityModel model = DanpheJSONConvert.DeserializeObject<MunicipalityModel>(str);
+                    if (model.MunicipalityId > 0)
+                    {
+                        var selectedMun = masterDbContext.Municipalities.Where(m => m.MunicipalityId == model.MunicipalityId).FirstOrDefault();
+                        selectedMun.CountryId = model.CountryId;
+                        selectedMun.CountrySubDivisionId = model.CountrySubDivisionId;
+                        selectedMun.MunicipalityName = model.MunicipalityName;
+                        selectedMun.Type = model.Type;
+                        selectedMun.ModifiedOn = System.DateTime.Now;
+                        selectedMun.ModifiedBy = currentUser.EmployeeId;
+                        masterDbContext.Entry(selectedMun).State = EntityState.Modified;
+                        masterDbContext.Entry(selectedMun).Property(x => x.CountryId).IsModified = true;
+                        masterDbContext.Entry(selectedMun).Property(x => x.CountrySubDivisionId).IsModified = true;
+                        masterDbContext.Entry(selectedMun).Property(x => x.MunicipalityName).IsModified = true;
+                        masterDbContext.Entry(selectedMun).Property(x => x.ModifiedBy).IsModified = true;
+                        masterDbContext.Entry(selectedMun).Property(x => x.ModifiedOn).IsModified = true;
+                        masterDbContext.Entry(selectedMun).Property(x => x.Type).IsModified = true;
+                    }
+                    else
+                    {
+                        model.CreatedOn = System.DateTime.Now;
+                        model.CreatedBy = currentUser.EmployeeId;
+                        masterDbContext.Municipalities.Add(model);
+                    }
+                    masterDbContext.SaveChanges();
+                    responseData.Results = model;
                     responseData.Status = "OK";
                 }
                 else if (reqType == "reaction")
@@ -308,6 +403,32 @@ namespace DanpheEMR.Controllers
                             throw ex;
                         }
                     }
+                }
+
+                else if (reqType == "post-bank")
+                {
+                    BanksModel bankDetail = DanpheJSONConvert.DeserializeObject<BanksModel>(str);
+
+                    bankDetail.CreatedBy = currentUser.EmployeeId;
+                    bankDetail.CreatedOn = DateTime.Now;
+
+                    masterDbContext.Banks.Add(bankDetail);
+                    masterDbContext.SaveChanges();
+
+
+                    responseData.Results = bankDetail;
+                    responseData.Status = "OK";
+                }
+
+                else if (reqType == "post-print-export-configuration")
+                {
+                    PrintExportConfigModel printExportConfigModel = DanpheJSONConvert.DeserializeObject<PrintExportConfigModel>(str);
+                    printExportConfigModel.CreatedBy = currentUser.EmployeeId;
+                    printExportConfigModel.CreatedOn = DateTime.Now;
+                    masterDbContext.PrintExportConfig.Add(printExportConfigModel);
+                    masterDbContext.SaveChanges();
+                    responseData.Results = printExportConfigModel;
+                    responseData.Status = "OK";
                 }
             }
             catch (Exception ex)
@@ -455,6 +576,23 @@ namespace DanpheEMR.Controllers
                         responseData.Results = countryInfo;
                         responseData.Status = "OK";
                     }
+                    else if (reqType == "municipalityStatusUpdate")
+                    {
+                        string munIdStr = this.ReadQueryStringData("municipalityId");
+                        int municipalityId = Convert.ToInt32(munIdStr);
+                        var selMunicipality = masterDBContext.Municipalities.Where(m => m.MunicipalityId == municipalityId).FirstOrDefault();
+                        selMunicipality.IsActive = !selMunicipality.IsActive;
+                        selMunicipality.ModifiedBy = currentUser.EmployeeId;
+                        selMunicipality.ModifiedOn = System.DateTime.Now;
+                        masterDBContext.Entry(selMunicipality).State = EntityState.Modified;
+                        masterDBContext.Entry(selMunicipality).Property(x => x.ModifiedOn).IsModified = true;
+                        masterDBContext.Entry(selMunicipality).Property(x => x.ModifiedBy).IsModified = true;
+                        masterDBContext.Entry(selMunicipality).Property(x => x.IsActive).IsModified = true;
+                        masterDBContext.SaveChanges();
+
+                        responseData.Results = selMunicipality;
+                        responseData.Status = "OK";
+                    }
                     else if (reqType == "subdivision")
                     {
                         CountrySubDivisionModel subdivInfo = DanpheJSONConvert.DeserializeObject<CountrySubDivisionModel>(str);
@@ -513,6 +651,55 @@ namespace DanpheEMR.Controllers
                         responseData.Results = parmToUpdate;
                     }
 
+                    else if (reqType == "put-bank")
+                    {
+                        BanksModel bankDetail = DanpheJSONConvert.DeserializeObject<BanksModel>(str);
+
+                        bankDetail.ModifiedBy = currentUser.EmployeeId;
+                        bankDetail.ModifiedOn = DateTime.Now;
+
+                        masterDBContext.Banks.Attach(bankDetail);
+
+                        masterDBContext.Entry(bankDetail).Property(x => x.BankName).IsModified = true;
+                        masterDBContext.Entry(bankDetail).Property(x => x.BankShortName).IsModified = true;
+                        masterDBContext.Entry(bankDetail).Property(x => x.Description).IsModified = true;
+                        masterDBContext.Entry(bankDetail).Property(x => x.IsActive).IsModified = true;
+                        masterDBContext.Entry(bankDetail).Property(x => x.ModifiedBy).IsModified = true;
+                        masterDBContext.Entry(bankDetail).Property(x => x.ModifiedOn).IsModified = true;
+
+                        masterDBContext.SaveChanges();
+
+                        responseData.Results = bankDetail;
+                        responseData.Status = "OK";
+
+                    }
+
+                    else if (reqType == "put-print-export-configuration")
+                    {
+                        PrintExportConfigModel printExportConfigModel = DanpheJSONConvert.DeserializeObject<PrintExportConfigModel>(str);
+                        printExportConfigModel.ModifiedBy = currentUser.EmployeeId;
+                        printExportConfigModel.ModifiedOn = DateTime.Now;
+                        masterDBContext.PrintExportConfig.Attach(printExportConfigModel);
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.SettingName).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.PageHeaderText).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ReportDescription).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ModuleName).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowHeader).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowFooter).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowEnDate).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowFilterDateRange).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowNpDate).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowOtherFilterVariables).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowPrintExportDateTime).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ShowUserName).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.IsActive).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ModifiedBy).IsModified = true;
+                        masterDBContext.Entry(printExportConfigModel).Property(x => x.ModifiedOn).IsModified = true;
+                        masterDBContext.SaveChanges();
+                        responseData.Results = printExportConfigModel;
+                        responseData.Status = "OK";
+                    }
+
                     else
                     {
                         responseData.Status = "Failed";
@@ -562,7 +749,7 @@ namespace DanpheEMR.Controllers
 
             List<BillItemPrice> itemList = currDepartment.ServiceItemsList;
             //BillingDbContext bilDbContext = new BillingDbContext(connString);
-
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
 
             itemList.ForEach(itm =>
             {
@@ -592,6 +779,11 @@ namespace DanpheEMR.Controllers
                     // add a new item.
                     if (itmFromServer == null)
                     {
+                        if (itm.ServiceDepartmentId == 0 && !String.IsNullOrEmpty(itm.ServiceDepartmentName))
+                        {
+                            itm.ServiceDepartmentId = masterDbContext.ServiceDepartments
+                                                .Where(b => b.ServiceDepartmentName == itm.ServiceDepartmentName).FirstOrDefault().ServiceDepartmentId;
+                        }
                         itm.ItemId = currDepartment.DepartmentId;
                         itm.ProcedureCode = currDepartment.DepartmentId.ToString();
                         masterDbContext.BillItemPrices.Add(itm);
@@ -611,6 +803,10 @@ namespace DanpheEMR.Controllers
                         itmFromServer.IsSAARCPriceApplicable = itm.IsSAARCPriceApplicable;
                         itmFromServer.IsForeignerPriceApplicable = itm.IsForeignerPriceApplicable;
                         itmFromServer.IsInsForeignerPriceApplicable = itm.IsInsForeignerPriceApplicable;
+                        itmFromServer.IsZeroPriceAllowed = itm.IsZeroPriceAllowed;
+                        itmFromServer.ModifiedBy = currentUser.EmployeeId;
+                        itmFromServer.ModifiedOn = DateTime.Now;
+                        itmFromServer.IsActive = itm.IsActive;
 
                         masterDbContext.Entry(itmFromServer).Property(b => b.ItemName).IsModified = true;
                         masterDbContext.Entry(itmFromServer).Property(b => b.Price).IsModified = true;
@@ -622,6 +818,10 @@ namespace DanpheEMR.Controllers
                         masterDbContext.Entry(itmFromServer).Property(b => b.IsSAARCPriceApplicable).IsModified = true;
                         masterDbContext.Entry(itmFromServer).Property(b => b.IsForeignerPriceApplicable).IsModified = true;
                         masterDbContext.Entry(itmFromServer).Property(b => b.IsInsForeignerPriceApplicable).IsModified = true;
+                        masterDbContext.Entry(itmFromServer).Property(b => b.IsZeroPriceAllowed).IsModified = true;
+                        masterDbContext.Entry(itmFromServer).Property(b => b.ModifiedOn).IsModified = true;
+                        masterDbContext.Entry(itmFromServer).Property(b => b.ModifiedBy).IsModified = true;
+                        masterDbContext.Entry(itmFromServer).Property(b => b.IsActive).IsModified = true;
 
                         masterDbContext.SaveChanges();
 

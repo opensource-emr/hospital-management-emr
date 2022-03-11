@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, Renderer2 } from "@angular/core";
 
 import { SecurityService } from '../../../security/shared/security.service';
 import { BedFeature } from '../../../adt/shared/bedfeature.model';
@@ -29,13 +29,22 @@ export class BedFeatureAddComponent {
   public update: boolean = false;
 
   public wardList: Array<Ward> = new Array<Ward>();
-
+  public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
   constructor(
     public settingsBLService: SettingsBLService,
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService,
-    public changeDetector: ChangeDetectorRef, public settingsService: SettingsService) {
+    public changeDetector: ChangeDetectorRef, public settingsService: SettingsService,
+    public renderer: Renderer2,) {
+      this.SetFocusById('BedFeatureName'); 
+      this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
+        if (e.keyCode == this.ESCAPE_KEYCODE) {
+          //this.onClose.emit({ CloseWindow: true, EventName: "close" });
+          this.Close();
+        }
+      });  
   }
+  globalListenFunc: Function;
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showAddPage = val;
@@ -43,6 +52,7 @@ export class BedFeatureAddComponent {
       this.update = true;
       this.CurrentBedFeature = Object.assign(this.CurrentBedFeature, this.selectedItem);
       this.CurrentBedFeature.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      this.SetFocusById('BedFeatureFullName')
     }
     else {
       this.CurrentBedFeature = new BedFeature();
@@ -52,6 +62,7 @@ export class BedFeatureAddComponent {
     }
 
     this.GetSrvDeptList();
+    this.SetFocusById('BedFeatureName'); 
   }
 
   Add() {
@@ -71,6 +82,7 @@ export class BedFeatureAddComponent {
             else {
               this.showMessageBox("error", "Check log for details");
               console.log(res.ErrorMessage);
+              this.SetFocusById('BedFeatureName'); 
             }
 
           },
@@ -205,7 +217,14 @@ export class BedFeatureAddComponent {
     }
 
   }
-
+  public SetFocusById(id: string) {
+    window.setTimeout(function () {
+        let elementToBeFocused = document.getElementById(id);
+        if (elementToBeFocused) {
+            elementToBeFocused.focus();
+        }
+    }, 600);
+}
 
 
 }

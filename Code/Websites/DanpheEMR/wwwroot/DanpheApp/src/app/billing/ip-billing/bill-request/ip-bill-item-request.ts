@@ -73,6 +73,10 @@ export class IpBillItemRequest implements OnInit {
   public searchByItemCode: boolean = true; //for items search
   public allRequestedData: any = null;
 
+  public BillingRequestDisplaySettings: any = null;
+  public LabTypeName: string = 'op-lab';
+  public hasMultipleLabType: boolean;
+
   constructor(
     public msgBoxServ: MessageboxService,
     public securityService: SecurityService,
@@ -85,7 +89,14 @@ export class IpBillItemRequest implements OnInit {
     this.searchByItemCode = this.coreService.UseItemCodeItemSearch();
     this.SetBillingItemsNPrices();
     this.BillRequestDoubleEntryWarningTimeHrs = this.coreService.LoadIPBillRequestDoubleEntryWarningTimeHrs();
-
+    //this.BillingRequestDisplaySettings = this.coreService.GetBillingRequestDisplaySettings();
+    this.GetBillingRequestDisplaySettings();
+    if (this.coreService.labTypes.length > 1) {
+      this.hasMultipleLabType = true;
+    } else {
+      this.hasMultipleLabType = false;
+      this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+    }
   }
 
   ngOnInit() {
@@ -106,6 +117,20 @@ export class IpBillItemRequest implements OnInit {
     this.ItemsListFormatter = this.ItemsListFormatter.bind(this);//to use global variable in list formatter auto-complete
 
     this.PastTest(this.pastTests);
+    this.SetLabTypeNameInLocalStorage();
+  }
+
+  SetLabTypeNameInLocalStorage() {
+    let labtypeInStorage = localStorage.getItem('BillingSelectedLabTypeName');
+    if (this.coreService.labTypes.length == 1) {
+      this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
+      localStorage.setItem('BillingSelectedLabTypeName', this.LabTypeName);
+    }
+    else {
+      if (labtypeInStorage) {
+        this.LabTypeName = labtypeInStorage;
+      }
+    }
   }
 
 
@@ -242,19 +267,6 @@ export class IpBillItemRequest implements OnInit {
     }
   }
 
-  printInvoice() {
-    let txnReceipt = BillingReceiptModel.GetReceiptFromTxnItems(this.billingTransaction.BillingTransactionItems);
-    txnReceipt.Patient = Object.create(this.patientInfo);
-    txnReceipt.IsValid = true;
-    txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-    txnReceipt.BillingDate = moment().format("YYYY-MM-DD HH:mm:ss");
-    txnReceipt.InvoiceNo = this.billingTransaction.InvoiceNo;
-    txnReceipt.CurrentFinYear = this.billingTransaction.FiscalYear;
-    this.IpBillRequestDetails = txnReceipt;
-    this.showIpBillRequestSlip = true;
-
-  }
-
   SetBillingTxnDetails() {
     let currentVisit = this.visitList.find(visit => visit.PatientVisitId == this.visitId);
     this.billingTransaction.TaxId = this.taxDetail.taxId;
@@ -264,7 +276,11 @@ export class IpBillItemRequest implements OnInit {
       //txnItem.RequestedBy = currentVisit ? currentVisit.ProviderId : null;
       //txnItem.BillingTransactionItemValidator.controls['RequestedBy'].setValue(txnItem.RequestedBy);
       txnItem.PatientId = this.patientId;
-
+      if (txnItem.SrvDeptIntegrationName && (txnItem.SrvDeptIntegrationName.toLowerCase() != "lab")) {
+        txnItem.LabTypeName = null;
+      } else {
+        txnItem.LabTypeName = this.LabTypeName;
+      }
       txnItem.RequestingDeptId = this.currBillingContext ? this.currBillingContext.RequestingDeptId : null;
       txnItem.BillingType = this.billingService.BillingType;
       txnItem.VisitType = this.billingService.BillingType.toLowerCase();
@@ -286,7 +302,14 @@ export class IpBillItemRequest implements OnInit {
       if (this.CheckSelectionFromAutoComplete() && this.billingTransaction.BillingTransactionItems.length) {
         for (var i = 0; i < this.billingTransaction.BillingTransactionItems.length; i++) {
           let currTxnItm = this.billingTransaction.BillingTransactionItems[i];
+          //for IsZeroPriceAlowed case...
+          var item = currTxnItm.ItemList.find(a => a.ItemId == currTxnItm.ItemId && a.ServiceDepartmentId == currTxnItm.ServiceDepartmentId);
+          if (item && item.IsZeroPriceAllowed) {
+            currTxnItm.UpdateValidator("off", "Price", "positiveNumberValdiator");
+          }
+
           for (var valCtrls in currTxnItm.BillingTransactionItemValidator.controls) {
+
             currTxnItm.BillingTransactionItemValidator.controls[valCtrls].markAsDirty();
             currTxnItm.BillingTransactionItemValidator.controls[valCtrls].updateValueAndValidity();
           }
@@ -299,6 +322,7 @@ export class IpBillItemRequest implements OnInit {
             isFormValid = false;
             break;
           }
+
         }
         if (!this.DiscountPercentSchemeValid) {
           this.msgBoxServ.showMessage("failed", ["Check Discount Schema (%)."]);
@@ -346,6 +370,7 @@ export class IpBillItemRequest implements OnInit {
       });
   }
 
+  public provReceiptInputs = { PatientId: 0, ProvFiscalYrId: 0, ProvReceiptNo: 0, visitType: null };
   PostToBillingTransaction() {
     this.billingTransaction.BillingTransactionItems.forEach(a => a.PatientVisitId = this.visitId);
     this.billingBLService.PostBillingTransactionItems(this.billingTransaction.BillingTransactionItems)
@@ -358,9 +383,11 @@ export class IpBillItemRequest implements OnInit {
             this.msgBoxServ.showMessage("success", ["Item added successfully"]);
             console.log(this.PostSuccessBool);
             if (this.PostSuccessBool) {
-              this.billingTransaction.FiscalYear = res.Results[0].ProvFiscalYear;
-              this.billingTransaction.InvoiceNo = res.Results[0].ProvisionalReceiptNo;
-              this.printInvoice();
+              this.provReceiptInputs.PatientId = this.patientId;
+              this.provReceiptInputs.ProvFiscalYrId = this.allRequestedData[0].ProvisionalFiscalYearId;
+              this.provReceiptInputs.ProvReceiptNo = this.allRequestedData[0].ProvisionalReceiptNo;
+              this.provReceiptInputs.visitType = null;//sending null from here for now.. Check this later.. 
+              this.showIpBillRequestSlip = true;
             } else {
               this.emitBillItemReq.emit({ newItems: this.allRequestedData });
             }
@@ -541,9 +568,12 @@ export class IpBillItemRequest implements OnInit {
         this.billingTransaction.BillingTransactionItems[index].IsValidSelItemName = false;
       if (!item && !this.selectedServDepts[index]) {
         this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems;
+        if (this.LabTypeName == 'er-lab') {
+          this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+        }
       }
       this.CheckForDoubleEntry();
-    }else{
+    } else {
       this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Past = false;
       this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now = false;
     }
@@ -562,7 +592,11 @@ export class IpBillItemRequest implements OnInit {
       if (doctor) {
         this.billingTransaction.BillingTransactionItems[index].ProviderId = doctor.EmployeeId;
         this.billingTransaction.BillingTransactionItems[index].ProviderName = doctor.FullName;
+
+
         this.billingTransaction.BillingTransactionItems[index].IsValidSelAssignedToDr = true;
+
+
       }
       else
         this.billingTransaction.BillingTransactionItems[index].IsValidSelAssignedToDr = false;
@@ -619,6 +653,9 @@ export class IpBillItemRequest implements OnInit {
     //else raise an invalid flag
     else {
       this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems;
+      if (this.LabTypeName == 'er-lab') {
+        this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
       this.billingTransaction.BillingTransactionItems[index].IsValidSelDepartment = false;
     }
   }
@@ -632,6 +669,9 @@ export class IpBillItemRequest implements OnInit {
         if (this.billingTransaction.BillingTransactionItems[index].ItemId == null)
           this.ResetSelectedRow(index);
         this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems.filter(a => a.ServiceDepartmentId == srvDeptId);
+        if (this.LabTypeName == 'er-lab') {
+          this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+        }
 
         //let servDeptName = this.GetServiceDeptNameById(srvDeptId);
         //if (this.IsDoctorMandatory(servDeptName, null)) {
@@ -643,15 +683,22 @@ export class IpBillItemRequest implements OnInit {
           this.billingTransaction.BillingTransactionItems[index].UpdateValidator("on", "ProviderId", "required");
         }
         else {
-          this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);
+          //this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);
         }
+        // this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);//pratik: 1March,21--- for LPH
+        this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "RequestedBy", null);//pratik: 1March,21--- for LPH
       }
     }
     else {
       let billItems = this.billItems.filter(a => a.ServiceDepartmentName != "OPD");
       this.billingTransaction.BillingTransactionItems[index].ItemList = billItems;
+      if (this.LabTypeName == 'er-lab') {
+        this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems.filter(a => a.SrvDeptIntegrationName != "OPD" && (a.IsErLabApplicable == true || a.SrvDeptIntegrationName != 'LAB'));
+      }
     }
   }
+
+
 
   //end: autocomplete assign functions  and item filter logic
 
@@ -672,14 +719,28 @@ export class IpBillItemRequest implements OnInit {
     let billItem = this.NewBillingTransactionItem();
     this.billingTransaction.BillingTransactionItems.push(billItem);
     billItem.AssignedDoctorList = this.doctorsList;
-    if (index != null) {
-      let new_index = this.billingTransaction.BillingTransactionItems.length - 1;
-      this.selectedRequestedByDr[new_index] = this.selectedRequestedByDr[index];
-      this.AssignRequestedByDoctor(new_index);
-      window.setTimeout(function () {
-        document.getElementById('items-box' + new_index).focus();
-      }, 0);
+    //if (index != null) {
+    //let new_index = this.billingTransaction.BillingTransactionItems.length - 1;
+    //this.selectedRequestedByDr[new_index] = this.selectedRequestedByDr[index];
+    //this.AssignRequestedByDoctor(new_index);
+    //window.setTimeout(function () {
+    //  document.getElementById('items-box' + new_index).focus();
+    //}, 0);
+    let new_index;
+    if (index == null) {
+      new_index = this.billingTransaction.BillingTransactionItems.length - 1;
     }
+    else {
+      new_index = index + 1
+    }
+    this.selectedRequestedByDr[new_index] = this.selectedRequestedByDr[index];
+    this.AssignRequestedByDoctor(new_index);
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById('items-box' + new_index);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 0);
   }
   NewBillingTransactionItem(index = null): BillingTransactionItem {
     let billItem = new BillingTransactionItem();
@@ -715,8 +776,14 @@ export class IpBillItemRequest implements OnInit {
       this.billingTransaction.BillingTransactionItems[index].UpdateValidator("on", "ProviderId", "required");
     }
     else {
-      this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);
+      //this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);
     }
+    let currItm = this.billingTransaction.BillingTransactionItems[index];
+    if (!this.BillingRequestDisplaySettings.AssignedToDr) {
+      currItm.UpdateValidator("off", "ProviderId", null);
+    }
+    // this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "ProviderId", null);//pratik: 1March,21--- for LPH
+    this.billingTransaction.BillingTransactionItems[index].UpdateValidator("off", "RequestedBy", null);//pratik: 1March,21--- for LPH
   }
   //end: mandatory doctor validations
 
@@ -725,17 +792,17 @@ export class IpBillItemRequest implements OnInit {
     let html: string = "";
     if (data.SrvDeptIntegrationName != "OPD") {
       if (this.searchByItemCode) {
-        html = data["ServiceDepartmentShortName"] + "-" + data["ItemCode"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+        html = data["ServiceDepartmentShortName"] + "-" + data["ItemCode"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
       }
       else {
-        html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+        html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
       }
-      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b>";
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + "<b>" + data["Price"] + "</b>";
     }
     else {
       let docName = data.Doctor ? data.Doctor.DoctorName : "";
-      html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
-      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+      html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"].toUpperCase() + "&nbsp;&nbsp;";
+      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + this.coreService.currencyUnit + " " + data["Price"];
     }
     return html;
   }
@@ -751,7 +818,7 @@ export class IpBillItemRequest implements OnInit {
     let html = data["ShortName"] + ' [ ' + data['PatientCode'] + ' ]';
     return html;
   }
-  //start: list formatters
+
   CloseIpBillRequestSlip($event) {
     this.showIpBillRequestSlip = false;
     this.loading = false;
@@ -870,14 +937,51 @@ export class IpBillItemRequest implements OnInit {
   }
 
   public DateDifference(currDate, startDate): number {
-    //const diffInMs = Date.parse(currDate) - Date.parse(startDate);
-    //const diffInHours = diffInMs / 1000 / 60 / 60;
-
-    //return diffInHours;
-
-
     var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(moment(startDate, "YYYY/MM/DD HH:mm:ss"), 'hours');
     return diffHrs;
   }
 
+  public AddTxnItemRowOnClick(index) {
+    if (index != -1) {
+      if (this.billingTransaction.BillingTransactionItems[index].ItemId == 0) {
+        this.setFocusById('billRequest');
+      } else {
+        this.AddNewBillTxnItemRow(index);
+      }
+    } else {
+      this.AddNewBillTxnItemRow(index);
+    }
+  }
+  //common function to set focus on  given Element. 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
+
+  public GetBillingRequestDisplaySettings() {
+    var StrParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "IPBillingRequestDisplaySettings");
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      this.BillingRequestDisplaySettings = currParam;
+    }
+  }
+
+  public OnLabTypeChange() {
+    this.billingTransaction.LabTypeName = this.LabTypeName;
+    this.FilterBillItems(0);
+
+    if (this.LabTypeName) {
+      if (localStorage.getItem('BillingSelectedLabTypeName')) {
+        localStorage.removeItem('BillingSelectedLabTypeName');
+      }
+      localStorage.setItem('BillingSelectedLabTypeName', this.LabTypeName);
+    } else {
+      this.msgBoxServ.showMessage('error', ["Please select Lab Type Name."]);
+    }
+  }
 }

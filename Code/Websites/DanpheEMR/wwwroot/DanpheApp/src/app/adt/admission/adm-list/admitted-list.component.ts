@@ -26,6 +26,7 @@ import { AdmittingDocInfoVM } from '../../shared/admission.view.model';
 import { CommonValidators } from '../../../shared/common-validator';
 import { ENUM_ValidatorTypes } from '../../../shared/shared-enums';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
+import { DanpheHTTPResponse } from '../../../shared/common-models';
 
 
 
@@ -69,6 +70,9 @@ export class AdmittedListComponent {
   public selectedAdmittedPat: any;
   public showPoliceCase: boolean = false;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public showIsInsurancePatient: boolean = false;
+  public allItemList = [];
+  public filteredItemList = []
 
   constructor(
     public router: Router,
@@ -91,10 +95,9 @@ export class AdmittedListComponent {
       this.adtGriColumns = new ADTGridColumnSettings(this.coreService, this.securityService);
       this.Load();
       this.admittedListGridColumns = this.adtGriColumns.AdmittedList;
+      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('AdmittedDate', true));
+      this.LoadDepartments();
     }
-
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('AdmittedDate', true));
-
   }
 
   ngAfterViewChecked() {
@@ -105,13 +108,8 @@ export class AdmittedListComponent {
     this.admissionBLService.GetAdmittedPatients()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          if(this.showPoliceCase){
-            this.admittedList = res.Results.filter(s => s.IsPoliceCase == true);
-          }else{
-            this.admittedList = res.Results;
-            this.admittedList = this.admittedList.slice();
-          }
-          
+          this.admittedList = res.Results;
+          this.allItemList = res.Results;
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -121,6 +119,20 @@ export class AdmittedListComponent {
           this.msgBoxServ.showMessage("error", [err.ErrorMessage]);
         });
   }
+
+  UpdateBedDurations(visitId: number) {
+    this.billingBLService.UpdateBedDurationBillTxn(visitId)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK") {
+          //console.log("ADT Bill Items Quantity updated.");
+        }
+        else {
+          console.log("Failed to update bed transaction detail.");
+          console.log(res.ErrorMessage);
+        }
+      });
+  }
+
 
   AdmittedListGridActions($event: GridEmitModel) {
 
@@ -141,6 +153,7 @@ export class AdmittedListComponent {
         var selectedBedInfo = Object.create($event.Data);
         //if (!this.selectedBedInfo.DischargedDate) {
         this.selectedIndex = $event.RowIndex;
+        this.patientVisitId = $event.Data.PatientVisitId;
         this.showTransferPage = false;
         this.changeDetector.detectChanges();
         this.selectedBedInfo = selectedBedInfo;
@@ -216,7 +229,6 @@ export class AdmittedListComponent {
         this.patientVisitId = $event.Data.PatientVisitId;
         this.showWristBand = false;
         this.changeDetector.detectChanges();
-        //this.patientVisitId = $event.Data.PatientVisitId;
         this.showWristBand = true;
         break;
       }
@@ -255,7 +267,10 @@ export class AdmittedListComponent {
       });
   }
   TransferUpgrade($event) {
+    let visitId = this.patientVisitId;
     this.Load();
+    this.UpdateBedDurations(visitId);
+    this.patientVisitId = null;
     this.showTransferPage = false;
     this.showUpgradePage = false;
     this.showChangeDoctorPage = false;
@@ -354,7 +369,7 @@ export class AdmittedListComponent {
     }
   }
 
-  StickerPrintCallBack() {
+  StickerPrintCallBack($event) {
     this.showSticker = false;
     this.patientVisitId = null;
   }
@@ -393,14 +408,36 @@ export class AdmittedListComponent {
 
     return retData;
   }
-
-  public checkValue(event){
-    if(event == true){
-      this.showPoliceCase = true;
-      this.Load();
-    }else{
-      this.showPoliceCase = false;
-      this.Load();
+  public FilterGridItems(event) {
+    this.filteredItemList = [];
+    if (this.showPoliceCase && this.showIsInsurancePatient) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsInsurancePatient == true || s.IsPoliceCase == true);
     }
+    else if (this.showIsInsurancePatient && !this.showPoliceCase) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsInsurancePatient == true);
+    }
+    else if (!this.showIsInsurancePatient && this.showPoliceCase) {
+      this.filteredItemList = this.allItemList.filter(s => s.IsPoliceCase == true);
+    }
+    else {
+      this.filteredItemList = this.allItemList;
+    }
+    this.admittedList = this.filteredItemList;
+  }
+
+
+  GetHistoryEitter($event) {
+    if ($event && $event.close) {
+      this.CloseBillHistory();
+    }
+  }
+
+  public allDepartments: Array<any> = [];
+  public LoadDepartments() {
+    this.admissionBLService.GetDepartments()
+      .subscribe((res: DanpheHTTPResponse) => {
+        this.allDepartments = res.Results;
+
+      });
   }
 }

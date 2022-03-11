@@ -13,16 +13,21 @@ import { PurchaseOrderItems } from '../../../inventory/shared/purchase-order-ite
 @Component({
   templateUrl: './purchase-order-verify.html'
 })
-export class PurchaseOrderVerifyComponent implements OnInit,OnDestroy {
+export class PurchaseOrderVerifyComponent implements OnInit, OnDestroy {
 
   public PurchaseOrder: PurchaseOrder;
   public PurchaseOrderVM: InventoryPurchaseOrderVM;
   public VerificationRemarks: string = "";
   public isVerificationAllowed: boolean = false;
   public loading: boolean = false;
-  public headerDetail: { hospitalName; address; email; PANno; tel; DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public nextVerifiersPermission: string = "";
-  public CopyOfOrderedItemsQuantity: Array<{OrderedItemId;Quantity;}> = [];
+  public CopyOfOrderedItemsQuantity: Array<{ OrderedItemId; Quantity; }> = [];
+  public CopyOfOrderedItemsStandardRate: Array<{ OrderedItemId; StandardRate; }> = [];
+  public CopyOfOrderedItemsPOItemSpecification: Array<{ OrderedItemId; POItemSpecification; }> = [];
+  showQuotationRatesPopUp: boolean;
+  PoUplodadedViewFiles: boolean;
+  // PurchaseOrderId: number;
   constructor(
     public verificationService: VerificationService,
     public verificationBLService: VerificationBLService,
@@ -133,9 +138,7 @@ export class PurchaseOrderVerifyComponent implements OnInit,OnDestroy {
     }
   }
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(
-      a => a.ParameterName == "Inventory BillingHeader"
-    ).ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == "Inventory Receipt Header").ParameterValue;
     if (paramValue) this.headerDetail = JSON.parse(paramValue);
     else
       this.messageBoxService.showMessage("error", [
@@ -196,6 +199,43 @@ export class PurchaseOrderVerifyComponent implements OnInit,OnDestroy {
         });
     }
   }
+
+  ShowQuotationRates() {
+    this.showQuotationRatesPopUp = true;
+  }
+  OnQuotationRatesClose() {
+    this.showQuotationRatesPopUp = false;
+  }
+
+
+  PoUplodadedviewFiles() {
+    this.PoUplodadedViewFiles = true;
+
+  }
+  OnUplodadedviewFiles() {
+    this.PoUplodadedViewFiles = false;
+
+  }
+  //this calculation is for the whole PO
+  CalculationForPO() {
+    this.PurchaseOrder.SubTotal = 0;
+    this.PurchaseOrder.VAT = 0;
+    this.PurchaseOrder.TotalAmount = 0;
+
+    for (var i = 0; i < this.PurchaseOrderVM.OrderedItemList.length; i++) {
+      try {
+        this.PurchaseOrder.SubTotal += (this.PurchaseOrderVM.OrderedItemList[i].StandardRate * this.PurchaseOrderVM.OrderedItemList[i].Quantity);
+        this.PurchaseOrderVM.OrderedItemList[i].VATAmount = this.PurchaseOrderVM.OrderedItemList[i].StandardRate * this.PurchaseOrderVM.OrderedItemList[i].Quantity * this.PurchaseOrderVM.OrderedItemList[i].VatPercentage / 100;
+        this.PurchaseOrder.VAT += this.PurchaseOrderVM.OrderedItemList[i].VATAmount;
+        this.PurchaseOrderVM.OrderedItemList[i].TotalAmount = (this.PurchaseOrderVM.OrderedItemList[i].StandardRate * this.PurchaseOrderVM.OrderedItemList[i].Quantity) + this.PurchaseOrderVM.OrderedItemList[i].VATAmount;
+        this.PurchaseOrder.TotalAmount += this.PurchaseOrderVM.OrderedItemList[i].TotalAmount;
+      }
+      catch (ex) {
+        console.log("Some value is missing.");
+      }
+    }
+   // this.PurchaseOrder.TotalAmount += this.PurchaseOrder.Insurance + this.PurchaseOrder.FreightAndPacking - this.PurchaseOrder.Discount;
+  }
   Print() {
     //this is used to print the receipt
 
@@ -209,22 +249,37 @@ export class PurchaseOrderVerifyComponent implements OnInit,OnDestroy {
     popupWinindow.document.open();
     popupWinindow.document.write(
       `<html>
-        <head>
-          <style>
-            .img-responsive{ position: relative;left: -65px;top: 10px;}
-            .qr-code{position: absolute; left: 1001px;top: 9px;}
-          </style>
-          <link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" />
-        </head>
+      <head>
         <style>
-          .printStyle {border: dotted 1px;margin: 10px 100px;}
-          .print-border-top {border-top: dotted 1px;}
-          .print-border-bottom {border-bottom: dotted 1px;}
-          .print-border {border: dotted 1px;}.center-style {text-align: center;}
-          .border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}
-          .hidden-in-print { display:none !important}
+          .img-responsive{ position: static;left: -65px;top: 10px;}
+          .qr-code{position: absolute; left: 1001px;top: 9px;}
         </style>
-        <body onload="window.print()">` +
+        <link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" />
+      </head>
+      <style>
+        .printStyle {border: dotted 1px;margin: 10px 100px;}
+        .print-border-top {border-top: dotted 1px;}
+        .print-border-bottom {border-bottom: dotted 1px;}
+        .print-border {border: dotted 1px;}.center-style {text-align: center;}
+        .border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}
+        .hidden-in-print { display:none !important}
+        table th, table td {
+            border: 1px solid #ccc;
+        }
+        .print-header .row {
+            display: flex;
+        }
+        .print-header .col-md-3 {
+            width: 25% 
+        }
+        .print-header .col-md-6 {
+            width: 50%
+        }
+        .print-header .logo {
+            padding: 20px 0 !important;
+        }
+      </style>
+      <body onload="window.print()">` +
       printContents +
       "</html>"
     );

@@ -14,7 +14,8 @@
                   <input type="text" name="" required value="" class="form-control" maxlength="40"
 													   [(ngModel)]="CurrentEmployeeRole.EmployeeRoleName"
 													   formControlName="EmployeeRoleName"
-													   id="Role" placeholder="Role" />
+													   id="Role" placeholder="Role" 
+                             (keyup.enter)="FocusElementById('Description')"/>
                   <span Class="color-red font-sm" [hidden]="CurrentEmployeeRole.IsValidCheck('EmploeeRoleName','required') || !(CurrentEmployeeRole.IsDirty('EmploeeRoleName'))">Enter Role Name</span> </div>
               </div>
               <div class="form-group">
@@ -22,7 +23,8 @@
                 <div class="col-md-8">
                   <input type="text" name="" value="" class="form-control"
 													   [(ngModel)]="CurrentEmployeeRole.Description" [ngModelOptions]="{standalone: true}"
-													   id="Description" placeholder="Description" />
+													   id="Description" placeholder="Description"
+                             (keyup.enter)="FocusElementById('Add')" />
                 </div>
               </div>
               <div class="form-group">
@@ -41,8 +43,8 @@
               </div>
             </div>
             <div class="panel-footer">
-              <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
-              <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" [disabled] = "loading" (click)="loading = true; Add()" value="Add" id="Add" />
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" [disabled] = "loading" (click)="loading = true; Update()" value="Update" id="Add" />
             </div>
           </form>
         </div>

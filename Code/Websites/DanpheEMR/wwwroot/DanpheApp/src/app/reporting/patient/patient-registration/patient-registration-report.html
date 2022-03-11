@@ -1,6 +1,6 @@
 <div class="wrapper">
   <div class="row">
-    <form [formGroup]="CurrentPatient.DyanamicValidator" class="form-horizontal">
+    <form  class="form-horizontal">
       <div class="form-body">
         <div class="col-md-12">
           <div class="caption custom-caption"><i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Patient Registration Report</span> </div>
@@ -64,7 +64,7 @@
             <div class="form-group">
               <label class="control-label col-md-3">Country<b style="float:right;">:</b></label>
               <div class="col-md-5">
-                <select id="ddlCountry" class="form-control" [(ngModel)]="currentPatRegreport.Country">
+                <select id="ddlCountry" class="form-control" [ngModelOptions]="{standalone:true}" [(ngModel)]="currentPatRegreport.Country">
                   <option value="Nepal">Nepal</option>
                   <option value="India">India</option>
                   <option value="China">China</option>

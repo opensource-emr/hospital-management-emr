@@ -18,6 +18,7 @@ using DanpheEMR.Controllers.Billing;
 using System.Data.SqlClient;
 using System.Data;
 using DanpheEMR.Enums;
+using System.Data.Entity.Infrastructure;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //test for checkin
 namespace DanpheEMR.Controllers
@@ -34,6 +35,7 @@ namespace DanpheEMR.Controllers
         // GET: api/values
         [HttpGet]
         public string Get(int patientId,
+            int departmentId,
             string status,
             string reqType,
             int visitId,
@@ -45,7 +47,7 @@ namespace DanpheEMR.Controllers
             string phoneNumber,
             DateTime fromDate,
             DateTime toDate,
-            string claimCode,
+            Int64? claimCode,
             int dayslimit,
             string search)
         {
@@ -89,16 +91,31 @@ namespace DanpheEMR.Controllers
                     //responseData.Status = "OK";
 
                 }
+                else if (reqType == "CheckIfApptExistForDepartmentOnDate")
+                {
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    var testdate = requestDate;
+                    var visitItem = dbContext.Visits.Where(v => (DbFunctions.TruncateTime(v.VisitDate) == DbFunctions.TruncateTime(requestDate.Date)) && (v.DepartmentId == departmentId) && (v.PatientId == patientId && v.BillingStatus.ToLower() != ENUM_BillingStatus.returned && v.BillingStatus.ToLower() != ENUM_BillingStatus.cancel)).AsEnumerable();
+
+                    if (visitItem.Any())
+                    {
+                        responseData.Results = true;
+                    }
+                    else
+                    {
+                        responseData.Results = false;
+                    }
+
+                }
                 else if (reqType == "existingClaimCode-VisitList")
                 {
                     var visitList = (from visit in dbContext.Visits.Include("Patient")
-                                     select visit).ToList()
+                                     select visit)
                                .Where(v => (v.BillingStatus != ENUM_BillingStatus.returned && v.BillingStatus != ENUM_BillingStatus.cancel) && v.ClaimCode == claimCode)
                                .OrderByDescending(v => v.PatientVisitId).ToList();
                     //responseData.Status = "OK";
                     responseData.Results = visitList;
                 }
-
                 else if (reqType != null && reqType == "getVisitInfoforStickerPrint")
                 {
 
@@ -106,6 +123,17 @@ namespace DanpheEMR.Controllers
                     List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@PatientVisitId", visitId) };
                     DataTable patStickerDetails = DALFunctions.GetDataTableFromStoredProc("SP_APPT_GetPatientVisitStickerInfo", paramList, dbContext);
                     responseData.Results = patStickerDetails;
+                }
+
+                else if (reqType != null && reqType == "get-requesting-department")
+                {
+                    var deptDetail = (from visit in dbContext.Visits
+                                where visit.PatientVisitId == visitId
+                                select new
+                                {
+                                    visit.DepartmentId
+                                }).FirstOrDefault();
+                    responseData.Results = deptDetail;
                 }
                 else if (reqType == "patient-visitHistory")
                 {
@@ -270,7 +298,7 @@ namespace DanpheEMR.Controllers
 
                     List<VisitModel> visitListByProviderId = (from d in dbContext.Visits
                                                               where d.ProviderId == inputProviderId && d.BillingStatus != ENUM_BillingStatus.returned// "returned"
-                                                              select d).ToList().Where(a => a.VisitDate.Date == requestDate.Date).ToList();
+                                                              select d).Where(a => a.VisitDate.Date == requestDate.Date).ToList();
                     //VisitDay visitDays = VisitDay.FormatData(visitListByProviderId);
 
                     responseResult.Results = visitListByProviderId;
@@ -349,7 +377,8 @@ namespace DanpheEMR.Controllers
                                                    EHSPrice = billItem.EHSPrice,
                                                    InsForeignerPrice = billItem.InsForeignerPrice,
                                                    IsTaxApplicable = billItem.TaxApplicable,
-                                                   billItem.HasAdditionalBillingItems
+                                                   billItem.HasAdditionalBillingItems,
+                                                   IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                                }).ToList();
                         responseData.Results = visitDoctorList;
                     }
@@ -381,7 +410,8 @@ namespace DanpheEMR.Controllers
                                                 EHSPrice = billItem.EHSPrice,
                                                 InsForeignerPrice = billItem.InsForeignerPrice,
                                                 IsTaxApplicable = billItem.TaxApplicable,
-                                                DiscountApplicable = billItem.DiscountApplicable
+                                                DiscountApplicable = billItem.DiscountApplicable,
+                                                IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                             }).ToList();
                         responseData.Results = deptOpdItems;
                     }
@@ -417,7 +447,8 @@ namespace DanpheEMR.Controllers
                                                    ForeignerPrice = billItem.ForeignerPrice,
                                                    InsForeignerPrice = billItem.InsForeignerPrice,
                                                    EHSPrice = billItem.EHSPrice,
-                                                   IsTaxApplicable = billItem.TaxApplicable
+                                                   IsTaxApplicable = billItem.TaxApplicable,
+                                                   IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                                }).ToList();
                         responseData.Results = visitDoctorList;
                     }
@@ -449,7 +480,8 @@ namespace DanpheEMR.Controllers
                                                      InsForeignerPrice = billItem.InsForeignerPrice,
                                                      EHSPrice = billItem.EHSPrice,
                                                      IsTaxApplicable = billItem.TaxApplicable,
-                                                     DiscountApplicable = billItem.DiscountApplicable
+                                                     DiscountApplicable = billItem.DiscountApplicable,
+                                                     IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                                  }).ToList();
                         responseData.Results = deptFollowupItems;
                     }
@@ -481,7 +513,8 @@ namespace DanpheEMR.Controllers
                                                 EHSPrice = billItem.EHSPrice,
                                                 InsForeignerPrice = billItem.InsForeignerPrice,
                                                 IsTaxApplicable = billItem.TaxApplicable,
-                                                DiscountApplicable = billItem.DiscountApplicable
+                                                DiscountApplicable = billItem.DiscountApplicable,
+                                                IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                             }).ToList();
                         responseData.Results = deptOpdItems;
                     }
@@ -517,7 +550,8 @@ namespace DanpheEMR.Controllers
                                                    ForeignerPrice = billItem.ForeignerPrice,
                                                    EHSPrice = billItem.EHSPrice,
                                                    InsForeignerPrice = billItem.InsForeignerPrice,
-                                                   IsTaxApplicable = billItem.TaxApplicable
+                                                   IsTaxApplicable = billItem.TaxApplicable,
+                                                   IsZeroPriceAllowed = billItem.IsZeroPriceAllowed
                                                }).ToList();
                         responseData.Results = visitDoctorList;
                     }
@@ -633,17 +667,17 @@ namespace DanpheEMR.Controllers
                     if (parameter != null && parameter.ParameterValue != null)
                     {
                         //JObject paramValue = JObject.Parse(parameter.ParameterValue);
-                       //var result = JsonConvert.DeserializeObject<any>(parameter.ParameterValue);
+                        //var result = JsonConvert.DeserializeObject<any>(parameter.ParameterValue);
 
                         //dynamic result = JValue.Parse(parameter.ParameterValue);
-                        
+
                     }
-                        //if one item was found but cancelled or returned then we've to issue it again..
-                        var cardBillingInfo = billingDbContext.BillingTransactionItems
-                                                       .Where(bItm => bItm.PatientId == patientId && bItm.ItemName == "Health Card"
-                                                       && bItm.BillStatus != ENUM_BillingStatus.cancel //"cancel" 
-                                                       && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
-                                                       .FirstOrDefault();
+                    //if one item was found but cancelled or returned then we've to issue it again..
+                    var cardBillingInfo = billingDbContext.BillingTransactionItems
+                                                   .Where(bItm => bItm.PatientId == patientId && bItm.ItemName == "Health Card"
+                                                   && bItm.BillStatus != ENUM_BillingStatus.cancel //"cancel" 
+                                                   && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
+                                                   .FirstOrDefault();
 
                     var healthCardStatus = new
                     {
@@ -658,6 +692,16 @@ namespace DanpheEMR.Controllers
                     //else
                     //    responseData.Results = false;
                     //responseData.Status = "OK";
+                }
+                else if(reqType == "list-visit")
+                {
+                    List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@SearchTxt", search),
+                          new SqlParameter("@RowCounts", 200),
+                          new SqlParameter("@DaysLimit",dayslimit)};
+
+                    DataTable dt = DALFunctions.GetDataTableFromStoredProc("SP_APPT_GetVisitListOfValidDays", paramList, dbContext);
+                    responseData.Results = dt;
+                    responseData.Status = "OK";
                 }
 
                 else
@@ -685,6 +729,7 @@ namespace DanpheEMR.Controllers
                                           && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != ENUM_VisitType.inpatient) && visit.BillingStatus != ENUM_BillingStatus.returned
                                           && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
                                      + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search)
+                                       where visit.Ins_HasInsurance == null
                                        select new ListVisitsVM
                                        {
                                            PatientVisitId = visit.PatientVisitId,
@@ -701,16 +746,18 @@ namespace DanpheEMR.Controllers
 
                                            PatientId = patient.PatientId,
                                            PatientCode = patient.PatientCode,
-                                           ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
+                                           ShortName = patient.ShortName,
+                                           //ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
                                            PhoneNumber = patient.PhoneNumber,
                                            DateOfBirth = patient.DateOfBirth,
                                            Gender = patient.Gender,
                                            Patient = patient,
 
+                                           QueueNo = visit.QueueNo,
+
                                            BillStatus = visit.BillingStatus
                                        }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).AsQueryable();
-
-
+                    
                     if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "VisitList") == true && search == "")
                     {
                         visitVMList = visitVMList.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
@@ -837,6 +884,7 @@ namespace DanpheEMR.Controllers
 
                     });
                     visitDbContext.SaveChanges();
+                    
                     responseData.Results = visits;
                     responseData.Status = "OK";
                 }
@@ -860,9 +908,10 @@ namespace DanpheEMR.Controllers
                             vis.ProviderName = VisitBL.GetProviderName(vis.ProviderId, connString);
                         }
 
-                        vis.VisitCode = VisitBL.CreateNewPatientVisitCode(vis.VisitType, connString);
+                       //vis.VisitCode = VisitBL.CreateNewPatientVisitCode(vis.VisitType, connString);
                         visitDbContext.Visits.Add(vis);
-                        visitDbContext.SaveChanges();
+                        //visitDbContext.SaveChanges();
+                        GenerateVisitCodeAndSave(visitDbContext, vis, connString);
                         //VisitBL.UpdateVisitCode(obj.PatientVisitId, visitDbContext);
                         //in client side Patient Data is also needed along with visit
 
@@ -881,7 +930,7 @@ namespace DanpheEMR.Controllers
                                 visitDbContext);
                         }
 
-
+                        vis.QueueNo = VisitBL.CreateNewPatientQueueNo(visitDbContext, vis.PatientVisitId, connString);
                         //Return Model should be in same format as that of the ListVisit since it's appended in the same list.
                         ListVisitsVM returnVisit = (from visit in visitDbContext.Visits
                                                     where visit.PatientVisitId == vis.PatientVisitId
@@ -906,7 +955,8 @@ namespace DanpheEMR.Controllers
                                                         VisitType = visit.VisitType,
                                                         AppointmentType = visit.AppointmentType,
                                                         BillStatus = visit.BillingStatus,
-                                                        Patient = patient
+                                                        Patient = patient,
+                                                        QueueNo = visit.QueueNo
                                                     }).FirstOrDefault();
 
 
@@ -934,9 +984,10 @@ namespace DanpheEMR.Controllers
                             vis.ProviderName = VisitBL.GetProviderName(vis.ProviderId, connString);
                         }
 
-                        vis.VisitCode = VisitBL.CreateNewPatientVisitCode(vis.VisitType, connString);
+                        //vis.VisitCode = VisitBL.CreateNewPatientVisitCode(vis.VisitType, connString);
                         visitDbContext.Visits.Add(vis);
-                        visitDbContext.SaveChanges();
+                        //visitDbContext.SaveChanges();
+                        GenerateVisitCodeAndSave(visitDbContext, vis, connString);
                         //VisitBL.UpdateVisitCode(obj.PatientVisitId, visitDbContext);
                         //in client side Patient Data is also needed along with visit
                         //VisitModel returnVisit = visitDbContext.Visits.Include("Patient")
@@ -954,7 +1005,7 @@ namespace DanpheEMR.Controllers
                                 visitDbContext);
                         }
 
-
+                        vis.QueueNo = VisitBL.CreateNewPatientQueueNo(visitDbContext, vis.PatientVisitId, connString);
 
                         //Return Model should be in same format as that of the ListVisit since it's appended in the samae list.
                         ListVisitsVM returnVisit = (from visit in visitDbContext.Visits
@@ -980,7 +1031,8 @@ namespace DanpheEMR.Controllers
                                                         VisitType = visit.VisitType,
                                                         AppointmentType = visit.AppointmentType,
                                                         BillStatus = visit.BillingStatus,
-                                                        Patient = patient
+                                                        Patient = patient,
+                                                        QueueNo = visit.QueueNo
                                                     }).FirstOrDefault();
 
 
@@ -1074,6 +1126,35 @@ namespace DanpheEMR.Controllers
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
             }
             return DanpheJSONConvert.SerializeObject(responseData, true);
+        }
+
+        private void GenerateVisitCodeAndSave(VisitDbContext visitDbContext, VisitModel vis, string connString)
+        {
+            try
+            {
+                vis.VisitCode = VisitBL.CreateNewPatientVisitCode(vis.VisitType, connString);
+                visitDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex is DbUpdateException dbUpdateEx)
+                {
+                    if (dbUpdateEx.InnerException?.InnerException is SqlException sqlException)
+                    {
+
+                        if (sqlException.Number == 2627)// unique constraint error 
+                        {
+                            GenerateVisitCodeAndSave(visitDbContext, vis, connString);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else throw;
+                }
+                else throw;
+            }
         }
 
         // PUT api/values/
@@ -1233,6 +1314,7 @@ namespace DanpheEMR.Controllers
                             {
                                 UpdateIsContinuedStatus(quickVisit.Visit.ParentVisitId, quickVisit.Visit.AppointmentType, true, currentUser.EmployeeId, visitDbContext);
                             }
+
                             visitDbTransaction.Commit();
 
                             //pratik: 5march'20 ---to generate queue no for every new visit
@@ -1243,9 +1325,9 @@ namespace DanpheEMR.Controllers
                         }
                         catch (Exception ex)
                         {
-                            visitDbTransaction.Rollback();
                             responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                             responseData.Status = "Failed";
+                            visitDbTransaction.Rollback();
                         }
                     }
                 }
@@ -1264,6 +1346,7 @@ namespace DanpheEMR.Controllers
         {
             try
             {
+                PatientDbContext patDbContext = new PatientDbContext(connString);
                 //create patient and save if not registered. else get patient details from id.
                 if (clientPat.PatientId == 0)
                 {
@@ -1280,6 +1363,15 @@ namespace DanpheEMR.Controllers
                     clientPat.CreatedBy = currentUserId;
                     visitDbContext.Patients.Add(clientPat);
                     //this save is used to get patientid and using that patientid we are creating patientcode
+                    visitDbContext.SaveChanges();
+                }
+                else if(clientPat.PatientId>0)
+                {
+                    visitDbContext.Patients.Attach(clientPat);
+                    visitDbContext.Entry(clientPat).Property(x => x.Address).IsModified = true;
+                    visitDbContext.Entry(clientPat).Property(x => x.MunicipalityId).IsModified = true;
+                    clientPat.ModifiedOn = System.DateTime.Now;
+                    clientPat.ModifiedBy = currentUserId;
                     visitDbContext.SaveChanges();
                 }
                 return clientPat;
@@ -1308,18 +1400,52 @@ namespace DanpheEMR.Controllers
                 }
                 currVisit.PatientId = currPatientId;
                 //if (currVisit.VisitType == "outpatient")
-                if (currVisit.VisitType == ENUM_VisitType.outpatient)
-                 currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString);//"V" + (newVisit.PatientVisitId + 100000);
+                /*if (currVisit.VisitType == ENUM_VisitType.outpatient)
+                    currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString);//"V" + (newVisit.PatientVisitId + 100000);
                 else
                     currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString); //"H" + (newVisit.PatientVisitId + 100000);
-
+*/
                 visitDbContext.Visits.Add(currVisit);
-                visitDbContext.SaveChanges();
+                //visitDbContext.SaveChanges();
+                GeneratePatientVisitCodeAndSave(visitDbContext,currVisit,connString);
                 //currVisit.VisitCode = VisitBL.UpdateVisitCode(currVisit.PatientVisitId, visitDbContext);
                 return currVisit;
 
             }
             catch (Exception ex) { throw ex; }
+        }
+
+        private void GeneratePatientVisitCodeAndSave(VisitDbContext visitDbContext, VisitModel currVisit, string connString)
+        {
+            try
+            {
+                if (currVisit.VisitType == ENUM_VisitType.outpatient)
+                    currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString);//"V" + (newVisit.PatientVisitId + 100000);
+                else
+                    currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString); //"H" + (newVisit.PatientVisitId + 100000);
+                visitDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+                if (ex is DbUpdateException dbUpdateEx)
+                {
+                    if (dbUpdateEx.InnerException?.InnerException is SqlException sqlException)
+                    {
+
+                        if (sqlException.Number == 2627)// unique constraint error 
+                        {
+                            GeneratePatientVisitCodeAndSave(visitDbContext, currVisit, connString);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else throw;
+                }
+                else throw;
+            }
         }
 
         //Adding billing for patient Visit
@@ -1342,7 +1468,7 @@ namespace DanpheEMR.Controllers
                         clientTransaction.InvoiceCode = "INS";
                     else
                         clientTransaction.InvoiceCode = "BL";
-                    clientTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
+                    //clientTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
 
                     clientTransaction.CreatedOn = DateTime.Now;
                     clientTransaction.CreatedBy = currentUserId;
@@ -1400,22 +1526,44 @@ namespace DanpheEMR.Controllers
                         }
                         VisitBL.UpdateRequisitionItemsBillStatus(visitDbContext, txnItem.ServiceDepartmentName, "paid", currentUserId, txnItem.RequisitionId, DateTime.Now);
                     });
-                    if (clientTransaction.IsInsuranceBilling == true)
-                    {
-                        BillingBL.UpdateInsuranceCurrentBalance(connString,
-                            clientTransaction.PatientId,
-                            clientTransaction.InsuranceProviderId ?? default(int),
-                            currentUserId, clientTransaction.TotalAmount ?? default(int), true);
 
-                    }
+                    //sud:4May'21--below code is not used anywhere
+                    //if (clientTransaction.IsInsuranceBilling == true)
+                    //{
+                    //    BillingBL.UpdateInsuranceCurrentBalance(connString,
+                    //        clientTransaction.PatientId,
+                    //        clientTransaction.InsuranceProviderId ?? default(int),
+                    //        currentUserId, clientTransaction.TotalAmount ?? default(int), true);
+
+                    //}
+
                     visitDbContext.AuditDisabled = false;
                     visitDbContext.BillingTransactions.Add(clientTransaction);
-                    visitDbContext.SaveChanges();
+                    GenerateInvoiceNoAndSaveInvoice(visitDbContext, clientTransaction, connString); //to avoid duplicate invoiceNo..
+                    //visitDbContext.SaveChanges();
+
+
+
                     //Yubraj: 28th June '19 //to get Billing UserName 
                     RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                     visitDbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);
                     visitDbContext.AddAuditCustomField("ChangedByUserName", currentUser.UserName);
                     clientTransaction.BillingUserName = currentUser.UserName;
+
+                    if (clientTransaction.BillStatus == ENUM_BillingStatus.paid)
+                    { //add to Empcashtransactions if the billstatus is paid, not needed for unpaid(credit).
+                        EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                        empCashTransaction.TransactionType = "CashSales";
+                        empCashTransaction.ReferenceNo = clientTransaction.BillingTransactionId;
+                        empCashTransaction.InAmount = clientTransaction.TotalAmount;
+                        empCashTransaction.OutAmount = 0;
+                        empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                        empCashTransaction.TransactionDate = DateTime.Now;
+                        empCashTransaction.CounterID = clientTransaction.CounterId;
+
+                        BillingDbContext billingDbContext = new BillingDbContext(base.connString);
+                        BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                    }
 
                     visitDbContext.AuditDisabled = true;
 
@@ -1437,6 +1585,38 @@ namespace DanpheEMR.Controllers
             {
 
                 throw ex;
+
+            }
+        }
+
+        //krishna, 5th,Jan,2022: Avoids the duplicate invoiceNo..
+        private static void GenerateInvoiceNoAndSaveInvoice(VisitDbContext dbContext, BillingTransactionModel clientTransaction, string connString)
+        {
+            try
+            {
+                clientTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
+                //if(invoiceNoTest == 1) { clientTransaction.InvoiceNo = 258017; invoiceNoTest++; }//logic to test the duplicate invoice no and retry to get the latest invoiceNo
+                dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex is DbUpdateException dbUpdateEx)
+                {
+                    if (dbUpdateEx.InnerException?.InnerException is SqlException sqlException)
+                    {
+
+                        if (sqlException.Number == 2627)// unique constraint error in BillingTranscation table..
+                        {
+                            GenerateInvoiceNoAndSaveInvoice(dbContext, clientTransaction, connString);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else throw;
+                }
+                else throw;
 
             }
         }
@@ -1483,7 +1663,7 @@ namespace DanpheEMR.Controllers
                                 UpdateIsContinuedStatus(quickVisit.Visit.ParentVisitId, quickVisit.Visit.AppointmentType, true, currentUser.EmployeeId, visitDbContext);
                             }
                             visitDbTransaction.Commit();
-
+                            quickVisit.Visit.QueueNo = VisitBL.CreateNewPatientQueueNo(visitDbContext, quickVisit.Visit.PatientVisitId, connString);
                             responseData.Results = quickVisit;
                             responseData.Status = "OK";
                         }

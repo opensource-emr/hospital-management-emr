@@ -34,4 +34,22 @@ namespace DanpheEMR.ServerModel
         //[NotMapped]
         //public DateTime? ReservedForDate { get; set; }
     }
+     public class BedDisplayModel
+    {
+        public string WardName { get; set; }
+        public int WardId { get; set; }
+        public string BedCode { get; set; }
+        public int BedId { get; set; }
+        public int BedNumber { get; set; }
+        public Boolean IsActive { get; set; }
+        public Boolean IsOccupied { get; set; }
+        public DateTime? CreatedOn { get; set; }
+        public int? CreatedBy { get; set; }
+        public List<BedFeatureModel> BedFeature {get;set;}
+    }
+    public class BedFeatureModel
+    {
+        public int BedFeatureId { get; set; }
+        public string BedFeatureName { get; set; }
+    }
 }

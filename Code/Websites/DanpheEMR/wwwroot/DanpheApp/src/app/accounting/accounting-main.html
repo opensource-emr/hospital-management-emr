@@ -47,6 +47,9 @@
   </ul>
   <ul class="page-breadcrumb" style="float:right;" *ngIf="validRoutes != undefined">
     <li *ngIf="securityService.AccHospitalInfo">
+      <button (click)="RefreshAccCacheData()" title="Refresh Data" class="btn green btn-success margin-rt-15">
+        <i class="fa fa-refresh" *ngIf="securityService.AccHospitalInfo.TotalHospitalPermissionCount > 0"></i>
+      </button>
       <button (click)="OpenHospitalChangeWindow()" class="btn green btn-success margin-rt-15"
         [disabled]="securityService.AccHospitalInfo.TotalHospitalPermissionCount <=1">
         Active: {{securityService.AccHospitalInfo.HospitalShortName}}
@@ -70,7 +73,10 @@
     </li>
   </ul>
 </div>
-<div class="wrapper">
+<div *ngIf="loading">  <!-- //mumbai-team-june2021-danphe-accounting-cache-change -->
+  Loading...
+</div>
+<div class="wrapper" *ngIf="!loading">
   <router-outlet></router-outlet>
 </div>
 

@@ -1,0 +1,264 @@
+<style>
+    label.mt-checkbox.mt-checkbox-outline {
+        text-indent: 5px;
+    }
+
+    .error-msg {
+        font-size: 12px;
+        font-weight: normal;
+    }
+</style>
+<div class="wrapper" style="padding-bottom: 10px;">
+    <div class="row">
+        <form *ngIf="model" [formGroup]="model.PatientValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Mother Name<sup>*</sup><b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input id="regPatMotherName" class="form-control" type="text" maxlength="30"
+                                    formControlName="MotherName" [(ngModel)]="model.MotherName" required value=""
+                                    (ngModelChange)="setBabyName()" (keyup.enter)="SetFocusById('regPatShortName')"
+                                    (focusout)="capitalizeFirstLetter('MotherName');EthnicGroupAutoSelect()"
+                                    placeholder="Mother Name" />
+                                <span class="error-msg" *ngIf="model.IsDirty('MotherName')"
+                                    [hidden]="model.IsValidCheck('MotherName','required')"> Mother
+                                    Name is required</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Baby Name<b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input id="regPatShortName" class="form-control" type="text" maxlength="30"
+                                    (keyup.enter)="SetFocusById('babyAge')" [(ngModel)]="model.ShortName" required
+                                    value="" (focusout)="capitalizeFirstLetter('ShortName')" placeholder="Baby Name"
+                                    [ngModelOptions]="{standalone: true}" />
+                                <!-- <span class="error-msg" *ngIf="model.IsDirty('ShortName')"
+                                    [hidden]="model.IsValidCheck('ShortName','required')"> Baby Name is required</span>
+                                <span class="error-msg" *ngIf="model.IsDirty('ShortName')"
+                                    [hidden]="model.IsValidCheck('ShortName','maxlength')"> Baby Name must be less than
+                                    30 characters</span> -->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Age<sup>*</sup><b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <div class="col-md-3" style="padding-left:0px !important;padding-right: 0px;">
+                                    <input class="form-control" type="number" min="0" max="150" formControlName="Age"
+                                        id="babyAge" onclick="this.select()" (focusout)="CalculateDob();"
+                                        (keyup.enter)="SetFocusById('babyAgeUnit')" [(ngModel)]="model.Age"
+                                        placeholder="Age" style="padding-right:0px;" />
+                                    <span class="error-msg" *ngIf="model.IsDirty('Age')"
+                                        [hidden]="model.IsValidCheck('Age','required')"> Age is
+                                        required</span>
+                                    <span *ngIf="model.Age == 0" class="color-red font-sm">Age should be greater than
+                                        0</span>
+                                </div>
+                                <div class="col-md-9" style="padding-right: 0px;">
+                                    <div class="input-group">
+                                        <select class="form-control custom-enter-selection" [(ngModel)]="model.AgeUnit"
+                                            id="babyAgeUnit" [ngModelOptions]="{standalone: true}"
+                                            (ngModelChange)="CalculateDob();"
+                                            (focus)="coreService.SetFocusOnCurrentSelect('babyAgeUnit','gender')"
+                                            (blur)="coreService.RemoveFocusFromCurrentSelect('babyAgeUnit')">
+                                            <option value="D"
+                                                (click)="coreService.SetFocusToNextSelectElement('gender')">
+                                                Days
+                                            </option>
+                                            <option value="M"
+                                                (click)="coreService.SetFocusToNextSelectElement('gender')">
+                                                Months
+                                            </option>
+                                            <option value="Y"
+                                                (click)="coreService.SetFocusToNextSelectElement('gender')">
+                                                Years
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <input type="text" hidden [(ngModel)]="model.DateOfBirth" formControlName="DateOfBirth"
+                            (ngModelChange)="GenerateAge()" />
+                        <div class="form-group">
+                            <label class="control-label col-md-4 left" style="padding-top: 1px;">Date Of
+                                Birth<b style="float:right;">:</b></label>
+                            <div class="col-md-8 datepicker-wrap">
+                                <danphe-date-picker [(ngModel)]="model.DateOfBirth" ngDefaultControl id="dateOfBirth"
+                                    (keyup.enter)="SetFocusById('gender')" [CalendarTypes]="calType"
+                                    formControlName="DateOfBirth" [year-settings]="'DateOfBirth'"> </danphe-date-picker>
+                                <span class="error-msg" *ngIf="model.IsDirty('DateOfBirth')"
+                                    [hidden]="model.IsValidCheck('DateOfBirth','required')"> Date Of Birth is
+                                    required</span> <span class="error-msg" *ngIf="model.IsDirty('DateOfBirth')"
+                                    [hidden]="model.IsValidCheck('DateOfBirth','wrongDate')">Wrong date is
+                                    selected</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Gender<sup>*</sup><b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <select class="form-control custom-enter-selection" [(ngModel)]="model.Gender"
+                                        formControlName="Gender"
+                                        (focus)="coreService.SetFocusOnCurrentSelect('gender','countrySubdivision')"
+                                        (blur)="coreService.RemoveFocusFromCurrentSelect('gender')" id="gender">
+                                        <option value="Male"
+                                            (click)="coreService.SetFocusToNextSelectElement('countrySubdivision')">Male
+                                        </option>
+                                        <option value="Female"
+                                            (click)="coreService.SetFocusToNextSelectElement('countrySubdivision')">
+                                            Female</option>
+                                        <option value="Others"
+                                            (click)="coreService.SetFocusToNextSelectElement('countrySubdivision')">
+                                            Other</option>
+                                    </select>
+                                </div>
+                                <span class="error-msg" *ngIf="model.IsDirty('Gender')"
+                                    [hidden]="model.IsValidCheck('Gender','required')">
+                                    Gender is required</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Country<b class="color-red"> *</b><b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <select id="ddlCountry" class="form-control" [(ngModel)]="model.CountryId"
+                                    (change)="SetFocusById('countrySubdivision')" formControlName="CountryId"
+                                    (ngModelChange)="CountryDDL_OnChange()">
+                                    <option *ngFor="let cont of Country_All" value="{{cont.CountryId}}">
+                                        {{cont.CountryName}}</option>
+                                </select>
+                                <span class="color-red font-sm" *ngIf="model.IsDirty('CountryId')"
+                                    [hidden]="model.IsValidCheck('CountryId','required')"> Country is
+                                    required.</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">District/State<b class="color-red"> *</b><b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" danphe-auto-complete formControlName="CountrySubDivisionId"
+                                    id="countrySubdivision" [(ngModel)]="selectedDistrict"
+                                    [list-formatter]="districtListFormatter" [source]="districts_Filtered"
+                                    placeholder="District" display-property-name="CountrySubDivisionName"
+                                    value-property-name=null (valueChanged)="AssignSelectedDistrict()"
+                                    (keyup.enter)="showMunicipality? SetFocusById('municipality') : SetFocusById('address')"
+                                    onClick="this.select();" max-num-list="10" />
+                                <span class="color-red font-sm" *ngIf="model.IsDirty('CountrySubDivisionId')"
+                                    [hidden]="model.IsValidCheck('CountrySubDivisionId','required')">
+                                    District/State is required.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xs-12">
+                        <div class="form-group" *ngIf="showMunicipality">
+                            <label class="control-label col-md-4">Municipality <b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <municipality-select *ngIf="model" [municipalityId]='model.MunicipalityId'
+                                    [subDivisionId]='model.CountrySubDivisionId'
+                                    (valueChange)="updateMunicipality($event)"></municipality-select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Address<b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                                    id="address" [(ngModel)]="model.Address" [source]="olderAddressList"
+                                    placeholder="Address" display-property-name="PatAddress" value-property-name=null
+                                    no-match-found-text=" " onClick="this.select();" min-chars="2"
+                                    style="text-transform: capitalize;" [grid-sort]="'sortonbasicdatatype'"
+                                    (keyup.enter)="!isVaccRegNumAutoIncreaseEnabled ? SetFocusById('patVaccRegNumber') : SetFocusById('register')"
+                                    max-num-list="10" />
+                            </div>
+                        </div>
+                        <div class="form-group" *ngIf="(patientId > 0) || !isVaccRegNumAutoIncreaseEnabled">
+                            <label class="control-label col-md-4">Vacc. Regd. No.<b class="color-red"> *</b><b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <p *ngIf="isVaccRegNumAutoIncreaseEnabled && (patientId > 0)" id="regNumber"
+                                    class="form-control">{{model.VaccinationRegNo}}</p>
+                                <input *ngIf="!isVaccRegNumAutoIncreaseEnabled" id="patVaccRegNumber"
+                                    class="form-control" type="text" maxlength="30" formControlName="VaccinationRegNo"
+                                    [(ngModel)]="model.VaccinationRegNo" required value="" min="1"
+                                    (keyup.enter)="SetFocusById('register')" type="number" placeholder="Reg No." />
+                                <span class="color-red font-sm"
+                                    *ngIf="!isVaccRegNumAutoIncreaseEnabled && model.IsDirty('VaccinationRegNo')"
+                                    [hidden]="model.IsValidCheck('VaccinationRegNo','required')">
+                                    Vacc. reg. No. is required. &nbsp; &nbsp;</span>
+                                <span *ngIf="!isVaccRegNumAutoIncreaseEnabled && !(model.VaccinationRegNo > 0)"
+                                    class="color-red font-sm">Vacc. reg. No. should be greater than 0</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Father Name<b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input id="regPatFatherName" class="form-control" type="text" maxlength="30"
+                                    [(ngModel)]="model.FatherName" required value=""
+                                    (keyup.enter)="SetFocusById('phoneNumber')" [ngModelOptions]="{standalone: true}"
+                                    (focusout)="capitalizeFirstLetter('FatherName')" placeholder="Father Name" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Phone number<b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="tel" maxlength="11" [(ngModel)]="model.PhoneNumber"
+                                    (keyup.enter)="SetFocusById('ethnicGroup')" id="phoneNumber"
+                                    [ngModelOptions]="{standalone: true}" placeholder="Phone number" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Caste/Ethnic Group<b
+                                    style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <select class="form-control" [(ngModel)]="model.EthnicGroup" id="ethnicGroup"
+                                    (change)="SetFocusById('register')" [ngModelOptions]="{standalone: true}">
+                                    <option value="Dalit">Dalit</option>
+                                    <option value="JanaJaati">JanaJaati</option>
+                                    <option value="Madhesi">Madhesi</option>
+                                    <option value="Muslim">Muslim</option>
+                                    <option value="Brahmin/Chhetri">Brahmin/Chhetri</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="all-buttons text-right margin-bottom-15">
+                                    <button type="button" id="cancelRegistration"
+                                        class="btn grey btn-default margin-7-hr"
+                                        (click)="CloseVaccinationRegister(false)">
+                                        Cancel
+                                    </button>
+                                    <button *ngIf="patientId == 0" type="button" id="register"
+                                        class="btn green btn-success margin-7-hr" [disabled]="loading"
+                                        (click)="loading=true;AddUpdateVaccinationPatient()">
+                                        Register
+                                    </button>
+                                    <button *ngIf="patientId > 0" type="button" id="register"
+                                        class="btn green btn-success margin-7-hr" [disabled]="loading"
+                                        (click)="loading=true;AddUpdateVaccinationPatient()">
+                                        Update
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" *ngIf="patientId == 0">
+                            <span style="color:darkgreen;">
+                                Note: 'Register' will also create a new Visit for this patient in <span
+                                    style="text-transform:uppercase;">{{vaccDeptName}} </span> Department.
+                            </span>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

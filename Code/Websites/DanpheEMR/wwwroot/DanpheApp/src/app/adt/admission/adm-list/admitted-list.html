@@ -5,17 +5,31 @@
     vertical-align: bottom;
     margin-left: 15px;
   }
+
+  .lbl-INSPatient {
+    color: rgb(24, 22, 22);
+    font-weight: bold;
+    vertical-align: bottom;
+    margin-left: 15px;
+  }
 </style>
 
 <div class="wrapper">
   <div class="row">
-    <div class="col-lg-12 col-md-12">
+    <div class="col-lg-12 col-sm-12">
       <div style="float:right">
+        <label style="margin-top: 3px;" class="lbl-INSPatient" for="isINSPatient">Insurance Patient<b>:</b> </label>
+        <input id="isINSPatient" name="isINSPatient" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+          (change)=" FilterGridItems(showIsInsurancePatient)" [(ngModel)]="showIsInsurancePatient"
+          [ngModelOptions]="{standalone: true}" />
+      </div>
+      <!-- <div style="float:right">
         <label class="lbl-police-case" for="isPoliceCase">Show Police Case<b>:</b> </label>
         <input id="isPoliceCase" name="isPoliceCase" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
-          (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase" [ngModelOptions]="{standalone: true}" />
-      </div>
-      
+          (change)="FilterGridItems(showPoliceCase)" [(ngModel)]="showPoliceCase"
+          [ngModelOptions]="{standalone: true}" />
+      </div> -->
+
     </div>
     <div class="col-lg-12 col-sm-12">
       <danphe-grid [grid-colDefaults]="admittedListGridColumns" [grid-data]="admittedList"
@@ -23,8 +37,8 @@
       </danphe-grid>
     </div>
   </div>
-  <danphe-bed-transfer *ngIf="showTransferPage" [selectedBedInfo]="selectedBedInfo"
-    (transfer)="TransferUpgrade($event)">
+  <danphe-bed-transfer *ngIf="showTransferPage" [selectedBedInfo]="selectedBedInfo" (transfer)="TransferUpgrade($event)"
+    [all-Departments]="allDepartments">
   </danphe-bed-transfer>
 
   <danphe-bed-upgrade [showUpgradePage]="showUpgradePage" [selectedBedInfo]="selectedBedInfo"
@@ -32,9 +46,9 @@
   </danphe-bed-upgrade>
 
   <!--@*Don't display wristband while inside admission sticker in Admitted-List : Bug#39 ADT*@-->
-  <admission-sticker [patientVisitId]="patientVisitId" [showSticker]="showSticker"
-    (after-print-action)="StickerPrintCallBack()" [showWristBand]="false">
-  </admission-sticker>
+  <!-- <admission-sticker [patientVisitId]="patientVisitId" [showSticker]="showSticker"
+    (after-print-action)="StickerPrintCallBack($event)" [showWristBand]="false">
+  </admission-sticker> -->
 
   <admission-cancel *ngIf="showCancelAdmissionPage" [ipVisitId]="selVisitId" [patientId]="selPatId"
     (on-cancel-closed)="CancelAdmission($event)">
@@ -43,6 +57,37 @@
   <change-doctor *ngIf="showChangeDoctorPage" [admittedPatientDrInfo]="admittedpatientdrinfo"
     (changeDoc-close)="TransferUpgrade($event)">
   </change-doctor>
+
+
+
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showSticker">
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+          <div class="modelbox-body">
+            <div class="row">
+              <div class="col-md-12">
+                <admission-sticker *ngIf="showSticker" [patientVisitId]="patientVisitId"
+                  (after-print-action)="StickerPrintCallBack($event)">
+                </admission-sticker>
+                <div class="clearfix"></div>
+                <ip-wrist-band [showWristBand]="false" [patientVisitId]="patientVisitId" [showAsPopup]="false">
+                </ip-wrist-band>
+              </div>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="StickerPrintCallBack('exit')">
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
   <!--Model Box Starting Here-->
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDischargePopUpBox">
@@ -117,6 +162,7 @@
       <!--Model Box Body End-->
     </div>
   </div>
+
   <div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom inv_modal"
     *ngIf="showPatientBillHistory">
     <div class="portlet-body form">
@@ -125,20 +171,73 @@
         <!--Model Box Body Start-->
         <div class="form-body">
           <bill-history [showPatientBillHistory]="showPatientBillHistory" [patient]="selPatient"
-            *ngIf="showPatientBillHistory"></bill-history>
+            (history-emitter)="GetHistoryEitter($event)" *ngIf="showPatientBillHistory"></bill-history>
         </div>
         <!--Model Box Body End-->
       </div>
     </div>
-    <div *ngIf="showGenericSticker">
-      <visit-gen-sticker-print *ngIf="showGenericSticker" [single-sticker-info]="patVisitGenericStickerInfo"
-        (on-popup-closed)="CloseGenericSticker($event)">
-      </visit-gen-sticker-print>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showWristBand">
+  <div class="portlet-body form">
+    <div class="col-md-6">
+      <div class="modelbox-div clearfix">
+        <!--Model Box Body Start-->
+        <div class="modelbox-body">
+          <ip-wrist-band *ngIf="showWristBand" [showWristBand]="true" [patientVisitId]="patientVisitId"
+            [showAsPopup]="false" (on-popup-closed)="CloseWristBandPage($event)">
+          </ip-wrist-band>
+        </div>
+
+        <!--Model Box Body End-->
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseWristBandPage()">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseWristBandPage()">
+            X
+          </button>
+        </div>
+
+      </div>
     </div>
-    <div *ngIf="showWristBand">
-      <ip-wrist-band *ngIf="showWristBand" [showWristBand]="true" [patientVisitId]="patientVisitId" [showAsPopup]="true"
-        (on-popup-closed)="CloseWristBandPage($event)">
-      </ip-wrist-band>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showGenericSticker">
+  <div class="portlet-body form">
+    <div class="col-md-6">
+      <div class="modelbox-div clearfix">
+        <!--Model Box Body Start-->
+        <div class="modelbox-body">
+          <visit-gen-sticker-print *ngIf="showGenericSticker" [single-sticker-info]="patVisitGenericStickerInfo"
+            (on-popup-closed)="CloseGenericSticker($event)">
+          </visit-gen-sticker-print>
+        </div>
+
+        <!--Model Box Body End-->
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseGenericSticker()">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseGenericSticker()">
+            X
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>

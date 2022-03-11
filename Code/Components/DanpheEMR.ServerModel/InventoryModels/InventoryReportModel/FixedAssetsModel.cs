@@ -17,4 +17,6 @@ namespace DanpheEMR.ServerModel.InventoryModels.InventoryReportModel
         public string UOMName { get; set; }
         public string Code { get; set; }
     }
+
+
 }

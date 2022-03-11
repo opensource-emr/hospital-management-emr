@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef, EventEmitter, Output, Injectable, ViewChild, ElementRef } from "@angular/core";
 import { RouterModule, Router, CanDeactivate } from '@angular/router';
 import { AppointmentService } from '../../../appointments/shared/appointment.service';
 import { IRouteGuard } from '../../../shared/route-guard.interface';
@@ -17,6 +17,8 @@ import { UnicodeService } from "../../../common/unicode.service";
 import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 import { MembershipType } from "../../shared/membership-type.model";//remove this or merge to one type with membership. 
 import { Membership } from "../../../settings-new/shared/membership.model";
+import { Municipality } from "../../../shared/address-controls/municipality-model";
+import { PatientRegistrationMainComponent } from "../patient-registration-main.component";
 @Component({
   templateUrl: "./patient-basic-info.html"
 })
@@ -40,7 +42,13 @@ export class PatientBasicInfoComponent implements IRouteGuard {
   public Countries: Array<any> = null;
   public MembershipTypeList: Array<MembershipType> = new Array<MembershipType>();
   public olderAddressList: Array<any> = [];
+  public isPhoneNumberMandatory: boolean = true;
+  public showMunicipality: boolean = false;
+  public showLocalName: boolean = true;
+  public submitDone: boolean = true;
 
+  // @Output('emitToRegisterButton')
+  // public emitToRegisterButton: EventEmitter<boolean>  = new EventEmitter<boolean>();
   constructor(public unicode: UnicodeService, _serv: PatientService,
     _appointmentServ: AppointmentService,
     public patientBLService: PatientsBLService,
@@ -53,7 +61,7 @@ export class PatientBasicInfoComponent implements IRouteGuard {
       this.olderAddressList = this.coreService.Masters.UniqueDataList.UniqueAddressList;
     }
 
-
+    this.GoToNextInput("InputId");
     this.patientService = _serv;
     this.model = _serv.getGlobal();
 
@@ -84,15 +92,16 @@ export class PatientBasicInfoComponent implements IRouteGuard {
     //this.GetMembershipType();
     //this.ConditionalValidationOfAgeAndDOB();//sud:3sept'18 now that both Dob & Age are selectable in single view, we can remove this.
 
+    this.isPhoneNumberMandatory = this.coreService.GetIsPhoneNumberMandatory();
+    this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
+
+    this.showLocalName = this.coreService.showLocalNameFormControl;
   }
 
   ngOnInit() {
     this.isPatientInfoLoaded = true;//sud:13Nov'19-- needed for membership.
+    this.phoneNumberMandatory();
   }
-
-
-
-
 
   ngAfterViewInit() {
     document.getElementById('regPatFirstName').focus();
@@ -382,4 +391,42 @@ export class PatientBasicInfoComponent implements IRouteGuard {
   //end: sundeep:14Nov'19--for membership/community scheme
 
 
+  public phoneNumberMandatory() {
+    if (!this.isPhoneNumberMandatory) {
+      this.model.UpdatePhoneValidator("off", "PhoneNumber");
+    }
+  }
+  public updateMunicipality(event) {
+    if (event) {
+      this.model.MunicipalityId = event.data;
+    }
+  }
+
+  public GoToNextInput(id: string) {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+  }
+  
+  public AgeUnitValueChange() {
+    if (this.isPhoneNumberMandatory == true) {
+      this.GoToNextInput('PhoneNumber');
+    }
+    else {
+      this.GoToNextInput('ddlCountry');
+    }
+  }
+  public SelectCountry() {
+    if (this.model.CountryId == 1) {
+      this.GoToNextInput('ddlDistrict');
+    } else {
+      this.GoToNextInput('Gender');
+    }
+  }
+
+
+  SetFocusById(IdToBeFocused: string) {
+    this.coreService.FocusInputById(IdToBeFocused);
+   }
 }

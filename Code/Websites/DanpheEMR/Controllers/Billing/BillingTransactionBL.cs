@@ -2,25 +2,18 @@
 using DanpheEMR.ServerModel;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using DanpheEMR.Core.Configuration;
-using Microsoft.Extensions.Options;
-using DanpheEMR.Utilities;
-using DanpheEMR.CommonTypes;
-using DanpheEMR.Core.Caching;
-using System.Xml;
-using Newtonsoft.Json;
 using DanpheEMR.Security;
-using DanpheEMR.Controllers.Billing;
 using DanpheEMR.Enums;
+using System.Data.SqlClient;
+using System.Data.Entity.Infrastructure;
 
 namespace DanpheEMR.Controllers.Billing
 {
     public class BillingTransactionBL
     {
+        //private static int invoiceNoTest = 1; // to test the duplicate invoiceNo.
 
         //post to BIL_TXN_BillingTransaction
         public static BillingTransactionModel PostBillingTransaction(BillingDbContext dbContext,
@@ -35,7 +28,7 @@ namespace DanpheEMR.Controllers.Billing
             {
                 foreach (var txnItem in billingTransaction.BillingTransactionItems)
                 {
-                                 
+
                     BillingTransactionItemModel clonedItem = BillingTransactionItemModel.GetClone(txnItem);
                     clonedItem.BillingTransaction = null;
                     newTxnItems.Add(clonedItem);
@@ -47,12 +40,13 @@ namespace DanpheEMR.Controllers.Billing
             billingTransaction.CreatedBy = currentUser.EmployeeId;
             if (billingTransaction.BillStatus == ENUM_BillingStatus.unpaid)// "unpaid")
             {
-                double? totalAmount = billingTransaction.TotalAmount;
-                int i = (int)totalAmount;
-                billingTransaction.TotalAmount = i;
-                string s = totalAmount.ToString();
-                s = s.Replace(i + "", "");
-                billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s) ? 0 : Convert.ToDecimal(s);
+                //sud:11May'21--Removing Adjustment Amounts. <NOT REQUIRED>
+                //double? totalAmount = billingTransaction.TotalAmount;
+                //int i = (int)totalAmount;
+                //billingTransaction.TotalAmount = i;
+                //string s = totalAmount.ToString();
+                //s = s.Replace(i + "", "");
+                //billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s) ? 0 : Convert.ToDecimal(s);
                 billingTransaction.PaidDate = null;
                 billingTransaction.PaidAmount = null;
                 billingTransaction.PaymentReceivedBy = null;
@@ -61,12 +55,13 @@ namespace DanpheEMR.Controllers.Billing
             }
             else if (billingTransaction.BillStatus == ENUM_BillingStatus.paid)// "paid")
             {
-                double? totalAmount = billingTransaction.TotalAmount;
-                int i = (int)totalAmount;
-                billingTransaction.TotalAmount = i;
-                string s = totalAmount.ToString();
-                s = s.Replace(i + "", "");
-                billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s)?0 : Convert.ToDecimal(s);
+                //sud:11May'21--Removing Adjustment Amounts. <NOT REQUIRED>
+                //double? totalAmount = billingTransaction.TotalAmount;
+                //int i = (int)totalAmount;
+                //billingTransaction.TotalAmount = i;
+                //string s = totalAmount.ToString();
+                //s = s.Replace(i + "", "");
+                //billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s) ? 0 : Convert.ToDecimal(s);
                 billingTransaction.PaidDate = currentDate;
                 billingTransaction.PaidCounterId = billingTransaction.CounterId;
                 billingTransaction.PaymentReceivedBy = billingTransaction.CreatedBy;
@@ -78,15 +73,19 @@ namespace DanpheEMR.Controllers.Billing
             billingTransaction.CreatedOn = currentDate;
             billingTransaction.CreatedBy = currentUser.EmployeeId;
             billingTransaction.FiscalYearId = fiscYear.FiscalYearId;
-            billingTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
             //billingTransaction.InvoiceCode = BillingBL.InvoiceCode;
             billingTransaction.InvoiceCode = billingTransaction.IsInsuranceBilling == true ? "INS" : BillingBL.InvoiceCode;
+            //if (string.IsNullOrEmpty(billingTransaction.LabTypeName))
+            //{
+            //    billingTransaction.LabTypeName = "op-lab";
+            //}
             dbContext.BillingTransactions.Add(billingTransaction);
 
-            dbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);           
+            dbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);
             dbContext.AddAuditCustomField("ChangedByUserName", currentUser.UserName);
 
-            dbContext.SaveChanges();
+            GenerateInvoiceNoAndSaveInvoice(billingTransaction, dbContext, connString); //To avoid the duplicate the invoiceNo..
+
             dbContext.AuditDisabled = true;
 
             PostUpdateBillingTransactionItems(dbContext,
@@ -97,20 +96,48 @@ namespace DanpheEMR.Controllers.Billing
                    billingTransaction.CounterId,
                    billingTransaction.BillingTransactionId);
             dbContext.SaveChanges();
-            
+
+            if (billingTransaction.BillStatus == ENUM_BillingStatus.paid)
+            { //If transaction is done with Depositor paymentmode is credit we don't have to add in EmpCashTransaction table
+                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                empCashTransaction.TransactionType = "CashSales";
+                empCashTransaction.ReferenceNo = billingTransaction.BillingTransactionId;
+                empCashTransaction.InAmount = billingTransaction.TotalAmount;
+                empCashTransaction.OutAmount = 0;
+                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                //empCashTransaction.Description = billingTransaction.de;
+                empCashTransaction.TransactionDate = DateTime.Now;
+                empCashTransaction.CounterID = billingTransaction.CounterId;
+
+                BillingBL.AddEmpCashTransaction(dbContext, empCashTransaction);
+            }
+
             //step:3-- if there's deposit deduction, then add to deposit table. 
             if (billingTransaction.PaymentMode != ENUM_BillPaymentMode.credit // "credit" 
-                && billingTransaction.DepositReturnAmount != null && billingTransaction.DepositReturnAmount > 0)
+                && billingTransaction.DepositUsed != null && billingTransaction.DepositUsed > 0)
             {
+                double? depBalance = 0;
+                if (billingTransaction.InvoiceType == ENUM_InvoiceType.inpatientDischarge)
+                {
+                    //in case of discharge bill, we clear all remaining deposits of a patient.
+                    //but from client side, we're already making deposit balance=0.
+                    //so only for DepositTable, we have to re-calcaultate the balance amount again.
+                    depBalance = billingTransaction.DepositReturnAmount;
+                }
+                else
+                {
+                    depBalance = billingTransaction.DepositBalance;
+                }
+
                 BillingDeposit dep = new BillingDeposit()
                 {
                     DepositType = ENUM_BillDepositType.DepositDeduct, //"depositdeduct",
                     Remarks = "Deposit used in InvoiceNo. " + billingTransaction.InvoiceCode + billingTransaction.InvoiceNo,
                     //Remarks = "depositdeduct" + " for transactionid:" + billingTransaction.BillingTransactionId,
                     IsActive = true,
-                    Amount = billingTransaction.DepositReturnAmount,
+                    Amount = billingTransaction.DepositUsed,
                     BillingTransactionId = billingTransaction.BillingTransactionId,
-                    DepositBalance = billingTransaction.DepositBalance,
+                    DepositBalance = depBalance,
                     FiscalYearId = billingTransaction.FiscalYearId,
                     CounterId = billingTransaction.CounterId,
                     CreatedBy = billingTransaction.CreatedBy,
@@ -124,10 +151,54 @@ namespace DanpheEMR.Controllers.Billing
                 billingTransaction.ReceiptNo = dep.ReceiptNo + 1;
                 dbContext.BillingDeposits.Add(dep);
                 dbContext.SaveChanges();
-                
+
+
+                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                empCashTransaction.TransactionType = ENUM_BillDepositType.DepositDeduct;
+                empCashTransaction.ReferenceNo = dep.DepositId;
+                empCashTransaction.InAmount = 0;
+                empCashTransaction.OutAmount = dep.Amount;
+                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                //empCashTransaction.Description = billingTransaction.de;
+                empCashTransaction.TransactionDate = DateTime.Now;
+                empCashTransaction.CounterID = dep.CounterId;
+
+                BillingBL.AddEmpCashTransaction(dbContext, empCashTransaction);
             }
             billingTransaction.FiscalYear = fiscYear.FiscalYearFormatted;
             return billingTransaction;
+        }
+
+        //Krishna: 5th,Jan'2022 // avoids the duplicate the invoiceNo..
+        private static void GenerateInvoiceNoAndSaveInvoice(BillingTransactionModel billingTransaction, BillingDbContext dbContext, string connString)
+        {
+            try
+            {
+                billingTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
+                //if(invoiceNoTest == 1) { billingTransaction.InvoiceNo = 258017; invoiceNoTest++; }//logic to test the duplicate invoice no and retry to get the latest invoiceNo
+                dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex is DbUpdateException dbUpdateEx)
+                {
+                    if (dbUpdateEx.InnerException?.InnerException is SqlException sqlException)
+                    {
+
+                        if (sqlException.Number == 2627)// unique constraint error in BillingTranscation table..
+                        {
+                            GenerateInvoiceNoAndSaveInvoice(billingTransaction, dbContext, connString);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    else throw;
+                }
+                else throw;
+
+            }
         }
 
         //post to BIL_TXN_BillingTransactionItems
@@ -146,12 +217,21 @@ namespace DanpheEMR.Controllers.Billing
             //var empList = masterDbContext.Employees.ToList();
             if (billingTransactionItems != null && billingTransactionItems.Count > 0)
             {
-                var ProvisionalReceiptNo = BillingBL.GetProvisionalReceiptNo(connString);
+                // we are using this only for Provisional billing hence we can use first element to check billing status..
+                int? ProvisionalReceiptNo = null;
+                if (billingTransactionItems[0].BillStatus == ENUM_BillingStatus.provisional)
+                {
+                    ProvisionalReceiptNo = BillingBL.GetProvisionalReceiptNo(connString);
+                }
                 for (int i = 0; i < billingTransactionItems.Count; i++)
                 {
                     var txnItem = billingTransactionItems[i];
                     if (txnItem.BillingTransactionItemId == 0)
                     {
+                        //if (string.IsNullOrEmpty(txnItem.LabTypeName))
+                        //{
+                        //    txnItem.LabTypeName = "op-lab";
+                        //}
                         txnItem.CreatedOn = currentDate;
                         txnItem.CreatedBy = currentUser.EmployeeId;
                         txnItem.RequisitionDate = currentDate;
@@ -187,7 +267,7 @@ namespace DanpheEMR.Controllers.Billing
                     if (billItemRequisition != null)
                     {
                         billItemRequisition.BillStatus = "paid";
-                        dbContext.Entry(billItemRequisition).State = EntityState.Modified;
+                        dbContext.Entry(billItemRequisition).State = System.Data.Entity.EntityState.Modified;
                     }
                 }
                 dbContext.SaveChanges();
@@ -267,6 +347,7 @@ namespace DanpheEMR.Controllers.Billing
             billingDbContext.Entry(billItem).Property(a => a.DiscountAmount).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.DiscountPercent).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.DiscountPercentAgg).IsModified = true;
+            billingDbContext.Entry(billItem).Property(a => a.DiscountSchemeId).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.TotalAmount).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.ProviderId).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.ProviderName).IsModified = true;
@@ -405,12 +486,12 @@ namespace DanpheEMR.Controllers.Billing
         {
             if (txnItmFromClient != null && txnItmFromClient.BillingTransactionItemId != 0)
             {
-               
+
                 using (var dbContextTransaction = billingDbContext.Database.BeginTransaction())
                 {
                     try
                     {
-                       
+
                         BillingTransactionItemModel txnItmFromDb = billingDbContext.BillingTransactionItems
           .Where(itm => itm.BillingTransactionItemId == txnItmFromClient.BillingTransactionItemId).FirstOrDefault();
                         billingDbContext.BillingTransactionItems.Attach(txnItmFromDb);
@@ -418,11 +499,10 @@ namespace DanpheEMR.Controllers.Billing
                         txnItmFromDb.Price = txnItmFromClient.Price;
                         txnItmFromDb.Quantity = txnItmFromClient.Quantity;
                         txnItmFromDb.SubTotal = txnItmFromClient.SubTotal;
-
                         txnItmFromDb.DiscountAmount = txnItmFromClient.DiscountAmount;
                         txnItmFromDb.DiscountPercent = txnItmFromClient.DiscountPercent;
                         txnItmFromDb.TotalAmount = txnItmFromClient.TotalAmount;
-                        txnItmFromDb.ProviderId = txnItmFromClient.ProviderId;                        
+                        txnItmFromDb.ProviderId = txnItmFromClient.ProviderId;
                         txnItmFromDb.ProviderName = txnItmFromClient.ProviderName;
                         txnItmFromDb.RequestedBy = txnItmFromClient.RequestedBy;
                         txnItmFromDb.DiscountPercentAgg = txnItmFromClient.DiscountPercentAgg;

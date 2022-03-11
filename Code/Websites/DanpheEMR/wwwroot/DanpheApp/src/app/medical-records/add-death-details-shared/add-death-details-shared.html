@@ -1,0 +1,89 @@
+<style>
+    #Submit{
+        margin-right:10px !important;
+    }
+    #Submit:focus{
+        background-color: green !important;        
+    }
+
+</style>
+
+<form [formGroup]="DeathDetails.DeathDetailsValidator" class="form-horizontal hm-form">
+    <div class="font-sm text-center fw-bold" *ngIf="IsPatientDead">
+        <span><h5 style="color: orange;"><i class="fa fa-info"></i> Death Details of Selected patient has already been Added.</h5></span>  
+     </div>
+    <div class="form-body">        
+        <div class="form-group">
+            <div class="col-md-12" *ngIf="showSelectPatient">
+                <label for="srch_PatientList" class="col-md-3" style="font-weight: 600;font-size: medium;"> Select
+                    Patient<sup>*</sup>:</label>
+                <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx"
+                    [(ngModel)]="SelectedPatient" [list-formatter]="PatientListFormatter"
+                    [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+                    placeholder="Search by HospitalNo, Patient Name" display-property-name="ShortName"
+                    value-property-name=null
+                    (valueChanged)="PatientInfoChanged()" onClick="this.select();"
+                    max-num-list="500" [min-chars]="3" match-formatted="true" [grid-sort]="'ShortName'"
+                    style="width: 400px !important;" [ngModelOptions]="{standalone: true}" />
+                <span class="color-red font-sm" [hidden]="ValidPatient">Patient is Required!</span>
+            </div>
+        </div>
+        <div class="form-group" *ngIf="SelectedPatient" style="margin-bottom: 10px;">
+            <div class="col-md-6"><label class="control-label lbl-text">Patient Name:</label>
+                {{SelectedPatient?.ShortName}}
+            </div>
+            <div class="col-md-6"><label class="control-label lbl-text">Age:</label>
+                {{SelectedPatient?.Age}}</div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-md-4"><label for="certNum" class="control-label lbl-text">Certificate
+                    Number</label></div>
+            <div class="col-md-5">
+                <div [ngClass]="{'alert alert-warning':duplicateCertificateNumber}">
+                    <input id="certNum" [(ngModel)]="DeathDetails.CertificateNumber" [disabled] = "IsPatientDead"
+                        [ngModelOptions]="{standalone:true}" type="text"
+                        (ngModelChange)="OnDeathCertificateChange()" class="cstm-field-ip" 
+                        (keyup.enter)="CertificateEnterKeyClick()">
+                        
+                    <div class="color-red font-sm" *ngIf="duplicateCertificateNumber">
+                        <i class="fa fa-warning"></i>Duplicate Death Certificate Number !
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row margin-8-tp">
+            <div class="col-md-4"><label for="deathDate" class="control-label lbl-text">Death Date
+                    <sup>*</sup></label></div>
+            <div class="col-md-8">
+                <danphe-date-picker id="DeathDate" formControlName="DeathDate" [(ngModel)]="DeathDetails.DeathDate" [attr.disabled]="IsPatientDead"
+                    [CalendarTypes]="'en,np'" >
+                </danphe-date-picker>
+                <!--<input id="deathDate" formControlName="DeathDate" [(ngModel)]="DeathDetails.DeathDate" type="date" class="cstm-field-ip" />-->
+                <span class="color-red font-sm" *ngIf="DeathDetails.IsDirty('DeathDate')"
+                    [hidden]="DeathDetails.IsValidCheck('DeathDate','required')">Enter Death
+                    Date</span>
+            </div>
+        </div>
+        <div class="row margin-8-tp">
+            <div class="col-md-4"><label for="DeathTime" class="control-label lbl-text">Death
+                    Time <sup>*</sup></label></div>
+            <div class="col-md-5">
+                <input id="DeathTime" formControlName="DeathTime" type="time" [(ngModel)]="DeathDetails.DeathTime"
+                    class="cstm-field-ip" [attr.disabled]="IsPatientDead ? true : null" 
+                    (keyup.enter)="coreService.FocusInputById('Submit')"/>
+                <span class="color-red font-sm" *ngIf="DeathDetails.IsDirty('DeathTime')"
+                    [hidden]="DeathDetails.IsValidCheck('DeathTime','required')">Enter Death
+                    Time</span>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="panel-footer" style="height: 50px; ">
+    <button (click)="Close()" id="close" *ngIf="showSelectPatient" class="cancel-cert btn-pd btn btn-sm btn-danger right"
+        style="margin-right:3px;">Cancel</button>
+    <button  id="Submit" (click)="AddDeathDetails()" [disabled]="IsPatientDead"
+        class="add-cert btn-pd btn btn-sm btn-primary right">
+        {{DeathDetails.DeathId>0?'Update Death Details':'Add Death Details'}}</button>
+</div>

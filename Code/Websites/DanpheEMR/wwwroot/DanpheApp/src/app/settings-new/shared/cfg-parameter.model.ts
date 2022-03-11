@@ -20,6 +20,7 @@ export class MappedObj {
 
   public ValueType: string = null;
   public ActualValueType: string = null;
+  public OuterKeyName: string = null;
 }
 
 

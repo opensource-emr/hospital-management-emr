@@ -57,8 +57,7 @@ export class PurchaseOrderItems {
             'ItemId': ['', Validators.compose([Validators.required])],
           'Quantity': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
           'StandardRate': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
-          'VatPercentage': ['', Validators.compose([Validators.required, Validators.min(0)])],
-          'DeliveryDays': ['', Validators.compose([Validators.min(0)])],
+          'VatPercentage': ['', Validators.compose([Validators.required])]
         });
     }
 

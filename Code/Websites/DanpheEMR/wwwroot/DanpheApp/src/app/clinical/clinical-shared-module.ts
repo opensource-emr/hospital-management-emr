@@ -20,6 +20,7 @@ import { PastMedicalComponent } from "./problems/past-medical.component";
 import { VitalsListComponent } from "./vitals/vitals-list.component";
 import { DoctorsNotesComponent } from "../doctors/notes/doctors-notes.component";
 import { AllergyListComponent } from "./others/allergy-list.component";
+import { HomeMedicationAddComponent } from "./medications/home-medication-add.component";
 
 @NgModule({
   providers: [],
@@ -51,7 +52,8 @@ import { AllergyListComponent } from "./others/allergy-list.component";
 
     SelectOrderComponent,
     DoctorsNotesComponent,
-    AllergyListComponent
+    AllergyListComponent,
+    HomeMedicationAddComponent
   ],
   exports: [
     VitalsAddComponent,
@@ -66,6 +68,7 @@ import { AllergyListComponent } from "./others/allergy-list.component";
     SelectOrderComponent,
     PastMedicalComponent,
     DoctorsNotesComponent,
+    HomeMedicationAddComponent
   ],
 })
 export class ClinicalSharedModule {}

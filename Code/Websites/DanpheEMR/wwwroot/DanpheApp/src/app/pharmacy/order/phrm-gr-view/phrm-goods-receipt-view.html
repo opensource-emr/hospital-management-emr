@@ -10,16 +10,11 @@
               <div id="print-good-reciept" class="row printStyle print-border">
                 <div style="text-align:center;">
                   <div class="col-md-12">
-                    <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;"> <img
-                        class="img-responsive" style="max-height:70px;"
-                        src="../../../themes/theme-default/images/hams-logo.PNG" /> </div>
+                    <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" /> </div>
                     <div style="width: 64%;float: left;padding-bottom:  0px;">
-                      <div class="text-center bill-head"
-                        style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
-                          style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                      <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                         <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                        <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
-                          headerDetail.tel}}</span><br />
+                        <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                         <span style="font-size:14px; margin-right: 30px;"><strong>PHARMACY UNIT</strong></span>
                       </div>
                     </div>
@@ -33,19 +28,20 @@
                       <p>Goods Receipt No.:<b>{{currentGR.CurrentFiscalYear}}-{{currentGR.GoodReceiptPrintId}}</b></p>
                       <p>Supplier Name :<b> {{currentGR.SupplierName}}</b> </p>
                       <p>Contact No.:<b> {{currentGR.ContactNo}}</b></p>
-                    </div>
-                    <div class="right" style="text-align:right;">
-                      <p>Date :<b> {{currentGR.GoodReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
-                      <p>Invoice No:<b>{{currentGR.InvoiceNo}}</b></p>
                       <p>PAN. No:<b>{{currentGR.Pin}}</b>
                     </div>
+                    <div class="right" style="text-align:right;">
+                      <p>Supplier Bill Date :<b> {{currentGR.SupplierBillDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                      <p>Good Receipt Date :<b> {{currentGR.GoodReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                      <p>Invoice No: <b>{{currentGR.InvoiceNo}}</b></p>
+                      <p *ngIf="currentGR.CreditPeriod">Credit Period: <strong>{{currentGR.CreditPeriod}}</strong></p>
+                    </div>
                     <div class="clear"></div>
-                    <p class="text-center btm-pad border-up-down"><b> GOODS RECEIPT DETAILS </b></p>
+                    <p class="text-center btm-pad border-up-down"><strong> GOODS RECEIPT DETAILS </strong></p>
                     <div class="clear"></div>
                     <div class="clear footer"></div>
-                    <div class="table-responsive">
-                      <table class="table table-striped table-bordered table-hover"
-                        style="background-color:initial;margin-top:10px">
+                    <div>
+                      <table class="table table-striped table-bordered table-hover" style="background-color:initial;margin-top:10px">
                         <thead>
                           <tr>
                             <td width="30px"><strong>Sn.</strong></td>
@@ -53,51 +49,64 @@
                             <td>Bat. No.</td>
                             <td>MRP</td>
                             <td>EXP. Dt.</td>
-                            <td *ngIf="IsPackagingItem">Packing</td>
+                            <td *ngIf="isPackingEnabled">Packing</td>
+                            <td *ngIf="isPackingEnabled">Packing Qty</td>
                             <td>Rec. Qty.</td>
-                            <td>Free Qty.</td>
-                            <td>Rate</td>
-                            <!-- <td *ngIf="!IsPackagingItem">GR price</td> -->
-                            <td>C.C. Charge%</td>
+                            <td *ngIf="showFreeQty">Free Qty.</td>
+                            <td *ngIf="isPackingEnabled">Strip Rate</td>
+                            <td>GR price</td>
+                            <td *ngIf="showCCCharge">C.C. Charge%</td>
                             <td *ngIf="IsItemLevelDiscountEnabled">Discount Amount</td>
-                            <td>Sub Total</td>
                             <td>Tot. Amt.</td>
                           </tr>
                         </thead>
                         <tbody>
                           <tr *ngFor="let row of currentGR.GoodsReceiptItems; let i=index">
                             <td width="30px">{{i+1}}</td>
-                            <td><b>{{row.ItemName}}</b></td>
+                            <td style="display: flex;justify-content: space-evenly;align-items: center;">
+
+                              <button class="noPrint" style="border: none; background: none;" *ngIf="row.BarcodeNumber>0" (click)="print('barcode'+i)">
+                                <span id="BarcodeTooltip" class="tooltip">
+                                  <span class="fa fa-barcode" style="padding: 3px 6px 3px 6px;font-size: 2.5rem;">
+                                  </span>
+                                  <p class="tooltiptext ttptextdown no-print">
+                                    Click to Print Barcode
+                                    <danphe-bar-code id="barcode{{i}}" [barcode-number]="row.BarcodeNumber" [height]="15">
+                                    </danphe-bar-code>
+                                  </p>
+                                </span>
+                              </button>
+                              <b>{{row.ItemName}}</b>
+                            </td>
                             <td>{{row.BatchNo}}</td>
                             <td>{{row.MRP | number : "1.2-2"}}</td>
                             <td style="width:100px">{{row.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                            <td *ngIf="IsPackagingItem">{{row.PackingName}}</td>
+                            <td *ngIf="isPackingEnabled">{{row.PackingName}}</td>
+                            <td *ngIf="isPackingEnabled">{{row.PackingQuantity}}</td>
                             <td>{{row.ReceivedQuantity}}</td>
-                            <td>{{row.FreeQuantity}}</td>
-                            <td *ngIf="IsPackagingItem">{{row.StripRate | number : "1.2-2"}}</td>
-                            <td *ngIf="!IsPackagingItem">{{row.GRItemPrice | number : "1.2-2"}}</td>
-                            <td>{{row.CCCharge }}</td>
+                            <td *ngIf="showFreeQty">{{row.FreeQuantity}}</td>
+                            <td *ngIf="isPackingEnabled">{{row.StripRate | number : "1.2-2"}}</td>
+                            <td>{{row.GRItemPrice | number : "1.2-2"}}</td>
+                            <td *ngIf="showCCCharge">{{row.CCCharge }}</td>
                             <td *ngIf="IsItemLevelDiscountEnabled">{{row.GrTotalDisAmt}}</td>
                             <td>{{row.SubTotal | number : "1.2-2"}}</td>
-                            <td>{{row.TotalAmount | number : "1.2-2"}}</td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                     <hr />
-                    <div class="col-md-12">
+                    <div class="row clearfix">
                       <div class="col-md-6">
-                        <div class="left text-left">
+                        <div class="left" style="text-align:left">
+                          <p><b>Payment Mode:</b>{{currentGR.PaymentMode}}</p>
                           <p *ngIf="!currentGR.IsCancel"><b>Remarks :</b> {{currentGR.Remarks}}</p>
                           <p *ngIf="currentGR.IsCancel"><b>Cancel Remarks :</b> {{currentGR.CancelRemarks}}</p>
-                        </div>
-                        <div *ngIf="currentGR.IsCancel == true" class="left">
-                          <div class="cancelStamp"> Cancelled </div>
+                          <p *ngIf="currentGR.IsCancel" class="cancelStamp"><b style="font-size: 22px;">Cancelled</b></p>
                         </div>
                       </div>
-                      <div class="col-md-6 right">
+                      <div class="col-md-6" style="float: right">
                         <div>
-                          <table id="total-table" class="table table-striped table-hover table-bordered">
+                          <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
                             <tr>
                               <td>Sub Total</td>
                               <td><b>{{currentGR.SubTotal | number : "1.2-2"}}</b></td>
@@ -118,34 +127,38 @@
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12" style="padding-top: 5px;">
-                      <div class="left">
+                    <div class="row clearfix" style="padding-top: 5px;">
+                      <div class="col-md-6 left text-left">
                         <div *ngIf="!currentGR.IsCancel">
-                          User: {{currentGR.UserName}}<br>
+                          User: {{currentGR.UserName}}
                         </div>
                         <div *ngIf="currentGR.IsCancel">
-                          CancelledBy: {{currentGR.CancelledByName}}<br>
+                          CancelledBy: {{currentGR.CancelledBy}}
                         </div>
                       </div>
-                      <div class="right">
+                      <div class="col-md-6 right text-right">
                         <div *ngIf="!currentGR.IsCancel && currentGR.CreatedOn">
                           Time: {{currentGR.CreatedOn | DanpheDateTime:'format':'HH:mm'}}
                         </div>
                         <div *ngIf="currentGR.IsCancel">
-                          CancelledOn: {{currentGR.CancelledOn}}
+                          CancelledOn: {{currentGR.CancelledOn | DanpheDateTime:'format':'YYYY-MM-DD' }}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div>
-                <button (click)="printGoodReciept()" class="btn  btn-small btn-info" style="float: right;">Print This
-                  Page</button>
-              </div>
-              <div id="cancelButtonContainer" *ngIf="canUserModify">
-                <button (click)="cancelGoodsReciept()" title="Cancel Goods Receipt" class="btn  btn-small btn-danger"
-                  style="float: right;">Cancel Goods Receipt</button>
+              <div class="view-actions">
+                <div>
+                  <button id="printButton" (click)="print()" class="btn  btn-small btn-info" style="float: right;">Print This Page</button>
+                </div>
+                <div id="cancelButtonContainer" *ngIf="canUserModify && !currentGR.IsCancel">
+                  <button (click)="cancelGoodsReciept()" title="Cancel Goods Receipt" class="btn  btn-small btn-danger" style="float: right;">Cancel Goods Receipt</button>
+                </div>
+                <div *ngIf="canUserModify  && !currentGR.IsCancel">
+                  <button id="editGR" (click)="editReceipt()" class="btn  btn-small btn-info" style="float: right;">Edit
+                    GR</button>
+                </div>
               </div>
             </div>
           </div>
@@ -155,8 +168,7 @@
     </div>
   </div>
 </div>
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationPopUp">
   <div class="portlet-body form">
     <div class="col-md-6 col-md-offset-3">
       <div class="modelbox-div">
@@ -168,8 +180,15 @@
         </div>
         <div class="modelbox-body">
           <div>
-            Cancel Remarks:&nbsp;<sup>*</sup>
-            <textarea [(ngModel)]="currentGR.CancelRemarks" class="form-control" name="Cancelremarks"></textarea>
+            <form [formGroup]="cancelForm" class="form-horizontal hm-form">
+              Cancel Remarks:&nbsp;<sup>*</sup>
+              <textarea name="CancelRemarks" id="CancelRemarks" formControlName="CancelRemarks" class="form-control"></textarea>
+              <div *ngIf="cancelForm.get('CancelRemarks').invalid && (cancelForm.get('CancelRemarks').dirty || cancelForm.get('CancelRemarks').touched)" class="error-message">
+                <div *ngIf="cancelForm.get('CancelRemarks').errors.required">
+                  Remarks is required for cancelling GR.
+                </div>
+              </div>
+            </form>
           </div>
         </div>
         <div class="modelbox-footer">
@@ -180,7 +199,7 @@
           </div>
         </div>
         <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="showConfirmationBox=false">
+          <button class="btn btn-danger" (click)="showConfirmationPopUp=false">
             X
           </button>
         </div>
@@ -188,3 +207,9 @@
     </div>
   </div>
 </div>
+
+<div>
+  <router-outlet></router-outlet>
+</div>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

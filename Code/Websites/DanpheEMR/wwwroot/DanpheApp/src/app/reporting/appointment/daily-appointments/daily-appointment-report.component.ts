@@ -22,11 +22,12 @@ export class RPT_APPT_DailyAppointmentReportComponent {
   public currentdailyappointment: RPT_APPT_DailyAppointmentReportModel = new RPT_APPT_DailyAppointmentReportModel();
   dlService: DLService = null;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+  public dateRange:string="";	
   gridExportOptions = {
     fileName: 'AppointmentList' + moment().format('YYYY-MM-DD') + '.xls',
   };
 
+  public loading: boolean = false;
   constructor(
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
@@ -36,16 +37,20 @@ export class RPT_APPT_DailyAppointmentReportComponent {
     this.currentdailyappointment.toDate = moment().format('YYYY-MM-DD');
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", true));
     this.loadDoctorsList();
+    this.DailyAppointmentReportColumns = this.reportServ.reportGridCols.DailyAppointmentReport;
   }
 
   Load() {
+    this.loading = true;//this disables the button until we get response from the api.
     if (this.currentdailyappointment.fromDate != null && this.currentdailyappointment.toDate != null) {
       this.dlService.Read("/Reporting/DailyAppointmentReport?FromDate="
         + this.currentdailyappointment.fromDate + "&ToDate=" + this.currentdailyappointment.toDate
         + "&Doctor_Name=" + this.currentdailyappointment.Doctor_Name + "&AppointmentType=" + this.currentdailyappointment.AppointmentType)
         .map(res => res)
+        .finally(() => { this.loading = false; })//re-enable the show-report button.
         .subscribe(res => this.Success(res),
-          res => this.Error(res));
+          res => this.Error(res)
+        );
     } else {
       this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
     }
@@ -55,14 +60,13 @@ export class RPT_APPT_DailyAppointmentReportComponent {
     this.msgBoxServ.showMessage("error", [err]);
   }
   Success(res) {
-    if (res.Status == "OK" && res.Results.length > 0) {
-      this.DailyAppointmentReportColumns = this.reportServ.reportGridCols.DailyAppointmentReport;
-      this.DailyAppointmentReportData = res.Results;
-    }
-    else if (res.Status == "OK" && res.Results.length == 0) {
-      this.msgBoxServ.showMessage("notice-message", ['Data is Not Available Between Selected Parameter ....Try Different'])
-      this.DailyAppointmentReportColumns = this.reportServ.reportGridCols.DailyAppointmentReport;
-      this.DailyAppointmentReportData = res.Results;
+    if (res.Status == "OK") {
+      if (res.Results && res.Results.length > 0) {
+        this.DailyAppointmentReportData = res.Results;
+      }
+      else {
+        this.msgBoxServ.showMessage("notice-message", ['Data is Not Available Between Selected Parameter ....Try Different'])
+      }
     }
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -117,5 +121,6 @@ export class RPT_APPT_DailyAppointmentReportComponent {
 
     this.currentdailyappointment.fromDate = this.fromDate;
     this.currentdailyappointment.toDate = this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 }

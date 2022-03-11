@@ -38,6 +38,7 @@ export class ProfileItemMapComponent {
   public ShowEditItem = false;
   public updateSelectedItem: ProfileItemMapModel = new ProfileItemMapModel();
   public ProfileBillItemGridColumns: Array<any> = [];
+  public allBillItems: any = [];
 
   @Input('profileId')
   public selectedProfileId: number = null;
@@ -46,7 +47,14 @@ export class ProfileItemMapComponent {
   @Input('categoryList')
   public PricecategoryList: any = null;
   @Input('all-BillitmList')
-  public allBillItems: any = [];
+  public set allBillItemList(_allBillItems) {
+    if(_allBillItems){
+      _allBillItems.forEach(element => {
+        element["Price_Unit"] = this.coreService.currencyUnit + element.Price;
+      });
+      this.allBillItems = _allBillItems;
+    }
+  }	
 
   //@Input('showAddPage')
   //public set value(val: boolean) {
@@ -226,6 +234,7 @@ export class ProfileItemMapComponent {
   }
   CloseShowEditItemPopup() {
     this.ShowEditItem = false;
+    this.callbackAdd.emit();
   }
 
   CallBackAddProfileItems(res) {
@@ -316,12 +325,12 @@ export class ProfileItemMapComponent {
   ItemsListFormatter(data: any): string {
     if (data["Doctor"]) {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b >";
+        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "<b>" + data["Price_Unit"] + "</b >";
       return html;
     }
     else {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b >";
+        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" +  "<b>" + data["Price_Unit"] + "</b >";
       return html;
     }
   }

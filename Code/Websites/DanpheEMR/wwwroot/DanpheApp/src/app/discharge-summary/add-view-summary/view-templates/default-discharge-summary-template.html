@@ -1,0 +1,483 @@
+<style>
+  .customer-print-header {}
+
+  .left-panel .panel-heading {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .left-panel .patient-hdr-label:nth-of-type(odd) {
+    padding: 10px 0;
+  }
+
+  body[onload="window.print()"] .left-panel .patient-hdr-label b,
+  body[onload="window.print()"] .p-relative b:before {
+    display: none !important;
+    color: #fff !important;
+    width: 0px !important;
+  }
+
+  .p-relative b:before {
+    display: none !important;
+    color: #fff !important;
+    width: 0px !important;
+  }
+
+  @media print {
+    .patient-hdr-label {
+      display: none !important;
+      color: #fff !important;
+      width: 1px !important;
+    }
+
+    .left-panel .panel-heading {
+      margin-top: 0;
+    }
+
+    .left-panel .patient-hdr-label {
+      font-weight: 600;
+      display: inline-block;
+      width: 33.33%;
+    }
+
+    /* ul.adviceSubList li .sub-main-cls .p-relative b:before {
+        display: none !important;
+      
+      } */
+    .left-panel .patient-hdr-label b:before {
+      content: '' !important;
+      display: none !important;
+      position: relative !important;
+      color: #fff !important;
+    }
+  }
+</style>
+<div class="clearfix">
+  <button (click)="print()" class="btn  btn-small btn-primary" style="float: right;margin-bottom: 15px;">Print This
+    Page</button>
+    <button *ngIf="(this.hasEditDischargeSunnaryPermission && this.IsFinalSubmited)||(!this.IsFinalSubmited)" (click)="EditRecord()" class="btn  btn-small btn-primary" style="float: right;margin-bottom: 15px; margin-right: 25px;">Edit</button>
+</div>
+<div id="printpage">
+  <div *ngIf="dsVM">
+    <div class="">
+      <customer-header
+        [header-title]="dsVM?.selectedADT?.ModuleName == 'emergency' ? 'Emergency Discharge Report' : 'Inpatient Discharge Report'">
+      </customer-header>
+      <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+      <div class="dsv-div">
+        <div class="left-panel view">
+          <div>
+            <h1 class="panel-heading">
+              <i class="fa fa-user"></i>{{dsVM?.selectedADT?.Name}} ({{dsVM?.selectedADT?.PatientCode}})
+              <!--<label>
+                {{dsVM?.selectedADT?.DOB | DanpheDateTime:'age'}}/{{dsVM?.selectedADT?.Gender}}
+              </label>-->
+            </h1>
+          </div>
+          <div style="border-style: groove;border: 1px solid #c8c9c8;padding: 0px 5px;">
+            <p class="patient-hdr-label"><strong>Patient Name</strong>: {{dsVM?.selectedADT?.Name}}</p>
+            <p class="patient-hdr-label"><strong>Hospital No.</strong>: {{dsVM?.selectedADT?.PatientCode}}</p>
+            <p class="patient-hdr-label"><b>InPatient No</b>: {{dsVM.VisitCode}}</p>
+            <p class="patient-hdr-label"><b>Age</b>: {{dsVM?.selectedADT?.DOB | DanpheDateTime:'age'}}/{{dsVM?.selectedADT?.Gender}}
+            </p>
+            <p class="patient-hdr-label"><b>Address</b>: {{dsVM?.selectedADT?.Address}}</p>
+            <p class="patient-hdr-label"><b>Contact No</b>: {{dsVM?.selectedADT?.PhoneNumber}}</p>
+            <p *ngIf="dsVM?.selectedADT?.ModuleName != 'emergency'" class="patient-hdr-label">
+              <b>Ward</b>: {{dsVM?.selectedADT?.BedInformation.Ward}}
+            </p>
+            <!--<p *ngIf="dsVM?.selectedADT?.ModuleName != 'emergency'" class="patient-hdr-label">
+              <b>BedType/Number</b>: {{dsVM?.selectedADT?.BedInformation.BedFeature}}
+            </p>-->
+            <p *ngIf="dsVM?.selectedADT?.ModuleName != 'emergency'" class="patient-hdr-label">
+              <b>
+                Bed Number
+              </b>: {{dsVM?.selectedADT?.BedInformation.BedNumber}}
+            </p>
+            <p class="patient-hdr-label">
+              <b>Admitted On</b>: {{dsVM?.selectedADT?.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }}
+            </p>
+            <p class="patient-hdr-label">
+              <b>Discharged On</b>: {{dsVM?.selectedADT?.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }}
+            </p>
+          </div>          
+        </div>
+      </div>
+
+      <div class="sub-main-cls">
+  
+        <div *ngIf="dsVM?.DischargeType != null" class="p-relative">
+          <b>
+           DISCHARGE TYPE: <span class="pull-center">
+              <span class=""
+                style="background-color: transparent; padding: 0 !important">{{dsVM?.DischargeType}}</span>
+            </span>
+          </b><br>
+        </div> 
+        <!-- <div *ngIf="dsVM?.patDischargeSummary?.DischargeConditionType != null" class="p-relative">
+        <b>DISCHARGE Condition Type</b><span class="value">{{dsVM?.patDischargeSummary?.DischargeConditionType}}</span>
+      </div> -->
+        <div class="p-relative" *ngIf="dsVM.DeathType != null">
+          <b>Death Type</b><span class="value">{{dsVM.DeathType}}</span>
+        </div>
+        <div class="p-relative" *ngIf="dsVM.DeliveryType != null">
+          <b>Delivery Type</b><span class="value">{{dsVM?.DeliveryType}}</span>
+        </div>
+        <div class="p-relative" *ngIf="dsVM?.DeliveryType != null">
+          <div *ngIf="dsVM?.BabyBirthDetails?.length>0" style="padding-top: 0px; padding-left:10px;">
+            <table class="table_data" style="width:80%;text-align: center;" border="1">
+              <caption style="text-align: center;"><b>Baby Birth Details</b></caption>
+              <thead>
+                <tr>
+                  <th width="250" style="text-align: center;"><span>Certificate No</span></th>
+                  <th width="100" style="text-align: center;">Sex</th>
+                  <th width="100" style="text-align: center;">Weight</th>
+                  <th width="100" style="text-align: center;">Birthdate</th>
+                  <th width="100" style="text-align: center;">BirthTime</th>
+                </tr>
+              </thead>
+              <tr *ngFor="let baby of dsVM?.BabyBirthDetails">
+                <td style="border-spacing: 5px;"><span> {{baby.CertificateNumber}}</span></td>
+                <td><span> {{baby.Sex}}</span></td>
+                <td><span> {{baby.WeightOfBaby}} grams </span></td>
+                <td><span> {{baby.BirthDate}}</span></td>
+                <td><span> {{baby.BirthTime}}</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="right-panel">
+        <div class="sub-main-cls" style="width: 100%;" *ngIf="dsVM?.NewPendingTests?.length>0">
+          <div class="p-relative">
+      
+            <b>INVESTIGATIONS | LAB TESTS</b>
+            <div class="value">
+              <ul class="lab-test-list" *ngIf="dsVM?.labRequests?.length>0">
+      
+                <div *ngFor="let tst of dsVM.labRequests;let i=index;">
+                  <li *ngIf="tst.IsSelectTest || (tst.IsChildSelected)">
+      
+                    <strong>{{tst.TestName}}:</strong>
+                    <span *ngIf="(tst.labComponents && tst.labComponents?.length == 1)">
+                      <span *ngFor="let cmpt of tst.labComponents; let ci= index;">
+                        {{cmpt.Value}} &nbsp;&nbsp;
+                        {{cmpt.Unit}}
+                      </span>
+                    </span>
+                    <!-- <i class="fa fa-check" *ngIf="tst.IsSelected"></i> -->
+      
+                    <span *ngIf="( tst.labComponents?.length > 1)">
+      
+                      <span *ngFor="let cmpt of tst.labComponents; let ci= index;">
+                        <span *ngIf="cmpt.IsCmptSelected">
+                          <span>
+                            <strong *ngIf="ci>0">,</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{cmpt.ComponentName}} -
+                          </span>
+                          <span>{{cmpt.Value}}</span>
+                          <span>{{cmpt.Unit}}</span>
+                          <!-- <i class="fa fa-check" *ngIf="cmpt.IsCmptSelected"></i> -->
+                        </span>
+                      </span>
+      
+                    </span>
+      
+      
+                  </li><br>
+                </div>
+      
+              </ul>
+              <h1><b *ngIf="dsVM?.NewPendingTests?.length>0" style="margin-bottom: 20px;">Pending Lab Tests</b></h1>
+              <div *ngFor="let p of dsVM.NewPendingTests;let i=index;" class="" style="padding: 3px 10px;">
+                <span>
+                  <label class="badge">{{p.TestName}}</label>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="(dsVM?.selectedDiagnosisList?.length>0)">
+          <div class="p-relative">
+            <b>DIAGNOSIS</b>
+            <span class="value content-data">
+              <ul>
+                <li *ngFor="let diagnosis of dsVM.selectedDiagnosisList; let i=  index;">
+                  &nbsp; {{diagnosis?.icd10Description}} &nbsp; <br>
+                </li>
+              </ul>
+            </span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="(dsVM?.selectedProviDiagnosisList?.length>0)">
+          <div class="p-relative">
+            <b>PROVISIONAL DIAGNOSIS</b>
+            <span class="value content-data">
+              <ul>
+                <li *ngFor="let diagnosis of dsVM.selectedProviDiagnosisList; let i=  index;">
+                  &nbsp; {{diagnosis?.icd10Description}} &nbsp; <br>
+                </li>
+              </ul>
+            </span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.DiagnosisFreeText">
+          <div class="p-relative">
+            <b>Other Diagnosis</b>
+            <span class="value content-data">{{dsVM?.patDischargeSummary?.DiagnosisFreeText}}</span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.CaseSummary">
+          <div class="p-relative">
+            <b>CASE SUMMARY</b>
+            <span class="value content-data">{{dsVM?.patDischargeSummary?.CaseSummary}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.Allergies">
+          <div class="p-relative">
+            <b>ALLERGIES</b>
+            <span class="value content-data">{{dsVM?.patDischargeSummary?.Allergies}}</span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.imagingResults?.length>0">
+          <div>
+            <div class="p-relative">
+              <b>IMAGING RESULTS</b>
+              <div class="value">
+                <table border="1" style="margin-top: 20px!important; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th style="color: black!important;">Imaging Type</th>
+                      <th style="color: black!important;">Item</th>
+                      <!-- <th>Report Text</th> -->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let img of dsVM.imagingResults" [hidden]="!(img.IsImagingSelected)">
+                      <td>{{img.ImagingTypeName}}</td>
+                      <td>{{img.ImagingItemName}}</td>
+                      <!-- <td [innerHTML]="img.ReportText"></td> -->
+                    </tr>
+                  </tbody>
+      
+                </table>
+              </div>
+            </div>
+      
+          </div>
+        </div>
+      
+        <!-- </div> -->
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.ProcedureNts">
+          <div class="p-relative">
+            <b> PROCEDURES </b>
+            <span class="value content-data">
+              {{dsVM?.patDischargeSummary?.ProcedureNts}}
+            </span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.OperativeFindings">
+          <div class="p-relative">
+            <b>OPERATIVE FINDINGS</b>
+            <span class="value">
+              {{dsVM?.patDischargeSummary?.OperativeFindings}}
+            </span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.Treatment">
+          <div class="p-relative">
+            <b>TREATMENTS DURING HOSPITAL STAY</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.Treatment}}</span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.Condition">
+          <div class="p-relative">
+            <b> CONDITION ON DISCHARGE</b><span class="value">{{dsVM?.patDischargeSummary?.Condition}}</span>
+          </div>
+        </div>
+      
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.SpeicialNotes">
+          <div class="p-relative">
+            <b> SPECIAL NOTES</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.SpeicialNotes}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.HospitalCourse">
+          <div class="p-relative">
+            <b> HOSPITAL COURSE</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.HospitalCourse}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.HistologyReport">
+          <div class="p-relative">
+            <b>HISTOLOGY REPORT</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.HistologyReport}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.ChiefComplaint">
+          <div class="p-relative">
+            <b> CHIEF COMPLAINT</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.ChiefComplaint}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.PresentingIllness">
+          <div class="p-relative">
+            <b>HISTORY OF PRESENTING ILLNESS</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.ChiefComplaint}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls" *ngIf="dsVM?.patDischargeSummary?.PendingReports">
+          <div class="p-relative">
+            <b>PENDING REPORTS</b>
+            <span class="value content-data"> {{dsVM?.patDischargeSummary?.PendingReports}}</span>
+          </div>
+        </div>
+        <div class="sub-main-cls sub-main-cls-fullwidth" style="width: 100%; display: inline-block;"
+          *ngIf="dsVM?.newMedicines?.length>0 || dsVM?.patDischargeSummary?.Activities || dsVM?.patDischargeSummary?.Diet || dsVM?.patDischargeSummary?.RestDays || dsVM?.patDischargeSummary?.FollowUp || dsVM?.patDischargeSummary?.Others">
+          <div class="p-relative">
+            <b>ADVICE ON DISCHARGE</b>
+      
+      
+            <div class="value">
+              <ul class="adviceSubList">
+                <li *ngIf="dsVM?.newMedicines?.length>0">
+                  <div class="sub-main-cls">
+                    <div class="">
+      
+                      <div style="font-size:16px; font-weight: bold;">
+                        <b> MEDICATIONS </b>&nbsp;
+                      </div>
+                      <div class="content-data value">
+      
+                        <div *ngFor="let med of dsVM.newMedicines">
+                          {{med.Medicine}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Medications with old, new and previous med division, might need in future -->                
+                </li>
+                <li *ngIf="dsVM?.patDischargeSummary?.Activities">
+                  <div class="sub-main-cls">
+                    <b> ACTIVITIES</b>
+                    <span class="value"> {{dsVM?.patDischargeSummary?.Activities}}</span>
+                  </div>
+                </li>
+                <li *ngIf="dsVM?.patDischargeSummary?.Diet">
+                  <div class="sub-main-cls">
+      
+                    <b> DIET </b>
+                    <span class="value content-date"> {{dsVM?.patDischargeSummary?.Diet}}</span>
+                  </div>
+                </li>
+                <li *ngIf="dsVM?.patDischargeSummary?.RestDays">
+                  <div class="sub-main-cls">
+      
+                    <b> REST DAYS </b>
+                    <span class="value">{{dsVM?.patDischargeSummary?.RestDays}}</span>
+                  </div>
+                  <!--<div class="content-data" style="font-size:15px;">
+                  {{dsVM?.patDischargeSummary?.RestDays}}
+              </div>-->
+      
+                </li>
+                <li *ngIf="dsVM?.patDischargeSummary?.FollowUp">
+                  <div class="sub-main-cls">
+                    <b> FOLLOW-UP APPOINTMENT</b><span class="value">
+                      After
+                      {{dsVM?.patDischargeSummary?.FollowUp}} days
+                    </span>
+      
+      
+                    <!--<div class="subtitle" style="font-size:16px;text-decoration:underline; font-weight: bold;">
+                    Follow-Up Appointment &nbsp;:&nbsp;<span style="text-decoration:none;">After {{dsVM?.patDischargeSummary?.FollowUp}} days</span>
+                </div>-->
+                    <!--<div class="content-data" style="font-size:15px;">
+                    After {{dsVM?.patDischargeSummary?.FollowUp}} days
+                </div>-->
+                  </div>
+                </li>
+                <li *ngIf="dsVM?.patDischargeSummary?.Others">
+                  <div class="sub-main-cls">
+                    <b> OTHERS </b>
+                    <span class="value"> {{dsVM?.patDischargeSummary?.Others}}</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="left-panel view" style="margin-top: 15px;padding-top: 0; overflow: hidden;">
+        <div class="row">
+          <div class="col-md-12 col-xs-12">
+            <div class="dr-signature-list">
+              <div>
+                
+                <h1 class="panel-heading"><i class="fa fa-user-md"></i>DOCTOR INCHARGE</h1>
+                <img src="{{dsVM.DrInchargeSignImgPath}}"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.DrInchargeSignImgPath" style="height: 80px;" />
+                  <p class="patient-hdr-label signature"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.DrInchargeSignImgPath" 
+                    style="height: 0px!important;"></p>
+                  <p class="patient-hdr-label signature"
+                    *ngIf="!ShowDoctorsSignatureImage || !dsVM.DrInchargeSignImgPath"></p>
+                <p class="patient-hdr-label"><strong>{{dsVM.DrInchargeLongSignature}}</strong></p>
+                <p class="patient-hdr-label">NMC No.: {{dsVM.DrInchargeNMC}}</p>
+              </div>
+              <!-- <div *ngIf="dsVM?.patDischargeSummary?.ConsultantName"> -->
+              <div>
+                <h1 class="panel-heading"><i class="fa fa-user-md"></i>CONSULTANT</h1>
+                <img src="{{dsVM.ConsultantSignImgPath}}"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.ConsultantSignImgPath" style="height: 80px;" />
+                  <p class="patient-hdr-label signature"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.ConsultantSignImgPath"
+                    style="height: 0px!important;"></p>
+                  <p class="patient-hdr-label signature"
+                    *ngIf="!ShowDoctorsSignatureImage || !dsVM.ConsultantSignImgPath"></p>
+
+                <p class="patient-hdr-label"><strong>{{dsVM.ConsultantLongSignature}}</strong></p>
+                <!-- <p class="patient-hdr-label"><strong>NMC Number</strong>&nbsp;:&nbsp;{{dsVM.NMC}}</p> -->
+                <p class="patient-hdr-label">NMC No.: {{dsVM.ConsultantNMC}}</p>
+      
+              </div>
+              <div *ngIf="dsVM?.patDischargeSummary?.ResidenceDrId">
+                <h1 class="panel-heading"><i class="fa fa-user-md"></i>RESIDENT Dr</h1>
+                <img src="{{dsVM.ResidenceDrSignImgPath}}"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.ResidenceDrSignImgPath"
+                    style="height: 80px;" />
+                  <p class="patient-hdr-label signature"
+                    *ngIf="ShowDoctorsSignatureImage && dsVM.ResidenceDrSignImgPath"
+                    style="height: 0px!important;"></p>
+                  <p class="patient-hdr-label signature"
+                    *ngIf="!ShowDoctorsSignatureImage || !dsVM.ResidenceDrSignImgPath"></p>
+                <p class="patient-hdr-label"><strong>{{dsVM.ResidenceDrLongSignature}}</strong></p>
+                <p class="patient-hdr-label">NMC No.: {{dsVM.ResidenceDrNMC}}</p>
+      
+              </div>
+              <div *ngIf="dsVM?.AnaesthetistLongSignature !=null">
+                <h1 class="panel-heading"><i class="fa fa-user-md"></i>ANESTHETISTS</h1>
+                <img src="{{dsVM.AnaesthetistSignImgPath}}"
+                *ngIf="ShowDoctorsSignatureImage && dsVM.AnaesthetistSignImgPath"
+                style="height: 80px;" />
+              <p class="patient-hdr-label signature"
+                *ngIf="ShowDoctorsSignatureImage && dsVM.AnaesthetistSignImgPath"
+                style="height: 0px!important;"></p>
+              <p class="patient-hdr-label signature"
+                *ngIf="!ShowDoctorsSignatureImage || !dsVM.AnaesthetistSignImgPath"></p>
+            <p class="patient-hdr-label"><strong>{{dsVM.AnaesthetistLongSignature }}</strong></p>
+            <p class="patient-hdr-label">NMC No.: {{dsVM.AnaesthetistNMC}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

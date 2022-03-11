@@ -16,6 +16,7 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int InvoiceItemId { get; set; }
         public int? InvoiceId { get; set; }
+        public int StoreId { get; set; }
         public int? CompanyId { get; set; }
         public int? PatientId { get; set; }
         public int? ItemId { get; set; }
@@ -28,6 +29,7 @@ namespace DanpheEMR.ServerModel
         public double? FreeQuantity { get; set; }
         public decimal? SubTotal { get; set; }
         public double? VATPercentage { get; set; }
+        public decimal? VATAmount { get; set; }
         public double? DiscountPercentage { get; set; }
         public decimal? TotalAmount { get; set; }
         public string BilItemStatus { get; set; }
@@ -74,6 +76,14 @@ namespace DanpheEMR.ServerModel
         public string WardName { get; set; }
         [NotMapped]
         public string WardUser { get; set; }
-     }
+        [NotMapped]
+        public string DoctorName { get; set; }
+        [NotMapped]
+        public string NMCNumber { get; set; }
+        [NotMapped]
+        public string StoreName { get; set; }
+        [NotMapped]
+        public decimal? StockMRP { get; set; }
+    }
 
 }

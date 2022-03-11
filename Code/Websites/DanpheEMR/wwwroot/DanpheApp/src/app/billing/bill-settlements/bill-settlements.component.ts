@@ -21,6 +21,7 @@ import { BillingReceiptModel } from "../shared/billing-receipt.model";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { CommonFunctions } from "../../shared/common.functions";
 import { BillSettlementModel } from "../shared/bill-settlement.model";
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   selector: 'my-app',
@@ -46,6 +47,18 @@ export class BillSettlementsComponent {
   public showReceipt: boolean = false;//to show hide settlement grid+action panel   OR  SettlementReceipt
   public showGrid: boolean = true;
 
+  //to receive deposit,provisional,patient info from billinginfofor settlement.
+  public DepositInfo: any = { "Deposit_In": 0, "Deposit_Out": 0, "Deposit_Balance": 0 };
+  public ProvisionalInfo: any = { "ProvisionalTotal": 0 };
+  public PatientInfo: any = null;
+  public selectAll: boolean = true;
+  public isSelected: boolean = true;
+  public settelmentProceedEnable: boolean = true;
+  public showInvoiceDetail: boolean = false;
+  public discountGreaterThanPayable:boolean = false;
+  public PayableAmount:number = 0;
+
+
   //sud: 13May'18--to display patient bill summary
   public patBillHistory = {
     IsLoaded: false,
@@ -67,7 +80,8 @@ export class BillSettlementsComponent {
     public changeDetector: ChangeDetectorRef,
     public callbackservice: CallbackService,
     public patientService: PatientService,
-    public msgBoxServ: MessageboxService) {
+    public msgBoxServ: MessageboxService,
+    public coreService:CoreService) {
 
     let counterId: number = this.securityService.getLoggedInCounter().CounterId;
     if (!counterId || counterId < 1) {
@@ -122,22 +136,39 @@ export class BillSettlementsComponent {
     patient.PatientId = row.PatientId;
     patient.PhoneNumber = row.PhoneNumber;
 
-    this.billingBLService.GetCreditInvoicesByPatient(patient.PatientId)
+    this.billingBLService.GetBillingInfoOfPatientForSettlement(patient.PatientId)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
-          this.patCrInvoicDetails = res.Results.CreditItems;
-          this.patientService.globalPatient = res.Results.Patient;
-          this.patCrInvoicDetails.forEach(function (inv) {
-            inv.Patient = res.Results.Patient;
-            inv.CreatedOn = moment(inv.CreatedOn).format("YYYY-MM-DD HH:mm");
-            //adding new field to manage checked/unchecked invoice.
-            inv.IsSelected = false;
-          });
+          this.patCrInvoicDetails = res.Results.CreditInvoiceInfo;
+          this.PatientInfo = res.Results.PatientInfo;
+          this.DepositInfo = res.Results.DepositInfo;
+          this.ProvisionalInfo = res.Results.ProvisionalInfo;
+          if (this.ProvisionalInfo.ProvisionalTotal > 0) {
+            this.settelmentProceedEnable = false;
+            this.msgBoxServ.showMessage("warning", ["There are few items in provisional list, please generate their invoices and proceed for settlement"]);
+          }else{
+           this.settelmentProceedEnable = true;
+          }
+
+          this.patCrInvoicDetails.forEach(a => {
+            a.isSelected = true;
+          })
+          this.SelectAll();
+
+          // this.patientService.globalPatient = res.Results.Patient;
+          // this.patCrInvoicDetails.forEach(function (inv) {
+          //   inv.Patient = res.Results.Patient;
+          //   inv.CreatedOn = moment(inv.CreatedOn).format("YYYY-MM-DD HH:mm");
+          //   //adding new field to manage checked/unchecked invoice.
+          //   inv.IsSelected = false;
+          // });
+          this.patientService.globalPatient.ShortName = this.PatientInfo.PatientName;
 
           //by default selecting all items.
           this.selectAllInvoices = true;
           this.SelectAllChkOnChange();
-          this.LoadPatientPastBillSummary(this.patientService.globalPatient.PatientId, res.Results.IsPatientAdmitted);
+          //this.CalculatePaidAmount();
+          //this.LoadPatientPastBillSummary(this.patientService.globalPatient.PatientId, res.Results.IsPatientAdmitted);
           this.loading = false;
         }
         else {
@@ -147,11 +178,104 @@ export class BillSettlementsComponent {
       });
   }
 
-  public settelmentProceedEnable: boolean = true;
+  public OnCheckboxChanged(indx) {
+    let currentItem = this.patCrInvoicDetails[indx];
+    if (currentItem) {
+      this.CalculateTotalCredit(indx);
+    }
+    let selectedInvoices = this.patCrInvoicDetails.filter(a => a.isSelected == true);
+            if(selectedInvoices.length > 0 && this.ProvisionalInfo.ProvisionalTotal <= 0){
+              this.settelmentProceedEnable = true;
+            }else{
+              this.settelmentProceedEnable = false;
+            }
+    
+    if(this.patCrInvoicDetails.every(b => b.isSelected == true)){
+      this.selectAll = true;
+    }else{
+      this.selectAll = false;
+    }   
 
+  }
+  public CalculateTotalCredit(indx) {
+    if (this.patCrInvoicDetails[indx].isSelected) {
+      this.model.CollectionFromReceivable += this.patCrInvoicDetails[indx].NetAmount;
+      this.CalculatePaidAmount();
+    }
+    else {
+      this.model.CollectionFromReceivable -= this.patCrInvoicDetails[indx].NetAmount;
+      this.CalculatePaidAmount();
+    }
+  }
+
+  public SelectAll() {
+    this.patCrInvoicDetails.forEach(a => {
+      a.isSelected = true;
+    })
+    if (this.selectAll) {
+      //this.settelmentProceedEnable = true;
+      this.model.CollectionFromReceivable = this.patCrInvoicDetails.reduce(function (acc, itm) { return acc + itm.NetAmount; }, 0);
+      this.CalculatePaidAmount();
+    } else {
+      this.patCrInvoicDetails.forEach(a => {
+        a.isSelected = false;
+      })
+      // this.settelmentProceedEnable = false;
+      this.model.CollectionFromReceivable = 0;
+      this.CalculatePaidAmount();
+    }
+  }
+
+  public CalculatePaidAmount() {
+
+    //this.model.PaidAmount = this.model.CollectionFromReceivable - this.model.DiscountAmount - this.DepositInfo.Deposit_Balance;
+    if(this.model.DiscountAmount < 0 || this.model.DiscountAmount > this.model.CollectionFromReceivable){
+      this.discountGreaterThanPayable = true;
+      this.settelmentProceedEnable = false;
+    }else{
+      this.discountGreaterThanPayable = false;
+      if(this.ProvisionalInfo.ProvisionalTotal <= 0){
+        if(this.patCrInvoicDetails.some(a=> a.isSelected == true) || this.selectAll){
+          this.settelmentProceedEnable = true;
+        }else{
+          this.settelmentProceedEnable = false;
+        }
+      }else{
+        this.settelmentProceedEnable = false;
+      }
+      this.model.PayableAmount = this.model.CollectionFromReceivable - this.model.DiscountAmount;
+    }
+    // this.model.PayableAmount = this.model.CollectionFromReceivable - this.model.DiscountAmount;
+    if(this.model.PayableAmount >= this.DepositInfo.Deposit_Balance){
+      this.model.PaidAmount = this.model.PayableAmount - this.DepositInfo.Deposit_Balance;
+      this.model.DepositDeducted = this.DepositInfo.Deposit_Balance;
+      this.model.RefundableAmount = 0;
+    }else{
+
+      this.model.DepositDeducted = this.model.PayableAmount;
+      this.model.RefundableAmount = this.DepositInfo.Deposit_Balance - this.model.PayableAmount;
+      this.model.PaidAmount = 0;
+    }
+
+
+  }
+  public singleInvoiceBillingTransactionId:number = 0;
+  public ShowInvoiceDetail(indx) {
+    this.showInvoiceDetail = true;
+    let singleInvoice = this.patCrInvoicDetails.filter((_, index) => index == indx);
+    this.singleInvoiceBillingTransactionId = singleInvoice[0].BillingTransactionId;
+  }
+
+  public InvoiceDetailCallBack(event: any) {
+    if (event) {
+      if (event.close) {
+        this.showInvoiceDetail = false;
+      }
+    }
+  }
   //sud: 13May'18--to display patient's bill history
   LoadPatientPastBillSummary(patientId: number, IsPatientAdmitted: boolean) {
-    this.billingBLService.GetPatientPastBillSummary(patientId)
+    this.billingBLService.GetPatientPastBillSummaryForBillSettlements(patientId, IsPatientAdmitted)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.patBillHistory = res.Results;
@@ -166,7 +290,7 @@ export class BillSettlementsComponent {
           this.patBillHistory.IsLoaded = true;
 
           //this.model.DueAmount = this.patBillHistory.BalanceAmount;
-          this.model.PayableAmount = this.patBillHistory.CreditAmount;
+          this.model.PayableAmount = this.patBillHistory.CreditAmount > this.patBillHistory.DepositBalance ? (this.patBillHistory.CreditAmount - this.patBillHistory.DepositBalance) : 0;
           this.model.PaidAmount = this.model.PayableAmount;
           this.model.ReturnedAmount = this.model.RefundableAmount;
 
@@ -196,6 +320,8 @@ export class BillSettlementsComponent {
     this.patCrInvoicDetails = [];
     this.model = new BillSettlementModel();
     this.GetBillsForSettlement();
+    //this.TotalCredit = 0;
+    this.selectAll = true;
   }
 
 
@@ -282,9 +408,9 @@ export class BillSettlementsComponent {
           console.log("Response from server:");
           console.log(res);
 
-          this.setlmntToDisplay = res.Results;
-          this.setlmntToDisplay.BillingUser = this.securityService.GetLoggedInUser().UserName;
-          this.setlmntToDisplay.Patient = this.patientService.globalPatient;
+          this.setlmntToDisplay = res.Results.SettlementId;
+          // this.setlmntToDisplay.BillingUser = this.securityService.GetLoggedInUser().UserName;
+          //this.setlmntToDisplay.Patient = this.patientService.globalPatient;
           this.showReceipt = true;
           this.showActionPanel = false;
           this.loading = false;
@@ -312,19 +438,35 @@ export class BillSettlementsComponent {
 
   GetSettlementInvoiceFormatted(): BillSettlementModel {
     let retSettlModel = new BillSettlementModel();
-    retSettlModel.BillingTransactions = this.patCrInvoicDetails;
+    retSettlModel.BillingTransactions = this.patCrInvoicDetails.filter(a => a.isSelected == true);
     retSettlModel.PatientId = this.patientService.globalPatient.PatientId;
     retSettlModel.PayableAmount = this.model.PayableAmount;
     retSettlModel.RefundableAmount = this.model.RefundableAmount;
     retSettlModel.PaidAmount = this.model.PaidAmount;
     retSettlModel.ReturnedAmount = this.model.ReturnedAmount;
-    retSettlModel.DepositDeducted = this.patBillHistory.DepositBalance;
+    retSettlModel.DepositDeducted = this.model.DepositDeducted;
     retSettlModel.DueAmount = this.model.DueAmount > 0 ? this.model.DueAmount : (-this.model.DueAmount);
     retSettlModel.PaymentMode = this.model.PaymentMode;
     retSettlModel.PaymentDetails = this.model.PaymentDetails;
     retSettlModel.CounterId = this.securityService.getLoggedInCounter().CounterId;
     retSettlModel.DiscountAmount = this.model.DiscountAmount;
     retSettlModel.Remarks = this.model.Remarks;
+    retSettlModel.CollectionFromReceivable = this.model.CollectionFromReceivable;
+
+    //to make list of BillReturnIdsCSV (added by Krishna 22nd,NOV'21)
+    this.patCrInvoicDetails.forEach(a => {
+      if(a.isSelected == true && a.BillReturnIdsCSV){
+        if(a.BillReturnIdsCSV.includes(',')){
+          let billReturnIds:any[] = a.BillReturnIdsCSV.toString().split(",");
+          billReturnIds.forEach(b =>{
+            retSettlModel.BillReturnIdsCSV.push(b);
+          });
+        }else{
+          retSettlModel.BillReturnIdsCSV.push(a.BillReturnIdsCSV);
+        }
+      }
+    }
+    );
     return retSettlModel;
   }
 

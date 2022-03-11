@@ -1,0 +1,328 @@
+<style>
+        .control-label {
+          font-size: 13px;
+        }
+      
+        .form-control {
+          font-size: 13px;
+        }
+      
+        /*div.col-md-7 {
+            padding: 0px;
+          }
+      
+          div.col-md-5 {
+            padding: 0px;
+          }
+      
+          div.col-md-4 {
+            padding: 0px;
+          }
+      
+          div.col-md-3 {
+            padding: 0px;
+          }
+        */
+        .mt-checkbox {
+          font-size: 13px;
+        }
+      
+        /* div.col-xs-12 {
+            padding-left: 10px;
+            margin-left: 25px;
+            margin-right: 15px;
+          }*/
+      
+        /*This class for background border red */
+        .bg-on {
+          font-weight: bold;
+          border: solid 1px red;
+        }
+      
+        /*This class for */
+        .bg-off {
+          font-weight: bold;
+        }
+      </style>
+      <div>
+        <div class="col-md-12" style="margin-bottom: 3px;">
+          <a feature="button" class="btn blue bordered" (click)="RouteToNotesList()"><i class=""></i>Cancel</a>
+        </div>
+        <!-- Subjective Notes related fields for Emergency Note-->
+        <div class="col-md-12" >
+         
+          <subjective-note [subjective-note]="notes.SubjectiveNote"
+                           [clinical-detail]="clinicalDetail" (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
+        </div>
+        <div class="col-md-12">
+           <div class="col-md-6">
+              <div class="row form-group">
+                  <div class="col-md-4">Clinical Notes</div>
+                  <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.PrescriptionNoteText" class="form-control" /></div>
+                </div>
+                <div class="row form-group">
+                  <div class="col-md-4">Diagnosis(ICD 10 code)</div>
+                  <div class="col-md-8"  *ngIf="prescriptionNotes.ICDList && prescriptionNotes.ICDList.length>0">
+                    <div class="row margin-5-bt" *ngFor="let icddata of prescriptionNotes.ICDList; let idx = index">
+                      <div class="col-md-9">
+                        <div class="autocomplete-item">
+                          <div>
+                            <input danphe-auto-complete
+                                   class="form-control"
+                                   [(ngModel)]="prescriptionNotes.ICDList[idx]"
+                                   [source]="ICD10List"
+                                   [list-formatter]="ICDListFormatter"
+                                   placeholder="Select ICD10"
+                                   display-property-name="ICD10Description"
+                                   onClick="this.select();"
+                                   match-formatted="true"
+                                   [grid-sort]="'ICD10Description'"
+                                   id="{{ 'icd10-box'+idx }}"
+                                   max-num-list="20" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-3" *ngIf="prescriptionNotes.ICDList && prescriptionNotes.ICDList.length > 1">
+                        <button class="btn btn-danger" (click)="DeleteRow(idx)">
+                          <i class="fa fa-close"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row margin-15-vr">
+                      <div class="col-md-4"><button class="btn btn-primary" (click)="AddNewICDRow()">Add ICD</button></div>
+                    </div>
+                  </div>
+                </div>
+           </div>
+            <div class="col-md-6">
+                <div class="each-card">
+                    <div class="col-md-12 form-group">
+                      <h3>Lab and Orders</h3>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="row form-group">
+                        <div class="col-md-12">Lab and Orders</div>
+                        <div class="col-md-12">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <select class="form-control" [(ngModel)]="selItemType" style="width:90%; height: 30px;" (ngModelChange)="ItemsTypeOnChange()">
+                                <option value="All">----------</option>
+                                <option value="Lab">Labs</option>
+                                <option value="Imaging">Imaging</option>
+                                <option value="Others">Others</option>
+                              </select>
+                            </div>
+                            <div class="col-md-8">
+                              <div class="input-group srchTbx" style="width: 100%;">
+                                <input danphe-auto-complete class="form-control round-input" aria-label="search"
+                                       [(ngModel)]="selOrdItem"
+                                       [source]="ordItemsFiltered"
+                                       [list-formatter]="orderItemsListFormatter"
+                                       placeholder="search order items"
+                                       display-property-name="ItemName"
+                                       max-num-list="20"
+                                       match-formatted="false"
+                                       (valueChanged)="OrderItemValueChanged()"
+                                       id="acOrderItem"
+                                       onClick="this.select();" />
+            
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row form-group">
+                        <div class="col-md-12">
+                          <div class="order-item-list">
+                            <div class="ord-new-items">
+                              <div class="item-type-head">
+                                Lab
+                              </div>
+            
+                              <div class="item-type-name">
+                                <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                                  <span *ngIf="itm.PreferenceType == 'Lab'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                  </span>
+                                </ng-container>
+                              </div>
+                            </div>
+                          </div>
+            
+                          <div class="order-item-list">
+                            <div class="ord-new-items">
+                              <div class="item-type-head">
+                                Imaging
+                              </div>
+            
+                              <div class="item-type-name">
+                                <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                                  <span *ngIf="itm.PreferenceType == 'Imaging'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                  </span>
+                                </ng-container>
+                              </div>
+                            </div>
+                          </div>
+            
+                          <div class="order-item-list">
+                            <div class="ord-new-items">
+                              <div class="item-type-head">
+                                Others
+                              </div>
+            
+                              <div class="item-type-name">
+                                <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                                  <span *ngIf="itm.PreferenceType == 'Others'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                  </span>
+                                </ng-container>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- <div class="clearfix"  style="font-weight: 600;border-bottom: 1px solid #d2c7c7;padding: 10px 12px;color: #333333;font-size: 14px;">
+                            <span class="pull-left" style="padding: 5px 0;">Selected Orders</span>
+                            <div class="pull-right"><button class="btn btn-danger btn-sm right" style="border-radius: 4px !important;margin-left:10px;"
+                                    (click)="CancelAll()">
+                              Cancel
+                            </button>
+                            <button class="btn blue btn-sm right" style="border-radius: 4px !important;" (click)="ProceedAll()">
+                              Proceed
+                            </button></div>
+                
+                          </div> -->
+                      </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+        <!-- Objective Notes fields-->
+        <div class="tab-pane" id="objective">
+          <objective-note [objective-note]="notes.ObjectiveNote"
+                          [clinical-detail]="clinicalDetail" (callback-objectivenote)="CallBackObjective($event)"></objective-note>
+        </div>
+     
+        
+        <!-- Assessment-Plan -->
+        <!-- <div class="col-md-12" id="assessment">
+          <assessment-plan [editMode]="APeditMode"
+                           [assessments]="assessment"
+                           (callback-assessmentandplan)="CallBackAssesmentAndPlan($event)">
+      
+          </assessment-plan>
+        
+        </div> -->
+        <div class="col-md-12" >
+          <freetext [patDetail]="patVisit"
+                    [editFreeText]="notes.FreeTextNote"
+                    (callback-freetextnotes)="CallBackFreeTexts($event)"> </freetext>
+      </div>
+        <div class="col-md-12">
+        <procedure-notes [editProcedureNote]="notes.ProcedureNote"
+        [patDetail]="patVisit"
+        (callback-procedurenotes)="CallBackProcedureNotes($event)">
+        </procedure-notes>
+      </div>
+      
+        <!-- Start: Instructions related fields for Emergency Note-->
+        <div class="tab-pane" id="instructions">
+          <div class="col-md-6">
+            <div class="hm-form">
+              <div class="text-head-wrapper clearfix">
+                <h3 class="text-head cstm-add-heading">Instructions</h3>
+              </div>
+              <div class="form-group">
+                <div class="row">
+                  <label class="control-label col-md-4">Follow Up<b>:</b></label>
+                  <div class="col-md-8">
+                    <div class="row">
+                      <div class="col-md-3">
+                        <input class="form-control" type="number" min="0" max="150"
+                               onFocus="this.value=0"
+                               [(ngModel)]="notes.FollowUp"
+                               (focusout)="FocusOut()"/>
+                      </div>
+                      <div class="col-md-9">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-radio mt-radio-outline">
+                              <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                              <span></span>Days
+                            </label>
+                            <label class="mt-radio mt-radio-outline">
+                              <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                              <span></span>Weeks
+                            </label>
+                            <label class="mt-radio mt-radio-outline">
+                              <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="notes.FollowUpUnit" (focusout)="FocusOut()">
+                              <span></span>Months
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="row">
+                  <label class="control-label col-md-4">Remarks<b>:</b></label>
+                  <div class="col-md-8">
+                    <textarea class="form-control" [(ngModel)]="notes.Remarks" maxlength="500" rows="3" (focusout)="FocusOut()"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+      
+            <br />
+      
+          </div>
+        </div>
+        <!-- End: Instructions related fields for Emergency Note-->
+      </div>
+      <div class="row">
+          <div class="col-md-12">
+              <!-- <div class="col-md-3">
+                <button class="btn blue"> Start (Sign) </button>
+            </div> -->
+            <!-- <div class="col-md-3">
+                <button class="btn btn-success" (click)="SubmitTemplate(1)"> Submit </button>
+            </div> -->
+            <div class="col-md-1">
+                <button class="btn btn-primary" (click)="SubmitTemplate(0)"> Save </button>
+            </div>
+            <!-- <div class="col-md-2">
+                <button class="btn blue" (click)="print($event)"> <i class="glyphicon glyphicon-print"></i> View & Print</button>
+        
+            </div> -->
+          </div>
+        </div>
+        <div *ngIf="showView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
+            <div class="portlet-body" style="background-color: white">
+              <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                <div class="col-md-9 col-xs-12 modelbox-div" style="margin-right: 24px;"> 
+                  <!--col-sm-12-->
+                  <div style="padding:10px"> <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i> </div>
+                  <div class="panel panel-default">
+                    <div id="print-template" class="row printStyle print-border">
+                      <!-- <div class="panel-heading"> OPD Examination </div> -->
+                      <opd-examination-view [patientVisitId]="patientVisitId"
+                      (callback-view)="CallBackView($event)">  </opd-examination-view>
+                    </div>
+                    <div class="row center-style">
+                      <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      

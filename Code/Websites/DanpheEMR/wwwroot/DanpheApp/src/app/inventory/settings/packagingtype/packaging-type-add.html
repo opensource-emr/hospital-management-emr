@@ -20,7 +20,8 @@
                                            [(ngModel)]="CurrentPackagingType.PackagingTypeName"
                                            formControlName="PackagingTypeName"
                                            id="PackagingTypeName"
-                                           placeholder="PackagingType Name" />
+                                           placeholder="PackagingType Name"
+                                           (keyup.enter)="FocusElementById('AddPackagingType')" />
                                     <span class="color-red font-sm" [hidden]="CurrentPackagingType.IsValidCheck('PackagingTypeName','required') || !(CurrentPackagingType.IsDirty('PackagingTypeName'))">Name is required</span>
                                     <span class="color-red font-sm" *ngIf="CurrentPackagingType.IsDirty('PackagingTypeName')" [hidden]="CurrentPackagingType.IsValidCheck('PackagingTypeName','maxlength')"> Length is not proper</span>
                                 </div>
@@ -52,8 +53,8 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddPackagingType()" value="Add PackagingType" [disabled]="loading"  />
-                                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading"  />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddPackagingType()" value="Add PackagingType" [disabled]="loading" id="AddPackagingType" />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" id="AddPackagingType" />
                             </div>
                        
                     </div>

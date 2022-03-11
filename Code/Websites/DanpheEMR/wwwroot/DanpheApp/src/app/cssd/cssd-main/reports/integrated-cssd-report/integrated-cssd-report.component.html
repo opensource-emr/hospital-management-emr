@@ -1,0 +1,28 @@
+<div class="selectedAssetForEdit row" style="margin-left: 20px; margin-right: 10px;">
+
+  <div class="col-md-4">
+    <label for="" style="padding-right: 5px;">Disinfection Methods:</label>
+    <select name="DisinfectionMethod" id="DisinfectionMethod" [(ngModel)]="selectedDisinfectionMethod"
+      (change)="OnFiltersChange()">
+      <option value="all" selected>All</option>
+      <option value="Chemical Disinfection">Chemical Disinfection</option>
+      <option value="Autoclave">Autoclave</option>
+      <option value="Microwave">Microwave</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+
+  <div class="col-md-4 text-right">
+    <strong>Substore : &nbsp;&nbsp;</strong>
+    <select [(ngModel)]="selectedSubstore" (change)="OnFiltersChange()" style="width:40%!important;">
+      <option value="0" selected>All Store</option>
+      <option *ngFor="let store of substoreList" value="{{store.StoreId}}">{{store.Name}}</option>
+    </select>
+  </div>
+</div>
+<div class="col-md-12">
+  <danphe-grid [grid-colDefaults]="integratedCssdReportGridColumns" [grid-data]="integratedCssdReportGridData"
+    [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+    (onDateChange)="onDateChange($event)" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions">
+  </danphe-grid>
+</div>

@@ -48,6 +48,8 @@ export class PatientHistoryComponent {
     public discountAmount: number = 0;
     public balance: number = 0;
     public checkouttimeparameter: string;
+    public ShowBillHistory : boolean =false;
+  
 
 
 
@@ -55,8 +57,26 @@ export class PatientHistoryComponent {
 
     constructor(public patientBLService: PatientsBLService, public lightbox: Lightbox, public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService, public coreService: CoreService) {
-        this.checkouttimeparameter = this.coreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;
+        this.checkouttimeparameter = this.coreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;   
+        this.ShowBillHistory = this.GetParameterForShowBillDetail();
+}
+public GetParameterForShowBillDetail() {
+    var show = this.coreService.Parameters.find(
+      (val) =>
+        val.ParameterName == "ShowBillDetailsOnHistoryPage" &&
+        val.ParameterGroupName.toLowerCase() == "patient"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
     }
+  }
 
     @Input("showPatientHistory")
     public set value(val: boolean) {
@@ -67,7 +87,10 @@ export class PatientHistoryComponent {
             this.getAdmissionHistory();
             this.getLabResult();
             this.getImagingResult();
-            this.getBillingHistory();
+            if(this.ShowBillHistory==true){
+                this.getBillingHistory();
+            }
+             
             this.changeDetector.detectChanges();
             this.isShowUploadMode = false;
             this.isShowListMode = true;

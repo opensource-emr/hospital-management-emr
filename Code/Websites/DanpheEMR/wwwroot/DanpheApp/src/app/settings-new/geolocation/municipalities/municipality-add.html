@@ -1,0 +1,71 @@
+<form [formGroup]="model.MunicipalityValidator" class="form-horizontal hm-form">
+    <div class="form-body">
+        <div class="form-group">
+            <label class="control-label col-md-5">Country<sup>*</sup><b>:</b></label>
+            <div class="col-md-7">
+                <select required id="ddlCountry" class="form-control" [(ngModel)]="model.CountryId"
+                    (change)="CountryChanged()" formControlName="CountryId">
+                    <option [ngValue]="null">Select</option>
+                    <option *ngFor="let country of countryList" value={{country.CountryId}}>{{country.CountryName}}
+                    </option>
+                </select>
+                <span class="color-red font-sm"
+                    [hidden]="model.IsValidCheck('CountryId','required') || !model.IsDirty('CountryId')">Country
+                    is required</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-5">Country Sub-Division<sup>*</sup><b>:</b></label>
+            <div class="col-md-7">
+                <select required id="ddlCountrySubDivision" class="form-control"
+                    [(ngModel)]="model.CountrySubDivisionId" (change)="coreService.FocusInputById('MunicipalityName')"
+                    formControlName="SubDivisionId">
+                    <option [ngValue]="null">Select</option>
+                    <option *ngFor="let subDivision of countrySubDivisionList"
+                        value={{subDivision.CountrySubDivisionId}}>{{subDivision.CountrySubDivisionName}}
+                    </option>
+                </select>
+                <span class="color-red font-sm"
+                    [hidden]="model.IsValidCheck('SubDivisionId','required') || !(model.IsDirty('SubDivisionId'))">Country
+                    Sub Division is required</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-5">Municipality Name<sup>*</sup><b>:</b></label>
+            <div class="col-md-7">
+                <input class="form-control" maxlength="30" [(ngModel)]="model.MunicipalityName"
+                    formControlName="MunicipalityName" required type="text" id="MunicipalityName" value=""
+                    placeholder="Country Sub-Division Name"
+                    (keyup.enter)="coreService.FocusInputById('txtMunicipalityType')" />
+                <br />
+                <span class="color-red font-sm"
+                    [hidden]="model.IsValidCheck('MunicipalityName','required') || !(model.IsDirty('MunicipalityName'))">Municipality
+                    Name is required</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-5">Type<b>:</b></label>
+            <div class="col-md-7">
+                <select required id="txtMunicipalityType" class="form-control" [(ngModel)]="model.Type"
+                     [ngModelOptions]="{standalone: true}" (change)="coreService.FocusInputById('Add')">
+                    <option [ngValue]="null">Select</option>
+                    <option value="Gaunpalika">Gaunpalika</option>
+                    <option value="Metro">Metro</option>
+                    <option value="Nagarpalika">Nagarpalika</option>
+                    <option value="Sub-Metro">Sub-Metro</option>
+                </select>
+                <!-- <input class="form-control" [(ngModel)]="model.Type" id="txtMunicipalityType"
+                    [ngModelOptions]="{standalone: true}" required type="text" value="" placeholder="Municipality Type"
+                    (keyup.enter)="coreService.FocusInputById('Add')" /> -->
+            </div>
+        </div>
+
+    </div>
+    <div class="panel-footer">
+        <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update"
+            [attr.disable]="coreService.loading" (click)="SaveMunicipality()" value="Add Sub Division" id="Add" />
+        <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update"
+            [attr.disable]="coreService.loading" (click)="SaveMunicipality()" value="Update" id="Add" />
+    </div>
+</form>

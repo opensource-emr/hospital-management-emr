@@ -7,6 +7,7 @@ import { SecurityService } from '../../../security/shared/security.service';
 //Parse, validate, manipulate, and display dates and times in JS.
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { AccountingService } from '../../shared/accounting.service';
 
 
 @Component({
@@ -24,7 +25,7 @@ export class LedgerGroupCategoryAddComponent {
     public CurrentLedgerGroupCategory: ledgerGroupCategoryModel;
     public chartOfAccounts: Array<ChartofAccountModel> = new Array<ChartofAccountModel>();
     public tempChartOfAccounts: Array<ChartofAccountModel> = new Array<ChartofAccountModel>();
-    constructor(public accountingSettingsBLService: AccountingSettingsBLService,
+    constructor(public accountingSettingsBLService: AccountingSettingsBLService,public accountingService: AccountingService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
         this.GetAllChartOfAccount();
@@ -42,12 +43,14 @@ export class LedgerGroupCategoryAddComponent {
     }
 
     GetAllChartOfAccount() {
-        this.accountingSettingsBLService.GetChartofAccount()
-            .subscribe(res => this.CallBackChartOfAccountList(res));
+        if (!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+            this.CallBackChartOfAccountList(this.accountingService.accCacheData.COA)//mumbai-team-june2021-danphe-accounting-cache-change
+        }
     }
 
     CallBackChartOfAccountList(res) {
-        this.tempChartOfAccounts = res.Results;
+        this.tempChartOfAccounts = res;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.tempChartOfAccounts = this.tempChartOfAccounts.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         this.chartOfAccounts = [];
         for (var i = 0; i < this.tempChartOfAccounts.length; i++) {
             if (this.tempChartOfAccounts[i].IsActive) {

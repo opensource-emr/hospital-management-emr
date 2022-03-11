@@ -1,0 +1,501 @@
+<div class="caption ph-title clearfix">
+    <div class="pull-left" *ngIf="IsCurrentDispensaryInsurace == false">
+        <button class="btn green btn-success tooltip" title="ALT+N" [disabled]="currentPatient.PatientId != -1 && currentPatient.PatientId != 0 " (click)="ShowOpPatAddPopUp()"> <i class="fa fa-plus"></i>{{(currentPatient.FirstName == 'Anonymous') ? 'Register New' : 'Update'}} Outdoor Patient
+        </button>
+        <button class="btn green btn-success tooltip" title="ALT+A" (click)="SetAnonymous()"> <i class="fa fa-user"></i>Anonymous Patient </button>
+    </div>
+    <div>
+        <div class="pull-right">
+            <div class="shortcut-key shortkey-right " title="Shortcut Keys">
+                <a href="#"><img src="../../../themes/theme-default/images/Keyboard-icon.svg" alt=""></a>
+                <div class="keydropdown">
+                    <ul>
+                        <li><kbd>ALT</kbd> + <kbd>A</kbd> = <samp>Anonymous Patient</samp> </li>
+                        <li><kbd>ALT</kbd> + <kbd>P</kbd> = <samp>Print Receipt</samp> </li>
+                        <li><kbd>ALT</kbd> + <kbd>N</kbd> = <samp>Register New Outdoor Patient</samp> </li>
+                        <li><kbd>ALT</kbd> + <kbd>L</kbd> = <samp>Show Stock Details</samp> </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="caption-subject pull-right">
+            <button class="btn green btn-success tooltip" title="ALT+L" (click)="StockDetails()"> Stock Details </button>
+        </div>
+    </div>
+</div>
+
+<div class="hide-main patient_searchdiv" id="new-sale-page">
+    <div class="Patient_search">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <div class="row">
+                        <label class="control-label col-md-4 pt5 tooltip" title="ALT + F">Search Patient:<sup *ngIf="currSale.PaymentMode == 'credit'" class="color-red">*</sup></label>
+                        <div class="col-md-8">
+                            <div class="autocomplete-item">
+                                <input *ngIf="IsCurrentDispensaryInsurace; else normalPatientSearch" id="patient-search" autocomplete="off" danphe-auto-complete class="form-control" [(ngModel)]="searchPatient" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'" [list-formatter]="insurancePatientListFormatter" placeholder="Search Patient (Minimum 5 Character)" display-property-name="ShortName" (valueChanged)="onClickPatient($event)" value-property-name=null onClick="this.select();" max-num-list="20" min-chars="5" match-formatted="true" (keyup.enter)="onPressedEnterKeyInPatientField()" [grid-sort]="'ShortName'" />
+                                <ng-template #normalPatientSearch>
+                                    <input autocomplete="off" danphe-auto-complete class="form-control" id="patient-search" [(ngModel)]="searchPatient" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'" [list-formatter]="patientListFormatter" placeholder="Search Patient (Minimum 5 Character)" display-property-name="ShortName" (valueChanged)="onClickPatient($event)" value-property-name=null onClick="this.select();" max-num-list="20" min-chars="5" match-formatted="true" [grid-sort]="'ShortName'" (keyup.enter)="onPressedEnterKeyInPatientField()" />
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mrg">
+                <div class="row no-gutters">
+                    <label class="control-label col-md-3 pt5">Doctor<sup>*</sup>:</label>
+                    <div class="col-md-9">
+                        <select-referrer #selectReferrer *ngIf="isReferrerLoaded" [selected-ref-id]="selectedRefId" [allow-external]="ExtRefSettings.EnableExternal" [default-external]="ExtRefSettings.DefaultExternal" (on-referrer-change)="onClickProvider($event)" (on-enter-key-pressed-in-referrer)="OnPressedEnterKeyInReferrerField()" class="ref-er" [default-referrer-info]="{AddDefaultReferrer: true, DefaultReferrerId: -1, ReferrerName: 'ANONYMOUS DOCTOR'}">
+                        </select-referrer>
+                        <div class="row">
+                            <div class="col-md-12"> <span class="color-red font-sm" *ngIf="currSale.IsDirty('Provider')" [hidden]="currSale.IsValidCheck('Provider','required')">Select Doctor</span> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 no-padding">
+                <form [formGroup]="currSale.InvoiceValidator" class="display-flex">
+                    <div class="input-group">
+                        <div class="icheck-inline">
+                            <label style="display:inline-block;">Visit Type<span style="color:red;">*</span>:</label>
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input type="radio" value="inpatient" [(ngModel)]="visitType" formControlName="VisitType">
+                                <span></span>&emsp;Inpatient </label>
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input type="radio" value="outpatient" [(ngModel)]="visitType" formControlName="VisitType">
+                                <span></span>&emsp;Outpatient </label>
+                        </div>
+                    </div>
+                    <span class="color-red font-sm" *ngIf="currSale.IsDirty('VisitType')" [hidden]="currSale.IsValidCheck('VisitType','required')" ngDefaultControl>Select Visit Type</span>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="well">
+        <div class="patient_info">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label>Patient Code:<span [innerHTML]="currentPatient.PatientCode ? currentPatient.PatientCode : newOutPatient.PatientCode ? newOutPatient.PatientCode : ''"></span></label>
+                </div>
+                <div class="col-sm-3">
+                    <label>Name:<span [innerHTML]="currentPatient.ShortName? currentPatient.ShortName : newOutPatient.ShortName? newOutPatient.ShortName : ''"></span></label>
+                </div>
+                <div class="col-sm-2">
+                    <label>Address:<span [innerHTML]="currentPatient.Address?currentPatient.Address: newOutPatient.Address? newOutPatient.Address : ''"></span></label>
+                </div>
+                <div class="col-sm-1">
+                    <label>Age:<span [innerHTML]="currentPatient.Age? currentPatient.Age: newOutPatient.Age? newOutPatient.Age : ''"></span></label>
+                </div>
+                <div class="col-sm-2">
+                    <label>Gender:<span [innerHTML]="currentPatient.Gender? currentPatient.Gender: newOutPatient.Gender? newOutPatient.Gender : ''"></span></label>
+                </div>
+                <div class="col-sm-2">
+                    <label>Contact No:<span [innerHTML]="currentPatient.PhoneNumber? currentPatient.PhoneNumber: newOutPatient.PhoneNumber? newOutPatient.PhoneNumber : ''"></span></label>
+                </div>
+            </div>
+            <div class="row" *ngIf="IsCurrentDispensaryInsurace">
+                <div class="col-sm-2">
+                    <label for="NSHINumber">NSHI Number:<span>{{currentPatient.NSHINumber}}</span></label>
+                </div>
+                <div class="col-sm-3">
+                    <label for="LatestClaimCode">Claim Code:<span>{{currentPatient.LatestClaimCode}}</span></label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="RemainingBalance">Remaining Balance:<span>{{currentPatient.RemainingBalance}}</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- @*Start:- Sale*@ -->
+
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <table class="table table-striped table-hover inv_table table-bordered">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>GenericName</th>
+                            <th><b>Drug/Medicine Name</b></th>
+                            <th><b>Expiry</b></th>
+                            <th><b>Batch</b></th>
+                            <th><b>Rack No</b></th>
+                            <th></th>
+                            <th><b>AvlQty</b></th>
+                            <th><b>Qty</b></th>
+                            <th><b>S.Price</b></th>
+                            <th><b>SubTotal</b></th>
+                            <th *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false"><b>Dis%</b></th>
+                            <th *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false">Discount Amount</th>
+                            <th *ngIf="isItemLevelVATApplicable"><b>VAT%</b></th>
+                            <th *ngIf="isItemLevelVATApplicable">VAT Amount</th>
+                            <th><b>Total Amount</b></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of currSaleItems; let i = index" [ngClass]="{'danger':row.selectedItem?.IsNarcotic}">
+                            <td>
+                                <a (click)="DeleteRow(i)"><i class="fa fa-times btn btn-danger"></i></a>
+                            </td>
+                            <td class="text-center">
+                                <span class="tooltip">
+                                    <i class="fa fa-medkit"></i>
+                                    <span class="tooltiptext">{{row.GenericName}}--{{row.Dosage}}--{{row.Frequency}}--{{row.Duration}}</span>
+                                </span>
+                            </td>
+                            <td class="autocomplete-item">
+                                <input danphe-auto-complete class="form-control" id="{{'generic'+i}}" [(ngModel)]="row.selectedGeneneric" value="{{row.GenericName}}" [source]="genericList" [list-formatter]="phrmGenericListFormatter" placeholder="--Select Generic Name--" display-property-name="GenericName" value-property-name=null value="row.GenericName" onClick="this.select();" (ngModelChange)="AssignSelectedGenName(row)" min-chars="1" [grid-sort]="'GenericName'" match-formatted="true" (keyup.enter)="OnPressedEnterKeyInGenericField(i)">
+                                <!-- <span class="error-msg" *ngIf="invalid || row.IsDirty('ItemName')"
+                  [hidden]="row.IsValidCheck('ItemName','invalidItem')">Invalid Generic</span> -->
+                            </td>
+                            <td [ngClass]="{'alert alert-warning':row.IsDuplicate,'autocomplete-item':true}" style="width:200px">
+                                <form [formGroup]="row.InvoiceItemsValidator" *ngIf="row.enableItmSearch">
+                                    <input *ngIf="IsCurrentDispensaryInsurace; else normalItemSearch" danphe-auto-complete class="form-control" [(ngModel)]="row.selectedItem" formControlName="ItemName" [source]="ItemListFiltered" [list-formatter]="insuranceItemListFormatter" placeholder="--Select Medicine--" display-property-name="ItemName" value-property-name=null onClick="this.select();" (valueChanged)="onChangeItem($event,i);ValueChanged(i,row)" max-num-list="100" [min-chars]="row.ItemFieldMinChars" style="width:250px;" id="{{'item-box'+i}}" [grid-sort]="'ItemName'" match-formatted="true" (keyup.enter)="OnPressedEnterKeyInItemField(i)" autocomplete="off" />
+                                    <ng-template #normalItemSearch>
+                                        <input danphe-auto-complete class="form-control" [(ngModel)]="row.selectedItem" formControlName="ItemName" [source]="ItemListFiltered" [list-formatter]="phrmItemListFormatter" placeholder="--Select Medicine--" display-property-name="ItemName" value-property-name=null onClick="this.select();" (valueChanged)="onChangeItem($event,i);ValueChanged(i,row)" max-num-list="100" [min-chars]="row.ItemFieldMinChars" style="width:250px;" id="{{'item-box'+i}}" [grid-sort]="'ItemName'" match-formatted="true" (keyup.enter)="OnPressedEnterKeyInItemField(i)" autocomplete="off" />
+                                    </ng-template>
+                                    <span class="error-msg" *ngIf=" row.IsDirty('ItemName')" [hidden]=" !invalid || row.IsValidCheck('ItemName','invalidItem')">Invalid Item</span>
+                                </form>
+                                <input *ngIf="!row.enableItmSearch" disabled class="form-control" style="width:250px;" type="text" [(ngModel)]="row.ItemName" />
+                                <div class="color-red font-sm" *ngIf="row.IsDuplicate == true"> <i class="fa fa-warning"></i>Duplicate Item not allowed
+                                </div>
+                            </td>
+                            <td><label style="width:100px ; " min="0" type="date" value="">{{row.ExpiryDate | date}}</label></td>
+                            <td><input [(ngModel)]="row.BatchNo" (valueChanged)="BatchNoChanged(i)" [ngModelOptions]="{standalone: true}" style="width:80px ; " min="0" class="form-control" type="text" value="" disabled></td>
+                            <td><label style="width:100px ; ">{{ row.RackNo }}</label></td>
+                            <td><a (click)="NewRow(i)"><i class="fa fa-plus btn btn-success" style="padding: 2px 8px !important;"></i></a></td>
+                            <td><input [(ngModel)]="row.TotalQty" [ngModelOptions]="{standalone: true}" style="width:50px ; " min="0" class="form-control" type="number" value="" disabled></td>
+                            <td>
+                                <form [formGroup]="row.InvoiceItemsValidator">
+                                    <input [(ngModel)]="row.Quantity" (ngModelChange)="ValueChanged(i,row.DiscountPercentage,row.DiscountAmount)" formControlName="Quantity" style="width:50px ; " min="0" class="form-control" type="number" onwheel="this.blur()" id="{{'qty'+i}}" (keyup.enter)="OnPressedEnterKeyInQuantityField(i)" onClick="this.select();" onfocus="this.select();">
+                                    <span class="error-msg" *ngIf="row.IsDirty('Quantity')" [hidden]="(row.TotalQty>=row.Quantity)">Sales
+                                        Qty Should be less than Total Qty</span>
+                                    <span class="color-red font-sm" *ngIf="invalid ||row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Not Valid quantity</span>
+                                    <!-- <br>        -->
+                                    <span class="color-red font-sm" *ngIf="invalid ||row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','wrongDecimalValue')">Required Whole Number</span>
+                                </form>
+                            </td>
+                            <td>
+                                <input [(ngModel)]="row.MRP" (ngModelChange)="ValueChanged(i)" [ngModelOptions]="{standalone: true}" style="width:50px ; " min="0" class="form-control" type="number" value="" disabled>
+                            </td>
+                            <td>
+                                {{row.SubTotal | number: "1.0-2"}}
+                                <!-- <input [(ngModel)]="row.SubTotal" [ngModelOptions]="{standalone: true}" style="width:70px ; " min="0" class="form-control" type="number" value="" disabled> -->
+                            </td>
+                            <td *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false">
+                                <form [formGroup]="row.InvoiceItemsValidator">
+                                    <input [(ngModel)]="row.DiscountPercentage" id="{{ 'dis-per'+i }}" (focusout)="ValueChanged(i,row.DiscountPercentage,0)" formControlName="DiscountPercentage" style="width:50px ; " (keyup.enter)="setFocusById('dis-amt'+i)" onClick="this.select();" min="0" class="form-control" type="number" value="">
+                                    <span class="color-red font-sm" *ngIf="row.IsDirty('DiscountPercentage')" [hidden]="row.IsValidCheck('DiscountPercentage','required') && row.IsValidCheck('DiscountPercentage','min') && row.IsValidCheck('DiscountPercentage','max')">Discount % Range: 0-100%</span>
+                                </form>
+                            </td>
+                            <td *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false">
+                                <input [(ngModel)]="row.TotalDisAmt" id="{{ 'dis-amt'+i }}" (focusout)="ValueChanged(i,0,row.TotalDisAmt)" [ngModelOptions]="{standalone: true}" onClick="this.select();" style="width:50px ; " (keyup.enter)="OnPressedEnterInItemLevelDiscountAmount(i)" min="0" class="form-control" type="number" value="">
+                            </td>
+                            <td *ngIf="isItemLevelVATApplicable">
+                                <form [formGroup]="row.InvoiceItemsValidator">
+                                    <input [(ngModel)]="row.VATPercentage" id="{{ 'vat-per'+i }}" (focusout)="OnVATChanged(i,row.VATPercentage,0)" formControlName="VATPercentage" style="width:50px ; " (keyup.enter)="OnPressedEnterInItemLevelVAT(i)" onClick="this.select();" min="0" class="form-control" type="number" value="" onwheel="this.blur()">
+                                    <span class="color-red font-sm" *ngIf="row.IsDirty('VATPercentage')" [hidden]="row.IsValidCheck('VATPercentage','required') && row.IsValidCheck('VATPercentage','min') && row.IsValidCheck('VATPercentage','max')">VAT % Range: 0-100%</span>
+                                </form>
+                            </td>
+                            <td *ngIf="isItemLevelVATApplicable">
+                                <input disabled [(ngModel)]="row.VATAmount" id="{{ 'vat-amt'+i }}" (ngModelChange)="OnVATChanged(i,0,row.VATAmount)" [ngModelOptions]="{standalone: true}" onClick="this.select();" style="width:50px ; " min="0" class="form-control" type="number" value="">
+                            </td>
+                            <td>
+                                {{row.TotalAmount | number: "1.0-2"}}
+                                <!-- <input [(ngModel)]="row.TotalAmount" (ngModelChange)="ValueChanged(i)" [ngModelOptions]="{standalone: true}" style="width:70px ; " min="0" class="form-control" type="number" value="" disabled> -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Barcode:</td>
+                            <td colspan="11">
+                                <input id="barcode-input-field" type="number" placeholder="--Enter Barcode--" [(ngModel)]="typedBarcode" (keypress)="barcodeKeyPressListener($event)" (keyup.enter)="onBarcodeReadingCompleted(typedBarcode)" onClick="this.select();" onFocus="this.select();">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt20 mb20 t-wrap">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="invoice-history" [hidden]="IsCurrentDispensaryInsurace == true">
+                                <div class="history-title"> <b>Invoice History</b> </div>
+                                <table>
+                                    <tr>
+                                        <td>Deposit Balance <b class="colon">:</b></td>
+                                        <td>{{patSummary.DepositBalance}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Credit <b class="colon">:</b></td>
+                                        <td style="text-decoration:underline;">{{patSummary.CreditAmount}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Provisional Amount <b class="colon">:</b></td>
+                                        <td style="text-decoration:underline;">{{patSummary.ProvisionalAmt}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Due<b class="colon">:</b></td>
+                                        <td>{{patSummary.TotalDue}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Balance Amount <b class="colon">:</b></td>
+                                        <td style="font-weight: bold;color: blue;font-size: 17px;"> {{patSummary.BalanceAmount}} </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Deduct from Deposit:</td>
+                                        <td>
+                                            <div class="form-group">
+                                                <input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit" [disabled]="patSummary.DepositBalance <= 0 || currSale.PaymentMode == 'credit'" style="width:18px;height:18px;" (change)="DepositDeductCheckBoxChanged()" class="no-margin">
+                                            </div>
+                                            <div *ngIf="deductDeposit" style="border: 1px solid;border-radius: 5px !important;padding-left: 14px;padding-bottom: 5px;">
+                                                <span>Deposit Deduction: {{depositDeductAmount}}</span> <span> New Deposit Balance: </span>
+                                                <span style="width:150px"><b style="color:blue"> {{newdepositBalance}}</b></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="accountinfo">
+                                <tr *ngIf="isMainDiscountAvailable == true && IsCurrentDispensaryInsurace == false">
+                                    <td>Discount Percentage:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <form [formGroup]="currSale.InvoiceValidator">
+                                                <input onwheel="this.blur()" class="form-control" formControlName="DiscountPer" [(ngModel)]="currSale.DiscountPer" (focusout)="AllCalculation(currSale.DiscountPer,0)" id="discountpercent" name="discountpercent" type="number" (keyup.enter)="setFocusById('discountamount')">
+                                                <span class="color-red font-sm" *ngIf="currSale.IsDirty('DiscountPer')" [hidden]="currSale.IsValidCheck('DiscountPer','required') && currSale.IsValidCheck('DiscountPer','min') && currSale.IsValidCheck('DiscountPer','max')">Discount % Range: 0-100%</span>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="isMainDiscountAvailable == true && IsCurrentDispensaryInsurace == false ">
+                                    <td>Discount Amount: </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input onwheel="this.blur()" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.DiscountAmount" (focusout)="AllCalculation(0,currSale.DiscountAmount)" id="discountamount" name="discountamount" type="number" (keyup.enter)="setFocusById('Tender')">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- <tr *ngIf="isMainVATApplicable == true">
+                  <td>VAT Percentage: </td>
+                  <td>
+                    <div class="form-group">
+                      <input onwheel="this.blur()" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.VATPercentage" (focusout)="AllCalculation(0,currSale.DiscountAmount)" id="total-vat-percentage" name="vat-percentage" type="number" (keyup.enter)="setFocusById('vatamount')">
+                    </div>
+                  </td>
+                </tr> -->
+                                <tr *ngIf="isMainVATApplicable == true">
+                                    <td>VAT Amount: </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input onwheel="this.blur()" class="form-control" [ngModelOptions]="{standalone: true}" disabled [(ngModel)]="currSale.VATAmount" id="total-vat-amount" name="vat-amount" type="number">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Payment Mode:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <select #paymentmode class="form-control" [(ngModel)]="currSale.PaymentMode" [ngModelOptions]="{standalone: true}" [disabled]="this.deductDeposit==true" (change)="onPaymentModechange()" (keyup.enter)="GoToNextButton(tender)">
+                                                <option *ngFor="let paymentMode of currentActiveDispensary.AvailablePaymentModes" [ngValue]="paymentMode.PaymentModeName" selected>{{paymentMode.PaymentModeName}}</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="currSale.PaymentMode =='credit' && IsCurrentDispensaryInsurace == false">
+                                    <td class="nxt-td">
+                                        Credit Organization<b>:</b>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <select class="form-control" [(ngModel)]="currSale.OrganizationId" [ngModelOptions]="{standalone: true}">
+                                                <option *ngFor="let oList of creditOrganizationsList" value="{{oList.OrganizationId}}">
+                                                    {{oList.OrganizationName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr [hidden]="(IsCurrentDispensaryInsurace == true && currSale.PaymentMode == 'credit')||(currSale.PaymentMode == 'credit')">
+                                    <td>Tender:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input #tender onwheel="this.blur()" onClick="this.select();" class="form-control" [ngModelOptions]="{standalone: true}" [disabled]="currSale.PaymentMode == 'credit'" [(ngModel)]="currSale.Tender" (ngModelChange)="ChangeTenderAmount()" id="Tender" name="tender" type="number" (keyup.enter)="GoToNextButton(printInvoice)">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="(IsCurrentDispensaryInsurace == true && currSale.PaymentMode == 'credit'||(currSale.PaymentMode == 'credit'))">
+                                    <td>Change:</td>
+                                    <td>{{coreService.currencyUnit}} {{currSale.Change}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Remarks:<sup *ngIf="isRemarksMandatory" class="color-red">*</sup></td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input [(ngModel)]="currSale.Remark" [ngModelOptions]="{standalone: true}" class="form-control" name="Remarks" id="remarks" (keyup.enter)="GoToNextButton(printInvoice)" type="text">
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="accountinfo">
+                                <tr>
+                                    <td>Sub Total:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input onwheel="this.blur()" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.SubTotal" disabled id="subtotal" name="subtotal" type="number">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Total Amount:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input onwheel="this.blur()" [(ngModel)]="currSale.TotalAmount" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="TotalAmount" type="number">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="IsCurrentDispensaryInsurace == true">
+                                    <td>Adjustment:</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input [(ngModel)]="currSale.Adjustment" [ngModelOptions]="{standalone: true}" class="form-control" name="Adjustment" type="number" disabled>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="IsCurrentDispensaryInsurace == true">
+                                    <td>Paid Amount: <i class="glyphicon glyphicon-hand-right blink" style="color:red;font-size:10px;"></i></td>
+                                    <td>
+                                        <div class="form-group">
+                                            <input [(ngModel)]="currSale.PaidAmount" [ngModelOptions]="{standalone: true}" class="form-control blink" name="PaidAmount" type="number" disabled>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="dot">
+                                    <td colspan="2" class="text-capitalize">In Words : <b>{{currSale.PaidAmount | NumberInWords}}
+                                        </b>Only. <br />
+                                        <br />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 text-center">
+            <button #printInvoice class="btn green btn-success tooltip" title="ALT + P" (click)="SaveSaleWithPatient()" [disabled]="loading">
+                <u>P</u>rint Invoice
+            </button>
+            <span></span>&nbsp;&nbsp;&nbsp;
+            <button class="btn btn-danger" *ngIf="!deductDeposit && currentPatient.PatientId != -1 && currSale.PaymentMode!='credit'" [disabled]="loading " (click)="SaveSaleWithCreditPatient()" rbac-permission='{"name":"btn-phrm-provisional-bill","actionOnInvalid":"remove"}'>
+                Provisional Slip
+            </button>
+            <span></span>&nbsp;&nbsp;&nbsp;
+            <button class="btn btn-danger" [disabled]="loading" (click)="Cancel()">
+                Discard Changes
+            </button>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- @*End:- Sale*@ -->
+    <!-- @*Start:- PopUp Modal For Doctor and NMC in case of Narcotic sales (Narcotics Record)*@ -->
+    <!--Model Box Starting Here-->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showSupplierAddPage">
+        <div class="portlet-body form" style="background-color:white">
+            <!--Model Box Body Start-->
+            <form class="form-horizontal">
+                <div class="form-body">
+                    <div class="col-md-12">
+                        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                        <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                            <br />
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Patient Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="50" [(ngModel)]="narcoticsRecord.BuyerName" value="" [ngModelOptions]="{standalone: true}" placeholder="Enter Patient Name" required />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Refill</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="10" [(ngModel)]="narcoticsRecord.Refill" value="" [ngModelOptions]="{standalone: true}" placeholder="Enter Refill" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Doctor Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="30" [(ngModel)]="narcoticsRecord.DoctorName" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter Doctor's Name" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">NMC Number<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="100" [(ngModel)]="narcoticsRecord.NMCNumber" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter NMC Number" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="padding-bottom: 18px;">
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" (click)="SaveNarcotics()" value="Add" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                    </div>
+                </div>
+            </form>
+            <!--Model Box Body End-->
+        </div>
+    </div>
+    <!-- @*End:- PopUp Modal For Doctor and NMC in case of Narcotic sales (Narcotics Record)*@
+
+@*Start:- PopUp Modal For Stock Details*@ -->
+
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showStockDetails">
+        <div class="portlet-body form" style="background-color:white">
+            <!--Model Box Body Start-->
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                    <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue; margin-top:10px;"> </div>
+                            <a style="float:right;  margin-top:-10px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div id="print-good-reciept" class="row printStyle print-border" style="margin-top: 50px;">
+                            <div style="text-align:left; margin-left:15px;">
+                                <div class="col-md-12">
+                                    <stock-list (on-closed)="Close()"> </stock-list>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                </div>
+            </div>
+            <!--Model Box Body End-->
+        </div>
+    </div>
+    <!-- <phrm-op-patient-add *ngIf="showAddNewOpPopUp" (callBackAddClose)="GetBackFromOpPatAdd($event)"></phrm-op-patient-add> -->
+    <phrm-op-patient-add *ngIf="showAddNewOpPopUp" [showPopUp]="showAddNewOpPopUp" [patient-info]="currentPatient" (call-back-close)="OnAddPatientPopUpClose($event)" (call-back-add-update)="OnNewPatientAdded($event)">
+    </phrm-op-patient-add>
+    <!-- invoice pop up -->
+    <app-phrm-invoice-view *ngIf="showSaleInvoice" [showPopUp]="showSaleInvoice" [invoiceId]="currSale.InvoiceId" (call-back-close)="OnInvoicePopUpClose()"></app-phrm-invoice-view>

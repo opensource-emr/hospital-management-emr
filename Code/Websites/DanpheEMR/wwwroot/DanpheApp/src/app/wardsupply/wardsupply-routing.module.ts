@@ -33,7 +33,15 @@ import { InternalConsumptionDetailsComponent } from './internal-consumption-deta
 import { WardInternalConsumptionReportComponent } from './reports/internal-consumption-report.component';
 import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requisition/inventory-ward-receive-stock/inventory-ward-receive-stock.component';
 import { PageNotFound } from '../404-error/404-not-found.component';
-
+import { WardSupplyAssetStockComponent } from './wardsupply-asset/wardsupply-asset-stock/wardsupply-asset-stock.component';
+import { WardSupplyAssetReturnListComponent } from './wardsupply-asset/wardsupply-asset-return/wardsupply-asset-return-list.component';
+import { WardSupplyAssetRequisitionListComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-requisition-list.component';
+import { WardSupplyAssetMainComponent } from './wardsupply-asset/wardsupply-asset-main.component';
+import { WardSupplyAssetReturnComponent } from './wardsupply-asset/wardsupply-asset-return/wardsupply-asset-new-return.component';
+import { InventoryPatientConsumptionListComponent } from './inventory-wardsupply/patient-consumption/inventory-ward-patient-consumption-list.component';
+import { InventoryPatientConsumptionComponent } from './inventory-wardsupply/patient-consumption/inventory-ward-patient-consumption.component';
+import { WardSupplyAssetRequisitionDetailsComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-requisition-details.component';
+import { WardSupplyAssetReqDispatchComponent } from './wardsupply-asset/wardsupply-asset-requisition/wardsupply-asset-req-dispatch/wardsupply-asset-req-dispatch-list.component';
 
 @NgModule({
   imports: [
@@ -84,6 +92,14 @@ import { PageNotFound } from '../404-error/404-not-found.component';
                   { path: "**", component: PageNotFound }
                 ]
               },
+              {
+                path: 'PatientConsumption', children: [
+                  { path: 'PatientConsumptionList', component: InventoryPatientConsumptionListComponent },
+                  { path: 'PatientConsumptionAdd', component: InventoryPatientConsumptionComponent },
+                  { path: '', redirectTo: 'PatientConsumptionList', pathMatch: 'full' },
+                  { path: "**", component: PageNotFound }
+                ]
+              },
               { path: 'Reports', component: WardInventoryReportComponent },
               { path: 'Reports/RequisitionDispatchReport', component: RequisitionDispatchReportComponent },
               { path: 'Reports/TransferReport', component: TransferReportComponent },
@@ -100,6 +116,21 @@ import { PageNotFound } from '../404-error/404-not-found.component';
               // { path: 'Reports/BreakageReport', component: WardBreakageReportComponent },
               // { path: 'Reports/TransferReport', component: WardTransferReportComponent },
             ]
+          },
+          {
+            path: 'FixedAsset', component: WardSupplyAssetMainComponent,
+            children: [
+              { path: '', redirectTo: 'Stock', pathMatch: 'full' },
+              {
+                path: 'Requisition',
+                children: [
+                  { path: '', redirectTo: 'List', pathMatch: 'full' },
+                  { path: 'List', component: WardSupplyAssetRequisitionListComponent },
+                  { path: 'View', component: WardSupplyAssetRequisitionDetailsComponent } ]},
+              { path: 'Stock', component: WardSupplyAssetStockComponent },
+              { path: 'Return', component: WardSupplyAssetReturnListComponent },
+              { path: 'RequisitionDispatch', component: WardSupplyAssetReqDispatchComponent }              
+        ],
           },
         ]
       },

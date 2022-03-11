@@ -26,9 +26,9 @@
                   <th>Qty.</th>
                   <th>Status</th>
                   <th>Sub Total</th>
-                  <th>Dis. %</th>
-                  <th>Dis. Amt.</th>
-                  <th>Total Amount</th>
+                  <!-- <th>Dis. %</th> -->
+                  <!-- <th>Dis. Amt.</th> -->
+                  <!-- <th>Total Amount</th> -->
                 </tr>
               </thead>
               <tbody>
@@ -42,28 +42,29 @@
                   </td>
                   <td><input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                       [(ngModel)]="itemToEdit.Price" (ngModelChange)="OnPriceChanged()" min="0"
-                      class="display-inline form-control" style="width:100px;" /></td>
+                      class="display-inline form-control" style="width:100px;" onClick="this.select();"/></td>
                   <td><input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                       [(ngModel)]="itemToEdit.Quantity" (ngModelChange)="OnQtyChanged()" min="0"
-                      class="form-control display-inline" style="width:80px;" /></td>
+                      class="form-control display-inline" style="width:80px;" onClick="this.select();"/></td>
                   <td>
                     <div>{{itemToEdit.OrderStatus}}</div>
                   </td>
                   <td>
                     <div>{{itemToEdit.SubTotal}}</div>
                   </td>
-                  <td *ngIf="!itemToEdit_Input.IsInsurance">
+                  <!-- <td *ngIf="!itemToEdit_Input.IsInsurance">
                     <input type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                       [(ngModel)]="itemToEdit.DiscountPercent" (ngModelChange)="OnDiscPercentChanged()" min="0"
                       class="display-inline form-control" style="width:80px;" />
-                    <!--[attr.disabled]="!discountApplicable == true ? true : null"-->
-                  </td>
-                  <td *ngIf="!itemToEdit_Input.IsInsurance">
+                  </td> -->
+                  <!--[attr.disabled]="!discountApplicable == true ? true : null"-->
+
+                  <!-- <td *ngIf="!itemToEdit_Input.IsInsurance">
                     <div>{{itemToEdit.DiscountAmount}}</div>
-                  </td>
-                  <td>
+                  </td> -->
+                  <!-- <td>
                     <div>{{itemToEdit.TotalAmount}}</div>
-                  </td>
+                  </td> -->
 
                 </tr>
 
@@ -105,8 +106,7 @@
           </div>
           <div class="col-md-12 page-bar-secondary text-right">
             <button class="btn primary-btn" (click)="SaveItem()" title="Save Changes">
-              <i class="fa fa-save"
-                 style="cursor:pointer;"></i> Save
+              <i class="fa fa-save" style="cursor:pointer;"></i> Save
             </button>
             <ng-container *ngIf="!itemToEdit.AllowCancellation">
               <button disabled class="text-link btn btn-danger" title="Cancel This Item">
@@ -129,20 +129,17 @@
 <!-- pop up Window for Cancle bill Request -->
 
 <div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom inv_modal"
-  *ngIf="showCancleDeatils">
+  *ngIf="showCancelPrintPopup">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-8 col-md-offset-2">
         <div class="modelbox-div clearfix">
-          <a class="btn btn-danger history-del-btn" (click)="ClosePopup()" title="Cancel"><i
+          <a class="btn btn-danger history-del-btn" (click)="CloseCancelPrintPopup()" title="Cancel"><i
               class="fa fa-times"></i></a>
           <div class="form-body">
             <div id="printpage">
               <div class="col-md-11">
                 <billing-header></billing-header>
-                <div class="qr-code" style="position: absolute;right: 20px;top: 20px;">
-                  <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
-                </div>
                 <div class="caption" style="color:blue;">
                   <div style="text-decoration: underline;color: green;margin-top: 15px; text-align:center;">
                     <h4><b>Item Cancellation</b></h4>
@@ -181,14 +178,14 @@
                       *ngIf="itemToEdit.TotalAmount !=0">ONLY</span> </div>
                   <div style="padding: 0px;width:56%;display:inline-block;">
                     <table class="bil-summ" style="width:100%">
-                      <tr style="border-top: 0px;">
+                      <!-- <tr style="border-top: 0px;">
                         <td> SubTotal </td>
                         <td> {{itemToEdit.SubTotal | number : "1.2-2"}} </td>
                       </tr>
                       <tr>
                         <td> Discount </td>
                         <td> {{itemToEdit.DiscountAmount | number : "1.2-2"}} </td>
-                      </tr>
+                      </tr> -->
                       <tr style="border-bottom: 0px;">
                         <th>Total Amount </th>
                         <th>{{itemToEdit.TotalAmount | number : "1.2-2"}}</th>

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angu
 import { Membership } from '../../../shared/membership.model';
 import { SettingsBLService } from '../../../shared/settings.bl.service';
 import { CommonFunctions } from "../../../../shared/common.functions";
+import { CoreService } from '../../../../core/shared/core.service';
 
 
 
@@ -32,17 +33,24 @@ export class MembershipSelectComponent {
   @Input("selected-id")
   public selMembershipId: number = null;
 
-  ///we can change the labels shown before dropdown for each parent component as per necessity.
-  @Input("labels-info")
-  public labelsInfo = { CommunityLabel: "Community", SchemeLabel: "Scheme" };
+  @Output("on-enter-key-pressed")
+  public onEnterKeyPressed: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  ///we can change the labels shown before dropdown for each parent component as per necessity.
+  //@Input("labels-info")
+  //public labelsInfo = { CommunityLabel: "Community", SchemeLabel: "Scheme" };
+
+  public labelsInfo: any;
+  public IsenterKeyPressed: boolean = false;
 
   @Output("on-membership-change")
   public onMembershipChange: EventEmitter<Membership> = new EventEmitter<Membership>();
 
 
-  constructor(public settingsBLService: SettingsBLService) {
-
+  constructor(public settingsBLService: SettingsBLService,
+    public coreService: CoreService) {
+    let label = this.coreService.Parameters.find(p => p.ParameterGroupName == "Billing" && p.ParameterName == "MembershipSchemeSettings").ParameterValue;
+    this.labelsInfo = JSON.parse(label);
   }
 
 
@@ -79,7 +87,7 @@ export class MembershipSelectComponent {
           else {
             //assign default selected values to the dropdown.
             //check if we can remove this hard-code value. suggestion: use IsDefault field in table and so on.
-            let defaultMemb = this.membershipList.find(a => a.MembershipTypeName == "General");
+            let defaultMemb = this.membershipList.find(a => a.MembershipTypeName.toLowerCase() == "general");
             if (defaultMemb) {
               this.selMembershipId = defaultMemb.MembershipTypeId;
               this.selectedCommunityName = defaultMemb.CommunityName;
@@ -101,7 +109,7 @@ export class MembershipSelectComponent {
 
   }
 
- 
+
 
   GetDistinctCommunityList() {
     this.distinctCommunityList = [];
@@ -140,12 +148,16 @@ export class MembershipSelectComponent {
 
       this.onMembershipChange.emit(null);
     }
+    this.MembershipTypeChange();
   }
 
 
 
 
   MembershipTypeChange() {
+    if (this.filteredMembershipList.length == 1) {
+      this.selMembershipId = this.filteredMembershipList[0].MembershipTypeId;
+    }
     let membershipToEmit: Membership = this.membershipList.find(a => a.MembershipTypeId == this.selMembershipId);
     if (this.isMandatory) {
       if (membershipToEmit == null || membershipToEmit == undefined) {
@@ -158,5 +170,5 @@ export class MembershipSelectComponent {
     //we've to emit the changed membership type in all cases.
     this.onMembershipChange.emit(membershipToEmit);
   }
-
+  
 }

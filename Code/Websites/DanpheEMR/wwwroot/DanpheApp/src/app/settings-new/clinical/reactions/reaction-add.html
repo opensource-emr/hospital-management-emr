@@ -17,7 +17,8 @@
 							   required
 							   id="ReactionName"
 							   value=""
-							   placeholder="Reaction Name" />
+                 placeholder="Reaction Name"
+                 (keyup.enter)="SetFocusById('ReactionCode')" />
                   <span class="color-red font-sm" [hidden]="CurrentReaction.IsValidCheck('ReactionName','required') || !(CurrentReaction.IsDirty('ReactionName'))">Reaction Name is required</span> </div>
               </div>
               <div class="form-group">
@@ -26,7 +27,8 @@
                   <input class="form-control" maxlength="30"
 							   [(ngModel)]="CurrentReaction.ReactionCode"
 							   [ngModelOptions]="{standalone: true}"
-							   type="text" id="ReactionCode" value="" placeholder="Reaction Code" />
+                 type="text" id="ReactionCode" value="" placeholder="Reaction Code" 
+                 (keyup.enter)="AddUpdateEnterKey()"/>
                   <br />
                 </div>
               </div>
@@ -47,8 +49,8 @@
               </div>
             </div>
             <div class="panel-footer">
-              <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddReaction()" value="Add Reaction" />
-              <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              <input type="button" id="addReaction" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddReaction()" value="Add Reaction" />
+              <input type="button" id="updateReaction" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
             </div>
           </form>
         </div>

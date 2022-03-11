@@ -1,29 +1,27 @@
-﻿<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage && CurrentRack && CurrentRack.RackValidator">
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage && CurrentRack && CurrentRack.RackValidator">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-4 col-md-offset-4">
         <div class="modelbox-div clearfix">
           <div class="caption lb-caption">
             <h3> <span>{{ !CurrentRack.RackId ? 'Add Rack' : 'Update ' + CurrentRack.Name}}</span> </h3>
-            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
           <form [formGroup]="CurrentRack.RackValidator" class="form-horizontal hm-form">
             <div class="form-body">
               <div class="form-group">
                 <label class="control-label col-md-5">Rack Name<b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" maxlength="30"
-										   [(ngModel)]="CurrentRack.Name"
-										   formControlName="Name"
-										   type="text" id="RackName" value="" placeholder="Rack Name" />
+                  <input class="form-control" maxlength="30" [(ngModel)]="CurrentRack.Name" formControlName="Name" (keyup.enter)="setFocusById('ParentRack')" type="text" id="Rack" value="" placeholder="Rack Name" />
                   <br />
-                  <span style="color:red" *ngIf="CurrentRack.IsDirty('Name')" [hidden]="CurrentRack.IsValidCheck('Name','required, unique')"> Rack Name is required.</span> 
+                  <span style="color:red" *ngIf="CurrentRack.IsDirty('Name')" [hidden]="CurrentRack.IsValidCheck('Name','required, unique')"> Rack Name is required.</span>
                 </div>
               </div>
               <div class="form-group" *ngIf="!CurrentRack.RackId || CurrentRack.ParentId != 0">
                 <label class="control-label col-md-5">Parent Rack<b>:</b></label>
                 <div class="col-md-7">
-                  <select class="form-control" [(ngModel)]="CurrentRack.ParentId" (ngModelChange)="AssignLocationFromParent()" [ngModelOptions]="{standalone: true}" placeholder="-- Select Parent Rack --">
-                    <option *ngFor="let parentRack of ParentRackListFiltered" value="{{parentRack.RackId}}">{{ parentRack.Name  }}</option>
+                  <select id="ParentRack" class="form-control" [(ngModel)]="CurrentRack.ParentId" (ngModelChange)="AssignLocationFromParent()" [ngModelOptions]="{standalone: true}" placeholder="-- Select Parent Rack --">
+                    <option *ngFor="let parentRack of ParentRackListFiltered" value="{{parentRack.RackId}}">{{ parentRack.Name }}</option>
                   </select>
                   <br />
                 </div>
@@ -31,21 +29,21 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Description<b>:</b></label>
                 <div class="col-md-7">
-                  <textarea class="form-control" [(ngModel)]="CurrentRack.Description" [ngModelOptions]="{standalone: true}"></textarea>
+                  <textarea id="description" class="form-control" [(ngModel)]="CurrentRack.Description" (keyup.enter)="setFocusById('location')" [ngModelOptions]="{standalone: true}"></textarea>
                 </div>`
               </div>
               <div class="form-group">
                 <label class="control-label col-md-5">Location<b>:</b></label>
                 <div class="col-md-7">
-                  <select [attr.disabled]="CurrentRack.ParentId" class="form-control" [(ngModel)]="selectedLocation" formControlName="LocationId" (ngModelChange)="ViewValue()">
+                  <select [attr.disabled]="CurrentRack.ParentId" id="location" class="form-control" [(ngModel)]="selectedLocation" formControlName="LocationId" (change)="LocationValue()">
                     <option *ngFor="let location of LocationList | keyvalue" value="{{location.key}}">{{location.value}}</option>
                   </select>
-                <span style="color:red" *ngIf="CurrentRack.IsDirty('LocationId')" [hidden]="CurrentRack.IsValidCheck('LocationId','required')"> Location is required.</span>
+                  <span style="color:red" *ngIf="CurrentRack.IsDirty('LocationId')" [hidden]="CurrentRack.IsValidCheck('LocationId','required')"> Location is required.</span>
                 </div>
               </div>
-              <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!CurrentRack.RackId " (click)="AddRack()" value="Add Rack" />
-                <input type="button" class="btn primary-btn" *ngIf="CurrentRack.RackId " (click)="UpdateRack()" value="Update" />
+              <div class="all-buttons text-right">
+                <button type="button" id="save" class="btn green btn-success" *ngIf="!CurrentRack.RackId " (click)="AddRack()">Save</button>
+                <button type="button" id="update" class="btn green btn-success" *ngIf="CurrentRack.RackId " (click)="UpdateRack()">Update</button>
               </div>
             </div>
           </form>

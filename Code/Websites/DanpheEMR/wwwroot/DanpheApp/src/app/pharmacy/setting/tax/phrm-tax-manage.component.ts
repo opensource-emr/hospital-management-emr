@@ -21,7 +21,7 @@ export class PHRMTAXManageComponent {
     public showTAXAddPage: boolean = false;
     public update: boolean = false;
     public index: number;
-    
+
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public changeDetector: ChangeDetectorRef,
@@ -44,7 +44,7 @@ export class PHRMTAXManageComponent {
     }
     TAXGridActions($event: GridEmitModel) {
         switch ($event.Action) {
-            case "edit":{
+            case "edit": {
                 this.selectedTAX = null;
                 this.update = true;
                 this.index = $event.RowIndex;
@@ -67,6 +67,7 @@ export class PHRMTAXManageComponent {
         this.showTAXAddPage = false;
         this.changeDetector.detectChanges();
         this.showTAXAddPage = true;
+        this.setFocusById('tax');
     }
     Add() {
         for (var i in this.currentTAX.TAXValidator.controls) {
@@ -77,19 +78,19 @@ export class PHRMTAXManageComponent {
             this.currentTAX.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.pharmacyBLService.AddTAX(this.currentTAX)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ["TAX Details Added."]);
-                        this.CallBackAddUpdate(res);
-                        this.currentTAX = new PHRMTAXModel();
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ["TAX Details Added."]);
+                            this.CallBackAddUpdate(res);
+                            this.currentTAX = new PHRMTAXModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
                     }
-                    else {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                }
                 );
         }
     }
@@ -101,19 +102,19 @@ export class PHRMTAXManageComponent {
         if (this.currentTAX.IsValidCheck(undefined, undefined)) {
             this.pharmacyBLService.UpdateTAX(this.currentTAX)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ['TAX Details Updated.']);
-                        this.CallBackAddUpdate(res)
-                        this.currentTAX = new PHRMTAXModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ['TAX Details Updated.']);
+                            this.CallBackAddUpdate(res)
+                            this.currentTAX = new PHRMTAXModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                    });
         }
     }
     CallBackAddUpdate(res) {
@@ -144,5 +145,10 @@ export class PHRMTAXManageComponent {
         this.selectedTAX = null;
         this.update = false;
         this.showTAXAddPage = false;
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

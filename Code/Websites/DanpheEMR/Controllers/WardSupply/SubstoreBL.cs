@@ -9,7 +9,7 @@ namespace DanpheEMR.Controllers
 {
     public class SubstoreBL
     {
-        public static List<VerifiersPermissionViewModel> GetVerifiersByStoreId(int StoreId,RbacDbContext rbacDb)
+        public static List<VerifiersPermissionViewModel> GetVerifiersByStoreId(int StoreId, RbacDbContext rbacDb)
         {
             var StoreVerifiers = GetStoreVerifiersListt(StoreId, rbacDb).ToList();
             var verifiersWithPermissionName = from SV in StoreVerifiers
@@ -36,13 +36,13 @@ namespace DanpheEMR.Controllers
         /// <param name="rbacDb">RBACDbContext</param>
         /// <param name="CurrentVerificationLevel">(Optional)The verification level for which we need Permission Id</param>
         /// <returns>Returns the Permission Id of all the verifiers.If CurrentVerificationLevel is provided, then PermissionId of that level will be the output.</returns>
-        public static IEnumerable<int> GetStoreVerifiersPermissionList(int StoreId, RbacDbContext rbacDb,int CurrentVerificationLevel = 0)
+        public static IEnumerable<int> GetStoreVerifiersPermissionList(int StoreId, RbacDbContext rbacDb, int CurrentVerificationLevel = 0)
         {
             return rbacDb.StoreVerificationMapModel
                     .Where(svm => svm.StoreId == StoreId && svm.IsActive == true && (CurrentVerificationLevel == 0 || svm.VerificationLevel == CurrentVerificationLevel))
-                    .Select(svm=>svm.PermissionId).AsEnumerable();
+                    .Select(svm => svm.PermissionId).AsEnumerable();
         }
-        public static string GetCurrentVerifiersPermissionName(int StoreId,int CurrentVerificationLevel, RbacDbContext rbacDb)
+        public static string GetCurrentVerifiersPermissionName(int StoreId, int CurrentVerificationLevel, RbacDbContext rbacDb)
         {
             var CurrentVerifiersPermissionId = rbacDb.StoreVerificationMapModel
                                                      .Where(svm => svm.StoreId == StoreId && svm.IsActive == true && svm.VerificationLevel == CurrentVerificationLevel)
@@ -50,7 +50,7 @@ namespace DanpheEMR.Controllers
             return RBAC.GetPermissionNameById(rbacDb, CurrentVerifiersPermissionId);
         }
 
-        
+
 
         /// <summary>
         /// Creates the store in the database
@@ -61,7 +61,7 @@ namespace DanpheEMR.Controllers
         public static PHRMStoreModel CreateStore(PHRMStoreModel storeModel, RbacDbContext rbacDbContext)
         {
             storeModel.CreatedOn = System.DateTime.Now;
-
+            storeModel.Category = Enums.ENUM_StoreCategory.Substore;
             if (CheckForStoreDuplication(storeModel.Name, 0, rbacDbContext))
             {
                 Exception ex = new Exception("Substore Already Exists.");
@@ -80,7 +80,8 @@ namespace DanpheEMR.Controllers
         /// <returns>true if duplicate store name found. else false</returns>
         public static Boolean CheckForStoreDuplication(string StoreName, int StoreId, RbacDbContext rbacDbContext)
         {
-            var flag = rbacDbContext.Store.Where(a => a.Name == StoreName && (a.StoreId != StoreId || StoreId == 0)).ToList().Count();
+            var substoreCategory = Enums.ENUM_StoreCategory.Substore;
+            var flag = rbacDbContext.Store.Where(a => a.Category == substoreCategory && a.Name == StoreName && (a.StoreId != StoreId || StoreId == 0)).ToList().Count();
             if (flag > 0)
             {
                 return true;
@@ -263,7 +264,7 @@ namespace DanpheEMR.Controllers
             var StorePermission = rbacDbContext.Permissions.Find(StorePermissionId);
             RBAC.ActivateDeactivatePermission(StorePermission, Status, currentUser, rbacDbContext);
 
-            var VerifierPermissionIdList = SubstoreBL.GetStoreVerifiersPermissionList(StoreId,rbacDbContext).ToList();
+            var VerifierPermissionIdList = SubstoreBL.GetStoreVerifiersPermissionList(StoreId, rbacDbContext).ToList();
             foreach (int verifierPermissionId in VerifierPermissionIdList)
             {
                 var VerifierPermission = rbacDbContext.Permissions.Find(verifierPermissionId);

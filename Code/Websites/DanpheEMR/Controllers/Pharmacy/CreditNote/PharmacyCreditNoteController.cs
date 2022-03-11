@@ -76,36 +76,34 @@ namespace DanpheEMR.Controllers.Pharmacy.CreditNote
         {
             try
             {
-                var test = phrmDbContext.PHRMGoodsReceiptItems.Select(i => new {
-                    i.ItemId,
-                    i.ItemName,
-                    i.GRItemPrice,
-                    i.GoodReceiptId,
-                    i.ReceivedQuantity,
-                    i.FreeQuantity,
-                    i.BatchNo,
-                    i.ExpiryDate
-                }).GroupBy(a => new { a.BatchNo, a.ItemId, a.ExpiryDate });
-                //var wOGoodreceipt = phrmDbContext.PHRMStockTransactionItems.Where(a => a.TransactionType == null && a.InOut=="in" && a.ReferenceNo==null);
-                //var availableQty= phrmDbContext.phrm
+                return Ok();
+                //var test = phrmDbContext.PHRMGoodsReceiptItems.Select(i => new {
+                //    i.ItemId,
+                //    i.ItemName,
+                //    i.GRItemPrice,
+                //    i.GoodReceiptId,
+                //    i.ReceivedQuantity,
+                //    i.FreeQuantity,
+                //    i.BatchNo,
+                //    i.ExpiryDate
+                //}).GroupBy(a => new { a.BatchNo, a.ItemId, a.ExpiryDate });
+                ////var wOGoodreceipt = phrmDbContext.PHRMStockTransactionItems.Where(a => a.TransactionType == null && a.InOut=="in" && a.ReferenceNo==null);
+                ////var availableQty= phrmDbContext.phrm
 
-                var remStk = phrmDbContext.PHRMStockTransactionModel.ToList().GroupBy(a => new { a.ItemId, a.BatchNo, a.ExpiryDate }).Select(g =>
-                     new PHRMStockTransactionItemsModel
-                     {
-                         ItemId = g.Key.ItemId,
-                         BatchNo = g.Key.BatchNo,
-                         ExpiryDate = g.Key.ExpiryDate,
-                         //InOut = g.Key.InOut,
-                         Quantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity) + g.Where(w => w.InOut == "in").Sum(f => f.FreeQuantity).Value - g.Where(w => w.InOut == "out")
-                         .Sum(o => o.Quantity) - g.Where(w => w.InOut == "out").Sum(f => f.FreeQuantity).Value,
-                         FreeQuantity = g.Where(w => w.InOut == "in").Sum(q => q.Quantity),
+                //var remStk = phrmDbContext.DispensaryStockTxns.ToList().GroupBy(a => new { a.ItemId, a.BatchNo, a.ExpiryDate }).Select(g =>
+                //     new PHRMDispensaryStockTransactionModel
+                //     {
+                //         ItemId = g.Key.ItemId,
+                //         BatchNo = g.Key.BatchNo,
+                //         ExpiryDate = g.Key.ExpiryDate,
+                //         Quantity = 0,
 
-                         MRP = g.FirstOrDefault().MRP,
-                         Price = g.FirstOrDefault().Price,
-                     }
-                    ).Where(a => a.Quantity > 0);
+                //         MRP = g.FirstOrDefault().MRP,
+                //         CostPrice = g.FirstOrDefault().CostPrice,
+                //     }
+                //    ).Where(a => a.Quantity > 0);
 
-                return Ok(remStk);
+                //return Ok(remStk);
             }
             catch (Exception ex)
             {

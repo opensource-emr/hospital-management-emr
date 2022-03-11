@@ -17,11 +17,13 @@ import { TransactionViewModel } from "./shared/transaction.model";
 import { SectionModel } from '../settings/shared/section.model';
 import { FiscalYearModel } from '../settings/shared/fiscalyear.model';
 import { SettingsBLService } from '../../settings-new/shared/settings.bl.service';
+import { AccountingService } from '../shared/accounting.service';
+import { Voucher } from './shared/voucher';
 @Component({
   templateUrl: "./transfer-to-accounting.html"
 })
 export class TransferToAccountingComponent {
-  public voucherList: Array<VoucherModel> = new Array<VoucherModel>();
+  public voucherList: Array<Voucher> = new Array<Voucher>();
   public itemList: Array<any> = new Array<any>();
   public accTxnFromBilling: Array<TransactionModel> = new Array<TransactionModel>();
   public accTxnForInv: Array<TransactionModel> = new Array<TransactionModel>();
@@ -82,7 +84,8 @@ export class TransferToAccountingComponent {
     public changeDetectorRef: ChangeDetectorRef,
     public securityService: SecurityService,
     public coreService: CoreService,
-    public settingsBLService: SettingsBLService) {
+    public settingsBLService: SettingsBLService,
+    public accountingService: AccountingService) {
     this.CheckManualTransferData();
     if (this.manualTransfer == true) {
       this.accTxnDetail.fromDate = moment().format('YYYY-MM-DD');
@@ -129,12 +132,13 @@ export class TransferToAccountingComponent {
           if (sectionApplication != null || sectionApplication != undefined) {
             this.permissions = this.securityService.UserPermissions.filter(p => p.ApplicationId == sectionApplication.ApplicationId);
           }
-          let sList = this.securityService.AccHospitalInfo.SectionList.filter(sec => sec.SectionId != 4); // 4 is Manual_Voucher (FIXED for DanpheEMR)
+          let sList = this.accountingService.accCacheData.Sections.filter(sec => sec.SectionId != 4); // 4 is Manual_Voucher (FIXED for DanpheEMR) //mumbai-team-june2021-danphe-accounting-cache-change
           sList.forEach(s => {
             let sname = s.SectionName.toLowerCase();
             let pp = this.permissions.filter(f => f.PermissionName.includes(sname))[0];
             if (pp != null || pp != undefined) {
               this.sectionList.push(s);
+              this.sectionList = this.sectionList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
             }
           })
           let defSection = this.sectionList.find(s => s.IsDefault == true);
@@ -151,32 +155,20 @@ export class TransferToAccountingComponent {
   }
   public GetVoucherList() {
     try {
-      this.accountingBLService.GetVoucher()
-        .subscribe(res => {
-          if (res.Status == "OK") {
-            if (res.Results.length) {
-              this.voucherList = res.Results;
-            }
-            else {
-              this.msgBoxServ.showMessage("failed", ["Unable to get voucher list"]);
-              console.log(res.Errors);
-            }
-          }
-        });
-
-    } catch (exception) {
+      if (!!this.accountingService.accCacheData.VoucherType && this.accountingService.accCacheData.VoucherType.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherList = this.accountingService.accCacheData.VoucherType//mumbai-team-june2021-danphe-accounting-cache-change
+      }
+    }
+    catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
   }
   public GetLedgerGroupList() {
     try {
-      this.accountingBLService.GetLedgerGroup()
-        .subscribe(res => {
-          if (res.Status == "OK") {
-            this.ledgerGroupList = new Array<ledgerGroupModel>();
-            this.ledgerGroupList = res.Results;
-          }
-        })
+      if (!!this.accountingService.accCacheData.LedgerGroups && this.accountingService.accCacheData.LedgerGroups.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerGroupList = new Array<ledgerGroupModel>();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerGroupList = this.accountingService.accCacheData.LedgerGroups//mumbai-team-june2021-danphe-accounting-cache-change
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -207,18 +199,17 @@ export class TransferToAccountingComponent {
   }
   GetVoucherHeadList() {
     try {
-      this.accountingBLService.GetVoucherHead()
-        .subscribe(res => {
-          this.voucherHeadList = res.Results;
-          if (this.voucherHeadList && this.voucherHeadList.length > 0) {
-            var defaultVH = this.voucherHeadList.filter(vh => vh.IsDefault == true);
-            if (defaultVH.length > 0) {
-              this.selVoucherHead.VoucherHeadId = defaultVH[0].VoucherHeadId;
-            } else {
-              this.selVoucherHead.VoucherHeadId = this.voucherHeadList[0].VoucherHeadId;
-            }
+      if (!!this.accountingService.accCacheData.VoucherHead && this.accountingService.accCacheData.VoucherHead.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.voucherHeadList = this.accountingService.accCacheData.VoucherHead;//mumbai-team-june2021-danphe-accounting-cache-change
+        if (this.voucherHeadList && this.voucherHeadList.length > 0) {
+          var defaultVH = this.voucherHeadList.filter(vh => vh.IsDefault == true);
+          if (defaultVH.length > 0) {
+            this.selVoucherHead.VoucherHeadId = defaultVH[0].VoucherHeadId;
+          } else {
+            this.selVoucherHead.VoucherHeadId = this.voucherHeadList[0].VoucherHeadId;
           }
-        });
+        }
+      }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -451,13 +442,14 @@ export class TransferToAccountingComponent {
             console.log(res.Errors);
           }
         });
+    
     }
   }
   Load(index) {
     this.loadingScreen = true;
     this.selectedDate = moment(this.pendingtxnList[index].TxnEnDate).format('YYYY-MM-DD');
     this.clearDisplay();
-    //if (this.CheckValidDate()) {
+    if (this.CheckValidDate()) {
     this.IsVAlidDate = true;
     this.ShowItemsList = true;
     this.itemList = new Array<any>();
@@ -476,8 +468,10 @@ export class TransferToAccountingComponent {
     }
     this.loading = true;
     this.saveLoading = false;
-    this.ShowItemsList = true;
-    //  }
+    this.ShowItemsList = true;    
+  
+     }
+     this.loadingScreen= false;
   }
 
   clearDisplay() {
@@ -560,10 +554,14 @@ export class TransferToAccountingComponent {
               this.showunavailableList = true;
               this.loadingScreen = false;
             }
+            else {
+              this.msgBoxServ.showMessage("Error", ['Failed to get data'])
+            }
           });
       }
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
+      this.loadingScreen = false;
     }
   }
   //automatic get and map billing txn 
@@ -590,10 +588,17 @@ export class TransferToAccountingComponent {
               this.showunavailableList = true;
               this.loadingScreen = false;
             }
+            else{
+              this.loadingScreen = false;
+            }
+          },
+          err=>{
+            this.loadingScreen = false;
           });
       }
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
+      this.loadingScreen = false;
     }
   }
   //temp get and mapped pharmacy txns
@@ -624,6 +629,7 @@ export class TransferToAccountingComponent {
       }
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
+      this.loadingScreen = false;
     }
   }
   //temp get and mapped incentive txns
@@ -654,54 +660,45 @@ export class TransferToAccountingComponent {
       }
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
+      this.loadingScreen = false;
     }
   }
 
   public GetTransferData(itmList: Array<any>) {
     try {
-      this.accountingBLService.GetLedgers()
-        .subscribe(res => {
-          if (res.Status == "OK") {
-            if (res.Results.length) {
-              this.ledgerList = new Array<LedgerModel>();
-              this.ledgerList = res.Results;
-              if (this.itemList.length >0) {
-                  this.itemList.forEach(a => {
-                    a.TransactionDate = moment(a.TransactionDate).format('YYYY-MM-DD');
-                    a.Remarks = (a.TransactionType == "ConsultantIncentive") ? ('Incetives Transaction entries to Accounting  on date:' + a.TransactionDate) : (a.Remarks);
-                    a.TransactionItemList = a.TransactionItems;
-                    a.TransactionItemList.forEach(b => {
-                      let led= this.ledgerList.find(x => x.LedgerId == b.LedgerId)
-                      if(led){
-                        b.LedgerName=led.LedgerName;
-                        b.Code =led.Code;
-                      }else{
-                        let lname=b.LedgerId;                        
-                        b.LedgerName="";
-                      }                     
-                      b.DrCr = b.DrCr;
-                     
-                    });
-                    //NBB-now we are getting voucherid from server so no need here again mapping 
-                    //a.VoucherId = this.mappingRuleList.find(c => c.Description == a.TransactionType).VoucherId;
-                    a.VoucherName = this.voucherList.find(v => v.VoucherId == a.VoucherId).VoucherName;
-                  });
-                  if(!this.IsPreview){
-                    this.SaveToAccounting();
-                  }
-                  else  {
-                    this.showPreview = true;
-                  }
-                }
-               
-            }
-            else {
-              this.msgBoxServ.showMessage("failed", ["Unable to get ledger list"]);
-              console.log(res.Errors);
-            }
+      if (!!this.accountingService.accCacheData.Ledgers && this.accountingService.accCacheData.Ledgers.length) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ledgerList = new Array<LedgerModel>();
+        this.ledgerList = this.accountingService.accCacheData.Ledgers;//mumbai-team-june2021-danphe-accounting-cache-change
+        if (this.itemList.length > 0) {
+          this.itemList.forEach(a => {
+            a.TransactionDate = moment(a.TransactionDate).format('YYYY-MM-DD');
+            a.Remarks = (a.TransactionType == "ConsultantIncentive") ? ('Incetives Transaction entries to Accounting  on date:' + a.TransactionDate) : (a.Remarks);
+            a.TransactionItemList = a.TransactionItems;
+            a.TransactionItemList.forEach(b => {
+              let led = this.ledgerList.find(x => x.LedgerId == b.LedgerId)
+              if (led) {
+                b.LedgerName = led.LedgerName;
+                b.Code = led.Code;
+              } else {
+                let lname = b.LedgerId;
+                b.LedgerName = "";
+              }
+              b.DrCr = b.DrCr;
+ 
+            });
+            //NBB-now we are getting voucherid from server so no need here again mapping 
+            //a.VoucherId = this.mappingRuleList.find(c => c.Description == a.TransactionType).VoucherId;
+            a.VoucherName = this.voucherList.find(v => v.VoucherId == a.VoucherId).VoucherName;
+          });
+          if (!this.IsPreview) {
+            this.SaveToAccounting();
           }
-        });
-
+          else {
+            this.showPreview = true;
+          }
+        }
+      }
+ 
     }
     catch (ex) {
       this.ShowCatchErrMessage(ex);
@@ -743,12 +740,21 @@ export class TransferToAccountingComponent {
           if (this.saveLoading) {
             this.accountingBLService.PostTxnListToACC(this.itemList)
               .subscribe(res => {
+                //if (res.Status == "OK") {
+                //  this.msgBoxServ.showMessage('success', ['record transfered to accounting']);
                 if (res.Status == "OK") {
                   this.msgBoxServ.showMessage('success', ['record transfered to accounting']);
+                  this.spliceDateList(this.selectedDate);
                   this.Clear();
-                  this.LoadTxnDates();
+                  this.loadingScreen = false;
                 }
-              },
+                else{
+                  this.loadingScreen = false;
+                  this.saveLoading = false;
+                  this.msgBoxServ.showMessage("error", ['There is problem, please try again']);
+                }
+              //}
+            },
                 err => {
                   this.loadingScreen = false;
                   this.saveLoading = false;
@@ -769,6 +775,18 @@ export class TransferToAccountingComponent {
       this.loadingScreen = false;
       this.saveLoading = false;
       this.ShowCatchErrMessage(ex);
+    }
+  }
+  //public index:number;
+  spliceDateList(date) {
+    const index:number = this.pendingtxnList.findIndex(d => moment(d.TransactionDate).format('YYYY-MM-DD') == date);
+    if (this.selectedDate) {
+      this.pendingtxnList.splice(index, 1);
+     //this.selectedDate="";
+      this.LoadTxnDates();
+    }
+    else{
+      this.loadingScreen = false;
     }
   }
   //=====================End:code for automatic get and map data=======================================
@@ -798,6 +816,7 @@ export class TransferToAccountingComponent {
   IsPreview:boolean = false; 
   showPreview:boolean= false;
   Preview(index){
+    this.loadingScreen = true;
     this.IsPreview = true;
     this.Load(index);
   }

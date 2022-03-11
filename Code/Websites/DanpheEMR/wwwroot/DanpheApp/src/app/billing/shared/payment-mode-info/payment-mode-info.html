@@ -1,20 +1,19 @@
-
 <style>
   .billing-table {
     background: #fff;
     margin-bottom: 10px;
   }
 
-    .billing-table .form-control {
-      font-size: 1em !important;
-    }
+  .billing-table .form-control {
+    font-size: 1em !important;
+  }
 
   .table thead tr th {
     font-size: 0.9em;
   }
 
   .nxt-td {
-/*    text-align: right;*/
+    /*    text-align: right;*/
     font-weight: bold;
     width: 140px;
     padding-right: 12px;
@@ -70,8 +69,7 @@
   <tr>
     <td style="" class="nxt-td"> Payment Mode: </td>
     <td>
-      <select [(ngModel)]="PaymentMode" class="mb-8" name="pay_mode" id="pay_mode"
-              (change)="OnPaymentModeChange()">
+      <select [(ngModel)]="PaymentMode" class="mb-8" name="pay_mode" id="pay_mode" (change)="OnPaymentModeChange()">
         <option value="cash">Cash</option>
         <option value="credit" style="font-weight:bold" [disabled]="deductDeposit">CREDIT</option>
         <option value="cheque">Cheque</option>
@@ -79,22 +77,13 @@
       </select>
     </td>
   </tr>
-  <tr>
-    <td style="" class="nxt-td" *ngIf="PaymentMode !='cash'">
-      Payment Details:
-    </td>
-    <td>
-      <textarea *ngIf="PaymentMode !='cash'" [(ngModel)]="PaymentDetails" (change)="OnPaymentModeChange()"
-                class="mb-8"></textarea>
-    </td>
-  </tr>
   <tr *ngIf="PaymentMode =='credit' && 'CreditOrganization' | booleanParameter : 'Billing'">
     <td style="" class="nxt-td">
       Credit Organization<b *ngIf="CreditOrganizationMandatory" class="color-red"> *</b><b style="float:right;">:</b>
     </td>
     <td>
-      <select class="form-control mb-8" [(ngModel)]="CreditOrganization.OrganizationId" (change)="OnCreditOrganizationChange()"
-              [ngModelOptions]="{standalone: true}">
+      <select class="form-control mb-8" [(ngModel)]="CreditOrganization.OrganizationId"
+        (change)="OnCreditOrganizationChange()" [ngModelOptions]="{standalone: true}">
         <option selected value="0">Select CreditOrganization</option>
         <option *ngFor="let oList of creditOrganizationsList" value="{{oList.OrganizationId}}">
           {{oList.OrganizationName}}
@@ -104,6 +93,16 @@
     <td></td>
     <td></td>
   </tr>
+  <tr>
+    <td style="" class="nxt-td" *ngIf="PaymentMode !='cash'">
+      Payment Details:
+    </td>
+    <td>
+      <textarea *ngIf="PaymentMode !='cash'" [(ngModel)]="PaymentDetails" (change)="OnPaymentModeChange()"
+        class="mb-8"></textarea>
+    </td>
+  </tr>
+
   <!--<tr *ngIf="showDeductFromDeposit">
     <td style="text-align: right" class="nxt-td">Deduct from Deposit:</td>
     <td align="left">

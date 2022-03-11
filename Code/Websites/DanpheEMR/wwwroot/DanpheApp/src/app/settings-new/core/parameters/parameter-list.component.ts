@@ -64,7 +64,7 @@ export class ParameterListComponent {
           this.ManageMapping();
           this.showEditParameter = true;
         }
-        
+
         else {
           this.msgBoxServ.showMessage('Failed !!', ["Sorry You cannot edit this System field."])
         }
@@ -204,8 +204,7 @@ export class ParameterListComponent {
       }
     }
     //Incase of Value LookUp
-    else if (this.selectedParameter && this.selectedParameter.ValueDataType && this.selectedParameter.ValueDataType.toLowerCase() == "value-lookup")
-    {
+    else if (this.selectedParameter && this.selectedParameter.ValueDataType && this.selectedParameter.ValueDataType.toLowerCase() == "value-lookup") {
       var allObjects = JSON.parse(this.selectedParameter.ValueLookUpList);
       for (var newObj of allObjects) {
         eachJsonItem = new MappedObj();
@@ -219,7 +218,7 @@ export class ParameterListComponent {
       }
     }
     //Incase of arrayobj 
-    else if(this.selectedParameter && this.selectedParameter.ValueDataType && this.selectedParameter.ValueDataType.toLowerCase() == "arrayobj"){
+    else if (this.selectedParameter && this.selectedParameter.ValueDataType && this.selectedParameter.ValueDataType.toLowerCase() == "arrayobj") {
       var newObj = JSON.parse(this.selectedParameter.ParameterValue);
       for (var prop in newObj) {
         eachJsonItem = new MappedObj();
@@ -254,6 +253,47 @@ export class ParameterListComponent {
           }
           this.selectedParameter.MappedObject.push(eachJsonItem);
         }
+
+      }
+    } else if (this.selectedParameter && this.selectedParameter.ValueDataType && (this.selectedParameter.ValueDataType.toLowerCase() == "jsonobj")) {
+      var newObj = JSON.parse(this.selectedParameter.ParameterValue);
+      for (var prop in newObj) {
+        eachJsonItem = new MappedObj();
+        eachJsonItem.OuterKeyName = prop;
+        eachJsonItem.KeyName = prop;
+        eachJsonItem.Value = newObj[prop];
+
+        eachJsonItem.ActualValueType = typeof newObj[prop];
+
+        if (eachJsonItem.ActualValueType == 'boolean') {
+          eachJsonItem.ValueType = "boolean";
+          eachJsonItem.Value = String(newObj[prop]).toLowerCase();
+          this.selectedParameter.MappedObject.push(eachJsonItem);
+        }
+        else if (eachJsonItem.ActualValueType == 'object') {
+          //var i = 0;
+          //eachJsonItem.ValueType = "object";
+          //eachJsonItem.Value = eachJsonItem.Value.toString();
+          //console.log(eachJsonItem.Value);
+          this.TraverseNestedJson(eachJsonItem.Value, eachJsonItem.OuterKeyName);
+        }
+        else if (eachJsonItem.ActualValueType == 'number') {
+          eachJsonItem.ValueType = "number";
+          eachJsonItem.Value = newObj[prop];
+          this.selectedParameter.MappedObject.push(eachJsonItem);
+        }
+        else {
+          if (newObj[prop] && (newObj[prop].toLowerCase() == 'true' || newObj[prop].toLowerCase() == 'false')) {
+            eachJsonItem.ValueType = "boolean";
+            eachJsonItem.Value = newObj[prop].toLowerCase();
+          }
+          else {
+            eachJsonItem.ValueType = eachJsonItem.ActualValueType;
+          }
+          this.selectedParameter.MappedObject.push(eachJsonItem);
+        }
+
+
 
       }
     }
@@ -298,13 +338,13 @@ export class ParameterListComponent {
   }
 
   //for ValueDataType = arrayobj: Anjana
-  public TraverseArrayObj(obj: any, keyname){
-    for(var property in obj){
-      if(typeof obj[property] == 'object'){
+  public TraverseArrayObj(obj: any, keyname) {
+    for (var property in obj) {
+      if (typeof obj[property] == 'object') {
         this.TraverseArrayObj(obj[property], keyname);
-      }else{
-        if(property != 'remove'){
-          var eachJsonItem : MappedObj = new MappedObj();
+      } else {
+        if (property != 'remove') {
+          var eachJsonItem: MappedObj = new MappedObj();
           eachJsonItem.ActualValueType = typeof obj[property];
           eachJsonItem.ValueType = eachJsonItem.ActualValueType;
           eachJsonItem.KeyName = keyname;
@@ -314,6 +354,31 @@ export class ParameterListComponent {
           } else if (eachJsonItem.ActualValueType != 'number' && eachJsonItem.Value.toLowerCase() == 'false') {
             eachJsonItem.ValueType = 'boolean';
           }
+          this.selectedParameter.MappedObject.push(eachJsonItem);
+        }
+      }
+    }
+  }
+
+  public TraverseNestedJson(obj: any, keyname) {
+    for (var property in obj) {
+      if (typeof obj[property] == 'object') {
+        this.TraverseArrayObj(obj[property], keyname);
+      } else {
+        if (property != 'remove') {
+          var eachJsonItem: MappedObj = new MappedObj();
+          eachJsonItem.ActualValueType = typeof obj[property];
+          eachJsonItem.ValueType = eachJsonItem.ActualValueType;
+          eachJsonItem.OuterKeyName = keyname;
+          eachJsonItem.KeyName = property;
+          eachJsonItem.Value = obj[property].toString();
+          // if (eachJsonItem.ActualValueType != 'number' && eachJsonItem.Value == 'true') {
+          //   eachJsonItem.ValueType = 'boolean';
+          //   eachJsonItem.Value = eachJsonItem.Value;
+          // } else if (eachJsonItem.ActualValueType != 'number' && eachJsonItem.Value == 'false') {
+          //   eachJsonItem.ValueType = 'boolean';
+          //   eachJsonItem.Value = "false";
+          // }
           this.selectedParameter.MappedObject.push(eachJsonItem);
         }
       }

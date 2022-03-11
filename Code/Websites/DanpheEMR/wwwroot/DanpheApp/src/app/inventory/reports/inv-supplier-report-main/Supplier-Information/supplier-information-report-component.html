@@ -1,0 +1,45 @@
+<style>
+    .dep-flex {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<form class="form-horizontal hm-form">
+    <div class="form-body">
+        <div class="caption lb-caption">
+            <i class="fa fa-money"></i>
+            <span class="caption-subject">Supplier Information Report </span>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                  <div class="row">
+                    <label class="control-label col-md-4"><b>Select Inventory<b style="float:right">:</b></b></label>
+                    <div class="col-md-8">
+                      <select [(ngModel)]="selectedInventory"  id="selectInventory" (change)="OnInventoryChange()" style="width:60%!important;" [ngModelOptions]="{standalone: true}">       
+                          <option [ngValue]="null" selected>--select--</option>
+                        <option *ngFor="let inv of inventoryList" value="{{inv.StoreId}}"> {{inv.Name}} </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="GetReportData()"[disabled]="loading">
+                        <span *ngIf="!loading">Show Report</span>
+                        <span *ngIf="loading">Loading...</span>
+                     </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <danphe-grid [grid-colDefaults]="INVSupplierInformationReportColumns"
+            [grid-data]="INVSupplierInformationReportData"
+            [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (grid-onExport)="OnGridExport($event)">
+</danphe-grid>
+        </div>
+    </div>
+</form>

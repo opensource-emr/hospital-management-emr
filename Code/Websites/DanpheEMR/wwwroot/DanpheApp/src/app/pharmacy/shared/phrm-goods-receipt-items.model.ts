@@ -18,6 +18,7 @@ export class PHRMGoodsReceiptItemsModel {
     public CategoryName: string = null;
     public SupplierName: string = null;
     public ItemId: number = 0;
+    public GenericName: string = null;
     public ItemName: string = null;
     public BatchNo: string = "";
     public update: boolean;
@@ -26,6 +27,7 @@ export class PHRMGoodsReceiptItemsModel {
     //public ManufactureDate: string = "";
     public PackingQty: number = 0;
     public ItemQTy: number = 0;
+    public VATAmt: number;
     public ReceivedQuantity: number = 0;
     public FreeQuantity: number = 0;
     public RejectedQuantity: number = 0;
@@ -44,7 +46,7 @@ export class PHRMGoodsReceiptItemsModel {
     public ModifiedOn: Date = null;
     public MRP: number = 0;
     public AvailableQuantity: number = 0;
-    ///
+    public TotalQuantity: number = 0; //rohit: for display purpose only.As per mediplus requirement, if free qty is enabled then totalqty should be shown with sum of itemqty and freeqty;
     public PendingQuantity: number = 0;
     public modQuantity: number = 0;
     public curtQuantity: number = 0;
@@ -55,19 +57,27 @@ export class PHRMGoodsReceiptItemsModel {
     public CounterId: number = 0;
     public GrTotalDisAmt: number = 0;
     //for local use only
-    public Margin: number = 0;
+    public Margin: number = 0; // use in calculation logic
+    public AdjustedMargin: number = 0; // use only for display purpose
     public VATAmount: any;
     public DiscountAmount: any;
     public PackingName: any;
     public StripRate: number = 0;
-    public StripQty:number = 0;
-    public StripMRP:number = 0;
-    public FreeStripQuantity:number = 0;
+    public StripQty: number = 0;
     public IndexOnEdit: number;
-    public IsPacking:boolean;
-    public IsItemDiscountApplicable:boolean;
+    public StockId: number;
     public Packing: PHRMPackingTypeModel = null;
-    public PackingTypeId:number = 0;
+    IsItemDiscountApplicable: boolean;
+    StripMRP: any;
+    FreeStripQuantity: any;
+    IsPacking: boolean;
+    public IsCancel: boolean = false;
+    public PackingTypeId: number;
+    StoreStockId: number;
+    public ItemRateHistory: Array<null> = new Array<null>();
+    public ItemMRPHistory: Array<null> = new Array<null>();
+    public IsItemAltered: boolean; // used as if that GR done item is already dispatched or sent to other store Or posted to Accouting.
+
 
     constructor() {
 
@@ -75,15 +85,15 @@ export class PHRMGoodsReceiptItemsModel {
         this.GoodReceiptItemValidator = _formBuilder.group({
             'ItemName': ['', Validators.compose([Validators.required])],
             //'PackingQuantity': ['', Validators.compose([Validators.required])],
-            //'ItemQTy': ['', Validators.compose([this.positiveValueRequired, this.wholeNumberRequired])],
+            'ItemQTy': ['', Validators.compose([this.positiveValueRequired, this.wholeNumberRequired])],
             //'ReceivedQuantity': ['', Validators.compose([Validators.required, this.positiveValueRequired, this.wholeNumberRequired])],
             //'ManufactureDate': ['', Validators.compose([Validators.required, this.pastDateValidator])],
             'ExpiryDate': ['', Validators.compose([Validators.required, this.dateValidator])],
-            'FreeQuantity': ['', Validators.compose([Validators.required])],
-            //'GRItemPrice': ['', Validators.compose([Validators.required, this.positiveValueRequired])],
+            //'FreeQuantity': ['', Validators.compose([Validators.required])],
+            'GRItemPrice': ['', Validators.compose([Validators.required, this.positiveValueRequired])],
             'MRP': ['', Validators.compose([Validators.required])],
             'BatchNo': ['', Validators.compose([Validators.required])],
-            'Margin': ['', Validators.compose([Validators.required])]
+            'AdjustedMargin': ['', Validators.compose([Validators.required, this.positiveOrZeroValueRequired])]
         });
     }
 
@@ -106,13 +116,23 @@ export class PHRMGoodsReceiptItemsModel {
     }
     positiveValueRequired(control: FormControl): { [key: string]: boolean } {
         if (control.value) {
-            if (control.value < 0) {
+            if (control.value <= 0) {
                 return { 'wrongValue': true };
             }
         }
-        //else {
-        //    return { 'wrongValue': true };
-        //}
+        else {
+            return { 'wrongValue': true };
+        }
+    }
+    positiveOrZeroValueRequired(control: FormControl): { [key: string]: boolean } {
+        if (control.value) {
+            if (control.value <= 0) {
+                return { 'wrongValue': true };
+            }
+        }
+        else {
+            return null;
+        }
     }
     wholeNumberRequired(control: FormControl): { [key: string]: boolean } {
         if (control.value) {

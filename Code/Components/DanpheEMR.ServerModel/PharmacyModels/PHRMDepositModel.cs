@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int DepositId { get; set; }
+        public int StoreId { get; set; }
         public int? FiscalYearId { get; set; }
         public int? ReceiptNo { get; set; }
         public int? PatientVisitId { get; set; }

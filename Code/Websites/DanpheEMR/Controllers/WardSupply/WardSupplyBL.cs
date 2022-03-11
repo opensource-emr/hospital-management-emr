@@ -8,6 +8,8 @@ using System.Data.Entity;
 using System.Configuration;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using DanpheEMR.Enums;
+using DanpheEMR.ServerModel.InventoryModels;
 
 namespace DanpheEMR.Controllers
 {
@@ -222,31 +224,22 @@ namespace DanpheEMR.Controllers
                     wardSupplyDbContext.SaveChanges();
 
                     //add stock to inventory
-                    var inventoryStock = new StockModel();
-                    inventoryStock = (from stock in wardSupplyDbContext.INVStockMaster
-                                      where stock.ItemId == stkTransferfromClient.ItemId && stock.BatchNO == stkTransferfromClient.BatchNo
+                    var inventoryStock = new StoreStockModel();
+                    inventoryStock = (from stock in wardSupplyDbContext.StoreStocks.Include(s => s.StockMaster)
+                                      where stock.ItemId == stkTransferfromClient.ItemId && stock.StockMaster.BatchNo == stkTransferfromClient.BatchNo
                                       select stock).FirstOrDefault();
                     if (inventoryStock != null)
                     {
-                        inventoryStock.AvailableQuantity = inventoryStock.AvailableQuantity + (int)(Convert.ToDecimal(stkTransferfromClient.DispachedQuantity));
-                        wardSupplyDbContext.Entry(inventoryStock).Property(a => a.AvailableQuantity).IsModified = true;
-                        wardSupplyDbContext.SaveChanges();
-                        var stockTransaction = new StockTransactionModel();
-                        stockTransaction.StockId = inventoryStock.StockId;
-                        stockTransaction.Quantity = (int)(Convert.ToDecimal(stkTransferfromClient.DispachedQuantity));
-                        stockTransaction.InOut = "in";
-                        stockTransaction.ItemId = inventoryStock.ItemId;
-                        stockTransaction.Price = inventoryStock.Price;
-                        stockTransaction.MRP = inventoryStock.MRP;
-                        stockTransaction.ReferenceNo = inventoryStock.GoodsReceiptItemId;
-                        stockTransaction.CreatedBy = currentUser.EmployeeId;
-                        stockTransaction.CreatedOn = DateTime.Now;
-                        stockTransaction.TransactionType = "Sent From WardSupply";
-                        stockTransaction.TransactionDate = stockTransaction.CreatedOn;
-                        //stockTransaction.FiscalYearId = InventoryBL.GetFiscalYear();
-                        stockTransaction.IsActive = true;
-                        wardSupplyDbContext.INVStockTransaction.Add(stockTransaction);
-                        wardSupplyDbContext.SaveChanges();
+                        inventoryStock.AddStock(
+                            quantity: Convert.ToDouble(stkTransferfromClient.DispachedQuantity),
+                            transactionType: ENUM_INV_StockTransactionType.TransferItem,
+                            transactionDate: null,
+                            currentDate: DateTime.Now,
+                            referenceNo: null,
+                            createdBy: currentUser.EmployeeId,
+                            fiscalYearId: GetCurrentInvFiscalYear(wardSupplyDbContext).FiscalYearId,
+                            needConfirmation: true
+                            );
                     }
                     //add to stock transaction in inventory
                     dbContextTransaction.Commit();//Commit Transaction
@@ -311,51 +304,50 @@ namespace DanpheEMR.Controllers
                 {
                     if (stkTransfer != null)
                     {
-                        for (int i = 0; i < stkTransfer.Count; i++)
-                        {
-                            //for linq as Array will not be accessed in linq
-                            var stockId = stkTransfer[i].StockId;
-                            var storeId = stkTransfer[i].StoreId;
-                            var itemId = stkTransfer[i].ItemId;
-                            var expiryDate = stkTransfer[i].ExpiryDate;
-                            var batchNo = stkTransfer[i].BatchNo;
+                        //for (int i = 0; i < stkTransfer.Count; i++)
+                        //{
+                        //    //for linq as Array will not be accessed in linq
+                        //    var stockId = stkTransfer[i].StockId;
+                        //    var storeId = stkTransfer[i].StoreId;
+                        //    var itemId = stkTransfer[i].ItemId;
+                        //    var expiryDate = stkTransfer[i].ExpiryDate;
+                        //    var batchNo = stkTransfer[i].BatchNo;
 
-                            WARDStockModel updatedStock = (from stock in wardSupplyDbContext.WARDStockModel
-                                                           where stock.StockId == stockId && stock.StoreId == storeId
-                                                           select stock
-                                                  ).FirstOrDefault();
-                            updatedStock.AvailableQuantity = (int)(Convert.ToDecimal(stkTransfer[i].AvailableQuantity)) - (int)(Convert.ToDecimal(stkTransfer[i].DispachedQuantity));
-                            wardSupplyDbContext.Entry(updatedStock).Property(a => a.AvailableQuantity).IsModified = true;
-                            //transaction table
-                            var selectedstockTxnItm = new WARDTransactionModel();
-                            selectedstockTxnItm.WardId = updatedStock.WardId;
-                            selectedstockTxnItm.ItemId = updatedStock.ItemId;
-                            selectedstockTxnItm.StockId = updatedStock.StockId;
-                            selectedstockTxnItm.StoreId = updatedStock.StoreId;
-                            selectedstockTxnItm.TransactionId = 0;
-                            selectedstockTxnItm.Quantity = (int)(Convert.ToDecimal(stkTransfer[i].DispachedQuantity));
-                            selectedstockTxnItm.TransactionType = "WardToPharmacy";
-                            selectedstockTxnItm.Remarks = "Sent From Ward To Pharmacy";
-                            selectedstockTxnItm.CreatedBy = currentUser.UserName;
-                            selectedstockTxnItm.CreatedOn = DateTime.Now;
-                            selectedstockTxnItm.IsWard = true;
-                            selectedstockTxnItm.ReceivedBy = ReceivedBy;
-                            wardSupplyDbContext.TransactionModel.Add(selectedstockTxnItm);
-                            wardSupplyDbContext.SaveChanges();
+                        //    WARDStockModel updatedStock = (from stock in wardSupplyDbContext.WARDStockModel
+                        //                                   where stock.StockId == stockId && stock.StoreId == storeId
+                        //                                   select stock
+                        //                          ).FirstOrDefault();
+                        //    updatedStock.AvailableQuantity = (int)(Convert.ToDecimal(stkTransfer[i].AvailableQuantity)) - (int)(Convert.ToDecimal(stkTransfer[i].DispachedQuantity));
+                        //    wardSupplyDbContext.Entry(updatedStock).Property(a => a.AvailableQuantity).IsModified = true;
+                        //    //transaction table
+                        //    var selectedstockTxnItm = new WARDTransactionModel();
+                        //    selectedstockTxnItm.WardId = updatedStock.WardId;
+                        //    selectedstockTxnItm.ItemId = updatedStock.ItemId;
+                        //    selectedstockTxnItm.StockId = updatedStock.StockId;
+                        //    selectedstockTxnItm.StoreId = updatedStock.StoreId;
+                        //    selectedstockTxnItm.TransactionId = 0;
+                        //    selectedstockTxnItm.Quantity = (int)(Convert.ToDecimal(stkTransfer[i].DispachedQuantity));
+                        //    selectedstockTxnItm.TransactionType = "WardToPharmacy";
+                        //    selectedstockTxnItm.Remarks = "Sent From Ward To Pharmacy";
+                        //    selectedstockTxnItm.CreatedBy = currentUser.UserName;
+                        //    selectedstockTxnItm.CreatedOn = DateTime.Now;
+                        //    selectedstockTxnItm.IsWard = true;
+                        //    selectedstockTxnItm.ReceivedBy = ReceivedBy;
+                        //    wardSupplyDbContext.TransactionModel.Add(selectedstockTxnItm);
+                        //    wardSupplyDbContext.SaveChanges();
 
-                            //pharmacy store stock changes
-                            var StoreStockEntry = pharmacyDbContext.PHRMStoreStock.Where(a => a.ItemId == itemId && a.ExpiryDate == expiryDate && a.BatchNo == batchNo).FirstOrDefault();
+                        //    //pharmacy store stock changes
+                        //    var StoreStockEntry = pharmacyDbContext.StockTransactions.Where(a => a.ItemId == itemId && a.ExpiryDate == expiryDate && a.BatchNo == batchNo).FirstOrDefault();
 
-                            StoreStockEntry.InOut = "in";
-                            StoreStockEntry.Quantity = Convert.ToDouble(stkTransfer[i].DispachedQuantity);
-                            var SubStoreName = pharmacyDbContext.PHRMStore.Where(a => a.StoreId == storeId).Select(a => a.Name).FirstOrDefault();
-                            StoreStockEntry.TransactionType = "ReturnFromSubstore";
-                            StoreStockEntry.Remark = "Returned from" + SubStoreName + ". ReferenceNo. is StockId of Ward.";
-                            StoreStockEntry.ReferenceNo = stkTransfer[i].StockId;
-                            pharmacyDbContext.PHRMStoreStock.Add(StoreStockEntry);
-                            pharmacyDbContext.SaveChanges();
+                        //    StoreStockEntry.InOut = "in";
+                        //    StoreStockEntry.Quantity = Convert.ToDouble(stkTransfer[i].DispachedQuantity);
+                        //    var SubStoreName = pharmacyDbContext.PHRMStore.Where(a => a.StoreId == storeId).Select(a => a.Name).FirstOrDefault();
+                        //    StoreStockEntry.TransactionType = "ReturnFromSubstore";
+                        //    StoreStockEntry.ReferenceNo = stkTransfer[i].StockId;
+                        //    pharmacyDbContext.StockTransactions.Add(StoreStockEntry);
+                        //    pharmacyDbContext.SaveChanges();
 
-                        }
+                        //}
                     }
                     dbContextTransaction.Commit();
                     return true;
@@ -369,57 +361,41 @@ namespace DanpheEMR.Controllers
         }
         public static void UpdateWardStockForConsumption(WardSupplyDbContext db, RbacUser currentUser, WARDInventoryConsumptionModel consumption)
         {
-            var stockList = db.WARDInventoryStockModel.Where(stock => stock.ItemId == consumption.ItemId && stock.StoreId == consumption.StoreId && stock.AvailableQuantity > 0).ToList();
-            var tempConsumeQty = consumption.ConsumeQuantity;   
+            var currentDate = DateTime.Now;
+            var stockList = db.StoreStocks.Include(s => s.StockMaster).Where(stock => stock.ItemId == consumption.ItemId && stock.StoreId == consumption.StoreId && stock.AvailableQuantity > 0 && stock.IsActive == true).ToList();
+            var totalConsumeQty = consumption.ConsumeQuantity;
             foreach (var stock in stockList)
             {
-                //insert stock txn as well.
-                var stockTxn = new WARDInventoryTransactionModel();
-                stockTxn.StoreId = consumption.StoreId;
-                stockTxn.ItemId = consumption.ItemId;
-                stockTxn.Remarks = $"Consumed By {consumption.UsedBy}";
-                stockTxn.ReceivedBy = consumption.UsedBy;
-                stockTxn.ReferenceNo = consumption.ConsumptionId;
-
-                stockTxn.StockId = stock.StockId;
-                stockTxn.MRP = stock.MRP;
-                stockTxn.GoodsReceiptItemId = stock.GoodsReceiptItemId;
-                stockTxn.Price = (decimal)(stock.Price);
-
-                stockTxn.TransactionType = "consumption-items";
-                stockTxn.InOut = "out";
-                stockTxn.CreatedBy = currentUser.EmployeeId;
-                stockTxn.CreatedOn = DateTime.Now;
-                stockTxn.TransactionDate = stockTxn.CreatedOn;
-                stockTxn.FiscalYearId = GetCurrentInvFiscalYear(db,consumption.ConsumptionDate).FiscalYearId;
-                stockTxn.IsActive = true;
-                if (stock.AvailableQuantity < tempConsumeQty)
+                if (stock.AvailableQuantity < totalConsumeQty)
                 {
-                    //case 1: stock does not contain quantity as consumed.
-                    //decrease available quantity from temporary consume quantity
-                    tempConsumeQty -= stock.AvailableQuantity;
-                    //store the consumed quantity from this stock in the stock transaction;
-                    stockTxn.Quantity = stock.AvailableQuantity;
-                    //decrease all the available quantity from the stock
-                    stock.AvailableQuantity = 0;
-                    db.WARDInventoryTransactionModel.Add(stockTxn);
-
+                    stock.DecreaseStock(
+                        quantity: stock.AvailableQuantity,
+                        transactionType: ENUM_INV_StockTransactionType.ConsumptionItem,
+                        transactionDate: consumption.ConsumptionDate,
+                        currentDate: currentDate,
+                        referenceNo: consumption.ConsumptionId,
+                        createdBy: currentUser.EmployeeId,
+                        fiscalYearId: GetCurrentInvFiscalYear(db).FiscalYearId
+                        );
+                    totalConsumeQty -= stock.AvailableQuantity;
+                    db.SaveChanges();
                 }
                 else
                 {
-                    //case 2: stock contains quantity as consumed.
-                    //decrease consumed quantity from the stock
-                    stock.AvailableQuantity -= tempConsumeQty;
-                    //save the consumed quantity in transaction
-                    stockTxn.Quantity = tempConsumeQty;
-                    //decrease all the consume quantity
-                    tempConsumeQty = 0;
-                    //since this case must be achieved in order to successfully consume
-                    //put a break and go to another consumption item
-                    db.WARDInventoryTransactionModel.Add(stockTxn);
+                    stock.DecreaseStock(
+                        quantity: totalConsumeQty,
+                        transactionType: ENUM_INV_StockTransactionType.ConsumptionItem,
+                        transactionDate: consumption.ConsumptionDate,
+                        currentDate: currentDate,
+                        referenceNo: consumption.ConsumptionId,
+                        createdBy: currentUser.EmployeeId,
+                        fiscalYearId: GetCurrentInvFiscalYear(db).FiscalYearId
+                        );
+                    totalConsumeQty = 0;
                     db.SaveChanges();
                     break;
                 }
+              
             }
         }
         public static InventoryFiscalYear GetCurrentInvFiscalYear(WardSupplyDbContext db, DateTime? DecidingDate = null)
@@ -433,15 +409,25 @@ namespace DanpheEMR.Controllers
 
             List<DispatchItemsModel> dispatchItemsToUpdate = await db.DispatchItems.Where(itm => itm.DispatchId == DispatchId).ToListAsync();
             if (dispatchItemsToUpdate == null || dispatchItemsToUpdate.Count == 0) { throw new Exception("Items Not Found."); };
+            var dispatchTxnTypes = new List<string>() { ENUM_INV_StockTransactionType.DispatchedItem, ENUM_INV_StockTransactionType.DispatchedItemReceivingSide };
             foreach (var dispatchedItem in dispatchItemsToUpdate)
             {
                 //TODO: Find stock txns for each dispatched item
-                var stockTxnList = await db.WardInventoryTransactionModel.Where(ST => ST.ReferenceNo == dispatchedItem.DispatchItemsId && ST.TransactionType == "dispatched-items").ToListAsync(); ;
+                var stockTxnList = await db.StockTransactions.Where(ST => ST.ReferenceNo == dispatchedItem.DispatchItemsId && dispatchTxnTypes.Contains(ST.TransactionType)).ToListAsync();
                 foreach (var stkTxn in stockTxnList)
                 {
-                    var stock = await db.WardInventoryStockModel.FindAsync(stkTxn.StockId);
-                    stock.AvailableQuantity += stock.UnConfirmedQty;
-                    stock.UnConfirmedQty = 0;
+
+                    var stock = await db.StoreStocks.FindAsync(stkTxn.StoreStockId);
+                    if (stock.StoreId == dispatchedItem.SourceStoreId)
+                    {
+                        // Find source store stock and update the quantity.
+                        stock.ConfirmStockDispatched(quantity: stkTxn.OutQty);
+                    }
+                    else
+                    {
+                        // Find target stock id and update the stock quantity
+                        stock.ConfirmStockReceived(quantity: stkTxn.InQty);
+                    }
                     await db.SaveChangesAsync();
                 }
                 //TODO: Update the Received Status in Dispatched Items Row in Dispatch Table

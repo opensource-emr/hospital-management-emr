@@ -1,0 +1,127 @@
+<style>
+  .btn {
+    margin: 5px;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>
+
+<div class="panel panel-default">
+  <div class="panel-heading good-panel-heading">
+    <div class="row">
+      <div class="col-md-2">
+        <b>Direct Dispatch</b>
+      </div>
+      <div class="col-md-7 text-right">
+        <label class="control-label">Dispatch&nbsp;Date&nbsp;<span>:</span>
+          <span>&nbsp;
+            {{dispatch.DispatchedDate |date : 'yyyy-MM-dd'}}
+            &nbsp;&nbsp;
+            <i *ngIf="dispatch.RequestedOn ">
+              ({{dispatch.DispatchedDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+          </span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+  <div class="panel-body">
+    <form [formGroup]="dispatch.RequisitionValidator" class="form-horizontal hm-form row">
+      <div class="col-md-3">
+        <div class="form-group">
+          <label class="control-label col-md-3">SubStore<sup style="color: red;">*</sup> <b>:</b></label>
+          <div class="pull-right col-md-9">
+            <input danphe-auto-complete [(ngModel)]="selectedStore" class="form-control"
+              [list-formatter]="StoreListFormatter" [source]="StoreList" placeholder="Enter Store Name"
+              display-property-name="Name" value-property-name=null onClick="this.select();"
+              (focusout)="OnStoreChange()" max-num-list="10" formControlName="SubStoreId" />
+            <span *ngIf="dispatch.IsDirty('SubStoreId')" style="color: red"
+              [hidden]="dispatch.IsValidCheck('SubStoreId','required')">
+              SubStore is required
+            </span>
+          </div>
+        </div>
+      </div>     
+    </form>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-striped table-hover inv_table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th sortable-header col="ItemName">
+                <b> Item Name</b>
+              </th>
+              <th> <b> Code </b> </th>
+              <th sortable-header col="BarCodeNumber">
+                <b> Bar Code number</b>
+              </th>
+              <th sortable-header col="BatchNo">
+                <b> BatchNo</b>
+              </th>            
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dispatch.DispatchItems; let i = index">
+            <td><a (click)="DeleteitemRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+              <td>
+                <div class="div-relative">
+                  <form [formGroup]="row.RequisitionItemValidator">
+                    <input danphe-auto-complete class="form-control" id="itemName{{i}}"
+                      [(ngModel)]="row.SelectedItem" [source]="ItemList" [list-formatter]="ItemListFormatter"
+                      placeholder="Enter Item Name" display-property-name="ItemName" value-property-name=null
+                      onclick="this.select();" (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="10"
+                      formControlName="ItemId" />
+                    <div class="error-message" *ngIf="row.IsDirty('ItemId')"
+                      [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
+                  </form>              
+                </div>
+              </td>
+              <td>
+                {{row.Code}}
+              </td>
+              <td>                          
+                <input danphe-auto-complete style="width:150px !important;" class="form-control" id="barCodeNumber{{i}}" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" 
+                 [(ngModel)]="row.selectedBarCode" [source]="barcodelist" [list-formatter]="ListFormatter"
+                    placeholder="BarCodeNumber" display-property-name="BarCodeNumber" value-property-name=null name="BarCodeNumber"
+                  onclick="this.select();" (valueChanged)="OnBarCodeChange(i,j,row.selectedBarCode,row.ItemId)" max-num-list="50"                
+                />                                
+            </td>                              
+            <td>
+                <input name="BatchNo" [(ngModel)]="row.BatchNo" [attr.disabled]="true" class="table-input" type="text" />
+            </td>             
+              <td><a (click)="AdditemRowRequest()"><i class="fa fa-plus btn btn-success"></i></a></td>              
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <span class="col-md-2">Remarks<sup style="color: red;">*</sup><span class="right">:</span></span>
+        <textarea name="Remarks" [(ngModel)]="Remarks" cols="70" rows="3"></textarea>
+      </div>
+      <div class="col-md-12">
+        <span class="col-md-2"> Received By<span class="right">:</span></span>
+        <input type="text" [(ngModel)]="ReceivedBy">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="panel-footer text-center">
+  <div>
+    <mark>Note: Direct Dispatch will automatically create new requisition and dispatch it.</mark>
+  </div>
+  <input type="button" class="btn primary-btn" [disabled]="loading" (click)="DirectDispatch()" value="Direct Dispatch">
+  <span></span>
+  <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Discard Changes">
+  <span></span>
+</div>

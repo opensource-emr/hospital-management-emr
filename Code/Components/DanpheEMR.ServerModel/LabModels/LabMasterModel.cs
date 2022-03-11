@@ -18,7 +18,7 @@ namespace DanpheEMR.ServerModel.LabModels
 
         public List<LabPendingResultVM> AddResult = new List<LabPendingResultVM>();
         public List<LabPendingResultVM> PendingReport = new List<LabPendingResultVM>();
-        public List<LabPendingResultVM> FinalReport = new List<LabPendingResultVM>();
+        public List<FinalLabReportListVM> FinalReport = new List<FinalLabReportListVM>();
         public List<Requisition> LabRequisitions = new List<Requisition>();
     }
 

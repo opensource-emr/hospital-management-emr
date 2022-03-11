@@ -1,0 +1,221 @@
+<style>
+  .surgeonli::after {
+    content: "\a";
+    white-space: pre;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span> {{editMode?"Edit Booked OT Details":"Booking OT Schedule "}} | {{
+                selectedPatient.ShortName? selectedPatient.ShortName : 'New Patient'}}</span>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div style="display: table;padding: 5px 0px;width: 100%;">
+            <div class="col-md-2">
+              <label style="font-weight: 700; font-size: small;">{{editMode?'Selected':'Select'}} Patient<sup>*</sup></label>
+            </div>
+            <div class="col-md-4">
+              <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+              <input danphe-auto-complete class="form-control" [(ngModel)]="selectedPatient"
+                [list-formatter]="patientListFormatter" [source]="AllPatientSearchAsync.bind(this)" placeholder="Enter Patient Name"
+                display-property-name="ShortName" value-property-name=null (valueChanged)="AddCurrentExistingPatient()"
+                onClick="this.select();" max-num-list="10" [attr.disabled]="editMode?true:null" id="srch_PatientList"
+                (keyup.enter)="goToDatePicker()" [min-chars]="3" [path-to-data]="'Results'" 
+                match-formatted="true"/>
+            </div>
+          </div>
+
+          <form [formGroup]="newOtBooking.OperationTheatreValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-6 col-xs-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Enter OT DateTime<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8" [attr.disabled]="editMode?true:null">
+                      <danphe-date-picker [input-focus]="this.goToDatePick" (output-focus)="FocusOutFromDatePicker($event)" formControlName="BookedForDate" [(ngModel)]="newOtBooking.BookedForDate"
+                        [showTime]="true" [CalendarTypes]="'en,np'" [allow-future-date]="isFutureDateEnabled">
+                      </danphe-date-picker>
+                      <!-- <input [(ngModel)]="newOtBooking.OtDate" class="form-control" type="text" id="otDateTime" placeholder="Ot Date Time" [ngModelOptions]="{standalone: true}" /> -->
+                      <div class="flx">
+
+                        <!-- <input id="appdate" class="form-control" type="date" name="" value=""
+                         [(ngModel)]="newOtBooking.BookedForDate" formControlName="BookedForDate" /> -->
+                        <!-- <span class="inl-blk">
+                          <i style="color: #0773bc;font-style: normal;font-size: 10px;line-height: 28px;
+                    vertical-align: -webkit-baseline-middle;padding: 0 10px;
+                    border: 1px  solid #0773bc;text-transform: uppercase;display: block;"> {{newOtBooking.BookedForDate | DanpheDateTime:'timename'}} </i>
+                        </span>                                    -->
+                      </div>
+                      <div class="flx">
+                        <span class="color-red font-sm"
+                          [hidden]="newOtBooking.IsValidCheck('BookedForDate','wrongDate')">Enter Valid Date</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Diagnosis<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <!-- <input [(ngModel)]="newOtBooking.Diagnosis" class="form-control" type="text" id="diagnosis" placeholder="Diagnosis" [ngModelOptions]="{standalone: true}" /> -->
+                      <input danphe-auto-complete class="form-control" [(ngModel)]="diagnosis" [source]="icd10List"
+                        [list-formatter]="DignosisFormatter" placeholder="Select Diagnosis"
+                        display-property-name="icd10Description" value-property-name="ICD10Id"
+                        (valueChanged)="loadICDs()" [min-chars]="1" max-num-list="10" formControlName="Diagnosis"
+                        id="Diagnosis" (keyup.enter)="SetFocusForMandatory('Diagnosis','surgeryType',diagnosis?diagnosis.ICD10Id:null)" />
+
+                      <span class="color-red font-sm" *ngIf="newOtBooking.IsDirty('Diagnosis')"
+                        [hidden]="newOtBooking.IsValidCheck('Diagnosis','required')">Diagnosis is mandatory.</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Type of Surgery<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea [(ngModel)]="newOtBooking.SurgeryType" formControlName="SurgeryType"
+                        class="form-control" type="text" id="surgeryType" placeholder="Type of Surgery"
+                        (keyup.enter)="SetFocusForMandatory('surgeryType','procedure',newOtBooking.SurgeryType)"  > </textarea>
+                      <span class="color-red font-sm" *ngIf="newOtBooking.IsDirty('SurgeryType')"
+                        [hidden]="newOtBooking.IsValidCheck('SurgeryType','required')">Please enter type of
+                        surgery.</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Procedure<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea [(ngModel)]="newOtBooking.ProcedureType" class="form-control" type="text" id="procedure"
+                        placeholder="Procedure" formControlName="ProcedureType"
+                        (keyup.enter)="SetFocusForMandatory('procedure','AnesthetistDoctor',newOtBooking.ProcedureType)" > </textarea>
+                      <span class="color-red font-sm" *ngIf="newOtBooking.IsDirty('ProcedureType')"
+                        [hidden]="newOtBooking.IsValidCheck('ProcedureType','required')">Please enter type of
+                        Procedure.</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Surgeon Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <!-- <danphe-multiselect [ddl-data]="otEmployeeList"
+                                          [pre-selected]="PreSelectedDoctors"
+                                          [placeholder-text]="'---Select Doctor---'"
+                                          [value-property-name]="'EmployeeId'"
+                                          (selected-items-list)="AssignSurgeon($event)"
+                                          [display-property-name]="'FullName'"
+                                          [single-selection]="false"> </danphe-multiselect> -->
+                      <select-referrer *ngIf="isReferrerLoaded" [selected-ref-id]="selectedRefId"
+                        [allow-external]="ExtRefSettings.EnableExternal"
+                        [default-external]="ExtRefSettings.DefaultExternal"
+                        (on-referrer-change)="OnSurgeonChanged($event)" class="ref-er"> </select-referrer>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="this.newOtBooking.OtSurgeonList.length>0">
+                    <ul class="select-list">
+                      <!-- <i class="fa fa-circle" aria-hidden="true"> </i> -->
+                      <li class="fa fa-circle" *ngFor="let surdoc of this.newOtBooking.OtSurgeonList; let i = index;">
+                        &nbsp;{{surdoc.FullName}} &nbsp;
+                        <i class="fa fa-times" style="color: rgb(105, 4, 4) !important"
+                          (click)="OnSurgeonRemoved(i,surdoc.EmployeeId)"></i>
+                        <br>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Anesthetist Doctor Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <!-- <input [(ngModel)]="newOtBooking.AnesthetistDoctor" class="form-control" type="text" id="procedure" placeholder="Anesthetist Doctor Name" [ngModelOptions]="{standalone: true}" /> -->
+                      <!-- <select-referrer *ngIf="isReferrerLoaded" [selected-ref-id]="selAnestheticId"
+                               [allow-external]="ExtRefSettings.EnableExternal" [default-external]="ExtRefSettings.DefaultExternal"
+                               (on-referrer-change)="AnesthetistDoctorChanged($event)" class="ref-er"> </select-referrer> -->
+                      <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="newOtBooking.AnesthetistDoctor" [list-formatter]="EmployeeFormatter"
+                        [source]="employeeList" placeholder="Enter Anesthetist Doctor Name"
+                        display-property-name="FullName" value-property-name=null onClick="this.select();"
+                        max-num-list="10" [ngModelOptions]="{standalone: true}" [min-chars]="1"
+                        id="AnesthetistDoctor" (keyup.enter)="SetFocusOn('AnesthetistAssistant')"/>
+                      <!-- (focusout)="AnesthetistDoctorChanged()"  -->
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-xs-12">
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Anesthetist Assistant Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="newOtBooking.AnesthetistAssistant" [list-formatter]="EmployeeFormatter"
+                        [source]="employeeList" placeholder="Enter Anesthetist Assistant Name"
+                        display-property-name="FullName" value-property-name=null onClick="this.select();"
+                        max-num-list="10" [ngModelOptions]="{standalone: true}" [min-chars]="1"
+                        id="AnesthetistAssistant" (keyup.enter)="SetFocusOn('ScrubNurse')"/>
+                      <!-- (focusout)="AnesthetistAssistantChanged()" -->
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Anesthesia<b>:</b></label>
+                    <div class="col-md-8">
+                      <input [(ngModel)]="newOtBooking.AnesthesiaType" class="form-control" type="text" id="procedure"
+                        placeholder="Anesthesia" [ngModelOptions]="{standalone: true}" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Scrub Nurse Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <!-- <input [(ngModel)]="newOtBooking.ScrubNurse" class="form-control" type="text" id="procedure" placeholder="Scrub Nurse" [ngModelOptions]="{standalone: true}" /> -->
+                      <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="newOtBooking.ScrubNurse" [list-formatter]="EmployeeFormatter"
+                        [source]="employeeList" placeholder="Enter Scrub Nurse Name" display-property-name="FullName"
+                        value-property-name=null onClick="this.select();" max-num-list="10"
+                        [ngModelOptions]="{standalone: true}" [min-chars]="1" id="ScrubNurse" 
+                        (keyup.enter)="SetFocusOn('remarks')"/>
+                      <!-- (focusout)="ScrubNurseChanged()" -->
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">OT Assistant Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <danphe-multiselect [ddl-data]="otEmployeeList" [pre-selected]="PreSelectedOtAssistent"
+                        [placeholder-text]="'---Select Ot Assistant Name---'" [value-property-name]="'EmployeeId'"
+                        (selected-items-list)="CallBackOtAssistant($event)" [display-property-name]="'FullName'"
+                        [single-selection]="false"> </danphe-multiselect>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Remarks<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <textarea [(ngModel)]="newOtBooking.Remarks" class="form-control" type="text" id="remarks"
+                        placeholder="Remarks" formControlName="Remarks"
+                         (keyup.enter)="SetFocusForMandatory('remarks','Save',newOtBooking.Remarks)"
+                        > </textarea>
+
+                      <span class="color-red font-sm" *ngIf="newOtBooking.IsDirty('Remarks')"
+                        [hidden]="newOtBooking.IsValidCheck('Remarks','required')">Remarks is mandatory to book new
+                        ot.</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- [attr.disabled]="IsSubmitClicked?true:null" -->
+            <div class="panel-footer text-right">
+              <input type="button" class="btn green btn-success margin-7-hr" (click)="SaveOTBooking()"
+                [value]="editMode?'Update OT Details':'Add New OT'" id="Save"/>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -23,7 +23,7 @@ namespace DanpheEMR.ServerModel
         public int ItemId { get; set; }
         public string ItemName { get; set; }
         public double Price { get; set; }
-        public double? Quantity { get; set; }
+        public double Quantity { get; set; }
         public double? SubTotal { get; set; }
         public double? DiscountPercent { get; set; }
         public double? DiscountPercentAgg { get; set; }
@@ -133,6 +133,7 @@ namespace DanpheEMR.ServerModel
         public string ModifiedByName { get; set; }
 
         public string OrderStatus { get; set; }//pratik:7Aug2020
+        public string LabTypeName { get; set; }//pratik:9Feb2021
 
     }
 }

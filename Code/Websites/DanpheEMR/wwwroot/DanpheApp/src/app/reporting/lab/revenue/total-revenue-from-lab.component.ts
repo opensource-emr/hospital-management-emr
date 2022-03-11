@@ -19,6 +19,7 @@ export class RPT_LAB_TotalRevenueFromLabComponent {
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   dlService: DLService = null;
   http: HttpClient = null;
+  public dateRange:string="";	
 
   constructor(
     _dlService: DLService,
@@ -72,5 +73,6 @@ export class RPT_LAB_TotalRevenueFromLabComponent {
   OnFromToDateChange($event) {
     this.currenttotalrevenue.fromDate = $event.fromDate;
     this.currenttotalrevenue.toDate = $event.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+ this.currenttotalrevenue.fromDate+"&nbsp;<b>To</b>&nbsp;"+ this.currenttotalrevenue.toDate;
   }
 }

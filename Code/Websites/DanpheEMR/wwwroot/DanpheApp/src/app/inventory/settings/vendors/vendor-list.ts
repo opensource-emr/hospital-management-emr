@@ -55,6 +55,7 @@ export class VendorListComponent {
         this.selectedVendor = $event.Data;
         this.selectedVendor.DefaultItem = JSON.parse(this.selectedVendor.DefaultItemJSON);
         this.showAddPage = true;
+        this.FocusElementById('VendorName');
       }
       default:
         break;
@@ -62,6 +63,7 @@ export class VendorListComponent {
   }
   AddVendor() {
     this.showAddPage = false;
+    this.FocusElementById('VendorName');
     this.changeDetector.detectChanges();
     this.showAddPage = true;
   }
@@ -84,6 +86,13 @@ export class VendorListComponent {
     this.selectedVendor = null;
     this.index = null;
   }
-
+  FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
 
 }

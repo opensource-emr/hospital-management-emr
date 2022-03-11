@@ -867,7 +867,7 @@ export class NursingIpBillItemRequestComponent {
       data["ServiceDepartmentName"] +
       "</i>)" +
       "&nbsp;&nbsp;" +
-      "RS." +
+      this.coreService.currencyUnit+ " " +
       data["Price"];
     return html;
   }

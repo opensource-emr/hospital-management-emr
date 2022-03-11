@@ -14,7 +14,7 @@ namespace DanpheEMR.ServerModel
         public int PatientVisitId { get; set; }
 
         //assign default value to this property, don't set it from anywhere else.. 
-   
+
         public double? Height { get; set; }
         public string HeightUnit { get; set; }
         public double? Weight { get; set; }
@@ -41,5 +41,23 @@ namespace DanpheEMR.ServerModel
         public DateTime VitalsTakenOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
         //public virtual PatientModel Patient { get; set; }
+
+        public int? Nadi { get; set; }
+        public string Mala { get; set; }
+        public string Mutra { get; set; }
+        public string Jivha { get; set; }
+        public string Shabda { get; set; }
+        public string Sparsha { get; set; }
+        public string Drik { get; set; }
+        public string Akriti { get; set; }
+        public string LungField { get; set; }
+        public string HeartSounds { get; set; }
+        public string PA_Tenderness { get; set; }
+        public string Organomegaly { get; set; }
+        public string CNS_Consiousness { get; set; }
+        public string Power { get; set; }
+        public string Reflexes { get; set; }
+        public string Tone { get; set; }
+        public string Others { get; set; }
     }
-}
+    }

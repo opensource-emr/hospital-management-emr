@@ -11,6 +11,7 @@ import { CompanyModel } from "../shared/company/company.model";
 @Component({
     selector: "company-add",
     templateUrl: "./company-add.html",
+    host: { '(window:keyup)': 'hotkeys($event)' }
 })
 export class CompanyAddComponent {
 
@@ -62,8 +63,10 @@ export class CompanyAddComponent {
                     err => {
                         this.logError(err);
                         this.loading = false;
+                        this.FocusElementById('CompanyName');
                     });
         }
+        this.FocusElementById('CompanyName');
     }
 
     //updating Company
@@ -88,8 +91,10 @@ export class CompanyAddComponent {
                     err => {
                         this.logError(err);
                         this.loading = false;
+                        this.FocusElementById('CompanyName');
                     });
         }
+        this.FocusElementById('CompanyName');
     }
 
     Close() {
@@ -103,6 +108,19 @@ export class CompanyAddComponent {
 
     logError(err: any) {
         console.log(err);
+    }
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
     }
 
 }

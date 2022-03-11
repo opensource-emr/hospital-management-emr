@@ -1,3 +1,147 @@
+<style>
+  th {
+    font-size: 13px !important;
+  }
+
+  .total-table td {
+    padding-bottom: 5px !important;
+  }
+
+  .inv_table thead tr th,
+  .inv_table tbody tr td {
+    padding: 3px !important;
+  }
+
+  /*input {
+    border-radius: 8px !important;
+  }*/
+
+  .fa-question {
+    /* top: 6px; */
+    border-top-right-radius: 3px !important;
+    border-bottom-right-radius: 3px !important;
+  }
+
+  input.ng-pristine {
+    border: 1px solid #ddd;
+    height: 30px;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .icon-info {
+    margin-left: 2px !important;
+    background-color: #2d68ea;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .dv-dup-bill-no {
+    background-color: yellow;
+    color: black;
+    cursor: default;
+  }
+
+  .msg-icn-warn {
+    color: #c1c112;
+    font-size: 17px;
+  }
+
+  .verification-card {
+    background-color: #e0e9f1;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 5px !important;
+    text-align: left;
+    width: 100%;
+    margin-top: 25px;
+  }
+
+  .verification-check {
+    background: #fff;
+    color: #2185cc;
+    padding: 3px 15px;
+    margin-bottom: auto;
+    border-radius: 5px !important;
+    box-shadow: 0px 0px 10px #eee;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .verification-check .custom-control-label {
+    margin-bottom: 0;
+    margin-left: 7px;
+    margin-top: 1px;
+    font-weight: 600;
+  }
+
+  .verification-form-control {
+    display: inline-block;
+    margin: 10px -15px;
+    width: 100%;
+  }
+
+  .verification-form-control .btn.btn-sm {
+    display: inline-flex;
+    height: 20px;
+    width: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100% !important;
+    font-size: 12px !important;
+    padding: 10px !important;
+    margin: 4px 3px;
+  }
+
+  .verification-form-control .verifier {
+    padding: 7px 15px;
+    background: #4158d3;
+    border-radius: 20px !important;
+    color: #fff;
+    margin-left: 15px;
+    font-weight: 500;
+    margin-bottom: 0px;
+    font-size: 12px;
+  }
+
+  .verification-form-control .form-control {
+    border: none;
+    box-shadow: 0px 4px 10px #eee;
+    font-size: 13px;
+  }
+
+  .verification-form-control .verifier i {
+    margin-right: 5px
+  }
+
+  .good-receipt-radio-btn label {
+    vertical-align: middle;
+  }
+
+  .good-receipt-radio-btn input[type=radio] {
+    margin: 4px 5px 0 5px;
+  }
+
+  .disable-input-box {
+    cursor: not-allowed;
+    border: 1px solid #ddd;
+    background-color: #eef1f5;
+    opacity: 1;
+  }
+
+  .invalid-input {
+    background-color: orange;
+  }
+</style>
+
 <div class="popup-static portlet box portlet-fullscreen">
   <div class="portlet-body form">
     <!--Model Box Body Start-->
@@ -5,8 +149,10 @@
       <div class="modelbox-div">
 
         <div class="modelbox-header">
-          <h4 *ngIf="!RecordSummary.MedicalRecordId" class="margin-0-vr text-center"><strong>Add Medical Records</strong></h4>
-          <h4 *ngIf="RecordSummary.MedicalRecordId" class="margin-0-vr text-center"><strong>Update Medical Records</strong></h4>
+          <h4 *ngIf="!RecordSummary.MedicalRecordId" class="margin-0-vr text-center"><strong>Add Medical
+              Records</strong></h4>
+          <h4 *ngIf="RecordSummary.MedicalRecordId" class="margin-0-vr text-center"><strong>Update Medical
+              Records</strong></h4>
         </div>
 
         <div class="modelbox-body">
@@ -21,7 +167,7 @@
                 </div>
                 <div class="flex-1">
                   <p class="patient-hdr-label">
-                    <b>InPatient ID</b>&nbsp;:
+                    <b>InPatient No.</b>&nbsp;:
                     {{patientDetail.VisitCode}}
                   </p>
                 </div>
@@ -54,10 +200,16 @@
               </div>
               <div class="flex-container">
                 <div class="flex-1">
-                  <p class="patient-hdr-label">
-                    <b>File No.</b>&nbsp;:
-                    <input type="text" name="filenumber" [(ngModel)]="RecordSummary.FileNumber" />
-                  </p>
+                  <div>
+                    <p class="patient-hdr-label">
+                      <span [ngClass]="{'invalid-input':duplicateFileNumber}"> <b>File No. </b>&nbsp;:</span>
+                      <input type="text" name="filenumber" [(ngModel)]="RecordSummary.FileNumber"
+                        (ngModelChange)="CheckFileNumberDuplication()" />
+                    </p>
+                    <div class="font-sm" *ngIf="duplicateFileNumber" style="color: orange;">
+                      <i class="fa fa-warning"></i>Warning: Duplicate file number !!
+                    </div>
+                  </div>
                 </div>
                 <div class="flex-1">
                   <p class="patient-hdr-label">
@@ -85,9 +237,12 @@
                     Yes
                   </p>
                 </div>
-                <div class="flex-1">
-
-                </div>
+                <div class="flex-1"></div>
+              </div>
+              <div style="background: orange; text-align: center;" *ngIf="IsDeadOnDifferentVisit">
+                <p>
+                  This Patient is Already Dead in Different Visit. Threfore, Discharge Type cannot be Death in this Visit!
+                </p>
               </div>
             </div>
           </div>
@@ -98,10 +253,12 @@
                   <div class="col-md-6">
                     <div class="row margin-8-tp">
                       <div class="col-md-5">
-                        <label class="control-label lbl-text">Inp Date</label>
+                        <label class="control-label lbl-text">Inpateint Date</label>
                       </div>
                       <div class="col-md-7">
-                        <input class="cstm-field-ip" disabled type="text" name="inpatientDate" [ngModel]="patientDetail.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'" />
+                        <label for="inpatientDate" class="cstm-field-ip">{{patientDetail.AdmittedDate | nepaliDate}}
+                          &nbsp;&nbsp;({{patientDetail.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}AD)</label>
+
                       </div>
                     </div>
                     <div class="row margin-8-tp">
@@ -109,87 +266,215 @@
                         <label class="control-label lbl-text">Discharged Date</label>
                       </div>
                       <div class="col-md-7">
-                        <input class="cstm-field-ip" disabled type="text" name="inpatientDate" [ngModel]="patientDetail.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'" />
+                        <label class="cstm-field-ip">{{patientDetail.DischargedDate | nepaliDate}}
+                          &nbsp;&nbsp;({{patientDetail.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                          &nbsp;AD)</label>
                       </div>
                     </div>
                     <div class="row margin-8-tp">
                       <div class="col-md-5">
-                        <label class="control-label lbl-text">Discharge Type<b class="color-red">  *</b><b style="float:right;"></b></label>
+                        <label class="control-label lbl-text">Discharge Type<b class="color-red"> *</b><b
+                            style="float:right;"></b></label>
                       </div>
                       <div class="col-md-7">
-                        <select *ngIf="allMasterDataForMR && allMasterDataForMR.AllDischargeType" class="cstm-field-sel" (change)="DischargeTypeChanged()" [(ngModel)]="RecordSummary.DischargeTypeId">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let discharge of allMasterDataForMR.AllDischargeType" [value]="discharge.DischargeTypeId">{{discharge.DischargeTypeName}}</option>
+                        <select *ngIf="allMasterDataForMR && allMasterDataForMR.AllDischargeType" class="cstm-field-sel"
+                          [attr.disabled]="(IsPatDead && !IsDeadOnDifferentVisit )?true:null"
+                          (change)="DischargeTypeChanged()" [(ngModel)]="RecordSummary.DischargeTypeId">
+                          <option [ngValue]="0">--Please Select--</option>
+                          <option *ngFor="let discharge of allMasterDataForMR.AllDischargeType"
+                            [value]="discharge.DischargeTypeId">{{discharge.DischargeTypeName}}</option>
                         </select>
                       </div>
                     </div>
-                    <div class="row margin-8-tp">
+                    <div class="row margin-8-tp" *ngIf="IsReferredCase">
                       <div class="col-md-5">
-                        <label class="control-label lbl-text">Dis Condition</label>
+                        <label class="control-label lbl-text">Referred Date <b style="float:right;"></b></label>
                       </div>
                       <div class="col-md-7">
-                        <select [(ngModel)]="RecordSummary.DischargeConditionId" (change)="DischargeConditionChanged()" class="cstm-field-sel">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let condition of RecordSummary.CurrentDischargeType.DischargeConditionTypes" [value]="condition.DischargeConditionId">{{condition.Condition}}</option>
+                        <danphe-date-picker [ngModelOptions]="{standalone:true}"
+                          [(ngModel)]="RecordSummary.ReferredDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                      </div>
+                    </div>
+
+                    <div class="row margin-8-tp" *ngIf="IsReferredCase">
+                      <div class="col-md-5"><label for="dTime" class="control-label lbl-text">Referred
+                          Time </label></div>
+                      <div class="col-md-7">
+                        <input id="dTime" type="time" [ngModelOptions]="{standalone:true}"
+                          [(ngModel)]="RecordSummary.ReferredTime" class="cstm-field-ip" />
+                      </div>
+                    </div>
+                    <div class="row margin-8-tp"
+                      *ngIf="RecordSummary?.CurrentDischargeType?.DischargeConditionTypes?.length>0">
+                      <div class="col-md-5">
+                        <label class="control-label lbl-text">Discharge Condition <b class="color-red"
+                            *ngIf="IsDeathCase"> *</b></label>
+                        <!---->
+                      </div>
+                      <div class="col-md-7">
+                        <select [(ngModel)]="RecordSummary.DischargeConditionId" (change)="DischargeConditionChanged()"
+                          class="cstm-field-sel">
+                          <option [ngValue]="undefined">--Please Select--</option>
+                          <option *ngFor="let condition of RecordSummary.CurrentDischargeType.DischargeConditionTypes"
+                            [value]="condition.DischargeConditionId">{{condition.Condition}}</option>
                         </select>
                       </div>
                     </div>
-                    <div class="row margin-8-tp">
+                    <div class="row margin-8-tp" *ngIf="IsDeliveryCase">
                       <div class="col-md-5">
                         <label class="control-label lbl-text">Delivery Type</label>
                       </div>
                       <div class="col-md-7">
-                        <select [(ngModel)]="RecordSummary.DeliveryTypeId" class="cstm-field-sel">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let del of RecordSummary.DischargeConditionTypes.CurrentConditionTypes" [value]="del.DeliveryTypeId">{{del.DeliveryTypeName}}</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="row margin-8-tp">
-                      <div class="col-md-5">
-                        <label class="control-label lbl-text">Condition at Birth</label>
-                      </div>
-                      <div class="col-md-7">
-                        <select [(ngModel)]="RecordSummary.BabyBirthConditionId" class="cstm-field-sel" (change)="BirthConditionChanged()">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let brthcondition of RecordSummary.BirthConditionList" [value]="brthcondition.BabyBirthConditionId">{{brthcondition.BirthConditionType}}</option>
+                        <select [(ngModel)]="RecordSummary.DeliveryTypeId" (change)="OnDeliveryTypeChange()"
+                          class="cstm-field-sel">
+                          <option [ngValue]="undefined">--Please Select--</option>
+                          <option *ngFor="let del of RecordSummary.DischargeConditionTypes.CurrentConditionTypes"
+                            [value]="del.DeliveryTypeId">{{del.DeliveryTypeName}}</option>
                         </select>
                       </div>
                     </div>
 
-                    <div *ngIf="showDeathPeriod" class="row margin-8-tp">
+                    <div class="row margin-8-tp" *ngIf="IsDeliveryCase">
                       <div class="col-md-5">
-                        <label class="control-label lbl-text">Death Period</label>
+                        <label class="control-label lbl-text">Number of Babies </label>
+                      </div>
+                      <div class="col-md-7">
+                        <input id="noOfBabies" type="number" name="noOfBabies"
+                          [(ngModel)]="RecordSummary.NumberOfBabies" (change)="OnNoOfBabiesChange()" />
+
+                      </div>
+                    </div>
+
+                    <div *ngIf="IsDeathCase" class="row margin-8-tp">
+                      <div class="col-md-5">
+                        <label class="control-label lbl-text">Death Period <b class="color-red"> *</b></label>
                       </div>
                       <div class="col-md-7">
                         <select [(ngModel)]="RecordSummary.DeathPeriodTypeId" class="cstm-field-sel">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let detpr of RecordSummary.CurrentDischargeType.DeathTypes" [value]="detpr.DeathTypeId">{{detpr.DeathType}}</option>
+                          <option [ngValue]="undefined">--Please Select--</option>
+                          <option *ngFor="let detpr of RecordSummary.CurrentDischargeType.DeathTypes"
+                            [value]="detpr.DeathTypeId">{{detpr.DeathType}}</option>
                         </select>
+                      </div>
+                    </div>
+
+
+                    <div class="row margin-8-tp" *ngIf="IsDeliveryCase">
+                      <div class="col-md-12 margin-20-tp">
+                        <div class="row">
+                          <div class="col-md-12">
+                            <div class="col-md-4">
+                              <label for="gravita" class="control-label lbl-text">Gravida</label>
+                            </div>
+                            <div class="col-md-5">
+                              <select [(ngModel)]="RecordSummary.GravitaId" class="cstm-field-sel">
+                                <option [ngValue]="undefined">--Please Select--</option>
+                                <option *ngFor="let gravita of allMasterDataForMR.AllGravita"
+                                  [value]="gravita.GravitaId">
+                                  {{gravita.GravitaName}}</option>
+                              </select>
+                            </div>
+                            <div class="col-md-3">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row margin-15-tp">
+                          <div class="col-md-12">
+                            <div class="col-md-4">
+                              <label for="gstWeek" class="control-label lbl-text">Gestation Period:</label>
+                            </div>
+                            <div class="col-md-4">
+                              Weeks:
+                              <input id="gstWeek" class="cstm-field-ip" type="number" onClick="this.select();"
+                                style="width:60px;" [(ngModel)]="RecordSummary.GestationalWeek"
+                                (ngModelChange)="CheckGestationaryWeek()"
+                                (keyup.enter)="coreService.FocusInputById('gstDay')" />
+                            </div>
+
+                            <div class="col-md-4">
+                              <div>
+                                <span [ngClass]="{'invalid-input':!ValidGestationalDay}"> Days:<br /></span>
+                                <input id="gstDay" class="cstm-field-ip" type="number" onClick="this.select();"
+                                  style="width: 60px;" [(ngModel)]="RecordSummary.GestationalDay"
+                                  (ngModelChange)="CheckGestationaryDay()"
+                                  (keyup.enter)="coreService.FocusInputById('bloodLost')" />
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-12" *ngIf="!ValidGestationalDay">
+                            <div class="color-red font-sm">
+                              <i class="fa fa-warning"></i>Gestational Day must not be greater than 6.
+                            </div>
+                          </div>
+                          <div class="col-md-12" *ngIf="!ValidGestationalWeek">
+                            <div class="color-red font-sm">
+                              <i class="fa fa-warning"></i>Gestational Week must not be greater than 48.
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row margin-15-tp">
+                          <div class="col-md-12">
+                            <div class="col-md-4">
+                              <label for="bloodLost" class="control-label lbl-text">Blood Lost</label>
+                            </div>
+                            <div class="col-md-5">
+                              <input id="bloodLost" class="cstm-field-ip" type="number"
+                                [(ngModel)]="RecordSummary.BloodLost" (ngModelChange)="CheckBloodLostAmount()" />
+                            </div>
+                            <div class="col-md-3">
+                              <select id="bloodLostUnit" class="cstm-field-ip"
+                                [(ngModel)]="RecordSummary.BloodLostUnit">
+                                <option value="ml">Ml</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-12" *ngIf="!ValidBloodLostAmount">
+                          <div class="color-red font-sm">
+                            <i class="fa fa-warning"></i>Invalid Blood Lost Quantity.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row margin-8-tp">
+                      <div class="col-md-12">
+                        <p class="margin-0-bt">
+                          <label class="control-label lbl-text">Remarks</label>
+                        </p>
+                        <textarea rows="4" style="width: 100%;resize: none;"
+                          [(ngModel)]="RecordSummary.Remarks"></textarea>
                       </div>
                     </div>
 
                     <div class="row margin-8-tp">
                       <div class="col-md-12">
                         <p class="margin-0-bt">
-                          <label class="control-label lbl-text">Investigations</label>
+                          <label class="control-label lbl-text"
+                            *ngIf="allInvestigationsLoaded && RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0">
+                            Investigations</label>
                         </p>
                       </div>
                       <div class="col-md-12" *ngIf="!allInvestigationsLoaded">
                         <div class="board padding-8-all" style="border: 1px solid #bfbdbd;">
                           <div class="flex-container justify-center">
-                            <img style="max-width: 75px" class="img-responsive" src="../../../../../themes/theme-default/images/loading-child.gif" alt="Alternate Text" />
+                            <img style="max-width: 75px" class="img-responsive"
+                              src="../../../../../themes/theme-default/images/loading-child.gif" alt="Alternate Text" />
                           </div>
                         </div>
                       </div>
-                      <div *ngIf="allInvestigationsLoaded && RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0" class="col-md-12">
-                        <div class="board padding-8-all" style="border: 1px solid #bfbdbd;">
+                      <div
+                        *ngIf="allInvestigationsLoaded && RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0"
+                        class="col-md-12">
+                        <div class="board padding-8-all" style="border: 1px solid #bfbdbd; max-height: 205px;
+                        overflow-y: auto;">
                           <div class="flex-container" *ngFor="let test of RecordSummary.AllTestList; let i=index;">
-                            <div style="border-bottom: 1px solid #c1c1c1;" class="pos-rel bg-light padding-7-hr margin-8-tp">
-                              <input class="rad-btn-aligned" type="checkbox" id="tstRq{{i}}" [(ngModel)]="test.IsSelected" />
-                              <label class="control-label lbl-text-data" for="tstRq{{i}}">
+                            <div style="border-bottom: 1px solid #c1c1c1;"
+                              class="pos-rel bg-light padding-7-hr margin-8-tp">
+                              <label class="control-label lbl-text-data">
                                 &nbsp;
-                                <ng-container *ngIf="test.TestCode && test.TestCode.toLowerCase() != 'null'">({{test.TestCode}})&nbsp;</ng-container>
+                                <ng-container *ngIf="test.TestCode && test.TestCode.toLowerCase() != 'null'">
+                                  ({{test.TestCode}})&nbsp;</ng-container>
                                 {{test.TestName}}
                               </label>
                             </div>
@@ -197,56 +482,48 @@
                         </div>
                       </div>
                     </div>
-
-                    <div class="row margin-8-tp">
-                      <div class="col-md-12">
-                        <p class="margin-0-bt">
-                          <label class="control-label lbl-text">Remarks</label>
-                        </p>
-                        <textarea rows="4" style="width: 100%;resize: none;" [(ngModel)]="RecordSummary.Remarks"></textarea>
-                      </div>
-                    </div>
-
                   </div>
 
                   <div class="col-md-6">
                     <div class="row margin-8-tp">
                       <div class="col-md-12">
                         <p class="margin-0-bt">
-                          <label class="control-label lbl-text">ICD 10</label>
+                          <label class="control-label lbl-text">Diagnosis (ICD 10)</label>
                         </p>
                       </div>
                       <div class="col-md-12">
                         <div>
-                          <div class="margin-8-bt" *ngIf="allMasterDataForMR && allMasterDataForMR.AllICDCodes && allMasterDataForMR.AllICDCodes.length > 0" style="width: 100%;">
-                            <input class="cstm-field-ip" danphe-auto-complete
-                                   [(ngModel)]="icdCode"
-                                   [list-formatter]="myICDListFormatter"
-                                   [source]="allMasterDataForMR.AllICDCodes"
-                                   placeholder="ICD 10 Codes"
-                                   display-property-name="ICD10Description"
-                                   value-property-name=null
-                                   id="icd10code"
-                                   max-num-list="10"
-                                   (valueChanged)="ShowValueChangedData()"
-                                   onClick="this.select();" />
+                          <div class="margin-8-bt"
+                            *ngIf="allMasterDataForMR && allMasterDataForMR.AllICDCodes && allMasterDataForMR.AllICDCodes.length > 0"
+                            style="width: 100%;">
+                            <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="icdCode"
+                              [list-formatter]="myICDListFormatter" [source]="allMasterDataForMR.AllICDCodes"
+                              placeholder="ICD 10 Codes" display-property-name="ICD10Description"
+                              value-property-name=null id="icd10code" max-num-list="50" match-formatted="true"
+                              (valueChanged)="ShowValueChangedData()" onClick="this.select();" />
                           </div>
-                          <div *ngIf="RecordSummary.ICDCodeList && RecordSummary.ICDCodeList.length > 0" class="board padding-8-all" style="border: 1px solid #bfbdbd;">
+                          <div *ngIf="RecordSummary.ICDCodeList && RecordSummary.ICDCodeList.length > 0"
+                            class="board padding-8-all"
+                            style="border: 1px solid #bfbdbd; max-height: 205px; overflow-y: auto;">
                             <div class="flex-container" *ngFor="let icd of RecordSummary.ICDCodeList; let i=index;">
-                              <div style="border-bottom: 1px solid #c1c1c1;" class="pos-rel bg-light padding-7-hr margin-8-tp">
-                                <label class="control-label lbl-text-data" for="icdSel{{i}}">({{icd.ICD10Code}})&nbsp;{{icd.ICD10Description}}</label>
-                                <button class="btn btn-danger removeicd" (click)="RemoveIcd(i)"><i class="fa fa-close"></i></button>
+                              <div style="border-bottom: 1px solid #c1c1c1;"
+                                class="pos-rel bg-light padding-7-hr margin-8-tp">
+                                <label class="control-label lbl-text-data"
+                                  for="icdSel{{i}}">({{icd.ICD10Code}})&nbsp;{{icd.ICD10Description}}</label>
+                                <button class="btn btn-danger removeicd" (click)="RemoveIcd(i)"><i
+                                    class="fa fa-close"></i></button>
                               </div>
                             </div>
                           </div>
-
                         </div>
                       </div>
                     </div>
                     <div class="row margin-8-tp">
                       <div class="col-md-12">
-                        <div style="width: 100%; display: flex;">
-                          <input style="margin-top: 9px;" id="operationConducted" type="checkbox" name="isOperationConducted" [(ngModel)]="RecordSummary.IsOperationConducted" (change)="ShowHideOperationInfo()" />
+                        <div style="width: 100%;">
+                          <input style="margin-top: 9px;" id="operationConducted" type="checkbox"
+                            name="isOperationConducted" [(ngModel)]="RecordSummary.IsOperationConducted"
+                            (change)="ShowHideOperationInfo()" />
                           <label class="control-label lbl-text" for="operationConducted"> Is Operation Conducted</label>
                         </div>
                       </div>
@@ -257,8 +534,9 @@
                       </div>
                       <div class="col-md-7">
                         <select [(ngModel)]="RecordSummary.OperationTypeId" class="cstm-field-sel">
-                          <option value="0">--Please Select--</option>
-                          <option *ngFor="let opr of allMasterDataForMR.AllOperationType" [value]="opr.OperationId">{{opr.OperationName}}</option>
+                          <option [ngValue]="undefined">--Please Select--</option>
+                          <option *ngFor="let opr of allMasterDataForMR.AllOperationType" [value]="opr.OperationId">
+                            {{opr.OperationName}}</option>
                         </select>
                       </div>
                     </div>
@@ -267,16 +545,10 @@
                         <label class="control-label lbl-text">Operation Doc.</label>
                       </div>
                       <div class="col-md-7">
-                        <input class="cstm-field-ip" danphe-auto-complete
-                               [(ngModel)]="RecordSummary.OperatedDoctor"
-                               [list-formatter]="myListFormatter"
-                               [source]="AllDoctors"
-                               placeholder="Doctor Name"
-                               display-property-name="FullName"
-                               value-property-name=null
-                               id="operatingDoc"
-                               max-num-list="10"
-                               onClick="this.select();" />
+                        <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="RecordSummary.OperatedDoctor"
+                          [list-formatter]="myListFormatter" [source]="AllDoctors" placeholder="Doctor Name"
+                          display-property-name="FullName" value-property-name=null id="operatingDoc" max-num-list="10"
+                          onClick="this.select();" />
                       </div>
                     </div>
                     <div *ngIf="RecordSummary.IsOperationConducted" class="row margin-8-tp">
@@ -284,14 +556,16 @@
                         <p>
                           <label class="control-label lbl-text">Operation Date</label>
                         </p>
-                        <danphe-date-picker [(ngModel)]="RecordSummary.OperationDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        <danphe-date-picker [(ngModel)]="RecordSummary.OperationDate" ngDefaultControl
+                          [CalendarTypes]="'en,np'">
                         </danphe-date-picker>
                       </div>
                       <div class="col-md-12">
                         <p class="margin-0-bt">
                           <label class="control-label lbl-text">Operation Diagnosis</label>
                         </p>
-                        <textarea rows="4" style="width: 100%;resize: none;" [(ngModel)]="RecordSummary.OperationDiagnosis"></textarea>
+                        <textarea rows="4" style="width: 100%;resize: none;"
+                          [(ngModel)]="RecordSummary.OperationDiagnosis"></textarea>
                       </div>
                     </div>
 
@@ -299,46 +573,21 @@
                 </div>
               </div>
               <div class="col-md-5">
-                <div *ngIf="RecordSummary.ShowBirthCertDetail" class="row margin-8-tp">
+                <div class="row margin-8-tp" *ngIf="IsDeliveryCase">
                   <div class="col-md-12">
-                    <div class="table-responsive">
-                      <table class="table brth-detail-holder table-bordered">
-                        <thead>
-                          <tr>
-                            <th colspan="7" class="text-center text-capitalize hdr-bg">Birth List</th>
-                          </tr>
-                        </thead>
-                        <thead>
-                          <tr>
-                            <th>Cert. No.</th>
-                            <th>Sex</th>
-                            <th>Wt.(gm)</th>
-                            <th>Father Name</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody *ngIf="RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length == 0">
-                          <tr><td class="text-center" colspan="7"><p><strong>No Birth Certificates Data</strong></p></td></tr>
-                        </tbody>
-                        <tbody *ngIf="RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length > 0">
-                          <tr *ngFor="let brth of RecordSummary.BabyBirthDetails; let b=index;">
-                            <td>{{brth.CertificateNumber}}</td>
-                            <td>{{brth.Sex}}</td>
-                            <td>{{brth.WeightOfBaby}}</td>
-                            <td>{{brth.FathersName}}</td>
-                            <td>{{brth.BirthDate}}</td>
-                            <td>{{brth.BirthTime}}</td>
-                            <th>
-                              <a style="display: inline-block;" (click)="EditCurrentBirthDetail(b)" class="margin-7-hr tbl-action-edit" title="edit"><i class="fa fa-edit"></i></a>
-                              <a *ngIf="!brth.BabyBirthDetailsId && !birthCertDetailEdit" (click)="RemoveCurrentBirthDetail(b)" style="display: inline-block;" class="margin-7-hr tbl-action-del" title="delete"><i class="fa fa-close"></i></a>
-                            </th>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div style="width: 100%; display: flex;">
+                      <input style="margin-top: 9px;" id="saveBirthDetailsLater" type="checkbox"
+                        name="SaveBirthDetailsLater" [(ngModel)]="RecordSummary.SaveBirthDetailsLater" [value]="true"
+                        (change)="SaveBirthDetailsLater()" [attr.disabled]="(RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length > 0 && 
+                        RecordSummary.BabyBirthDetails[0].BabyBirthDetailsId>0)?true:null" />
+                      <label class="control-label lbl-text" for="saveBirthDetailsLater"> &nbsp;&nbsp; Save Birth Details
+                        Later?</label>
                     </div>
                   </div>
+                </div>
+                <div *ngIf=" IsDeliveryCase && RecordSummary.ShowBirthCertDetail" class="row margin-8-tp">
+
+                  <!-- Start: Add Birth Certificate -->
                   <div class="col-md-12 margin-15-tp">
                     <div class="text-center">
                       <p class="large-header">Enter Birth Details</p>
@@ -346,107 +595,30 @@
                     <div class="birth-cert-form-holder">
                       <div class="row">
                         <div class="col-md-12">
-                          <form style="width: 100%;" [formGroup]="RecordSummary.BirthDetail.BabyBirthDetailsValidator">
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="certNum" class="control-label lbl-text">Certificate Number</label></div>
-                              <div class="col-md-5">
-                                <input id="certNum" [(ngModel)]="RecordSummary.BirthDetail.CertificateNumber" [ngModelOptions]="{standalone: true}" type="text" name="birth-condition" class="cstm-field-ip" />
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="sex" class="control-label lbl-text">Sex</label></div>
-                              <div class="col-md-5">
-                                <input id="sex" formControlName="Sex" [(ngModel)]="RecordSummary.BirthDetail.Sex" type="text" name="birth-condition" class="cstm-field-ip" />
-                                <span class="color-red font-sm" *ngIf="RecordSummary.BirthDetail.IsDirty('Sex')" [hidden]="RecordSummary.BirthDetail.IsValidCheck('Sex','required')">Enter Sex</span>
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="babyWt" class="control-label lbl-text">Weight</label></div>
-                              <div class="col-md-5">
-                                <div class="row">
-                                  <div class="col-md-6"><input id="babyWt" formControlName="WeightOfBaby" [(ngModel)]="RecordSummary.BirthDetail.WeightOfBaby" type="number" min="0" class="cstm-field-ip" /></div>
-                                  <div class="col-md-6"><span style="line-height: 2;">gram</span></div>
-                                </div>
-                                <span class="color-red font-sm" *ngIf="RecordSummary.BirthDetail.IsDirty('WeightOfBaby')" [hidden]="RecordSummary.BirthDetail.IsValidCheck('WeightOfBaby','required')">Enter baby Weight</span>
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="numOfBabies" class="control-label lbl-text">No. of Babies</label></div>
-                              <div class="col-md-5">
-                                <div class="row">
-                                  <div class="col-md-6"><input id="numOfBabies" [ngModelOptions]="{standalone: true}" [(ngModel)]="RecordSummary.BirthDetail.NumberOfBabies" type="number" min="1" class="cstm-field-ip" /></div>
-                                  <div class="col-md-6"><span style="line-height: 2;"></span></div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="fatherName" class="control-label lbl-text">Father Name</label></div>
-                              <div class="col-md-5">
-                                <input id="fatherName" [(ngModel)]="RecordSummary.BirthDetail.FathersName" [ngModelOptions]="{standalone: true}" type="text" class="cstm-field-ip" />
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-9">
-                                <p class="margin-0-bt pull-left"><label for="birthDate" class="control-label lbl-text">Birth Date</label></p>
-                                <div class="pull-right">
-                                  <danphe-date-picker formControlName="BirthDate" [(ngModel)]="RecordSummary.BirthDetail.BirthDate" ngDefaultControl [CalendarTypes]="'en,np'">
-                                  </danphe-date-picker>
-                                  <!--<input id="birthDate" formControlName="BirthDate" [(ngModel)]="RecordSummary.BirthDetail.BirthDate" type="date" class="cstm-field-ip" />-->
-                                  <span class="color-red font-sm" *ngIf="RecordSummary.BirthDetail.IsDirty('BirthDate')" [hidden]="RecordSummary.BirthDetail.IsValidCheck('DeathDate','required')">Enter Birth Date</span>
-                                </div>
-                                
+                          <add-birth-details-shared #sendToChild [NoOfBabies]="RecordSummary.NumberOfBabies"
+                            [MotherPatientId]="patientId" (on-submit)="OnBabyBirthDetailSaved($event)">
 
-                              </div>
-                             
-                              <div class="col-md-3">
-                                <button *ngIf="!birthCertDetailEdit" (click)="AddBirthDetailToList()" class="add-cert btn-pd btn btn-sm">Add Cert</button>
-                                <button *ngIf="birthCertDetailEdit" (click)="SaveBirthDetail()" class="add-cert btn-pd btn btn-sm">Save Cert</button>
-                              </div>
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="birthTime" class="control-label lbl-text">Birth Time</label></div>
-                              <div class="col-md-5">
-                                <input id="birthTime" type="time" formControlName="BirthTime" [(ngModel)]="RecordSummary.BirthDetail.BirthTime" class="cstm-field-ip" />
-                                <span class="color-red font-sm" *ngIf="RecordSummary.BirthDetail.IsDirty('BirthTime')" [hidden]="RecordSummary.BirthDetail.IsValidCheck('BirthTime','required')">Enter Birth Time</span>
-                              </div>
-                              <div class="col-md-3"><button (click)="ResetBirthDetail()" class="cancel-cert btn-pd btn btn-sm">Cancel</button></div>
-                            </div>
-                          </form>
+                          </add-birth-details-shared>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-12 margin-20-tp">
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="col-md-4">
-                          <label for="gravita" class="control-label lbl-text">Gravita</label>
-                        </div>
-                        <div class="col-md-5">
-                          <select [(ngModel)]="RecordSummary.GravitaId" class="cstm-field-sel">
-                            <option value="0">--Please Select--</option>
-                            <option *ngFor="let gravita of allMasterDataForMR.AllGravita" [value]="gravita.GravitaId">{{gravita.GravitaName}}</option>
-                          </select>
-                        </div>
-                        <div class="col-md-3">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row margin-15-tp">
-                      <div class="col-md-12">
-                        <div class="col-md-4">
-                          <label for="gstWeek" class="control-label lbl-text">Gestational Week</label>
-                        </div>
-                        <div class="col-md-5">
-                          <input id="gstWeek" class="cstm-field-ip" type="number" [(ngModel)]="RecordSummary.GestationalWeek" />
-                        </div>
-                        <div class="col-md-3">
-                        </div>
-                      </div>
+
+                </div>
+                <!--    End: Add Birth Certificate  -->
+
+                <div class="row margin-8-tp" *ngIf="IsDeathCase && !IsPatDead">
+                  <div class="col-md-12">
+                    <div style="width: 100%; display: flex;">
+                      <input style="margin-top: 9px;" id="saveDeathDetailsLater" type="checkbox"
+                        name="SaveDeathDetailsLater" [(ngModel)]="RecordSummary.SaveDeathDetailsLater" [value]="true"
+                        (change)="SaveDeathDetailsLater()" />
+                      <label class="control-label lbl-text" for="saveDeathDetailsLater"> Save Death Details
+                        Later?</label>
                     </div>
                   </div>
                 </div>
-                <div *ngIf="RecordSummary.ShowDeathCertDetail" class="row margin-8-tp">
+                <div *ngIf="RecordSummary.ShowDeathCertDetail && IsDeathCase" class="row margin-8-tp">
                   <div class="col-md-12">
                     <div class="text-center">
                       <p class="large-header">Enter Death Details</p>
@@ -454,30 +626,8 @@
                     <div class="birth-cert-form-holder">
                       <div class="row">
                         <div class="col-md-12">
-                          <form style="width: 100%;" [formGroup]="RecordSummary.DeathDetail.DeathDetailsValidator">
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="deathCertNum" class="control-label lbl-text">Certificate Number</label></div>
-                              <div class="col-md-5">
-                                <input id="deathCertNum" [(ngModel)]="RecordSummary.DeathDetail.CertificateNumber" [ngModelOptions]="{standalone: true}" type="text" class="cstm-field-ip" />
-                              </div>
-                            </div>  
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="deathDate" class="control-label lbl-text">Death Date</label></div>
-                              <div class="col-md-8">
-                                <danphe-date-picker formControlName="DeathDate" [(ngModel)]="RecordSummary.DeathDetail.DeathDate" ngDefaultControl [CalendarTypes]="'en,np'">
-                                </danphe-date-picker>
-                                <!--<input id="deathDate" formControlName="DeathDate" [(ngModel)]="RecordSummary.DeathDetail.DeathDate" type="date" class="cstm-field-ip" />-->
-                                <span class="color-red font-sm" *ngIf="RecordSummary.DeathDetail.IsDirty('DeathDate')" [hidden]="RecordSummary.DeathDetail.IsValidCheck('DeathDate','required')">Enter Death Date</span>
-                              </div>                             
-                            </div>
-                            <div class="row margin-8-tp">
-                              <div class="col-md-4"><label for="deathTime" class="control-label lbl-text">Death Time</label></div>
-                              <div class="col-md-5">
-                                <input id="deathTime" formControlName="DeathTime" type="time" [(ngModel)]="RecordSummary.DeathDetail.DeathTime" class="cstm-field-ip" />
-                                <span class="color-red font-sm" *ngIf="RecordSummary.DeathDetail.IsDirty('DeathTime')" [hidden]="RecordSummary.DeathDetail.IsValidCheck('DeathTime','required')">Enter Death Time</span>
-                              </div>                              
-                            </div>
-                          </form>
+                          <add-death-details-shared [PatientId]="patientId"
+                            (death-details-emitter)="callBackForDeathDetails($event)"></add-death-details-shared>
                         </div>
                       </div>
                     </div>
@@ -490,9 +640,11 @@
 
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button *ngIf="!isEditMode" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;ValidateAndAddNewMedicalRecords()">Add Record</button>
-            <button *ngIf="isEditMode" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;ValidateAndUpdateMedicalRecords()">Update Record</button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseMRAddPupUp()">Cancel</button>
+            <button *ngIf="!isEditMode" type="button" class="btn green btn-success margin-7-hr"
+              (click)="ValidateAndAddNewMedicalRecords()" [attr.disabled]="loading?true:null">Add Record</button>
+            <button *ngIf="isEditMode" type="button" class="btn green btn-success margin-7-hr"
+              (click)="ValidateAndUpdateMedicalRecords()">Update Record</button>
+            <button type="button" class="btn btn-cancel margin-7-hr" (click)="CloseMRAddPupUp()">Cancel</button>
           </div>
         </div>
 

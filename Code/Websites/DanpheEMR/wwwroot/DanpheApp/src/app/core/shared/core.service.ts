@@ -1,4 +1,4 @@
-import { Injectable, Directive } from "@angular/core";
+import { Injectable, Directive, HostListener } from "@angular/core";
 //import { ParameterModel } from './parameter.model'
 import { CoreBLService } from "./core.bl.service";
 import { CommonMaster } from "../../shared/common-masters.model";
@@ -9,6 +9,16 @@ import { Employee } from "../../employee/shared/employee.model";
 import { CodeDetailsModel } from "../../shared/code-details.model";
 import { DanpheRoute } from "../../security/shared/danphe-route.model";
 import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
+import { LabTypesModel } from "../../labs/lab-selection/lab-type-selection.component";
+import { stob64, hextorstr, KEYUTIL, KJUR } from 'jsrsasign';
+import * as qz from 'qz-tray';
+import { PrinterSettingsModel } from "../../settings-new/printers/printer-settings.model";
+import { SettingsBLService } from "../../settings-new/shared/settings.bl.service";
+import { Municipality } from "../../shared/address-controls/municipality-model";
+import { Observable } from "rxjs";
+import { GovernmentItems } from "../../../app/labs/shared/lab-government-items.model";
+import { Membership } from "../../../app/settings-new/shared/membership.model";
+
 
 @Injectable()
 export class CoreService {
@@ -16,6 +26,7 @@ export class CoreService {
   public Parameters: Array<CFGParameterModel> = null; //sud:26Sept'19--Changed from parametermodel to CFGPrameterModel since it's a duplicate.
   public Masters: CommonMaster = new CommonMaster();
   public LookUps: Array<LookupsModel> = new Array<LookupsModel>();
+  public loading: boolean = false;
 
   public AppSettings: DanpheAppSettings = null; //sud:25Dec'18
   public CodeDetails: Array<CodeDetailsModel> = new Array<CodeDetailsModel>(); //for accounting codes..
@@ -30,10 +41,61 @@ export class CoreService {
   public currSelectedSecRoute: DanpheRoute = null;
   accountingSettingsBLService: any;
   public DatePreference: string = "np";
+  public labTypes: Array<LabTypesModel>;
+  public QzTrayObject: any;
+  public billingDotMatrixPrinters: Array<any>;
+
+  //vaiables to set and reset for SELECT html to work with enter key: Starts
+  public selectEnterKeyCaptureEnabled: number;
+  public nextFocusElemId: string;
+  //vaiables to set and reset for SELECT html to work with enter key: End
+
+  public allMunicipalities: Array<any>;
+  public allPrintExportConfiguration : Array<any>;
+  public singleLabType: boolean = false;
+
+  //START: Danphe App Level Configuration/preference variables here
+  //By : NageshBB/MenkaChaugule On: 29 July 2021
+  //Description: Please add all variable for project level configuration or preferences
+  //We will use variables for whole project */
+  public showCalendarADBSButton: boolean = true;
+  public showLocalNameFormControl: boolean = true;
+  public showCountryMapOnLandingPage: boolean = true;
+  //END: Danphe App Level Configuration/preference variables here
+
+  public allGovItems: Array<GovernmentItems> = new Array<GovernmentItems>();
+
   constructor(
     public coreBlService: CoreBLService,
     public msgBoxServ: MessageboxService
   ) { }
+
+  //Functions to set focus and remove focus and assign size to select html tag starts
+  //with the help of these functions we make select html tag work with enter key
+  public SetFocusOnCurrentSelect(
+    currElmId: string,
+    nextElmId: string,
+    numOfElemToShow: string = "3"
+  ) {
+    this.selectEnterKeyCaptureEnabled = 1;
+    this.nextFocusElemId = nextElmId;
+    document.getElementById(currElmId) &&
+      document.getElementById(currElmId).setAttribute("size", numOfElemToShow);
+  }
+
+  public RemoveFocusFromCurrentSelect(currElmId: string) {
+    this.selectEnterKeyCaptureEnabled = 0;
+    this.nextFocusElemId = null;
+    document.getElementById(currElmId) &&
+      document.getElementById(currElmId).removeAttribute("size");
+  }
+
+  public SetFocusToNextSelectElement(nextElmId: string) {
+    this.selectEnterKeyCaptureEnabled = 0;
+    document.getElementById(nextElmId) &&
+      document.getElementById(nextElmId).focus();
+  }
+  //Functions to set focus and remove focus and assign size to select html tag Ends
 
   public RemoveSelectedSecRoute() {
     this.currSelectedSecRoute = null;
@@ -43,6 +105,10 @@ export class CoreService {
   //i.e: appcomponent for now.
   public InitializeParameters() {
     return this.coreBlService.GetParametersList();
+  }
+
+  public GetAllLookUpDetails(type: number) {
+    return this.coreBlService.GetAllLookUpDetails(type);
   }
 
   public GetMasterEntities() {
@@ -143,6 +209,13 @@ export class CoreService {
     let srvDept = srvDepts.find((a) => a.ServiceDepartmentName == srvDeptName);
     return srvDept ? srvDept.IntegrationName : null;
   }
+
+  public GetServiceIntegrationNameById(srvDeptId: number): string {
+    let srvDepts = this.Masters.ServiceDepartments;
+    let srvDept = srvDepts.find((a) => a.ServiceDepartmentId == srvDeptId);
+    return srvDept ? srvDept.IntegrationName : null;
+  }
+
   //ashim: 22Aug2018: Used in visit-patient-info.component
   public GetDefaultCountry() {
     let countryJson = this.Parameters.find(
@@ -250,19 +323,60 @@ export class CoreService {
     }
   }
 
-  public GetCareofPersonNoMandatory() {
-    var currParameter = this.Parameters.find(
+  public GetImmunizationDepartmentName() {
+    var dept = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "ImmunizationDeptName" &&
+        val.ParameterGroupName.toLowerCase() == "common"
+    );
+    if (dept) {
+      return dept.ParameterValue;
+    } else {
+      return "Immunization";
+    }
+  }
+
+  public IsCareofPersonNoInAdmCreateMandatory() {
+    let currParameter = this.Parameters.find(
       (a) =>
-        a.ParameterName == "IsCareOfPersonContactNoMandatory" &&
+        a.ParameterName == "AdtNewAdmissionDisplaySettings" &&
         a.ParameterGroupName == "ADT"
     );
-    if (currParameter) {
+    if (currParameter && currParameter.ParameterValue) {
       let careofPersonNumberMandatory = JSON.parse(
         currParameter.ParameterValue
       );
-      return careofPersonNumberMandatory;
-    } else {
+      if (
+        careofPersonNumberMandatory &&
+        careofPersonNumberMandatory.IsCareOfPersonContactNoMandatory
+      ) {
+        return careofPersonNumberMandatory.IsCareOfPersonContactNoMandatory;
+      }
       return false;
+    } else {
+      return true;
+    }
+  }
+
+  public IsAdmittingDoctorInAdmCreateMandatory() {
+    let currParameter = this.Parameters.find(
+      (a) =>
+        a.ParameterName == "AdtNewAdmissionDisplaySettings" &&
+        a.ParameterGroupName == "ADT"
+    );
+    if (currParameter && currParameter.ParameterValue) {
+      let careofPersonNumberMandatory = JSON.parse(
+        currParameter.ParameterValue
+      );
+      if (
+        careofPersonNumberMandatory &&
+        careofPersonNumberMandatory.AdmittingDoctorMandatory
+      ) {
+        return careofPersonNumberMandatory.AdmittingDoctorMandatory;
+      }
+      return false;
+    } else {
+      return true;
     }
   }
 
@@ -288,14 +402,26 @@ export class CoreService {
       let frmToTxt = "";
       let nepaliFromDate = "";
       let nepaliToDate = "";
-      if (fromDate && toDate && fromDate.length && toDate.length) {        
-        nepaliFromDate = NepaliCalendarService.ConvertEngToNepaliFormatted_static(fromDate,
+      if (fromDate && toDate && fromDate.length && toDate.length) {
+        nepaliFromDate =
+          NepaliCalendarService.ConvertEngToNepaliFormatted_static(
+            fromDate,
+            "YYYY-MM-DD"
+          );
+        nepaliToDate = NepaliCalendarService.ConvertEngToNepaliFormatted_static(
+          toDate,
           "YYYY-MM-DD"
         );
-        nepaliToDate = NepaliCalendarService.ConvertEngToNepaliFormatted_static(toDate,
-          "YYYY-MM-DD"
-        );
-        frmToTxt = ` From: ` + fromDate + ` to ` + toDate + ` (B.S. From: ` +nepaliFromDate + ` to ` + nepaliToDate + `)`;
+        frmToTxt =
+          ` From: ` +
+          fromDate +
+          ` to ` +
+          toDate +
+          ` (B.S. From: ` +
+          nepaliFromDate +
+          ` to ` +
+          nepaliToDate +
+          `)`;
       }
       header =
         `<div class="bl-report-header text-center"><h3>` +
@@ -375,7 +501,148 @@ export class CoreService {
     }
   }
 
-  //anish: for getting the name of Hospital for which it is made
+  public GetAllParametersDataForLabReport() {
+    let verificationParmDefault = {
+      EnableVerificationStep: "true",
+      VerificationLevel: 2,
+      PreliminaryReportSignature: "Preliminary Report",
+      ShowVerifierSignature: "false",
+      PreliminaryReportText: "This is preliminary text",
+    };
+
+    let allValuesDefault = {
+      LoggedInUserSignatory: false,
+      ReportDispatcherSignature: false,
+      DisplayPrintInfo: false,
+      LabBarCodeInReport: false,
+      LabReportVerificationB4Print: {},
+      HospitalCode: "",
+      CultureIntermediateResults: false,
+      HighLowNormalFlag: false,
+      DigitalSignatureEnabled: false,
+      CollectionSite: "",
+      showGap: false,
+      referredByLabelInLabReport:""
+    };
+
+    var paramName = [
+      "ShowLoggedInUserSignatory",
+      "ShowReportDispatcherSignature",
+      "DisplayingPrintInfo",
+      "ShowLabBarCodeInReport",
+      "LabReportVerificationNeededB4Print",
+      "HospitalCode",
+      "ShowCultureIntermediateResults",
+      "ShowHighLowNormalFlag",
+      "EnableDigitalSignatureInLab",
+      "CollectionSite",
+      "LabReportHeader"
+    ];
+    var filteredData = this.Parameters.filter((val) => {
+      if (
+        (val.ParameterGroupName.toLowerCase() == "lab" ||
+          val.ParameterGroupName.toLowerCase() == "common") &&
+        paramName.indexOf(val.ParameterName) > -1
+      ) {
+        return true;
+      }
+    });
+    if (filteredData) {
+      let reportHeader = filteredData.find((val) =>
+        val.ParameterName == "LabReportHeader"
+      );
+      let parsedHeader = JSON.parse(reportHeader.ParameterValue);
+      allValuesDefault.showGap = parsedHeader && parsedHeader.showGap;
+      allValuesDefault.referredByLabelInLabReport = parsedHeader.referredByLabelInLabReport;
+    }
+    if (filteredData) {
+      let paramLGSignatory = filteredData.find(
+        (val) => val.ParameterName == "ShowLoggedInUserSignatory"
+      );
+      allValuesDefault.LoggedInUserSignatory =
+        this.GetBoolValueFromParam(paramLGSignatory);
+
+      let paramDispatcherSignatory = filteredData.find(
+        (val) => val.ParameterName == "ShowReportDispatcherSignature"
+      );
+      allValuesDefault.ReportDispatcherSignature = this.GetBoolValueFromParam(
+        paramDispatcherSignatory
+      );
+
+      let paramDisplayPrintInfo = filteredData.find(
+        (val) => val.ParameterName == "DisplayingPrintInfo"
+      );
+      allValuesDefault.DisplayPrintInfo = this.GetBoolValueFromParam(
+        paramDisplayPrintInfo
+      );
+
+      let labBarCodeInReport = filteredData.find(
+        (val) => val.ParameterName == "ShowLabBarCodeInReport"
+      );
+      allValuesDefault.LabBarCodeInReport =
+        this.GetBoolValueFromParam(labBarCodeInReport);
+
+      let cultureIntermediateResults = filteredData.find(
+        (val) => val.ParameterName == "ShowCultureIntermediateResults"
+      );
+      allValuesDefault.CultureIntermediateResults = this.GetBoolValueFromParam(
+        cultureIntermediateResults
+      );
+
+      let highLowNormalFlag = filteredData.find(
+        (val) => val.ParameterName == "ShowHighLowNormalFlag"
+      );
+      allValuesDefault.HighLowNormalFlag =
+        this.GetBoolValueFromParam(highLowNormalFlag);
+
+      let digitalSignatureEnabled = filteredData.find(
+        (val) => val.ParameterName == "EnableDigitalSignatureInLab"
+      );
+      allValuesDefault.DigitalSignatureEnabled = this.GetBoolValueFromParam(
+        digitalSignatureEnabled
+      );
+
+      let collectionSite = filteredData.find(
+        (val) => val.ParameterName == "CollectionSite"
+      );
+      allValuesDefault.CollectionSite = collectionSite
+        ? collectionSite.ParameterValue
+        : "";
+
+      let hospitalCode = filteredData.find(
+        (val) => val.ParameterName == "HospitalCode"
+      );
+      allValuesDefault.HospitalCode = hospitalCode
+        ? hospitalCode.ParameterValue.toLowerCase()
+        : "";
+
+      let verificationParam = filteredData.find(
+        (val) => val.ParameterName == "LabReportVerificationNeededB4Print"
+      );
+      allValuesDefault.LabReportVerificationB4Print = verificationParam
+        ? JSON.parse(verificationParam.ParameterValue)
+        : verificationParmDefault;
+    }
+
+    return allValuesDefault;
+  }
+
+  public GetBoolValueFromParam(parm: CFGParameterModel) {
+    if (
+      parm &&
+      parm.ParameterValue &&
+      parm.ParameterValue.trim() != "" &&
+      (parm.ParameterValue.trim() == "true" ||
+        parm.ParameterValue.trim() == "1" ||
+        parm.ParameterValue.trim() == "false" ||
+        parm.ParameterValue.trim() == "0")
+    ) {
+      return Boolean(JSON.parse(parm.ParameterValue.trim()));
+    } else {
+      return false;
+    }
+  }
+
   public ShowLoggedInUserSignatory() {
     var show = this.Parameters.find(
       (val) =>
@@ -393,10 +660,29 @@ export class CoreService {
       return false;
     }
   }
+
   public ShowLabReportDispatcherSignatory() {
     var show = this.Parameters.find(
       (val) =>
         val.ParameterName == "ShowReportDispatcherSignature" &&
+        val.ParameterGroupName.toLowerCase() == "lab"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public IsUnitEditApplicableWhileResultAdd() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "UnitEditInAddResult" &&
         val.ParameterGroupName.toLowerCase() == "lab"
     );
     if (show) {
@@ -452,6 +738,24 @@ export class CoreService {
     var show = this.Parameters.find(
       (val) =>
         val.ParameterName == "ShowLabBarCodeInReport" &&
+        val.ParameterGroupName.toLowerCase() == "lab"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public ShowEditResultButtonInLabFinalReport() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "ShowResultEditInFinalReport" &&
         val.ParameterGroupName.toLowerCase() == "lab"
     );
     if (show) {
@@ -622,6 +926,7 @@ export class CoreService {
       return false;
     }
   }
+
   //sud:7Aug'19--We shouldn't use hospital code since it's used by PatientCode format and might impact in larger scale
   //it's against best practice, so revise it and make necessary corrections after checking the impacts.
   public GetHospitalCode() {
@@ -634,6 +939,220 @@ export class CoreService {
       return code.ParameterValue.toLowerCase();
     } else {
       this.msgBoxServ.showMessage("error", ["Please set HospitalCode."]);
+    }
+  }
+
+  public GetDotMatrixPrinterDimensions(param: number = 0) {
+    let dotPrinterDimensions: any = {
+      totalWidth: 50,
+      totalHeight: 33,
+      headerGap: 9,
+      mh: 7, //changes fast
+      ml: 95, //changes slow
+    };
+
+    let paramName = "";
+
+    //0 is for main, 1 is for Insurance, 2 for insurance sticker
+
+    switch (param) {
+      case 1: {
+        paramName = "DotMatrixPrinterDimensionSetting_InInsBilling";
+        break;
+      }
+      case 2: {
+        paramName = "DotMatrixPrinterDimension_Ins_Sticker";
+        break;
+      }
+      case 3: {
+        paramName = "DotMatrixPrinterDimension_Adt_Sticker";
+        break;
+      }
+      case 4: {
+        paramName = "DotMatrixPrinterDimension_Adt_DepositReceipt";
+        break;
+      }
+      case 5: {
+        paramName = "DotMatrixPrinterDimensionSetting_InInsDischarge";
+        break;
+      }
+      case 6: {
+        paramName = "DotMatrixPrinterDimensionSetting_InNormalDischargeBill";
+        break;
+      }
+      default: {
+        paramName = "DotMatrixPrinterDimensionSetting";
+        break;
+      }
+    }
+
+    let code = this.Parameters.find(
+      (val) =>
+        val.ParameterName == paramName &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (code) {
+      dotPrinterDimensions = JSON.parse(code.ParameterValue);
+      for (let key in dotPrinterDimensions) {
+        dotPrinterDimensions[key] = +dotPrinterDimensions[key];
+      }
+    } else {
+      this.msgBoxServ.showMessage("error", ["Please set Printer Dimensions."]);
+    }
+
+    return dotPrinterDimensions;
+  }
+
+  public EnableDotMatrixPrintingInRegistration() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "PrintByDotMatrixInRegistrationSticker" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public EnableDotMatrixPrintingInADT() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "PrintByDotMatrixInAdtSticker" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public EnableDotMatrixPrintingInEmergencySticker() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "PrintByDotMatrixInEmergencySticker" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  public EnableDotMatrixPrintingInGovInsSticker() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "PrintByDotMatrixInGovInsuranceSticker" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  public EnableDotMatrixPrintingInVaccinationSticker() {
+    var show = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "PrintByDotMatrixInVaccinationSticker" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public GetDotMatrixPrinterRegStickerDimensions() {
+    let dotPrinterDimensions: any = {
+      totalWidth: 50,
+      totalHeight: 8,
+      headerGap: 0,
+      mh: 2, //changes fast
+      ml: 95, //changes slow
+    };
+    var code = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "DotMatrixPrinterDimensionSetting_RegStickers" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (code) {
+      dotPrinterDimensions = JSON.parse(code.ParameterValue);
+      for (let key in dotPrinterDimensions) {
+        dotPrinterDimensions[key] = +dotPrinterDimensions[key];
+      }
+    } else {
+      this.msgBoxServ.showMessage("error", ["Please set Printer Dimensions."]);
+    }
+    return dotPrinterDimensions;
+  }
+
+  public GetPharmacyDotMatrixPrinterDimensions() {
+    let dotPrinterDimensions: any = {
+      totalWidth: 60,
+      totalHeight: 33,
+      headerGap: 0,
+      mh: 2, //changes fast
+      ml: 95, //changes slow
+    };
+    var code = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "DotMatrixPrinterDimensionSetting_PhrmInvoice" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (code) {
+      dotPrinterDimensions = JSON.parse(code.ParameterValue);
+      for (let key in dotPrinterDimensions) {
+        dotPrinterDimensions[key] = +dotPrinterDimensions[key];
+      }
+    } else {
+      this.msgBoxServ.showMessage("error", ["Please set Printer Dimensions."]);
+    }
+    return dotPrinterDimensions;
+  }
+
+  public GetBillingDotMatrixPrinterSettings() {
+    var code = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "BillingPrinterSettings" &&
+        val.ParameterGroupName.toLowerCase() == "printersetting"
+    );
+    if (code) {
+      let val = JSON.parse(code.ParameterValue);
+      return val;
+    } else {
+      this.msgBoxServ.showMessage("error", [
+        "Please set Printer Settings for dot matrix printer in billing.",
+      ]);
+      return null;
     }
   }
 
@@ -718,10 +1237,22 @@ export class CoreService {
   }
 
   public ShowLabStickerPrintOption() {
+    let stickerOption = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "LabStickerPrintOption" &&
+        val.ParameterGroupName.toLowerCase() == "lab"
+    );
+    if (stickerOption) {
+      return JSON.parse(stickerOption.ParameterValue);
+    }
+    return { enable: false, maximumPrintCount: 5 };
+  }
+
+  public IsReserveFeatureEnabled() {
     var show = this.Parameters.find(
       (val) =>
-        val.ParameterName == "ShowLabStickerPrintOption" &&
-        val.ParameterGroupName.toLowerCase() == "lab"
+        val.ParameterName == "ReservePreviousBedDuringTransferFromNursing" &&
+        val.ParameterGroupName.toLowerCase() == "nursing"
     );
     if (show) {
       let val = show.ParameterValue.toLowerCase();
@@ -735,11 +1266,11 @@ export class CoreService {
     }
   }
 
-  public IsReserveFeatureEnabled() {
+  public IsVaccRegNumAutoIncreamentEnabled() {
     var show = this.Parameters.find(
       (val) =>
-        val.ParameterName == "ReservePreviousBedDuringTransferFromNursing" &&
-        val.ParameterGroupName.toLowerCase() == "nursing"
+        val.ParameterName == "AutoIncreamentRegNumber" &&
+        val.ParameterGroupName.toLowerCase() == "vaccination"
     );
     if (show) {
       let val = show.ParameterValue.toLowerCase();
@@ -849,7 +1380,6 @@ export class CoreService {
     }
   }
 
-
   public GetRequisitionListColumnArray() {
     var colArray = this.Parameters.find(
       (val) =>
@@ -900,6 +1430,20 @@ export class CoreService {
     );
     if (colArray) {
       return JSON.parse(colArray.ParameterValue);
+    } else {
+      return null;
+      //this.msgBoxServ.showMessage("error", ["Please set Column array"]);
+    }
+  }
+
+  public GetRouteNameAfterLabReportVerification() {
+    var colArray = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "RedirectPageAfterReportVerification" &&
+        val.ParameterGroupName.toLowerCase() == "lab"
+    );
+    if (colArray) {
+      return colArray.ParameterValue;
     } else {
       return null;
       //this.msgBoxServ.showMessage("error", ["Please set Column array"]);
@@ -1166,9 +1710,6 @@ export class CoreService {
     }
   }
 
-
-
-
   public LoadOPBillRequestDoubleEntryWarningTimeHrs() {
     let param = this.Parameters.find(
       (p) =>
@@ -1178,8 +1719,23 @@ export class CoreService {
     if (param) {
       let paramValueStr = param.ParameterValue;
       if (paramValueStr) {
-        var provSlipFooterParam = JSON.parse(paramValueStr);
-        return provSlipFooterParam;
+        var curParam = JSON.parse(paramValueStr);
+        return curParam;
+      }
+    }
+  }
+
+  public LoadInsBillRequestDoubleEntryWarningTimeHrs() {
+    let param = this.Parameters.find(
+      (p) =>
+        p.ParameterGroupName == "Insurance" &&
+        p.ParameterName == "InsBillRequestDoubleEntryWarningTimeHrs"
+    );
+    if (param) {
+      let paramValueStr = param.ParameterValue;
+      if (paramValueStr) {
+        var curParam = JSON.parse(paramValueStr);
+        return curParam;
       }
     }
   }
@@ -1228,11 +1784,19 @@ export class CoreService {
   public SetCalenderDatePreference(res) {
     if (res.Status == "OK") {
       let data = res.Results;
-      this.DatePreference = data != null ? data.PreferenceValue : "np";//sud:8Aug'20--hardcoded for temporary purpose.. pls correct this later..
+      this.DatePreference = data != null ? data.PreferenceValue : "np"; //sud:8Aug'20--hardcoded for temporary purpose.. pls correct this later..
       //sud:29May'20-Re-writing the logic and adding null check on this.Parameters.
-      //sometimes this.parameters is not yet loaded when this funciton is called.. 
-      if (this.DatePreference == "" && this.Parameters && this.Parameters.length > 0) {
-        let param = this.Parameters.find(p => p.ParameterName == "CalendarDatePreference" && p.ParameterGroupName.toLowerCase() == "common");
+      //sometimes this.parameters is not yet loaded when this funciton is called..
+      if (
+        this.DatePreference == "" &&
+        this.Parameters &&
+        this.Parameters.length > 0
+      ) {
+        let param = this.Parameters.find(
+          (p) =>
+            p.ParameterName == "CalendarDatePreference" &&
+            p.ParameterGroupName.toLowerCase() == "common"
+        );
         if (param) {
           let paramValueObj = JSON.parse(param.ParameterValue);
           if (paramValueObj != null) {
@@ -1243,7 +1807,6 @@ export class CoreService {
             }
           }
         }
-
       }
     }
   }
@@ -1251,7 +1814,11 @@ export class CoreService {
 
   public GetExcludedOPpages(pageName: string) {
     let retVal = [];
-    let param = this.Parameters.find(p => p.ParameterName == 'ExcludeInOp' && p.ParameterGroupName.toLowerCase() == 'nursing');
+    let param = this.Parameters.find(
+      (p) =>
+        p.ParameterName == "ExcludeInOp" &&
+        p.ParameterGroupName.toLowerCase() == "nursing"
+    );
     if (param) {
       let jsonData = JSON.parse(param.ParameterValue);
       if (pageName && pageName.length > 0 && jsonData) {
@@ -1264,7 +1831,11 @@ export class CoreService {
   }
 
   public GetBufferTimeForReceivedOn() {
-    let param = this.Parameters.find(p => p.ParameterName == 'ReceivedOnDateBufferTime' && p.ParameterGroupName.toLowerCase() == 'nursing');
+    let param = this.Parameters.find(
+      (p) =>
+        p.ParameterName == "ReceivedOnDateBufferTime" &&
+        p.ParameterGroupName.toLowerCase() == "nursing"
+    );
     if (param) {
       let min = +param.ParameterValue;
       return min;
@@ -1274,11 +1845,15 @@ export class CoreService {
 
   //sud:29May'20--for Calendar Settings.
   public GetSoftwareStartYear_Np(): number {
-    let retValue = 2073;//this is the year our software was started.. (1st Version in MNK Hospital)
+    let retValue = 2073; //this is the year our software was started.. (1st Version in MNK Hospital)
     if (this.Parameters) {
-      let param = this.Parameters.find(p => p.ParameterName == 'SoftwareStartYearInBS' && p.ParameterGroupName.toLowerCase() == 'common');
+      let param = this.Parameters.find(
+        (p) =>
+          p.ParameterName == "SoftwareStartYearInBS" &&
+          p.ParameterGroupName.toLowerCase() == "common"
+      );
       if (param) {
-        retValue = +param.ParameterValue;//it changes string to number
+        retValue = +param.ParameterValue; //it changes string to number
       }
     }
     return retValue;
@@ -1346,6 +1921,19 @@ export class CoreService {
     return canclrule;
   }
 
+  public GetBillItemsReturnRestrictionRules() {
+    var restrictRule = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "BillItemsReturnRestrictionRules" &&
+        val.ParameterGroupName.toLowerCase() == "common"
+    );
+
+    if (restrictRule) {
+      return JSON.parse(restrictRule.ParameterValue);
+    }
+    return restrictRule;
+  }
+
   public GetIpBillOrderStatusSettingB4Discharge() {
     var DischargeRule = this.Parameters.find(
       (val) =>
@@ -1359,7 +1947,7 @@ export class CoreService {
     return DischargeRule;
   }
 
-  //sud: Copied from IpBilling-OrderStatus, this can be overwritten later after merging. 
+  //sud: Copied from IpBilling-OrderStatus, this can be overwritten later after merging.
   public LoadIPBillRequestDoubleEntryWarningTimeHrs(): number {
     let param = this.Parameters.find(
       (p) =>
@@ -1372,8 +1960,7 @@ export class CoreService {
         var provSlipFooterParam = JSON.parse(paramValueStr);
         return parseInt(provSlipFooterParam);
       }
-    }
-    else {
+    } else {
       return 0;
     }
   }
@@ -1395,6 +1982,414 @@ export class CoreService {
       return false;
     }
   }
+
+  public AddReportWOSignatory() {
+    var allow = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "RadiologyReportAddWithOutSignatories" &&
+        val.ParameterGroupName.toLowerCase() == "radiology"
+    );
+
+    if (allow) {
+      let val = allow.ParameterValue.toLowerCase();
+      if (val == "true") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public GetIsPhoneNumberMandatory() {
+    var phoneParameter = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Patient" &&
+        a.ParameterName == "PhoneNumberMandatory"
+    );
+    let phoneNum = JSON.parse(phoneParameter.ParameterValue);
+
+    return phoneNum;
+  }
+  public GetLabTypes() {
+    return this.coreBlService.GetLabTypes();
+  }
+
+  public SetLabTypes(res) {
+    // let PermName = ['erlab', 'oplab'];
+    let i = 0;
+    if (res.Status == "OK") {
+      this.labTypes = res.Results;
+      if (res.Results.length == 1) {
+        this.singleLabType = true;
+      }
+      //our permission name is in format: 'lab-type-erlab' 'lab-type-oplab'... 
+      this.labTypes.forEach(W => {
+        W.PermName = W.LabTypeName.replace('-', '');
+        i++;
+      });
+    }
+  }
+
+  public ShowMunicipality() {
+    var showMun = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Common" && a.ParameterName == "AddressSettings"
+    );
+    let param = JSON.parse(showMun.ParameterValue);
+    return param;
+  }
+
+  public GetBillingRequestDisplaySettings() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Billing" &&
+        a.ParameterName == "BillingRequestDisplaySettings"
+    );
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      return currParam;
+    }
+  }
+
+  // /** gets the core params for the BillingPackageInvoiceColumnSelection*/
+  // public GetBillingPackageInvoiceColumnSelection() {
+  //   var StrParam = this.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "BillingPackageInvoiceColumnSelection");
+  //   if (StrParam && StrParam.ParameterValue) {
+  //     let currParam = JSON.parse(StrParam.ParameterValue);
+  //     return currParam;
+  //   }
+  // }
+
+  // // end of GetBillingPackageInvoiceColumnSelection
+
+  public GetInsBillRequestDisplaySettings() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Insurance" &&
+        a.ParameterName == "InsBillRequestDisplaySettings"
+    );
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      return currParam;
+    }
+  }
+
+  public GetMaternityAncNumberOfAllowedVisits() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Maternity" &&
+        a.ParameterName == "MaternityAncVisit"
+    );
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      return currParam;
+    }
+  }
+
+  public GetInvoiceDisplaySettings() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Billing" &&
+        a.ParameterName == "InvoiceDisplaySettings"
+    );
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      return currParam;
+    }
+  }
+  public GetInvoiceFooterNoteSettings() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "Billing" &&
+        a.ParameterName == "BillingInvoiceFooterNoteSettings"
+    );
+    if (StrParam && StrParam.ParameterValue) {
+      let currParam = JSON.parse(StrParam.ParameterValue);
+      return currParam;
+    }
+  }
+
+  public GetAdditionalBillItemsInAdmission() {
+    var param = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "AdditionalBillItemsInAdmission" &&
+        val.ParameterGroupName.toLowerCase() == "admission"
+    );
+    if (param) {
+      var obj = JSON.parse(param.ParameterValue);
+      return obj || [];
+    } else {
+      this.msgBoxServ.showMessage("error", [
+        "Please set Additional BillItems settings in Admission",
+      ]);
+      return [];
+    }
+  }
+
+  public GetNewAdmissionSettings(moduleName: string) {
+    let defData = {
+      IsBillingEnabled: false,
+      IsDepositEnabled: false,
+      IsDiscountSchemeEnabled: false,
+    };
+    var param = this.Parameters.find(
+      (val) =>
+        val.ParameterName == "NewAdmissionSettings" &&
+        val.ParameterGroupName.toLowerCase() == "admission"
+    );
+    if (param) {
+      var obj = JSON.parse(param.ParameterValue);
+      let dataToReturn = obj.find(
+        (o) => o.Module.toLowerCase() == moduleName.toLowerCase()
+      );
+      return dataToReturn ? dataToReturn : defData;
+    } else {
+      this.msgBoxServ.showMessage("error", [
+        "Please set New Admission Settings",
+      ]);
+      return defData;
+    }
+  }
+
+  public SetQZTrayObject() {
+    //Alternate method 2 - direct
+    this.QzTrayObject = qz;
+    this.QzTrayObject.security.setCertificatePromise(function (
+      resolve,
+      reject
+    ) {
+      resolve(
+        "-----BEGIN CERTIFICATE-----\n" +
+        "MIID/zCCAuegAwIBAgIUHLAudnma7zysXlSYT2CMFZS5kkYwDQYJKoZIhvcNAQEL\n" +
+        "BQAwgY0xCzAJBgNVBAYTAklOMRQwEgYDVQQIDAtNQUhBUkFTSFRSQTEPMA0GA1UE\n" +
+        "BwwGTVVNQkFJMRQwEgYDVQQKDAtURVNUQ09NUEFOWTELMAkGA1UECwwCSVQxDDAK\n" +
+        "BgNVBAMMA05CQjEmMCQGCSqGSIb3DQEJARYXc3VwcG9ydEB0ZXN0Y29tcGFueS5j\n" +
+        "b20wIBcNMjEwNDA4MTAxODU1WhgPMjA1MjEwMDExMDE4NTVaMIGNMQswCQYDVQQG\n" +
+        "EwJJTjEUMBIGA1UECAwLTUFIQVJBU0hUUkExDzANBgNVBAcMBk1VTUJBSTEUMBIG\n" +
+        "A1UECgwLVEVTVENPTVBBTlkxCzAJBgNVBAsMAklUMQwwCgYDVQQDDANOQkIxJjAk\n" +
+        "BgkqhkiG9w0BCQEWF3N1cHBvcnRAdGVzdGNvbXBhbnkuY29tMIIBIjANBgkqhkiG\n" +
+        "9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsS1DLcb43EHRGbih1jy8j5wShq9yNrOntM+0\n" +
+        "1jjKecSjI6y0FezpILFOFBf5sdE3oOs/lJt7Ff46cAgTIAJw2d3izj/oHpoz6rwx\n" +
+        "qfr1bYg9g/fLREpwfmntJ2F7S3jmQbFtM7Sfrrfvr0CKxIBzo4fn8JRoy9hmBql7\n" +
+        "2jNUlFeVtF9ybThqN0g8tL2GqdtVtx5KSSQSf9r/9xDck/eys6AUTM1LVcdUUnMj\n" +
+        "F+RpQVX305YwWq56/HBQkOYm37IEBcQAunag6t6mQLHZeOz/TVs86Vqo0oIQ2TKe\n" +
+        "/Hqekhq3Ms4bRTxxzMv8kl0aZ1OoaaU0JlKFvKlQQX6tV/IiBQIDAQABo1MwUTAd\n" +
+        "BgNVHQ4EFgQUNRcOZDPjkDwTqywU4STm+jBRu24wHwYDVR0jBBgwFoAUNRcOZDPj\n" +
+        "kDwTqywU4STm+jBRu24wDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC\n" +
+        "AQEADmP9auCyaGNHtajFsvlWQ+J+35YswO4nLaYnWyeCIVIqRJmAoVmdUoE5ZozG\n" +
+        "qgyd7+qxw3hHqUNjRM+MZ3CdiKObsga0LTgVh4l0hePt1ASfrk6xpRTGGeNAayCy\n" +
+        "RaRzhqRyTKmVEF1Q0aL5vEuU53VXVLJVwC3rlVcfMOADkhgi880w5sQyI+KB62Lo\n" +
+        "vnGwZlq2MlfloLt0SR5ibkQw+GEac/9e+ttyRtIZral+hqJxlKnJXpmNQN3FUrhH\n" +
+        "rT2yb8HlWzUfdhV5qB8ZDvC8NbzSzOULE//juouAUOAm78e+/1LQDTbYsh3oeHwF\n" +
+        "ewTnjiY2eE/gY695iRMfZGjm/g==\n" +
+        "-----END CERTIFICATE-----\n"
+      );
+    });
+    var privateKey =
+      "-----BEGIN PRIVATE KEY-----\n" +
+      "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCxLUMtxvjcQdEZ\n" +
+      "uKHWPLyPnBKGr3I2s6e0z7TWOMp5xKMjrLQV7OkgsU4UF/mx0Teg6z+Um3sV/jpw\n" +
+      "CBMgAnDZ3eLOP+gemjPqvDGp+vVtiD2D98tESnB+ae0nYXtLeOZBsW0ztJ+ut++v\n" +
+      "QIrEgHOjh+fwlGjL2GYGqXvaM1SUV5W0X3JtOGo3SDy0vYap21W3HkpJJBJ/2v/3\n" +
+      "ENyT97KzoBRMzUtVx1RScyMX5GlBVffTljBarnr8cFCQ5ibfsgQFxAC6dqDq3qZA\n" +
+      "sdl47P9NWzzpWqjSghDZMp78ep6SGrcyzhtFPHHMy/ySXRpnU6hppTQmUoW8qVBB\n" +
+      "fq1X8iIFAgMBAAECggEAedkF/WJ8XYXKFyVZ72tfxmfweb4JD0Ooj3nVBQqTfQDV\n" +
+      "rUAlrXp7raciakE+0KJw3nNLC5mOIcbwS4HSHU5wa/Tj+TIMIZetIr8AbMURqp1q\n" +
+      "qOpuWW3URav1lAK/d10TBZTO5CNROih3ZxA9Hvy0Cn/57AM0uxP8vpIqghqRDV60\n" +
+      "/bQaZ0N7lFhQIojON0nBQ9EH2z8iZLxHgNELLrxV51VLWsEhkQtCXw7zvavoYxw2\n" +
+      "zmDa0qHjPe4mhw1Bfl8aKr7eluKY08dDX+k2UfgUWTFOp591Aq1rPCyK1EOwXyt4\n" +
+      "nz883BKEgIO+/nzZH5R7NP2UMOhvmEL4lTyQFgDYwQKBgQDk22fkmRLMUUgE2zH+\n" +
+      "oqlAXoq+uXgokrT2gKVXn8cj/NoS9X6E6tw/L9FKpWgWd9whhKAj98nOtbv5lFJi\n" +
+      "FNMz8z86rJfdIaZMlhrsdiNuK+yzRkKqDfG3Nb4LOK/0F2TYrjCV/WyfRKNZiv1d\n" +
+      "gH5rFLhNeTi1pwc553ZCqfN8EQKBgQDGMLuSyQJeOMT07gQOHopRYqDN0OTp9Jux\n" +
+      "/zCFnqK7U3QADp5yEdozD56hvYOH59TrwhbpSv5nW2N18OrlTQFmherirrI90S7Q\n" +
+      "EydXo54wAJYzkc2rdDI2JxJpN7LxZN87S6nZ5INffBlNxwbn8oqii5zqUeZ96LaM\n" +
+      "G1TSPobKtQKBgQCpLaSEsb/auG9z35H6ucZCZmFMkpDH9YO/AeS4fM3axa1z/HTV\n" +
+      "z0SXlUKzWskyatKZGJDFZgSSQXg/DK1GAj0LF1NzjWkKODjWPtSSXtbcN65X7KWV\n" +
+      "To+ULy9Y3kP8Plr3bvVNu7TTnArhQ8T+nOFXSU7hPq50YpAN9xROPZJX8QKBgGna\n" +
+      "P2S/nVcrpO5YbawI3cFoFxC2QH1AWyPvcz/6oVnB0dPx+uhb5pmc/xHNwYGF7e/Z\n" +
+      "YxlJJ6WWZwHoId1EirnyTqixu5tOrV0OzdV+Gw/yUEbM2fd4ARVxOuEdkaJiSORH\n" +
+      "njk1VoFaK72hzmt13FvCi5WPFrcq4szkECKWqLF9AoGABWVfGh8dFTkq6F4I+TlI\n" +
+      "nRnnYg0H5rXc+rOaiz6+ccAlpFc8PhkZfcfyiPg9WgbRo+za+pbCP/AvZMdCFJ7r\n" +
+      "ls/piOCFCmqNPc1FnEB7M7pZVhS0ayWuLNy1zRzz4bXZNiYb1StAmmZmzTkkTNQv\n" +
+      "yBStj7Ka0FRa+Q7X+utUJ3I=\n" +
+      "-----END PRIVATE KEY-----\n";
+
+    this.QzTrayObject.security.setSignatureAlgorithm("SHA512"); // Since 2.1
+    this.QzTrayObject.security.setSignaturePromise(function (toSign) {
+      return function (resolve, reject) {
+        try {
+          var pk = KEYUTIL.getKey(privateKey);
+          var sig = new KJUR.crypto.Signature({ alg: "SHA512withRSA" }); // Use "SHA1withRSA" for QZ Tray 2.0 and older
+          //var sig = new KJUR.crypto.Signature({"alg": "SHA1withRSA"});
+          sig.init(pk);
+          sig.updateString(toSign);
+          var hex = sig.sign();
+          resolve(stob64(hextorstr(hex)));
+        } catch (err) {
+          console.error(err);
+          reject(err);
+        }
+      };
+    });
+  }
+
+  public GetAdmissionCases() {
+    var StrParam = this.Parameters.find(
+      (a) =>
+        a.ParameterGroupName == "ADT" && a.ParameterName == "AdmissionCases"
+    );
+    let currParm = JSON.parse(StrParam.ParameterValue);
+    return currParm;
+  }
+
+  //function to focus and select.
+  //We need to pass the targetId and waitTime in milliseconds before focus jumps into the given html control.
+  //Internally we decide whether to select the content or not.
+  public FocusInputById(targetId: string, waitTimeInMs: number = 100) {
+    let timer = window.setTimeout(function () {
+      let htmlObject: any = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+        let elemType = htmlObject.type;
+        //content selection is applied for below content types. Not applicable For other only focus is applied.
+        if (
+          elemType == "text" ||
+          elemType == "number" ||
+          elemType == "tel" ||
+          elemType == "password"
+        ) {
+          htmlObject.select();
+        }
+      }
+      clearTimeout(timer);
+    }, waitTimeInMs);
+  }
+
+  //pratik:May:27,2021
+  public AllPrinterSettings: Array<PrinterSettingsModel> = [];
+  public GetPrinterSettings() {
+    return this.coreBlService.GetPrinterSettingList();
+  }
+  public SetPrinterSettings(res) {
+    //this.AllPrinterSettings = PrinterSettingsModel.GetAllPrinterSettings();
+    if (res.Status == "OK") {
+      this.AllPrinterSettings = res.Results;
+    }
+  }
+
+  //Anjana: May27, 2021: Get all municipalities based on CountrySubDivisionId
+
+  public GetAllMunicipalities() {
+    this.coreBlService.GetAllMunicipalities().subscribe((res) => {
+      if (res.Status == "OK") {
+        this.allMunicipalities = res.Results;
+      } else {
+        this.msgBoxServ.showMessage("Failed", [
+          "Failed to get municipalities.",
+        ]);
+      }
+    });
+  }
+
+  public GetPrintExportConfiguration() {
+    this.coreBlService.GetPrintExportConfiguration().subscribe((res) => {
+      if (res.Status == "OK") {
+        this.allPrintExportConfiguration = res.Results;
+      } else {
+        this.msgBoxServ.showMessage("Failed", [
+          "Failed to get printexportconfiguration.",
+        ]);
+      }
+    });
+  }
+  public GetMunicipalityByCountryAndSubDivisionId(id) {
+    if (id > 0 && this.allMunicipalities && this.allMunicipalities.length) {
+      return this.allMunicipalities.find((m) => m.CountrySubDivisionId == id);
+    }
+  }
+
+  public SetCalendarADBSButton() {
+    var calParameter = this.Parameters.find(
+      (a) => a.ParameterName == "ShowCalendarADBSButton"
+    );
+    if (calParameter)
+      this.showCalendarADBSButton = JSON.parse(calParameter.ParameterValue);
+    else
+      this.msgBoxServ.showMessage("error", [
+        "Please set showCalendarADBSButton in parameters.",
+      ]);
+  }
+
+  public SetLocalNameFormControl() {
+    var localNameParameter = this.Parameters.find(
+      (a) => a.ParameterName == "ShowLocalNameFormControl"
+    );
+    if (localNameParameter)
+      this.showLocalNameFormControl = JSON.parse(
+        localNameParameter.ParameterValue
+      );
+    else
+      this.msgBoxServ.showMessage("error", [
+        "Please set showLocalNameFormControl in parameters.",
+      ]);
+  }
+
+  public SetCountryMapOnLandingPage() {
+    var mapParameter = this.Parameters.find(
+      (a) => a.ParameterName == "ShowCountryMapOnLandingPage"
+    );
+    if (mapParameter) {
+      this.showCountryMapOnLandingPage = JSON.parse(
+        mapParameter.ParameterValue
+      );
+    } else
+      this.msgBoxServ.showMessage("error", [
+        "Please set showCountryMapOnLandingPage in parameters.",
+      ]);
+  }
+
+
+  public GetAllGovLabComponents() {
+    this.coreBlService.GetAllGovLabComponents().subscribe(
+      (res) => {
+        if (res.Status == "OK") {
+          this.allGovItems = res.Results;
+        } else {
+          this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+        }
+      },
+      (err) => {
+        this.msgBoxServ.showMessage("error", [
+          "Failed to get ReportTemplate List",
+        ]);
+      }
+    );
+  }
+  public GetLabEmailSettings() {
+    var email = this.Parameters.find(
+      (val) =>
+        val.ParameterName.toLowerCase() == "emailsettingslaboratory" &&
+        val.ParameterGroupName.toLowerCase() == "lab"
+    );
+    if (email) {
+      var obj = JSON.parse(email.ParameterValue);
+      return obj;
+    } else {
+      this.msgBoxServ.showMessage("error", [
+        "Please set EmailSettingParameters",
+      ]);
+    }
+  }
+
+  public AllMembershipTypes: Array<Membership> = [];
+  public SetAllMembershipTypes(results) {
+    this.AllMembershipTypes = results;
+  }
+
+
 }
 
 export class LookupsModel {

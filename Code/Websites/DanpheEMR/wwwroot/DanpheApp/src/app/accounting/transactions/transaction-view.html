@@ -18,7 +18,11 @@
               <div class="row">
                 <div class="col-md-12 col-xs-12">
                   <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
-
+                  <div class="col-md-10" *ngIf="showPayeeAndCheque">
+                    <div class="row">
+                      <span class="col-md-10" style="font-size: 14px;"><b>Payee Name:</b>&nbsp;{{transaction.PayeeName}}<b>&nbsp;&nbsp;&nbsp;&nbsp;Cheque Number:</b>&nbsp;{{transaction.ChequeNumber}}</span>
+                    </div>
+                  </div>
                   <div class="col-md-12" id="excelTransactionView">
                     <div class="row">
                       <div class="col-md-12 patient-hdr-label">
@@ -52,7 +56,7 @@
                       <div class="col-md-12" style="overflow-y:auto">
                         <table class="table_data" style="width:100%;" border="1">
                           <tr>
-                            <th>
+                            <th *ngIf="showVoucherHeadCol">
                               <!-- Main Ledger  -->
                               Account Head
                             </th>
@@ -71,7 +75,7 @@
                             </th>
                           </tr>
                           <tr *ngFor="let txnItm of transaction.TransactionItems">
-                            <td>
+                            <td *ngIf="showVoucherHeadCol">
                               {{txnItm.LedgerGroupName}}<br />
                             </td>
                             <td>
@@ -84,10 +88,10 @@
                                 <span>{{det.Name}}</span>
                                 <span>
                                   <span *ngIf="det.Dr > 0">
-                                    Dr: {{det.Dr | Currency}}
+                                    Dr: {{det.Dr | Currency:'4'}}
                                   </span>
                                   <span *ngIf="det.Cr > 0">
-                                    Cr: {{det.Cr | Currency}}
+                                    Cr: {{det.Cr | Currency:'4'}}
                                   </span>
                                 </span>
                               </span>
@@ -97,28 +101,31 @@
                               {{txnItm.Description}}
                             </td>
                             <td>
-                              <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                              <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                             </td>
                             <td>
-                              <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                              <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                             </td>
                           </tr>
                           <tr>
-                            <th colspan="3">
+                            <th *ngIf="showVoucherHeadCol" colspan="3">
+                              <b style="float:right;"> Total &nbsp;&nbsp; </b>
+                            </th>
+                            <th *ngIf="!showVoucherHeadCol" colspan="2">
                               <b style="float:right;"> Total &nbsp;&nbsp; </b>
                             </th>
                             <th>
-                              {{drTotal | Currency}}
+                              {{drTotal | Currency:'4'}}
                             </th>
                             <th>
-                              {{crTotal | Currency}}
+                              {{crTotal | Currency:'4'}}
                             </th>
                           </tr>
                         </table>
                       </div>
                       <div class="col-md-12">
                         <b> In Words :</b>&nbsp;
-                        {{crTotal | Currency | NumberInWords | CapitalFirstLetter}} <span
+                        {{crTotal | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span
                           *ngIf="crTotal !=0">Only</span>
                       </div>
                       <div class="col-md-12">
@@ -135,10 +142,13 @@
                           <tr>
                             <td>
                               <br />
+                              <br />
                               <b style="border-top:1px solid black; padding:0px 10px;">
                                 Prepared
                                 By
-                              </b>
+                              </b> 
+                              <br />
+                              {{transaction.Preparedby}}                         
                             </td>
                             <td>
                               <br />
@@ -219,6 +229,11 @@
               </customer-header>
               <div class="col-md-12 col-xs-12">
                 <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+                <div class="col-md-10" *ngIf="showPayeeAndCheque">
+                  <div class="row">
+                    <span class="col-md-10" style="font-size: 14px;"><b>Payee Name:</b>&nbsp;{{transaction.PayeeName}}<b>&nbsp;&nbsp;&nbsp;&nbsp;Cheque Number:</b>&nbsp;{{transaction.ChequeNumber}}</span>
+                  </div>
+                </div>
                 <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print"
                   (click)="Close()" title="Cancel">X</a>
                 <div class="col-md-12" id="excelTransactionView">
@@ -276,7 +291,7 @@
                             style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                             <span style="width:30%;">
                               <br />{{row.UserName}} :
-                              {{row.Total | Currency}}
+                              {{row.Total | Currency:'4'}}
                             </span>
                           </span>
                         </td>
@@ -288,10 +303,10 @@
                             <span>{{det.Name}}</span>
                             <span>
                               <span *ngIf="det.Dr > 0">
-                                Dr: {{det.Dr | Currency}}
+                                Dr: {{det.Dr | Currency:'4'}}
                               </span>
                               <span *ngIf="det.Cr > 0">
-                                Cr: {{det.Cr | Currency}}
+                                Cr: {{det.Cr | Currency:'4'}}
                               </span>
                             </span>
                           </span>
@@ -301,10 +316,10 @@
                           <!--{{txnItm.Remarks}}-->
                         </td>
                         <td>
-                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                         <td>
-                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                       </tr>
                       <tr *ngFor="let txnItm of returntransaction.TransactionItems">
@@ -320,10 +335,10 @@
                             <span>{{det.Name}}</span>
                             <span>
                               <span *ngIf="det.Dr > 0">
-                                Dr: {{det.Dr | Currency}}
+                                Dr: {{det.Dr | Currency:'4'}}
                               </span>
                               <span *ngIf="det.Cr > 0">
-                                Cr: {{det.Cr | Currency}}
+                                Cr: {{det.Cr | Currency:'4'}}
                               </span>
                             </span>
                           </span>
@@ -332,10 +347,10 @@
                           <!--{{txnItm.Remarks}}-->
                         </td>
                         <td>
-                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                         <td>
-                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                       </tr>
                       <tr *ngFor="let txnItm of deposittransaction.TransactionItems">
@@ -351,10 +366,10 @@
                             <span>{{det.Name}}</span>
                             <span>
                               <span *ngIf="det.Dr > 0">
-                                Dr: {{det.Dr | Currency}}
+                                Dr: {{det.Dr | Currency:'4'}}
                               </span>
                               <span *ngIf="det.Cr > 0">
-                                Cr: {{det.Cr | Currency}}
+                                Cr: {{det.Cr | Currency:'4'}}
                               </span>
                             </span>
                           </span>
@@ -363,10 +378,10 @@
                           <!--{{txnItm.Remarks}}-->
                         </td>
                         <td>
-                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                         <td>
-                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                          <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                         </td>
                       </tr>
                       <tr>
@@ -374,10 +389,10 @@
                           <b style="float:right;">Total &nbsp;&nbsp; </b>
                         </th>
                         <th>
-                          {{totaldr | Currency}}
+                          {{totaldr | Currency:'4'}}
                         </th>
                         <th>
-                          {{totalcr | Currency}}
+                          {{totalcr | Currency:'4'}}
                         </th>
                       </tr>
                       <tr>
@@ -388,7 +403,7 @@
                           <span style="float:right;">Sales SubTotal &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{drTotal | Currency}}
+                          {{drTotal | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -398,7 +413,7 @@
                           </span>
                         </td>
                         <td colspan="2">
-                          {{tradeAmount | Currency}}
+                          {{tradeAmount | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -406,7 +421,7 @@
                           <span style="float:right;"> Return Sales &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{returnAmount | Currency}}
+                          {{returnAmount | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -414,7 +429,7 @@
                           <span style="float:right;"> Return Discount &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{returnDiscount | Currency}}
+                          {{returnDiscount | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -422,7 +437,7 @@
                           <b style="float:right;"> Net Sales &nbsp;&nbsp; </b>
                         </td>
                         <td colspan="2">
-                          <b>{{salesTotalAmount | Currency}}</b>
+                          <b>{{salesTotalAmount | Currency:'4'}}</b>
                         </td>
                       </tr>
                       <tr>
@@ -430,7 +445,7 @@
                           <span style="float:right;">Less Receivables &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{receivableAmount | Currency}}
+                          {{receivableAmount | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -440,7 +455,7 @@
                           </span>
                         </td>
                         <td colspan="2">
-                          {{paymentamount | Currency}}
+                          {{paymentamount | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -448,7 +463,7 @@
                           <span style="float:right;">Add Advance Received &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{depositcr | Currency}}
+                          {{depositcr | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -456,7 +471,7 @@
                           <span style="float:right;">Less Advance Settled &nbsp;&nbsp; </span>
                         </td>
                         <td colspan="2">
-                          {{depositdr | Currency}}
+                          {{depositdr | Currency:'4'}}
                         </td>
                       </tr>
                       <tr>
@@ -464,7 +479,7 @@
                           <b style="float:right;">Cash Collection Total &nbsp;&nbsp; </b>
                         </th>
                         <th colspan="2">
-                          {{totalAmount | Currency}}
+                          {{totalAmount | Currency:'4'}}
                         </th>
                       </tr>
                       <!--<tr>
@@ -487,11 +502,11 @@
                                   </tr>
                                   <tr *ngFor="let row of userCashCollection">
                                       <td style="width:30%;">{{row.UserName}}</td>
-                                      <td style="width:10%; text-align:right;">{{row.SalesDr | Currency}}</td>
-                                      <td style="width:10%; text-align:right;">{{row.SalesCr | Currency}}</td>
-                                      <td style="width:10%; text-align:right;">{{row.DepositDr | Currency}}</td>
-                                      <td style="width:10%; text-align:right;">{{row.DepositCr | Currency}}</td>
-                                      <td style="width:20%; text-align:right;">{{row.Total | Currency}}</td>
+                                      <td style="width:10%; text-align:right;">{{row.SalesDr | Currency:'4'}}</td>
+                                      <td style="width:10%; text-align:right;">{{row.SalesCr | Currency:'4'}}</td>
+                                      <td style="width:10%; text-align:right;">{{row.DepositDr | Currency:'4'}}</td>
+                                      <td style="width:10%; text-align:right;">{{row.DepositCr | Currency:'4'}}</td>
+                                      <td style="width:20%; text-align:right;">{{row.Total | Currency:'4'}}</td>
                                   </tr>
                               </table>
                           </td>
@@ -500,7 +515,7 @@
                   </div>
                   <div>
                     <b> In Words :</b>&nbsp;
-                    {{totalAmount | Currency | NumberInWords | CapitalFirstLetter}} <span
+                    {{totalAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span
                       *ngIf="totalAmount !=0">Only</span>
                   </div>
                   <div>
@@ -517,10 +532,13 @@
                       <tr>
                         <td>
                           <br />
+                          <br />
                           <b style="border-top:1px solid black; padding:0px 10px;">
                             Prepared
                             By
                           </b>
+                          <br />
+                          {{transaction.Preparedby}}
                         </td>
                         <td>
                           <br />
@@ -593,6 +611,11 @@
               <customer-header [header-title]="txnDetails.VoucherType + '('+txnDetails.FiscalYear+')'">
               </customer-header>
               <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+              <div class="col-md-10" *ngIf="showPayeeAndCheque">
+                <div class="row">
+                  <span class="col-md-10" style="font-size: 14px;"><b>Payee Name:</b>&nbsp;{{transaction.PayeeName}}<b>&nbsp;&nbsp;&nbsp;&nbsp;Cheque Number:</b>&nbsp;{{transaction.ChequeNumber}}</span>
+                </div>
+              </div>
               <a class="btn btn-danger hidden-print rt_close_btn" (click)="Closereverse()" title="Cancel">X</a>
 
               <div class="row">
@@ -626,7 +649,7 @@
                       <div class="col-md-12" style="overflow-y:auto">
                         <table class="table_data" style="width:100%;" border="1">
                           <tr>
-                            <th>
+                            <th *ngIf="showVoucherHeadCol">
                               <!-- Main Ledger  -->
                               Account Head
                             </th>
@@ -645,7 +668,7 @@
                             </th>
                           </tr>
                           <tr *ngFor="let txnItm of txnDetails.TransactionItems">
-                            <td>
+                            <td *ngIf="showVoucherHeadCol">
                               {{txnItm.LedgerGroupName}}<br />
                             </td>
                             <td>
@@ -656,10 +679,10 @@
                                 <span>{{det.Name}}</span>
                                 <span>
                                   <span *ngIf="det.Dr > 0">
-                                    Dr: {{det.Dr | Currency}}
+                                    Dr: {{det.Dr | Currency:'4'}}
                                   </span>
                                   <span *ngIf="det.Cr > 0">
-                                    Cr: {{det.Cr | Currency}}
+                                    Cr: {{det.Cr | Currency:'4'}}
                                   </span>
                                 </span>
                               </span>
@@ -669,28 +692,31 @@
                               {{txnItm.Description}}
                             </td>
                             <td>
-                              <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                              <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                             </td>
                             <td>
-                              <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                              <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
                             </td>
                           </tr>
                           <tr>
-                            <th colspan="3">
+                            <th  *ngIf="showVoucherHeadCol" colspan="3">
+                              <b style="float:right;"> Total &nbsp;&nbsp; </b>
+                            </th>
+                            <th *ngIf="!showVoucherHeadCol" colspan="2">
                               <b style="float:right;"> Total &nbsp;&nbsp; </b>
                             </th>
                             <th>
-                              {{drTotal | Currency}}
+                              {{drTotal | Currency:'4'}}
                             </th>
                             <th>
-                              {{crTotal | Currency}}
+                              {{crTotal | Currency:'4'}}
                             </th>
                           </tr>
                         </table>
                       </div>
                       <div class="col-md-12">
                         <b> In Words :</b>&nbsp;
-                        {{crTotal | Currency | NumberInWords | CapitalFirstLetter}} <span
+                        {{crTotal | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span
                           *ngIf="crTotal !=0">Only</span>
                       </div>
                       <div class="col-md-12">

@@ -76,14 +76,14 @@
         </div>
         <br />
         <div class="col-md-4">
-            Total Amount: <b> Rs. {{ billingTransactionItem.TotalAmount }}</b>
+            Total Amount: <b> {{coreService.currencyUnit}} {{ billingTransactionItem.TotalAmount }}</b>
 
         </div>
         <div class="col-md-4">
-            Hospital Percent: <b> {{ fractionPercent.HospitalPercent }}% (Rs. {{ hospitalAmount }})</b>
+            Hospital Percent: <b> {{ fractionPercent.HospitalPercent }}% ({{coreService.currencyUnit}} {{ hospitalAmount }})</b>
         </div>
         <div class="col-md-4">
-            Doctor Percent: <b> {{ fractionPercent.DoctorPercent }}% (Rs. {{ doctorAmount }})</b>
+            Doctor Percent: <b> {{ fractionPercent.DoctorPercent }}% ({{coreService.currencyUnit}} {{ doctorAmount }})</b>
         </div>
 
     </div>

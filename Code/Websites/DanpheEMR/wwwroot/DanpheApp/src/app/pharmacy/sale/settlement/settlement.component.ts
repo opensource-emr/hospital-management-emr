@@ -79,31 +79,24 @@ export class PHRMSettlementComponent implements OnDestroy {
     public msgBoxServ: MessageboxService) {
 
     this.currentCounter = this.securityService.getPHRMLoggedInCounter().CounterId;
-    if (this.currentCounter < 1) {
-      this.callbackservice.CallbackRoute = '/Pharmacy/Sale/New'
-      this.router.navigate(['/Pharmacy/ActivateCounter']);
-    }
-    else {
-      this.PHRMSettlementGridCols = GridColumnSettings.PHRMSettlementBillSearch;
-      this.GetBillsForSettlement();
-      this.showGrid = true;
-    }
+    this.PHRMSettlementGridCols = GridColumnSettings.PHRMSettlementBillSearch;
+    this.showGrid = true;
 
   }
   ngOnDestroy(): void {
     this.patientService.CreateNewGlobal();
   }
 
-  GetBillsForSettlement() {
-    this.allPHRMPendingSettlements = [];
-    this.pharmacyBLService.GetPHRMPendingBillsForSettlement()
-      .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
-          this.allPHRMPendingSettlements = res.Results;
-          this.filteredPHRMPendingSettlements = this.allPHRMPendingSettlements;
-        }
-      });
-  }
+  // GetBillsForSettlement() {
+  //   this.allPHRMPendingSettlements = [];
+  //   this.pharmacyBLService.GetPHRMPendingBillsForSettlement()
+  //     .subscribe((res: DanpheHTTPResponse) => {
+  //       if (res.Status == "OK") {
+  //         this.allPHRMPendingSettlements = res.Results;
+  //         this.filteredPHRMPendingSettlements = this.allPHRMPendingSettlements;
+  //       }
+  //     });
+  // }
 
 
   PHRMSettlementGridActions($event: GridEmitModel) {
@@ -150,7 +143,7 @@ export class PHRMSettlementComponent implements OnDestroy {
         if (res.Status == "OK") {
           this.patCrInvoicDetails = res.Results.CreditItems;
           this.patientService.globalPatient = res.Results.Patient;
-          var patient  = this.patientService.globalPatient;
+          var patient = this.patientService.globalPatient;
           patient.ShortName = `${patient.FirstName} ${patient.MiddleName ? patient.MiddleName : ''} ${patient.LastName}`;
           this.patCrInvoicDetails.forEach(function (inv) {
             inv.selectedPatient = res.Results.Patient;
@@ -175,7 +168,7 @@ export class PHRMSettlementComponent implements OnDestroy {
           this.selectAllInvoices = true;
           this.SelectAllChkOnChange();
           this.LoadPatientPastBillSummary(patient.PatientId);
-          
+
         }
         else {
           this.msgBoxServ.showMessage("error", ["Couldn't fetch patient's credit details. Please try again later"], res.ErrorMessage);
@@ -228,7 +221,7 @@ export class PHRMSettlementComponent implements OnDestroy {
     this.patientService.CreateNewGlobal();
     this.patCrInvoicDetails = [];
     this.model = new PHRMSettlementModel();
-    this.GetBillsForSettlement();
+    //this.GetBillsForSettlement();
   }
 
   gridExportOptions = {
@@ -339,19 +332,19 @@ export class PHRMSettlementComponent implements OnDestroy {
     }
   }
 
-  CheckRemarks(){
-    if(this.model.DiscountPercentage !=null){
+  CheckRemarks() {
+    if (this.model.DiscountPercentage != null) {
       this.model.IsDiscounted = true;
     }
-    else{
+    else {
       this.model.IsDiscounted = false;
     }
   }
   CheckIsDiscountApplied(): boolean {
-    if(this.model.DiscountPercentage !=null){
+    if (this.model.DiscountPercentage != null) {
       this.model.IsDiscounted = true;
     }
-    else{
+    else {
       this.model.IsDiscounted = false;
     }
     if (this.model.IsDiscounted && !this.model.Remarks) {
@@ -430,7 +423,7 @@ export class PHRMSettlementComponent implements OnDestroy {
     //write logic based on $event later on.. for now only close this..
     this.showReceipt = false;
     this.setlmntToDisplay = new PHRMSettlementModel();
-    this.GetBillsForSettlement();
+    //this.GetBillsForSettlement();
     this.BackToGrid();
     this.changeDetector.detectChanges();
 

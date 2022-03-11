@@ -29,6 +29,7 @@ export class RPT_BIL_UserCollectionReportModel {
 
     public CounterId: string = "";
     public CreatedBy: string = "";
+    public EmployeeId: number = null;
    
 
     public DailySalesValidator: FormGroup = null;

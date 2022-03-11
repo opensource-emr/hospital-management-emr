@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,7 +72,9 @@ namespace DanpheEMR.ServerModel.BillingModels
         public string RequestingUserDept { get; set; }//sud:24Sept'18
 
         public bool AllowCancellation { get; set; }
-      
+        [NotMapped]
+        public string ItemIntegrationName { get; set; }
+
 
     }
 }

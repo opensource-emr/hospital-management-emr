@@ -5,8 +5,8 @@ import { DanpheAutoCompleteDirective } from "./danphe-auto-complete.directive";
 
 export {
   DanpheAutoComplete,
-    DanpheAutoCompleteModule,
+  DanpheAutoCompleteModule,
   DanpheAutoCompleteComponent,
- DanpheAutoCompleteDirective
+  DanpheAutoCompleteDirective
 };
 

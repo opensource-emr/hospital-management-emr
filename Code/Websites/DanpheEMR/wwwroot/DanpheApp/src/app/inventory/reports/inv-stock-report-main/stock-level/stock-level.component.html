@@ -1,0 +1,173 @@
+<div class="row">
+
+  <form class="form-horizontal">
+    <div class="form-body">
+      <div class="caption lb-caption" style="padding: 5px; margin: 5px;">
+        <i class="fa fa-bar-chart"></i>
+        <span class="caption-subject">Current Stock Level Report</span>
+      </div>
+      <div class="row" style="background: #eaeaea;padding: 5px; margin: 5px;">
+        <div class="col-md-4" *ngIf="showStoreList">
+          <danphe-multiselect [ddl-data]="storeList" [placeholder-text]="'---Select Item---'" [pre-selected]="preSelectedStores" [value-property-name]="'StoreId'" (selected-items-list)="onChange($event)" [display-property-name]="'Name'" [single-selection]="false">
+          </danphe-multiselect>
+        </div>
+        <div class="col-md-2">
+          <button class="btn blue" type="button" (click)="ShowStockLevelReport()" [disabled]="loading" style="height: 40px;">
+            <i class="fa fa-search"></i>&nbsp;
+            <span *ngIf="!loading">Load</span>
+            <span *ngIf="loading">Loading...</span>
+            
+          </button>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="input-group pull-right">
+                <div class="icheck-inline">
+                  List by Item Type: &nbsp;
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input type="radio" (change)="LoadStockLevelReportByStatus('a')" [(ngModel)]="value" name="name" value="a" style="width:15px;height:15px" />
+                    <span></span>All
+                  </label>
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input type="radio" (change)="LoadStockLevelReportByStatus('b')" name="name" [(ngModel)]="value" value="b" style="width:15px;height:15px" />
+                    <span></span>Capital Goods
+                  </label>
+
+                  <label class="mt-checkbox mt-checkbox-outline">
+                    <input type="radio" (change)="LoadStockLevelReportByStatus('c')" name="name" [(ngModel)]="value" value="c" style="width:15px;height:15px" />
+                    <span></span>Consumables
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12" *ngIf="filteredStockLevelReport.length>0">
+    <danphe-grid [grid-colDefaults]="StockLevelReportColumns" [grid-data]="filteredStockLevelReport" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (grid-actions)="StockLevelGridAction($event)">
+    </danphe-grid>
+  </div>
+
+  <!-- START: Summary -->
+  <div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+    <div class="table-responsive table-wrapper" id="print_summary">
+      <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+        <thead>
+          <tr>
+            <th colspan="2" style="text-align: center;">
+              <span style="font-size:large;"> Summary </span> ({{selectedGRCategory}})
+              <br>
+              <span style="font-size: large;"> Selected Stores : </span> [{{storeNames}}]
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container>
+            <tr>
+              <td style="font-weight:bold; color:blue">
+                <span> <b> Total Stock Quantity </b> </span>
+              </td>
+              <td>
+                <span> {{summary.TotalQuantity }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:bold; color:blue">
+                <span> <b> Total Stock Value </b> </span>
+              </td>
+              <td>
+                <span> {{summary.TotalStockValue | Currency}} </span>
+              </td>
+            </tr>
+
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <br>
+  </div>
+  <!-- END: Summary -->
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="DetailsView">
+  <div class="portlet-body form">
+    <div class="form-body clearfix">
+      <div class="col-md-12" id="sf" style="margin-left: 200px;">
+        <div class="col-md-8 modelbox-div">
+          <div id="printpageTransactionView">
+            <a class="btn btn-danger hidden-print rt_close_btn" (click)="ClosePopup()" title="Cancel">X</a>
+            <div style="text-align: center;">
+              <label style="font-size: x-large;"> <b>Item Details </b> </label>
+            </div>
+            <div class="row">
+              <div>
+                <div class="col-md-12">
+                  <table>
+                    <tr>
+                      <td> <b> Item Name : </b> </td>
+                      <td> {{itemDetails.ItemName}} </td>
+                    </tr>
+                    <tr>
+                      <td> <b> Item Code :</b> </td>
+                      <td> {{itemDetails.ItemCode}} </td>
+                    </tr>
+                    <tr>
+                      <td> <b> Item Type :</b></td>
+                      <td> {{itemDetails.ItemType}} </td>
+                    </tr>
+                  </table>
+                </div>
+
+                <hr style="border:1px solid grey;margin-top: 0px;margin-bottom: 5px;" />
+
+                <div class="row">
+                  <div class="col-md-12 col-xs-12">
+
+                    <div class="col-md-12" id="excelTransactionView">
+                      <div class="row">
+                        <div class="col-md-12 patient-hdr-label">
+
+                        </div>
+                        <div class="col-md-12" style="overflow-y:auto">
+                          <table class="table_data" style="width:100%;" border="1">
+                            <tr>
+                              <th> Store Name </th>
+                              <th> GoodsReceiptNo </th>
+                              <th> GoodsReceiptDate</th>
+                              <th> Received Quantity </th>
+                              <th> Available Quantity </th>
+                              <th> Unit Price </th>
+                              <th> Total Value </th>
+                            </tr>
+                            <tr *ngFor="let gr of grdetails">
+                              <td> {{gr.StoreName}} </td>
+                              <td> {{gr.GoodsReceiptNo}} </td>
+                              <td> {{gr.GoodsReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD' }} </td>
+                              <td> {{gr.Quantity}} </td>
+                              <td> {{gr.AvailableQuantity}} </td>
+                              <td> {{gr.Price}} </td>
+                              <td> {{gr.AvailableQuantity*gr.Price | Currency}} </td>
+                            </tr>
+
+                          </table>
+                          <br> <br>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -37,7 +37,7 @@ export class InventorySettingDLService {
     return this.http.get<any>("/api/InventorySettings?reqType=ItemList");
   }
   public GetTermsConditions(TermsApplicationId) {
-    return this.http.get<any>("/api/InventorySettings/GetTermsListByTermsApplicationId/"+ TermsApplicationId,this.options);
+    return this.http.get<any>("/api/InventorySettings/GetTermsListByTermsApplicationId/" + TermsApplicationId, this.options);
   }
 
   public GetItem() {
@@ -71,7 +71,9 @@ export class InventorySettingDLService {
     return this.http.get<any>("/api/InventorySettings?reqType=GetVendors");
   }
 
-
+  public getAllRoles() {
+    return this.http.get<any>("/api/inventorySettings/getAllRoles");
+  }
 
   //POST
 

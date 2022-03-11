@@ -55,6 +55,8 @@ export class TransactionViewComponent {
   public IsReverse: boolean = false;
   public TempVoucherNumber: string = "";
   public txnDetails: any;
+  public showPayeeAndCheque = false;
+  public showVoucherHeadCol : boolean = false;
   constructor(public coreService: CoreService,
     public accBLService: AccountingBLService,
     public msgBoxServ: MessageboxService,
@@ -64,6 +66,7 @@ export class TransactionViewComponent {
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
     this.showExport();
+    this.showVoucherHead();
   }
 
   public showEditbtn:boolean=true;
@@ -303,6 +306,8 @@ export class TransactionViewComponent {
         this.crTotal = cr;
         this.drTotal = dr;
       }
+      this.drTotal = CommonFunctions.parseDecimal(this.drTotal);
+      this.crTotal =  CommonFunctions.parseDecimal(this.crTotal);
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -318,6 +323,8 @@ export class TransactionViewComponent {
           this.totalcr += txnItm.Amount;
         }
       });
+      this.totaldr =  CommonFunctions.parseDecimal(this.totaldr);
+      this.totalcr =  CommonFunctions.parseDecimal(this.totalcr);
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
     }
@@ -335,7 +342,12 @@ export class TransactionViewComponent {
     if (val) {
       this.Reset();
       // this.GetTxn(val);
-
+      if(val.includes('PMTV')){
+        this.showPayeeAndCheque = true;
+      }
+      else{
+        this.showPayeeAndCheque = false;
+      }
       this.GetTxnbyVoucher(val);
 
     }
@@ -519,10 +531,12 @@ export class TransactionViewComponent {
     try {
       var secId = parseInt(localStorage.getItem("SectionId"));
       this.showeditPage =true;
+      this.fiscalYId = this.fiscalYearId;//mumbai-team-june2021-danphe-accounting-cache-change
+      this.changeDetector.detectChanges();//mumbai-team-june2021-danphe-accounting-cache-change
       this.editvoucherNumber = null;
       this.changeDetector.detectChanges();
       this.editvoucherNumber = this.voucherNumber;
-      this.fiscalYId =this.fiscalYearId;
+      this.changeDetector.detectChanges();//mumbai-team-june2021-danphe-accounting-cache-change
       //this.accountingService.VoucherNumber = this.voucherNumber;
       // this.router.navigate(['/Accounting/Transaction/EditVoucher']);
       // this.showeditPage = true;
@@ -549,15 +563,33 @@ export class TransactionViewComponent {
       return;
     }
     this.IsShowReceivedBy = false;
+    var receivedByMappingDetail = [];
     let Parameter = this.coreService.Parameters;
     Parameter = Parameter.filter(parms => parms.ParameterName == "ReceivedByInVoucher" && parms.ParameterGroupName == "Accounting");
     if (Parameter.length > 0) {
-      let receivedByMappingDetail = JSON.parse(Parameter[0].ParameterValue);
-      if((dataV.txnList.VoucherNumber.toLocaleLowerCase().includes(receivedByMappingDetail.VoucherCode))==true && dataV.SectionId == receivedByMappingDetail.SectionId)
+      let finalstr = '['+ Parameter[0].ParameterValue +']'
+      receivedByMappingDetail = JSON.parse(finalstr);
+    //   receivedByMappingDetail.forEach(element => {
+    //   if((dataV.txnList.VoucherNumber.toLocaleLowerCase().includes(element.VoucherCode))==true && dataV.SectionId == element.SectionId)
+    //   {
+    //     this.changeDetector.detectChanges();
+    //     this.IsShowReceivedBy=true;                      
+    //   }
+     
+    //  });
+
+    //for allow ReceivedBy to multiple voucher type 
+    let j=0;
+    for( let i= 0;i< receivedByMappingDetail.length; i++ )
+    {
+      for( j; j<receivedByMappingDetail[i].length; j++)      
+    if((dataV.txnList.VoucherNumber.toLocaleLowerCase().includes(receivedByMappingDetail[i][j].VoucherCode))==true && dataV.SectionId == receivedByMappingDetail[i][j].SectionId)
       {
         this.changeDetector.detectChanges();
-        this.IsShowReceivedBy=true;
+        this.IsShowReceivedBy=true;                      
       }
+      
+    }
     }
     //this.calType = calendarTypeObject.AccountingModule;
 
@@ -626,10 +658,12 @@ export class TransactionViewComponent {
     this.accBLService.PostToTransaction(this.txnDetails).
       subscribe(res => {
         if (res.Status == 'OK') {
-          this.msgBoxServ.showMessage("success", ["Reverse voucher saved"]);
-          var VoucherNumber = res.Results.VoucherNumber;
+          this.transaction.VoucherNumber= res.Results.VoucherNumber;
           this.IsReverse = false;
-          this.GetTxnbyVoucher(VoucherNumber);
+          this.viewTxn=true;
+          this.msgBoxServ.showMessage("success", ["Reverse voucher saved"]);
+          this.Close();//mumbai-team-june2021-danphe-accounting-cache-change
+          //this.GetTxnbyVoucher(VoucherNumber);
         }
         else {
           this.msgBoxServ.showMessage("failed", ['failed to create transaction.']);
@@ -655,5 +689,15 @@ export class TransactionViewComponent {
   }
   Closereverse() {
     this.IsReverse = false;
+  }
+
+  showVoucherHead() {
+    let Accountheadshow = this.coreService.Parameters.find(a => a.ParameterName == "ShowAccountHeadInVoucher" && a.ParameterGroupName == "Accounting").ParameterValue;
+    if (Accountheadshow == "true") {
+      this.showVoucherHeadCol = true;
+    }
+    else {
+      this.showVoucherHeadCol = false;
+    }
   }
 }

@@ -2033,7 +2033,7 @@ ag-grid, ag-grid-angular, ag-grid-ng2, ag-grid-polymer, ag-grid-aurelia {
     color: #444;
     font-family: 'Quicksand','Open Sans', sans-serif;
     font-weight: 500;
-    font-size: 12px;
+    font-size: 13px;
 }
 .ag-theme-fresh .ag-body-viewport {
     background-color: #fff;
@@ -4390,6 +4390,7 @@ ag-grid, ag-grid-angular, ag-grid-ng2, ag-grid-polymer, ag-grid-aurelia {
 
 .ag-center-cols-container{ 
     display: block;
+    min-height: 105px;
 }
 
 .ag-center-cols-viewport {
@@ -4430,7 +4431,18 @@ height: 100%;
 
 /*.ag-root{overflow: auto;}*/
 
+/* sanjit : added for fixed asset icons styles */
+.grid-action-icon.fixed-asset-action.fa {
+    font-size: 16px;
+    margin-right: 4px
+}
+.grid-action.phrm-stock-action.fa{
+	font-size: 16px;
+}
 
-
+.grid-action-icon.fixed-asset-action.fa.dark {
+    color: black;
+}
+/* sanjit : added for fixed asset icons styles */
 
 

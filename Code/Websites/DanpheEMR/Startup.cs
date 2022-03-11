@@ -14,13 +14,21 @@ using DanpheEMR.Security;
 using DanpheEMR.Core.Caching;
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
-using DanpheEMR.Utilities;
+using DanpheEMR.Utilities; 
 using DanpheEMR.CommonTypes;
 using DanpheEMR.Services.Pharmacy.Rack;
 using Newtonsoft.Json.Serialization;
 using DanpheEMR.Services;
 using System.Data.SqlClient;
 using Audit.SqlServer.Providers;
+using DanpheEMR.Services.Dispensary;
+using DanpheEMR.Services.Maternity;
+using DanpheEMR.Services.DispensaryTransfer;
+using DanpheEMR.Services.Vaccination;
+using DanpheEMR.Services.Pharmacy.PharmacyPO;
+using DanpheEMR.Services.LIS;
+using DanpheEMR.Services.Pharmacy.SupplierLedger;
+using DanpheEMR.Services.QueueManagement;
 
 namespace DanpheEMR
 {
@@ -90,11 +98,26 @@ namespace DanpheEMR
             services.AddTransient<IRackService, RackService>();
             services.AddTransient<IInventoryCompanyService, InventoryCompanyService>();
             services.AddTransient<IDesignationService, DesignationService>();
+            services.AddTransient<IInventoryReceiptNumberService, InventoryReceiptNumberService>();
             services.AddTransient<IInventoryGoodReceiptService, InventoryGoodReceiptService>();
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IFractionPercentService, FractionPercentService>();
             services.AddTransient<IFractionCalculationService, FractionCalculationService>();
             services.AddTransient<IVerificationService, VerificationService>();
+            services.AddTransient<IDispensaryService, DispensaryService>();
+            services.AddTransient<IDispensaryRequisitionService, DispensaryRequisitionService>();
+            services.AddTransient<IMaternityService, MaternityService>();
+            services.AddTransient<IDispensaryTransferService, DispensaryTransferService>();
+            services.AddTransient<IActivateInventoryService, ActivateInventoryService>();
+            services.AddTransient<IPharmacyPOService, PharmacyPOService>();
+            services.AddTransient<IVaccinationService, VaccinationService>();
+            services.AddTransient<ICssdItemService, CssdItemService>();
+            services.AddTransient<ICssdReportService, CssdReportService>();
+            services.AddTransient<INepaliReceiptService, NepaliReceiptService>();
+            services.AddTransient<ISupplierLedgerService, SupplierLedgerService>();
+            services.AddTransient<IFileUploadService, GoogleDriveFileUploadService>();
+            services.AddTransient<ILISService, LISService>();
+            services.AddTransient<IQueueManagementService, QueueManagementService>();
 
             // Add framework services.
             services.AddOptions();

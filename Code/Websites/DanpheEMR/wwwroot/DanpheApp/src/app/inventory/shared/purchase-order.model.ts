@@ -41,24 +41,25 @@ export class PurchaseOrder {
   public PurchaseOrderValidator: FormGroup = null;
 
   //sanjit: added for verification purpose
-  public IsVerificationEnabled : boolean = false;
+  public IsVerificationEnabled: boolean = false;
   public VerifierList: POVerifier[] = [];
   public CurrentVerificationLevel: number;
   public MaxVerificationLevel: number;
   public CurrentVerificationLevelCount: number;
   public VerificationStatus: string;
   public IsVerificationAllowed: boolean = false;
-  public VerifierIds : string;
+  public VerifierIds: string;
   public Item: ItemMaster = null;
   public Vendor: VendorMaster = null;
   public InvoiceHeaderId: number = null;
   public IsModificationAllowed: boolean = true;
-
+  public OrderFromStoreName: string = '';
   constructor() {
 
     var _formBuilder = new FormBuilder();
     this.PurchaseOrderValidator = _formBuilder.group({
       'VendorId': ['', Validators.compose([Validators.required])],
+
     });
   }
   ngOnInit() {

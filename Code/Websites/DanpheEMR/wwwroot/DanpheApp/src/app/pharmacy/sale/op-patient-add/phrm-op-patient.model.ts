@@ -29,7 +29,6 @@ export class PharmacyOpPatientVM {
   public Address: string = null;
 
   //public MembershipTypeId: number = 0;
-  public ProviderId:number= 0;
 
   //Audit Trail Information.
   public CreatedOn: string = null;

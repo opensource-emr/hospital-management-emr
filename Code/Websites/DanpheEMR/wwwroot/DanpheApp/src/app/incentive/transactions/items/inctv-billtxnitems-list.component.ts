@@ -196,7 +196,26 @@ export class INCTV_BillTxnItemListComponent {
 
   gridExportOptions = {
     fileName: 'InvoiceItemLevelIncentive_' + moment().format('YYYY-MM-DD') + '.xls',
-    displayColumns: ['TransactionDate', 'PatientName', 'ServiceDepartmentName', 'ItemName', 'InvoiceNo', 'ReferredByEmpName', 'AssignedToEmpName', 'TotalAmount']
+    displayColumns: ['TransactionDate', 'PatientName', 'ServiceDepartmentName', 'ItemName', 'InvoiceNo', 'ReferredByEmpName', 'AssignedToEmpName', 'TotalAmount','FractionCount']
   };
 
+  public ExportAllIncentiveDate() {
+    this.dlService.ReadExcel("/ReportingNew/ExportToExcel_INCTV_InvoiceItemLevel?FromDate="
+      + this.fromDate + "&ToDate=" + this.toDate)
+      .map(res => res)
+      .subscribe(data => {
+        let blob = data;
+        let a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "InvoiceItemLevelIncentive_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+        document.body.appendChild(a);
+        a.click();
+      },
+
+        res => this.ErrorMsg(res));
+  }
+  ErrorMsg(err) {
+    this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
+    console.log(err.ErrorMessage);
+  }
 }

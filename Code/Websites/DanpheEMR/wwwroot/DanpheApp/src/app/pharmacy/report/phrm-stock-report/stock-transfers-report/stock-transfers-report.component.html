@@ -1,0 +1,138 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Stock Transfers Report</span> </div>
+      <div class="row">
+        <div class="col-md-6">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+        </div>
+        <div class="col-md-4">
+          <label class="control-label col-md-5">Not Received Stocks<br />(In Transition)<b>:</b></label>
+          <div class="col-md-5">
+            <div class="input-group">
+              <div class="icheck-inline">
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input name="NotReceivedStocks" type="checkbox" value="NotReceivedStocks" [(ngModel)]="NotReceivedStocks" [ngModelOptions]="{standalone: true}">
+                  <span></span> </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="GetReportData()"[disabled]="loading">
+              <span *ngIf="!loading">Show Report</span>
+              <span *ngIf="loading">Loading...</span>
+             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12 col-xs-12">
+      <div class="row mt10">
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="control-label col-md-4">Item Name<b style="float:right;">:</b></label>
+            <div class="col-md-6 autocomplete-item">
+              <input danphe-auto-complete class="form-control" [(ngModel)]="selectedItem" [source]="allItemList" [list-formatter]="myItemListFormatter" placeholder="--Select Item--" display-property-name="ItemName" match-formatted="true" [grid-sort]="'ItemName'" value-property-name=null onClick="this.select();" (valueChanged)="onChangeItem($event)" max-num-list="10" (focusout)="CheckProperSelectedItem()" min-chars="0" style="width:100%;" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="control-label col-md-5">Source Store(From)<b style="float:right;">:</b></label>
+            <div class="col-md-6">
+              <select name="SelectedSourceStore" id="SelectedSourceStore" [(ngModel)]="selectedSourceStore" class="form-control">
+                <option [ngValue]="null" selected>All</option>
+                <option *ngFor="let store of sourceStoreList" [ngValue]="store">
+                  {{store.Name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="control-label col-md-4">Target Store(To)<b style="float:right;">:</b></label>
+            <div class="col-md-6">
+              <select name="SelectedTargetStore" id="SelectedTargetStore" [(ngModel)]="selectedTargetStore" class="form-control">
+                <option [ngValue]="null" selected>All</option>
+                <option *ngFor="let store of targetStoreList" [ngValue]="store">
+                  {{store.Name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="stockTransfersGridColumns" [grid-data]="stockTransfersResult" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footerContent" [grid-date-range]="dateRange" [report-for]="pharmacy" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+    <!-- Summary -->
+    <div class=" col-sm-12 col-md-12" style="margin-bottom: 10px !important; display: flex;justify-content: center;">
+      <div class="table-responsive table-wrapper" id="print_summary">
+        <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">
+                <span style="font-size:large;"> Summary </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container>
+              <tr>
+                <td></td>
+                <td style="font-weight:bold; color:blue"><b>Quantity</b></td>
+                <td style="font-weight:bold; color:blue"><b>Purchase Value</b></td>
+                <td style="font-weight:bold; color:blue"><b>Sales Value</b></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue">
+                  <span> <b> Transferred Stocks<br />(Received Stocks)</b> </span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.totalReceivedQuantity | number: '1.0-2' }}</span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;">{{grandTotal.totalReceivedPurchaseValue | Currency}} </span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.totalReceivedSalesValue | Currency }}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue">
+                  <span> <b>In-Transition Stocks <br />(Not Received Stocks) </b> </span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.totalTransitionQuantity | number: '1.0-2' }}</span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.totalTransitionPurchaseValue | Currency}} </span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.totalTransitionSalesValue | Currency }}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue">
+                  <span> <b> Total Stocks</b> </span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.grandTotalTransferredQuantity | number: '1.0-2' }}</span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;">{{grandTotal.grandTotalPurchaseValue | Currency}}</span>
+                </td>
+                <td>
+                  <span style="font-size:2rem;"> {{grandTotal.grandTotalSalesValue| Currency }}</span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

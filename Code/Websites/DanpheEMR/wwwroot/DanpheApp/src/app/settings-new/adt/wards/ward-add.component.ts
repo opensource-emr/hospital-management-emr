@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, Renderer2 } from "@angular/core";
 import { SecurityService } from '../../../security/shared/security.service';
 import { Ward } from '../../../adt/shared/ward.model';
 import { SettingsBLService } from '../../shared/settings.bl.service';
@@ -24,15 +24,23 @@ export class WardAddComponent {
   public wardList: Array<Ward> = new Array<Ward>();
   public subStoreList: Array<PHRMStoreModel> = new Array<PHRMStoreModel>();
   public selectedSubStore: PHRMStoreModel = new PHRMStoreModel();
-
+  public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
   constructor(
     public settingsBLService: SettingsBLService,
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService,
-    public changeDetector: ChangeDetectorRef
+    public changeDetector: ChangeDetectorRef,
+    public renderer: Renderer2,
   ) {
     this.GetActiveSubStore();
+    this.SetFocusById('WardName'); 
+    this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
+      if (e.keyCode == this.ESCAPE_KEYCODE) {
+        this.Close();
+      }
+    });   
   }
+  globalListenFunc: Function;
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showAddPage = val;
@@ -48,6 +56,7 @@ export class WardAddComponent {
 
       this.update = false;
     }
+    this.SetFocusById('WardName');  
   }
 
   GetActiveSubStore() {
@@ -77,6 +86,7 @@ export class WardAddComponent {
             }
             else {
               this.showMessageBox("Failed", res.ErrorMessage);
+              this.SetFocusById('WardName');
             }
           },
           err => {
@@ -149,4 +159,12 @@ export class WardAddComponent {
   onChangeSubstore($event) {
     this.CurrentWard.StoreId = $event.StoreId;
   }
+  public SetFocusById(id: string) {
+    window.setTimeout(function () {
+        let elementToBeFocused = document.getElementById(id);
+        if (elementToBeFocused) {
+            elementToBeFocused.focus();
+        }
+    }, 600);
+}
 }

@@ -1,7 +1,6 @@
 ﻿using DanpheEMR.DalLayer;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,12 +12,13 @@ namespace DanpheEMR.ViewModel.Pharmacy
     }
     public static class GetInvoiceReceiptByInvoiceIdFunc
     {
-        public static async Task<GetInvoiceReceiptByInvoiceIdViewModel> GetInvoiceReceiptByInvoiceIdAsync(this PharmacyDbContext db, int invoiceId)
+        public static GetInvoiceReceiptByInvoiceIdViewModel GetInvoiceReceiptByInvoiceId(this PharmacyDbContext db, int invoiceId)
         {
-            var invoiceDetail = await (from inv in db.PHRMInvoiceTransaction.Where(i => i.InvoiceId == invoiceId)
+            var invoiceDetail = (from inv in db.PHRMInvoiceTransaction.Where(i => i.InvoiceId == invoiceId)
                                  from pat in db.PHRMPatient.Where(p => p.PatientId == inv.PatientId)
+                                 from provider in db.Employees.Where(p => p.EmployeeId == inv.ProviderId).DefaultIfEmpty()
                                  from countryd in db.CountrySubDivision.Where(c => c.CountrySubDivisionId == pat.CountrySubDivisionId)
-                                 from fy in db.BillingFiscalYear.Where(f => f.FiscalYearId == inv.FiscalYearId)
+                                 from fy in db.PharmacyFiscalYears.Where(f => f.FiscalYearId == inv.FiscalYearId)
                                  from createdByUser in db.Users.Where(u => u.EmployeeId == inv.CreatedBy)
                                  from depo in db.DepositModel.Where(d => d.TransactionId == inv.InvoiceId).DefaultIfEmpty()
                                  from creditOrg in db.CreditOrganizations.Where(c => c.OrganizationId == inv.OrganizationId).DefaultIfEmpty()
@@ -26,6 +26,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
                                  {
                                      InvoicePrintId = inv.InvoicePrintId,
                                      ReceiptNo = inv.InvoiceId,
+                                     ClaimCode = inv.ClaimCode,
                                      ReceiptDate = inv.CreateOn,
                                      TotalQuantity = inv.TotalQuantity,
                                      DepositDeductAmount = (depo != null) ? depo.DepositAmount : 0,
@@ -35,14 +36,19 @@ namespace DanpheEMR.ViewModel.Pharmacy
                                      DepositBalance = (depo != null) ? depo.DepositBalance : 0,
                                      Remarks = inv.Remark,
                                      CreditOrganizationName = (creditOrg == null) ? null : creditOrg.OrganizationName,
-                                     UserName = createdByUser.UserName,
+                                     BillingUser = createdByUser.UserName,
                                      ReceiptPrintNo = inv.InvoicePrintId,
                                      PrintCount = inv.PrintCount,
                                      IsReturned = inv.IsReturn,
-                                     CurrentFinYear = fy.FiscalYearFormatted,
+                                     CurrentFinYear = fy.FiscalYearName,
                                      SubTotal = inv.SubTotal,
                                      DiscountAmount = inv.DiscountAmount,
+                                     VATPercentage = 0,
+                                     VATAmount = inv.VATAmount,
                                      TotalAmount = inv.TotalAmount,
+                                     ProviderName = (provider != null) ? provider.FullName : null,
+                                     ProviderNMCNumber = (provider != null) ? provider.MedCertificationNo : null,
+                                     StoreId = inv.StoreId,
                                      Patient = new GetInvoiceReceiptPatientDTO
                                      {
                                          PatientId = pat.PatientId,
@@ -53,30 +59,42 @@ namespace DanpheEMR.ViewModel.Pharmacy
                                          PhoneNumber = pat.PhoneNumber,
                                          CountrySubDivisionName = countryd.CountrySubDivisionName,
                                          Age = pat.Age,
-                                         PANNumber = pat.PANNumber,
+                                         NSHINumber = pat.Ins_NshiNumber,
+                                         PANNumber = (pat != null) ? pat.PANNumber : null,
                                          Address = pat.Address,
                                          DateOfBirth = pat.DateOfBirth,
                                          Gender = pat.Gender,
                                          PatientCode = pat.PatientCode
-                                     }
-                                 }).FirstOrDefaultAsync();
-            invoiceDetail.InvoiceItems = await (from invitm in db.PHRMInvoiceTransactionItems.Where(I => I.InvoiceId == invoiceId && I.Quantity > 0)
+                                     },
+
+                                 }).FirstOrDefault();
+
+
+            invoiceDetail.InvoiceItems = (from IItem in db.PHRMInvoiceTransactionItems.Where(I => I.InvoiceId == invoiceId && I.Quantity > 0)
+                                          from I in db.PHRMItemMaster.Where(i => i.ItemId == IItem.ItemId)
+                                          from G in db.PHRMGenericModel.Where(g => g.GenericId == I.GenericId).DefaultIfEmpty()
                                           select new GetInvoiceReceiptItemDTO
                                           {
-                                              ItemId = invitm.ItemId,
-                                              Quantity = invitm.Quantity,
-                                              ItemName = invitm.ItemName,
-                                              BatchNo = invitm.BatchNo,
-                                              ExpiryDate = invitm.ExpiryDate,
-                                              MRP = invitm.MRP,
-                                              FreeQuantity = invitm.FreeQuantity,
-                                              SubTotal = invitm.SubTotal,
-                                              VATPercentage = invitm.VATPercentage,
-                                              TotalAmount = invitm.TotalAmount,
-                                              DiscountPercentage = invitm.DiscountPercentage,
-                                              BilItemStatus = invitm.BilItemStatus,
-                                              TotalDisAmt = invitm.TotalDisAmt
-                                          }).OrderBy(x => x.ItemName).ToListAsync();
+                                              ItemId = IItem.ItemId,
+                                              Quantity = IItem.Quantity,
+                                              ItemName = IItem.ItemName,
+                                              BatchNo = IItem.BatchNo,
+                                              ExpiryDate = IItem.ExpiryDate,
+                                              MRP = IItem.MRP,
+                                              FreeQuantity = IItem.FreeQuantity,
+                                              SubTotal = IItem.SubTotal,
+                                              VATPercentage = IItem.VATPercentage,
+                                              VATAmount = IItem.VATAmount,
+                                              DiscountPercentage = IItem.DiscountPercentage,
+                                              TotalAmount = IItem.TotalAmount,
+                                              BilItemStatus = IItem.BilItemStatus,
+                                              TotalDisAmt = IItem.TotalDisAmt,
+                                              GenericName = (G != null) ? G.GenericName : "N/A"
+                                          }).ToList(); //OrderBy ItemName removed for LPH;
+            // for taxable and non taxable amount
+            invoiceDetail.TaxableAmount = invoiceDetail.InvoiceItems.Where(a => a.VATAmount > 0).Sum(a => a.SubTotal - a.TotalDisAmt);
+            invoiceDetail.NonTaxableAmount = invoiceDetail.InvoiceItems.Where(a => a.VATAmount <= 0).Sum(a => a.SubTotal ?? 0 - a.TotalDisAmt ?? 0);
+            invoiceDetail.VATPercentage = (invoiceDetail.TaxableAmount) == 0 ? 0 : (invoiceDetail.VATAmount * 100) / (invoiceDetail.TaxableAmount);
             return new GetInvoiceReceiptByInvoiceIdViewModel() { pharmacyReceipt = invoiceDetail };
         }
     }
@@ -84,6 +102,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
     {
         public int InvoicePrintId { get; set; }
         public int ReceiptNo { get; set; }
+        public Int64? ClaimCode { get; set; }
         public DateTime? ReceiptDate { get; set; }
         public double? TotalQuantity { get; set; }
         public double? DepositDeductAmount { get; set; }
@@ -93,16 +112,23 @@ namespace DanpheEMR.ViewModel.Pharmacy
         public double? DepositBalance { get; set; }
         public string Remarks { get; set; }
         public string CreditOrganizationName { get; set; }
-        public string UserName { get; set; }
+        public string BillingUser { get; set; }
         public int ReceiptPrintNo { get; set; }
         public int? PrintCount { get; set; }
         public bool? IsReturned { get; set; }
         public string CurrentFinYear { get; set; }
         public decimal? SubTotal { get; set; }
         public decimal? DiscountAmount { get; set; }
+        public decimal? VATAmount { get; set; }
         public decimal? TotalAmount { get; set; }
+        public string ProviderName { get; set; }
+        public string ProviderNMCNumber { get; set; }
         public GetInvoiceReceiptPatientDTO Patient { get; set; }
         public IList<GetInvoiceReceiptItemDTO> InvoiceItems { get; set; }
+        public decimal? VATPercentage { get; set; }
+        public decimal? TaxableAmount { get; set; }
+        public decimal? NonTaxableAmount { get; set; }
+        public int StoreId { get; set; }
     }
 
     public class GetInvoiceReceiptPatientDTO
@@ -115,6 +141,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
         public string PhoneNumber { get; set; }
         public string CountrySubDivisionName { get; set; }
         public string Age { get; set; }
+        public string NSHINumber { get; set; }
         public string PANNumber { get; set; }
         public string Address { get; set; }
         public DateTime? DateOfBirth { get; set; }
@@ -136,5 +163,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
         public decimal? TotalAmount { get; set; }
         public string BilItemStatus { get; set; }
         public decimal? TotalDisAmt { get; set; }
+        public string GenericName { get; set; }
+        public decimal? VATAmount { get; set; }
     }
 }

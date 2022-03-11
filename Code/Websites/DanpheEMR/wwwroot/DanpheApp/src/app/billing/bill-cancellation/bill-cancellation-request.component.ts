@@ -17,7 +17,8 @@ import * as moment from 'moment/moment';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
-  templateUrl: "./bill-cancellation-request.html" //"/BillingView/BillCancellationRequest"
+  templateUrl: "./bill-cancellation-request.html", //"/BillingView/BillCancellationRequest"
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class BillCancellationRequestComponent {
     public ProvisionalItemsGridColumns: Array<any> = [];
@@ -162,6 +163,12 @@ cancelRequest(billTransactionItem, index: number){
     }
   }else {
     this.msgBoxServ.showMessage("failed", ["Please Write Cancellation Remarks"]);
+  }
+}
+
+public hotkeys(event) {
+  if (event.keyCode == 27) {//key->ESC
+    this.showConfirmationBox=false;
   }
 }
 

@@ -35,9 +35,9 @@ export class UserListComponent {
     this.selectedItem = new User();
     this.selectedResetPassItem = new User();
     this.selectedActivateDeactivate = new User();
-    this.getEmpList();
+    this.getUserList();
   }
-  public getEmpList() {
+  public getUserList() {
     this.settingsBLService.GetUserList()
       .subscribe(res => {
         if (res.Status == "OK") {
@@ -85,9 +85,6 @@ export class UserListComponent {
 
         break;
       }
-
-
-
       default:
         break;
     }
@@ -99,15 +96,18 @@ export class UserListComponent {
   }
 
   CallBackAdd($event) {
-    this.userList.push($event.user);
-    if (this.index != null)
-      this.userList.splice(this.index, 1);
-    this.userList = this.userList.slice();
+    if($event.user){
+      this.userList.push($event.user);
+    }
+    // if (this.index != null){
+    //   this.userList.splice(this.index, 1);
+    // }
+    this.userList=this.userList.slice();
     this.changeDetector.detectChanges();
     this.showAddPage = false;
     this.showResetPassPage = false;
     this.selectedItem = null;
-    this.index = null;
+    this.index = null; 
   }
   HideRoleManage() {
     this.showManageRole = false;
@@ -131,7 +131,7 @@ export class UserListComponent {
                 this.msgBoxServ.showMessage("success", [responseMessage]);
                 let userUpdated = { item: currUser };
                 //This for send to callbackadd function to update data in list
-                this.getEmpList();
+                this.getUserList();
               }
               else {
                 this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);

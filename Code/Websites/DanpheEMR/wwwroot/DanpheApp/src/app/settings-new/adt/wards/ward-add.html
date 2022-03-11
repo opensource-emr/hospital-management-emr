@@ -16,7 +16,8 @@
                           <input class="form-control" maxlength="100" type="text" id="WardName" formControlName="WardName"
                                                [(ngModel)]="CurrentWard.WardName"
                                                required value=""
-                                               placeholder="Enter Ward Name" />
+                                               placeholder="Enter Ward Name"
+                                               (keyup.enter)="SetFocusById('WardCode')"  />
                           <span class="color-red font-sm" [hidden]="CurrentWard.IsValidCheck('WardName','required') || !(CurrentWard.IsDirty('WardName'))">Ward Name is required</span> <span class="color-red font-sm" *ngIf="CurrentWard.IsDirty('WardName')" [hidden]="CurrentWard.IsValidCheck('WardName','maxlength')"> Length is not proper</span> </div>
                       </div>
                       <div class="form-group">
@@ -25,7 +26,8 @@
                           <input class="form-control" maxlength="20" type="text" id="WardCode" formControlName="WardCode"
                                                [(ngModel)]="CurrentWard.WardCode"
                                                required value=""
-                                               placeholder="Enter Ward Code" />
+                                               placeholder="Enter Ward Code" 
+                                               (keyup.enter)="SetFocusById('add')"/>
                           <span class="color-red font-sm" *ngIf="CurrentWard.IsDirty('WardCode')" [hidden]="CurrentWard.IsValidCheck('WardCode','maxlength')">WardCode should be less than 20 characters</span> </div>
                       </div>
                       <div class="form-group">
@@ -73,8 +75,13 @@
                      
             </div>
 			   <div class="panel-footer">
-                        <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
-                        <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                        <input type="button" id="add"  class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+                        
+                        <!-- <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" /> -->
+                        <button *ngIf="update" id="add" type="button" class="btn green btn-success margin-7-hr"
+                        [disabled]="disableButton" (click)="loading=true;Update()">
+                        Update
+                      </button>
                       </div>
           </form>
         </div>

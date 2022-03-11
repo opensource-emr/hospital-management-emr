@@ -1,0 +1,206 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal " style="margin-bottom:25px">
+  <div class="portlet-body ">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> Depreciation History of <strong> {{selectedAsset.ItemName | CapitalFirstLetter}} |
+                {{selectedAsset.BarCodeNumber}}</strong>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()"><i class="fa fa-close"></i></a>
+          </div>
+          <div style="padding: 0 10px;">
+            <a class="btn btn-primary" (click)="AddDepreciationBtnClick()" style="margin-bottom: 10px!important;">
+              Add Depreciation</a>
+            <table class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Fiscal Year</th>
+                  <th>Depreciation Method</th>
+                  <th>Rate</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Depreciation Value</th>
+                  <th>Accumulated Amount</th>
+                  <th *ngIf="isCurrentYearDeprenRecorded">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let dprn of depreciationList; let i = index;">
+                  <td>{{dprn.FiscalYearName}}</td>
+                  <td>{{dprn.Method}}</td>
+                  <td>{{dprn.Rate}}</td>
+                  <td>{{dprn.StartDate | nepaliDate}}</td>
+                  <td>{{dprn.EndDate | nepaliDate}}</td>
+                  <td>{{dprn.DepreciationAmount}}</td>
+                  <td>{{dprn.AccumulatedAmount}}</td>
+                  <td *ngIf="isCurrentYearDeprenRecorded"><a *ngIf="dprn.FiscalYearId==currentFiscalYearId"
+                      class="btn btn-primary" (click)="EditCurrentYearDepreciation(i)"> Edit </a></td>
+                </tr>
+                <tr *ngIf="(depreciationList.length==0)">
+                  <td class="text-center" colspan="7">No Depreciation Records</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div *ngIf="showAddForm" style="margin-top: 50px!important;">
+              <p class="text-center" style="font-weight: 700;font-size: large;">{{EditMode?"Edit":"Add"}} Form</p>
+              <form class="hm-form" [formGroup]="depreciation.DepreciationValidators">
+                <table class="table table-striped table-bordered table-hover">
+                  <tbody>
+                    <tr style="font-weight: 700; margin-bottom: 100px!important;">
+                      <td>Item Code :</td>
+                      <td>{{selectedAsset.ItemCode}}</td>
+                      <td>Item Name :</td>
+                      <td>{{selectedAsset.ItemName}}</td>
+                      <td>Barcode Number: </td>
+                      <td>{{selectedAsset.BarCodeNumber}}</td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Fiscal Year<sup>*</sup>:</td>
+                      <!-- <td><input  type="text" [(ngModel)]="depreciation.FiscalYearId"/>   </td> (change)="FiscalYearChange(fy)"  -->
+                      <td><select (change)="FiscalYearChange($event)" [(ngModel)]="depreciation.FiscalYearId"
+                          formControlName="FiscalYearId">
+                          <option [value]="undefined">Select Fiscal Year</option>
+                          <option *ngFor="let fy of fiscalYearList" [value]="fy.FiscalYearId">{{fy.FiscalYearName}}
+                          </option>
+                        </select>
+                        &nbsp;&nbsp;&nbsp;<span Class="color-red font-sm"
+                          [hidden]="depreciation.IsValidCheck('FiscalYearId','required') || !(depreciation.IsDirty('FiscalYearId'))">Fiscal
+                          Year is required !</span>
+                      </td>
+                      <td>Depreciation Method<sup>*</sup>:</td>
+                      <td><select (change)="DeprnMethodChange($event)" [(ngModel)]="depreciation.AssetDeprnMethodId"
+                          formControlName="AssetDeprnMethodId">
+                          <option [value]="undefined">Select Method</option>
+                          <option *ngFor="let meth of methodList" [value]="meth.AssetDeprnMethodId">{{meth.Method}}
+                          </option>
+                        </select>
+                        &nbsp;&nbsp;&nbsp;<span Class="color-red font-sm"
+                          [hidden]="depreciation.IsValidCheck('AssetDeprnMethodId','required') || !(depreciation.IsDirty('AssetDeprnMethodId'))">Depreciation
+                          Method is required !</span>
+                      </td>
+
+                    </tr>
+                    <tr>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Start Date<sup>*</sup>:</td>
+                      <td>
+                        <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'" formControlName="StartDate"
+                          [(ngModel)]="depreciation.StartDate" style="width:100px;"></danphe-date-picker>
+                        &nbsp;&nbsp;&nbsp;
+                        <span Class="color-red font-sm"
+                          [hidden]="depreciation.IsValidCheck('StartDate','required') || !(depreciation.IsDirty('StartDate'))">Start
+                          Date is required !</span>
+                      </td>
+                      <td>End Date<sup>*</sup>:</td>
+                      <td>
+                        <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'" formControlName="EndDate"
+                          [(ngModel)]="depreciation.EndDate" style="width:100px;"></danphe-date-picker>
+                        &nbsp;&nbsp;&nbsp;<span Class="color-red font-sm"
+                          [hidden]="depreciation.IsValidCheck('EndDate','required') || !(depreciation.IsDirty('EndDate'))">End
+                          Date is required !</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                    </tr>
+
+                    <tr>
+                      <td>Rate :</td>
+                      <td><input type="number" [(ngModel)]="depreciation.Rate" [ngModelOptions]="{standalone:true}" />
+                      </td>
+                      <td> Depreciation Value<sup>*</sup>:</td>
+                      <td><input type="number" [(ngModel)]="depreciation.DepreciationAmount"
+                          formControlName="DepreciationAmount" />
+                        &nbsp;&nbsp;&nbsp;<span Class="color-red font-sm"
+                          [hidden]="depreciation.IsValidCheck('DepreciationAmount','required') || !(depreciation.IsDirty('DepreciationAmount'))">Depreciation
+                          Amount is required !</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </div>
+            <div class="text-right" *ngIf="showAddForm">
+              <div class="panel-footer">
+                <button *ngIf="showAddForm" type="button" class="btn btn-success" (click)="Submit()"
+                  [disabled]="loading">
+                  {{EditMode?"Update":"Add"}} Depreciation Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 
+<div class="popup-static portlet box portlet-fullscreen custom_modal " style="margin-bottom:25px">
+    <div class="portlet-body ">
+      <div class="row">
+      <div class="col-md-12">       
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Assets Depreciation Edit</span></h3>
+            <a class="btn btn-danger" (click)="Close()"><i class="fa fa-close"></i></a> 
+          </div> 
+          <div class="selectedAsset" style="padding: 0 10px;">
+           <table class="table table-striped table-bordered table-hover">
+            <thead>
+              <tr class="tbl-td-padding">
+                <td>Bar Code Number</td>
+                <td>Item Name</td>
+                <td>Total Life in Year</td>
+                <td>Year of use</td>
+                <td>Manufacture Date</td>
+                <td>Warranty</td>
+                <td>Performance</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="selectedAsset">
+                <td>{{selectedAsset.ItemCode}}</td>
+                <td>{{selectedAsset.BarCodeNumber}}</td>
+                <td>{{selectedAsset.ItemName}}</td>
+                <td><input type="number" min="0" [(ngModel)]="selectedAsset.TotalLife" style="width:100px;"></td>
+                <td>
+                  <input type="text" [(ngModel)]="selectedAsset.YearOfUse"   style="width:100px;" />
+                 </td>
+                 <td>
+                  <danphe-date-picker  disbal ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}" [(ngModel)]="selectedAsset.ManufactureDate" [allow-future-date]="true" style="width:100px;" ></danphe-date-picker>
+                 </td>
+                 <td>{{selectedAsset.WarrantyExpiryDate | date:'yyyy-MM-dd'}}</td>
+                <td>
+                  <select [(ngModel)]="selectedAsset.Performance"  >
+                    <option [ngValue]="null" disabled >...Choose a Performance.... </option>
+                    <option value="Good Condition">Good Condition</option>
+                    <option value="Working">Working</option>
+                    <option value="Not working">Not working</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+           </table>
+           <div class="selectedAsset text-center">
+            <div class="panel-footer">
+              <input type="button" class="btn btn-success" (click)="Save()" value="Update"   [disabled]="loading" />
+            </div>          
+          </div>
+            </div>
+          </div>
+  
+        </div>  
+      </div> 
+      </div>
+    </div> -->

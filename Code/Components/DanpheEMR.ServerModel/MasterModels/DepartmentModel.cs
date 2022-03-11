@@ -16,6 +16,7 @@ namespace DanpheEMR.ServerModel
         public string DepartmentName { get; set; }
         public string Description { get; set; }
         public int? DepartmentHead { get; set; }
+        public string NoticeText { get; set; }
         public bool IsActive { get; set; }
         public bool IsAppointmentApplicable { get; set; }
         public int? CreatedBy { get; set; }
@@ -23,6 +24,7 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public int? ParentDepartmentId { get; set; }
+        public string RoomNumber { get; set; }
 
         [NotMapped]
         public List<BillItemPrice> ServiceItemsList { get; set; }

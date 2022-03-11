@@ -28,6 +28,7 @@ import { SettingsBLService } from "../../settings-new/shared/settings.bl.service
 import { Employee } from "../../employee/shared/employee.model";
 import { BillingTransaction } from "../../billing/shared/billing-transaction.model";
 import { DanpheHTTPResponse } from "../../shared/common-models";
+import * as moment from "moment";
 
 @Component({
   selector: "visit-info",
@@ -41,7 +42,7 @@ export class VisitInfoComponent implements OnInit {
   public selectedDoctor = { DepartmentId: 0, DepartmentName: "", ProviderId: 0, ProviderName: "", ItemName: "", Price: 0, IsTaxApplicable: false, DepartmentLevelAppointment: false };
   public selectedDepartment = { DepartmentId: 0, DepartmentName: "" };
 
-  public departmentList: Array<Department>;
+  public departmentList: Array<Department> = [];
   public departmentId: number;
   public providerId: number;
   @Input("isInsuranceBilling")
@@ -51,6 +52,7 @@ export class VisitInfoComponent implements OnInit {
   public priceCategoryChanged: Subscription;
   public showDocMandatory: boolean = false; //this is used to show either doctor is mandatory or not// it is used only in case of EHS price selection --Yubraj 23rd 2019
 
+  public visitTimeDiff: number = null;
 
 
   constructor(public visitBLService: VisitBLService,
@@ -96,14 +98,26 @@ export class VisitInfoComponent implements OnInit {
               this.showDocMandatory = false;
               this.visit.UpdateValidator("off", "Doctor", null);
               this.visit.IsValidSelProvider = true;
+              //Remove doctor assignment for department level appointment
+              if (this.enableDepartmentLevelAppointment) {
+                this.visit.ProviderId = null;
+                this.visit.ProviderName = null;
+              }
             }
           }
         }
       });
+
+    this.visitTimeDiff = this.coreService.Parameters.find(p => p.ParameterGroupName == "Appointment" && p.ParameterName == "VisitTimeDifferenceMinutes").ParameterValue;
+    this.visit.VisitTime = moment().add(this.visitTimeDiff, 'minutes').format('HH:mm');
+    setInterval(() => {
+      if (this.visit.VisitTime)
+        this.visit.VisitTime = moment().add(this.visitTimeDiff, 'minutes').format('HH:mm');;
+    }, 1000);
+
   }
 
   ngOnInit() {
-
     if (this.visitService.appointmentType.toLowerCase() == "transfer") {
       this.visit.ParentVisitId = this.visitService.ParentVisitInfo.PatientVisitId;
       this.visit.TransferredProviderId = this.visitService.ParentVisitInfo.ProviderId;
@@ -148,7 +162,11 @@ export class VisitInfoComponent implements OnInit {
     }
 
     this.AssignAppointmentDetails();
+  }
 
+  ngAfterViewInit() {
+    if (this.departmentList && this.departmentList.length)
+      this.SetFocusById('txtDepartment');
   }
 
   //needed for Bill-Change events..
@@ -156,7 +174,6 @@ export class VisitInfoComponent implements OnInit {
     // prevent memory leak when component destroyed
     this.priceCategoryChanged.unsubscribe();
   }
-
 
   AssignAppointmentDetails() {
     if (this.appointmentService.getGlobal().AppointmentId) {
@@ -197,9 +214,16 @@ export class VisitInfoComponent implements OnInit {
   GetDepartments() {
     this.visitBLService.GetDepartment()
       .subscribe(res => {
-        if(res.Status == "OK")
-        this.departmentList = res.Results;
-      });
+        if (res.Status == "OK")
+          this.departmentList = res.Results;
+        this.SetFocusById('txtDepartment');
+        // if (this.visit.PatientId) {
+        //   this.SetFocusById('txtDepartment');
+        // }
+      },
+        error => {
+          this.msgBoxServ.showMessage('error', ['No Departments found']);
+        });
   }
 
   GetVisitDoctors() {
@@ -246,7 +270,6 @@ export class VisitInfoComponent implements OnInit {
         this.visit.IsValidSelProvider = true;
         this.visit.IsValidSelDepartment = true;
         this.visit.DepartmentId = doctor.DepartmentId;
-
         this.visitService.TriggerBillChangedEvent({ ChangeType: "Doctor", SelectedDoctor: this.selectedDoctor });
       }
       else {
@@ -282,6 +305,7 @@ export class VisitInfoComponent implements OnInit {
         this.visit.IsValidSelProvider = true;
         this.visit.DepartmentId = department.DepartmentId;
         this.visit.DepartmentName = department.DepartmentName;
+        this.visit.DeptRoomNumber = department.RoomNumber;
         this.selectedDoctor = null;
         this.FilterDoctorList();
 
@@ -354,5 +378,38 @@ export class VisitInfoComponent implements OnInit {
   }
 
   //end: Pratik: 12Sept'19--For External Referrals
+
+  SetFocusById(IdToBeFocused: string) {
+    window.setTimeout(function () {
+      let elemToFocus = document.getElementById(IdToBeFocused)
+      if (elemToFocus != null && elemToFocus != undefined) {
+        elemToFocus.focus();
+      }
+    }, 100);
+  }
+
+  enterFromDepartment() {
+    this.AssignSelectedDepartment();
+    if (!this.visit.PatientId && this.showDocMandatory == false) {
+
+      this.SetFocusById('aptPatFirstName');
+
+    } else if (!this.visit.PatientId && this.showDocMandatory == true) {
+      this.SetFocusById('doctorName');
+
+    } else if (this.visit.PatientId && this.showDocMandatory == true) {
+      this.SetFocusById('doctorName');
+    }
+    else {
+      this.SetFocusById('tender');
+    }
+  }
+  enterFromDoctor() {
+    if (!this.visit.PatientId) {
+      this.SetFocusById('aptPatFirstName');
+    } else {
+      this.SetFocusById('tender');
+    }
+  }
 
 }

@@ -51,9 +51,10 @@ export class ImagingReportViewModel {
   public PatientCode: string = null;//sud:16Jul'19--needed for edit report.
   public ReportTemplateId: number = null;
   public TemplateName: string = "Not Set";//default value for template.
-
+  public Muncipality : string = null;
+  public CountrySubDivision : string = null;
   public PatientNameLocal: string = null;
-
+  public BillingDate:string = null;
   public ImagingReportId: number = null;
   public ImagingItemName: string = null;
   public ImagingTypeName: string = null;
@@ -85,4 +86,6 @@ export class RadiologyScanDoneDetail {
   public Remarks: string = "";
   public PatientCode: string = "";
   public ShortName: string = "";
+  public FilmTypeId:number = null;
+  public FilmQuantity:number = null;
 }

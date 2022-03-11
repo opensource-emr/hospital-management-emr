@@ -34,15 +34,23 @@ export class PurchaseRequestItemModel {
 
   //ItemName only for display purpose
   public ItemName: string = "";
-  public Code: string=""
+  public Code: string = ""
   public Item: ItemModel = null;
+  public MSSNO: string = null; ///Rajib: 11/25/2020 Tilagnga Hospital
+  public SupplyRequiredBefore: string = null; ///Rajib: 11/25/2020 Tilagnga Hospital
+  public QuantityVerifiedOn: string = moment().format("YYYY-MM-DD"); ///Rajib: 11/25/2020 Tilagnga Hospital
+  public ItemCategory: string = '';//rohit/ramesh:23Sep'21--For Capital/Consumable Combined..
+  public filteredItemList: any[] = [];//rohit/ramesh:23Sep'21--For Capital/Consumable Combined..
+  public UOMName: string; // for UI change ie View Page;
+  HSNCODE: string = "";
 
   constructor() {
 
     var _formBuilder = new FormBuilder();
     this.PurchaseRequestItemValidator = _formBuilder.group({
       'ItemId': ['', Validators.compose([Validators.required])],
-      'Quantity': ['', Validators.compose([Validators.required, Validators.min(1)])],
+      'Quantity': ['', Validators.compose([Validators.required])],
+
     });
   }
 

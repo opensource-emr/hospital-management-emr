@@ -18,6 +18,7 @@ export class RPT_LAB_DoctorWisePatientCountLabReportComponent {
   public currentdoctorwiselab: RPT_LAB_DoctorWiseLabModel = new RPT_LAB_DoctorWiseLabModel();
   public fromDate: string = null;
   public toDate: string = null;
+  public dateRange:string = "";
 
   constructor(
     public dlService: DLService,
@@ -117,5 +118,6 @@ export class RPT_LAB_DoctorWisePatientCountLabReportComponent {
 
     this.currentdoctorwiselab.fromDate = this.fromDate;
     this.currentdoctorwiselab.toDate = this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 }

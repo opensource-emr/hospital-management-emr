@@ -43,6 +43,10 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         [NotMapped]
         public int? CreditOrganizationId { get; set; }
+        //EMR_LPH_MERGE: NageshBB- 18-June-2021-below LedgerId column name added here for fix build error after emr accounting module paste into code
+        [NotMapped]
+        public int? LedgerId { get; set; }
+        
 
     }
 }

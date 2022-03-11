@@ -10,6 +10,7 @@ export class ExternalReferralModel {
 
   public TDSPercent: number = 0; //pratik:15April'2020
   public PANNumber: string = null;//pratik:15April'2020
+  public NMCNumber: string = null;
   public IsIncentiveApplicable: boolean = false;//pratik:15April'2020
 
   public IsActive: boolean = true;
@@ -28,8 +29,8 @@ export class ExternalReferralModel {
     this.ExternalRefValidator = _formBuilder.group({
       'ReferrerName': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
       //'ContactNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$'), Validators.maxLength(15)])],
-      'ContactNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
-      'EmailAddress': ['', Validators.compose([Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')])], 
+      'ContactNumber': ['', Validators.compose([Validators.pattern('^[a-zA-Z0-9_@./#)(&+-]+$')])],
+      'EmailAddress': ['', Validators.compose([Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')])],
     });
   }
 
@@ -37,7 +38,7 @@ export class ExternalReferralModel {
     if (fieldName == undefined) {
       return this.ExternalRefValidator.dirty;
     }
-      
+
     else
       return this.ExternalRefValidator.controls[fieldName].dirty;
   }
@@ -59,6 +60,6 @@ export class ExternalReferralModel {
     else {
       return !(this.ExternalRefValidator.hasError(validator, fieldName));
     }
-      
+
   }
 }

@@ -30,7 +30,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Select Employee<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input danphe-auto-complete
+                  <input id="EmployeeId" (keyup.enter)="GoToNextInput('UserName')" danphe-auto-complete
                            [(ngModel)]="selEmployee"
                            [source]="empList"
                            placeholder="Employee Name"
@@ -50,7 +50,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">User Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input required value="" class="form-control" maxlength="30"
+                  <input (keyup.enter)="GoToNextInput('EmailId')" required value="" class="form-control" maxlength="30"
                            [(ngModel)]="CurrentUser.UserName"
                            formControlName="UserName"
                            type="text" id="UserName" placeholder="User Name" />
@@ -59,7 +59,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Email Id<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input name="" required value="" class="form-control" maxlength="30"
+                  <input id="EmailId" (keyup.enter)="GoToNextInput('Password')" name="" required value="" class="form-control" maxlength="30"
                            [(ngModel)]="CurrentUser.Email" formControlName="Email"
                            type="email" placeholder="Email Id" />
                   <br />
@@ -68,7 +68,7 @@
               <div class="form-group">
                 <label class="control-label col-md-5">Password<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input name="" required value="" class="form-control" maxlength="30"
+                  <input  id="Password" (keyup.enter)="GoToNextInput('Addbtn')" name="" required value="" class="form-control" maxlength="30"
                            [(ngModel)]="CurrentUser.Password" formControlName="Password"
                            type="password" placeholder="Password" />
                   <br />
@@ -91,7 +91,7 @@
               
             </div>
 			  <div class="panel-footer">
-                <input type="button" class="btn btn-primary" (click)="Add()" value="Add" />
+                <input type="button" id="Addbtn" class="btn green btn-success margin-7-hr" (click)="Add()" value="Add" />
               </div>
           </form>
         </div>

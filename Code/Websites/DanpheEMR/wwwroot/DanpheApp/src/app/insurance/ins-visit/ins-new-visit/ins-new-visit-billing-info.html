@@ -1,0 +1,277 @@
+<style>
+  .headin-left {
+    /*position: relative;
+    display: table;
+    content: '';*/
+  }
+
+  .headin-left:after {
+    /*position: absolute;
+      left: 7px;
+      top: -14px;
+      content: 'Billing Information';
+      font-weight: 700;
+      color: #006687;
+      background: #fff;
+      padding: 0px 5px;
+      line-height: 24px;*/
+  }
+
+  .headin-left .icheck-inline {
+    padding-left: 0px;
+    font-size: 0.95em;
+    font-weight: 600;
+  }
+
+  .headin-left .icheck-inline select,
+  .headin-left .form-control {
+    height: 30px;
+    font-size: 0.95em;
+    padding-left: 5px;
+    /* font-family: 'Source Sans Pro'; */
+  }
+
+  .headin-left .bill-info table {
+    /* font-family: 'Source Sans Pro'; */
+    font-weight: 600;
+  }
+
+  .headin-left label,
+  .bill-inf label {
+    font-size: 0.90em;
+    font-weight: 700;
+    /* font-family: Source Sans Pro; */
+    color: #333;
+  }
+
+  .bill-inf {
+    /* font-family:'Source Sans Pro' */
+  }
+
+  .p-0 {
+    padding: 0px !important;
+  }
+
+  .blink_me {
+    animation: blinker 1s linear infinite;
+  }
+
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .delBtn {
+    padding: 0;
+    margin-top: 0;
+    margin-right: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 30px !important;
+    text-align: center;
+  }
+
+  input[placeholder="Search Additional Item Name"] {
+    border: 1px solid #ccc;
+    height: 30px;
+    padding: 5px;
+    width: 100%;
+  }
+</style>
+
+<div class="headin-left"
+  style="border: 1px solid #96969a;margin-top: 8px; margin-bottom:15px; border-radius: 2px !important;padding: 20px 0px 10px;">
+  <h3 class="visit-head">
+    <i class="fa fa-file-o"></i>Billing Information
+    <price-category-select *ngIf="IsCountryIdLoaded && ShowPriceCategory"
+      (on-category-change)="OnPriceCategoryChange($event)" [selected-price-category]="priceCategory" class="select-pc">
+    </price-category-select>
+    <label *ngIf="!showBillSummaryPanel">Billing Not Required.</label>
+  </h3>
+  <div class="col-md-12 form-horizontal">
+    <div class="row">
+      <div class="col-md-12" *ngIf="showBillSummaryPanel">
+        <div class="col-md-12" style="padding: 0px;">
+          <div>
+            <div style="border-bottom: 2px solid #f6f6f6;margin-bottom: 5px;">
+              <div class="form-group" style="margin-bottom: 5px;" *ngIf="ShowAdditionalBillItem">
+                <label class="col-md-4" style="padding-right:0">Additional Bill Item ? </label>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <div class="icheck-inline" style="margin-top: 0">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="AdditionalBillItem" type="checkbox" value=""
+                          title="do you want to show Additional Bill Item" [(ngModel)]="isAdditionalBillItem"
+                          (ngModelChange)="IsAdditionalBillItemChange()">
+                        <span></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <table class="bill-itms bill_items_table custom_table padLess_table"
+                style="width:100%; font-size: 13px; border: 1px solid #ccc;">
+                <tr style="background: #eee; color: #333;font-weight: 500;">
+                  <td></td>
+                  <td class="print-par" style="width:60%; padding:4px 5px; color: #000;"><b>Particular(s)</b></td>
+                  <td class="text-right print-price" style="padding:4px 5px; width: 20%;    color: #000;"><b>Price</b>
+                  </td>
+                  <td class="text-right print-rate" style="padding:4px 5px; width: 10%;    color: #000;"><b>Dis</b></td>
+                  <td class="text-right print-amt" style="padding:4px 5px; width: 10%;    color: #000;"><b>Amt</b></td>
+                  <td></td>
+                </tr>
+                <tr *ngFor="let billItem of billingTransaction.BillingTransactionItems; let i=index">
+                  <ng-container>
+                    <td></td>
+                    <td style="padding:5px; font-size: 12px; font-weight: 600; width: 60%">{{billItem.ItemName}}</td>
+
+                    <td *ngIf="billItem.ItemName!='Health Card'" class="text-right print-rate"
+                      style="padding: 5px; font-weight: 600;width: 20%">
+                      <input [(ngModel)]="billItem.GovtInsurancePrice" class="form-control" type="number" min="0"
+                        (ngModelChange)="Calculation()" placeholder="GovtInsurancePrice" 
+                        style="text-align: right; padding: 1px; height: 25px;" [disabled]="!PriceEditable ? true : null" />
+                    </td>
+                    <td class="text-right print-rate" style="padding: 5px; font-weight: 600; width:10%">
+                      {{billItem.DiscountAmount}}</td>
+                    <td class="text-right print-amt" style="padding: 5px; font-weight: 600;width:10%">
+                      {{billItem.TotalAmount}}</td>
+                    <td></td>
+                  </ng-container>
+                </tr>
+                <tr *ngFor="let row of AdditionBillItemList;let indx = index">
+                    <ng-container *ngIf="isAdditionalBillItem && AdditionBillItemList.length && ShowAdditionalBillItem">
+                      <td>
+                        <a class="btn btn-success delBtn" (click)="AddNewBillTxnItemRow(row)"
+                          title="Click to add new item">
+                          <i class="fa fa-plus"></i>
+                        </a>
+                      </td>
+                      <td>
+                        <input danphe-auto-complete [(ngModel)]="row.ItmObj" [list-formatter]="ItemNameListFormatter"
+                          [source]="AdditionalBilItems" placeholder="Search Additional Item Name"
+                          display-property-name="ItemName" value-property-name=null onclick="this.select()"
+                          max-num-list="10" (ngModelChange)="ItemChange(row,indx)" />
+                      </td>
+                      <td>
+                        <input type="number" style="width:60px;" [(ngModel)]="row.GovtInsurancePrice"
+                          [disabled]="!row.PriceChangeEnabled" 
+                           (change)="OnPriceChange(row)" onClick="this.select();" />
+                      </td>
+                      <td class="text-right print-rate" style="padding: 5px; font-weight: 600; width:10%">
+                        {{row.DiscountAmount}}</td>
+                      <td class="text-right print-amt" style="padding: 5px; font-weight: 600;width:10%">
+                        {{row.TotalAmount}}</td>
+                      <td>
+                        <a class="btn btn-danger delBtn" (click)="deleteRow(row,indx)"
+                          title="Click to remove this item">
+                          <i class="fa fa-times"></i>
+                        </a>
+                      </td>
+                    </ng-container>
+                </tr>
+             
+              </table>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label *ngIf="ShowDiscountPercent" class="col-md-3" style="position: relative; top: 6px;">Discount %</label>
+            <div class="col-md-3" *ngIf="ShowDiscountPercent">
+              <input [(ngModel)]="billingTransaction.DiscountPercent" class="form-control" type="number" min="0"
+                onClick="this.select();" [disabled]="DisableDiscountPercent" max="100" (ngModelChange)="Calculation()"
+                placeholder="Discount %" />
+            </div>
+
+          </div>
+          <div class="col-md-12" style="padding-left: 0px;">
+            <div class="row">
+              <label class="col-md-3" style="color:#000; font-size: 14px; font-weight: bold"><b>SubTotal:</b></label>
+              <div class="col-md-3">
+                <span><b>{{billingTransaction.SubTotal}}</b></span>
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-md-3" style="color:#000; font-size: 14px; font-weight: bold"><b>Total
+                  Amount:</b></label>
+              <div class="col-md-3"> <span style="font-weight: bold"> <b
+                    [ngStyle]="{'color': !previousVisitBillingTxn ? '#000' : '','font-size' : !previousVisitBillingTxn? '14px' : ''}">{{
+                    (insuranceService.appointmentType.toLowerCase() == 'new' ||
+                    insuranceService.appointmentType.toLowerCase() == 'followup' ||
+                    insuranceService.appointmentType.toLowerCase() == 'referral') ? billingTransaction.TotalAmount :
+                    totalAmount}}</b> </span> </div>
+            </div>
+            <div class="row" *ngIf="ShowTender">
+              <label class="col-md-3" style="color:#000; font-size: 14px; font-weight: bold"><b>Tender:</b></label>
+              <div class="col-md-3">
+                <input type="number" [(ngModel)]="billingTransaction.Tender" class="form-control pd-managed"
+                  (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                  [disabled]="billingTransaction.PaymentMode == 'credit'" onClick="this.select();">
+              </div>
+            </div>
+            <div class="row" *ngIf="ShowChange">
+              <label class="col-md-3"
+                style="color:#000; font-size: 14px; font-weight: bold"><b>Change/Return:</b></label>
+              <div class="col-md-3"> <span><b>{{billingTransaction.Change}}</b></span> </div>
+            </div>
+          </div>
+          <div class="col-md-8" style="padding-left: 0px;margin-left: -15px;">
+            <label class="col-md-5" style="color:#000; font-size: 14px; font-weight: bold"><b>Payment Mode:</b></label>
+            <div class="col-md-7">
+              <select [(ngModel)]="billingTransaction.PaymentMode" class="mb-8" name="pay_mode" id="pay_mode"
+                style="width: 100% !important;">
+                <option value="credit" style="font-weight:bold">CREDIT</option>
+              </select>
+            </div>
+
+          </div>
+          <div class="row" *ngIf="insuranceService.appointmentType=='Transfer' && previousVisitBillingTxn">
+            <label class="col-md-7"><b>Previous Bill Amount</b><b style="float:right;">:</b></label>
+            <div class="col-md-5"> <span><b>{{previousVisitBillingTxn.TotalAmount}}</b></span> </div>
+          </div>
+          <div class="row" *ngIf="insuranceService.appointmentType=='Transfer' && previousVisitBillingTxn">
+            <label class="col-md-7"> <b>Amount to be </b><b
+                [ngStyle]="{'color': (billingTransaction.TotalAmount + totalWithoutConsultationCharge) -  previousVisitBillingTxn.TotalAmount >= 0 ? 'green' : 'red'}">{{(billingTransaction.TotalAmount
+                + totalWithoutConsultationCharge) - previousVisitBillingTxn.TotalAmount >= 0 ? 'Paid' : 'Returned'
+                }}</b><b style="float:right;">:</b> </label>
+            <div class="col-md-5"> <span> <b
+                  [ngStyle]="{'color': (billingTransaction.TotalAmount + totalWithoutConsultationCharge) -  previousVisitBillingTxn.TotalAmount >= 0  ? 'green' : 'red','font-size' : previousVisitBillingTxn? '19px' : ''}">
+                  {{TobePaidorReturned >= 0 ? TobePaidorReturned : -(TobePaidorReturned)}} </b> </span> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12" *ngIf="insuranceService.appointmentType=='Transfer' && previousVisitBillingTxn">
+    <hr style="margin:0px;" />
+    <div>
+      <p>
+        Transferred From : <b>
+          {{previousVisitDetail.DepartmentName}}
+          {{previousVisitDetail.ProviderName}}
+          ({{previousVisitDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+          {{previousVisitDetail.VisitTime | DanpheDateTime:'format-time'}})
+        </b>
+      </p>
+      <p><b style="text-align:center">Below Invoice will be returned:</b></p>
+      <p>
+        Invoice No: <b>{{previousVisitBillingTxn.InvoiceCode}}{{previousVisitBillingTxn.InvoiceNo}}</b> Total
+        Amount: <b>{{previousVisitBillingTxn.TotalAmount}}</b>
+      </p>
+      <div class="col-md-12" style="background-color: #eee8e8;"
+        *ngFor="let item of previousVisitBillingTxn.BillingTransactionItems; let i = index;">
+        <p> Billing Items : </p>
+        <div class="row">
+          <label class="control-label col-md-7">{{i+1}}. {{item.ItemName}} <b style="float:right;">:</b></label>
+          <label class="control-label col-md-5">{{item.TotalAmount}}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4" *ngIf="currBillingContext.Insurance && currBillingContext.Insurance.InsuranceNumber">
+    <div class="form-group">
+      <label class="control-label col-md-7">Insurance Balance<b style="float:right;">:</b> </label>
+      <div class="col-md-5"> {{currBillingContext.Insurance.CurrentBalance}} </div>
+    </div>
+  </div>
+</div>

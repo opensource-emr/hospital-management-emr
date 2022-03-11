@@ -11,6 +11,7 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../s
   templateUrl: "./diagnosis-wise-patient-report.html"
 })
 export class RPT_ADT_DiagnosisWisePatientReportComponent {
+  public dateRange : string = '';
   public fromDate: string = null;
   public toDate: string = null;
   public selDiagnosis: any = "";
@@ -115,6 +116,7 @@ export class RPT_ADT_DiagnosisWisePatientReportComponent {
 
     this.currentdiagnosiswisepatient.fromDate = this.fromDate;
     this.currentdiagnosiswisepatient.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
   }
 
 }

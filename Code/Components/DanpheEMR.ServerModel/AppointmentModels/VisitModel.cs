@@ -15,6 +15,7 @@ namespace DanpheEMR.ServerModel
         public string VisitCode { get; set; } //H followed by 6 digits for InPatient and V for outPatient
         public int PatientId { get; set; }
         public DateTime VisitDate { get; set; }
+        public string QueueStatus { get; set; }
         public int? ProviderId { get; set; }
         public string ProviderName { get; set; }
         public string Comments { get; set; }
@@ -37,7 +38,10 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public string Remarks { get; set; }
-        public string ClaimCode { get; set; }
+
+        //sud:1-Oct'21--Changing Claimcode from String to Int64-- to use Incremental logic (max+1)
+        //need nullable since ClaimCode is Non-Mandatory for normal visits.
+        public Int64? ClaimCode { get; set; }
         public bool? IsSignedVisitSummary { get; set; }
         //added: ashim:22Aug2018: To handle transfer visit case.
         public int? TransferredProviderId { get; set; }
@@ -48,7 +52,7 @@ namespace DanpheEMR.ServerModel
         public int? CurrentCounterId { get; set; }
 
         public int? DepartmentId { get; set; }//sud:19June2019-For DepartmentLevel Appointment.
-        public DepartmentModel Department { get; set; }
+
         [NotMapped]
         public string DepartmentName { get; set; }//Yubaraj:21Jun'19--Needed to show Deptname in List visit page.
 
@@ -64,6 +68,10 @@ namespace DanpheEMR.ServerModel
         public List<ImagingReportModel> ImagingReports { get; set; }
 
         public int? QueueNo { get; set; }
+        public bool? Ins_HasInsurance { get; set; }
+
+        [NotMapped]
+        public bool? IsLastClaimCodeUsed { get; set; }//sud:1-Oct'21
 
     }
 }

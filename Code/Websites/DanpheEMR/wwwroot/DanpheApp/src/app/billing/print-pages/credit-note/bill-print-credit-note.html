@@ -1,0 +1,156 @@
+<!-- <style>
+  .main-info {
+    margin-top: 31px;
+  }
+
+  .ReturnInvoice-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .ReturnInvoice-print-main .print-detail {
+    width: 100%;
+  }
+</style> -->
+
+<div class="wrapper" *ngIf="isDataLoaded">
+  <div class="col-md-12" id="billing-return-reciept">
+    <div id="divCreditNotePrintPage" style="text-align:center;">
+      <div class="returnReceipt bill-receipt-printpage">
+        <table class="bill-itms">
+          <tbody>
+            <tr>
+              <td colspan="8" style="width: 1%;">
+                <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+                <div class="qr-code" style="position: absolute;right: 15px;top: 20px;"
+                  *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.ShowQR">
+                  <qr-code *ngIf="'ShowQRCode' | booleanParameter : 'Billing'" [value]="patientQRCodeInfo" [size]="90"
+                    [backgroundAlpha]="0"></qr-code>
+                </div>
+                <div class="clearfix"></div>
+                <div class="bill-patinfo" style="padding-top: 7px;">
+                  <p style="text-align:center;">
+                    <span> <b>CREDIT NOTE</b> </span>
+                  </p>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-md-12 main-info ReturnInvoice-print-main" style="padding:0px;">
+                  <div class="left-div print-detail">
+                    <p class="no-margin" style="text-align:left; "> Credit Note No:
+                      {{ReturnInvoice.FiscalYear}}-CRN{{ReturnInvoice.CreditNoteNumber}}
+                    </p>
+
+                    <p class="no-margin" style="text-align:left; ">
+                      Ref. Invoice No: <span>{{ReturnInvoice.FiscalYear}} -
+                        {{ReturnInvoice.InvoiceCode}}{{ ReturnInvoice.RefInvoiceNum}}
+                      </span>
+                    </p>
+                    <p class="no-margin" style="text-align:left; ">
+                      <strong>Hospital No:</strong>
+                      <span><strong>{{Patient.PatientCode}}</strong></span>
+                    </p>
+                    <p class="no-margin" style="text-align: left;display:block;font-size: 11px;">
+                      <strong>Patient's Name:&nbsp;{{Patient.ShortName}}</strong>
+                    </p>
+                    <!-- <p class="no-margin" style="text-align:left; font-size:11px;"
+                      *ngIf="Patient.CountryId != 1">
+                      Address: {{Patient.Address}}, {{Patient.CountryName}}
+                    </p>
+                    <p class="no-margin" style="text-align:left; font-size:11px;"
+                      *ngIf="Patient.CountryId == 1">
+                      Address: {{Patient.Address}},
+                      {{Patient.CountrySubDivisionName}}
+                    </p> -->
+                    <!-- <p class="no-margin" style="text-align:left;font-size:11px;"
+                      *ngIf="Patient.PhoneNumber">
+                      Contact No: {{Patient.PhoneNumber}}
+                    </p> -->
+                  </div>
+                  <div class="right-div print-detail">
+                    <p class="no-margin" style="text-align:right;">
+                      CRN Date:
+                      {{ReturnInvoice.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;"> ({{ReturnInvoice.CreatedOn |
+                      nepaliDate:'format':'YYYY-MM-DD'}})
+                    </p>
+                    <p class="no-margin" style="text-align:right; font-size:11px;">
+                      Age/Sex :
+                      {{Patient.Age }}/{{Patient.Gender}}
+                    </p>
+                  </div>
+                </div>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+              </td>
+            </tr>
+            <tr>
+              <td width="30px" class="print-sn"> Sn.</td>
+              <td width="170px" class="print-par">Service Particular(s)</td>
+              <td width="20px" class="text-right print-qty">Unit</td>
+              <td width="60px" class="text-right print-amt">Amount</td>
+            </tr>
+            <tr *ngFor="let row of ReturnInvoice.ReturnInvoiceItems; let i=index">
+              <td>{{i+1}}</td>
+              <td>
+                {{row.ItemName}}
+              </td>
+              <td class="text-right print-qty">{{row.RetQuantity}}</td>
+              <td class="text-right print-amt">{{row.RetTotalAmount}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="col-md-12 bill-summ-div">
+          <div class="text-capitalize"
+            style="padding: 10px 0px 0px 0px;text-align:left; width:46%;display:inline-block;vertical-align:top;font-size: 12px; ">
+            <span *ngIf="ReturnInvoice.TotalAmount !=0"> In Words : {{ReturnInvoice.TotalAmount | number: "1.2-2" |
+              NumberInWords | uppercase}} ONLY</span>
+          </div>
+          <div style="padding: 0px;width:54%;display:inline-block;">
+            <table class="bil-summ" style="width:100%">
+              <tr style="border-bottom: 0px;">
+                <td style="border-bottom: none;">Total Amount </td>
+                <td style="text-align:right; border-bottom: none;border-right: 0px;" align="right">
+                  {{ReturnInvoice.TotalAmount | number : "1.2-2"}}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;">
+          <div class="left" style="font-size:11px;"> User: {{BillReturnUserName}} </div>
+          <div class="right" style="font-size:11px;">
+            Time: {{
+            ReturnInvoice.CreatedOn | DanpheDateTime:'format':'hh:mm
+            A'
+            }}
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="text-align: left;font-size: 11px;padding-top: 5px;">
+          Remarks: {{ReturnInvoice.Remarks}}
+        </div>
+        <div class="clear"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+      <button class="btn green btn-success" value="" (click)="print()" id="btnPrintCreditNote" [disabled]="loading">
+        <span>Print</span>&nbsp;&nbsp;
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+
+    <select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-creditnote'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+  </div>
+</div>
+
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj"
+  (print-sucess)="AfterPrintCompleted()">
+</app-print-page>

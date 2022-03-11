@@ -1,28 +1,81 @@
 <div class="wrapper">
   <div class="row" *ngIf="showGrid">
-    <div class="col-lg-12 col-sm-12">
-      <div class="caption lb-caption"> 
-        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> --> 
-        <span class="caption-subject">Final Reports</span> </div>
+    <div class="col-lg-8 col-sm-8">
+      <div class="caption lb-caption">
+        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+        <span class="caption-subject">Final Reports</span>
+      </div>
     </div>
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-7 col-xs-12">
+          <label style="vertical-align: top;margin-top: 10px; margin-right: 10px;">Reporting Date: </label>
+          <div style="display: inline-block;">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)"
+              [date-settings-name]="'common-range-with-today'">
+            </from-to-date-select>
+          </div>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <div class="row">
+            <label class="col-md-3 text-right" style="line-height: 3;">Category:</label>
+            <div class="col-md-6">
+              <div class="row">
+                <div style="display: inline-block; width: 100%;">
+                  <lab-category-select (selected-category-list)="LabCategoryOnChange($event)"></lab-category-select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <button [disabled]="loading" class="btn green btn-success pull-right"
+                (click)="LoadDataForFinalReport();">Load
+                <i class="fa fa-refresh"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="row" *ngIf="showGrid">
     <div class="col-lg-12 col-sm-12">
-      <danphe-grid [grid-colDefaults]="gridColumns"
-                 [grid-data]="reportList"
-                 (grid-actions)="GridActions($event)"
-                 [rangeType]="dateRange"
-                 (onDateChange)="onDateChange($event)"
-                 [show-CustomDate]="true"
-                 (serverSearchText)="serverSearchTxt($event)"
-                 [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="reportList" (grid-actions)="GridActions($event)"> </danphe-grid>
     </div>
   </div>
   <div *ngIf="!showGrid" style="margin-top:5px;">
-    <button class="btn primary-btn pull-left margin-7-rt" (click)="BackToGrid();"> <i class="fa fa-arrow-left"></i> Back To Grid </button>
-    <danphe-lab-results [showReport]="showReport"
-                      [showAddEditResult]="showAddEditResult"
-                      [printReportFromGrid]="printReportFromGrid"
-                      [requisitionIdList]="requisitionIdList"
-                      [verificationRequired]="verificationRequired"
-                      (callbackAddUpdate)="CallBackBackToGrid($event)"></danphe-lab-results>
+    <button class="btn primary-btn pull-left margin-7-rt" (click)="BackToGrid();"> <i class="fa fa-arrow-left"></i> Back
+      To Grid </button>
+    <danphe-lab-results [showReport]="showReport" [showAddEditResult]="showAddEditResult"
+      [printReportFromGrid]="printReportFromGrid" [requisitionIdList]="requisitionIdList" [TeleMedicineUploadForm] = "TeleMedicineUploadForm" [showUplaodToTeleMedicine] = "true"
+      [verificationRequired]="verificationRequired" (callbackAddUpdate)="CallBackBackToGrid($event)" (callbackUpdateUploadStatus)="UpdateUploadStatus($event)">
+    </danphe-lab-results>
   </div>
+
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReportUpload">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption clearfix">
+                        <button class="btn green btn-success pull-right" (click)="exportToPdf()" [disabled]="loading">
+                          Upload To Telemedicine
+                        </button>
+                        <button class="btn btn-danger pull-right" [disabled]="loading" (click)="Close()">X</button>
+                    </div>
+                    <div class="modelbox-body">
+                        <danphe-lab-results *ngIf="showReportUpload" [showReport]="showReportUpload" [hidePrintButton]="true"
+                            [requisitionIdList]="requisitionIdList" [printReportFromGrid]="false"
+                            (callbackAddUpdate)="CallBackBackToGrid($event)">
+                        </danphe-lab-results>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>

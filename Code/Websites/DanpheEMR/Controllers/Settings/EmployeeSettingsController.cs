@@ -445,6 +445,7 @@ namespace DanpheEMR.Controllers
                     masterDBContext.Entry(clientEmployee).Property(x => x.ContactNumber).IsModified = true;
                     masterDBContext.Entry(clientEmployee).Property(x => x.Email).IsModified = true;
                     masterDBContext.Entry(clientEmployee).Property(x => x.PANNumber).IsModified = true;
+                    masterDBContext.Entry(clientEmployee).Property(x => x.MedCertificationNo).IsModified = true;
                     masterDBContext.Entry(clientEmployee).Property(x => x.TDSPercent).IsModified = true;
                     masterDBContext.Entry(clientEmployee).Property(x => x.IsIncentiveApplicable).IsModified = true;
                     masterDBContext.Entry(clientEmployee).Property(x => x.IsActive).IsModified = true;
@@ -484,7 +485,14 @@ namespace DanpheEMR.Controllers
             //                             where master.ParameterGroupName.ToLower() == "common" && master.ParameterName == "SignatureLocationPath"
             //                             select master.ParameterValue).FirstOrDefault();
 
+           
+
             string signatoryImagePath = this._hostingEnvironment.WebRootPath + "\\" + @"fileuploads\EmployeeSignatures\";
+
+            if (!Directory.Exists(signatoryImagePath))
+            {
+                Directory.CreateDirectory(signatoryImagePath);
+            }
 
             var dateTimeToAppend = System.DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
             dateTimeToAppend = dateTimeToAppend.Replace("/", "");
@@ -538,6 +546,7 @@ namespace DanpheEMR.Controllers
                 retEmpObj.ContactNumber = extRefObj.ContactNumber;
                 retEmpObj.Email = extRefObj.EmailAddress;
                 retEmpObj.PANNumber = extRefObj.PANNumber;
+                retEmpObj.MedCertificationNo = extRefObj.NMCNumber;
                 retEmpObj.TDSPercent = extRefObj.TDSPercent;
                 retEmpObj.IsIncentiveApplicable = extRefObj.IsIncentiveApplicable;
                 retEmpObj.IsActive = extRefObj.IsActive;

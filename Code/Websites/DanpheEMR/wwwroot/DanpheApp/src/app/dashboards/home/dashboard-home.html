@@ -86,7 +86,7 @@
   <div class="clearfix"></div>
   <!-- END DASHBOARD STATS 1-->
   <div class="row">
-    <div class="col-lg-6 col-md-6">
+    <div *ngIf="showCountryMap" class="col-lg-6 col-md-6">
       <div class="portlet light">
         <div class="portlet-title">
           <div class="caption lb-caption no-margin no-padding"> <i class="icon-bar-chart"></i> <span class="caption-subject"> Patient distribution (zone wise) </span> <span class="caption-helper"></span> </div>

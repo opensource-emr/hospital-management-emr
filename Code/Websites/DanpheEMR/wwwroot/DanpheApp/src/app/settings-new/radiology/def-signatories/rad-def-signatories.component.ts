@@ -111,5 +111,7 @@ export class RadDefSignatoriesComponent implements OnInit {
   //  return retCFGParamModel;
   //}
 
-
+  CheckBoxChange(a){
+    console.log(a);
+  }
 }

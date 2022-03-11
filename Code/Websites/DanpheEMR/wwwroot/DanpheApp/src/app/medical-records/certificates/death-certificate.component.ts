@@ -35,9 +35,9 @@ export class DeathCertificateComponent {
   @Output("closeDeathCertificate") closeDeathCertificate: EventEmitter<object> = new EventEmitter<object>();
   public deadPat: DeathDetails = new DeathDetails();
   public loading: boolean = false;
-
+  public showPrint : boolean= false;
   public HospitalDetails: any;
-
+  public printDetails: HTMLElement;
   public providerList: Array<Employee> = new Array<Employee>();
   public isFinalCertificate: boolean = false;
   public CertifiedSignatory: any = '';
@@ -65,8 +65,9 @@ export class DeathCertificateComponent {
     this.medicalRecordsBLService.GetDeathDetailForCertificate(this.deathDetailId).subscribe(res => {
       if (res.Status == 'OK') {
         this.deadPat = res.Results;
+        this.deadPat.DeathDate = moment(this.deadPat.DeathDate).format("YYYY/MM/DD");
         if (!this.deadPat.CertifiedBy || !this.deadPat.FatherName ||
-          !this.deadPat.MotherName || !this.deadPat.SpouseOf || !this.deadPat.CauseOfDeath) {
+          !this.deadPat.MotherName || !this.deadPat.CauseOfDeath) {
           this.isFinalCertificate = false;       
         } else {
           this.AssignCertBySignatory();
@@ -100,9 +101,12 @@ export class DeathCertificateComponent {
 
   public UpdateDeathCertificationDetail() {
     if (this.loading) {
-      if (this.CertifiedSignatory && this.CertifiedSignatory.EmployeeId) { this.deadPat.CertifiedBy = this.CertifiedSignatory.EmployeeId; }
+      if (this.CertifiedSignatory && this.CertifiedSignatory.EmployeeId)
+       { 
+         this.deadPat.CertifiedBy = this.CertifiedSignatory.EmployeeId; 
+        }
       if (this.deadPat.FatherName && this.deadPat.FatherName.trim() !== '' && this.deadPat.MotherName && this.deadPat.MotherName.trim() != ''
-        && this.deadPat.CertifiedBy && this.deadPat.SpouseOf && this.deadPat.SpouseOf.trim() != '' && this.deadPat.CauseOfDeath
+        && this.deadPat.CertifiedBy   && this.deadPat.CauseOfDeath
         && this.deadPat.CauseOfDeath.trim() != '') {
         this.medicalRecordsBLService.PutDeathCertificateReportDetail(this.deadPat).subscribe(res => {
           if (res.Status == "OK") {
@@ -140,21 +144,30 @@ export class DeathCertificateComponent {
 
   }
 
-  public Print() {
-    let popupWinindow;
-    if (document.getElementById("PrintPage")) {
-      var printContents = document.getElementById("PrintPage").innerHTML;
-    }
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    var documentContent = '<html><head>';
-    documentContent += `<link rel="stylesheet" type="text/css" href="../../../../../themes/theme-default/DanpheStyle.css" />`
-      + `</head>`;
+  // public Print() {
+  //   let popupWinindow;
+  //   if (document.getElementById("PrintPage")) {
+  //     var printContents = document.getElementById("PrintPage").innerHTML;
+  //   }
+  //   popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+  //   popupWinindow.document.open();
+  //   var documentContent = '<html><head>';
+  //   documentContent += `<link rel="stylesheet" type="text/css" href="../../../../../themes/theme-default/DanpheStyle.css" />`
+  //     + `</head>`;
 
-    documentContent += '<body onload="window.print()">' + printContents + '</body></html>';
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
-    this.closeDeathCertificate.emit({ close: true })
+  //   documentContent += '<body onload="window.print()">' + printContents + '</body></html>';
+  //   popupWinindow.document.write(documentContent);
+  //   popupWinindow.document.close();
+  //   this.closeDeathCertificate.emit({ close: true })
+  // }
+
+  public Print() {
+    this.printDetails = document.getElementById("PrintPage");
+    this.showPrint = true;
+  }
+  callBackPrint() {
+    this.printDetails = null;
+    this.showPrint = false;
   }
 
   public Edit() {

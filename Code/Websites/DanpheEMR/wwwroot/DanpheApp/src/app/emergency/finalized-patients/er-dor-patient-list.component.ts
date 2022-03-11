@@ -42,22 +42,28 @@ export class ERDorPatientListComponent {
   public ERDischargedPatientGridCol: Array<any> = null;
   public globalVisit: any;
   public globalPatient: any;
-
-
+  public caseIdList: Array<number> = new Array<number>();
+  public casesList = [];
+  public filteredData: any;
 
   constructor(public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService, public patientService: PatientService, public visitService: VisitService,
     public emergencyBLService: EmergencyBLService, public coreService: CoreService, public router: Router) {
     this.ERDischargedPatientGridCol = EmergencyGridColumnSettings.ERLamaPatientList;
-    this.GetERDORPatientList();
+    //this.GetERDORPatientList();
   }
 
 
-
   public GetERDORPatientList() {
-    this.emergencyBLService.GetAllDorERPatients()
+    var id = this.caseIdList ? this.caseIdList : null;
+    this.emergencyBLService.GetAllDorERPatients(id[0])
       .subscribe(res => {
         if (res.Status == "OK") {
           this.allDischargedPatients = res.Results;
+          this.filteredData = res.Results;
+          if (this.caseIdList[0] == 6) {
+            this.filterNestedDetails()
+          }
+
         }
         else {
           this.msgBoxServ.showMessage("Failed", ["Cannot Get Emergency PatientList !!"]);
@@ -195,4 +201,27 @@ export class ERDorPatientListComponent {
     this.globalVisit.VisitTime = moment(data.VisitDateTime).format("HH:MM");
   }
 
+  PatientCasesOnChange($event) {
+    if ($event.mainDetails && $event.mainDetails != 0) {
+      this.caseIdList = [];
+      this.casesList = [];
+      this.caseIdList.push($event.mainDetails);
+      if ($event.nestedDetails && $event.nestedDetails.length >= 1) {
+        $event.nestedDetails.forEach(v => {
+          this.caseIdList.push(v.Id);
+          this.casesList.push(v);
+        });
+      }
+    }
+    else {
+      this.caseIdList = [];
+      this.caseIdList.push($event.mainDetails)
+    }
+    this.GetERDORPatientList();
+  }
+
+  filterNestedDetails() {
+    this.caseIdList.slice(1);
+    this.filteredData = this.allDischargedPatients.filter(a => this.caseIdList.includes(a.PatientCases.SubCase));
+  }
 }

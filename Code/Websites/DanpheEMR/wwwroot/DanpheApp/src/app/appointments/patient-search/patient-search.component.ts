@@ -11,55 +11,60 @@ import { Patient } from "../../patients/shared/patient.model";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { APIsByType } from '../../shared/search.service';
 import { CoreService } from '../../core/shared/core.service';
+import { VisitService } from '../shared/visit.service';
 
 @Component({
-    templateUrl: "./search-patient.html"
+    templateUrl: "./search-patient.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class PatientSearchComponent {
-    // binding logic
 
-    public selectedpatient: Patient = new Patient();
     patients: Array<Patient> = new Array<Patient>();
     searchmodel: Patient = new Patient();
-    public patGirdDataApi:string="";
+    public patGirdDataApi: string = "";
     //start: for angular-grid
     AppointmentpatientGridColumns: Array<any> = null;
     //start: for angular-grid
-    searchText:string='';
+    searchText: string = '';
     public showInpatientMessage: boolean = false;
-    public enableServerSideSearch:boolean=false;
-    public wardBedInfo: string = null;
+    public enableServerSideSearch: boolean = false;
+    public wardBedInfo: any = null;
+
+
     constructor(
         public _patientservice: PatientService,
         public appointmentService: AppointmentService,
         public router: Router, public appointmentBLService: AppointmentBLService,
-        public msgBoxServ: MessageboxService,public coreService:CoreService
+        public msgBoxServ: MessageboxService, public coreService: CoreService, public visitService: VisitService,
     ) {
         this.getParamter();
         this.Load("");
         this._patientservice.CreateNewGlobal();
         this.appointmentService.CreateNewGlobal();
         this.AppointmentpatientGridColumns = GridColumnSettings.AppointmentPatientSearch;
-        this.patGirdDataApi=APIsByType.PatByName
-
+        this.patGirdDataApi = APIsByType.PatientListForRegNewVisit
     }
 
     ngAfterViewInit() {
-        document.getElementById('quickFilterInput').focus();
+        // document.getElementById('quickFilterInput').focus();
+        let btnObj = document.getElementById('btnNewPatient');
+        if (btnObj) {
+            btnObj.focus();
+        }
     }
 
     serverSearchTxt(searchTxt) {
         this.searchText = searchTxt;
         this.Load(this.searchText);
     }
-    getParamter(){
+    getParamter() {
         let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
-        var data= JSON.parse(parameterData);
+        var data = JSON.parse(parameterData);
         this.enableServerSideSearch = data["PatientSearchPatient"];
-      }
+    }
     Load(searchText): void {
-        this.appointmentBLService.GetPatients(searchText)
+        this.appointmentBLService.GetPatientsListForNewVisit(searchText)
             .subscribe(res => {
                 if (res.Status == 'OK') {
                     this.patients = res.Results;
@@ -70,11 +75,11 @@ export class PatientSearchComponent {
 
                 }
             },
-            err => {
-                //alert('failed to get  patients');
-                this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
+                err => {
+                    //alert('failed to get  patients');
+                    this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
 
-            });
+                });
     }
     //ashim: 22Aug2018 : Removed unnecessary server call to get patient details
     SelectPatient(event, _patient) {
@@ -85,6 +90,8 @@ export class PatientSearchComponent {
             }
         });
         pat.DateOfBirth = moment(pat.DateOfBirth).format('YYYY-MM-DD');
+        //sud:6Sept'21--Pls don't remove below (appointmenttype)--it causes issue during refer/followup.
+        this.visitService.appointmentType = "New";
         this.router.navigate(["/Appointment/Visit"]);
         //var pat = this._patientservice.getGlobal();
         //this.appointmentBLService.GetPatientById(_patient.PatientId)
@@ -96,36 +103,6 @@ export class PatientSearchComponent {
 
         //    });
     }
-
-    //CallBackSelected(res) {
-    //    if (res.Status == 'OK') {
-
-    //        var pat = this._patientservice.getGlobal();
-
-
-    //        pat.PatientId = res.Results.PatientId;
-    //        pat.PatientCode = res.Results.PatientCode;
-    //        pat.FirstName = res.Results.FirstName;
-    //        pat.LastName = res.Results.LastName;
-    //        pat.MiddleName = res.Results.MiddleName;
-    //        pat.DateOfBirth = moment(res.Results.DateOfBirth).format('YYYY-MM-DD');
-    //        pat.CountrySubDivisionId = res.Results.CountrySubDivisionId;
-    //        pat.Gender = res.Results.Gender;
-    //        pat.Email = res.Results.Email;
-    //        pat.PhoneNumber = res.Results.PhoneNumber;
-    //        pat.ShortName = res.Results.ShortName;
-
-    //        pat.Salutation = res.Results.Salutation;
-    //        pat.CountryId = res.Results.CountryId;
-    //        pat.IsDobVerified = res.Results.IsDobVerified;
-    //        pat.Age = res.Results.Age;
-    //        pat.MembershipTypeId = res.Results.MembershipTypeId;
-    //        pat.Address = res.Results.Address;
-    //        pat.CountrySubDivision = res.Results.CountrySubDivision;
-    //        this.router.navigate(["/Appointment/Visit"]);
-    //    }
-    //}
-
     logError(err: any) {
         this.msgBoxServ.showMessage("error", [err]);
         console.log(err);
@@ -136,21 +113,15 @@ export class PatientSearchComponent {
         switch ($event.Action) {
             case "appoint":
                 {
-                    if($event.Data.IsAdmitted){
-                        this.wardBedInfo = $event.Data.WardBedInfo;
+                    //this.wardBedInfo = { WardName: null, BedCode: null, Date: null };
+                    if ($event.Data.IsAdmitted) {
+                       // this.wardBedInfo = { WardName:  $event.Data.WardName, BedCode: $event.Data.BedCode, Date: null };
                         this.showInpatientMessage = true;
-                    }else{
+                    } else {
                         this.SelectPatient(null, $event.Data)
                     }
-                    
                 }
                 break;
-            //case "edit":
-            //    {
-            //        this.SelectPatient(null, $event.Data)
-            //        //this.router.navigate(['/Patient/RegisterPatient/BasicInfo']);
-            //    }
-            //    break;
             default:
                 break;
         }
@@ -158,6 +129,27 @@ export class PatientSearchComponent {
         // alert($event.Action);
     }
     NewPatientAppointment() {
+
+        //sud:6Sept'21--Pls don't remove below (appointmenttype)--it causes issue during referral...
+        this.visitService.appointmentType = "New";
         this.router.navigate(["/Appointment/Visit"]);
     }
+
+    //this function is hotkeys when pressed by user
+    hotkeys(event) {
+        if (event.altKey) {
+            switch (event.keyCode) {
+                case 78: {// => ALT+N comes here
+                    this.NewPatientAppointment();
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    //
+
 }

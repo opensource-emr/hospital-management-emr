@@ -105,6 +105,7 @@ export class VisitBillingInfoComponent implements OnInit {
     PriceChangeEnabled: false,
     TaxApplicable: false,
     DefaultForNewPatient: true,
+    ShowProviderName: false,
     ItmObj: { ItemId: 33, ItemName: "OPD Card Charge" }
   },
   {
@@ -119,6 +120,7 @@ export class VisitBillingInfoComponent implements OnInit {
     PriceChangeEnabled: true,
     TaxApplicable: false,
     DefaultForNewPatient: false,
+    ShowProviderName: false,
     ItmObj: { ItemId: 34, ItemName: "Health Card" }
   }];
 
@@ -128,6 +130,7 @@ export class VisitBillingInfoComponent implements OnInit {
 
   public AdditionBillItemList: Array<AdditionalBillItemVMModel> = [];
   public NotAddtionalBillItem = { ItemId: 0, ItemName: null };
+  public ShowAdditionalBillItem: boolean = false;
 
   constructor(public billingService: BillingService,
     public securityService: SecurityService,
@@ -141,7 +144,7 @@ export class VisitBillingInfoComponent implements OnInit {
     public changeDetectorRef: ChangeDetectorRef) {
 
     this.InitializeSubscriptions();
-    //this.GetParameterizedPriceCategory();
+    this.GetShowAdditionalBillItemParameter();
 
     this.GetBillingItems();
   }
@@ -160,6 +163,8 @@ export class VisitBillingInfoComponent implements OnInit {
   public docOpdPriceItems = [];
 
   public isOldPatientOpd: boolean = false;
+  public DisableDiscountPercent: boolean = false;
+  public MembershipTypeName: string = null;
 
   public InitializeSubscriptions() {
     //Billing component is subscribing to NeedBillRecalculation event of Visit Service,
@@ -183,14 +188,28 @@ export class VisitBillingInfoComponent implements OnInit {
               //show membershipname as remarks when discountpercent>0
               if (newBill.DiscountPercent && newBill.DiscountPercent > 0) {
                 this.billingTransaction.Remarks = newBill.MembershipTypeName;
+                //this.MembershipTypeName = newBill.MembershipTypeName;
+                //this.billingTransaction.BillingTransactionItems.forEach(a => {
+                //  a.DiscountSchemeId = newBill.MembershipTypeId;
+                //});
               }
               else {
                 this.billingTransaction.Remarks = null;
               }
 
-              this.billingTransaction.DiscountPercent = newBill.DiscountPercent;
+              this.MembershipTypeName = newBill.MembershipTypeName;
+              this.billingTransaction.BillingTransactionItems.forEach(a => {
+                a.DiscountSchemeId = newBill.MembershipTypeId;
+              });
+              this.billingTransaction.DiscountPercent = newBill.DiscountPercent ? newBill.DiscountPercent : 0;
+              if (!this.MembershipTypeName || this.MembershipTypeName == 'General') {
+                this.DisableDiscountPercent = true;
+              }
+              else {
+                this.DisableDiscountPercent = false;
+              }
             }
-
+            this.changeDetectorRef.detectChanges();
           }
           else if (newBill.ChangeType == "Doctor") {
 
@@ -208,9 +227,14 @@ export class VisitBillingInfoComponent implements OnInit {
           }
           else if (newBill.ChangeType == "Department") {
             let selDept = newBill.SelectedDepartment;
-            this.ResetOpdBillTxnItem();
             this.visitBillItem = this.deptOpdItems.find(d => d.DepartmentId == selDept.DepartmentId);
+            this.ResetOpdBillTxnItem();
             this.AssignVisitBillItemToTxn(this.visitBillItem);
+            if (this.visitBillItem) {
+              this.AssignVisitBillItemToTxn(this.visitBillItem);
+
+              this.NotAddtionalBillItem = { ItemId: this.visitBillItem.ItemId, ItemName: this.visitBillItem.ItemName };
+            }
           }
           else if (newBill.ChangeType == "Referral") {
             if (this.opdBillTxnItem)
@@ -308,7 +332,8 @@ export class VisitBillingInfoComponent implements OnInit {
 
         var addbillitm = JSON.parse(additionaBillItem.ParameterValue);
         addbillitm.forEach(a => {
-          var billitm = this.allBillItms.find(b => b.ItemName == a.ItemName);
+          // var billitm = this.allBillItms.find(b => b.ItemName.trim().toLowerCase() == a.ItemName.trim().toLowerCase());
+          var billitm = this.allBillItms.find(b => b.ServiceDepartmentId == a.ServiceDeptId && b.ItemId == a.ItemId);
           if (billitm) {
             var itmobj = new AdditionalBillItemVMModel();
             itmobj.ItemName = billitm.ItemName;
@@ -323,6 +348,7 @@ export class VisitBillingInfoComponent implements OnInit {
             itmobj.PriceChangeEnabled = a.PriceChangeEnabled;
             itmobj.TaxApplicable = a.TaxApplicable;
             itmobj.DefaultForNewPatient = a.DefaultForNewPatient;
+            itmobj.ShowProviderName = a.ShowProviderName;
             itmobj.ItmObj = { ItemId: billitm.ItemId, ItemName: billitm.ItemName }
             this.AdditionalBilItems.push(itmobj);
           }
@@ -330,11 +356,11 @@ export class VisitBillingInfoComponent implements OnInit {
         let patId = this.visitService.globalVisit.PatientId;
         if (!patId) {
           this.enableHealthCard = this.coreService.GetEnableHealthCard()
-          if(this.enableHealthCard == true){
+          if (this.enableHealthCard == true) {
             this.isAdditionalBillItem = this.AdditionalBilItems.find(a => a.DefaultForNewPatient == true) ? true : false;
-          }else{
+          } else {
             this.isAdditionalBillItem = false;
-          }          
+          }
           this.IsAdditionalBillItemChange();
         }
       }
@@ -498,7 +524,8 @@ export class VisitBillingInfoComponent implements OnInit {
     this.opdBillTxnItem.ProviderId = billItem.ProviderId;
     this.opdBillTxnItem.ProviderName = billItem.ProviderName;
     this.opdBillTxnItem.PriceCategory = this.priceCategory;
-
+    this.opdBillTxnItem.IsZeroPriceAllowed = billItem.IsZeroPriceAllowed;//sud:7Apr'21--needed for immunization and other depts where price could be zero.
+    //this.Calculation();
     // referral charges for doctor 
     if (this.visitService.appointmentType == "Referral") {
       let refChargeParam = this.coreService.Parameters.find(p => p.ParameterGroupName == "Billing" && p.ParameterName == "ReferralChargeApplicable");
@@ -927,8 +954,9 @@ export class VisitBillingInfoComponent implements OnInit {
         itmObj.BillingType = ENUM_BillingType.outpatient;// "outpatient";
         itmObj.VisitType = ENUM_VisitType.outpatient;// "outpatient";
         itmObj.BillStatus = this.billingTransaction.BillStatus;
-        itmObj.ProviderId = this.opdBillTxnItem.ProviderId;
-        itmObj.ProviderName = this.opdBillTxnItem.ProviderName;
+        itmObj.IsZeroPriceAllowed = billItem.IsZeroPriceAllowed;
+        itmObj.ProviderId = this.opdBillTxnItem ? this.opdBillTxnItem.ProviderId : null;
+        itmObj.ProviderName = this.opdBillTxnItem ? this.opdBillTxnItem.ProviderName : null;
         this.billingTransaction.BillingTransactionItems.push(itmObj);
       }
 
@@ -954,6 +982,7 @@ export class VisitBillingInfoComponent implements OnInit {
           defaultRow.PriceChangeEnabled = item.PriceChangeEnabled;
           defaultRow.TaxApplicable = item.TaxApplicable;
           defaultRow.ItmObj = item.ItmObj;
+          defaultRow.ShowProviderName = item.ShowProviderName;
           this.AdditionBillItemList.push(defaultRow);
 
           this.Calculation();
@@ -1013,6 +1042,15 @@ export class VisitBillingInfoComponent implements OnInit {
       row.DiscountAmount = 0;
 
     row.TotalAmount = row.Price - row.DiscountAmount;
+
+    var itm = this.billingTransaction.BillingTransactionItems.find(a => a.ItemId == row.ItemId && a.ItemName == row.ItemName);
+    itm.DiscountAmount = row.DiscountAmount;
+    itm.DiscountPercent = this.billingTransaction.DiscountPercent
+    itm.Price = row.Price;
+    itm.SubTotal = itm.Quantity * row.Price;
+    itm.TotalAmount = row.TotalAmount;
+
+
     this.Calculation();
 
   }
@@ -1067,16 +1105,55 @@ export class VisitBillingInfoComponent implements OnInit {
       billItem.BillingType = ENUM_BillingType.outpatient;// "outpatient";
       billItem.VisitType = ENUM_VisitType.outpatient;// "outpatient";
       billItem.BillStatus = this.billingTransaction.BillStatus;
-      billItem.ProviderId = this.opdBillTxnItem.ProviderId;
-      billItem.ProviderName = this.opdBillTxnItem.ProviderName;
+
+      billItem.ShowProviderName = row.ShowProviderName;
+      if (billItem.ShowProviderName) {
+        billItem.ProviderId = this.opdBillTxnItem ? this.opdBillTxnItem.ProviderId : null;
+        billItem.ProviderName = this.opdBillTxnItem ? this.opdBillTxnItem.ProviderName : null;
+      }
+
       billItem.RequestedBy = this.opdBillTxnItem.RequestedBy;
       billItem.RequestedByName = this.opdBillTxnItem.RequestedByName;
       this.billingTransaction.BillingTransactionItems.push(billItem);
+    } else {
+
+      this.billingTransaction.BillingTransactionItems.forEach(a => {
+        if (a.ShowProviderName) {
+          a.ProviderId = this.opdBillTxnItem.ProviderId;
+          a.ProviderName = this.opdBillTxnItem.ProviderName;
+        }
+      });
     }
   }
 
   public GetBillingItems() {
     this.allBillItms = this.visitService.allBillItemsPriceList;
+  }
+
+  SetFocusById(IdToBeFocused: string) {
+    window.setTimeout(function () {
+      let elemToFocus = document.getElementById(IdToBeFocused)
+      if (elemToFocus != null && elemToFocus != undefined) {
+        elemToFocus.focus();
+      }
+    }, 100);
+  }
+
+  public GetShowAdditionalBillItemParameter() {
+    var show = this.coreService.Parameters.find((val) =>
+      val.ParameterName == "ShowAdditionalBillItemCheckBox" &&
+      val.ParameterGroupName == "Visit"
+    );
+    if (show) {
+      let val = show.ParameterValue.toLowerCase();
+      if (val == "true") {
+        this.ShowAdditionalBillItem = true;
+      } else {
+        this.ShowAdditionalBillItem = false;
+      }
+    } else {
+      return false;
+    }
   }
 }
 
@@ -1093,6 +1170,7 @@ class AdditionalBillItemVMModel {
   public PriceChangeEnabled: boolean = true;
   public TaxApplicable: boolean = false;
   public DefaultForNewPatient: boolean = false;
+  public ShowProviderName: boolean = false;
 
   public ItmObj = { ItemId: 0, ItemName: null };
 }

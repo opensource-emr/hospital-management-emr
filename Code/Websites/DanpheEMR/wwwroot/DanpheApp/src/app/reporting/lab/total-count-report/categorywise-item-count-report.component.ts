@@ -20,6 +20,8 @@ import { CoreService } from "../../../core/shared/core.service";
 export class RPT_LAB_CategoryWiseItemCountComponent {
   @Input("fromDate") public fromDate: any;
   @Input("toDate") public toDate: any;
+  @Input("orderStatus")
+  orderStatus:string='';
   reportData: Array<any> = [];
   public showCategoryDetail: boolean = false;
   public selectedCategory: any;
@@ -43,7 +45,8 @@ export class RPT_LAB_CategoryWiseItemCountComponent {
         "/Reporting/CategoryWiseLabItemCountLabReport?FromDate=" +
           this.fromDate +
           "&ToDate=" +
-          this.toDate
+          this.toDate+"&orderStatus="+
+          this.orderStatus
       )
       .map((res) => res)
       .subscribe(

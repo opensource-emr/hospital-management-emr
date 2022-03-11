@@ -26,6 +26,8 @@ export class RPT_BIL_ReferralSummaryComponent {
     tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0, tot_CreditReceived: 0, tot_DepositReceived: 0, tot_DepositRefund: 0
   };
   public currentDate: string = "";
+  public headerDetail:any=null;
+  public headerProperties:any;
 
   constructor(
     public msgBoxServ: MessageboxService,
@@ -33,6 +35,8 @@ export class RPT_BIL_ReferralSummaryComponent {
     public coreService: CoreService,
     public changeDetector: ChangeDetectorRef) {
     this.currentDate = moment().format('YYYY-MM-DD');
+    this.LoadHeaderDetailsCalenderTypes();
+   
     //this.loadDocSummary();
   }
 
@@ -84,18 +88,70 @@ export class RPT_BIL_ReferralSummaryComponent {
       });
   }
 
-  public ExportToExcelRefSummary() {
-    this.dlService.ReadExcel("/ReportingNew/ExportToExcelRefSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate)
-      .map(res => res)
-      .subscribe(data => {
-        let blob = data;
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "ReferralSummaryReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
-        document.body.appendChild(a);
-        a.click();
-      },
-        err => this.ErrorMsg(err));
+  LoadHeaderDetailsCalenderTypes() {
+    let allParams = this.coreService.Parameters;
+    if (allParams.length) {
+   
+      let HeaderParms = allParams.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader");
+      if (HeaderParms) {
+        this.headerDetail = JSON.parse(HeaderParms.ParameterValue);
+        let header = allParams.find(a => a.ParameterGroupName == 'BillingReport' && a.ParameterName == 'TableExportSetting');
+        if(header){
+          this.headerProperties = JSON.parse(header.ParameterValue)["ReferralMain"];
+        }
+      }
+    }
+  }
+  // public ExportToExcelRefSummary() {
+  //   this.dlService.ReadExcel("/ReportingNew/ExportToExcelRefSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate)
+  //     .map(res => res)
+  //     .subscribe(data => {
+  //       let blob = data;
+  //       let a = document.createElement("a");
+  //       a.href = URL.createObjectURL(blob);
+  //       a.download = "ReferralSummaryReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+  //       document.body.appendChild(a);
+  //       a.click();
+  //     },
+  //       err => this.ErrorMsg(err));
+  // }
+
+  ExportToExcelRefSummary(tableId){
+    if(tableId){
+      let workSheetName = 'Bill Referral Report';
+      //let Heading = 'BILL REFERAL REPORT';
+      let filename = 'BillREferralReport';
+      var Heading;
+      var phoneNumber;
+      var hospitalName;
+      var address;
+      if(this.headerProperties.HeaderTitle!=null){
+        Heading = this.headerProperties.HeaderTitle;
+      }else{
+        Heading = 'BILL REFERAL REPORT';
+      }
+
+      if(this.headerProperties.ShowHeader == true){
+         hospitalName = this.headerDetail.hospitalName;
+         address = this.headerDetail.address;
+      }else{
+        hospitalName = null;
+        address = null;
+      }
+
+      if(this.headerProperties.ShowPhone == true){
+        phoneNumber = this.headerDetail.tel; 
+      }else{
+        phoneNumber = null;
+      }
+      // let hospitalName = this.headerDetail.hospitalName;
+      // let address = this.headerDetail.address;
+      //NBB-send all parameters for now 
+      //need enhancement in this function 
+      //here from date and todate for show date range for excel sheet data
+      CommonFunctions.ConvertHTMLTableToExcelForBilling(tableId, this.FromDate, this.ToDate, workSheetName,
+        Heading, filename, hospitalName,address,phoneNumber,this.headerProperties.ShowHeader,this.headerProperties.ShowDateRange);
+    }
   }
 
   public ErrorMsg(err) {

@@ -29,6 +29,9 @@ export class SecurityDLService {
     public GetActiveBillingCounter() {
         return this.http.get<any>("/api/Security?reqType=activeBillingCounter", this.options);
     }
+    public GetActiveLab(){
+        return this.http.get<any>("/api/Security?reqType=activeLab", this.options);
+    }
     public GetActivePharmacyCounter() {
         return this.http.get<any>("/api/Security?reqType=activePharmacyCounter", this.options);
     }
@@ -46,5 +49,9 @@ export class SecurityDLService {
     public GetINVHospitalInfo(){
         return this.http.get<any>("/api/Security?reqType=get-inv-hospitalInfo", this.options);
     }
+
+    public ActivateLab(labId: number, labName: string){
+        return this.http.put<any>("/api/Security?reqType=activateLab&labId=" +labId +"&labName=" +labName, this.options);
+      }
 
 }

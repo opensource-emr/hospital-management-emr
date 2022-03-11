@@ -109,14 +109,14 @@
                           <th></th>
                         </span>
                         <th>Opening Balance</th>
-                        <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency}}</b></td>
-                        <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency}}</b></td>
+                        <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+                        <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
 
                         <td><b
-                            *ngIf="ledgerResult.OpeningBalanceDrAmount > 0">{{ledgerResult.OpeningBalanceDrAmount | Currency}}
+                            *ngIf="ledgerResult.OpeningBalanceDrAmount > 0">{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}
                             &nbsp; <span> Dr</span>
                           </b>
-                          <b *ngIf="ledgerResult.OpeningBalanceCrAmount > 0">{{ledgerResult.OpeningBalanceCrAmount | Currency}}
+                          <b *ngIf="ledgerResult.OpeningBalanceCrAmount > 0">{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}
                             &nbsp;<span> Cr</span></b>
                         </td>
 
@@ -140,10 +140,10 @@
                                     <span> &nbsp;&nbsp;&nbsp;{{det.Name}}</span>
                                     <span>
                                       <span *ngIf="det.DrCr">
-                                        Dr: {{det.Amount | Currency}}
+                                        Dr: {{det.Amount | Currency:'4'}}
                                       </span>
                                       <span *ngIf="!det.DrCr">
-                                        Cr: {{det.Amount | Currency}}
+                                        Cr: {{det.Amount | Currency:'4'}}
                                       </span>
                                     </span>
                                   </span>
@@ -151,10 +151,10 @@
                                 <td style="width:60%; border:none;">
                                   <div *ngIf="txn.Details?.length == 0">
                                     <div *ngIf="txn.DrCr">
-                                      Dr: {{txn.LedAmount | Currency}}
+                                      Dr: {{txn.LedAmount | Currency:'4'}}
                                     </div>
                                     <div *ngIf="!txn.DrCr">
-                                      Cr: {{txn.LedAmount | Currency}}
+                                      Cr: {{txn.LedAmount | Currency:'4'}}
                                     </div>
                                   </div>
                                 </td>
@@ -172,23 +172,23 @@
                           {{txnItm.Description}}</td>
                         <td>
                           <p *ngIf="txnItm.DrCr  && IsOpeningBalance!=true">
-                            {{txnItm.Amount | Currency}}
+                            {{txnItm.Amount | Currency:'4'}}
                           </p>
                         </td>
                         <td>
                           <p *ngIf="!txnItm.DrCr  && IsOpeningBalance!=true">
-                            {{txnItm.Amount | Currency}}
+                            {{txnItm.Amount | Currency:'4'}}
                           </p>
                         </td>
 
                         <td>
                           <p *ngIf="txnItm.Balance > 0">
-                            {{txnItm.Balance | Currency}}
+                            {{txnItm.Balance | Currency:'4'}}
                             <span *ngIf="txnItm.BalanceType==true" style="font-weight: bold;">Dr</span>
                             <span *ngIf="txnItm.BalanceType==false" style="font-weight: bold;">Cr</span>
                           </p>
                           <p *ngIf="txnItm.Balance == 0">
-                            {{txnItm.Balance | Currency}}
+                            {{txnItm.Balance | Currency:'4'}}
                           </p>
                         </td>
                         <td *ngIf="actionView && IsOpeningBalance!=true"
@@ -201,8 +201,8 @@
                         <th></th>
                         <th></th>
                         <th>Current Total</th>
-                        <td><b>{{ledgerResult.DrTotalAmount | Currency}} &nbsp; Dr</b></td>
-                        <td><b>{{ledgerResult.CrTotalAmount | Currency}} &nbsp; Cr</b></td>
+                        <td><b>{{ledgerResult.DrTotalAmount | Currency:'4'}} &nbsp; Dr</b></td>
+                        <td><b>{{ledgerResult.CrTotalAmount | Currency:'4'}} &nbsp; Cr</b></td>
                         <th></th>
                         <td *ngIf="actionView"></td>
                       </tr>
@@ -211,8 +211,8 @@
                         <th></th>
                         <th></th>
                         <th>Closing Balance</th>
-                        <td><b>{{ledgerResult.DrNetAmount | Currency}}&nbsp; Dr</b></td>
-                        <td><b>{{ledgerResult.CrNetAmount | Currency}}&nbsp; Cr</b></td>
+                        <td><b>{{ledgerResult.DrNetAmount | Currency:'4'}}&nbsp; Dr</b></td>
+                        <td><b>{{ledgerResult.CrNetAmount | Currency:'4'}}&nbsp; Cr</b></td>
                         <th></th>
                         <td *ngIf="actionView"></td>
                       </tr>
@@ -221,8 +221,8 @@
                   <div style="text-align:right;display:inline-block;">
 
                     <b>In Words :</b>
-                    {{ledgerResult.DrNetAmount | Currency | NumberInWords | CapitalFirstLetter}}
-                    {{ledgerResult.CrNetAmount | Currency | NumberInWords | CapitalFirstLetter}}<span
+                    {{ledgerResult.DrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}
+                    {{ledgerResult.CrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}<span
                       *ngIf="ledgerResult.DrNetAmount !=0 || ledgerResult.CrNetAmount !=0">Only</span>
                   </div>
                   <br />

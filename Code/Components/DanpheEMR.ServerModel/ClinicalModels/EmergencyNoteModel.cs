@@ -32,7 +32,6 @@ namespace DanpheEMR.ServerModel.ClinicalModels
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool? IsActive { get; set; }
-        public string ICDSelected { get; set; }
 
     }
 }

@@ -60,7 +60,7 @@ export class HamsPatientHealthCardComponent implements OnInit {
       //shortname comes in this format: "HAMS" or "MNK", "MMH", and so on. 
       this.hospitalShortName = hospNamePararam.ParameterValue.toLowerCase();
       //Naming format for our logo is: hospshortname-logo.png  inside above folder.
-      //final path format example: ../images/health-card/hams-logo.PNG, ../images/health-card/mmh-logo.PNG  and so on. 
+      //final path format example: ../images/health-card/hospital-logo.PNG, ../images/health-card/mmh-logo.PNG  and so on. 
       this.imgLogoSrcPath = this.hospLogoFolderPath + this.hospitalShortName + "-logo.PNG";
       //hams-hospital-bg.jpg
       this.hospBgSrcPath = this.hospBgFolderPath + this.hospitalShortName + "-hospital-bg.jpg";

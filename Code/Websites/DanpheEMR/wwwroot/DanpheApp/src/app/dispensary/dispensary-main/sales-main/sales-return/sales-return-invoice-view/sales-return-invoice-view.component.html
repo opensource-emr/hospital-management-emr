@@ -1,0 +1,22 @@
+<!--START:  Popup for show return Invoice items details show -->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showInvoiceReturnPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-close"></i></a>
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt" (call-back-print)="Close()"> </pharmacy-receipt>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END:  Popup for show return Invoice items details show -->

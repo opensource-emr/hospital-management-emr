@@ -5,6 +5,8 @@ import { VisitService } from "../../appointments/shared/visit.service";
 import { PatientService } from "../../patients/shared/patient.service";
 import { NursingBLService } from "../shared/nursing.bl.service";
 import { Router } from "@angular/router";
+import { ADT_BLService } from "../../adt/shared/adt.bl.service";
+import { DanpheHTTPResponse } from "../../shared/common-models";
 
 @Component({
   templateUrl: "./nursing-transfer.html",
@@ -45,6 +47,7 @@ export class NursingTransferComponent {
     public patientservice: PatientService,
     public msgBoxServ: MessageboxService,
     public nursingBlService: NursingBLService,
+    public admissionBLService: ADT_BLService,
     public router: Router
   ) {
     this.patientId = this.patientservice.globalPatient.PatientId;
@@ -73,5 +76,14 @@ export class NursingTransferComponent {
 
   TransferUpgrade($event) {
     this.router.navigate(["/Nursing/InPatient"]);
+  }
+
+  public allDepartments: Array<any> = [];
+  public LoadDepartments() {
+    this.admissionBLService.GetDepartments()
+      .subscribe((res: DanpheHTTPResponse) => {
+        this.allDepartments = res.Results;
+
+      });
   }
 }

@@ -26,7 +26,9 @@ export class RPT_LAB_StatusWiseItemCountComponent {
   public selectedCategory: any;
   public itemDataOfCategory: Array<any> = [];
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+  public dateRange:string = "";
+  public statusAbove:number =0;
+  public orderStatus={statusList: ''};
   constructor(
     public dlService: DLService,
     public msgBoxServ: MessageboxService,
@@ -46,6 +48,7 @@ export class RPT_LAB_StatusWiseItemCountComponent {
   OnFromToDateChange($event) {
     this.fromDate = $event.fromDate;
     this.toDate = $event.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 
 
@@ -55,7 +58,9 @@ export class RPT_LAB_StatusWiseItemCountComponent {
         "/Reporting/TestStatusDetailReport?FromDate=" +
         this.fromDate +
         "&ToDate=" +
-        this.toDate
+        this.toDate+
+        "&orderStatus="+
+        this.orderStatus.statusList
       )
       .map((res) => res)
       .subscribe(
@@ -76,6 +81,7 @@ export class RPT_LAB_StatusWiseItemCountComponent {
       this.msgBoxServ.showMessage("notice-message", [
         "No Data is Avaliable for Selected Parameters.....Try Different",
       ]);
+      this.StatusWiseItemCountData =[];
     } else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }

@@ -10,7 +10,8 @@ import { RequisitionItems } from "./requisition-items.model";
 import * as moment from 'moment/moment';
 export class Requisition {
   public RequisitionId: number = 0;
-  public StoreId: number = null;
+  public RequestFromStoreId: number = null; //substoreId
+  public RequestToStoreId: number = null; //inventory/mainstore id
   public DepartmentId: number = null;
   public RequisitionDate: string = moment().format();
   public RequisitionStatus: string = null;
@@ -20,12 +21,13 @@ export class Requisition {
   public CreatedOn: string = moment().format('YYYY-MM-DD');
   public ModifiedBy: number = null;
   public ModifiedOn: Date = null;
-  public CancelRemarks:string=null;
+  public CancelRemarks: string = null;
   public RequisitionValidator: FormGroup = null;
-
+  public MSSNO: string = null;
+  public MINNo: string = null;
   public StoreName: string = ""; //for displaying and data manipulation purpose : sanjit 31Mar'2020
-  public CurrentVerificationLevelCount : number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
-  public CurrentVerificationLevel : number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
+  public CurrentVerificationLevelCount: number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
+  public CurrentVerificationLevel: number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
   public MaxVerificationLevel: number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
   public PermissionId: number = 0; //for displaying and data manipulation purpose : sanjit 31Mar'2020
   public isVerificationAllowed: boolean = false; //for authorization purpose : sanjit 6Apr'2020
@@ -41,11 +43,13 @@ export class Requisition {
   public canDispatchItem: boolean = false;
   public isReceiveItemsEnabled: boolean = false;
   public NewDispatchAvailable: boolean = false;
+  public ReqDisGroupId: number;
   constructor() {
 
     var _formBuilder = new FormBuilder();
     this.RequisitionValidator = _formBuilder.group({
-      'StoreId': ['', Validators.compose([Validators.required])]
+      'RequestFromStoreId': ['', Validators.compose([Validators.required])],
+      'RequestToStoreId': ['', Validators.compose([Validators.required])]
     });
   }
 

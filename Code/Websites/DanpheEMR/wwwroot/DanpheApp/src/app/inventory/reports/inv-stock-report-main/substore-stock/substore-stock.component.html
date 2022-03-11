@@ -1,0 +1,219 @@
+<style>
+/*
+.information-container {
+	border: 1px solid #dedede;
+	border-radius: 10px !important;
+	background-color: #dedede;
+}
+.card {
+	margin: 0px;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
+	border: 3px solid #dedede;
+	border-radius: 15px !important;
+	background-color: #acb7bd;
+}
+.card .card-icon {
+	margin: 15px
+}
+.card .card-title {
+	font-size: 15px;
+	font-weight: 600;
+}
+.card .card-desc {
+	font-size: 20px;
+	font-weight: 600;
+}
+*/
+table.ss-table {
+	display: table;
+	table-layout: fixed;
+}
+table.ss-table thead.ss-table-head {
+	display: table-header-group;
+	vertical-align: middle;
+}
+table.ss-table thead.ss-table-head tr {
+	display: block;
+	position: relative;
+	border-collapse: collapse;
+}
+table.ss-table thead.ss-table-head tr th {
+	display: table-cell;
+}
+table.ss-table tbody.ss-table-body {
+	overflow: auto;
+	display: block;
+	max-height: 200px;
+}
+table.ss-table tbody.ss-table-body tr th, table.ss-table tbody.ss-table-body tr td {
+	display: table-cell;
+}
+td:nth-child(1), th:nth-child(1) {
+	min-width: 35px;
+}
+td:nth-child(2), th:nth-child(2) {
+	min-width: 170px;
+  max-width: 180px;
+}
+td:nth-child(3), th:nth-child(3) {
+	min-width: 140px;
+}
+td:nth-child(4), th:nth-child(4) {
+	min-width: 140px;
+}
+td:nth-child(5), th:nth-child(5) {
+	width: 140px;
+}
+
+  /*scroll bar*/
+  ::-webkit-scrollbar-track {
+background: #dedede;
+border-radius: 5px;
+}
+
+  :not(:hover)::-webkit-scrollbar-track {
+background: #e7e7e7;
+border-radius: 5px;
+}
+
+  ::-webkit-scrollbar {
+width: 6px;
+height: 10px;
+}
+
+  ::-webkit-scrollbar-thumb {
+background: rgb(150, 145, 145);
+border-radius: 5px;
+}
+
+  :not(:hover)::-webkit-scrollbar-thumb {
+background: rgb(212, 209, 209);
+border-radius: 5px;
+}
+/*filter search*/
+.activeFilterBox {
+	background: rgba(24, 29, 31, .07);
+	border-radius: 24px !important;
+	height: 24px;
+	padding: 0 6px;
+	margin: 0 12px;
+}
+.activeFilterText {
+	margin: 0 6px;
+}
+</style>
+<!--This is for the topmost details-->
+
+<div class="information-container inv_substore_list">
+  <div class="row clearfix" *ngIf="SubstoreStockReport !=null">
+    <div class="col-md-3 col-xs-3">
+      <div class="card">
+        <div class="card-desc">
+          <div class="center-align">{{SubstoreStockReport.InventoryTotal.TotalQuantity}}</div>
+        </div>
+        <div class="card-title">Total Stock</div>
+        <div class="card-icon"> <i class="fa fa-home fa-2x"></i> </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-3">
+      <div class="card bg-danger">
+        <div class="card-desc">
+          <div class="center-align">{{coreService.currencyUnit}} {{SubstoreStockReport.InventoryTotal.TotalValue | number:'1.0-2'}}</div>
+        </div>
+        <div class="card-title">Total Value</div>
+        <div class="card-icon"> <i class="fa fa-dollar fa-2x"></i> </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-3">
+      <div class="card bg-success">
+        <div class="card-desc">
+          <div class="center-align">{{SubstoreStockReport.InventoryTotal.ExpiryQuantity}}</div>
+        </div>
+        <div class="card-title">Expiry Stock</div>
+        <div class="card-icon"> <i class="fa fa-warning fa-2x"></i> </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-3">
+      <div class="card bg-warning">
+        <div class="card-desc">
+          <div class="center-align">{{coreService.currencyUnit}} {{SubstoreStockReport.InventoryTotal.ExpiryValue | number:'1.0-2'}}</div>
+        </div>
+        <div class="card-title">Expiry Stock Value</div>
+        <div class="card-icon"> <i class="fa fa-money fa-2x"></i> </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="inv_substore_search m2">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="search-form">
+        <label for="FilterParameter">Filter By:</label>
+        <input class="form-control" *ngIf="FilterParameter == null"
+        danphe-auto-complete [source]="SearchSource" placeholder="Type Here To Search!!!" display-property-name="Name"
+        [(ngModel)]="FilterParameter" (ngModelChange)="Sort()" [list-formatter]="SearchListFormatter" />
+        <span class="activeFilterBox" *ngIf="!!FilterParameter"> <span class="activeFilterText">{{FilterParameter.Name}}</span> <span><a style="margin-left:6px" disabled="loading" (click)="ResetSort()"><span
+              class="fa fa-close"></span></a></span> </span> </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-7" *ngIf="SubstoreStockReport != null"> 
+    <!--This is for the table related to substore-->
+    <div class="portlet light substore_table">
+      <div class="portlet-title"><div class="caption lb-caption no-margin no-padding"> <i class="icon-bar-chart"></i> <span class="caption-subject">Substore Distribution</span> </div></div>
+      <table class="table ss-table">
+        <thead class="ss-table-head">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Stock Quantity</th>
+            <th>Stock Value</th>
+            <th>Consumed/Dispatched</th>
+          </tr>
+        </thead>
+        <tbody class="ss-table-body">
+          <tr class="table-dark" *ngFor="let row of SubstoreStockReport.InventoryStoreTotal;let i = index">
+            <th scope="row">{{i+1}}</th>
+            <td><a (click)="Load(row.StoreId,0)">{{row.Name}}</a></td>
+            <td>{{row.TotalQuantity}}</td>
+            <td>{{row.TotalValue | number:'1.0-2'}}</td>
+            <td>{{row.TotalConsumed}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--This is for the table related to items-->
+    <div class="portlet light substore_table">
+      <div class="portlet-title"><div class="caption lb-caption no-margin no-padding"> <i class="icon-bar-chart"></i> <span class="caption-subject">Item Distribution</span> </div></div>
+      <table class="table ss-table">
+        <thead class="ss-table-head">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Stock Quantity</th>
+            <th>Stock Value</th>
+            <th>Consumed</th>
+          </tr>
+        </thead>
+        <tbody class="ss-table-body">
+          <tr class="table-dark" *ngFor="let row of SubstoreStockReport.InventoryItemTotal;let i = index">
+            <th scope="row">{{i+1}}</th>
+            <td><a (click)="Load(0,row.ItemId)">{{row.ItemName}}</a></td>
+            <td>{{row.TotalQuantity}}</td>
+            <td>{{row.TotalValue | number:'1.0-2'}}</td>
+            <td>{{row.TotalConsumed}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-5 right">
+    <div class="portlet light"><canvas id="doughnut-for-Substore"></canvas></div>
+  </div>
+  <div class="col-md-5 right" style="margin-top:10px">
+    <div class="portlet light"><canvas id="bar-chart-horizontal-for-item"></canvas></div>
+  </div>
+</div>

@@ -13,7 +13,12 @@
 
 }
 
- 
+.border-around{
+  box-sizing: border-box;
+  border: 1px solid #000000;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
 
 .avoid-inside-page-brk{page-break-inside: avoid;}
 
@@ -288,13 +293,24 @@ table.culture-holder-table > thead > tr{ border: 1px solid #000;}
 .cmh table.lab-report-tbl tbody tr th {font-size: 12px;}
 .cmh table.lab-report-tbl tbody tr td {font-size: 12px; padding-top: 2px;padding-bottom: 2px;}
 .cmh .cs-result{font-style: italic;}
-.frmt2-headertxt{padding: 18px 0px 8px !important;}
+.frmt2-headertxt{padding: 10px 0px 10px !important;}
+.bold{font-weight: bold;}
 .cmh .footer-text-wrapper{text-align: center;}
-
 
 tbody.culture-negative-testres tr{border: none;}
 .report-print-info{position: fixed; bottom: 3px; right: 10px;font-size: 10px;}
 
 
+.lab-qrholder{
+  margin-bottom: 12px;
+}
 
+.extra-gap{height: 32px;}
+
+
+.lph .signature-item{
+  flex-basis: 40% !important;
+  padding: 1% !important;
+  font-size: 11px;
+}
 

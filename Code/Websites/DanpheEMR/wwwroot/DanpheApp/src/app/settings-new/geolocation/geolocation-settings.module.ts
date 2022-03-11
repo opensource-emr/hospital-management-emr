@@ -13,6 +13,8 @@ import { CountryListComponent } from './countries/country-list.component';
 import { CountrySubdivisionAddComponent } from './subdivisions/country-subdivision-add.component';
 import { CountrySubdivisionListComponent } from './subdivisions/country-subdivision-list.component';
 import { AuthGuardService } from '../../security/shared/auth-guard.service';
+import { MunicipalityListComponent } from './municipalities/municipality-list.component';
+import { MunicipalityAddComponent } from './municipalities/municipality-add.component';
 export const geoLocSettingsRoutes =
   [
     {
@@ -20,7 +22,8 @@ export const geoLocSettingsRoutes =
       children: [
         { path: '', redirectTo: 'ManageCountry', pathMatch: 'full' },
         { path: 'ManageCountry', component: CountryListComponent, canActivate: [AuthGuardService] },
-        { path: 'ManageSubdivision', component: CountrySubdivisionListComponent, canActivate: [AuthGuardService] }
+        { path: 'ManageSubdivision', component: CountrySubdivisionListComponent, canActivate: [AuthGuardService] },
+        { path: 'ManageMunicipality', component: MunicipalityListComponent, canActivate: [AuthGuardService] }
       ]
     }
   ]
@@ -43,7 +46,9 @@ export const geoLocSettingsRoutes =
     CountryAddComponent,
     CountryListComponent,
     CountrySubdivisionAddComponent,
-    CountrySubdivisionListComponent
+    CountrySubdivisionListComponent,
+    MunicipalityListComponent,
+    MunicipalityAddComponent
   ],
   bootstrap: []
 })

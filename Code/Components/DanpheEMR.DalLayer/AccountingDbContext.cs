@@ -67,8 +67,16 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
             modelBuilder.Entity<FiscalYearLogModel>().ToTable("ACC_FiscalYear_Log");
             modelBuilder.Entity<EditVoucherLogModel>().ToTable("ACC_Log_EditVoucher");
+            modelBuilder.Entity<BillItemPrice>().ToTable("BIL_CFG_BillItemPrice");
+            modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
             modelBuilder.Entity<PrimaryGroupModel>().ToTable("ACC_MST_PrimaryGroup");
             modelBuilder.Entity<AccountingTransactionHistoryModel>().ToTable("ACC_Transaction_History");
+            modelBuilder.Entity<BankReconciliationModel>().ToTable("ACC_TXN_Bank_Reconciliation");
+            modelBuilder.Entity<BankReconciliationCategoryModel>().ToTable("ACC_MST_Bank_ReconciliationCategory");
+            modelBuilder.Entity<GoodsReceiptModel>().ToTable("INV_TXN_GoodsReceipt");
+            modelBuilder.Entity<AccountingPaymentModel>().ToTable("ACC_TXN_Payment");
+            modelBuilder.Entity<PHRMGoodsReceiptModel>().ToTable("PHRM_GoodsReceipt");
+
         }
         public DbSet<ChartOfAccountModel> ChartOfAccounts { get; set; }
         public DbSet<VoucherModel> Vouchers { get; set; }
@@ -103,7 +111,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<HospitalModel> Hospitals { get; set; }
         public DbSet<HospitalTransferRuleMappingModel> HospitalTransferRuleMappings { get; set; }
         public DbSet<ReverseTransactionModel> ReverseTransaction { get; set; }
-        public DbSet<AccountingBillLedgerMappingModel> AccountBuillLedgerMapping { get; set; }
+        public DbSet<AccountingBillLedgerMappingModel> AccountBillLedgerMapping { get; set; }
         public DbSet<AccountingCodeDetailsModel> ACCCodeDetails { get; set; }
 
         public DbSet<CreditOrganizationModel> BillCreditOrganizations { get; set; }
@@ -115,9 +123,16 @@ namespace DanpheEMR.DalLayer
         public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<FiscalYearLogModel> FiscalYearLog { get; set; }
         public DbSet<EditVoucherLogModel> EditVoucherLog { get; set; }
+        public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
+        public DbSet<BillItemPrice> BillItemPrice { get; set; }
         public DbSet<AccountingTransactionHistoryModel> AccountingTransactionHistory { get; set; }
         public DbSet<PrimaryGroupModel> PrimaryGroup { get; set; }
+        public DbSet<BankReconciliationModel> BankReconciliationModel { get; set; }
+        public DbSet<BankReconciliationCategoryModel> BankReconciliationCategory { get; set; }
 
+        public DbSet<GoodsReceiptModel> GoodsReceiptModels { get; set; }
+        public DbSet<AccountingPaymentModel> AccountingPaymentModels { get; set; }
+        public DbSet<PHRMGoodsReceiptModel> PHRMGoodsReceipt { get; set; }
 
         #region Get inventory Goods Receipt for transfer to accounting group by Date Wise
         public DataTable INVGoodsReceiptData()

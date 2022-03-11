@@ -4,6 +4,7 @@ using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.InventoryReportModel;
 using DanpheEMR.Services;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -18,14 +19,17 @@ namespace DanpheEMR.Controllers
     [Route("api/[controller]")]
     public class VerificationController : CommonController
     {
-        public IVerificationService _verificationService;
-        public IInventoryGoodReceiptService _goodReceiptService;
+        private IVerificationService _verificationService;
+        private IInventoryGoodReceiptService _goodReceiptService;
         public DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
 
-        public VerificationController(IOptions<MyConfiguration> _config, IVerificationService verificationService, IInventoryGoodReceiptService goodReceiptService) : base(_config)
+        private IInventoryReceiptNumberService _inventoryReceiptNumberService { get; }
+
+        public VerificationController(IOptions<MyConfiguration> _config, IVerificationService verificationService, IInventoryGoodReceiptService goodReceiptService, IInventoryReceiptNumberService inventoryReceiptNumberService) : base(_config)
         {
             _verificationService = verificationService;
             _goodReceiptService = goodReceiptService;
+            _inventoryReceiptNumberService = inventoryReceiptNumberService;
         }
         [HttpGet]
         public string Get(string reqType)
@@ -293,6 +297,31 @@ namespace DanpheEMR.Controllers
             }
             return Ok(responseData);
         }
+
+
+        [HttpGet]
+        [Route("~/api/Verification/GetQuotationRatesDetails/{PurchaseOrderId}")]
+        public IActionResult GetQuotationRatesDetails([FromRoute] int PurchaseOrderId)
+        {
+
+            try
+            {
+                var inventoryReportingDbContext = new InventoryReportingDbContext(connString);
+                var QuotionRatesDetails = inventoryReportingDbContext.QuotationRatesReport(PurchaseOrderId);
+
+                responseData.Results = QuotionRatesDetails;
+                responseData.Status = "OK";
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                throw ex;
+            }
+            return Ok(responseData);
+        }
+
+
+
         [HttpGet]
         [Route("~/api/Verification/GetInventoryPurchaseOrderDetails/{PurchaseOrderId}")]
         public IActionResult GetInventoryPurchaseOrderDetails([FromRoute] int PurchaseOrderId)
@@ -431,7 +460,7 @@ namespace DanpheEMR.Controllers
         {
             var responseData = new DanpheHTTPResponse<object>();
             var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-            var data = this.ReadPostData();
+            var data = ReadPostData();
             GoodsReceiptModel GoodsReceipt = DanpheJSONConvert.DeserializeObject<GoodsReceiptModel>(data);
             var dbContext = new InventoryDbContext(connString);
 
@@ -442,14 +471,29 @@ namespace DanpheEMR.Controllers
                 var CurrentVerificationLevelCount = GoodsReceipt.CurrentVerificationLevelCount;
                 var MaxVerificationLevel = GoodsReceipt.MaxVerificationLevel;
                 int? ParentVerificationId = GoodsReceipt.VerificationId;
-                var VerificationId = this._verificationService.CreateVerification(currentUser.EmployeeId, CurrentVerificationLevel, CurrentVerificationLevelCount, MaxVerificationLevel, Status, VerificationRemarks, ParentVerificationId);
+                var VerificationId = _verificationService.CreateVerification(currentUser.EmployeeId, CurrentVerificationLevel, CurrentVerificationLevelCount, MaxVerificationLevel, Status, VerificationRemarks, ParentVerificationId);
+                //Set IMIR No and Date once the verification is done.
+                GoodsReceipt.IMIRDate = DateTime.Now;
+                if (GoodsReceipt.IMIRNo == null)
+                {
+                    GoodsReceipt.IMIRNo = VerificationBL.GetIMIRNo(dbContext, GoodsReceipt.IMIRDate);
+                }
                 if (CurrentVerificationLevelCount == MaxVerificationLevel)
                 {
-                    GoodsReceipt.GRStatus = "active";
-                    //directly add stock to inventory --later can be changed to some receive or add to inventory mechanism
+                    //create GRN when verification is completed.
+                    //GoodsReceipt.FiscalYearId = InventoryBL.GetFiscalYear(dbContext).FiscalYearId;
+                   // GoodsReceipt.GoodsReceiptDate = DateTime.Now;
+                    //GoodsReceipt.GoodsReceiptNo = _inventoryReceiptNumberService.GenerateGRN(GoodsReceipt.GoodsReceiptDate, GoodsReceipt.GRGroupId);
+                    GoodsReceipt.GRStatus = "verified";
+
+                    // stock will be later added after GR is received
                     GoodsReceipt.GoodsReceiptItem.Where(gritem => gritem.IsActive == true).ToList().ForEach(grItem =>
                     {
-                        _goodReceiptService.AddtoInventoryStock(grItem);
+                        //grItem.GRItemDate = GoodsReceipt.GoodsReceiptDate;
+                        grItem.DonationId = GoodsReceipt.DonationId;
+                        //grItem.CreatedBy = (grItem.GoodsReceiptItemId == 0) ? currentUser.EmployeeId : grItem.CreatedBy;
+                        // _goodReceiptService.AddtoInventoryStock(grItem, GoodsReceipt.GRCategory);
+
                     });
                 }
                 InventoryBL.UpdateGRAfterVerification(dbContext, GoodsReceipt, VerificationId, currentUser);
@@ -480,20 +524,20 @@ namespace DanpheEMR.Controllers
                 int? ParentVerificationId = null;
                 if (CurrentVerificationlevel > 0)
                 {
-                    ParentVerificationId = db.GoodsReceipts.Where(req => req.PurchaseOrderId == GoodsReceiptId)
+                    ParentVerificationId = db.GoodsReceipts.Where(req => req.GoodsReceiptID == GoodsReceiptId)
                         .Select(req => req.VerificationId).FirstOrDefault();
                 }
                 var VerificationId = _verificationService.CreateVerification(currentUser.EmployeeId, CurrentVerificationlevel, CurrentVerificationLevelCount, MaxVerificationLevel, VerificationStatus, VerificationRemarks, ParentVerificationId);
-                bool flag = InventoryBL.CancelGoodsReceipt(db, GoodsReceiptId, CancelRemarks, currentUser, GRStatus, VerificationId);
+                InventoryBL.CancelGoodsReceipt(db, GoodsReceiptId, CancelRemarks, currentUser, GRStatus, VerificationId);
 
-                if (flag == false) { throw new Exception("Failed to reject the goods receipt."); }
+
                 responseData.Results = GoodsReceiptId;
                 responseData.Status = "OK";
             }
             catch (Exception ex)
             {
                 responseData.Status = "Failed";
-                throw ex;
+                responseData.ErrorMessage = $"Goods Receipt Reject Failed. Details: {ex.Message}";
             }
             return Ok(responseData);
             #endregion

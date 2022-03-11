@@ -36,7 +36,7 @@ namespace DanpheEMR.ServerModel
         public bool? HasNegativeResults { get; set; }
         public string NegativeResultText { get; set; }
         public int? LabTestCategoryId { get; set; }
-
+        public bool? SmsApplicable { get; set; }
         public virtual LabReportTemplateModel LabReportTemplate { get; set; }
 
 

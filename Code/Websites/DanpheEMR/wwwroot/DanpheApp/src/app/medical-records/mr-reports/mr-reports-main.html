@@ -41,6 +41,7 @@
 <div class="row">
   <div class="col-md-12" *ngIf="validRoutes != undefined">
     <div class="row">
+
       <div class="col-md-3" *ngFor="let route of validRoutes">
         <a routerLink="{{route.RouterLink}}" class="report_list">
           <div class="span2 padder-v b-r b-light rpt-link-container">
@@ -54,7 +55,7 @@
           </div>
         </a>
       </div>
-    </div>    
+    </div> 
   </div>
 </div>
 

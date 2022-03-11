@@ -47,6 +47,7 @@ export class UnitOfMeasurementListComponent {
                 this.changeDetector.detectChanges();
                 this.selectedUnitOfMeasurement = $event.Data;
                 this.showAddPage = true;
+                this.FocusElementById('UOMName');
             }
             default:
                 break;
@@ -54,6 +55,7 @@ export class UnitOfMeasurementListComponent {
     }
     AddUnitOfMeasurement() {
         this.showAddPage = false;
+        this.FocusElementById('UOMName');
         this.changeDetector.detectChanges();
         this.showAddPage = true;
     }
@@ -76,6 +78,13 @@ export class UnitOfMeasurementListComponent {
         this.selectedUnitOfMeasurement = null;
         this.index = null;
     }
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 
 }

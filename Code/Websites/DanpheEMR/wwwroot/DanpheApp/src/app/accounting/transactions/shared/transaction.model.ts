@@ -21,6 +21,8 @@ export class TransactionModel {
     public IsActive: boolean = true;
     public IsBackDateEntry: boolean = false;
     public Remarks: string = "";
+    public PayeeName: string = "";
+    public ChequeNumber: number = null;
     //public ReferenceTransactionId: number = 0;
     public SectionId: number = null;
     public VoucherNumber: string = "";
@@ -44,7 +46,9 @@ export class TransactionModel {
         var _formBuilder = new FormBuilder();
         this.TransactionValidator = _formBuilder.group({
             'VoucherId': ['', Validators.compose([])],
-            'Remarks': ['', Validators.compose([Validators.maxLength(100)])],
+            'PayeeName' : ['', Validators.required],
+            'ChequeNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]+$')])],
+            'Remarks': ['', Validators.compose([Validators.maxLength(500)])],
             'RefTxnVoucherNumber': ['', Validators.compose([])],
             'VoucherHead': ['', Validators.required],
             'TransactionDate': ['', Validators.compose([Validators.required, this.dateValidators])]
@@ -101,6 +105,7 @@ export class TransactionViewModel {
     public VoucherType: string = null;
     public IsGroupTxn: boolean = true;  
     public IsEditable:boolean=null;  
+    public VoucherNumber:number=0;
     public TransactionItems: Array<{
         LedgerGroupName: string,
         LedgerName: string,

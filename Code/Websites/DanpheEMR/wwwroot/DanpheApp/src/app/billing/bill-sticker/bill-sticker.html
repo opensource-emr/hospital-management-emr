@@ -67,7 +67,7 @@
           </div>
 
           <div *ngIf="EnableShowTicketPrice && billStickerDetail.TicketCharge>0" style="padding-top: 8px;padding-left: 3px;font-size: 12px;font-weight: bold;">
-            <span> Ticket Charge: Rs. {{billStickerDetail.TicketCharge}}</span>
+            <span> Ticket Charge: {{coreService.currencyUnit}} {{billStickerDetail.TicketCharge}}</span>
           </div>
 
           <div style="padding-top: 13px;font-size:13px;">
@@ -99,4 +99,22 @@
   <p *ngIf="showLoading" style="text-align:center;width:400px;">
     please wait while printing is in progress...
   </p>
+
+  <div class="col-md-8">
+    <div class="padding-15-bt padding-15-tp padding-7-hr">
+      <div><label>Sticker Printer: <b>{{printerName}}</b> </label> <a (click)="ChangeStickerPrinter()">Change?</a> </div>
+    </div>
+    <table class="table table-striped table-bordered table-hover">
+      <tr *ngIf="showStickerChange">
+        <td> Change Sticker: </td>
+        <td>
+            <select class="margin-7-hr" [(ngModel)]="printerNameSelected">
+              <option *ngFor="let location of allPrinterName" [value]="location.Name">{{location.Name}}</option>
+            </select>
+        </td>
+        <td><button class="btn green btn-success" (click)="UpdateNewPrinter();">OK</button></td>
+        <td><button class="btn green btn-success" (click)="CloseChangeStickerPrinter();">Reset</button></td>
+      </tr>
+    </table>
+  </div>
 </div>

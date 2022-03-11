@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ViewChild, ElementRef } from "@angular/core";
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SlicePipe } from '@angular/common';
@@ -14,13 +14,15 @@ import { BillingService } from "../../billing/shared/billing.service";
 import { InsuranceVM } from "../../billing/shared/patient-billing-context-vm";
 import { VisitService } from "../shared/visit.service";
 import { Subscription } from "rxjs";
+import { ENUM_PrintingType, PrinterSettingsModel } from "../../settings-new/printers/printer-settings.model";
+
 @Component({
   selector: 'opd-sticker',
   templateUrl: "./opd-sticker-print.html"
 })
 
 export class PrintStickerComponent {
-  public ageSex : string = '';
+  public ageSex: string = '';
   public OpdStickerDetails: OPDStickerViewModel = new OPDStickerViewModel();
 
   @Input("isInsuranceBilling")
@@ -28,8 +30,15 @@ export class PrintStickerComponent {
   @Input("IMISCode")
   public IMISCode: string = "";
 
+  @Input("routeFrom")
+  public routeFrom: string = "";
+
   @Input("SelectedVisitDetails")
   public SelectedVisitDetails: any;
+
+  @Input("showDateOfBirth")
+  public showDateOfBirth: any;
+
   public showOpdSticker: boolean = false;
   @Output("after-print-action")
   afterPrintAction: EventEmitter<Object> = new EventEmitter<Object>();
@@ -43,6 +52,7 @@ export class PrintStickerComponent {
 
   public showServerPrintBtn: boolean = false;
   public showLoading: boolean = false;
+  public printerNameSelected: any = null;
 
   //for QR-specific purpose only--sud.
   public showQrCode: boolean = false;
@@ -52,6 +62,25 @@ export class PrintStickerComponent {
   public EnableShowTicketPrice: boolean = false;
   public hospitalCode: string = '';
   public QueueNoSetting = { "ShowInInvoice": false, "ShowInSticker": false };
+  public allPrinterName: any = null;
+  public showStickerChange: boolean = false;
+  public printerName: string = null;
+  public showRoomNumber: boolean = false;
+  public roomNo: string = null;
+
+  public dotPrinterDimensions: any;
+  public printByDotMatrixPrinter: boolean = false;
+  public PrinterDisplayName: string = null;
+  public PrinterNameDotMatix: string = null;
+  public ModelName: string = null;
+  public showPrinterChange: boolean = false;
+  public billingDotMatrixPrinters: Array<any>;
+  public serverPrintFolderPath: any;
+  public openBrowserPrintWindow: boolean = false;
+  public browserPrintContentObj: any;
+  public defaultFocus: string = null;
+
+  public closePopUpAfterStickerPrint: boolean = true;
 
   constructor(
     public http: HttpClient,
@@ -59,38 +88,68 @@ export class PrintStickerComponent {
     public router: Router,
     public nepaliCalendarServ: NepaliCalendarService,
     public coreService: CoreService,
-    public visitService: VisitService
+    public visitService: VisitService,
+    public changeDetector: ChangeDetectorRef,
+    public billingService: BillingService
   ) {
     this.showHidePrintButton();
     this.loadMaximumFollowUpDays();
-    
+
     let paramValue = this.coreService.EnableDepartmentLevelAppointment();
     this.hospitalCode = this.coreService.GetHospitalCode();
+
     this.hospitalCode = (this.hospitalCode && this.hospitalCode.trim().length > 0) ? this.hospitalCode : "allhosp";
-    console.log(this.hospitalCode);
     if (paramValue) {
       this.doctorOrDepartment = "Department";
     }
     else {
       this.doctorOrDepartment = "Doctor";
     }
+
     this.EnableShowTicketPrice = this.GetEnableShowTicketPrice();
+    this.printerName = localStorage.getItem('Danphe_OPD_Default_PrinterName');
+    var allStickerFolderDetail = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'reg-sticker' && a.ParameterName == 'StickerPrinterSettings');
+    if (allStickerFolderDetail) {
+      this.allPrinterName = JSON.parse(allStickerFolderDetail.ParameterValue);
+    }
+
+    var room = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'appointment' && a.ParameterName == 'RoomNumberInSticker');
+    if (room) {
+      let roomValue = JSON.parse(room.ParameterValue);
+      this.showRoomNumber = roomValue.Show;
+      this.roomNo = roomValue.DisplayName;
+    }
+
+    this.SetPrinterFromParam();
   }
 
   ngOnInit() {
     this.QueueNoSetting = this.coreService.GetQueueNoSetting();
-
+    let val = this.coreService.Parameters.find(p => p.ParameterGroupName == 'Appointment' && p.ParameterName == 'VisitPrintSettings');
+    let param = JSON.parse(val && val.ParameterValue);
+    if (param) {
+      this.defaultFocus = param.DefaultFocus;
+      this.closePopUpAfterStickerPrint = param.closePopUpAfterStickerPrint;
+    }
     //if (this.showOpdSticker && this.SelectedVisitDetails) {
     //  this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId);
     //}
   }
 
+  ngAfterViewInit() {
+    //this.SetFocusById("btnPrintSticker");
+    let btnObj = document.getElementById('btnPrintOpdSticker');
+    if (btnObj && this.defaultFocus.toLowerCase() == "sticker") {
+      btnObj.focus();
+    }
+
+  }
 
   @Input("showOpdSticker")
-  public set value(val: boolean) { 
+  public set value(val: boolean) {
     this.showOpdSticker = val;
     if (this.showOpdSticker && this.SelectedVisitDetails) {
-      this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId); 
+      this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId);
     }
   }
   GetVisitforStickerPrint(PatientVisitId) {
@@ -119,6 +178,11 @@ export class PrintStickerComponent {
       this.OpdStickerDetails.RoomNo = res.Results[0].RoomNo;
       this.OpdStickerDetails.OpdTicketCharge = res.Results[0].OpdTicketCharge;
       this.OpdStickerDetails.QueueNo = res.Results[0].QueueNo;
+      this.OpdStickerDetails.DeptRoomNumber = res.Results[0].DeptRoomNumber;
+      this.OpdStickerDetails.MunicipalityName = res.Results[0].MunicipalityName;
+      if (this.OpdStickerDetails.DepartmentName.toLowerCase() == 'immunization') {
+        this.showDateOfBirth = true;
+      }
       this.localDateTime = this.GetLocalDate() + " BS";
       //get Formatted age/sex to give as input to qr-code value.
       this.ageSex = CommonFunctions.GetFormattedAgeSexforSticker(this.OpdStickerDetails.DateOfBrith, this.OpdStickerDetails.Gender, this.OpdStickerDetails.Age);
@@ -136,12 +200,19 @@ Age/Sex: `+ this.ageSex + `
 Contact No: `+ this.OpdStickerDetails.PhoneNumber + `
 Address: `+ this.OpdStickerDetails.Address;
       //set this to true only after all values are set.
-      this.showQrCode = true;
+      //this.showQrCode = true;
     }
     else {
       this.showOpdSticker = false;
       this.AfterPrintAction();
       this.msgBoxServ.showMessage("error", ["Sorry!!! not able to get date for opd-sticker of this patient"]);
+    }
+  }
+
+  printStickerDotMatrix() {
+    if (this.printByDotMatrixPrinter) {
+      this.PrintDotMatrix();
+      return;
     }
   }
 
@@ -155,7 +226,6 @@ Address: `+ this.OpdStickerDetails.Address;
     documentContent += `<style>
       .opdstickercontainer {
       width: 370px;
-      height: 180px;
       margin: 0px;
       display: block;
       font-size: 13px;
@@ -182,9 +252,15 @@ Address: `+ this.OpdStickerDetails.Address;
     documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanphePrintStyle.css"/>';
     /// documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     documentContent += '</head>';
-    documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
+    documentContent += '<body>' + printContents + '</body></html>'
     popupWinindow.document.write(documentContent);
     popupWinindow.document.close();
+
+    let tmr = setTimeout(function () {
+      popupWinindow.print();
+      popupWinindow.close();
+    }, 200);
+
     this.AfterPrintAction();
   }
   Close() {
@@ -195,18 +271,20 @@ Address: `+ this.OpdStickerDetails.Address;
     console.log(err.ErrorMessage);
   }
   AfterPrintAction() {
-    // this is after print action ..and it pass some event to the parent component
-    this.afterPrintAction.emit({ showOpdSticker: false });
+    if (this.closePopUpAfterStickerPrint) {
+      // this is after print action ..and it pass some event to the parent component
+      this.router.navigate(['Appointment/PatientSearch']);
+      this.afterPrintAction.emit({ showOpdSticker: false });
+    }
+
   }
 
   //06April2018 print from server
   printStickerServer() {
     let printContents = document.getElementById("OPDsticker").innerHTML;
-    var printableHTML = '<html><head><link rel="stylesheet" type="text/css" href="Style/DanphePrintStyle.css" />';
-    printableHTML += `<style>
+    var printableHTML = `<style>
       .opdstickercontainer {
       width: 370px;
-      height: 180px;
       margin: 0px;
       display: block;
       font-size: 13px;
@@ -230,11 +308,15 @@ Address: `+ this.OpdStickerDetails.Address;
       margin: 8px 15px 0 0;
     }
     </style>`;
-    printableHTML += '<meta http-equiv="X-UA-Compatible" content="IE= edge"/></head>';
+    printableHTML += '<meta charset="utf-8">';
     printableHTML += '<body>' + printContents + '</body></html>';
-    var PrinterName = this.LoadPrinterSetting();
+    var PrinterName = this.coreService.AllPrinterSettings.find(a => a.PrintingType == 'server' && a.GroupName == 'reg-sticker').PrinterDisplayName;;
     PrinterName += this.OpdStickerDetails.PatientCode;
-    var filePath = this.LoadFileStoragePath();
+    var filePath = this.coreService.AllPrinterSettings.find(a => a.PrintingType == 'server' && a.GroupName == 'reg-sticker').ServerFolderPath;
+    var lastCharacter = filePath.substr(filePath.length - 1);
+    if (lastCharacter != '\\') {
+      filePath += '\\';
+    }
     this.loading = true;
     this.showLoading = true;
     this.http.post<any>("/api/Billing?reqType=saveHTMLfile&PrinterName=" + PrinterName + "&FilePath=" + filePath, printableHTML, this.options)
@@ -271,13 +353,7 @@ Address: `+ this.OpdStickerDetails.Address;
       this.showServerPrintBtn = false;
     }
   }
-  //load file storage path
-  LoadFileStoragePath() {
-    let params = this.coreService.Parameters;
-    params = params.filter(p => p.ParameterName == "PrintFileLocationPath");
-    let path = params[0].ParameterValue;
-    return path;
-  }
+
   //timer function
   timerFunction() {
     var timer = Observable.timer(10000);
@@ -316,4 +392,132 @@ Address: `+ this.OpdStickerDetails.Address;
     }
     return retVal;
   }
+
+
+
+  public print() {
+    this.coreService.loading = true;
+    if (!this.selectedPrinter || this.selectedPrinter.PrintingType == ENUM_PrintingType.browser) {
+      this.browserPrintContentObj = document.getElementById("opdprintpage");
+      this.openBrowserPrintWindow = false;
+      this.changeDetector.detectChanges();
+      this.openBrowserPrintWindow = true;
+      if (this.closePopUpAfterStickerPrint) {
+        this.router.navigate(['Appointment/PatientSearch']);
+      }
+      this.coreService.loading = false;
+    } else if (this.selectedPrinter.PrintingType == ENUM_PrintingType.dotmatrix) {
+      //-----qz-tray start----->
+      this.coreService.QzTrayObject.websocket.connect()
+        .then(() => {
+          return this.coreService.QzTrayObject.printers.find();
+        })
+        .then(() => {
+          var config = this.coreService.QzTrayObject.configs.create(this.selectedPrinter.PrinterName);
+          let printOutType = "reg-sticker";
+          let dataToPrint = this.PrintDotMatrix();
+          return this.coreService.QzTrayObject.print(config, CommonFunctions.GetEpsonPrintDataForPage(dataToPrint, this.selectedPrinter.mh, this.selectedPrinter.ml, this.selectedPrinter.ModelName, printOutType));
+
+        })
+        .catch(function (e) {
+          console.error(e);
+        })
+        .finally(() => {
+          if (this.closePopUpAfterStickerPrint) {
+            this.router.navigate(['Appointment/PatientSearch']);
+          }
+          this.coreService.loading = false;
+          return this.coreService.QzTrayObject.websocket.disconnect();
+        });
+      //-----qz-tray end----->
+    } else if (this.selectedPrinter.PrintingType == ENUM_PrintingType.server) {
+
+      this.printStickerServer();
+      this.coreService.loading = false;
+    }
+    else {
+      this.msgBoxServ.showMessage('error', ["Printer Not Supported."]);
+      this.coreService.loading = true;
+      return;
+    }
+  }
+
+
+  public printDetaiils: any;
+
+
+  public PrintDotMatrix() {
+    let nline = '\n';
+    let finalDataToPrint = "";
+    finalDataToPrint = finalDataToPrint + "Date:" + this.OpdStickerDetails.VisitDate + '(' + this.localDateTime + ')' + '-' + this.OpdStickerDetails.VisitTime + nline;
+    finalDataToPrint += "Name:" + this.OpdStickerDetails.PatientName + " " + this.ageSex + nline;
+    finalDataToPrint += "Hosp. No:" + this.OpdStickerDetails.PatientCode + " " + (this.OpdStickerDetails.PhoneNumber ? "Ph:" + this.OpdStickerDetails.PhoneNumber : "") + nline;
+
+    let address = '';
+    if (this.OpdStickerDetails.CountryName == 'Nepal') {
+      address = "Address:" + (this.OpdStickerDetails.Address ? this.OpdStickerDetails.Address : "") + " " + this.OpdStickerDetails.District + nline;
+    } else {
+      address = "Address:" + (this.OpdStickerDetails.Address ? this.OpdStickerDetails.Address : "") + " " + this.OpdStickerDetails.CountryName + nline;
+    }
+    finalDataToPrint += address;
+
+    finalDataToPrint += "Dept: " + this.OpdStickerDetails.DepartmentName + " " + ((this.showRoomNumber && this.OpdStickerDetails.DeptRoomNumber) ? " Room.No:" + this.OpdStickerDetails.DeptRoomNumber : "") +  nline;
+    finalDataToPrint += (this.OpdStickerDetails.DoctorName ? "Doc: "+this.OpdStickerDetails.DoctorName + "  " : "");
+    finalDataToPrint += ((this.QueueNoSetting.ShowInSticker && this.OpdStickerDetails.QueueNo) ? "Q.No: "+ this.OpdStickerDetails.QueueNo : "") + nline;
+    // if(this.OpdStickerDetails.DoctorName){
+    //   finalDataToPrint += "Doctor:" + this.OpdStickerDetails.DoctorName + nline;
+    // }
+    //let newLineReq = false;
+    // if (this.EnableShowTicketPrice && this.OpdStickerDetails.OpdTicketCharge > 0) {
+    //   finalDataToPrint += "Tkt. Charge:" + this.coreService.currencyUnit + this.OpdStickerDetails.OpdTicketCharge + "  ";
+    //   newLineReq = true;
+    // }
+    // if (this.QueueNoSetting.ShowInSticker && this.OpdStickerDetails.QueueNo) {
+    //   finalDataToPrint += "Q.No:" + this.OpdStickerDetails.QueueNo + (this.isInsuranceBilling ? "IMIS Code:" + this.IMISCode : "");
+    //   newLineReq = true;
+    // }
+    //finalDataToPrint += (newLineReq ? nline : "");
+    finalDataToPrint += this.OpdStickerDetails.AppointmentType.toUpperCase() + "   " + "User:" + this.OpdStickerDetails.User + "  "; 
+    finalDataToPrint += (this.EnableShowTicketPrice && this.OpdStickerDetails.OpdTicketCharge > 0 ? "Tkt:" + this.coreService.currencyUnit + this.OpdStickerDetails.OpdTicketCharge : "");
+    return finalDataToPrint;
+  }
+
+
+  public SetPrinterFromParam() {
+    this.printByDotMatrixPrinter = this.coreService.EnableDotMatrixPrintingInRegistration();
+    if (this.printByDotMatrixPrinter) {
+      if (!this.coreService.billingDotMatrixPrinters || !this.coreService.billingDotMatrixPrinters.length) {
+        this.coreService.billingDotMatrixPrinters = this.coreService.GetBillingDotMatrixPrinterSettings();
+      }
+
+      this.billingDotMatrixPrinters = this.coreService.billingDotMatrixPrinters;
+
+      if (!this.billingService.OpdStickerDotMatrixPageDimension) {
+        this.billingService.OpdStickerDotMatrixPageDimension = this.coreService.GetDotMatrixPrinterDimensions(); //1 is for ins billing
+      }
+
+      this.dotPrinterDimensions = this.billingService.OpdStickerDotMatrixPageDimension;
+
+      let prntrInStorage = localStorage.getItem('BillingStickerPrinter');
+      if (prntrInStorage) {
+        let val = this.billingDotMatrixPrinters.find(p => p.DisplayName == prntrInStorage);
+        this.PrinterDisplayName = val ? val.DisplayName : '';
+        this.PrinterNameDotMatix = val ? val.PrinterName : '';
+      } else {
+        this.showPrinterChange = true;
+      }
+    }
+  }
+
+  public ShowPrinterLocationChange() {
+    let ptr = this.billingDotMatrixPrinters.find(p => p.DisplayName == this.PrinterDisplayName);
+    this.PrinterNameDotMatix = ptr ? ptr.PrinterName : '';
+    this.showPrinterChange = true;
+  }
+
+  public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
+  OnPrinterChanged($event) {
+    this.selectedPrinter = $event;
+  }
+
 }

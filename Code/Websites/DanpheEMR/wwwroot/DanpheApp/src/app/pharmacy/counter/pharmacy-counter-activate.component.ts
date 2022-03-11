@@ -6,7 +6,6 @@ import { PharmacyMainComponent } from '../pharmacy-main.component';
 import { SecurityService } from '../../security/shared/security.service';
 import { PharmacyBLService } from '../shared/pharmacy.bl.service';
 //import { BillingCounter } from '../shared/billing-counter.model';
-import {PHRMSaleComponent } from '../sale/phrm-sale.component'
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CallbackService } from '../../shared/callback.service';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';

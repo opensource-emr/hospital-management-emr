@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
+import { Component, ChangeDetectorRef, Input, Output, EventEmitter, OnInit, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -12,11 +12,11 @@ import * as moment from 'moment/moment';
 
 @Component({
     selector: "itemtyp-item-add",
-    templateUrl:"./phrm-item-type-manage.html"
+    templateUrl: "./phrm-item-type-manage.html"
 
 })
 
-export class PHRMItemTypeManageComponent {
+export class PHRMItemTypeManageComponent implements OnInit {
     public CurrentItemType: PHRMItemTypeModel = new PHRMItemTypeModel();
     public selectedItem: PHRMItemTypeModel = new PHRMItemTypeModel();
     public selCategory: PHRMCategoryModel = new PHRMCategoryModel();
@@ -26,6 +26,9 @@ export class PHRMItemTypeManageComponent {
     public showItemTypeAddPage: boolean = false;
     public update: boolean = false;
     public index: number;
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;   //to close the window on click of ESCape.
+
     @Input("selectedItemType")
     public selectedItemType: PHRMItemTypeModel;
     @Output("callback-add")
@@ -33,19 +36,27 @@ export class PHRMItemTypeManageComponent {
 
     @Input("showAddPage")
     public set value(val: boolean) {
-      this.showItemTypeAddPage = val;
+        this.showItemTypeAddPage = val;
+        this.setFocusById('itemtype');
     }
 
     constructor(
         public pharmacyBLService: PharmacyBLService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.itemtypeGridColumns = PHRMGridColumns.PHRMItemTypeList;
         this.getItemTypeList();
         this.getCategorys();
     }
 
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+    }
     public getItemTypeList() {
         this.pharmacyBLService.GetItemTypeList()
             .subscribe(res => {
@@ -71,9 +82,9 @@ export class PHRMItemTypeManageComponent {
                     this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
                 }
             },
-            err => {
-                this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-            });
+                err => {
+                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                });
     }
 
     ItemTypeGridActions($event: GridEmitModel) {
@@ -87,6 +98,7 @@ export class PHRMItemTypeManageComponent {
                 this.selectedItem = $event.Data;
                 this.CurrentItemType.ItemTypeId = this.selectedItem.ItemTypeId;
                 this.CurrentItemType.CategoryId = this.selectedItem.CategoryId;
+                this.selCategory.CategoryName = this.categoryList.find(x => x.CategoryId == this.selectedItem.CategoryId).CategoryName;
                 this.CurrentItemType.ItemTypeName = this.selectedItem.ItemTypeName;
                 this.CurrentItemType.Description = this.selectedItem.Description;
                 this.CurrentItemType.IsActive = this.selectedItem.IsActive;
@@ -112,6 +124,7 @@ export class PHRMItemTypeManageComponent {
         this.showItemTypeAddPage = false;
         this.changeDetector.detectChanges();
         this.showItemTypeAddPage = true;
+        this.setFocusById('itemtype');
     }
     Add() {
         for (var i in this.CurrentItemType.ItemTypeValidator.controls) {
@@ -120,22 +133,22 @@ export class PHRMItemTypeManageComponent {
         }
         if (this.CurrentItemType.IsValidCheck(undefined, undefined)) {
             this.CurrentItemType.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-            this.CurrentItemType.CategoryId = this.selectedItem.CategoryId;
+            this.CurrentItemType.CategoryId = this.selCategory.CategoryId;
             this.pharmacyBLService.AddItemType(this.CurrentItemType)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ["Item Type Added."]);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentItemType = new PHRMItemTypeModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ["Item Type Added."]);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentItemType = new PHRMItemTypeModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong" + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -147,19 +160,19 @@ export class PHRMItemTypeManageComponent {
         if (this.CurrentItemType.IsValidCheck(undefined, undefined)) {
             this.pharmacyBLService.UpdateItemType(this.CurrentItemType)
                 .subscribe(
-                res => {
-                    if (res.Status == "OK") {
-                        this.msgBoxServ.showMessage("success", ['Item Type Details Updated.']);
-                        this.CallBackAddUpdate(res)
-                        this.CurrentItemType = new PHRMItemTypeModel();
-                    }
-                    else {
-                        this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
-                    }
-                },
-                err => {
-                    this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                });
+                    res => {
+                        if (res.Status == "OK") {
+                            this.msgBoxServ.showMessage("success", ['Item Type Details Updated.']);
+                            this.CallBackAddUpdate(res)
+                            this.CurrentItemType = new PHRMItemTypeModel();
+                        }
+                        else {
+                            this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
+                        }
+                    },
+                    err => {
+                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                    });
         }
     }
 
@@ -177,7 +190,7 @@ export class PHRMItemTypeManageComponent {
                     break;
                 }
             };
-            this.AddUpdateResponseEmitter(itemtype);
+            this.getItemTypeList();
             this.CallBackAdd(itemtype);
         }
         else {
@@ -186,14 +199,16 @@ export class PHRMItemTypeManageComponent {
     }
 
     CallBackAdd(itmtype: PHRMItemTypeModel) {
-        this.itemtypeList.push(itmtype);
         if (this.index != null)
-            this.itemtypeList.splice(this.index, 1);
+            this.itemtypeList.splice(this.index, 1, itmtype);
+        else
+            this.itemtypeList.unshift(itmtype);
         this.itemtypeList = this.itemtypeList.slice();
         this.changeDetector.detectChanges();
         this.showItemTypeAddPage = false;
         this.selectedItem = null;
         this.index = null;
+        this.AddUpdateResponseEmitter(itmtype);
     }
     ActivateDeactivateStatus(currItemType: PHRMItemTypeModel) {
         if (currItemType != null) {
@@ -203,19 +218,19 @@ export class PHRMItemTypeManageComponent {
                 currItemType.IsActive = status;
                 this.pharmacyBLService.UpdateItemType(currItemType)
                     .subscribe(
-                    res => {
-                        if (res.Status == "OK") {
-                            let responseMessage = res.Results.IsActive ? "Item-Type is now activated." : "Item-Type is now Deactivated.";
-                            this.msgBoxServ.showMessage("success", [responseMessage]);
-                            this.getItemTypeList();
-                        }
-                        else {
-                            this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
-                        }
-                    },
-                    err => {
-                        this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
-                    });
+                        res => {
+                            if (res.Status == "OK") {
+                                let responseMessage = res.Results.IsActive ? "Item-Type is now activated." : "Item-Type is now Deactivated.";
+                                this.msgBoxServ.showMessage("success", [responseMessage]);
+                                this.getItemTypeList();
+                            }
+                            else {
+                                this.msgBoxServ.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+                        });
             }
             //to refresh the checkbox if we cancel the prompt
             //this.getItemTypeList();
@@ -225,11 +240,11 @@ export class PHRMItemTypeManageComponent {
         try {
             if (this.selCategory.CategoryId) {
                 if ((this.selCategory.CategoryId != 0) && (this.selCategory.CategoryId != null)) {
-                    this.selectedItem.CategoryId = this.selCategory.CategoryId;
+                    this.CurrentItemType.CategoryId = this.selCategory.CategoryId;
                 }
             }
         } catch (ex) {
-            this.msgBoxServ.showMessage("Failed",ex);
+            this.msgBoxServ.showMessage("Failed", ex);
         }
     }
 
@@ -251,5 +266,10 @@ export class PHRMItemTypeManageComponent {
 
     AddUpdateResponseEmitter(itemtype) {
         this.callbackAdd.emit({ itemtype: itemtype });
+    }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
     }
 }

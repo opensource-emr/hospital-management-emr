@@ -1,13 +1,4 @@
-import {
-    NgForm,
-    FormGroup,
-    FormControl,
-    Validators,
-    FormBuilder,
-    ReactiveFormsModule
-} from '@angular/forms'
-import * as moment from 'moment/moment';
-import { PHRMItemMasterModel } from "./phrm-item-master.model";
+import { FormGroup, Validators, FormBuilder } from '@angular/forms'
 import { PHRMGoodsReceiptItemsModel } from "./phrm-goods-receipt-items.model";
 export class PHRMReturnToSupplierItemModel {
 
@@ -36,23 +27,23 @@ export class PHRMReturnToSupplierItemModel {
     public BatchWiseAvailableQuantity: number = 0;
     public ReceivedQuantity: number = 0;
     public FreeQuantity: number = 0;
-    public FreeQuantityReturn:number = 0;
+    public FreeQuantityReturn: number = 0;
     public FreeAmount: number = 0;
-    public FreeAmountReturn:number = 0;
+    public FreeAmountReturn: number = 0;
     public FreeRate: number = 0;
     public DiscountedAmount: number = 0;
     public MRP: number = 0;
     public BatchNoList: any = [];
     public TempBatchNoList: any = [];
-    public CCCharge:any;
+    public CCCharge: any;
     public CheckQty: boolean = false;
-    public checked:boolean;// for checking and uncheck item row in UI
+    public checked: boolean;// for checking and uncheck item row in UI
     public SelectedGRItems: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ReturnToSupplierItemValidator = _formBuilder.group({
             'ItemId': ['', Validators.compose([Validators.required])],
-           // 'TotalAvailableQuantity': ['', Validators.compose([Validators.required])],
+            // 'TotalAvailableQuantity': ['', Validators.compose([Validators.required])],
             'Quantity': ['', Validators.compose([Validators.required])]
             // 'Checked':['',Validators.compose([Validators.required])]
         });
@@ -66,12 +57,12 @@ export class PHRMReturnToSupplierItemModel {
     }
 
 
-    public IsValid():boolean{if(this.ReturnToSupplierItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.ReturnToSupplierItemValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.ReturnToSupplierItemValidator.valid;
         }
         else
             return !(this.ReturnToSupplierItemValidator.hasError(validator, fieldName));
     }
-    
+
 }

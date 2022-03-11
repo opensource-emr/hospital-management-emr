@@ -1,0 +1,125 @@
+<div class="popup-static portlet box portlet-fullscreen">
+        <div class="portlet-body form" style="background-color:white">
+          <!--Model Box Body Start-->
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+              </div>
+              <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                <div class="col-md-12 noPrint">
+                  <div class="caption" style="color:blue; margin-top:10px;">
+                  </div>
+                  <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                  <hr />
+                </div>
+                <danphe-grid [grid-colDefaults]="DispatchListGridColumns" [grid-data]="dispatchList" (grid-actions)="DispatchDetailsGridAction($event)" [NepaliDateInGridParams]="DispatchNepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+                </danphe-grid>
+                <hr />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetailsbyDispatchId">
+        <div class="portlet-body form" style="background-color:white">
+          <!--Model Box Body Start-->
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+              </div>
+              <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="row">
+                            <div class="col-md-12">
+                              <div class="left">
+                                <button class="btn btn-primary btn-sm" (click)="Cancel()"><i class="fa fa-backward"></i>&nbsp;Back to Requisition
+                                  List</button>
+                              </div>
+                            </div>
+                          </div>
+                <div class="col-md-12 noPrint">
+                  <div class="caption" style="color:blue; margin-top:10px;">
+                  </div>
+                  <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                  <hr />
+                </div>
+                <!-- Billing Header Start -->
+                <div id="printpage" class="row printStyle print-border">
+                  <div style="text-align:center;">
+                    <div class="col-md-12">
+                         <print-header [unit-name]="'Inventory Unit'"></print-header>
+                        <div class="clear"></div>
+                        <div style="float: left;">
+                          <div class="qr-code" style="position: absolute; right: 12px; top: 9px;">
+                            <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                          </div>
+                        </div>
+                        <!-- Billing Header  -->
+                        <div style="clear:left"></div>
+                      
+                      <div class="clear"></div>
+                      <div class="left" style="text-align:left;">
+                        <p>Dispatch Id :<b> {{innerDispatchdetails.DispatchId}}</b></p>
+                        <p>Requisition No:<b> {{innerDispatchdetails.RequisitionId}}</b></p>
+                      </div>
+                      <div class="right" style="text-align:right;">
+                        <p>Dispatch Date:<b> {{innerDispatchdetails.Dispatchdate | date}}</b>&nbsp;
+                        <!-- <i *ngIf="innerDispatchdetails.CreatedOn">({{innerDispatchdetails.CreatedOn | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i></p> -->
+                        <p>Requisition Date:<b> {{innerDispatchdetails.RequisitionDate | date}}</b>
+                        <!-- <i *ngIf="innerDispatchdetails.requisitionDate">({{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i></p> -->
+      
+                      </div>
+                      <div class="clear"></div>
+                      <p class="text-center btm-pad border-up-down"><b>DISPATCH DETAILS PRINT</b></p>
+                      <div class="clear"></div>
+                      <div class="clear footer"></div>
+                      <div class="table-responsive">
+                        <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;width:100%">
+                          <thead>
+                            <tr style="font-weight: bold;text-align:center">
+                              <td>S.N</td>
+                              <td>Item Name</td>
+                              <td>Batch No</td>
+                              <td>BarCodeNumber</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style="text-align:center" *ngFor="let row of details ; let i= index ">
+                              <td><b>{{ i+ 1 }}</b></td>
+                              <td>{{row.ItemName}}</td>
+                              <td>{{row.BatchNo}}</td>
+                              <td>{{row.BarCodeNumber}}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <hr />
+                      <div class="col-md-12">
+                        <div style="text-align: left" class="col-md-4">Requested By:&nbsp;<b>{{innerDispatchdetails.DispatcheBy}}</b></div>
+                        <div  style="text-align: left" class="col-md-4">Received By:&nbsp;<b>{{innerDispatchdetails.ReceivedBy}}</b></div>
+                        <div style="text-align: left" class="col-md-4">Dispatched By:&nbsp;<b>{{innerDispatchdetails.DispatcheBy}}</b></div>
+                      </div>
+                      <div style="float:right">
+                        &nbsp;
+                        &nbsp;
+                      </div>
+                    
+                  </div>
+                </div>
+                <div class="row center-style">
+                  <div class="col-md-12 col-xs-12 ">
+                    <a (click)="print()" class="btn btn-default" style="position: absolute;top: -31px; right: 1px;">
+                      Print
+                      <i class="glyphicon glyphicon-print"></i>
+                    </a><span> </span><span> </span>
+                  </div>
+                </div>
+                <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+      </div>
+    

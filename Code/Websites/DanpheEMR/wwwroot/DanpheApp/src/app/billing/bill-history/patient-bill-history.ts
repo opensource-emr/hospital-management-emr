@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { BillingBLService } from '../shared/billing.bl.service';
@@ -11,12 +11,17 @@ import { Patient } from "../../patients/shared/patient.model";
 
 import { BillingService } from "../shared/billing.service";
 import * as moment from 'moment/moment';
+import { CoreService } from "../../core/shared/core.service";
 
 @Component({
   selector: "bill-history",
-  templateUrl: "./patient-bill-history.html"
+  templateUrl: "./patient-bill-history.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PatientBillHistoryComponent {
+
+  @Output("history-emitter")
+  historyEmitter: EventEmitter<Object> = new EventEmitter<Object>();
 
   @Input("showPatientBillHistory")
   public showPatientBillHistory: boolean = false;
@@ -51,14 +56,15 @@ export class PatientBillHistoryComponent {
   public unPaidPatBillHistoryDetail = Array<any>();
   public returnedPatBillHistoryDetail = Array<any>();
   public insuranceBillDetail = Array<any>();
-  public currencyUnit: string = "";
+  //public currencyUnit: string = "";
   public showView: false;
   private RefundAmount: boolean = false;
 
   constructor(public billingBLService: BillingBLService,
     public msgBoxServ: MessageboxService,
-    public patientService: PatientService, public billingService: BillingService) {
-    this.currencyUnit = this.billingService.currencyUnit;
+    public patientService: PatientService, public billingService: BillingService,
+    public coreService: CoreService) {
+    //this.currencyUnit = this.billingService.currencyUnit;
 
   }
 
@@ -134,11 +140,13 @@ export class PatientBillHistoryComponent {
             else if (invoice.IsInsuranceBilling && !invoice.IsReturned) {
               this.insuranceBillDetail.push(invoice);
             }
-            else if (invoice.IsReturned) {
-              invoice.BillStatus = 'returned';
-              this.returnedPatBillHistoryDetail.push(invoice);
-            }
+            // else if (invoice.IsReturned) {
+            //   invoice.BillStatus = 'returned';
+            //   this.returnedPatBillHistoryDetail.push(invoice);
+            // }
           });
+          this.returnedPatBillHistoryDetail = res.Results.ReturnedItems;
+          
           this.patBillHistoryDetail.ProvisionalItems.forEach(provisional => {
             provisional.SubTotal = CommonFunctions.parseAmount(provisional.SubTotal);
             provisional.Amount = CommonFunctions.parseAmount(provisional.Amount);
@@ -174,7 +182,12 @@ export class PatientBillHistoryComponent {
   }
 
   showDetailedView(event: any) {
-    console.log(event);
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.historyEmitter.emit({ close: true });
+    }
   }
 
 }

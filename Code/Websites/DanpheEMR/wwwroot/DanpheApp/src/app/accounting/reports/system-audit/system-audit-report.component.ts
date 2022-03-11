@@ -19,7 +19,7 @@ export class SystemAuditReportComponent {
   public toDate: string = null;
   public fiscalyearList: any;
   public voucherType: string = "";
-
+  btndisabled=false;
   public editvoucherGridColumns: Array<any> = null;
   public backDateEntryGridColumns: Array<any> = null;
   public voucherReversalGridColumns: Array<any> = null;
@@ -52,7 +52,10 @@ export class SystemAuditReportComponent {
     this.GetFiscalYearList();
   }
   public GetFiscalYearList() {
-    this.fiscalyearList = this.securityService.AccHospitalInfo.FiscalYearList;
+    if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.accountingService.accCacheData.FiscalYearList; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.fiscalyearList = this.fiscalyearList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
+    }
   }
   //public validDate:boolean=true;
   //selectDate(event){
@@ -146,12 +149,13 @@ export class SystemAuditReportComponent {
         if (sectionApplication != null || sectionApplication != undefined) {
           this.permissions = this.securityService.UserPermissions.filter(p => p.ApplicationId == sectionApplication.ApplicationId);
         }
-        let sList = this.securityService.AccHospitalInfo.SectionList;
+        let sList = this.accountingService.accCacheData.Sections; //mumbai-team-june2021-danphe-accounting-cache-change
         sList.forEach(s => {
           let sname = s.SectionName.toLowerCase();
           let pp = this.permissions.filter(f => f.PermissionName.includes(sname))[0];
           if (pp != null || pp != undefined) {
             this.sectionList.push(s);
+            this.sectionList = this.sectionList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
           }
         })
         let defSection = this.sectionList.find(s => s.IsDefault == true);
@@ -168,6 +172,7 @@ export class SystemAuditReportComponent {
 
 }
   Load(type) {
+    this.btndisabled=true;
     try {
       if (this.voucherType !== "") {
         let getvouchertype = type == "" ? this.voucherType : type;
@@ -182,13 +187,16 @@ export class SystemAuditReportComponent {
             )
             .subscribe((res) => {
               if (res.Status == "OK" && res.Results.length) {
+                this.btndisabled=false;
                 this.logsResults = res.Results;
               } else {
+                this.btndisabled=false;
                 this.msgBoxServ.showMessage("notice", ["No record found."]);
               }
             });
         }
       } else {
+        this.btndisabled=false;
         this.msgBoxServ.showMessage("error", [
           "Please select first Audit report type",
         ]);

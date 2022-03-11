@@ -9,7 +9,7 @@ import { SecurityService } from "../../security/shared/security.service"
 })
 
 // App Component class
-export class BillDuplicatePrintsMainComponent {
+export class BIL_DuplicatePrint_MainComponent {
     validRoutes: any;
     constructor(public securityService: SecurityService) {
         //get the chld routes of Clinical from valid routes available for this user.

@@ -1,0 +1,242 @@
+<style type="text/css">
+  .Selected {
+    border-collapse: collapse;
+    border-spacing: 5px;
+  }
+
+  .Selected {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  .blank_row {
+    height: 20px !important;
+    /* overwrites any other rules */
+    background-color: #FFFFFF;
+  }
+
+  .table-wrapper table tr.sticky-row td {
+    position: sticky;
+    top: -1px;
+    background-color: #f1f1f1;
+    z-index: 2;
+  }
+
+  .dv-table-wrapper {
+    max-height: 450px !important;
+  }
+
+
+  tr.tbl-footer-summary td {
+    position: sticky;
+    z-index: 3;
+    bottom: -1px;
+    background-color: #f1f1f1 !important;
+    font-weight: bold;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <div class="row table-responsive">
+        <div class="form-horizontal">
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="caption custom-caption">
+                <i class="glyphicon glyphicon-asterisk"></i>
+                <span class="caption-subject">Inpatient Morbidity Report</span>
+              </div>
+              <div class="row">
+                <div class="col-md-6 col-xs-12">
+                  <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                  <div class="form-group">
+                    <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="">
+                      <i class="fa fa-search"></i> Show Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br />
+        <br />
+        <div *ngIf="displayReport">
+          <div id="dvPrintPage_IpMorbidityRpt">
+            <div class="table-wrapper dv-table-wrapper" style="width: 100%;">
+              <!--Start: Table 1 -->
+              <table border="1" class="table-hover tblReport Selected" style="width:100%;font-size: 12px;"
+                align="center">
+                <tr class="sticky-row">
+                  <td class="Selected report-title" align="center" colspan="25">
+                    <b>
+                      B. Inpatient Morbidity (No. of Patients Discharged)
+                    </b>
+                  </td>
+                </tr>
+                <tr style="background-color: #e1e2ea;font-weight: bold;" class="sticky-row">
+                  <td class="Selected" align="center" rowspan="2">ICDCode</td>
+                  <td class="Selected" align="left" rowspan="2">Disease</td>
+                  <!-- <td class="Selected" align="center" colspan="2">Admitted</td> -->
+                  <td class="Selected" align="center" colspan="2">&lt;=28Days</td>
+                  <td class="Selected" align="center" colspan="2">29Days-1Year</td>
+                  <td class="Selected" align="center" colspan="2">01-04Years</td>
+                  <td class="Selected" align="center" colspan="2">05-14Years</td>
+                  <td class="Selected" align="center" colspan="2">15-19Years</td>
+                  <!-- <td class="Selected" align="center" colspan="2">Deaths </td> -->
+                  <td class="Selected" align="center" colspan="2">20-29Years</td>
+                  <td class="Selected" align="center" colspan="2">30-39Years</td>
+                  <td class="Selected" align="center" colspan="2">40-49Years</td>
+                  <td class="Selected" align="center" colspan="2">50-59Years</td>
+                  <td class="Selected" align="center" colspan="2">&gt;=60Years</td>
+                  <td class="Selected" align="center" colspan="2">TotalDeaths</td>
+                </tr>
+                <tr style="background-color: #e1e2ea;font-weight: bold;" class="sticky-row">
+                  <!-- <td class="Selected" align="center">Male</td>
+                  <td class="Selected" align="center">Female</td> -->
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+
+                  <td class="Selected" align="center">F</td>
+                  <td class="Selected" align="center">M</td>
+                </tr>
+                <tr style="background-color: #e1e2ea;font-weight: bold;" class="sticky-row">
+                  <td class="Selected" align="center">1</td>
+                  <td class="Selected" align="center">2</td>
+                  <td class="Selected" align="center">3</td>
+                  <td class="Selected" align="center">4</td>
+                  <td class="Selected" align="center">5</td>
+                  <td class="Selected" align="center">6</td>
+                  <td class="Selected" align="center">7</td>
+                  <td class="Selected" align="center">8</td>
+                  <td class="Selected" align="center">9</td>
+                  <td class="Selected" align="center">10</td>
+                  <td class="Selected" align="center">11</td>
+                  <td class="Selected" align="center">12</td>
+                  <td class="Selected" align="center">13</td>
+                  <td class="Selected" align="center">14</td>
+                  <td class="Selected" align="center">15</td>
+                  <td class="Selected" align="center">16</td>
+                  <td class="Selected" align="center">17</td>
+                  <td class="Selected" align="center">18</td>
+                  <td class="Selected" align="center">19</td>
+                  <td class="Selected" align="center">20</td>
+                  <td class="Selected" align="center">21</td>
+                  <td class="Selected" align="center">22</td>
+                  <td class="Selected" align="center">23</td>
+                  <td class="Selected" align="center">24</td>
+                </tr>
+                <tr *ngFor="let o of InpatientMorbidityReport.InpatientMorbidity">
+                  <td class="Selected" align="center">{{o.ICDCode}}</td>
+                  <td class="Selected" align="left">{{o.ICDCodeName}}</td>
+
+                  <td class="Selected" align="center">{{o.v0Day_to_28_Days_Female}}</td>
+                  <td class="Selected" align="center">{{o.v0Day_to_28_Days_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v29Days_to_1yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v29Days_to_1yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v1yr_to_4yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v1yr_to_4yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v5yr_to_14yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v5yr_to_14yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v15yr_to_19yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v15yr_to_19yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v20yr_to_29yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v20yr_to_29yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v30yr_to_39yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v30yr_to_39yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v40yr_to_49yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v40yr_to_49yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.v50yr_to_59yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.v50yr_to_59yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.gt_60yr_Female}}</td>
+                  <td class="Selected" align="center">{{o.gt_60yr_Male}}</td>
+
+                  <td class="Selected" align="center">{{o.TotalDeaths_Female}}</td>
+                  <td class="Selected" align="center">{{o.TotalDeaths_Male}}</td>
+
+                </tr>
+                <tr class="tbl-footer-summary">
+                  <td align="center"></td>
+                  <td align="right">TOTAL</td>
+                  <td align="center">{{summaryValues.v0Day_to_28_Days_Female}}</td>
+                  <td align="center">{{summaryValues.v0Day_to_28_Days_Male}}</td>
+                  <td align="center">{{summaryValues.v29Days_to_1yr_Female}}</td>
+                  <td align="center">{{summaryValues.v29Days_to_1yr_Male}}</td>
+                  <td align="center">{{summaryValues.v1yr_to_4yr_Female}}</td>
+                  <td align="center">{{summaryValues.v1yr_to_4yr_Male}}</td>
+                  <td align="center">{{summaryValues.v5yr_to_14yr_Female}}</td>
+                  <td align="center">{{summaryValues.v5yr_to_14yr_Male}}</td>
+                  <td align="center">{{summaryValues.v15yr_to_19yr_Female}}</td>
+                  <td align="center">{{summaryValues.v15yr_to_19yr_Male}}</td>
+                  <td align="center">{{summaryValues.v20yr_to_29yr_Female}}</td>
+                  <td align="center">{{summaryValues.v20yr_to_29yr_Male}}</td>
+                  <td align="center">{{summaryValues.v30yr_to_39yr_Female}}</td>
+                  <td align="center">{{summaryValues.v30yr_to_39yr_Male}}</td>
+                  <td align="center">{{summaryValues.v40yr_to_49yr_Female}}</td>
+                  <td align="center">{{summaryValues.v40yr_to_49yr_Male}}</td>
+                  <td align="center">{{summaryValues.v50yr_to_59yr_Female}}</td>
+                  <td align="center">{{summaryValues.v50yr_to_59yr_Male}}</td>
+                  <td align="center">{{summaryValues.gt_60yr_Female}}</td>
+                  <td align="center">{{summaryValues.gt_60yr_Male}}</td>
+                  <td align="center">{{summaryValues.TotalDeaths_Female}}</td>
+                  <td align="center">{{summaryValues.TotalDeaths_Male}}</td>
+                </tr>
+              </table>
+              <!--End: Table 1 -->
+
+            </div>
+
+          </div>
+          <p style="text-align:center;">
+            <button class="btn green btn-success" (click)="Print()"> Print Report <i
+                class="glyphicon glyphicon-print"></i> </button>
+                <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('dvPrintPage_IpMorbidityRpt')"> <i class="fa fa-file-excel-o"></i> Export </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- for print window -->
+<!-- <app-print-page *ngIf="showPrint" [print-data]="printDetails" (print-sucess)="callBackPrint()"></app-print-page> -->

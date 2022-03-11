@@ -1,198 +1,292 @@
+<style>
+  .table-hover>tbody>tr>td {
+    background-color: #fff;
+    color: #000;
+    font-size: 12px;
+    padding: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .table-hover>tbody>tr:first-child td {
+    background-color: #f3f4f6;
+  }
+
+  .table-wrapper table tr:first-child td {
+    position: sticky;
+    top: -1px;
+    background-color: #f1f1f1;
+    z-index: 2;
+  }
+
+  tr.tbl-footer-summary td {
+    position: sticky;
+    z-index: 3;
+    bottom: -1px;
+    background-color: #f1f1f1 !important;
+  }
+</style>
+
 <div class="row">
   <div class="form-body">
     <div class="col-md-12">
-      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> 
-        <!-- <span class="caption-subject font-red-sunglo bold uppercase">User Collection&nbsp;  Report</span> --> 
-        <span *ngIf="!IsSummaryViewMode" class="caption-subject">User Collection Report (Detailed)</span> <span *ngIf="IsSummaryViewMode" class="caption-subject ">User Collection sReport (Summary)</span> </div>
-		  
-    </div>
-      <div class="col-md-6">
-        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i>
+        <!-- <span class="caption-subject font-red-sunglo bold uppercase">User Collection&nbsp;  Report</span> -->
+        <span *ngIf="!IsSummaryViewMode" class="caption-subject">User Collection Report (Detailed)</span> <span *ngIf="IsSummaryViewMode" class="caption-subject ">User Collection Report (Summary)</span>
       </div>
-      <div class="col-md-12 mt10">
-        <div class="row">
-          <div class="col-md-4 col-xs-12">
-            <div class="form-group row">
-              <label class="control-label col-md-6">Counter<b style="float:right;">:</b></label>
-              <div class="col-md-6">
-                <select id="ddlCounter" [(ngModel)]="phrmReports.CounterId" class="form-control"
-                                [ngModelOptions]="{standalone: true}">
-                  <option value="0">All</option>
-                  <option *ngFor="let counter of counterlist" value="{{counter.CounterId}}">{{counter.CounterName}}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 col-xs-12">
-            <div class="form-group row">
-              <label class="control-label col-md-5">User<b style="float:right;">:</b></label>
-              <div class="col-md-7">
-                <input class="form-control" value="" [(ngModel)]="phrmReports.CreatedBy"
-                               [ngModelOptions]="{standalone: true}" placeholder="Enter User Name" />
-              </div>
-            </div>
-          </div>
-          <div class="col-md-2 col-xs-12">
-            <div class="form-group" *ngIf="PHRMUserReportData.length>0">
-              <button class="btn blue" style="margin-left:0px" type="button" (click)="SwitchViews()"> <i class="fas fa-eye"></i> {{viewMode}} </button>
-            </div>
-          </div>
-          <div class="col-md-2 col-xs-12">
-            <div class="form-group">
-              <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
-            </div>
+
+    </div>
+    <div class="col-md-8">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'" [showToogleTimeBtn]="true"> </from-to-date-select>
+    </div>
+    <div class="col-md-4 col-xs-12">
+      <div class="form-group row">
+        <label class="control-label col-md-5">Select Dispensary<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <input danphe-auto-complete [(ngModel)]="selectedDispensary" class="form-control" [list-formatter]="DispensaryListFormatter" [source]="dispensaryList" placeholder="Enter Dispensary Name" display-property-name="Name" value-property-name=null onclick="this.select();" id="dispensary" (valueChanged)="OnDispensaryChange()" max-num-list="10" [ngModelOptions]="{standalone: true}" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12 mt10">
+    <div class="row">
+      <div class="col-md-4 col-xs-12">
+        <div class="form-group row">
+          <label class="control-label col-md-6">Counter<b style="float:right;">:</b></label>
+          <div class="col-md-6">
+            <select id="ddlCounter" [(ngModel)]="phrmReports.CounterId" class="form-control" [ngModelOptions]="{standalone: true}">
+              <option value="0">All</option>
+              <option *ngFor="let counter of counterlist" value="{{counter.CounterId}}">{{counter.CounterName}}</option>
+            </select>
           </div>
         </div>
       </div>
-      <!-- <div class="col-md-5 col-xs-12">
-                <div class="form-group">
-                    <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-7">                   
-                        <danphe-date-picker [(ngModel)]="phrmReports.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-                        </danphe-date-picker>
-                    </div>
-                </div>
-            </div> --> 
-      <!-- <div class="col-md-5 col-xs-12">
-                <div class="form-group">
-                    <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">                     
-                        <danphe-date-picker [(ngModel)]="phrmReports.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-                        </danphe-date-picker>
-                    </div>
-                </div>
-            </div> --> 
-    
+      <div class="col-md-4 col-xs-12">
+        <div class="form-group row">
+          <label class="control-label col-md-5">User<b style="float:right;">:</b></label>
+          <div class="col-md-7">
+            <input class="form-control" value="" [(ngModel)]="phrmReports.CreatedBy" [ngModelOptions]="{standalone: true}" placeholder="Enter User Name" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group" *ngIf="showUserCollectionSummary || PHRMUserReportData.length>0">
+          <button class="btn blue" style="margin-left:0px" type="button" (click)="SwitchViews()"> <i class="fa fa-eye"></i> {{viewMode}} </button>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="Load()" [disabled]="loading">
+            <span *ngIf="!loading">Show Report</span>
+            <span *ngIf="loading">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="row" *ngIf="!IsSummaryViewMode">
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="PHRMUserReportColumn"
-                     [grid-data]="PHRMUserReportData"
-                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                     [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="PHRMUserReportColumn" [grid-data]="PHRMUserReportData" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (grid-onExport)="OnGridExport($event)" [grid-footer-content]="footerContent" [grid-date-range]="dateRange" [report-for]="'pharmacy'"> </danphe-grid>
   </div>
 </div>
-<div class="row" *ngIf="!IsSummaryViewMode">
-  <div class="col-lg-12 col-sm-12" *ngIf="PHRMUserReportData.length>0">
-    <div class="col-md-12 col-xs-12">
-      <div>
-        <div style="padding-top:7px;">
-          <h4 style="font-weight:bold"> Net Cash Collection  &nbsp;&nbsp; <span class="blinkAmount"> (   {{summaryFormatted.TotalCash}}) </span></h4>
+<hr style="font-weight: 1px;">
+<div *ngIf="!IsSummaryViewMode && (dailySalesReportSummaryData.length > 0 || showUserCollectionSummary) ">
+  <div class="row" style="margin-top: 7px;">
+    <div id="print_summary">
+      <div id="net-collection" class="col-lg-12 col-sm-12">
+        <div class="col-md-12 col-xs-12">
           <div>
-            <table class="tbl-summ" border="1" style="width:50%;">
-              <tr>
-                <td> Gross Total Sales </td>
-                <td> {{summaryFormatted.GrossTotal_Sales}} </td>
-              </tr>
-              <tr>
-                <td> Discount </td>
-                <td> {{summaryFormatted.Discount}} </td>
-              </tr>
-              <tr>
-                <td> Return SubTotal </td>
-                <td> {{summaryFormatted.ReturnSubTotal}} </td>
-              </tr>
-              <tr>
-                <td> Return Discount </td>
-                <td> {{summaryFormatted.ReturnDiscount}} </td>
-              </tr>
-              <tr>
-                <td>Return Amount</td>
-                <td>{{summaryFormatted.ReturnAmount}}</td>
-              </tr>
-              <tr>
-                <td>Net Sales</td>
-                <td> {{summaryFormatted.NetSales}}</td>
-              </tr>
-              <tr>
-                <td>Less Credit Amount</td>
-                <td> {{summaryFormatted.CreditAmount}}</td>
-              </tr>
-              <tr>
-                <td>Add Deposit Received</td>
-                <td> {{summaryFormatted.DepositReceived}}</td>
-              </tr>
-              <tr>
-                <td>Deposit Deducted</td>
-                <td> {{summaryFormatted.DepositDeduct}}</td>
-              </tr>
-              <tr>
-                <td>Less Deposit Refund</td>
-                <td> {{summaryFormatted.DepositRefund}}</td>
-              </tr>
-              <tr>
-                <td>Add Collection From Receivables</td>
-                <td> {{summaryFormatted.CreditReceived}}</td>
-              </tr>
-              <tr>
-                <td>Less Cash Discount</td>
-                <td> {{summaryFormatted.CashDiscount}}</td>
-              </tr>
-              <tr style="border: 2px solid;">
-                <td style="font-weight:bold;"> Total Cash Collection </td>
-                <td style="font-weight:bold;"> {{summaryFormatted.TotalCash}} </td>
-              </tr>
-            </table>
+            <div>
+              <div>
+                <div style="font-weight:bold; float: left;"> Net Cash Collection &nbsp;&nbsp;
+                  <span class="blinkAmount"> ({{summaryFormatted.TotalCash}}) </span>
+                </div>
+                <div style="float: right;">
+                  <button class="btn green btn-success no-print btn-sm" type="button" (click)="Print('net-collection')">
+                    <i class="fa fa-print"></i>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <table class="tbl-summ" border="1" style="width:100%;">
+                  <tr>
+                    <td> Gross Total Sales </td>
+                    <td> {{summaryFormatted.GrossTotal_Sales}} </td>
+                  </tr>
+                  <tr>
+                    <td> Discount </td>
+                    <td> {{summaryFormatted.Discount}} </td>
+                  </tr>
+                  <tr>
+                    <td> Return SubTotal </td>
+                    <td> {{summaryFormatted.ReturnSubTotal}} </td>
+                  </tr>
+                  <tr>
+                    <td> Return Discount </td>
+                    <td> {{summaryFormatted.ReturnDiscount}} </td>
+                  </tr>
+                  <tr>
+                    <td>Return Amount</td>
+                    <td>{{summaryFormatted.ReturnAmount}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Net Sales</strong></td>
+                    <td> <strong>{{summaryFormatted.NetSales}}</strong></td>
+                  </tr>
+                  <tr *ngIf="isItemLevelVATApplicable">
+                    <td>VAT Amount</td>
+                    <td> {{summaryFormatted.VATAmount}}</td>
+                  </tr>
+                  <tr>
+                    <td>Less Credit Amount</td>
+                    <td> {{summaryFormatted.CreditAmount}}</td>
+                  </tr>
+                  <tr>
+                    <td>Add Deposit Received</td>
+                    <td> {{summaryFormatted.DepositReceived}}</td>
+                  </tr>
+                  <tr>
+                    <td>Deposit Deducted</td>
+                    <td> {{summaryFormatted.DepositDeduct}}</td>
+                  </tr>
+                  <tr>
+                    <td>Less Deposit Refund</td>
+                    <td> {{summaryFormatted.DepositRefund}}</td>
+                  </tr>
+                  <tr>
+                    <td>Add Collection From Receivables</td>
+                    <td> {{summaryFormatted.CreditReceived}}</td>
+                  </tr>
+                  <tr>
+                    <td>Less Cash Discount</td>
+                    <td> {{summaryFormatted.CashDiscount}}</td>
+                  </tr>
+                  <tr style="border: 2px solid;">
+                    <td style="font-weight:bold;"> Total Cash Collection </td>
+                    <td style="font-weight:bold;"> {{summaryFormatted.TotalCash}} </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Store-Wise Collection Section -->
+      <div class="col-lg-12 col-sm-12" *ngIf="PHRMUserReportData.length>0">
+        <div class="col-md-12 col-xs-12">
+          <h4 style="font-weight:bold; text-align: center; "> Store Wise Collection </h4>
+          <div style="padding-top:7px;">
+            <div *ngFor="let storeData of storeWiseData; let i = index;">
+              <div class="col-md-4">
+                <div class="no-print" style="text-align: right;">
+                  <button class="btn green btn-success no-print btn-sm" type="button" (click)="Print('printData'+i)">
+                    <i class="fa fa-print"></i>
+                  </button>
+                </div>
+                <div id="printData{{i}}">
+                  <table class="tbl-summ" border="1" style="width:100%; table-layout: fixed;">
+                    <tr>
+                      <td style="text-align: center;"><b>{{storeData.StoreName}}</b></td>
+                      <!-- <td class="no-print" style="text-align: right;" ><button class="blue btn no-print" type="button"    (click)="PrintFxn('printData'+i)" style="padding: 1%;"> <i class="fa fa-print"></i> Print </button></td> -->
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td> Cash Sales </td>
+                      <td> {{storeData.CashSales | number}} </td>
+                    </tr>
+                    <tr>
+                      <td> Cash Sales Refund </td>
+                      <td> {{storeData.CashSalesRefund | number}} </td>
+                    </tr>
+                    <tr>
+                      <td> Net Cash Sales </td>
+                      <td> {{(storeData.CashSales - storeData.CashSalesRefund) | number}} </td>
+                    </tr>
+                    <br />
+                    <tr>
+                      <td> Credit Sales </td>
+                      <td> {{storeData.CreditSales | number}} </td>
+                    </tr>
+                    <tr>
+                      <td> Credit Sales Refund </td>
+                      <td> {{storeData.CreditSalesRefund | number}} </td>
+                    </tr>
+                    <tr>
+                      <td>Net Credit Sales</td>
+                      <td> {{(storeData.CreditSales - storeData.CreditSalesRefund) | number}} </td>
+                    </tr>
+                    <br />
+                    <tr style="border: 2px solid;">
+                      <td style="font-weight:bold;"> Net Total Sales </td>
+                      <td style="font-weight:bold;"> {{storeData.NetTotalSales | number}}</td>
+                    </tr>
+                  </table>
+                  <br />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <div class="row" *ngIf="IsSummaryViewMode">
   <div class="col-md-12" id="printPage">
-    <div class="table-responsive">
-      <table class="table-hover tblReport" border="1" width="100%" style="background-color:initial;margin-top:10px">
+    <div class="table-wrapper">
+      <table class="table-hover tblReport" border="1" width="100%" style="background-color:initial;">
         <tbody>
-          <tr style="background-color: #599be0;color: white;">
-            <td style="font-weight:bold">S.N.</td>
-            <td style="font-weight:bold">Date</td>
+          <tr style="background-color: #f3f4f6;color: #000;">
+            <td style="font-weight:bold;">S.N.</td>
             <td style="font-weight:bold">User</td>
-            <td style="font-weight:bold">Gross Total (Sales Less Return)</td>
-            <td style="font-weight:bold">Net Discount</td>
-            <td style="font-weight:bold">Deposit Received</td>
-            <td style="font-weight:bold">Deposit Refund</td>
-            <td style="font-weight:bold">Collection from Receivables</td>
-            <td style="font-weight:bold">Net Credit Sales</td>
-            <td style="font-weight:bold">Cash Discount</td>
-            <td style="font-weight:bold">Cash Collection</td>
+            <td style="font-weight:bold;text-align:right;">Cash Sales</td>
+            <td style="font-weight:bold;text-align:right;">Return Cash Sales</td>
+            <td style="font-weight:bold;text-align:right;">Deposit Received</td>
+            <td style="font-weight:bold;text-align:right;">Deposit Refund</td>
+            <td style="font-weight:bold;text-align:right;">Collection From Receivables</td>
+            <td style="font-weight:bold;text-align:right;">Settlement Discount</td>
+            <td style="font-weight:bold;text-align:right;">Cash Collection</td>
           </tr>
           <tr *ngFor="let row of dailySalesReportSummaryData;let i=index">
             <td>{{i+1}}</td>
-            <td>{{row.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-            <td style="text-align:left">{{row.CreatedBy }}</td>
-            <td style="text-align:right">{{row.SubTotal | ParseAmount}}</td>
-            <td style="text-align:right">{{row.DiscountAmount | ParseAmount}}</td>
-            <td style="text-align:right">{{row.DepositReceived | ParseAmount}} </td>
-            <td style="text-align:right">{{row.DepositRefund  | ParseAmount}}</td>
-            <td style="text-align:right">{{row.CreditReceived  | ParseAmount}}</td>
-            <td style="text-align:right">{{row.CreditAmount  | ParseAmount}}</td>
-            <td style="text-align:right">{{row.CashDiscount  | ParseAmount}}</td>
-            <td style="text-align:right">{{row.CashCollection | ParseAmount}}</td>
+            <td style="text-align:left">{{row.FullName }}</td>
+            <td style="text-align:right">{{row.CashSales_Amount | ParseAmount}}</td>
+            <td style="text-align:right">{{row.CashSales_ReturnAmount | ParseAmount}}</td>
+            <td style="text-align:right">{{row.Deposit_Received | ParseAmount}} </td>
+            <td style="text-align:right">{{row.Deposit_Refund | ParseAmount}}</td>
+            <td style="text-align:right">{{row.CollectionFromReceivables | ParseAmount}}</td>
+            <td style="text-align:right">{{row.Sett_CashDiscount | ParseAmount}}</td>
+            <td style="text-align:right">{{row.NetCollection | ParseAmount}}</td>
           </tr>
-        </tbody>
-        <tbody>
-          <tr>
-            <td colspan="9">&nbsp;</td>
-          </tr>
-          <tr *ngFor="let row of summaryGrandTotal;let i=index">
-            <td style="font-weight:bold;text-align:right;" colspan="3">Grand Total</td>
-            <td style="font-weight:bold;text-align:right;">{{row.SubTotal| ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.DiscountAmount | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right">{{row.DepositReceived | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.DepositRefund  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CreditReceived  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CreditAmount  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CashDiscount  | ParseAmount}}</td>
-            <td style="font-weight:bold;text-align:right;">{{row.CashCollection | ParseAmount}}</td>
+
+          <tr class="tbl-footer-summary">
+            <td style="font-weight:bold;text-align:right;" colspan="2">Grand Total</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CashSales_Amount| ParseAmount}}</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CashSales_ReturnAmount | ParseAmount}}
+            </td>
+            <td style="font-weight:bold;text-align:right">{{total_SummaryView.Deposit_Received | ParseAmount}}</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.Deposit_Refund | ParseAmount}}</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CollectionFromReceivables |
+              ParseAmount}}</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.Sett_CashDiscount | ParseAmount}}</td>
+            <td style="font-weight:bold;text-align:right;">{{total_SummaryView.NetCollection | ParseAmount}}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-  <div class="form-group" style="text-align:center">
-    <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
-    <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('printPage')"> <i class="fa fa-file-excel-o"></i> Export </button>
+  <div></div>
+  <div class="col-md-12" style="text-align:center; margin-top: 15px;">
+    <button class="blue btn" type="button" (click)="Print('printPage')"> <i class="fa fa-print"></i> Print </button>
+    <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('printPage')">
+      <i class="fa fa-file-excel-o"></i> Export
+    </button>
   </div>
 </div>
+
+
+<!-- for header print -->
+<print-header style="display:none;padding:0px" id="headerForPrint" [unit-name]="'Department Of Pharmacy'" [show-pan-number]="headerDetailParam.showPANNo" [show-phone-number]="headerDetailParam.showPhoneNumber">
+</print-header>

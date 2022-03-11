@@ -11,6 +11,7 @@ import * as moment from 'moment/moment';
 import { SecurityService } from '../../security/shared/security.service';
 import { VisitService } from '../shared/visit.service';
 import { ENUM_BillingStatus, ENUM_VisitStatus, ENUM_VisitType, ENUM_AppointmentType } from '../../shared/shared-enums';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   selector: "danphe-free-referal-visit",
@@ -42,7 +43,7 @@ export class FreeReferalVisitComponent {
 
   constructor(public visitBLService: VisitBLService,
     public msgBoxServ: MessageboxService, public securityService: SecurityService,
-    public visitService: VisitService) {
+    public visitService: VisitService, public coreService : CoreService) {
 
     this.departmentList = this.visitService.ApptApplicableDepartmentList;
     this.doctorList = this.visitService.ApptApplicableDoctorsList;
@@ -92,46 +93,65 @@ export class FreeReferalVisitComponent {
     }
   }
 
+  CheckExistingPatientsAndSubmit() {
+    let paramValue = this.coreService.EnableDepartmentLevelAppointment();
+    if(this.departmentId>0 && (paramValue? true:this.selectedDoctor.ProviderId >0)){
+    if (this.loading) {
+      this.visitBLService.GetApptForDeptOnSelectedDate(this.departmentId, this.selectedVisit.VisitDate, this.selectedVisit.PatientId)
+        .subscribe(res => {
+          if ((res.Status == "OK") && res.Results ) {
+            this.msgBoxServ.showMessage("failed", ['Patient has already appointment for this department on selected date.']);
+            this.loading = false;
+          } else {
+            this.AddReferralVisit();
+          }
+        });
+     }
+   }
+   else{
+     this.msgBoxServ.showMessage("error",["Please provide all input fields."]);
+     this.loading = false;
+   }
+  }
 
   AddReferralVisit() {
-    this.loading = true;//disables Refer button
-
-    let refVis = new Visit();
-    refVis.ProviderId = this.selectedDoctor.ProviderId;
-    refVis.ProviderName = this.selectedDoctor.ProviderName;
-    refVis.PatientId = this.selectedVisit.PatientId;
-    refVis.DepartmentId = this.departmentId;
-
-    refVis.VisitDate = moment().format("YYYY-MM-DD");
-    refVis.VisitTime = moment().add(5, 'minute').format("HH:mm");//by default we add 5 minutes to the new visit.
-    refVis.VisitType = ENUM_VisitType.outpatient;// "outpatient";
-    refVis.VisitStatus = ENUM_VisitStatus.initiated;// "Initiated";
-    refVis.BillingStatus = ENUM_BillingStatus.paid;// "paid";
-    refVis.ReferredByProvider = this.selectedVisit.ProviderId.toString();
-    refVis.AppointmentType = ENUM_AppointmentType.referral;// "Referral";
-    refVis.ParentVisitId = this.selectedVisit.PatientVisitId;
-    refVis.CreatedBy = this.securityService.loggedInUser.EmployeeId;
-    refVis.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
-    refVis.IsActive = true;
-
-
-    this.visitBLService.PostFreeReferralVisit(refVis)
-      .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
-
-          this.addreferal.emit({ action: "free-referral", data: res.Results });
-          this.loading = false;//enable Refer button once function completed
-        }
-        else {
-          this.msgBoxServ.showMessage("error", ["Failed to add referral visit. Please try again.", res.ErrorMessage]);
-          this.loading = false;
-        }
-
-      });
-
-    this.loading = false;//enable Refer button once function completed
-
+      let refVis = new Visit();
+      refVis.ProviderId = this.selectedDoctor.ProviderId;
+      refVis.ProviderName = this.selectedDoctor.ProviderName;
+      refVis.PatientId = this.selectedVisit.PatientId;
+      refVis.DepartmentId = this.departmentId;
+  
+      refVis.VisitDate = moment().format("YYYY-MM-DD");
+      refVis.VisitTime = moment().add(5, 'minute').format("HH:mm");//by default we add 5 minutes to the new visit.
+      refVis.VisitType = ENUM_VisitType.outpatient;// "outpatient";
+      refVis.VisitStatus = ENUM_VisitStatus.initiated;// "Initiated";
+      refVis.BillingStatus = ENUM_BillingStatus.paid;// "paid";
+      refVis.ReferredByProvider = this.selectedVisit.ProviderId? this.selectedVisit.ProviderId.toString():null;
+      refVis.AppointmentType = ENUM_AppointmentType.referral;// "Referral";
+      refVis.ParentVisitId = this.selectedVisit.PatientVisitId;
+      refVis.CreatedBy = this.securityService.loggedInUser.EmployeeId;
+      refVis.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
+      refVis.IsActive = true;
+  
+  
+      this.visitBLService.PostFreeReferralVisit(refVis)
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status == "OK") {
+  
+            this.addreferal.emit({ action: "free-referral", data: res.Results });
+            this.msgBoxServ.showMessage("success",["Patient is successfully referred."]);
+            this.loading = false;//enable Refer button once function completed
+          }
+          else {
+            this.msgBoxServ.showMessage("error", ["Failed to add referral visit. Please try again.", res.ErrorMessage]);
+            this.loading = false;
+          }
+  
+        });
+  
+      this.loading = false;//enable Refer button once function completed
   }
+
   Close() {
     this.addreferal.emit({ action: "close" });
   }

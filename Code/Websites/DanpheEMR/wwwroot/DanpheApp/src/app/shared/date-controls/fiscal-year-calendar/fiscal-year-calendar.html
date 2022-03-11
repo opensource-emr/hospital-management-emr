@@ -9,7 +9,7 @@
     </select>
   </div>
  
-  <div class="mar-lft-5">
+  <div *ngIf="showAdBsButton" class="mar-lft-5">
     <button *ngIf="showDatePicker && calType == 'np'" (click)="changeToEnglish()" class="btn blue">BS</button>
     <button *ngIf="showDatePicker && calType == 'en'" (click)="changeToNepali()" class="btn blue">AD</button>
   </div>

@@ -32,6 +32,7 @@ export class ViewMedicalRecordComponent {
   public patientId: number = null;
   public patientVisitId: number = null;
   public medicalRecordId: number = null;
+  public OperationDiagnosis: any;
 
   public showDeathPeriod: boolean = false;
   public allDataLoaded: boolean = false;
@@ -61,6 +62,7 @@ export class ViewMedicalRecordComponent {
         if (res.Status == 'OK') {
 
           this.RecordSummary = res.Results.MedicalRecordOfPatient;
+          this.OperationDiagnosis= this.RecordSummary.OperationDiagnosis;
           this.RecordSummary.BirthDetail = new BabyBirthDetails();
           this.allMasterDataForMR.AllOperationType = res.Results.AllOperationType;
           this.allMasterDataForMR.AllDischargeType = res.Results.AllDischargeType;
@@ -85,16 +87,16 @@ export class ViewMedicalRecordComponent {
               if (this.RecordSummary.DeathPeriodTypeId) {
                 var dthPeriod = dis.DeathTypes.find(c => c.DeathTypeId == this.RecordSummary.DeathPeriodTypeId);
                 if (dthPeriod) { this.allTypeName.DeathPeriodTypeName = dthPeriod.DeathType; }
-              } 
-            }          
+              }
+            }
           }
-          if (this.RecordSummary.BabyBirthConditionId) {
-            var brthCondition = this.allMasterDataForMR.AllBirthConditions.find(bc => bc.BabyBirthConditionId == this.RecordSummary.BabyBirthConditionId);
-            if (brthCondition) {this.allTypeName.BabyBirthConditionName = brthCondition.BirthConditionType;}
-          }
+          // if (this.RecordSummary.BabyBirthConditionId) {
+          //   var brthCondition = this.allMasterDataForMR.AllBirthConditions.find(bc => bc.BabyBirthConditionId == this.RecordSummary.BabyBirthConditionId);
+          //   if (brthCondition) {this.allTypeName.BabyBirthConditionName = brthCondition.BirthConditionType;}
+          // }
           if (this.RecordSummary.OperationTypeId) {
             var opr = this.allMasterDataForMR.AllOperationType.find(o => o.OperationId == this.RecordSummary.OperationTypeId);
-            if (opr) { this.allTypeName.OperationTypeName = opr.OperationName; }            
+            if (opr) { this.allTypeName.OperationTypeName = opr.OperationName; }
           }
           if (this.RecordSummary.GravitaId) {
             var grv = this.allMasterDataForMR.AllGravita.find(g => g.GravitaId == this.RecordSummary.GravitaId);
@@ -141,7 +143,7 @@ export class ViewMedicalRecordComponent {
   }
 
   public PrintRecord() {
-    let popupWinindow;  
+    let popupWinindow;
     if (document.getElementById("patMrRecordDetail")) {
       var printContents = document.getElementById("patMrRecordDetail").innerHTML;
     }
@@ -151,7 +153,7 @@ export class ViewMedicalRecordComponent {
     documentContent += `<link href="../../../../../assets-dph/external/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />`
       + `<link rel="stylesheet" type="text/css" href="../../../../../themes/theme-default/DanpheStyle.css" />`
       + `<link rel="stylesheet" type="text/css" href="../../../../../themes/theme-default/DanphePrintStyle.css" /></head>`;
-    
+
 
     documentContent += '<body class="medical-record-body" onload="window.print()">' + printContents + '</body></html>';
     popupWinindow.document.write(documentContent);
@@ -160,6 +162,6 @@ export class ViewMedicalRecordComponent {
   }
 
   public CloseMRViewPopUp() {
-    this.closeViewMrPopup.emit({action: null, close: true });
+    this.closeViewMrPopup.emit({ action: null, close: true });
   }
 }

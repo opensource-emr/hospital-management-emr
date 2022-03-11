@@ -28,6 +28,8 @@ export class RPT_BIL_DocDeptSummaryComponent {
     @Input("showBackButton")
     public showBackBtn: boolean = false;
     public currentDate: string = "";
+    public headerDetail:any;
+    public headerProperties:any;
 
     constructor(
         public msgBoxServ: MessageboxService,
@@ -35,6 +37,7 @@ export class RPT_BIL_DocDeptSummaryComponent {
         public coreService: CoreService,
         public changeDetector: ChangeDetectorRef) {
         this.currentDate = moment().format('YYYY-MM-DD');
+        this.LoadHeaderDetailsCalenderTypes();
     }
     @Input("showDocDeptSummary")
     public set value(val: boolean) {
@@ -78,20 +81,71 @@ export class RPT_BIL_DocDeptSummaryComponent {
             });
     }
 
-    public ExportToExcelDocDeptSummary() {
-        this.dlService.ReadExcel("/ReportingNew/ExportToExcelBilDocDeptSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&ProviderId=" + this.ProviderId)
-            .map(res => res)
-            .subscribe(data => {
-                let blob = data;
-                let a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = "BilDocDeptSummaryReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
-                document.body.appendChild(a);
-                a.click();
-            },
-                err => this.ErrorMsg(err));
-    }
+    // public ExportToExcelDocDeptSummary() {
+    //     this.dlService.ReadExcel("/ReportingNew/ExportToExcelBilDocDeptSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&ProviderId=" + this.ProviderId)
+    //         .map(res => res)
+    //         .subscribe(data => {
+    //             let blob = data;
+    //             let a = document.createElement("a");
+    //             a.href = URL.createObjectURL(blob);
+    //             a.download = "BilDocDeptSummaryReport_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+    //             document.body.appendChild(a);
+    //             a.click();
+    //         },
+    //             err => this.ErrorMsg(err));
+    // }
 
+    LoadHeaderDetailsCalenderTypes() {
+        let allParams = this.coreService.Parameters;
+        if (allParams.length) {
+          let HeaderParms = allParams.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader");
+          if (HeaderParms) {
+            this.headerDetail = JSON.parse(HeaderParms.ParameterValue);
+            let header = allParams.find(a => a.ParameterGroupName == 'BillingReport' && a.ParameterName == 'TableExportSetting');
+            if(header){
+                this.headerProperties = JSON.parse(header.ParameterValue)["DoctorSummary"];
+            }
+          }
+        }
+      }
+
+    public ExportToExcelDocDeptSummary(tableId){
+        if(tableId){
+            let workSheetName = 'Doctor Department Summary Report';
+            //let Heading = 'DOCTOR DEPARTMENT SUMMARY REPORT';
+            let filename = 'DoctorDepartmentSummaryReport';
+            var Heading;
+            var phoneNumber;
+            var hospitalName;
+            var address;
+            if(this.headerProperties.HeaderTitle!=null){
+              Heading = this.headerProperties.HeaderTitle;
+            }else{
+              Heading = 'DOCTOR DEPARTMENT SUMMARY REPORT';
+            }
+      
+            if(this.headerProperties.ShowHeader == true){
+               hospitalName = this.headerDetail.hospitalName;
+               address = this.headerDetail.address;
+            }else{
+              hospitalName = null;
+              address = null;
+            }
+      
+            if(this.headerProperties.ShowPhone == true){
+              phoneNumber = this.headerDetail.tel; 
+            }else{
+              phoneNumber = null;
+            }
+            // let hospitalName = this.headerDetail.hospitalName;
+            // let address = this.headerDetail.address;
+            //NBB-send all parameters for now 
+            //need enhancement in this function 
+            //here from date and todate for show date range for excel sheet data
+            CommonFunctions.ConvertHTMLTableToExcelForBilling(tableId, this.FromDate, this.ToDate, workSheetName,
+              Heading, filename, hospitalName,address,phoneNumber,this.headerProperties.ShowHeader,this.headerProperties.ShowDateRange);
+          }
+    }
     public ErrorMsg(err) {
         this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
         console.log(err.ErrorMessage);

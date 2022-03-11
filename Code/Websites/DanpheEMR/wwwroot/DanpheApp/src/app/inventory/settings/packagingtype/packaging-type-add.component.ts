@@ -12,7 +12,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: 'packagingtype-add',
-    templateUrl: './packaging-type-add.html'
+    templateUrl: './packaging-type-add.html',
+    host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class PackagingTypeAddComponent {
@@ -76,8 +77,10 @@ export class PackagingTypeAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('PackagingTypeName');
                 });
         }
+        this.FocusElementById('PackagingTypeName');
     }
     //adding new packagingtype
     Update() {
@@ -101,8 +104,10 @@ export class PackagingTypeAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('PackagingTypeName');
                 });
         }
+        this.FocusElementById('PackagingTypeName');
     }
 
     Close() {
@@ -133,7 +138,19 @@ export class PackagingTypeAddComponent {
     logError(err: any) {
         console.log(err);
     }
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
+    }
 
 
 }

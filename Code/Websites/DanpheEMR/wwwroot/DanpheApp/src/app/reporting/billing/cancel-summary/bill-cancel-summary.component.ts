@@ -24,6 +24,9 @@ export class RPT_BIL_BillCancelSummaryComponent {
 
   public fromDate: string = null;
   public toDate: string = null;
+  public dateRange: string = "";
+
+  public loading: boolean = false;
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService, public reportServ: ReportingService) {
 
@@ -41,6 +44,7 @@ export class RPT_BIL_BillCancelSummaryComponent {
   Load() {
     this.dlService.Read("/BillingReports/BillCancelSummaryReport?FromDate=" + this.fromDate + "&ToDate=" + this.toDate)
       .map(res => res)
+      .finally(() => { this.loading = false; })
       .subscribe(res => this.Success(res),
         res => this.Error(res));
   }
@@ -84,6 +88,7 @@ export class RPT_BIL_BillCancelSummaryComponent {
   OnFromToDateChange($event) {
     this.fromDate = $event ? $event.fromDate : this.fromDate;
     this.toDate = $event ? $event.toDate : this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
 
   }
 

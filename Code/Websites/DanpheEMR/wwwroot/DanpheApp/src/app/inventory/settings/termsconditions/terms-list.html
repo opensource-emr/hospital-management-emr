@@ -1,7 +1,7 @@
 ﻿
 <div>
     <input type="button" class="btn primary-btn m1" (click)="showAddTerms()" value="Add Terms & Conditions" />
-    <terms-add [showAddPage]="showAddPage"
+    <terms-add [showAddPage]="showAddPage" *ngIf="showAddPage"
                [TermsApplicationId]="TermsApplicationId"
                [selected-list]="selTermslist"
                (callback-add)="CallBackAdd($event)"

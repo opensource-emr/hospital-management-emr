@@ -5,16 +5,19 @@
 @using DanpheEMR.ServerModel;
 @using DanpheEMR.DalLayer;*@-->
 <style>
-.billCreditTable thead tr th, .billCreditTable tbody tr td {
-	padding: 2px !important;
-}
+  .billCreditTable thead tr th,
+  .billCreditTable tbody tr td {
+    padding: 2px !important;
+  }
 </style>
 
 <div class="wrapper">
   <div class="row">
     <div class="col-lg-12 col-sm-12">
-      <danphe-grid [grid-colDefaults]="ProvisionalItemsGridColumns" [grid-data]="provisionalItemList" [show-CustomDate]="true" (grid-actions)="CancelGridActions($event)"
-                   [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="ProvisionalItemsGridColumns" [grid-data]="provisionalItemList"
+        [show-CustomDate]="true" (grid-actions)="CancelGridActions($event)" [rangeType]="dateRange"
+        (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
   </div>
 </div>
@@ -37,7 +40,7 @@
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
             <button type="button" class="btn btn-primary btn-sm margin-7-hr"
-                    (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
+              (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
               Proceed
             </button>
           </div>
@@ -52,5 +55,4 @@
   </div>
 </div>
 
-<!--@*----------------for credit bills---------------*@--> 
-
+<!--@*----------------for credit bills---------------*@-->

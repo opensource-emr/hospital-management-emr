@@ -1,0 +1,109 @@
+﻿<div class="row">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <h3><i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Stock Manage</span></h3>
+    </div>
+  </div>
+</div>
+<div class="row" style="padding-top:5px;">
+  <div class="col-md-12" style="background-color:whitesmoke">
+    <div class="form-control" style="background-color:whitesmoke"> <b>Item Name : {{this.itemName}}</b> <br />
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="table-responsive" style="padding-top:10px">
+      <table class="table table-striped table-hover inv_table padLess_table table-bordered" style="background-color:initial">
+        <thead>
+          <tr style="font-weight:bold;text-align:left">
+            <td>GR No.</td>
+            <td style=" max-width: 115px; ">Received Date
+              <span class="icheck-inline">
+                <label style="margin: 0px !important;" class="mt-checkbox mt-checkbox-outline" title="Click to change Date Format">
+                  <input name="showNepaliDate" type="checkbox" [(ngModel)]="showNepaliDate" id="showNepaliDate">
+                  <span></span><label for="showNepaliDate">Date (B.S.) ?</label>
+                </label>
+              </span>
+            </td>
+            <td>Batch No.</td>
+            <td>Expiry Date</td>
+            <!-- <td style=" max-width: 115px; ">Expiry Date
+              <span class="icheck-inline">
+                <label style="margin: 0px !important;" class="mt-checkbox mt-checkbox-outline" title="Click to change Date Format">
+                  <input name="showExpiryNepaliDate" type="checkbox" [(ngModel)]="showExpiryNepaliDate" id="showExpiryNepaliDate">
+                  <span></span><label for="showExpiryNepaliDate">Date (B.S.) ?</label>
+                </label>
+              </span>
+            </td> -->
+            <td>Received Qty</td>
+            <td>Current Qty</td>
+            <td>Modified Qty</td>
+            <!-- <td><a (click)="AddRow()"><i class="glyphicon glyphicon-plus btn btn-success"></i></a></td> -->
+            <!-- sanjit: 12Apr'20 : We should let user add item from here, goods receipt is the point of entry for items. -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of stockDetails" style="text-align:left">
+            <td>{{row.GoodsReceiptNo}}</td>
+            <td>
+              <ng-container *ngIf="row.GoodsReceiptDate">
+                <span *ngIf="showNepaliDate; else englishDate">{{row.GoodsReceiptDate| nepaliDate:'format':'YYYY-MM-DD'}} BS</span>
+                <ng-template #englishDate>{{row.GoodsReceiptDate | date : 'yyyy-MM-dd'}} AD</ng-template>
+              </ng-container>
+            </td>
+            <td>{{row.BatchNo}}</td>
+            <td>{{row.ExpiryDate | date : 'yyyy-MM-dd'}}</td>
+            <!-- <td>
+              <span *ngIf="showExpiryNepaliDate; else englishDate">{{row.ExpiryDate| nepaliDate:'format':'YYYY-MM-DD'}} BS</span>
+              <ng-template #englishDate>{{row.ExpiryDate | date : 'yyyy-MM-dd'}} AD</ng-template>
+            </td> -->
+            <td>{{row.ReceivedQty}}</td>
+            <td>{{row.curQuantity}}</td>
+            <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /></td>
+            <td></td>
+          </tr>
+          <tr *ngFor="let row of tempList; let i = index" style="text-align:left">
+            <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+            <td><input danphe-auto-complete [(ngModel)]="row.BatchNo" class="table-input" [source]="zeroStockDetails" [list-formatter]="myListFormatter" placeholder="Batch No" display-property-name="BatchNo" value-property-name=null min-chars="1" (valueChanged)="SelectBatchNoFromSearchBox(row.BatchNo,i)" max-num-list="10" style="width:150px " /></td>
+            <td><input [(ngModel)]="row.ReceivedQty" disabled style="width:150px" class="table-input" name="ReceivedQty" type="text" /></td>
+            <td><input [(ngModel)]="row.curQuantity" disabled style="width:150px" class="table-input" name="curQuantity" type="text" /></td>
+            <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-5 col-md-offset-7">
+        <div class="mt20 t-wrap">
+          <table class="inv_table">
+            <tr>
+              <td>Current Total Available : </td>
+              <td>
+                <div class="form-group">
+                  <input [(ngModel)]="currQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="currQuantity" type="number" />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Modified Total Available : </td>
+              <td>
+                <div class="form-group">
+                  <input [(ngModel)]="moddQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="moddQuantity" type="number" />
+                </div>
+              </td>
+            </tr>
+          </table>
+          <div class="form-group">
+            <div class="text-right">
+              <input type="button" class="btn btn-success" value="Update Stock" (click)="UpdateStock()" />
+              <span></span>
+              <input type="button" class="btn btn-danger" (click)="routetoStockList()" value="Cancel">
+              <span></span> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

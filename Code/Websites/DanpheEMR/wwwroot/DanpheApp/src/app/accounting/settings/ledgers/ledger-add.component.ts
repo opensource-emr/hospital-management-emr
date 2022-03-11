@@ -13,6 +13,8 @@ import { $$iterator } from "rxjs/internal/symbol/iterator";
 import { SettingsBLService } from "../../../settings-new/shared/settings.bl.service";
 import { Employee } from "../../../employee/shared/employee.model";
 import { CoreService } from "../../../core/shared/core.service";
+import { AccountingService } from "../../shared/accounting.service"
+import { ENUM_ACC_ADDLedgerLedgerType } from "../../../shared/shared-enums";
 
 @Component({
   selector: 'ledger-add',
@@ -95,6 +97,12 @@ export class LedgersAddComponent {
   // END: Inventory Subcategory Ledger
   public provisionalLedgerCode: number = 0;
 
+
+  //START: Billin Income Ledger
+  public typeBillingLedger: boolean = false;
+  public billingsledgerList: Array<LedgerModel> = new Array<LedgerModel>();
+  public billingsledgers: any;
+  //END: Billin Income Ledger
   public ConsultantfilterType: string = "all";
   public disabledRow: boolean = true;
   public allcoaList: any[];
@@ -104,7 +112,8 @@ export class LedgersAddComponent {
     public msgBoxServ: MessageboxService,
     public accountingBLService: AccountingBLService,
     public settingBlService: SettingsBLService,
-    public coreService: CoreService) {
+    public coreService: CoreService,
+    public accountingService: AccountingService) {
     this.GetProvisionalLedgerCode();
     this.GetLedgerGroup();
     this.getLedgerList();
@@ -117,20 +126,16 @@ export class LedgersAddComponent {
   //  this.update = false;
   //}
   public getCoaList() {
-    this.accountingSettingsBLService.GetChartofAccount()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.allcoaList = res.Results;
-        }
-      });
+    if (!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
+      this.allcoaList = this.accountingService.accCacheData.COA; //mumbai-team-june2021-danphe-accounting-cache-change
+      this.allcoaList = this.allcoaList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+    }
   }
   public getPrimaryGroupList() {
-    this.accountingSettingsBLService.getPrimaryGroupList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.primaryGroupList = res.Results;
-        }
-      });
+    if (!!this.accountingService.accCacheData.PrimaryGroup && this.accountingService.accCacheData.PrimaryGroup.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+      this.primaryGroupList = this.accountingService.accCacheData.PrimaryGroup;//mumbai-team-june2021-danphe-accounting-cache-change
+      this.primaryGroupList = this.primaryGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+    }
   }
   public Getledgers() {
     try {
@@ -160,24 +165,25 @@ export class LedgersAddComponent {
     this.CurrentLedger.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
   }
   GetLedgerGroup() {
-    this.accountingSettingsBLService.GetLedgerGroup()
-      .subscribe(res => this.CallBackLedgerGroup(res));
+      if(!!this.accountingService.accCacheData.LedgerGroups && this.accountingService.accCacheData.LedgerGroups.length>0){ //mumbai-team-june2021-danphe-accounting-cache-change
+        this.CallBackLedgerGroup(this.accountingService.accCacheData.LedgerGroups);//mumbai-team-june2021-danphe-accounting-cache-change
+      }
   }
 
   CallBackLedgerGroup(res) {
     this.sourceLedGroupList = new Array<LedgerModel>();
-    this.sourceLedGroupList = res.Results;
+    this.sourceLedGroupList = res;
+    this.sourceLedGroupList = this.sourceLedGroupList.slice();
     this.ledgergroupList = [];
-   // this.primaryGroupList = [];
+    // this.primaryGroupList = [];
     this.coaList = [];
     this.ledgerList = new Array<LedgerModel>();
-   // this.primaryGroupList = Array.from([new Set(this.sourceLedGroupList.map(i => i.PrimaryGroup))][0]);
+    // this.primaryGroupList = Array.from([new Set(this.sourceLedGroupList.map(i => i.PrimaryGroup))][0]);
   }
   //adding new Ledger
   AddLedger() {
     if (this.typeConsultant) {
       this.NewledgerList = this.employeeList.filter(a => a.IsSelected == true);
-
       this.NewledgerList.forEach(emp => {
         var empData = this.ledgerListAutoComplete.filter(l => l.LedgerName == emp.LedgerName);
         if (empData.length == 0) {
@@ -227,55 +233,67 @@ export class LedgersAddComponent {
         }
       });
     }
-    // if (this.checkUniqueLedgerName()) {
-    this.CheckDrCrValidation();
-    if (this.CurrentLedger.LedgerGroupId == 0 || this.CurrentLedger.LedgerGroupId == null) {
-      this.msgBoxServ.showMessage("error", ["Please select ledger group"]);
+    if (this.typeBillingLedger) {
+      this.NewledgerList = this.billingsledgers.filter(a => a.IsSelected == true);
+      this.NewledgerList.forEach(dept => {
+        var deptData = this.ledgerListAutoComplete.filter(l => l.LedgerName == dept.LedgerName);
+        if (deptData.length == 0) {
+          dept.Code = "";
+          dept.LedgerId = 0;
+          this.msgBoxServ.showMessage("warning",["Ledger name required for"]);
+        }
+      });
+
     }
-    else {
-      let ledgerValidation = true;
-      //for checking validations, marking all the fields as dirty and checking the validity.
-      for (var ledger of this.NewledgerList) {
-        for (var b in ledger.LedgerValidator.controls) {
-          ledger.LedgerValidator.controls[b].markAsDirty();
-          ledger.LedgerValidator.controls[b].updateValueAndValidity();
-        }
-        if (ledger.IsValidCheck(undefined, undefined)) {
-          ledgerValidation = false;
-          return;
-        }
-      };
-      if (ledgerValidation) {
-        this.loading = true;
-        ///During First Time Add Current Balance and Opening Balance is Equal                 
-        this.accountingSettingsBLService.AddLedgerList(this.NewledgerList)
-          .subscribe(
-            res => {
-              if (res.Status == "OK") {
-                this.msgBoxServ.showMessage("success", ["Ledgers Added"]);
-                // this.CurrentLedger
-                this.CallBackAddLedger(res);
-                this.CurrentLedger = new LedgerModel();
-                this.NewledgerList = new Array<LedgerModel>();
-                this.selLedgerGroup = null; ////Null the Selected Ledger Group   
-                this.GetProvisionalLedgerCode();
-                // this.loading = false;
-                // this.typeConsultant = false;
-                this.Close();
-              }
-              else {
-                this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
-                this.loading = false;
-              }
-            },
-            err => {
-              this.logError(err);
-              this.loading = false;
-            });
-      } else {
-        this.loading = false;
+    //if (this.checkUniqueLedgerName()) {
+      this.CheckDrCrValidation();
+      if (this.CurrentLedger.LedgerGroupId == 0 || this.CurrentLedger.LedgerGroupId == null) {
+        this.msgBoxServ.showMessage("error", ["Please select ledger group"]);
       }
-    }
+      else {
+        let ledgerValidation = true;
+        //for checking validations, marking all the fields as dirty and checking the validity.
+        for (var ledger of this.NewledgerList) {
+          for (var b in ledger.LedgerValidator.controls) {
+            ledger.LedgerValidator.controls[b].markAsDirty();
+            ledger.LedgerValidator.controls[b].updateValueAndValidity();
+          }
+          if (ledger.IsValidCheck(undefined, undefined)) {
+            ledgerValidation = false;
+            return;
+          }
+        };
+        if (ledgerValidation) {
+          this.loading = true;
+          ///During First Time Add Current Balance and Opening Balance is Equal                 
+          this.accountingSettingsBLService.AddLedgerList(this.NewledgerList)
+            .subscribe(
+              res => {
+                if (res.Status == "OK") {
+                  this.msgBoxServ.showMessage("success", ["Ledgers Added"]);
+                  // this.CurrentLedger
+                  this.CallBackAddLedger(res);
+                  this.CurrentLedger = new LedgerModel();
+                  this.NewledgerList = new Array<LedgerModel>();
+                  this.selLedgerGroup = null; ////Null the Selected Ledger Group   
+                  this.GetProvisionalLedgerCode();
+                  // this.loading = false;
+                  // this.typeConsultant = false;
+                  this.Close();
+                }
+                else {
+                  this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
+                  this.loading = false;
+                }
+              },
+              err => {
+                this.logError(err);
+                this.loading = false;
+              });
+        } else {
+          this.loading = false;
+        }
+      }
     //}
   }
 
@@ -316,24 +334,31 @@ export class LedgersAddComponent {
     this.employeeList = new Array<LedgerModel>();
     this.showinventorysubcategoryAllLedgers = false;
     this.ledgerSearchKey = null;
+
+    //Billing ledger
+    this.typeBillingLedger = false;
+    this.billingsledgerList = new Array<LedgerModel>();
+    this.billingsledgers = null;
+
     this.disabledRow = true;
     this.getLedgerList();
   }
   //after adding Ledger is succesfully added  then this function is called.
   CallBackAddLedger(res) {
     if (res.Status == "OK" && res.Results != null) {
-      let temp = new LedgerModel();
-      temp = Object.assign(temp, res.Results);
-      temp.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
-      temp.COA = this.CurrentLedger.COA;
-      temp.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
-      temp.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
-      temp.LedgerName = this.CurrentLedger.LedgerName;
-      this.sourceLedgerList.push(temp);
-      this.ledgergroupList = new Array<LedgerModel>();
-      this.ledgerList = new Array<LedgerModel>();
-      this.callbackAdd.emit({ ledger: temp });
-    }
+      res.Results.forEach(ledger => {//mumbai-team-june2021-danphe-accounting-cache-change
+      ledger.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
+      ledger.COA = this.CurrentLedger.COA;
+      ledger.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
+      ledger.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
+      this.getLedgerList();
+      this.sourceLedgerList.push(ledger);
+      this.accountingService.accCacheData.LedgersALL.push(ledger);//mumbai-team-june2021-danphe-accounting-cache-change
+    });
+    this.ledgergroupList = new Array<LedgerModel>();
+    this.ledgerList = new Array<LedgerModel>();
+    this.callbackAdd.emit(true);
+  }
     else if (res.Status == "OK" && res.Results == null) {
       this.msgBoxServ.showMessage("notice-message", ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
     }
@@ -404,19 +429,19 @@ export class LedgersAddComponent {
     }
   }
   public PrimaryGroupChanged() {
-   // if (this.CurrentLedger.PrimaryGroup) {
-      this.coaList = [];
-      this.ledgergroupList = [];
-      this.selLedgerGroup = null;
-      this.CurrentLedger.LedgerGroupName = null;
-      //  this.CurrentLedger.LedgerName = null;
-      //  this.ledgerList = new Array<LedgerModel>();
-      // let selectedPrimaryGroupList = this.sourceLedGroupList.filter(a => a.PrimaryGroup == this.CurrentLedger.PrimaryGroup);
-      // this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
-      let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == this.CurrentLedger.PrimaryGroup)[0].PrimaryGroupId;
-      this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
-      this.CurrentLedger.COA = this.coaList[0].ChartOfAccountName;
-      this.COAChanged();
+    // if (this.CurrentLedger.PrimaryGroup) {
+    this.coaList = [];
+    this.ledgergroupList = [];
+    this.selLedgerGroup = null;
+    this.CurrentLedger.LedgerGroupName = null;
+    //  this.CurrentLedger.LedgerName = null;
+    //  this.ledgerList = new Array<LedgerModel>();
+    // let selectedPrimaryGroupList = this.sourceLedGroupList.filter(a => a.PrimaryGroup == this.CurrentLedger.PrimaryGroup);
+    // this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
+    let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == this.CurrentLedger.PrimaryGroup)[0].PrimaryGroupId;
+    this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
+    this.CurrentLedger.COA = this.coaList[0].ChartOfAccountName;
+    this.COAChanged();
     //}
   }
   public COAChanged() {
@@ -429,33 +454,28 @@ export class LedgersAddComponent {
       this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == this.CurrentLedger.COA);
     }
   }
-
+//on default ledger creation time
   public CheckDuplicateLedger(index: number) {
     if (this.NewledgerList[index].LedgerName) {
       this.changeDetector.detectChanges();
+      // let count = this.sourceLedgerList.filter(s => s.LedgerName.trim().toLowerCase() == this.NewledgerList[index].LedgerName.trim().toLowerCase()).length;
+      // let check = this.NewledgerList.filter(s => s.LedgerName.trim().toLowerCase() == this.NewledgerList[index].LedgerName.trim().toLowerCase()).length;
       let count = this.sourceLedgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
       let check = this.NewledgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
-      if (count > 0 || check > 0) {
+     
+      if (count > 0 || check > 1) {
         this.NewledgerList[index].LedgerName = null;
         this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
         this.loading = false;
       }
-      else {
-
-      }
+     
     }
   }
   public getLedgerList() {
-    this.accountingSettingsBLService.GetLedgerList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.sourceLedgerList = res.Results;
-        }
-        else {
-          alert("Failed ! " + res.ErrorMessage);
-        }
-
-      });
+      if(!!this.accountingService.accCacheData.LedgersALL && this.accountingService.accCacheData.LedgersALL.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+        this.sourceLedgerList = this.accountingService.accCacheData.LedgersALL;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.sourceLedgerList = this.sourceLedgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+      }
   }
   LedgerGroupListFormatter(data: any): string {
     return data["LedgerGroupName"];
@@ -552,6 +572,22 @@ export class LedgersAddComponent {
         }
       }
     }
+    else if(this.typeBillingLedger){
+      if (e.target.name == "Dr") {
+        if (e.target.checked) {
+          this.billingsledgers[index].DrCr = true;
+          this.billingsledgers[index].Cr = false;
+          this.billingsledgers[index].Dr = true;
+        }
+      }
+      if (e.target.name == "Cr") {
+        if (e.target.checked) {
+          this.billingsledgers[index].DrCr = false;
+          this.billingsledgers[index].Dr = false;
+          this.billingsledgers[index].Cr = true;
+        }
+      }
+    }
     else {
       if (e.target.name == "Dr") {
         if (e.target.checked) {
@@ -612,139 +648,59 @@ export class LedgersAddComponent {
   ToggleLedgerType(ledgerType) {
     this.ledgerType = ledgerType;
     this.CurrentLedger = new LedgerModel();
+    this.isSelectAll=false;
+    this.typeledger = false;
+    this.typesupplier = false;
+    this.typeConsultant = false;
+    this.typeCreditOrganization = false;
+    this.typeInventoryVendor = false;
+    this.typeinventorysubcategory = false;
+    this.ledgerSearchKey = null;//
+    this.showinventorysubcategoryAllLedgers = false;//
+    this.typeBillingLedger = false;
+    this.disabledRow = false;
 
-    if (ledgerType == 'ledger') {
+    if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.Default) {
       this.typeledger = true;
-      this.typesupplier = false;
-      this.typevendor = false;
-      this.typeConsultant = false;
-      this.typeCreditOrganization = false;
-      this.typeInventoryVendor = false;
-      this.typeinventorysubcategory = false;
-      this.ledgerSearchKey = null;
-      this.showinventorysubcategoryAllLedgers = false;
       this.disabledRow = true;
-      // this.getLedgerList();
     }
-    else if (ledgerType == 'pharmacysupplier') {
-      this.typeledger = false;
-      this.typesupplier = true;
-      this.typevendor = false;
-      this.typeConsultant = false;
-      this.typeCreditOrganization = false;
-      this.typeInventoryVendor = false;
-      this.typeinventorysubcategory = false;
-      this.ledgerSearchKey = null;
-      this.showinventorysubcategoryAllLedgers = false;
-      // this.getLedgerList();
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.PharmacySupplier) {
+      this.getLedgerList();
       this.SetSupplierData();
-      this.disabledRow = true;
     }
-    else if (ledgerType == 'inventoryvendor') {
-      this.typeledger = false;
-      this.typesupplier = false;
-      this.typevendor = true;
-      this.typeConsultant = false;
-      this.typeCreditOrganization = false;
-      this.typeInventoryVendor = true;
-      this.typeinventorysubcategory = false;
-      this.ledgerSearchKey = null;
-      this.showinventorysubcategoryAllLedgers = false;
-      // this.getLedgerList();
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.InventoryVendor) {
       this.SetInventoryVendorData();
-      this.disabledRow = true;
     }
-    else if (ledgerType == 'consultant') {
-      this.typeledger = false;
-      this.typesupplier = false;
-      this.typevendor = false;
-      this.typeConsultant = true;
-      this.typeCreditOrganization = false;
-      this.typeInventoryVendor = false;
-      this.typeinventorysubcategory = false;
-      this.ledgerSearchKey = null;
-      this.showinventorysubcategoryAllLedgers = false;
-      // this.getLedgerList();
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.Consultant) {
       this.SetConsultantData();
-      this.disabledRow = true;
     }
-    else if (ledgerType == 'creditorganization') {
-      this.typeledger = false;
-      this.typesupplier = false;
-      this.typevendor = false;
-      this.typeConsultant = false;
-      this.typeCreditOrganization = true;
-      this.typeInventoryVendor = false;
-      this.typeinventorysubcategory = false;
-      this.ledgerSearchKey = null;
-      this.showinventorysubcategoryAllLedgers = false;
-      // this.getLedgerList();
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.CreditOrganization) {
       this.SetCreditOrganizationData();
-      this.disabledRow = true;
     }
-    else if (ledgerType == 'inventorysubcategory') {
-      this.typeledger = false;
-      this.typesupplier = false;
-      this.typevendor = false;
-      this.typeConsultant = false;
-      this.typeCreditOrganization = false;
-      this.typeInventoryVendor = false;
-      this.typeinventorysubcategory = true;
-      this.ledgerSearchKey = null;
-      // this.getLedgerList();
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.InventorySubCategory) {
       this.SetInventorySubcategoryData();
-      this.disabledRow = true;
+    }
+    else if (ledgerType == ENUM_ACC_ADDLedgerLedgerType.BillingPriceItem) {
+      this.SetBillingItemsData();    
     }
   }
-  CheckDuplicateSupplierLedger(index: number) {
-    if (this.NewledgerList[index].LedgerName) {
-      this.changeDetector.detectChanges();
-      let led = this.ledgerMappingList.supplier.find(s => s.LedgerName == this.CurrentLedger.LedgerName);
-      let check = this.NewledgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
-      if (led || check > 0) {
-        this.CurrentLedger.LedgerName = null;
-        this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
-        this.loading = false;
-      }
-    }
-  }
-  // CheckLedgerTypeValidation() {
-  // //   var temp = true;
-  // //   if (this.ledgerType != 'ledger') {
-  // //     // if (this.ledgerType == 'creditorganization') {
-  // //     //   this.NewledgerList.forEach(itm => {
-  // //     //     let emp = this.creditOrgizerList.find(s => s.OrganizationName == itm.LedgerName);
-  // //     //     if (!emp) {
-  // //     //       itm.LedgerName = null;
-  // //     //       this.msgBoxServ.showMessage("notice", ['ledger not allowed']);
-  // //     //       temp = false;
-  // //     //     }
-  // //     //     else {
-  // //     //       itm.LedgerType = this.ledgerType;
-  // //     //       itm.LedgerReferenceId = emp.OrganizationId;
-  // //     //       itm.LedgerName = emp.OrganizationName;
-  // //     //     }
-  // //     //   });
-  // //     // }
-
-  // //     // else if (this.ledgerType == 'inventorysubcategory') {
-  // //     //   this.NewledgerList.forEach(itm => {
-  // //     //     let emp = this.inventorySubList.find(s => s.SubCategoryName == itm.LedgerName);//change here occourding to result
-  // //     //     if (!emp) {
-  // //     //       itm.LedgerName = null;
-  // //     //       this.msgBoxServ.showMessage("notice", ['ledger not allowed']);
-  // //     //       temp = false;
-  // //     //     }
-  // //     //     else {
-  // //     //       itm.LedgerType = this.ledgerType;
-  // //     //       itm.LedgerReferenceId = emp.SubCategoryId;
-  // //     //       itm.LedgerName = emp.SubCategoryName;
-  // //     //     }
-  // //     //   });
-  // //     // }
-  // //   }
-  // //   return temp;
-  //  }
+  //Nagesh-BB Not in use for any purpose
+  // CheckDuplicateSupplierLedger(index: number) {
+  //   if (this.NewledgerList[index].LedgerName) {
+  //     this.changeDetector.detectChanges();
+  //     // let led = this.ledgerMappingList.supplier.find(s => s.LedgerName.trim().toLowerCase() == this.CurrentLedger.LedgerName.trim().toLowerCase());
+  //     // let check = this.NewledgerList.filter(s => s.LedgerName.trim().toLowerCase() == this.NewledgerList[index].LedgerName.trim().toLowerCase()).length;
+  //      let led = this.ledgerMappingList.supplier.find(s => s.LedgerName == this.CurrentLedger.LedgerName);
+  //     let check = this.NewledgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
+     
+  //     if (led || check > 0) {
+  //       this.CurrentLedger.LedgerName = null;
+  //       this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
+  //       this.loading = false;
+  //     }
+  //   }
+  // }
+ 
   //for LedgerGroup add popup
   AddLedgerGroupPopUp() {
     this.showAddLedgerGroupPopUp = false;
@@ -765,21 +721,30 @@ export class LedgersAddComponent {
     this.ledgergroupList = this.ledgergroupList.slice();
     this.GetLedgerGroup();
   }
+  //this is only for default ledger creation check not for other types
   checkUniqueLedgerName() {
     if (this.NewledgerList.length) {
       this.changeDetector.detectChanges();
       var temp = true;
-      if (!this.typeConsultant) {
+      let foundDuplicate=0;
+      if (!this.typeConsultant && !this.typeBillingLedger) {
         this.NewledgerList.forEach(itm => {
-          let count = this.sourceLedgerList.filter(s => s.LedgerName == itm.LedgerName).length;
-          let check = this.NewledgerList.filter(s => s.LedgerName == itm.LedgerName).length;
-          if (count > 0 || check > 1) {
-            this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
+          // let existedInDatabase = this.sourceLedgerList.filter(s => s.LedgerName.trim().toLowerCase() == itm.LedgerName.trim().toLowerCase()).length;
+          // let existedIncurrentList = this.NewledgerList.filter(s => s.LedgerName.trim().toLowerCase() == itm.LedgerName.trim().toLowerCase()).length;
+          let existedInDatabase = this.sourceLedgerList.filter(s => s.LedgerName.trim().toLowerCase() == itm.LedgerName.trim().toLowerCase()).length;
+          let existedIncurrentList = this.NewledgerList.filter(s => s.LedgerName.trim().toLowerCase()== itm.LedgerName.trim().toLowerCase()).length;
+          
+          if (existedInDatabase > 0 || existedIncurrentList > 1) {    
             this.loading = false;
             temp = false;
+            foundDuplicate=foundDuplicate+1;
           }
         });
       }
+      if(foundDuplicate >0){
+        this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed, please check.']);
+      }
+      
       return temp;
     }
     else {
@@ -873,6 +838,7 @@ export class LedgersAddComponent {
           this.totalLedger = this.employeeList.length;
           this.mappedLedger = this.employeeList.filter(l => l.IsMapped == true).length;
           this.notmappedLedger = this.employeeList.filter(l => l.IsMapped == false).length;
+          this.typeConsultant = (this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.Consultant) ? true:false;
         }
       });
   }
@@ -885,19 +851,27 @@ export class LedgersAddComponent {
 
         if (this.ConsultantfilterType == 'withacchead') {
           this.employeeList = this.NewEmpledgerList.filter(l => l.EmployeeName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
-          this.phrmSupplierList = this.phrmsupplierList.filter(l => l.SupplierName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
+          let phrmData = this.phrmSupplierList.filter(l => (l.LedgerId > 0));
+          this.phrmSupplierList = phrmData.filter(l => l.SupplierName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
           this.inventoryVendorList = this.inventoryvledgerList.filter(l => l.VendorName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
           this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
           this.creditOrgizerList = this.creditOrgledgerList.filter(l => l.OrganizationName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
+          let billData = this.billingsledgerList.filter(l => (l.LedgerId > 0)); 
+          this.billingsledgers = billData.filter(l=> (l.ServiceDepartmentName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1) || (typeof l.ItemName === "string" ? l.ItemName.toLowerCase().indexOf(searchKey) > -1 && l.LedgerId > 0 : []))
+          //this.billingsledgers = this.billingsledgerList.filter(l => (l.LedgerId > 0) && (l.ServiceDepartmentName.toLowerCase().indexOf(searchKey) > -1) || (typeof l.ItemName === "string" ? l.ItemName.toLowerCase().indexOf(searchKey) > -1 : []))
 
         }
         else if (this.ConsultantfilterType == 'withoutacchead') {
-
           this.employeeList = this.NewEmpledgerList.filter(l => l.EmployeeName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
-          this.phrmSupplierList = this.phrmsupplierList.filter(l => l.SupplierName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
+          let phrmData = this.phrmSupplierList.filter(l => (l.LedgerId == 0));
+          this.phrmSupplierList = phrmData.filter(l => l.SupplierName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
+          //this.phrmSupplierList = this.phrmsupplierList.filter(l => l.SupplierName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
           this.inventoryVendorList = this.inventoryvledgerList.filter(l => l.VendorName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
           this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
           this.creditOrgizerList = this.creditOrgledgerList.filter(l => l.OrganizationName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
+           let billData = this.billingsledgerList.filter(l => (l.LedgerId == 0));
+           this.billingsledgers = billData.filter(l=> (l.ServiceDepartmentName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1) || (typeof l.ItemName === "string" ? l.ItemName.toLowerCase().indexOf(searchKey) > -1 : []))
+          //this.billingsledgers = this.billingsledgerList.filter(l => (l.LedgerId == 0) && (l.ServiceDepartmentName.toLowerCase().indexOf(searchKey) > -1) || (typeof l.ItemName === "string" ? l.ItemName.toLowerCase().indexOf(searchKey) > -1 : []))
 
         }
         else {
@@ -906,35 +880,36 @@ export class LedgersAddComponent {
           this.inventoryVendorList = this.inventoryvledgerList.filter(l => l.VendorName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
           this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
           this.creditOrgizerList = this.creditOrgledgerList.filter(l => l.OrganizationName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
-
+          let billData = this.billingsledgerList; 
+          this.billingsledgers = billData.filter(l=> (l.ServiceDepartmentName.toLowerCase().indexOf(searchKey.toLowerCase())> -1) || (typeof l.ItemName === "string" ? l.ItemName.toLowerCase().indexOf(searchKey) > -1 : []))
+        
         }
       }
       else {
         if (this.ConsultantfilterType == 'withacchead') {
           this.employeeList = this.NewEmpledgerList.filter(l => l.LedgerId > 0);
           this.phrmSupplierList = this.phrmsupplierList.filter(l => l.LedgerId > 0);
-
           this.inventoryVendorList = this.inventoryvledgerList.filter(l => l.LedgerId > 0);
           this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.LedgerId > 0);
           this.creditOrgizerList = this.creditOrgledgerList.filter(l => l.LedgerId > 0);
+          this.billingsledgers = this.billingsledgerList.filter(l => l.LedgerId > 0);
         }
         else if (this.ConsultantfilterType == 'withoutacchead') {
-
           this.employeeList = this.NewEmpledgerList.filter(l => l.LedgerId == 0);
-
           this.phrmSupplierList = this.phrmsupplierList.filter(l => l.LedgerId == 0);
           this.inventoryVendorList = this.inventoryvledgerList.filter(l => l.LedgerId == 0);
           this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.LedgerId == 0);
           this.creditOrgizerList = this.creditOrgledgerList.filter(l => l.LedgerId == 0);
+          this.billingsledgers = this.billingsledgerList.filter(l => l.LedgerId == 0);
         }
         else {
           this.employeeList = this.NewEmpledgerList;
           this.phrmSupplierList = this.phrmsupplierList;
-
           this.inventoryVendorList = this.inventoryvledgerList;
           this.inventorySubList = this.inventorysubcategoryledgerList;
           this.creditOrgizerList = this.creditOrgledgerList;
-
+          this.billingsledgers = this.billingsledgerList; 
+        
         }
       }
     }
@@ -946,44 +921,68 @@ export class LedgersAddComponent {
   AssignSelectedLedger(index) {
     try {
       if (this.typesupplier) {  // pharmacy supplier
-        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.phrmSupplierList[index].LedgerName);
+        var  ledgerNameSelected=(typeof (this.phrmSupplierList[index].LedgerName) == 'object')?this.phrmSupplierList[index].LedgerName.LedgerName.trim().toLowerCase():this.phrmSupplierList[index].LedgerName.trim().toLowerCase();
+        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
         if (ledger.length > 0) {
           this.phrmSupplierList[index].Code = ledger[0].Code;
           this.phrmSupplierList[index].LedgerId = ledger[0].LedgerId;
           this.phrmSupplierList[index].LedgerName = ledger[0].LedgerName;
+        }else{
+          this.phrmSupplierList[index].Code = "";
+          this.phrmSupplierList[index].LedgerId = 0;
         }
       }
       else if (this.typeConsultant) { // consultant ledger
-        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.employeeList[index].LedgerName);
+        var  ledgerNameSelected=(typeof (this.employeeList[index].LedgerName) == 'object')?this.employeeList[index].LedgerName.LedgerName.trim().toLowerCase():this.employeeList[index].LedgerName.trim().toLowerCase();
+        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
+        //var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == this.employeeList[index].LedgerName.trim().toLowerCase() );
         if (ledger.length > 0) {
           this.employeeList[index].Code = ledger[0].Code;
           this.employeeList[index].LedgerId = ledger[0].LedgerId;
           this.employeeList[index].LedgerName = ledger[0].LedgerName;
+        }else{
+          this.employeeList[index].Code = "";
+          this.employeeList[index].LedgerId = 0;
         }
       }
 
       else if (this.typeCreditOrganization) { // billing credit organization
-        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.creditOrgizerList[index].LedgerName);
+        var  ledgerNameSelected=(typeof (this.creditOrgizerList[index].LedgerName) == 'object')?this.creditOrgizerList[index].LedgerName.LedgerName.trim().toLowerCase():this.creditOrgizerList[index].LedgerName.trim().toLowerCase();
+        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
+       // var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()  == this.creditOrgizerList[index].LedgerName.trim().toLowerCase() );
         if (ledger.length > 0) {
           this.creditOrgizerList[index].Code = ledger[0].Code;
           this.creditOrgizerList[index].LedgerId = ledger[0].LedgerId;
           this.creditOrgizerList[index].LedgerName = ledger[0].LedgerName;
+        }else{
+          this.creditOrgizerList[index].Code = "";
+          this.creditOrgizerList[index].LedgerId = 0;
         }
       }
       else if (this.typeInventoryVendor) { // inventory vendor
-        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.inventoryVendorList[index].LedgerName);
+        var  ledgerNameSelected=(typeof (this.inventoryVendorList[index].LedgerName) == 'object')?this.inventoryVendorList[index].LedgerName.LedgerName.trim().toLowerCase():this.inventoryVendorList[index].LedgerName.trim().toLowerCase();
+        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
+       // var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == this.inventoryVendorList[index].LedgerName.trim().toLowerCase() );
         if (ledger.length > 0) {
           this.inventoryVendorList[index].Code = ledger[0].Code;
           this.inventoryVendorList[index].LedgerId = ledger[0].LedgerId;
           this.inventoryVendorList[index].LedgerName = ledger[0].LedgerName;
+        }else{
+          this.inventoryVendorList[index].Code = "";
+          this.inventoryVendorList[index].LedgerId = 0;
         }
       }
       else if (this.typeinventorysubcategory) {   // inventory items subcategory
-        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.inventorySubList[index].LedgerName);
+        var  ledgerNameSelected=(typeof (this.inventorySubList[index].LedgerName) == 'object')?this.inventorySubList[index].LedgerName.LedgerName.trim().toLowerCase():this.inventorySubList[index].LedgerName.trim().toLowerCase();
+        var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
+        //var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == this.inventorySubList[index].LedgerName.trim().toLowerCase() );
         if (ledger.length > 0) {
           this.inventorySubList[index].Code = ledger[0].Code;
           this.inventorySubList[index].LedgerId = ledger[0].LedgerId;
           this.inventorySubList[index].LedgerName = ledger[0].LedgerName;
+        }else{
+          this.inventorySubList[index].Code = "";
+          this.inventorySubList[index].LedgerId = 0;
         }
       }
 
@@ -1054,6 +1053,19 @@ export class LedgersAddComponent {
           if (a.IsSelected) {
             if (a.IsMapped == false) {
               a.LedgerName = a.SubCategoryName;
+              a.Code = "";
+              a.LedgerId = 0;
+            }
+          }
+        });
+      }
+      else if (this.typeBillingLedger) {
+        this.billingsledgers.forEach(a => {
+          a.IsSelected = true;
+          a.IsActive = true;
+          if (a.IsSelected) {
+            if (a.IsMapped == false) {
+              a.LedgerName = a.ServiceDepartmentName;
               a.Code = "";
               a.LedgerId = 0;
             }
@@ -1145,15 +1157,24 @@ export class LedgersAddComponent {
             a.Code = "";
             a.LedgerId = 0;
           }
+          a.IsSelected = false;
+        });
+      }
+      else if (this.typeBillingLedger) {
+        this.billingsledgers.forEach(a => {
+          if (a.IsMapped == false) {
+            a.LedgerName = "";
+            a.Code = "";
+            a.LedgerId = 0;
+          }
           else {
-            //ledgerListAutoComplete empty becaose of in invsubcategory ledgergroup on coa
-            // var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == a.LedgerName);
-            // if (ledger.length == 0) {
-            //   let data = this.ledgerListAutoComplete.filter(l => l.LedgerId == a.LedgerId);
-            //   a.Code = data[0].Code;
-            //   a.LedgerId = data[0].LedgerId;
-            //   a.LedgerName = data[0].LedgerName;
-            //}
+            var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == a.LedgerName);
+            if (ledger.length == 0) {
+              let data = this.ledgerListAutoComplete.filter(l => l.LedgerId == a.LedgerId);
+              a.Code = data[0].Code;
+              a.LedgerId = data[0].LedgerId;
+              a.LedgerName = data[0].LedgerName;
+            }
           }
           a.IsSelected = false;
         });
@@ -1301,6 +1322,34 @@ export class LedgersAddComponent {
         }
       }
     }
+    else if (this.ledgerType == 'billingincomeledger') {
+      this.selectedLedgerCount = this.billingsledgers.filter(a => a.IsSelected == true).length;
+
+      if (this.billingsledgers[index].IsSelected) {
+        if (this.billingsledgers[index].IsMapped == false) {
+          this.billingsledgers[index].LedgerName = "";//remove autocomplete Ledgername
+          this.billingsledgers[index].Code = "";
+          this.billingsledgers[index].LedgerId = 0;
+        }
+      }
+      else if ((this.billingsledgers[index].IsSelected == false)) {
+        if (this.billingsledgers[index].IsMapped == false) {
+          this.billingsledgers[index].LedgerName = "";
+          this.billingsledgers[index].Code = "";
+          this.billingsledgers[index].LedgerId = 0;
+        }
+        else {
+          var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.billingsledgers[index].LedgerName);
+          if (ledger.length == 0) {
+            let data = this.ledgerListAutoComplete.filter(l => l.LedgerId == this.billingsledgers[index].LedgerId);
+            this.billingsledgers[index].Code = data[0].Code;
+            this.billingsledgers[index].LedgerId = data[0].LedgerId;
+            this.billingsledgers[index].LedgerName = data[0].LedgerName;
+          }
+        }
+      }
+    }
+
   }
 
   ShowSaveButtonOnCkboxChange() {
@@ -1324,7 +1373,6 @@ export class LedgersAddComponent {
       this.isSelectAll = this.inventorySubList.every(a => a.IsSelected == true);
       this.selectedLedgerCount = this.inventorySubList.filter(a => a.IsSelected == true).length;
     }
-
   }
   ToggleEmpLedger(mapped) {
     if (mapped == 'true') {
@@ -1382,7 +1430,7 @@ export class LedgersAddComponent {
         if (res.Status == "OK") {
           this.creditOrgledgerList = new Array<LedgerModel>();
           let data = res.Results;
-         // data = data.filter(d => d.LedgerGroupId == this.CurrentLedger.LedgerGroupId || d.LedgerGroupId == null);
+          // data = data.filter(d => d.LedgerGroupId == this.CurrentLedger.LedgerGroupId || d.LedgerGroupId == null);
           data.forEach(emp => {
             var led = new LedgerModel();
             led = Object.assign(led, emp);
@@ -1400,6 +1448,7 @@ export class LedgersAddComponent {
           this.totalLedger = this.creditOrgizerList.length;
           this.mappedLedger = this.creditOrgizerList.filter(l => l.IsMapped == true).length;
           this.notmappedLedger = this.creditOrgizerList.filter(l => l.IsMapped == false).length;
+          this.typeCreditOrganization = (this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.CreditOrganization) ? true:false;
 
         }
 
@@ -1476,12 +1525,12 @@ export class LedgersAddComponent {
             led.Cr = (emp.DrCr == false) ? true : null;
             led.LedgerType = "inventoryvendor",
               this.inventoryvledgerList.push(led);
-          });
+          });          
           this.inventoryVendorList = this.inventoryvledgerList;
           this.totalLedger = this.inventoryVendorList.length;
           this.mappedLedger = this.inventoryVendorList.filter(l => l.IsMapped == true).length;
           this.notmappedLedger = this.inventoryVendorList.filter(l => l.IsMapped == false).length;
-
+          this.typeInventoryVendor = (this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.InventoryVendor) ? true:false;
         }
 
       });
@@ -1566,6 +1615,7 @@ export class LedgersAddComponent {
           this.totalLedger = this.phrmSupplierList.length;
           this.mappedLedger = this.phrmSupplierList.filter(l => l.IsMapped == true).length;
           this.notmappedLedger = this.phrmSupplierList.filter(l => l.IsMapped == false).length;
+          this.typesupplier =(this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.PharmacySupplier) ? true:false;
         }
       });
   }
@@ -1651,7 +1701,8 @@ export class LedgersAddComponent {
           this.totalLedger = this.inventorySubList.length;
           this.mappedLedger = this.inventorySubList.filter(l => l.IsMapped == true).length;
           this.notmappedLedger = this.inventorySubList.filter(l => l.IsMapped == false).length;
-
+          this.typeinventorysubcategory = (this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.InventorySubCategory) ? true:false;
+          
         }
 
       });
@@ -1676,6 +1727,110 @@ export class LedgersAddComponent {
     }
   }
   //END : Inventory subcategory Ledger 
+
+  // START: Billings Items Income Ledgers
+  SetBillingItemsData() {
+    this.selectedLedgerCount = 0;
+    this.getBillingItemsList();
+    this.CurrentLedger = new LedgerModel();
+    let LedgerGroupName = this.ledgerTypeParamter.find(a => a.LedgerType == 'billingincomeledger').LedgergroupUniqueName;
+    let billingLedger = this.sourceLedGroupList.find(a => a.Name == LedgerGroupName);
+
+    if (billingLedger != null || billingLedger != undefined) {
+      let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == billingLedger.PrimaryGroup)[0].PrimaryGroupId;
+      this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
+
+      this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == billingLedger.COA);
+      this.CurrentLedger.PrimaryGroup = billingLedger.PrimaryGroup;
+      this.CurrentLedger.COA = billingLedger.COA;
+      this.CurrentLedger.LedgerGroupName = billingLedger.LedgerGroupName;
+      this.CurrentLedger.LedgerGroupId = billingLedger.LedgerGroupId;
+      this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
+
+    }
+    else {
+      this.msgBoxServ.showMessage('notice', ['Please first create ledger group for SALES']);
+    }
+
+  }
+  getBillingItemsList() {
+
+    this.accountingSettingsBLService.GetBillingItemsList()
+      .subscribe(res => {
+        if (res.Status == "OK") { 
+
+          this.billingsledgerList = new Array<LedgerModel>();
+          let data = res.Results; 
+
+          data.forEach(dep => {
+            var led = new LedgerModel();
+            led = Object.assign(led, dep);
+            led.LedgerId = (dep.LedgerId != null) ? dep.LedgerId : 0,
+              led.LedgerGroupId = (dep.LedgerGroupId != null) ? dep.LedgerGroupId : this.CurrentLedger.LedgerGroupId,
+              led.LedgerName = (dep.LedgerName != null) ? dep.LedgerName : "",
+              led.LedgerReferenceId = (dep.LedgerReferenceId != null) ? dep.LedgerReferenceId : dep.ServiceDepartmentId,
+              led.IsActive = (dep.IsActive != null) ? dep.IsActive : false,
+              led.Dr = (dep.DrCr == true) ? dep.DrCr : null;
+            led.Cr = (dep.DrCr == false) ? true : null;
+            this.billingsledgerList.push(led);
+          });
+          this.billingsledgers = this.billingsledgerList;
+          this.totalLedger = this.billingsledgers.length;
+          this.mappedLedger = this.billingsledgers.filter(l => l.IsMapped == true).length;
+          this.notmappedLedger = this.billingsledgers.filter(l => l.IsMapped == false).length;
+          this.typeBillingLedger = (this.ledgerType ==ENUM_ACC_ADDLedgerLedgerType.BillingPriceItem) ? true:false;
+
+
+        }
+      });
+  }
+
+  ToggleBillingLedger(mapped) {
+    if (mapped == 'true') {
+      this.ConsultantfilterType = 'withacchead';
+      this.changeDetector.detectChanges();
+      this.billingsledgers = this.billingsledgerList.filter(led => led.LedgerId > 0);
+     this.changeDetector.detectChanges();
+      this.selectedLedgerData = null;
+    }
+    else if (mapped == 'false') {
+      this.ConsultantfilterType = 'withoutacchead';
+     this.changeDetector.detectChanges();
+      this.billingsledgers = this.billingsledgerList.filter(led => led.LedgerId == 0);
+     this.changeDetector.detectChanges();
+      this.selectedLedgerData = null;
+    }
+    else {
+      this.ConsultantfilterType = 'all';
+      this.changeDetector.detectChanges();
+      this.billingsledgers = this.billingsledgerList;
+      this.changeDetector.detectChanges();
+      this.selectedLedgerData = null;
+    }
+
+  }
+  AssignSelectedBillingLedger(index) {
+    try {
+      var  ledgerNameSelected=(typeof (this.billingsledgers[index].LedgerName) == 'object')?this.billingsledgers[index].LedgerName.LedgerName.trim().toLowerCase():this.billingsledgers[index].LedgerName.trim().toLowerCase();
+      var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase()== ledgerNameSelected);
+      //var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == this.billingsledgers[index].LedgerName.trim().toLowerCase() );
+      if (ledger.length > 0) {
+        this.billingsledgers[index].Code = ledger[0].Code;
+        this.billingsledgers[index].LedgerId = ledger[0].LedgerId;
+        this.billingsledgers[index].LedgerName = ledger[0].LedgerName;
+      }else{
+        this.billingsledgers[index].Code = "";
+        this.billingsledgers[index].LedgerId = 0;
+      }
+    }
+    catch (ex) {
+      this.ShowCatchErrMessage(ex); 
+    }
+  }
+ 
+  // END: Billings Items Income Ledgers
+
+
   //Get Provisional Ledger code , this code used for show for new ledger before ledger creation
   //provisional ledger code is not final may be it will different than showed 
   GetProvisionalLedgerCode() {
@@ -1716,4 +1871,6 @@ export class LedgersAddComponent {
       this.ShowCatchErrMessage(ex);
     }
   }
+
+  
 }

@@ -24,7 +24,7 @@
         <table class="table table-striped" style="width:50%">
           <tr style="font-weight:bold;" *ngIf="admissionInfo.DepositBalance">
             <td style="font-size:14px;">To Be Refund :</td>
-            <td style="font-size:15px;background-color: #c8c3df !important;"><b>Rs. {{admissionInfo.DepositBalance}}</b></td>
+            <td style="font-size:15px;background-color: #c8c3df !important;"><b>{{coreService.currencyUnit}} {{admissionInfo.DepositBalance}}</b></td>
           </tr>
         </table>
         <table class="table">
@@ -55,8 +55,8 @@
     <div class="form-body">
       <div class="col-md-12 col-md-offset-3">
         <div class="col-md-6 col-sm-6 col-xs-6 modelbox-div" style="margin-right: 24px;"> <a style="float:right;" class="btn btn-danger" (click)="CloseAlertPopUp()" title="Cancel">X</a>
-          <deposit-receipt [deposit]="returnDepositInfo"
-                                     [showReceipt]="showReceipt"></deposit-receipt>
+          <bil-print-deposit-slip [deposit]="returnDepositInfo"
+                                     [showReceipt]="showReceipt"></bil-print-deposit-slip>
         </div>
       </div>
     </div>

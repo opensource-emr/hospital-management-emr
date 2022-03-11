@@ -45,7 +45,6 @@ export class NursingWardBillingComponent {
   public allBillItems: Array<any>;
   public inPatientId: number = null;
   public inPatientVisitId: number = null;
-  public showDischargeBill: boolean = false;
   public showNewIpRequestPopup: boolean = false;
   public showPatientSearch: boolean = true;
   public loading = false;
@@ -65,6 +64,7 @@ export class NursingWardBillingComponent {
 
 
   public nursingCancellationNumber: number = 0;
+  public HidePriceCol:boolean = true;
 
   constructor(
     public billingBLService: BillingBLService,
@@ -90,6 +90,75 @@ export class NursingWardBillingComponent {
     //    this.nursingCancellationNumber = +ENUM_OrderStatusNumber[c];
     //  }
     //});
+    this.GridColumnSettings();
+    // this.nursingWardBillingColumns = [
+    //   {
+    //     headerName: "Requested Date",
+    //     field: "RequisitionDate",
+    //     width: 80,
+    //   },
+    //   {
+    //     headerName: "Department",
+    //     field: "ServiceDepartmentName",
+    //     width: 100,
+    //   },
+    //   {
+    //     headerName: "Item Name",
+    //     width: 100,
+    //     field: "ItemName"
+    //   },
+    //   {
+    //     headerName: "Assigned To Dr.",
+    //     width: 100,
+    //     field: "ProviderName",
+    //   },
+    //   { headerName: "Qty", field: "Quantity", width: 30 },
+    //   { headerName: "Sub Total", field: "SubTotal", width: 30  },
+    //   { headerName: "Added By", field: "RequestingUserName", width: 80 },
+    //   { headerName: "Status", field: "OrderStatus", width: 80 },
+    //   { headerName: "Action", cellRenderer: this.GetActionList, width: 80 },
+    // ];
+
+    this.currentPatient = this.patientService.globalPatient;
+    this.currentVisit = this.visitService.globalVisit;
+
+    if (this.currentPatient.PatientId && this.currentVisit.PatientVisitId) {
+      this.GetPatientProvisionalItems(
+        this.currentPatient.PatientId,
+        this.currentVisit.PatientVisitId
+      );
+      this.GetCurrentVisitContext();
+    } else {
+    }
+
+    this.GetBillingItems();
+    this.GetBillingCounterForNursing();
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(
+      new NepaliDateInGridColumnDetail("RequisitionDate", true)
+    );
+  }
+
+  ngOnInit() { }
+
+  GridColumnSettings(){
+    let moduleName = "Nursing";
+    let param = this.coreService.Parameters.find(
+      (p) =>
+        p.ParameterGroupName == "Common" &&
+        p.ParameterName == "WardBillingColumnSettings"
+    );
+    if (param) {
+      let paramValue = JSON.parse(param.ParameterValue);
+      let data = paramValue.find(
+        (a) => a.Module.toLowerCase() == moduleName.toLowerCase()
+      );
+      if(data.ShowPrice == true){
+        this.HidePriceCol = false;
+      }else{
+        this.HidePriceCol = true;
+      }
+      
+    }
 
     this.nursingWardBillingColumns = [
       {
@@ -113,31 +182,12 @@ export class NursingWardBillingComponent {
         field: "ProviderName",
       },
       { headerName: "Qty", field: "Quantity", width: 30 },
+      { headerName: "Sub Total", field: "SubTotal", width: 30,  hide: this.HidePriceCol  },
       { headerName: "Added By", field: "RequestingUserName", width: 80 },
       { headerName: "Status", field: "OrderStatus", width: 80 },
       { headerName: "Action", cellRenderer: this.GetActionList, width: 80 },
     ];
-
-    this.currentPatient = this.patientService.globalPatient;
-    this.currentVisit = this.visitService.globalVisit;
-
-    if (this.currentPatient.PatientId && this.currentVisit.PatientVisitId) {
-      this.GetPatientProvisionalItems(
-        this.currentPatient.PatientId,
-        this.currentVisit.PatientVisitId
-      );
-      this.GetCurrentVisitContext();
-    } else {
-    }
-
-    this.GetBillingItems();
-    this.GetBillingCounterForNursing();
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(
-      new NepaliDateInGridColumnDetail("RequisitionDate", true)
-    );
   }
-
-  ngOnInit() { }
 
   GetActionList(params) {
     if (params.data.AllowCancellation) {
@@ -147,12 +197,6 @@ export class NursingWardBillingComponent {
     } else {
       return `<span title="Can't Cancel">Cannot cancel</span>`;
     }
-  }
-
-  public showsummary() {
-    this.showDischargeBill = true;
-    this.inPatientId = this.currentPatient.PatientId;
-    this.inPatientVisitId = this.currentVisit.PatientVisitId;
   }
 
   public GetCurrentVisitContext() {
@@ -245,9 +289,7 @@ export class NursingWardBillingComponent {
 
         })
   }
-  public CloseRecieptView() {
-    this.showDischargeBill = false;
-  }
+
   public CloseOrderView() {
     this.showNewIpRequestPopup = false;
   }

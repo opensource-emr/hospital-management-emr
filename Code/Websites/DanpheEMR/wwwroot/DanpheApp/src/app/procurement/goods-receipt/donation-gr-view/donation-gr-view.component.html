@@ -1,0 +1,134 @@
+<!-- POP UP  -->
+<div
+  style="position:fixed;top:0;bottom:0;left:0;right:0;background: rgba(0,0,0,0.6); z-index: 9999; display: flex; justify-content: center;align-items: center;">
+  <div id="print-page" style="background-color: #ffffff; padding:2rem;">
+    <!-- Close Button -->
+    <button class="btn btn-danger noPrint" style="float:right;margin-top:-10px;border: 1px solid; border-radius: 50%;"
+      (click)="close()"><i class="fa fa-times"></i></button>
+    <!-- Header Section -->
+    <div style="display: flex;justify-content: center;">
+      <div>
+        <div style="font-weight: 700;">सङ्घ/ प्रदेश / स्थानीय तह </div>
+        <div style="font-weight: 700;">............... मन्त्रालय / विभाग / कार्यालय</div>
+        <div style="font-weight: 700;">कार्यालय कोड नं.:</div>
+        <div style="font-weight: 700;"><u>हस्तान्तरण फाराम</u></div>
+      </div>
+    </div>
+    <!-- Sub Header -->
+    <div>
+      यस कार्यालयको तपसिल अनुसारको मालसामान हस्तान्तरण गरिएको छ ।
+    </div>
+    <div style="display: flex;justify-content: space-between; margin-bottom:1rem;">
+      <div>
+        <div>सामान हस्तान्तरण गर्ने निर्णय नं:</div>
+        <div>सामान हस्तान्तरण गर्ने निर्णय मितिः</div>
+        <div>सामान हस्तान्तरण गरिएको कार्यालयको नामः</div>
+      </div>
+      <div style="width:35%;">
+        <div style="display: flex;justify-content: space-between;">
+          <span style="width: 50%;">मिति:-</span> <span
+            style="width:50%;border: 1px solid;padding: 0.5rem;">{{donationDetail.DonationDate | nepaliDate }}</span>
+        </div>
+        <div style="display: flex;justify-content: space-between;">
+          <span style="width: 50%;">हस्तान्तरण फारम नं:-</span> <span
+            style="width: 50%;border: 1px solid;padding: 0.5rem;">{{donationDetail.DonationFormNo}}</span>
+        </div>
+      </div>
+    </div>
+    <!-- Table Section -->
+    <table rules="all" border=1 style="width: 100%; margin-bottom: 2rem;">
+      <thead>
+        <tr>
+          <th style="padding: 1rem;">क्र.सं.</th>
+          <th style="padding: 1rem;">जिन्सी वर्गीकरण सङ्केत न.</th>
+          <th style="padding: 1rem;">जिन्सी खाता पाना न.</th>
+          <th style="padding: 1rem;">सामानको नाम</th>
+          <th style="padding: 1rem;">स्पेसिफिकेशन</th>
+          <th style="padding: 1rem;">सामानको पहिचान नं</th>
+          <th style="padding: 1rem;">मोडल नं</th>
+          <th style="padding: 1rem;">इकाई</th>
+          <th style="padding: 1rem;">परिमाण</th>
+          <th style="padding: 1rem;">जम्मा परल मूल्य</th>
+          <th style="padding: 1rem;">सुरु प्राप्त मिति</th>
+          <th style="padding: 1rem;">सामानको भौतिक अवस्था</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of donationDetail.DonationItems;let i = index">
+          <td style="padding: 1rem;">{{i+1}}</td>
+          <td style="padding: 1rem;"></td>
+          <td style="padding: 1rem;"></td>
+          <td colspan="2" style="padding: 1rem;">{{item.ItemName}}
+            <label *ngIf="item.Specification"><br />{{item.Specification}}</label>
+          </td>
+          <td style="padding: 1rem;">{{item.Code}}</td>
+          <td style="padding: 1rem;">{{item.BatchNo}}</td>
+          <td style="padding: 1rem;">{{item.UOMName}}</td>
+          <td style="padding: 1rem;">{{item.Quantity}}</td>
+          <td style="padding: 1rem;">{{item.TotalAmount}}</td>
+          <td style="padding: 1rem;"></td>
+          <td style="padding: 1rem;">{{item.Remarks}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Footer Note -->
+    <div style="display: flex;justify-content: center; margin-bottom: 2rem;">
+      <div style="display: flex;justify-content: center; width: 100%;">
+        <div style="width:50%">
+          <div style="text-align: left;font-weight: 700;text-decoration: underline;">सामान हस्तान्तरण गर्ने कार्यालयले
+            भर्नेः </div>
+          <div>
+            <div style="display: flex; justify-content:space-between;width: 100%;margin-bottom: 1rem;">
+              <div style="text-align: left;">
+                <div> सामान बुझाउनेकोः </div>
+                <div>नामः</div>
+                <div>पदः</div>
+                <div>दस्तखतः</div>
+                <div>मितिः</div>
+              </div>
+              <div style="text-align: left;margin-right: 5rem;">
+                <div>सामान हस्तान्तरण गर्ने कार्यालय प्रमुखकोः </div>
+                <div>नामः</div>
+                <div>पदः</div>
+                <div>दस्तखतः</div>
+                <div>मितिः</div>
+              </div>
+            </div>
+            <div style="text-align: center;">कार्यालयको छाप: </div>
+          </div>
+        </div>
+        <div style="width: 50%;">
+          <div style="text-align: left;font-weight: 700;padding-left:2rem;text-decoration: underline;">सामान बुझिलिनेले
+            कार्यालयले भर्नेः </div>
+          <div style="padding-left:2rem;">
+            <div style="display: flex; justify-content:space-between;width: 100%;margin-bottom: 1rem;">
+              <div style="text-align: left;">
+                <div> सामान बुझिलिनेकोः </div>
+                <div>नामः</div>
+                <div>पदः</div>
+                <div>दस्तखतः</div>
+                <div>मितिः</div>
+              </div>
+              <div style="text-align: left;margin-right: 5rem;">
+                <div>बुझिलिने कार्यालय प्रमुखकोः </div>
+                <div>नामः</div>
+                <div>पदः</div>
+                <div>दस्तखतः</div>
+                <div>मितिः</div>
+              </div>
+            </div>
+            <div style="text-align: center;">कार्यालयको छाप: </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Print button -->
+    <div style="display: flex; justify-content: center;">
+      <button class="btn btn-success noPrint" (click)="print()"><i class="fa fa-printer"></i> Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Common print component -->
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

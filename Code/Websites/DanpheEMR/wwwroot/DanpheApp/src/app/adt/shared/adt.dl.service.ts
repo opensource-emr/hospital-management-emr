@@ -78,6 +78,15 @@ export class ADT_DLService {
       "/api/Patient?reqType=patient-search-by-text&search=" + searchTxt,
       this.options
     );
+  } 
+  
+  //sud:29Nov--Needed Separate API to get the patient list quicker.
+  public GetPatientListForADT(searchTxt) {
+    //return this.http.get<any>("/api/Patient", this.options);
+    return this.http.get<any>(
+      "/api/Patient?reqType=patient-search-for-new-visit&search=" + searchTxt,
+      this.options
+    );
   }
   public GetCheckPatientAdmission(patientId: number) {
     return this.http.get<any>(
@@ -204,12 +213,6 @@ export class ADT_DLService {
       this.options
     );
   }
-  public GetEmployeeFollowUp() {
-    return this.http.get<any>(
-      "/api/Admission?reqType=get-emp-followup",
-      this.options
-    );
-  }
   public GetNursingEmployeeFavorites() {
     return this.http.get<any>(
       "/api/Admission?reqType=get-nur-favorites",
@@ -218,6 +221,15 @@ export class ADT_DLService {
   }
   public GetAllWardBedInfo() {
     return this.http.get<any>("/api/Admission/GetAllWardBedInfo", this.options);
+  }
+  public GetNewClaimcode() {
+    return this.http.get<any>("/api/insurance?reqType=get-new-claimCode", this.options);
+  }
+  public GetOldClaimcode(patId) {
+    return this.http.get<any>("/api/insurance?reqType=get-patient-old-claimCode-for-admission&patientId="+patId,this.options);
+  }
+  public GetInsVisitList(claimCode: number, patId:number) {
+    return this.http.get<any>("/api/Insurance?&reqType=existingClaimCode-VisitList&claimCode=" + claimCode+"&patientId="+patId, this.options);
   }
   public PostAdmission(currentAdmission) {
     let data = JSON.stringify(currentAdmission);
@@ -369,6 +381,13 @@ export class ADT_DLService {
     return this.http.put<any>(
       "/api/Admission?reqType=discharge-frombilling",
       data,
+      this.options
+    );
+  }
+
+  public DischargePatientWithZeroItem(data: string) {
+    return this.http.post<any>(
+      "/api/Admission?reqType=discharge-zero-item", data,
       this.options
     );
   }

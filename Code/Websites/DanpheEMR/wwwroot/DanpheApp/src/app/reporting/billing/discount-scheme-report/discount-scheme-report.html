@@ -1,0 +1,95 @@
+﻿<div class="wrapper">
+  <div class="row">
+    <div class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+              class="caption-subject">Discount Scheme Report</span> </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()" id='btn_showReport'>
+                <i class="fa fa-search"></i> Show Report
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="row">
+            <!-- <div class="col-md-5 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Search Patient<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" value="" [(ngModel)]="PatientName" [ngModelOptions]="{standalone: true}"
+                    placeholder="Search by HospitalNo, Patient Name" />
+                </div>
+              </div>
+            </div> -->
+            <div class="col-md-6 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Scheme Name<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input danphe-auto-complete class="form-control" [(ngModel)]="DiscountScheme" [source]="DiscountSchemeList"
+                    [list-formatter]="DiscountSchemeListFormatter" placeholder="Enter User Name" [min-chars]="1"
+                    display-property-name="MembershipTypeName" value-property-name="MembershipTypeId" onClick="this.select();"
+                    [ngModelOptions]="{standalone: true}" match-formatted="true" (keyup.enter)="this.coreService.FocusInputById('btn_showReport')" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="DiscountSchemeGridData.length>0">
+      <danphe-grid [grid-colDefaults]="DiscountSchemeGridColumns" [grid-data]="DiscountSchemeGridData"
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="'billing'"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-date-range]="dateRange">
+      </danphe-grid>
+    </div>
+  </div>
+
+  <!-- <div class="row" id="summaryFooter" style="margin-bottom: 60px;">
+    <div class="col-lg-12 col-sm-12" *ngIf="DiscountSchemeGridData && DiscountSchemeGridData.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+          <div style="padding-top:7px;">
+            <h4 style="font-weight:bold;">
+              Summary 
+            </h4>
+            <div style=" margin: 0px auto">
+              <table class="tbl-summ" border="1" style="width:30%;">
+                <tr>
+                  <td style="text-align: center;">A</td>
+                  <td>Total Deposit Received </td>
+                  <td> {{summaryFormatted.TotalDepositReceived}} </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">B</td>
+                  <td>Total Deposit Deduted</td>
+                  <td> {{summaryFormatted.TotalDepositDeducted}} </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">C</td>
+                  <td>Total Deposit Returned</td>
+                  <td> {{summaryFormatted.TotalDepositReturned}} </td>
+                </tr>
+                <tr style="border: 2px solid;">
+                  <td></td>
+                  <td style="font-weight: bold;">Total Balance (A-(B+C)) </td>
+                  <td style="font-weight: bold;"> {{summaryFormatted.Balance}} </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+</div>

@@ -9,27 +9,46 @@
     </div>
     <div class="panel-body">
       <div class="row">
-        <div class="col-md-6">
+        <!-- <div class="col-md-4">
+          <div class="row">
+            <label for="PRCategory" class="control-label col-md-4" style="margin-top: 5px;">
+              PR Category<sup style="color: red">*</sup><b>:</b>
+            </label>
+            <div class="col-md-6">
+              <select name="PRCategory" [(ngModel)]="currentPurchaseRequest.PRCategory" (change)="OnPRCategoryChanged()">
+                <option *ngFor="let prCategory of PRCategories | keyvalue" [value]="prCategory.value">
+                  {{prCategory.value}}
+                </option>
+              </select>
+              <div class="tooltip">
+                <span style="cursor: pointer;">
+                  <i class="fa fa-info icon-info"></i>
+                </span>
+                <p class="tooltiptext ttptextdown no-print">Items will be filtered based on this category. Only
+                  '{{currentPurchaseRequest.PRCategory}}' items are searchable now. </p>
+              </div>
+               <div class="error-message" *ngIf="goodsReceipt.IsDirty('GRCategory')" [hidden]="goodsReceipt.IsValidCheck('GRCategory','required')"> GR Category is required. </div>
+            </div>
+          </div>
+        </div> -->
+        <div class="col-md-4">
           <div class="row">
             <form [formGroup]="currentPurchaseRequest.PurchaseRequestValidator" class="form-inline hm-form">
-              <label class="control-label col-md-4">Vendor<b>:</b></label>
+              <label class="control-label col-md-3">Vendor<b>:</b></label>
               <div class="col-md-8">
                 <div class="div-relative">
                   <input danphe-auto-complete class="form-control" [(ngModel)]="selectedVendor" [source]="VendorList" [list-formatter]="VendorListFormatter" placeholder="Vendor Name" display-property-name="VendorName" value-property-name=null max-num-list="10" [ngModelOptions]="{standalone:true}" (focusout)="SelectVendorFromSearchBox()" onclick="this.select();" />
                   <a *ngIf="!selectedVendor" class="fa fa-question" (click)="AddVendorPopUp()" title="Unable to find Vendor? Click to Add Vendor."></a>
-                  <!-- <div class="error-message" *ngIf="goodsReceipt.IsDirty('VendorId')"
-                          [hidden]="goodsReceipt.IsValidCheck('VendorId','required')"> Vendor is required.
-                        </div> -->
                 </div>
               </div>
             </form>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="row">
             <form [formGroup]="currentPurchaseRequest.PurchaseRequestValidator" class="form-inline hm-form">
-              <label class="control-label col-md-3 col-sm-4">Request Date<b>:</b></label>
-              <div class="col-md-9 col-sm-8">
+              <label class="control-label col-md-4">Request Date<b>:</b></label>
+              <div class="col-md-8 col-sm-6">
                 <danphe-date-picker [(ngModel)]="currentPurchaseRequest.RequestDate" ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}">
                 </danphe-date-picker>
               </div>
@@ -41,10 +60,18 @@
             <thead>
               <tr>
                 <th></th>
-                <th><b>ItemName</b></th>
+                <th><b>PR Category</b></th>
+                <!-- <th><b>MSS NO.</b></th> -->
+                <th><b>Item Name</b></th>
                 <th><b>Code</b></th>
-                <th><b>Unit</b></th>
+                <th><b>UOM</b></th>
                 <th><b>Quantity</b></th>
+                <th><b>Available Qty</b></th>
+                <th><b>Quantity Verified On</b></th>
+                <th><b></b>Supply required before</th>
+                <!-- <th><b>Approved Quantity by Top Management</b></th>
+                <th><b>Po No.& Date</b></th>
+                <th><b>Supplier Invoice No. & Date</b></th> -->
                 <th><b>Item Remark</b></th>
                 <th></th>
               </tr>
@@ -52,10 +79,16 @@
             <tbody>
               <tr *ngFor="let row of currentPurchaseRequest.PurchaseRequestItems; let i = index">
                 <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                <!-- <td><b *ngIf="row.SelectedItem != null">{{row.SelectedItem.MSSNO}}</b></td> -->
+                <td><select [(ngModel)]="row.ItemCategory" [ngModelOptions]="{standalone:true}" (ngModelChange)="OnPRCategoryChanged(i)">
+                    <option *ngFor="let prCategory of PRCategories | keyvalue" [value]="prCategory.value">
+                      {{prCategory.value}}
+                    </option>
+                  </select></td>
                 <td>
-                  <div class="div-relative">
+                  <div class="div-relative autocomplete-item">
                     <form [formGroup]="row.PurchaseRequestItemValidator">
-                      <input id="itemName{{i}}" danphe-auto-complete class="form-control " [(ngModel)]="row.SelectedItem" [source]="ItemList" [list-formatter]="ItemListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="10" formControlName="ItemId" onclick="this.select();" (keyup.enter)="GoToNextInput('qty'+i)" no-match-found-text="click ? to add new item" />
+                      <input id="itemName{{i}}" danphe-auto-complete class="form-control " [(ngModel)]="row.SelectedItem" [source]="row.filteredItemList" [list-formatter]="ItemListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i);OnItemSelected(row.SelectedItem)" max-num-list="20" formControlName="ItemId" onclick="this.select();" [min-chars]="1" (keyup.enter)="GoToNextInput('qty'+i,row.SelectedItem,i)" no-match-found-text="click ? to add new item" match-formatted="true" />
 
                       <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a>
                     </form>
@@ -72,11 +105,44 @@
                 <td style="width: 80px;">
                   <form [formGroup]="row.PurchaseRequestItemValidator">
                     <input id="qty{{i}}" [(ngModel)]="row.RequestedQuantity" class="form-control" min="0" [disabled]="disableTextBox" (wheel)="coreService.PreventNumberChangeOnScroll($event)" formControlName="Quantity" (keyup.enter)="AddRowRequest()" name="quantity" type="number">
-                    <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','min')">
-                      invalid quantity
-                    </div>
+                    <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','positivenum')">
+                      invalid quantity</div>
                   </form>
                 </td>
+                <td>
+                  <span *ngIf="row.SelectedItem?.AvailableStock != undefined; else availableQty0">{{row.SelectedItem?.AvailableStock}}</span>
+                  <ng-template #availableQty0>0</ng-template>
+                </td>
+                <td>
+                  <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}" [(ngModel)]="row.QuantityVerifiedOn"></danphe-date-picker>
+
+                </td>
+                <td>
+                  <div class="col-md-6">
+                    <select [(ngModel)]="row.SupplyRequiredBefore" [ngModelOptions]="{standalone:true}">
+                      <option [ngValue]="null" disabled>Choose...</option>
+                      <option value="1 Month">1 Month</option>
+                      <option value="2 Month">2 Month</option>
+                      <option value="3 Month">3 Month</option>
+                      <option value="4 Month">4 Month</option>
+                      <option value="5 Month">5 Month</option>
+                      <option value="6 Month">6 Month</option>
+                      <option value="7 Month">7 Month</option>
+                      <option value="8 Month">8 Month</option>
+                      <option value="9 Month">9 Month</option>
+                      <option value="10 Month">10 Month</option>
+                      <option value="11 Month">11 Month</option>
+                      <option value="12 Month">12 Month</option>
+                    </select>
+
+
+                  </div>
+                </td>
+
+                <!-- <td></td>
+                <td></td>
+                <td></td> -->
+
                 <td>
                   <input class="form-control" type="text" name="ItemRemarks" [(ngModel)]="row.Remarks" [ngModelOptions]="{standalone:true}" />
                 </td>
@@ -87,15 +153,15 @@
         </div>
         <div class="col-md-12" style="margin:10px 0">
           <label for="Remarks" class="col-md-2">Remarks <span class="right">:</span></label>
-          <textarea class="col-md-6" [(ngModel)]="currentPurchaseRequest.Remarks" name="Remarks" rows="3" cols="50"></textarea>
+          <textarea id="remarks" class="col-md-6" [(ngModel)]="currentPurchaseRequest.Remarks" name="Remarks" rows="3" cols="50" (keyup.enter)="setFocusById('RequestPORequisition')"></textarea>
         </div>
       </div>
     </div>
 
 
     <div class="panel-footer text-center">
-      <input *ngIf="isEdit" type="button" class="btn primary-btn" (click)="UpdatePORequisition()" value="Update" />
-      <input *ngIf="!isEdit" type="button" class="btn primary-btn" (click)="AddPORequisition()" value="Request" />
+      <input *ngIf="isEdit" id="UpdatePORequisition" type="button" class="btn green btn-success margin-7-hr" (click)="UpdatePORequisition()" value="Update" />
+      <input *ngIf="!isEdit" id="RequestPORequisition" type="button" class="btn green btn-success margin-7-hr" (click)="AddPORequisition()" value="Request" />
       <input type="button" class="btn btn-danger" (click)="DiscardChanges()" value="Discard">
     </div>
   </div>
@@ -104,4 +170,5 @@
 
 
 <item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp" (callback-add)="OnNewItemAdded($event)"></item-add>
-<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)"></vendor-add>
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)">
+</vendor-add>

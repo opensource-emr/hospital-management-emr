@@ -20,6 +20,7 @@ import { PatientBedInfoVM } from '../shared/admission.view.model';
 import { DischargeCancel } from '../shared/dischage-cancel.model';
 import { ENUM_BillingStatus, ENUM_VisitStatus, ENUM_AppointmentType, ENUM_VisitType } from '../../shared/shared-enums';
 import { BedReservationInfo } from './bed-reservation-info.model';
+import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
 
 @Injectable()
 export class ADT_BLService {
@@ -33,6 +34,13 @@ export class ADT_BLService {
     public labsDLService: LabsDLService,
     public billingDLService: BillingDLService) {
     this.GetCurrencyUnit;
+  }
+  public GetBillItemList(srvItemsList?: Array<number>, itemIdList?: Array<number>) {
+    let srvItemsListStr = "";
+    let itemIdListStr = "";
+    if (srvItemsList && srvItemsList.length) { srvItemsListStr = JSON.stringify(srvItemsList); }
+    if (itemIdList && itemIdList.length) { itemIdListStr = JSON.stringify(itemIdList); }
+    return this.visitDLService.GetBillItemList(srvItemsListStr, itemIdListStr);
   }
   public GetCurrencyUnit() {
     var currParameter = this.coreService.Parameters.find(a => a.ParameterName == "Currency")
@@ -48,6 +56,12 @@ export class ADT_BLService {
   }
   public GetPatients(searchTxt) {
     return this.admissionDLService.GetPatientList(searchTxt)
+      .map(res => { return res })
+  }
+
+  //sud:29Nov--Needed Separate API to get the patient list quicker.
+  public GetPatientListForADT(searchTxt) {
+    return this.admissionDLService.GetPatientListForADT(searchTxt)
       .map(res => { return res })
   }
   public GetPatientDeposits(patId) {
@@ -139,7 +153,7 @@ export class ADT_BLService {
   }
   public GetDischargedPatientsList(fromDt, toDt) {
     let admissionStatus = "discharged"
-    return this.admissionDLService.GetDischargedPatientsList(admissionStatus,fromDt, toDt)
+    return this.admissionDLService.GetDischargedPatientsList(admissionStatus, fromDt, toDt)
       .map(res => { return res });
   }
   // for discharge summary
@@ -172,15 +186,34 @@ export class ADT_BLService {
     return this.admissionDLService.GetAllWardBedInfo()
       .map(res => { return res });
   }
-
-  public PostAdmission(currentAdmission: Admission, currentPatientBedInfo: PatientBedInfo, currentDeposit: BillingDeposit) {
+  public GetNewClaimcode() {
+    return this.admissionDLService.GetNewClaimcode()
+      .map(res => { return res });
+  }
+  public GetOldClaimcode(patId: number) {
+    return this.admissionDLService.GetOldClaimcode(patId)
+      .map(res => { return res });
+  }
+  public GetInsVisitList(claimCode: number, patId: number) {
+    return this.admissionDLService.GetInsVisitList(claimCode, patId)
+      .map(res => res);
+  }
+  public PostAdmission(currentAdmission: Admission, currentPatientBedInfo: PatientBedInfo, currentDeposit: BillingDeposit, billTransaction: BillingTransaction) {
     currentAdmission.AdmissionStatus = "admitted";
     currentPatientBedInfo.Action = "admission";
     var tempAdmission: any;
     tempAdmission = _.omit(currentAdmission, ['AdmissionValidator']);
     var tempBedInfo = _.omit(currentPatientBedInfo, ['PatientBedInfoValidator']);
+
+    billTransaction.BillingTransactionItems.forEach((b, i) => {
+      let dt = b;
+      let omitedDt = _.omit(dt, ['BillingTransactionItemValidator', 'Patient']);
+      billTransaction.BillingTransactionItems[i] = omitedDt;
+    });
+
     tempAdmission.PatientBedInfos.push(tempBedInfo);
     tempAdmission.BilDeposit = currentDeposit;
+    tempAdmission.BillingTransaction = billTransaction;
     //let billTransItemTemp = bilItms.map(function (item) {
     //    var temp = _.omit(item, ['ItemList', 'BillingTransactionItemValidator', 'Patient']);
     //    return temp;

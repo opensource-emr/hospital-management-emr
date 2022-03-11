@@ -11,6 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import { BabyBirthDetails } from '../../adt/shared/baby-birth-details.model';
 import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
 import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./birth-list.html"
@@ -28,6 +29,10 @@ export class BirthListComponent {
   public selectedBirth: any = null;
   public babyBirthDetailsId: number = null;
 
+  public showAddNewBirthDetails: boolean = false;
+
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+
   constructor(
     public router: Router, public http: HttpClient,
     public medicalRecordsBLService: MR_BLService,
@@ -37,18 +42,18 @@ export class BirthListComponent {
     public coreService: CoreService) {
     this.gridColumns = MRGridColumnSettings.BirthList;
     this.dateRange = "last3Months";
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('BirthDate', false));
+
   }
 
 
   onDateChange($event) {
     this.fromDate = $event.fromDate;
     this.toDate = $event.toDate;
-    console.log(this.fromDate);
-    console.log(this.toDate);
 
     if (this.fromDate != null && this.toDate != null) {
       if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-        this.GetAllTheBirthList(this.fromDate, this.toDate);
+        this.GetAllTheBirthList();
       } else {
         this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
       }
@@ -56,7 +61,7 @@ export class BirthListComponent {
     }
   }
 
-  public GetAllTheBirthList(frmDate, toDate) {
+  public GetAllTheBirthList() {
     this.medicalRecordsBLService.GetBirthList(this.fromDate, this.toDate).subscribe(res => {
       if (res.Status == 'OK') {
         this.birthList = res.Results;
@@ -92,4 +97,12 @@ export class BirthListComponent {
     }
   }
 
+  CallBack(data) {
+    if (data && data.Close) {
+      this.showAddNewBirthDetails = false;
+    } else if (data && (data.Add || data.Edit)) {
+      this.showAddNewBirthDetails = false;
+      this.GetAllTheBirthList();
+    }
+  }
 }

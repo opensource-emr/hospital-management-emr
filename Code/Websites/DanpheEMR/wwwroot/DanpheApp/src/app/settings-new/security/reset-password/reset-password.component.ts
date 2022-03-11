@@ -8,7 +8,8 @@ import * as moment from 'moment/moment';
 
 @Component({
   selector: "reset-password",
-  templateUrl: "./reset-password.html"
+  templateUrl: "./reset-password.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 
 })
 export class ResetPasswordComponent {
@@ -24,12 +25,13 @@ export class ResetPasswordComponent {
 
   @Output("callback-add")
   callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
- 
+
   constructor(
     public settingsBLService: SettingsBLService,
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
+    this.GoToNextInput("newpass");
   }
   //@Input("showResetPassPage")
   //public set value(val: boolean) {
@@ -131,9 +133,18 @@ export class ResetPasswordComponent {
     //this.showResetPassPage = false;
     this.callbackAdd.emit({});
   }
-
-
-
-
+  GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event) {
+    if (event.keyCode == 27) { // For ESCAPE_KEY =>close pop up
+      this.Close();
+    }
+  }
 
 }

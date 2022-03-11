@@ -13,9 +13,10 @@ import GridColumnSettings from "../../../shared/danphe-grid/grid-column-settings
 })
 export class RPT_BIL_ItemSummaryReportComponent {
 
+  public billing: string = "billing";
   public FromDate: string = "";
   public ToDate: string = "";
-
+  public dateRange: string = "";
   public showReport: boolean = false;
   public allReportData: Array<any> = [];
   public currentDate: string = "";
@@ -23,11 +24,14 @@ export class RPT_BIL_ItemSummaryReportComponent {
   public reportHeaderHtml: string = '';
   public hdr: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
 
+  public loading: boolean = false;
+
   public summary = {
     tot_BilAmt: 0, tot_DiscountAmount: 0, tot_SubTotal: 0, total_Qty: 0
   };
 
   public ItemSummaryReportGridCol: Array<any> = null;
+  public footerContent = '';
 
   constructor(
     public msgBoxServ: MessageboxService,
@@ -46,9 +50,13 @@ export class RPT_BIL_ItemSummaryReportComponent {
   }
 
   ngOnInit() {
+    // if(document.getElementById("calc-summary")!=null)
+    // this.footerContent=document.getElementById("calc-summary").innerHTML;
+  }
 
-
-
+  ngAfterViewChecked() {
+    if (document.getElementById("calc-summary") != null)
+      this.footerContent = document.getElementById("calc-summary").innerHTML;
   }
 
   LoadBillItemSummary() {
@@ -56,6 +64,7 @@ export class RPT_BIL_ItemSummaryReportComponent {
       //let srvDept = this.ServDeptName.replace(/&/g, '%26');//this is URL-Encoded value for character  '&'    --see: URL Encoding in Google for details.
       this.dlService.Read("/BillingReports/RPT_Bil_ItemSummaryReport?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => {
           if (res.Status == "OK") {
             let data = JSON.parse(res.Results.JsonData);
@@ -78,6 +87,7 @@ export class RPT_BIL_ItemSummaryReportComponent {
 
 
               this.showReport = true;
+
             }
             else {
               this.msgBoxServ.showMessage("notice-message", ['Data Not Available for Selected Parameters...']);
@@ -153,7 +163,7 @@ export class RPT_BIL_ItemSummaryReportComponent {
   OnFromToDateChange($event) {
     this.FromDate = $event ? $event.fromDate : this.FromDate;
     this.ToDate = $event ? $event.toDate : this.ToDate;
-
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.FromDate + "&nbsp;<b>To</b>&nbsp;" + this.ToDate;
     //this.allReportData.FromDate = this.FromDate;
     //this.allReportData.ToDate = this.ToDate;
   }

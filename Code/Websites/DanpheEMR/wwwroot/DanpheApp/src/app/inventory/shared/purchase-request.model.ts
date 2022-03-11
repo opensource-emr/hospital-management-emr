@@ -8,6 +8,7 @@ import {
 } from '@angular/forms'
 import { PurchaseRequestItemModel } from './purchase-request-item.model';
 import * as moment from 'moment';
+import { ENUM_GRItemCategory } from '../../shared/shared-enums';
 
 export class PurchaseRequestModel {
   public PurchaseRequestId: number = 0;
@@ -19,7 +20,7 @@ export class PurchaseRequestModel {
   public Remarks: number;
   public CancelledBy: number = null;
   public CancelledOn: string = null;
-  public CancelRemarks: string = null;
+  public CancelRemarks: string = "";
   public IsActive: boolean = true;
   public IsPOCreated: boolean = false;
   public CreatedBy: number = 0;
@@ -38,10 +39,14 @@ export class PurchaseRequestModel {
   public MaxVerificationLevel: number;
   public isVerificationAllowed: boolean;
   public VerificationStatus: string;
+  public PRCategory: string = ENUM_GRItemCategory.Consumables;
+  public StoreId: number;
+  public RequestFromStoreName: string = '';
+  PRGroupId: number;
   constructor() {
 
     var _formBuilder = new FormBuilder();
-    this.PurchaseRequestValidator = _formBuilder.group({   });
+    this.PurchaseRequestValidator = _formBuilder.group({});
   }
 
   public IsDirty(fieldName): boolean {

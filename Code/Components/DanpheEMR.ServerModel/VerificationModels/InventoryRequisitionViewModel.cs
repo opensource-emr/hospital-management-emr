@@ -65,9 +65,27 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         public DateTime Date { get; set; }
     }
-    public class DispatchVerificationActor: VerificationActor
+    public class DispatchVerificationActor : VerificationActor
     {
         public int DispatchId { get; set; }
         public bool isReceived { get; set; }
+    }
+    public class QuotationRatesVm
+    {
+        public IList<string> ItemNameList { get; set; }
+        public IList<QuotationRatesDto> QuotationRates { get; set; }
+    }
+    public class QuotationRatesDto
+    {
+        public int? VendorId { get; set; }
+        public string VendorName { get; set; }
+        public IList<QuotationRatesComparisionDTO> ItemDetails { get; set; }
+    }
+    public class QuotationRatesComparisionDTO
+    {
+        public int? ItemId { get; set; }
+        public string ItemName { get; set; }
+        public decimal? Price { get; set; }
+        public string Status { get; set; }
     }
 }

@@ -5,6 +5,8 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { HomeMedication } from "../shared/home-medication.model";
 import { HttpClient} from '@angular/common/http';
 import * as moment from 'moment/moment';
+import { Router } from "@angular/router";
+import { Patient } from "../../patients/shared/patient.model";
 @Component({
     templateUrl: "../../view/clinical-view/HomeMedicationList.html"    // "/ClinicalView/HomeMedication"
 })
@@ -18,7 +20,7 @@ export class HomeMedicationListComponent {
     constructor(public patientService: PatientService,
         public medicationBLService: MedicationBLService,
         public changeDetector: ChangeDetectorRef,
-        public msgBoxServ: MessageboxService, public http: HttpClient) {
+        public msgBoxServ: MessageboxService, public http: HttpClient,public router: Router) {
         this.GetHomeMedicationList();
     }
     //get the list of surgical history of the selected patient.
@@ -62,4 +64,8 @@ export class HomeMedicationListComponent {
             this.homemedications.push($event.homeMedication);
         }
     }
+    public currPat: Patient = new Patient();
+    printMedications() {
+            this.router.navigate(['/Doctors/PatientOverviewMain/Orders/PrintMedication']);
+      }
 }

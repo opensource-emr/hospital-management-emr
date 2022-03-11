@@ -1,6 +1,6 @@
 <div *ngIf="showMedicationAddBox && CurrentHomeMedication.HomeMedicationValidator" class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
   <form [formGroup]="CurrentHomeMedication.HomeMedicationValidator" class="form-horizontal">
-    <div class="cstm-close" (click)="showMedicationAddBox = false">
+    <div class="cstm-close" (click)="close()">
       <a><i class="fa fa-close"></i> </a>
     </div>
     <h3 class="cstm-add-heading">{{CurrentHomeMedication.HomeMedicationId ? 'Update' : 'Add'}} Home Medication</h3>
@@ -110,7 +110,7 @@
       </div>
     </div>
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Comments</label>
+      <label class="control-label cstm-control-label col-md-12">Anupana</label>
       <div class="col-md-12">
         <textarea type="text" class="form-control cstm-form-control" maxlength="200"
                   formControlName="Comments"

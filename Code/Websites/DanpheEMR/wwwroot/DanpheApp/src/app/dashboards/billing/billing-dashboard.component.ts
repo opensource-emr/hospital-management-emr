@@ -18,7 +18,7 @@ export class BillingDashboardComponent {
   selectedDate: string = null;
   incomeSegFromDate: string = null;
   incomeSegToDate: string = null;
-  lastSelectedDate: string;
+  //lastSelectedDate: string;//sud:25Nov'21--This is no longer required.
   salesDayBook: RPT_BIL_SalesDaybookModel = new RPT_BIL_SalesDaybookModel();  //;{ sales: 0, DiscountAmount: 0, ReturnAmount: 0, TaxCollection: 0, creditSales: 0, AdvanceReceived: 0, AdvanceSettlement: 0 };
 
   counterDayDate: string = null;
@@ -49,14 +49,13 @@ export class BillingDashboardComponent {
   }
 
   LoadSalesDayBook() {
-    if (this.selectedDate && this.selectedDate != this.lastSelectedDate) {
+    if (this.selectedDate) {
       this.dlService.Read("/BillingReports/SalesDaybook?FromDate="
         + this.selectedDate + "&ToDate=" + this.selectedDate)
         .map(res => res)
         .subscribe(res => {
           if (res.Status == "OK") {
             this.salesDayBook = res.Results[0];
-            this.lastSelectedDate = this.selectedDate;
             //round off all the properties inside sales daybook.
             if (this.salesDayBook) {
               this.salesDayBook.SubTotal = CommonFunctions.parseAmount(this.salesDayBook.SubTotal);
@@ -69,12 +68,12 @@ export class BillingDashboardComponent {
               this.salesDayBook.Paid_DiscountAmount = CommonFunctions.parseAmount(this.salesDayBook.Paid_DiscountAmount);
               this.salesDayBook.Paid_TaxableAmount = CommonFunctions.parseAmount(this.salesDayBook.Paid_TaxableAmount);
               this.salesDayBook.Paid_TaxAmount = CommonFunctions.parseAmount(this.salesDayBook.Paid_TaxAmount);
-              this.salesDayBook.Paid_TotalAmount = CommonFunctions.parseAmount(this.salesDayBook.Paid_TotalAmount);
+              this.salesDayBook.Paid_TotalAmount = CommonFunctions.parseAmount(this.salesDayBook.Paid_SubTotal - this.salesDayBook.CashRet_TotalAmount);
               this.salesDayBook.CrSales_SubTotal = CommonFunctions.parseAmount(this.salesDayBook.CrSales_SubTotal);
               this.salesDayBook.CrSales_DiscountAmount = CommonFunctions.parseAmount(this.salesDayBook.CrSales_DiscountAmount);
               this.salesDayBook.CrSales_TaxableAmount = CommonFunctions.parseAmount(this.salesDayBook.CrSales_TaxableAmount);
               this.salesDayBook.CrSales_TaxAmount = CommonFunctions.parseAmount(this.salesDayBook.CrSales_TaxAmount);
-              this.salesDayBook.CrSales_TotalAmount = CommonFunctions.parseAmount(this.salesDayBook.CrSales_TotalAmount);
+              this.salesDayBook.CrSales_TotalAmount = CommonFunctions.parseAmount(this.salesDayBook.CrSales_SubTotal - this.salesDayBook.CrRet_TotalAmount);
               this.salesDayBook.CrReceived_SubTotal = CommonFunctions.parseAmount(this.salesDayBook.CrReceived_SubTotal);
               this.salesDayBook.CrReceived_DiscountAmount = CommonFunctions.parseAmount(this.salesDayBook.CrReceived_DiscountAmount)
               this.salesDayBook.CrReceived_TaxableAmount = CommonFunctions.parseAmount(this.salesDayBook.CrReceived_TaxableAmount);
@@ -96,7 +95,7 @@ export class BillingDashboardComponent {
               this.salesDayBook.CrRet_TaxableAmount = CommonFunctions.parseAmount(this.salesDayBook.CrRet_TaxableAmount);
               this.salesDayBook.CrRet_TaxAmount = CommonFunctions.parseAmount(this.salesDayBook.CrRet_TaxAmount);
               this.salesDayBook.CrRet_TotalAmount = CommonFunctions.parseAmount(this.salesDayBook.CrRet_TotalAmount);
-              this.salesDayBook.ReturnAmount = CommonFunctions.parseAmount(this.salesDayBook.ReturnAmount);
+              this.salesDayBook.ReturnAmount = CommonFunctions.parseAmount(this.salesDayBook.TotalSalesReturn);
             }
 
           } else {

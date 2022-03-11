@@ -1,0 +1,97 @@
+
+  <style>
+    .table-hover>tbody>tr>td {
+      background-color: #fff;
+      color: #000;
+      font-size: 12px;
+      padding: 5px;
+      border: 1px solid #ccc;
+    }
+  
+    .table-hover>tbody>tr:first-child td {
+      background-color: #f3f4f6;
+    }
+  
+    .table-wrapper table tr:first-child td {
+      position: sticky;
+      top: -1px;
+      background-color: #f1f1f1;
+      z-index: 2;
+    }
+  
+    tr.tbl-footer-summary td {
+      position: sticky;
+      z-index: 3;
+      bottom: -1px;
+      background-color: #f1f1f1 !important;
+    }
+  </style>
+  <div class="wrapper">
+    <div class="row">
+      <form class="form-horizontal">
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="caption custom-caption">
+              <!-- <i class="glyphicon glyphicon-asterisk"></i> -->
+              <i class="fa fa-money"></i>
+              <span class="caption-subject">Maternity Allowance Report </span>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <from-to-date-select (on-change)="onFromToDateChange($event)">
+                </from-to-date-select>
+              </div>
+              <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                  <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="loading">
+                    <i class="fa fa-search"></i> Show Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12">
+        <customer-header style="display:none;padding:0px" id="headerForPrint" [header-title]="'Maternity Allowance Report'"></customer-header>
+        <danphe-grid [grid-colDefaults]="matRptAllowanceGridColumns" [grid-data]="matRptAllowanceGridReportData"
+          [grid-showExport]="true" *ngIf="IsSummaryViewMode" [grid-footer-content]="footerContent"  [grid-exportOptions]="gridExportOptions"
+          [grid-date-range]="dateRange" [report-for]="'MRReport'"  (grid-actions)="MaternityAllowanceGridActions($event)"> 
+        </danphe-grid>
+      </div>
+    </div>
+     <div class="row" *ngIf="IsSummaryViewMode">
+      <div class="col-lg-12 col-sm-12">
+        <div class="col-md-12 col-xs-12">
+          <div id="print_netCashCollection">
+            <div style="padding-top:7px;">
+              <h4 style="font-weight:bold">
+                Summary&nbsp;&nbsp;  
+              </h4>
+              <div>
+                <table class="tbl-summ" border="1" style="width:50%;">
+                  <tr>
+                    <td> Paid to Patient </td>
+                    <td> {{summaryFormatted.PaidToPatient}} </td>
+                  </tr>
+                  <tr>
+                    <td> Returned from Patient </td>
+                    <td> {{summaryFormatted.ReturnedFromPatient}} </td>
+                  </tr>
+                  <tr>
+                    <td> Net Paid Amount </td>
+                    <td> {{summaryFormatted.NetPaidAmount}} </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <maternity-payment-receipt *ngIf="showPaymentReceipt" [patient-paymentId]="patientPaymentId" (popup-close-action)="closePaymentPopup($event)"><maternity-payment-receipt></maternity-payment-receipt>
+  <maternity-payment-receipt *ngIf="showPaymentReceipt" (popup-close-action)="closePaymentPopup($event)"><maternity-payment-receipt>

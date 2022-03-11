@@ -9,6 +9,7 @@ import { Vitals } from "../../clinical/shared/vitals.model";
 import { PatientClinicalDetail } from "../../clinical/shared/patient-clinical-details.vmodel";
 import { NotesModel } from "../shared/notes.model";
 import { Visit } from "../../appointments/shared/visit.model";
+import { MedicationBLService } from "../../clinical/shared/medication.bl.service";
 
 @Component({
     selector: "objective-note",
@@ -23,6 +24,7 @@ export class ObjectiveNotesComponent {
     public vitalsList: Array<Vitals> = new Array<Vitals>();
     public painDataList: Array<any> = new Array<any>();
     public addVitalBox: boolean = false;
+    public showMedicationAddBox: boolean = false; //@input-medication
     @Input("objective-note")
     public objectiveNote: ObjectiveNotesModel;
 
@@ -34,7 +36,8 @@ export class ObjectiveNotesComponent {
 
     constructor(public ioAllergyVitalsBLService: IOAllergyVitalsBLService, public patientservice: PatientService,
      public visitService: VisitService , public securityService: SecurityService,
-        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService)
+        public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService,
+        public medicationBLService: MedicationBLService,)
     {
       this.patVisit = this.visitService.getGlobal();
         this.GetPatientVitalsList();     
@@ -127,6 +130,20 @@ export class ObjectiveNotesComponent {
       this.CallBackObjectiveNotes.emit({ objectivenote : this.objectiveNote });
     }
   }
+  CallBackAddMedication($event) { //@output
+    if ($event && $event.homeMedication) {
+        this.clinicalDetail.Medications.push($event.homeMedication);
+    }
+    this.showMedicationAddBox = false;
+    this.changeDetector.detectChanges();
+}
+
+
+AddMediactionPopUp() {
+    this.showMedicationAddBox = false;
+    this.changeDetector.detectChanges();
+    this.showMedicationAddBox = true;
+}
 
 }
 

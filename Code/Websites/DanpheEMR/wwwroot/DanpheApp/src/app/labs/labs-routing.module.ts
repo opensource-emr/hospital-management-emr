@@ -20,6 +20,10 @@ import { ExternalTestListComponent } from './external-labs/tests-list/external-t
 import { LabTestsCollectSampleComponent } from './lab-tests/lab-collect-sample/lab-tests-collect-sample.component';
 import { LabReportDispatchComponent } from './lab-tests/lab-master/lab-report-dispatch';
 import { PageNotFound } from '../404-error/404-not-found.component';
+import { LabTypeSelectionComponent } from './lab-selection/lab-type-selection.component';
+import { LabSelectionGuardService } from './shared/lab-selection-guard.service';
+import { LabSendSmsComponent } from './notification/sms/send-sms.component';
+import { LabNotificationComponent } from './notification/notification-main.component';
 
 @NgModule({
   imports: [
@@ -29,19 +33,32 @@ import { PageNotFound } from '../404-error/404-not-found.component';
         component: LabsMainComponent, canDeactivate: [ResetPatientcontextGuard],
         children: [
           { path: '', redirectTo: 'Dashboard', pathMatch: 'full' },
-          { path: 'Dashboard', component: LabDashboardComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'Requisition', component: LabListRequisitionComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'CollectSample', component: LabTestsCollectSampleComponent, canActivate: [AuthGuardService] },
-          { path: 'AddResult', component: LabTestsResults, canActivate: [AuthGuardService] },
-          { path: 'PendingReports', component: LabTestsPendingReports, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'PendingLabResults', component: LabTestsPendingResultsComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'FinalReports', component: LabTestsFinalReports, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'WardBilling', component: WardBillingComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'BarCode', component: LabBarCodeComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'ReportDispatch', component: LabReportDispatchComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'Settings', loadChildren: '../labs/lab-settings/lab-settings.module#LabSettingsModule' },
+          {
+            path: 'Dashboard',
+            component: LabDashboardComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService]
+          },
+          { path: 'Requisition', component: LabListRequisitionComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'CollectSample', component: LabTestsCollectSampleComponent, canActivate: [AuthGuardService, LabSelectionGuardService] },
+          { path: 'AddResult', component: LabTestsResults, canActivate: [AuthGuardService, LabSelectionGuardService] },
+          { path: 'PendingReports', component: LabTestsPendingReports, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'PendingLabResults', component: LabTestsPendingResultsComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'FinalReports', component: LabTestsFinalReports, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'WardBilling', component: WardBillingComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'BarCode', component: LabBarCodeComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          { path: 'ReportDispatch', component: LabReportDispatchComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService] },
+          {
+            path: 'Notification', component: LabNotificationComponent,
+            children: [
+              { path: '', redirectTo: 'SMS', pathMatch: 'full' },
+              { path: 'SMS', component: LabSendSmsComponent },
+              { path: "**", component: PageNotFound }
+            ]
+            , canActivate: [AuthGuardService, ResetPatientcontextGuard, LabSelectionGuardService]
+          },
+          { path: 'Settings', loadChildren: '../labs/lab-settings/lab-settings.module#LabSettingsModule', canActivate: [LabSelectionGuardService] },
           {
             path: 'ExternalLabs', component: ExternalLabsMainComponent,
+            canActivate: [LabSelectionGuardService],
             children: [
               { path: '', redirectTo: 'TestList', pathMatch: 'full' },
               { path: 'TestList', component: InternalTestListComponent },
@@ -50,8 +67,10 @@ import { PageNotFound } from '../404-error/404-not-found.component';
 
             ]
           },
+          { path: 'LabTypeSelection', component: LabTypeSelectionComponent },
+          { path: 'Lis', loadChildren: '../labs/lab-lis/lis-module#LISModule', canActivate: [AuthGuardService, LabSelectionGuardService] },
           { path: "**", component: PageNotFound }
-          
+
         ]
       },
       { path: "**", component: PageNotFound }

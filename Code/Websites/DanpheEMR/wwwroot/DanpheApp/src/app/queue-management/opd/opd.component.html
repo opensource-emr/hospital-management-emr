@@ -1,0 +1,95 @@
+<div class="wrapper">
+    <div class="row">
+        <div class="col-lg-6 col-sm-12 text-left">
+            <div class="caption lb-caption">
+              <h3><span><i class="fa fa-user"></i>Patient Queue List</span></h3>
+            </div>
+          </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-4" *ngIf="queueLevel!='hospital'">
+            <div class="form-group" *ngIf="queueLevel=='department'">
+                <label class="control-label col-md-5">Department<b style="float: right;">:</b></label>
+                <div class="col-md-7">
+                    <input
+                    class="form-control"
+                    danphe-auto-complete
+                    [(ngModel)]="department"
+                    [ngModelOptions]="{standalone: true}"
+                    [list-formatter]="DepartmentListFormatter"
+                    [source]="DepartmentList"
+                    placeholder="Select Department"
+                    display-property-name="DepartmentName"
+                    value-property-name="null"
+                    onclick="this.select()"
+                    (focusout)="fiterByDepartment()"
+                    />
+                </div>
+            </div>
+            <div class="form-group" *ngIf="queueLevel=='doctor'">
+                <label class="control-label col-md-5">Doctor<b style="float: right;">:</b></label>
+                <div class="col-md-7">
+                    <input
+                    class="form-control"
+                    danphe-auto-complete
+                    [(ngModel)]="doctor"
+                    [ngModelOptions]="{standalone: true}"
+                    [list-formatter]="DoctorListFormatter"
+                    [source]="DoctorList"
+                    placeholder="Select Doctor"
+                    display-property-name="FullName"
+                    value-property-name="null"
+                    onclick="this.select()"
+                    (focusout)="fiterByDoctor()"
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="control-label col-md-3">Status<b style="float: right;">:</b></label>
+                <div *ngFor = "let radio of radioButtons" style="display: inline-flex;" >
+                    <input type="radio" id ={{radio.id}} [checked]="radio.value == 'pending'" name='status'[(ngModel)]="selectedStatus" value={{radio.value}} (change)="filterByStatus()">
+                    <label for={{radio.id}} style="margin-left: 5px;margin-right: 10px;">{{radio.label}}</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="col-lg-6 col-sm-12 text-right"> <button class="btn blue" [disabled]="loading" (click)="loading=true; getAppointmentData()">
+                <i class="fa fa-refresh "></i> Load Data </button> </div>
+        </div>
+    </div>
+    <br>
+    <div class="row" *ngIf="showGrid" >
+        <div class="col-lg-12 col-sm-12">
+          <danphe-grid [grid-colDefaults]="visitGridColumns" [grid-data]="filteredVisit" (grid-actions)="VisitGridActions($event)"
+        > </danphe-grid>
+        </div>
+    </div>
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showCheckInConfirmation || showSkipConfirmation || showUndoConfirmation">
+        <div class="col-md-6 col-md-offset-3">
+          <div class="modelbox-div">
+            <div class="modelbox-header">
+              <h4 class="margin-0-vr">Confirm Your Action ???</h4>
+            </div>
+            <div class="modelbox-body">
+              <p style="color:green;" *ngIf="showUndoConfirmation">You Are About To <span style="color: rgb(29, 29, 82);"><b>Undo </b></span> <i>{{selectedPatient.ShortName}}</i>. With Queue Number: <i>{{selectedPatient.QueueNo}}</i>. Are You Sure?</p>
+                <p style="color:green;" *ngIf="showSkipConfirmation">You Are About To <span style="color: rgb(241, 90, 90);"><b>Skip </b></span> <i>{{selectedPatient.ShortName}}</i>. With Queue Number: <i>{{selectedPatient.QueueNo}}</i>. Are You Sure?</p>
+                <p style="color:green;" *ngIf="showCheckInConfirmation">You Are About To <span style="color: rgb(90, 92, 241);"><b>CheckIn </b></span> <i>{{selectedPatient.ShortName}}</i>. With Queue Number: <i>{{selectedPatient.QueueNo}}</i>. Are You Sure?</p>
+            </div>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <button type="button" class="btn btn-success btn-sm horizontal-space" (click)="updateQueueStatus()"> Yes
+                </button>
+                <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="closeConfirmation()"> No
+                </button>
+              </div>
+            </div>
+            <div class="close-modelbox lb-close-btn">
+              <button class="btn btn-danger" (click)="closeConfirmation()">X</button>
+            </div>
+          </div>
+        </div>
+    </div>  
+</div>

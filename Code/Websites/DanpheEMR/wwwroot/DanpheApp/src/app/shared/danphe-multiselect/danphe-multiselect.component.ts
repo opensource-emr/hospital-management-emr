@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Input, Output, EventEmitter, OnInit } from "@angular/core"
 @Component({
     selector: "danphe-multiselect",
@@ -108,19 +108,15 @@ export class DanpheMultiSelectComponent implements OnInit {
 
     //all events 
     onItemSelect(item: any) {
-
         this.items.emit(this.filterItem(this.selectedItems));
     }
     OnItemDeSelect(item: any) {
-
         this.items.emit(this.filterItem(this.selectedItems));
     }
     onSelectAll(items: any) {
-
         this.items.emit(this.filterItem(this.selectedItems));
     }
     onDeSelectAll(items: any) {
-
         this.items.emit(this.filterItem(this.selectedItems));
     }
 

@@ -1,0 +1,127 @@
+/*This class for background border red */
+
+.bg-on {
+    font-weight: bold;
+    border: solid 1px red;
+}
+
+/*This class for */
+
+.bg-off {
+    font-weight: bold;
+}
+
+tr.tbl-td-padding td {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.header-title {
+    background-color: #e7e9ea;
+    margin: 0 0 15px 0 !important;
+    padding: 10px;
+}
+
+/* Keyboard Shortcut Keys Styles */
+
+/*This is class for keyboard shortcut view */
+
+.shortcut-key {
+    position: relative;
+    float: left;
+    margin-top: 2px;
+    margin-left: 5px;
+}
+
+.shortcut-key a {
+    display: block;
+    border: 1px solid #ccc;
+    padding: 5px;
+    width: 60px;
+    border-radius: 5px !important;
+}
+
+.shortcut-key a img {
+    display: block;
+    width: 40px;
+    margin: 0 auto;
+}
+
+.keydropdown {}
+
+.keydropdown ul {
+    min-width: 30rem;
+    background-color: #beb8b8;
+    position: absolute;
+    left: 0;
+    top: 120%;
+    padding: 7px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin: 0;
+    opacity: 0.30;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+.keydropdown ul:before {
+    content: "";
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #ccc transparent;
+    border-style: solid;
+    position: absolute;
+    top: -11px;
+}
+
+.keydropdown ul:after {
+    content: "";
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #beb8b8 transparent;
+    border-style: solid;
+    position: absolute;
+    top: -10px;
+}
+
+.shortcut-key:hover .keydropdown ul {
+    opacity: 1;
+    visibility: visible;
+}
+
+.keydropdown ul li {
+    display: block;
+    padding: 5px 0;
+}
+
+.keydropdown ul li kbd {
+    border: 1px solid #ccc;
+    padding: 0px 3px;
+    border-radius: 3px;
+    background-color: #fff;
+    display: inline-block;
+    vertical-align: middle;
+    color: #000;
+}
+
+.shortkey-right {
+    float: right;
+}
+
+.shortkey-right .keydropdown ul {
+    right: 0;
+    left: auto;
+}
+
+.shortkey-right .keydropdown ul:before, .shortkey-right .keydropdown ul:after {
+    content: "";
+    left: auto;
+    right: 5%;
+}
+
+.keydropdown ul li samp {
+    margin-left: 2px;
+    font-size: 9pt;
+}
+
+/* Keyboard Shortcut Keys Styles */

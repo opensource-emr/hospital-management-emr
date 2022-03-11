@@ -1,20 +1,15 @@
-<style>
-  .doc-page-bar-right {
-    display: none !important;
-  }
-</style>
 <!-- <link href="../../../../../themes/theme-default/TabControl.css" rel="stylesheet" /> -->
-<div class="wrapper">
-  <div [class]="ShowDocNab?'page-bar fixed-top-bar':'doc-page-bar-right fixed-top-bar'">
+<div>
+  <div class="page-bar fixed-top-bar">
     <ul class="page-breadcrumb ">
       <li *ngFor="let route of validRoutes">
-        <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'"
-          aria-expanded="true">{{route.DisplayName}}</a>
+        <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" aria-expanded="true">{{route.DisplayName}}</a>
       </li>
     </ul>
   </div>
-  <router-outlet></router-outlet>
 </div>
+<router-outlet>
+</router-outlet>
 
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="messageDetail">
   <div class="portlet-body form">

@@ -26,14 +26,14 @@
             <div class="form-group">
               <label class="control-label col-md-4">Relationship with Patient<b class="color-red">*</b><b style="float:right;">:</b></label>
               <div class="col-md-4">
-                <input class="form-control" style="margin-top:5px" type="text" [(ngModel)]="guarantor.PatientRelationship" formControlName="PatientRelationship" />
+                <input class="form-control"  required value="" (keyup.enter)="GoToNextInput('GuarantorName')" style="margin-top:5px" type="text" [(ngModel)]="guarantor.PatientRelationship" formControlName="PatientRelationship" autofocus/>
               </div>
               <div class="col-md-4">
                 <div class="input-group">
                   <div class="icheck-inline">
                     <label class="control-label">OR</label>
                     <label class="mt-checkbox mt-checkbox-outline"> SELF
-                      <input type="checkbox" value="Self" [(ngModel)]="guarantor.GuarantorSelf" (ngModelChange)="ChangeForSelf($event)" [ngModelOptions]="{standalone: true}" />
+                      <input type="checkbox" (keyup.enter)="GoToNextInput('GuarantorName')" value="Self" [(ngModel)]="guarantor.GuarantorSelf" (ngModelChange)="ChangeForSelf($event)" [ngModelOptions]="{standalone: true}" />
                       <span></span> </label>
                   </div>
                 </div>
@@ -43,7 +43,7 @@
             <div class="form-group">
               <label class="control-label col-md-4">Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
               <div class="col-md-8">
-                <input type="text" class="form-control" formControlName="GuarantorName" [(ngModel)]="guarantor.GuarantorName" />
+                <input type="text" class="form-control" id="GuarantorName" formControlName="GuarantorName" [(ngModel)]="guarantor.GuarantorName" />
                 <span class="color-red" *ngIf="guarantor.IsDirty('GuarantorName')" [hidden]="guarantor.IsValidCheck('GuarantorName','required')">Guarantor Name is required</span> </div>
             </div>
             <div class="form-group">

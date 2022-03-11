@@ -9,6 +9,7 @@ import { HttpClientModule, HttpClientJsonpModule } from "@angular/common/http";
 import { DoctorsRoutingConstant } from "./doctors-routing.constant";
 //Dashboard components
 import { DoctorsMainComponent } from "../doctors/doctors-main.component";
+import { DoctorDashboardComponent } from "./dashboard/doctor-dashboard.component";
 
 import { SharedModule } from "../shared/shared.module";
 //to display visit lists in patient-visit-history. use the same doctor-dashboard.component as well--sudarshan 24march
@@ -50,9 +51,6 @@ import { ClinicalSharedModule } from "../clinical/clinical-shared-module";
 import { DoctorSharedModule } from "./doctor-shared.module";
 import { InPatientDischargeSummaryComponent } from "./patient/in-patient-discharge-summary.component";
 import { NursingDLService } from "../nursing/shared/nursing.dl.service";
-import { OutPatientMainComponent } from "./opd/outpatient-main.component";
-import { OPNewPatientComponent } from "./opd/op-new-patient/op-new-patient.component";
-import { OPDRecordComponent } from "./opd/opd-record/opd-record.component";
 
 @NgModule({
   providers: [
@@ -84,6 +82,7 @@ import { OPDRecordComponent } from "./opd/opd-record/opd-record.component";
 
   declarations: [
     DoctorsMainComponent,
+    DoctorDashboardComponent,
     DoctorRevenueComponent,
     ProblemsMainComponent,
     VisitSummaryComponent,
@@ -104,11 +103,7 @@ import { OPDRecordComponent } from "./opd/opd-record/opd-record.component";
     ReferralSourceListComponent,
     ReferralSourceAddComponent,
     InPatientDischargeSummaryComponent,
-    OutPatientMainComponent,
-    OPDRecordComponent,
-    OPNewPatientComponent
-
   ],
   bootstrap: [], //do we need anything here ? <sudarshan:2jan2017>
 })
-export class DoctorsModule { }
+export class DoctorsModule {}

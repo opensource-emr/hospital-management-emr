@@ -33,7 +33,7 @@ export class GoodsReceiptListComponent implements OnInit {
     public routeFromService: RouteFromService
   ) {
     this.dateRange = 'last1Week';
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('GoodReceiptDate', false),new NepaliDateInGridColumnDetail('GoodReceiptDate', false)]);
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('GoodsReceiptDate', false), new NepaliDateInGridColumnDetail('VendorBillDate',false)]);
     this.GRGridColumn = VerificationGridColumns.GRList;
   }
 

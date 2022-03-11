@@ -1,60 +1,124 @@
-<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSticker">
-  <div class="portlet-body form">
+<div class="row" *ngIf="stickerDetail">
     <div class="col-md-12">
-      <div class="col-md-6">
-        <div class="modelbox-div" style="margin: 30px auto;width: 490px;padding: 30px 30px 10px 30px;"> <a class="btn btn-danger history-del-btn" (click)="Close()" title="close... route to admitted patient list">X</a>
-          <div>
-            <div class="row" *ngIf="showSticker">
-              <div id="sticker" *ngIf="stickerDetail" style="width: 400px;height: 240px;border: 1px dotted black;padding: 10px;margin: 0 auto 15px auto;">
-                <div id="opdprintpage" style="width:370px; height:182px;margin:0px;display:block;">
-                  <div style="width:100%;">
-                    <div>
-                      <div style="font-size:14px;"> <span> DOA : {{stickerDetail.AdmissionDate  | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}&nbsp;&nbsp;({{localDateTime}}) </span> </div>
-                      <div>
-                        <div style="display:inline-block;width: 15%;vertical-align: top;"> Name&nbsp;:&nbsp; </div>
-                        <div style="font-size:16px;display:inline-block;font-weight:bold;text-transform:uppercase">
-                          <div style="display:inline-block;"> {{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp; </div>
-                          <div style="display:inline-block;font-style:italic;font-size:15px;"> {{stickerDetail.DateOfBirth | DanpheDateTime:'age'}}/{{stickerDetail.Gender | slice:0:1}} </div>
+        <div class="modelbox-div" style="margin-bottom: 10px;width: 490px;padding: 30px 30px 10px 30px;">
+            <div>
+                <div class="row">
+                    <div id="sticker" style="width: 400px;height: 175px;border: 1px dotted black;padding: 10px;margin: 0 auto 15px auto;font-size: 12px;">
+                        <div id="adtPrintPage" style="width: 380px; margin:0px;display:block;font-size: 12px;font-weight: normal;">
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div><span> DOA : {{stickerDetail.AdmissionDate |
+                    DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}&nbsp;({{localDateTime}}) </span></div>
+                                <div><span>IP No. :
+                    {{stickerDetail.InPatientNo}} </span></div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div>Name&nbsp;:&nbsp;<span style="text-transform: uppercase;font-weight: bold;">{{stickerDetail.PatientName}}&nbsp;&nbsp;&nbsp;{{stickerDetail.DateOfBirth
+                    | DanpheDateTime:'age'}}/{{stickerDetail.Gender |
+                    slice:0:1}}</span>
+                                </div>
+                                <div *ngIf="stickerDetail.PhoneNumber"><span>Tel : {{stickerDetail.PhoneNumber}} </span></div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div><span> Hospital No. :
+                    {{stickerDetail.PatientCode}} </span></div>
+                                <div *ngIf="stickerDetail.Ins_HasInsurance">Claim Code. : {{stickerDetail.ClaimCode}}</div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div>Address&nbsp;:&nbsp;<span>{{stickerDetail.Address}},
+                    {{stickerDetail.District}}</span>
+                                </div>
+                                <div *ngIf="stickerDetail.Ins_HasInsurance"> NSHI No. : {{stickerDetail.Ins_NshiNumber}} </div>
+                            </div>
+
+                            <hr style="border:0.5px solid black;margin:0px;" />
+
+                            <div style="width:100%; display: flex;justify-content: space-between;" *ngIf="stickerDetail.AdmittingDoctor">
+                                <div>Admitting Doctor&nbsp;:&nbsp;<span>{{stickerDetail.AdmittingDoctor}}</span>
+                                </div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div>Requesting Department&nbsp;:&nbsp;<span>{{stickerDetail.RequestingDepartmentName}}</span>
+                                </div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div>Ward/Bed&nbsp;:&nbsp;<span>{{stickerDetail.Ward}} /
+                    {{stickerDetail.BedCode}}</span>
+                                </div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div *ngIf="stickerDetail.CareOfPersonName">
+                                    C/O&nbsp;:&nbsp;<span>{{stickerDetail.CareOfPersonName}}</span>
+                                </div>
+                                <div *ngIf="stickerDetail.CareOfPersonPhoneNo">
+                                    C/O Tel&nbsp;:&nbsp;<span>{{stickerDetail.CareOfPersonPhoneNo}}</span>
+                                </div>
+                            </div>
+
+                            <div style="width:100%; display: flex;justify-content: space-between;">
+                                <div *ngIf="stickerDetail.CareOfPersonName">
+                                    C/O Relation&nbsp;:&nbsp;<span>{{stickerDetail.CareOfPersonRelation}}</span>
+                                </div>
+                                <div *ngIf="stickerDetail.User">
+                                    User&nbsp;:&nbsp;<span style="font-weight: bold;">{{stickerDetail.User}}</span>
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                      <div> <span style="display:inline-block;"> Hospital No. : {{stickerDetail.PatientCode}} </span> <span style="float:right;font-size:14px;padding-right: 5px;"> IP No. : {{stickerDetail.InPatientNo}} </span> </div>
-                      <div>
-                        <div> <span class="ip-sticker-add " style="width: 245px;display: inline-block; text-transform:capitalize; overflow: hidden;">Address&nbsp;:&nbsp;{{stickerDetail.Address}}, {{stickerDetail.District}}</span> <span style="float:right;font-size:14px;padding-right: 5px;max-width: 105px; overflow: hidden;"> Tel : {{stickerDetail.PhoneNumber}} </span> </div>
-                      </div>
                     </div>
-                    <hr style="border:0.5px solid black;margin:0px;" />
-                  </div>
-                  <div style="width: 100%;"> <span>Admitting Doctor :</span> <span style="font-size:14px;"> <b style="text-transform:uppercase"> <span class="left" *ngIf=" stickerDetail.AdmittingDoctor =='Dr. Atit Poudel'||stickerDetail.AdmittingDoctor =='Prof. Dr. Padam Raj Pant'||stickerDetail.AdmittingDoctor =='Dr. Sunita Pun'"> Prof. Dr.Padam Raj Pant and Team </span> <span *ngIf=" stickerDetail.AdmittingDoctor !='Dr. Atit Poudel'&&stickerDetail.AdmittingDoctor !='Prof. Dr. Padam Raj Pant'&&stickerDetail.AdmittingDoctor !='Dr. Sunita Pun'"> {{stickerDetail.AdmittingDoctor}} </span> </b> </span> </div>
-                  <div style="width: 100%;">
-                    <div style="width:75%;display:inline-block;">
-                      <div style="font-size:13px;text-transform:capitalize "> Ward/Bed : {{stickerDetail.Ward}} / {{stickerDetail.BedCode}} </div>
-                      <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonName"> C/O : {{stickerDetail.CareOfPersonName}} </div>
-                      <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonPhoneNo"> C/O Tel :{{stickerDetail.CareOfPersonPhoneNo}} </div>
-                      <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonName"> C/O Relation : {{stickerDetail.CareOfPersonRelation}} </div>
-                      <div style="padding-top: 7px;font-size:13px;"> <span style="float:left;padding-right: 20px;"> User&nbsp;: {{stickerDetail.User}} </span> </div>
-                    </div>
-                    <div style="width:19%;display:inline-block;vertical-align: top;">
-                      <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
-                    </div>
-                  </div>
-                </div>
+
+                    <!-- <p style="text-align:center;width: 400px;">
+            <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()"> Print Sticker
+              <i class="glyphicon glyphicon-print" id="btnPrintAdmissionSticker"></i> </button>
+            <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="showLoading"
+              id="btnPrintAdmissionSticker"> Print
+              Sticker <i class="glyphicon glyphicon-print"></i> </button>
+          </p>
+          <p *ngIf="showLoading" style="text-align:center;width:400px;"> please wait while printing is in
+            progress... </p>
+          <div class="col-md-8">
+            <div class="padding-15-bt padding-15-tp padding-7-hr">
+              <div><label>Sticker Printer: <b>{{printerName}}</b> </label> <a
+                  (click)="ChangeStickerPrinter()">Change?</a>
               </div>
-              <p style="text-align:center;width: 400px;">
-                <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()"> Print Sticker <i class="glyphicon glyphicon-print"></i> </button>
-                <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="showLoading"> Print Sticker <i class="glyphicon glyphicon-print"></i> </button>
-              </p>
-              <p *ngIf="showLoading" style="text-align:center;width:400px;"> please wait while printing is in progress... </p>
             </div>
-          </div>
+            <table class="table table-striped table-bordered table-hover">
+              <tr *ngIf="showStickerChange">
+                <td> Change Sticker: </td>
+                <td>
+                  <select class="margin-7-hr" [(ngModel)]="printerNameSelected">
+                    <option *ngFor="let location of allPrinterName" [value]="location.Name">{{location.Name}}
+                    </option>
+                  </select>
+                </td>
+                <td><button class="btn green btn-success" (click)="UpdateNewPrinter();">OK</button></td>
+                <td><button class="btn green btn-success" (click)="CloseChangeStickerPrinter();">Reset</button>
+                </td>
+              </tr>
+            </table>
+          </div> -->
+
+
+                </div>
+            </div>
         </div>
-        <div *ngIf="showWristBand"> <div class="modelbox-div" style="background-color: #ffffff; padding: 10px"><a class="btn btn-danger history-del-btn" (click)="Close()" title="close... route to admitted patient list">X</a>
-          <ip-wrist-band [showWristBand]="showWristBand" [patientVisitId]="patientVisitId" [showAsPopup]="false"> </ip-wrist-band></div>
+
+        <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+            <button id="btnAdtSticker" class="btn green btn-success" value="" (click)="print()" [disabled]="coreService.loading">
+        <span>Print</span>&nbsp;&nbsp;
+        &nbsp;&nbsp;<i class="glyphicon glyphicon-print"></i>
+      </button>
         </div>
-      </div>
-      <div class="col-md-6" *ngIf="showDepositReceipt" style="background-color:white;margin-top:30px;padding:0px"> <div class="modelbox-div" style="box-shadow: none;"><a class="btn btn-danger history-del-btn" (click)="Close()" title="close... route to admitted patient list" style="top:-39px;">X</a>
-        <deposit-receipt [deposit]="deposit"
-                           [showReceipt]="showDepositReceipt"></deposit-receipt></div>
-      </div>
+
+        <select-printer [group-name]="'reg-sticker'" [storage-key]="'ip-sticker'" (on-printer-change)="OnPrinterChanged($event)">
+        </select-printer>
     </div>
-  </div>
 </div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

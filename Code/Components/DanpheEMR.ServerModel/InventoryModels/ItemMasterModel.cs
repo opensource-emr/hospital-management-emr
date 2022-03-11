@@ -34,5 +34,15 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public bool IsActive { get; set; }
 
+        public string MSSNO { get; set; } /// Rajib: 11/25/2020 Tilaganga Hospital
+        public string HSNCODE { get; set; } /// Rajib: 11/25/2020 Tilaganga Hospital
+
+        public int? VendorId { get; set; } /// Rajib: 11/25/2020 Tilaganga Hospital
+        public bool? IsCssdApplicable { get; set; }
+        public bool? IsColdStorageApplicable { get; set; }
+        public bool? IsPatConsumptionApplicable { get; set; }
+        public int? MaintenanceOwnerRoleId { get; set; }
+        public int? RegisterPageNumber { get; set; }
+        public int? StoreId { get; set; }
     }
 }

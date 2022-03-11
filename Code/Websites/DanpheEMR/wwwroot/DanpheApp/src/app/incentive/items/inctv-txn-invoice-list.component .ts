@@ -175,6 +175,7 @@ export class IncentiveTxnInvoiceListComponent {
     this.selectedBillTxnItem.BillingTransactionItemId = txnItm.BillingTransactionItemId;
     this.selectedBillTxnItem.ItemName = txnItm.ItemName;
     this.selectedBillTxnItem.ItemId = txnItm.ItemId;
+    this.selectedBillTxnItem.Quantity = txnItm.Quantity;
     this.selectedBillTxnItem.BillItemPriceId = txnItm.BillItemPriceId;
     this.selectedBillTxnItem.TotalAmount = txnItm.TotalAmount;
     this.selectedBillTxnItem.AssignedToEmpName = txnItm.AssignedToEmpName;
@@ -232,7 +233,7 @@ export class IncentiveTxnInvoiceListComponent {
     //here we're highlighting the PatientName.
     let html: string = "";
     html = "<font size=03>" + data["InvoiceNo"] + "</font>&nbsp;-&nbsp;&nbsp;<font color='blue'; size=03 ><b>" + data["PatientName"] +
-      "</b></font>&nbsp;&nbsp;" + "(" + data["PatientCode"] + ")" + "    Rs." + data["TotalAmount"]
+      "</b></font>&nbsp;&nbsp;" + "(" + data["PatientCode"] + ")" + "    "+this.coreservice.currencyUnit + data["TotalAmount"]
       + "&nbsp;&nbsp;&nbsp;<font color='green'; size=01><b>" + txnDateFormatted + "</b></font>";
     return html;
   }
@@ -404,6 +405,7 @@ class IncentiveTransactionInvoiceItemsVM {
   public FractionCount: number = null;
   public InvoiceNo: string = "";
   public BillItemPriceId: number = 0;
+  public Quantity: number = 0;
   public ItemId: number = 0;
   public ItemName: string = "";
   public PatientCode: string = "";

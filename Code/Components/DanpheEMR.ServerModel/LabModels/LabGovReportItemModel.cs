@@ -18,6 +18,7 @@ namespace DanpheEMR.ServerModel.LabModels
         public string DisplayName { get; set; }
         public bool? HasInnerItems { get; set; }
         public string InnerTestGroupName { get; set; }
+        public bool IsActive { get; set; }
 
         [NotMapped]
         public int Count { get; set; }

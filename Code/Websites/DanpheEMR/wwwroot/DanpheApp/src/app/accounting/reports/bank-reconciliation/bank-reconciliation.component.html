@@ -1,0 +1,613 @@
+<style>
+    .noPadding {
+      padding-left: 2px !important;
+      padding-right: 2px !important;
+    }
+  
+    .tr-highlight {
+      border: 3px solid #006687;
+    }
+  
+    .control-label b {
+      font-weight: 600;
+    }
+  </style>
+  
+  <!-- START: Display Bank reconciliation Report -->
+  <div>
+    <div class="caption custom-caption top-report-section">
+      <h3><i class="fa fa-book"></i>
+        <span class="caption-subject">Bank Reconciliation Details</span>
+      </h3>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+      <div class="row">
+        <div class="col-md-4 col-xs-12 noPadding">
+          <div class="form-group">
+  
+            <label class="control-label"> <b>Select Ledger</b> <b class="color-red"> *</b></label>
+            <div style="margin-top: 5px;"> <span *ngIf="selLedger" style="float: left !important; margin-top: 5px;
+            margin-right: 5px;">{{selLedger.Code}}</span>
+              <input danphe-auto-complete [(ngModel)]="selLedger" [source]="ledgerList" placeholder="Ledger Name"
+                display-property-name="LedgerName" value-property-name="LedgerName" [list-formatter]="LedgerListFormatter"
+                max-num-list="15" [grid-sort]="'LedgerName'" onClick="this.select();"
+                style="background-color: azure; height: 30px; width: 90% !important;" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xs-12 noPadding">
+          <div class="form-group">
+            <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
+                style="float:right;">:</b></label>
+            <div>
+              <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
+                (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-xs-12 noPadding">
+          <div class="form-group mt10">
+            <br>
+            <button class="btn blue" type="button" (click)="GetTxnList()">
+              <i class="fa fa-search"></i>
+              Show Details
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="ledgerResult" id="printpage" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
+        <div style="width: 50%; margin: auto;">
+          <customer-header id="headerForPrint" [header-title]="selLedger.LedgerName + ' Ledger'+ '(' + selLedger.Code +')'"></customer-header>
+        </div>
+        <div class="col-md-12 col-xs-12" style="padding: 0;">
+          <div class="col-md-12" style="padding: 5px; text-align: right;">
+            <div class="form-actions">
+                <button class="btn btn-primary" (click)="ViewDetails()" value="details" title="details page">
+                   Reconciliation Details<i style="margin-left:10px;"></i>
+                  </button>
+              <button class="btn btn-primary hidden-print" (click)="Save()" value="Save" title="Save page">
+                Save<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+              </button>
+              <!-- <button class="btn btn-primary hidden-print" (click)="PrintTxnTable('exportTable')" value="Print" title="print page">
+                Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+              </button>
+              <button class="btn btn-primary hidden-print" (click)="ExportToExcel('exportTable')" value=""
+                title="export to excel">
+                Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+              </button> -->
+            </div>
+          </div>
+          <table style="width:100% !important;">
+            <tr>
+              <td style="width: 10%;"><b>Bank Name :</b> </td>
+              <td style="width: 25%;"> {{selLedger.LedgerName}} </td>
+  
+              <td style="width: 10%;"><b>Address :</b> </td>
+              <td style="width: 25%;"> {{selLedger.Address}} </td>
+  
+              <td style="width: 10%;"><b>Contact :</b> </td>
+              <td style="width: 25%;"> {{selLedger.MobileNo}} </td>
+  
+            </tr>
+  
+          </table>
+          <br>
+          <div id="exportTable" class="col-md-12" style="overflow-y:auto;padding:0px; max-height: 400px !important;">
+  
+  
+            <table  style="width: 110% !important;">
+              <tr>
+                <th></th>
+                <th>Book Date <danphe-date-change  class="ADBS_btn" [dataArr]="ledgerResult" [datecolumn]="'TransactionDateBsAd'">
+                  </danphe-date-change>
+                </th>
+                <th>Bank Date </th>
+                <th>Voucher Number</th>
+                <th>Category</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance as per book</th>
+                <th>Balance as per bank</th>
+                <th>Difference</th>
+                <th>Action</th>
+              </tr>
+              <tr *ngFor="let txnItm of ledgerResult;let i = index;" [ngClass]="{'tr-highlight': txnItm.IsHighlighted}">
+                <td>
+                  <input type="checkbox" [(ngModel)]="txnItm.IsVerified" (change)="checkValue($event,i)"
+                    [ngModelOptions]="{standalone: true}" />
+  
+                </td>
+                <td>{{txnItm.TransactionDateBsAd | DanpheDateTime:'format':'YYYY-MM-DD' }}</td>
+                <td>
+                  <danphe-date-picker (ngModelChange)="dateChanged($event,i)" ngDefaultControl
+                    [(ngModel)]="txnItm.BankTransactionDate" [CalendarTypes]="calType"
+                    [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+  
+                </td>
+                <td>{{txnItm.VoucherNumber}}</td>
+                <td>
+                  <select [disabled]="!txnItm.IsVerified" [(ngModel)]="txnItm.CategoryId" id="Category" (change)="onCategoryChange($event.target.value,i)">
+                    <option  value="null">— Select —</option>
+                    <option *ngFor="let cat of bankReconcCategory"   [value]="cat.CategoryId"> {{cat.CategoryName}}
+                      </option>
+                  </select>
+                  <div style="color: red;"
+                   *ngIf="(ledgerResult[i].IsVerified == true) && (txnItm.CategoryId == 0) "> please select Category</div>
+                </td>
+                <td>
+                  <p>
+                    {{txnItm.LedgerDr | Currency:'4'}}
+                  </p>
+                </td>
+                <td>
+                  <p>
+                    {{txnItm.LedgerCr | Currency:'4'}}
+                  </p>
+                </td>
+  
+                <td>
+                  <p *ngIf="txnItm.Balance > 0">
+                    {{txnItm.Balance | Currency:'4'}}
+                    <span *ngIf="txnItm.BalanceType==true" style="font-weight: bold;">Dr</span>
+                    <span *ngIf="txnItm.BalanceType==false" style="font-weight: bold;">Cr</span>
+                  </p>
+                  <p *ngIf="txnItm.Balance == 0">
+                    {{txnItm.Balance | Currency:'4'}}
+                  </p>
+  
+                </td>
+  
+                <td>
+  
+                  <input type="text"  (change)="calculateDifference(i)" class="form-control"
+                    [(ngModel)]="txnItm.BankBalance" style=" width: 50% !important;float: left;" 
+                   [disabled]="!txnItm.IsVerified" />
+                  <select [(ngModel)]="txnItm.DrCr" (change)="onbalanceTypeChange($event.target.value,i)" style=" width: 35% !important">
+                    <option value="null">— Select —</option>
+                    <option value="true"> Dr </option>
+                    <option value="false"> Cr </option>
+                  </select>
+                  <div style="color: red;"
+                    *ngIf="(ledgerResult[i].IsVerified == true) && (ledgerResult[i].BankBalance == null || ledgerResult[i].BankBalance == 0)">
+                    Enter Balance as per bank
+                  </div>
+                </td>
+                <td> <input type="text" class="form-control" disabled [(ngModel)]="txnItm.Difference"
+                    [ngModelOptions]="{standalone: true}"> </td>
+                <td> <button class="btn btn-primary btn-sm" (click)="GetTxnItem(i)">View</button><br><br>
+
+                <button class="btn btn-primary btn-sm" (click)="GetReconciliationHistory(i)">History</button> </td>
+                <!-- <td>
+                  <input type="checkbox" [(ngModel)]="txnItm.IsVerified" (change)="checkValue($event,i)"
+                    [ngModelOptions]="{standalone: true}" />
+  
+                </td> -->
+              </tr>
+  
+            </table>
+          </div>
+  
+          <div class="col-md-12" style="padding-top:50px;display: none;">
+            <table style="width:100%;border:0;text-align:center;">
+              <tr>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                  <b> Prepared By</b>
+                </td>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                  <b> Checked By</b>
+                </td>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br>
+                  <b> Approved By</b>
+                </td>
+              </tr>
+  
+            </table>
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  <!-- START: Display save confirmation popup  -->
+  <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSavePopup">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+          <div class="modelbox-div clearfix" style="margin-top: 25%;">
+            <div class="caption lb-caption" style="text-align: center;">
+              <h3> <span> <b> Are you sure ?</b> </span> </h3>
+            </div>
+            <div>
+              <label style="margin-left: 10px;"> <b>Remark :</b> <b style="color: red;">*</b> </label> <br>
+              <textarea name="remark" [(ngModel)]="remark" style="width: 95%;  margin: 10px;"> </textarea>
+            </div>
+            <div style="text-align: center;">
+              <button class="btn btn-primary btn-sm" (click)="saveReconcilation()"> Yes </button>
+              <button class="btn btn-primary btn-sm" (click)="closesavePopup()"> No </button>
+              <br /> <br />
+            </div>
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END: Display save confirmation popup  -->
+  
+  <!-- START: Display selected bank txn details popup -->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetails">
+    <div class="portlet-body form">
+      <!--Model Box Body Start-->
+      <div class="form-body clearfix">
+        <div class="col-md-12" id="sf" style="margin-left: 90px;">
+          <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div">
+            <div class="row">
+              <div id="printpageTransactionView">
+                <a class="btn btn-danger hidden-print rt_close_btn" (click)="ClosetxnDetails()" title="Cancel">X</a>
+                <customer-header id="headerForPrint" [header-title]="txnItems.VoucherType + '('+txnItems.FiscalYear+')'">
+                </customer-header>
+                <div class="row">
+                  <div class="col-md-12 col-xs-12">
+                    <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+  
+                    <div class="col-md-12" >
+                      <div class="row" id="printpageView">
+                        <div class="col-md-12 patient-hdr-label">
+                          <table style="width:100% !important;" id="excelTransactionView">
+                            <tr>
+                              <td style="width: 10%;"><b>Bank Name :</b> </td>
+                              <td style="width: 25%;"> {{selLedger.LedgerName}} </td>
+  
+                              <td style="width: 10%;"><b>Address :</b> </td>
+                              <td style="width: 25%;"> {{selLedger.Address}} </td>
+  
+                              <td style="width: 10%;"><b>Contact :</b> </td>
+                              <td style="width: 25%;"> {{selLedger.MobileNo}} </td>
+  
+                            </tr>
+  
+                          </table>
+                          <table style="width:100%;" align="center">
+                            <tr>
+                              <td style="width: 35%;">
+                                <b>Voucher No:</b>&nbsp;{{txnItems.VoucherNumber}}
+                              </td>
+                              <td style="text-align:center;">
+                              </td>
+                              <td style="width: 35%;">
+                                <b>Book Date:</b>
+                                <span> &nbsp; {{selectedTxn.TransactionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}
+                                  <b>BS</b>
+                                  <br />
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                  {{selectedTxn.TransactionDate |
+                                  DanpheDateTime:'format':'YYYY-MM-DD'}} <b>AD</b>
+                                </span>
+                              </td>
+                              <td style="width: 35%;">
+                                <b>Bank Date:</b>
+                                <span> &nbsp;{{selectedTxn.BankTransactionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}
+                                  <b> BS </b> <br />
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {{selectedTxn.BankTransactionDate |
+                                  DanpheDateTime:'format':'YYYY-MM-DD'}} <b> AD </b>
+                                </span>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                        <br /> <br />
+                        <div class="col-md-12" style="overflow-y:auto">
+                          <table class="table_data" style="width:100%;" border="1">
+                            <tr>
+                              <th *ngIf="showVoucherHeadCol">
+                                Account Head
+                              </th>
+                              <th>
+                                Particulars
+                              </th>
+                              <th>
+                                Description
+                              </th>
+                              <th>
+                                Debit
+                              </th>
+                              <th>
+                                Credit
+                              </th>
+                            </tr>
+                            <tr *ngFor="let itm of txnItems.TransactionItems">
+                              <td *ngIf="showVoucherHeadCol">
+                                {{itm.LedgerGroupName}}<br />
+                              </td>
+                              <td>
+                                {{itm.LedgerName}}
+                                <span *ngFor="let det of itm.Details"
+                                  style="font-size:12px;color:green;padding-left:50px;">
+                                  <br />
+                                  <span>{{det.Name}}</span>
+                                  <span>
+                                    <span *ngIf="det.DrCr">
+                                      Dr: {{det.Amount | Currency:'4'}}
+                                    </span>
+                                    <span *ngIf="!det.DrCr">
+                                      Cr: {{det.Amount | Currency:'4'}}
+                                    </span>
+                                  </span>
+                                </span>
+                              </td>
+                              <td>
+                                {{itm.Description}}
+                              </td>
+                              <td>
+                                <p *ngIf="itm.DrCr == false">{{itm.Amount | Currency:'4'}}</p>
+                              </td>
+                              <td>
+                                <p *ngIf="itm.DrCr == true">{{itm.Amount | Currency:'4'}}</p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <th *ngIf="showVoucherHeadCol" colspan="3">
+                                <b style="float:right;"> Total &nbsp;&nbsp; </b>
+                              </th>
+                              <th *ngIf="!showVoucherHeadCol" colspan="2">
+                                <b style="float:right;"> Total &nbsp;&nbsp; </b>
+                              </th>
+                              <th>
+                                {{drTotal | Currency:'4'}}
+                              </th>
+                              <th>
+                                {{crTotal | Currency:'4'}}
+                              </th>
+                            </tr>
+                          </table>
+                        </div>
+                        <div class="col-md-12">
+                          <b> Balance as per Book :</b> &nbsp;
+                          {{selectedTxn.Balance | Currency:'4' }}
+                        </div>
+                        <div class="col-md-12">
+                          <b>Balance as per Bank :</b> &nbsp;
+                          {{selectedTxn.BankBalance | Currency:'4'}}
+                        </div>
+  
+                        <div class="col-md-12">
+                          <b>Difference :</b> &nbsp;
+                          {{selectedTxn.Difference}}
+                        </div>
+                        <hr />
+                        <div class="col-md-12" style="padding-top:50px;">
+                          <table style="width:100%;border:0;text-align:center;">
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <br />
+                                <b style="border-top:1px solid black; padding:0px 10px;">
+                                  Prepared
+                                  By
+                                </b>
+                              </td>
+                              <td>
+                                <br />
+                                <b style="border-top:1px solid black; padding:0px 10px;">
+                                  Checked
+                                  By
+                                </b>
+                              </td>
+                              <td>
+                                <br />
+                                <b style="border-top:1px solid black; padding:0px 10px;">
+                                  Approved
+                                  By
+                                </b>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>
+                      <br />
+                      <br />
+                      <div class="col-md-12" style="padding-bottom: 15px;">
+                        <div class="form-actions" style="text-align: right;">
+                          <button id="printbtn" class="btn green btn-success hidden-print" (click)="PrintTxnTable('printpageView')"
+                            value="Print" title="print page">
+                            Print<i class="glyphicon glyphicon-print" style="margin-left:10px; "></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--</form>-->
+      <!--Model Box Body End-->
+    </div>
+  </div>
+  <!-- END: Display selected bank txn details popup -->
+   <!-- START: history of bank txn details popup -->
+   <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="historyPopup">
+      <div class="portlet-body form">
+        <!--Model Box Body Start-->
+    
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            <div class="modelbox-div clearfix">
+              <div class="caption custom-caption no-margin">
+                <h3> <span>Bank Reconciliation History</span> </h3>
+                <a class="btn btn-danger" (click)="ClosetxnDetails()" title="Cancel">X</a>
+              </div>
+              <form class="form-horizontal">
+                <div class="form-body">
+                  <h5 style="text-transform:capitalize;" >
+                    <div>
+                      <span style="display:inline-block;">Bank Name: <b> {{selLedger.LedgerName}} </b></span> &nbsp;&nbsp;&nbsp;
+    
+                   <span style="float:right;">Voucher No:&nbsp; 
+                    <b> {{voucherNo}} </b></span>
+                  </div>
+                  </h5>
+                  <div class="table-responsive">
+                    <table class="table  table-bordered table-hover" style="background-color:initial;margin-top:20px">
+                     
+                        <tr>
+                          <th><b>Sr. No</b></th>
+                          <th><b>Voucher Date</b></th>
+                          <th><b>Category</b></th>
+                          <th><b> Balance as per bank</b></th>
+                          <th><b>Difference</b></th>
+                          <th><b>CreatedBy</b></th>
+                          <th><b>Remark</b></th>
+                        </tr>
+                      
+                      <tbody>
+                        <tr *ngFor="let row of txnHistory;let i=index;">
+                          <td><span style="font-weight:bold;text-align:center;">{{i+1}}</span></td>
+                          <td>{{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                          <td>{{row.CategoryName}}</td>
+                          <td>{{row.BankBalance | Currency:'4'}}</td>
+                          <td>{{row.Difference | Currency:'4'}}</td>
+                          <td>{{row.User}}</td>
+                          <td>{{row.Remark}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+    
+        <!--Model Box Body End-->
+      </div>
+    </div>
+      
+    <!-- END: history of bank txn details popup -->
+    
+    <!-- START: Display all bank txn details popup -->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetailView">
+      <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="form-body clearfix">
+          <div class="col-md-12" id="sf" style="margin-left: 90px;">
+            <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div">
+              <div class="row">
+                <div id="printpageTransactionView">
+                  <a class="btn btn-danger hidden-print rt_close_btn" (click)="ClosetxnDetails()" title="Cancel">X</a>
+                  <customer-header [header-title]="selLedger.LedgerName + ' Ledger'+ '(' + selLedger.Code +')'"></customer-header>
+                  <div class="row">
+                    <div class="col-md-12 col-xs-12">
+                      <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+    
+                      <div class="col-md-12" id="print_Rec_View" >
+                        <div class="row" >
+                          <div class="col-md-12 patient-hdr-label" >
+                            <table style="width:100% !important;">
+                              <tr>
+
+                                <td style="width: 10%;"><b>Bank Name :</b> </td>
+                                <td style="width: 50%;"> {{selLedger.LedgerName}} </td>
+    
+                              </tr>
+    
+                            </table>
+                          </div>
+                          <br /> <br />
+                          <div class="col-md-12" style="overflow-y:auto">
+                            <table class="table_data" style="width:100%;" border="1"  id="excelTransactionView" >
+                              <tr>
+                                <th>
+                                 Voucher Date
+                                </th>
+                                <th>
+                                  Voucher Number
+                                </th>
+                                <th>
+                                  Category
+                                </th>
+                                <th>
+                                  Balance as per Book
+                                </th>
+                                <th>
+                                  Balance as per bank
+                                </th>
+                                <th>
+                                  Difference
+                                </th>
+                                <th>
+                                 Remark
+                                </th>
+                              </tr>
+                              <tr *ngFor="let r of reconciliationDetails">
+                                <td>
+                                  {{r.TransactionDateBsAd | DanpheDateTime:'format':'YYYY-MM-DD' }}<br />
+                                </td>
+                                <td>
+                                  {{r.VoucherNumber }}
+                                </td>
+                                <td>
+                                  {{r.CategoryName}}
+                                </td>
+                                <td>
+                                 {{r.Balance | Currency:'4'}}
+                                </td>
+                                <td>
+                                  {{r.BankBalance | Currency:'4'}}
+                                </td>
+                                <td>
+                                    {{r.Difference | Currency:'4'}}
+                                  </td>
+                                  <td>
+                                      {{r.Remark}}
+                                    </td>
+                              </tr>
+                            </table>
+                          </div>
+                          <hr />
+                        </div>
+                        <br />
+                        <br />
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary hidden-print" (click)="PrintTxnTable('print_Rec_View')" value="Print" title="print page">
+                                Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+                              </button>
+                              <button class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value=""
+                                title="export to excel">
+                                Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+                              </button>
+                            </div>
+                      </div>
+                    </div>
+                  </div>
+    
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    <!-- END: Display all bank txn details popup -->
+   
+  <!-- START: Open reusable print function -->
+  <app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page>
+  <!-- END: Open reusable print function -->
+  

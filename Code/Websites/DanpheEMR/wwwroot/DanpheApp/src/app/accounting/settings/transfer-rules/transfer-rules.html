@@ -1,0 +1,30 @@
+<div>
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+      <div class="col-md-3 col-xs-12">
+        <div class="form-group">
+          <label class="control-label" style="margin-left: 5px;"> Select Module<b class="color-red">
+              *</b><b style="float:right;">:</b></label>
+          <div>
+            <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}"
+            style="width: 100%;height: 32px !important;">
+            <option *ngFor="let s of sectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+          </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-1 col-xs-12" style="margin-top: 5px;">
+        <div class="form-group">
+          <br>
+          <button class="btn blue" type="button" [disabled]="btndisabled" (click)="loadData() ">
+            <i class="fa fa-refresh"></i> Show
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="showGridData">
+      <danphe-grid [grid-colDefaults]="TransferRulesGridColumns" [grid-data]="TransferRulesList"
+        (grid-actions)="TransferRulesGridActions($event)"> </danphe-grid>
+    </div>
+  </div>
+</div>

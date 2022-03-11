@@ -25,7 +25,7 @@ export class BillingDepositComponent {
   //declare boolean loading variable for disable the double click event of button
   loading: boolean = false;
   public showReceipt: boolean = false;
-  public currencyUnit: string;
+  //public currencyUnit: string;
   @Input("isAddDepositFrmBillTxn")
   public isAddDepositFrmBillTxn: boolean = false;
   @Output("emit-deposit")
@@ -63,7 +63,7 @@ export class BillingDepositComponent {
       this.router.navigate(['/Billing/SearchPatient']);
     }
     else {
-      this.currencyUnit = this.billingService.currencyUnit;
+      //this.currencyUnit = this.billingService.currencyUnit;
       this.Initialize();
       this.GetPatientDeposit(this.patientservice.getGlobal().PatientId);
     }
@@ -78,6 +78,10 @@ export class BillingDepositComponent {
     this.deposit.PatientId = this.patientservice.getGlobal().PatientId;
     this.deposit.PaymentMode = "cash";
     this.LoadPatientBillingContext();
+  }
+
+  ngAfterViewInit() {
+    this.SetFocusById('txtAmount');
   }
 
   LoadPatientPastBillSummary(patientId: number) {
@@ -141,8 +145,14 @@ export class BillingDepositComponent {
           this.loading = false;
           return;
         }
-        if (this.deposit.DepositType == "Deposit")
+        if (this.deposit.DepositType == "Deposit") {
+          if (this.deposit.Amount > 10000000000) {
+            this.msgBoxServ.showMessage("failed", ["Deposit Amount should not be greater than 10000000000"]);
+            this.loading = false;
+            return;
+          }
           this.deposit.DepositBalance = this.deposit.DepositBalance + this.deposit.Amount;
+        }
         else
           this.deposit.DepositBalance = this.deposit.DepositBalance - this.deposit.Amount;
         this.billingBLService.PostBillingDeposit(this.deposit)
@@ -153,10 +163,10 @@ export class BillingDepositComponent {
               }
               if (res.Status == "OK") {
                 if (this.deposit.DepositType == "Deposit") {
-                  this.msgBoxServ.showMessage("success", ["Deposit of " + this.currencyUnit + this.deposit.Amount + " added successfully."]);
+                  this.msgBoxServ.showMessage("success", ["Deposit of " + this.coreService.currencyUnit + this.deposit.Amount + " added successfully."]);
                 }
                 else {
-                  this.msgBoxServ.showMessage("success", [this.currencyUnit + this.deposit.Amount + " returned successfully."]);
+                  this.msgBoxServ.showMessage("success", [this.coreService.currencyUnit + this.deposit.Amount + " returned successfully."]);
                 }
                 if (_showReceipt) {
                   this.deposit = res.Results;
@@ -206,103 +216,14 @@ export class BillingDepositComponent {
       });
   }
 
-  //Ashim:#modificationDeposit 7May'18 - we're not posting to BillingTransactionTable incase of deposit or deposit return.
+  SetFocusById(IdToBeFocused: string) {
+    window.setTimeout(function () {
+      let elemToFocus = document.getElementById(IdToBeFocused)
+      if (elemToFocus != null && elemToFocus != undefined) {
+        elemToFocus.focus();
+      }
+    }, 100);
+  }
 
-  //GetFormattedTxnForDeposit(): BillingTransaction {
-
-  //    let billTxn = new BillingTransaction();
-  //    billTxn.PatientId = this.patientservice.globalPatient.PatientId;
-  //    billTxn.PatientVisitId = null;//get proper value here later if possible.
-  //    billTxn.Remarks = this.deposit.Remarks;
-  //    //this.model.CreatedOn = res.Results.CreatedOn;
-  //    if (this.deposit.DepositType == 'deposit') {
-  //        billTxn.TransactionType = "DEPOSIT";
-  //        billTxn.DepositAmount = billTxn.TotalAmount = billTxn.PaidAmount = this.deposit.Amount;
-  //        billTxn.DepositBalance = this.model.DepositBalance + this.deposit.Amount;
-  //    }
-  //    else {
-  //        billTxn.TransactionType = "DEPOSIT RETURN";
-  //        billTxn.DepositReturnAmount = this.deposit.Amount;
-  //        billTxn.DepositBalance = this.model.DepositBalance - this.deposit.Amount;
-  //        billTxn.DepositAmount = 0;
-  //    }
-  //    billTxn.PaidDate = moment().format("YYYY-MM-DD HH:mm:ss");
-  //    billTxn.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
-  //    billTxn.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-  //    billTxn.CounterId = this.securityService.getLoggedInCounter().CounterId;
-  //    return billTxn;
-
-  //}
-
-
-
-  //Ashim:#modificationDeposit 7May'18 - we're not using invoice incase of deposit or deposit return
-  //CallBackDeposit(depositModel: BillingDeposit) {
-  //    let txnReceipt = BillingReceiptModel.GetReceiptForDeposit(depositModel.BillingTransaction);
-  //    txnReceipt.Patient = Object.create(this.patientservice.globalPatient);
-  //    txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-  //    txnReceipt.IsValid = true;
-  //    this.billingService.globalBillingReceipt = txnReceipt;
-  //    this.router.navigate(['Billing/ReceiptPrint']);
-  //}
-
-
-  //CallBack(res) {
-  //    this.deposit.BillingTransactionId = res.Results.BillingTransactionId;
-  //    this.model.BillingTransactionId = res.Results.BillingTransactionId;
-
-  //    var item = new BillingTransactionItem();
-  //    if (this.model.TransactionType == "DEPOSIT") {
-  //        item.TotalAmount = res.Results.DepositAmount
-  //        item.Quantity = 1;
-  //        item.Price = res.Results.DepositAmount;
-  //    }
-  //    else {
-  //        item.TotalAmount = res.Results.DepositReturnAmount;
-  //        item.Quantity = 1;
-  //        item.Price = res.Results.DepositReturnAmount;
-  //        this.model.DepositAmount = 0;
-  //    }
-  //    item.ItemName = this.model.TransactionType;
-  //    this.model.TotalAmount = item.TotalAmount;
-  //    if (this.model.TransactionType == "DEPOSIT") {
-  //        this.model.Tender = item.TotalAmount;
-  //    }
-  //    else {
-  //        let retamt = res.Results.DepositReturnAmount;
-  //        this.model.DepositReturnAmount = retamt;
-  //        this.model.Tender = 0;
-  //    }
-  //    //this.model.BillingTransactionItems[0].BillingTransactionId = this.deposit.BillingTransactionId;
-  //    this.model.BillingTransactionItems.push(item);
-  //    this.model.PaidDate = this.deposit.CreatedOn;
-  //    this.model.Remarks = this.deposit.Remarks;
-  //    this.model.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-  //    //this.deposit.OperatedDate = res.Results.PaidDate;
-  //    //update the Bill Transaction Id  on the deposit Table
-  //    this.billingBLService.UpdateTxnItemIdOnDeposit(this.deposit)
-  //        .subscribe(() => {
-  //            //this.deposit = new BillingDeposit();
-  //            ////this.model. = this.deposit.OperatedDate;
-  //            //var globalBill = this.billingService.CreateNewGlobalBillingTransaction();
-  //            //globalBill = Object.assign(globalBill, this.model);
-  //            //globalBill.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-  //            //this.model.BillingTransactionItems[0].RequisitionDate = moment().add((5 - moment().minute() % 5), 'minutes').format('YYYY-MM-DDTHH:mm');
-
-  //            ////if (res.Results[0].TransactionType == 'deposit' || res.Results[0].TransactionType == 'deposit') {
-  //            //this.model.DepositBalance = this.model.DepositAmount - this.model.DepositReturnAmount;
-  //            ////}
-  //            let depositbalance = this.model.DepositAmount - this.model.DepositReturnAmount;
-  //            //}
-
-  //            let txnReceipt = BillingReceiptModel.GetReceiptForDeposit(this.model);
-  //            txnReceipt.Patient = Object.create(this.patientservice.globalPatient);
-  //            txnReceipt.DepositBalance = depositbalance;
-  //            txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
-  //            txnReceipt.IsValid = true;
-  //            this.billingService.globalBillingReceipt = txnReceipt;
-  //            this.router.navigate(['Billing/ReceiptPrint']);
-  //        });
-  //}
 
 }

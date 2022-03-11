@@ -30,6 +30,12 @@ input[type="number"] {
           <div class="col-md-6" [ngClass]="showPriceCategory ? 'shpricecat':'hide'">
             <price-category-select (on-category-change)="OnPriceCategoryChange($event)"></price-category-select>
           </div>
+          <div class="col-md-5" *ngIf="!coreService.singleLabType">
+            Lab Type:
+            <select [(ngModel)]="LabTypeName" name="lab_type" id="lab_type" (change)="OnLabTypeChange()">
+              <option *ngFor="let labtype of coreService.labTypes" value="{{labtype.LabTypeName}}">{{labtype.DisplayName}}</option>
+            </select>
+          </div>
         </div>
         <table class="table billing-table table-bordered doc-tbl inv_table padLess_table " style="background-color:initial;margin-top:10px">
           <thead>

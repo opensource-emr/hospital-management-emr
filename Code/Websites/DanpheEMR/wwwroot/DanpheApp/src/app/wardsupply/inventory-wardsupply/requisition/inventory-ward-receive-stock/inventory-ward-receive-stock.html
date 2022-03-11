@@ -102,11 +102,11 @@
                     <strong class="col-md-2">Remarks :</strong>
                     <span *ngIf="!!dispatch.ReceivedBy; else elseBlockThree">{{dispatch.ReceivedRemarks}}</span>
                     <ng-template #elseBlockThree>
-                      <textarea class="col-md-7" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3"></textarea>
+                      <textarea id="ReceivedRemarks" class="col-md-7" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3" (keyup.enter)="setFocusById('ReceiveButton')"></textarea>
                     </ng-template>
                   </div>
                   <div class="text-center">
-                    <button class="btn btn-primary btn-sm" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour"      
+                    <button id="ReceiveButton" class="btn green btn-success margin-7-hr" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour"      
                       [disabled]="loading == true"              
                       (click)="ReceiveDispatchById(dispatch.DispatchId,dispatch.ReceivedRemarks)">Receive</button>
                       <ng-template #elseBlockFour>

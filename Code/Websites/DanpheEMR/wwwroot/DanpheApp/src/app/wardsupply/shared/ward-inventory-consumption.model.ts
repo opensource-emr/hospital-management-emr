@@ -6,6 +6,7 @@ import {
   FormBuilder,
   ReactiveFormsModule
 } from '@angular/forms'
+import { ItemMaster } from '../../inventory/shared/item-master.model';
 export class WardInventoryConsumptionModel {
   public ConsumptionId: number = 0;
   public DepartmentId: number = 0;
@@ -24,6 +25,7 @@ export class WardInventoryConsumptionModel {
   public StockId: number = 0;
   public StoreId: number = 0;
   public ConsumeQuantity: number = 1;
+  public SelectedItem: ItemMaster = null;
 
   public ConsumptionValidator: FormGroup = null;
   constructor() {

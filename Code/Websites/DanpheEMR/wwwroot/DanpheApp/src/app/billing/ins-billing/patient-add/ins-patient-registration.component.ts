@@ -1,17 +1,9 @@
 import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { CoreService } from '../../../core/shared/core.service';
-import { CommonFunctions } from '../../../shared/common.functions';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { PatientService } from '../../../patients/shared/patient.service';
-import * as moment from 'moment/moment';
-import { InsuranceVM } from '../../shared/patient-billing-context-vm';
-import { BillingBLService } from '../../shared/billing.bl.service';
-import { BillingDLService } from '../../shared/billing.dl.service';
-import { Patient } from '../../../patients/shared/patient.model';
-import { QuickVisitVM } from '../../../appointments/shared/quick-visit-view.model';
 import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
-import { InsuranceInfo } from '../../../patients/shared/insurance-info.model';
 import { GovInsurancePatientVM } from '../shared/gov-ins-patient.view-model';
 import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
 import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
@@ -46,6 +38,7 @@ export class INSPatientRegistrationComponent {
   @Input("popup-action")
   popupAction: string = "add";//add or edit.. logic will change accordingly.
 
+  public showLocalName:boolean= true;
 
   constructor(public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
@@ -57,7 +50,7 @@ export class INSPatientRegistrationComponent {
   ) {
 
     this.Initialize();
-
+    this.showLocalName=this.coreService.showLocalNameFormControl;
   }
 
   Initialize() {
@@ -123,7 +116,7 @@ export class INSPatientRegistrationComponent {
 
   RegisterInsurancePatient() {
     if (this.loading) {
-     
+
       //at beginning, current balance would be initial balance.
       this.insPatient.InitialBalance = this.insPatient.CurrentBalance;
       this.insPatient.InsuranceName = this.insProviderList.find(a => a.InsuranceProviderId == this.insPatient.InsuranceProviderId).InsuranceProviderName;
@@ -142,7 +135,7 @@ export class INSPatientRegistrationComponent {
 
         //removing extra spaces typed by the users
         this.insPatient.FirstName = this.insPatient.FirstName.trim();
-        this.insPatient.MiddleName = this.insPatient.MiddleName ? this.insPatient.MiddleName.trim() : null;
+        this.insPatient.MiddleName = this.insPatient.MiddleName ? this.insPatient.MiddleName.trim() : "";
         this.insPatient.LastName = this.insPatient.LastName.trim();
         this.insPatient.ShortName = this.insPatient.FirstName + " " + this.insPatient.MiddleName + this.insPatient.LastName;
 

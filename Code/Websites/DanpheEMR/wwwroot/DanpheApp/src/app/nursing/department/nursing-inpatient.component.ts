@@ -20,6 +20,7 @@ import { NursingDLService } from "../shared/nursing.dl.service";
 import { ADT_DLService } from "../../adt/shared/adt.dl.service";
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
 import { take } from "rxjs/operators";
+import { DanpheHTTPResponse } from "../../shared/common-models";
 
 
 @Component({
@@ -140,6 +141,7 @@ export class NursingInPatientComponent {
       this.ipdList = this.ipdList.slice();
 
     }, 60000);
+    this.LoadDepartments();
   }
   ngOnDestroy() {
     clearInterval(this.Timer);
@@ -536,6 +538,15 @@ export class NursingInPatientComponent {
       this.LoadIPDList(this.searchText);
     }
   }
+  
+  public allDepartments: Array<any> = [];
+  public LoadDepartments() {
+    this.admissionBLService.GetDepartments()
+      .subscribe((res: DanpheHTTPResponse) => {
+        this.allDepartments = res.Results;
+
+      });
+  }
 }
 
 export class NursingGridColSetting {
@@ -560,6 +571,7 @@ export class NursingGridColSetting {
     },
     { headerName: "Hospital Number", field: "PatientCode", width: 80 },
     { headerName: "IP Number", field: "VisitCode", width: 80 },
+    { headerName: "", field: "", width: 35, cellRenderer: this.InsPatientIconRenderer },
     { headerName: "Name", field: "Name", width: 150 },
     {
       headerName: "Age/Sex",
@@ -573,12 +585,12 @@ export class NursingGridColSetting {
       cellRenderer: this.BedDetailRenderer,
       width: 110,
     },
-    {
-      headerName: "Police Case ?",
-      field: "IsPoliceCase",
-      width: 90,
-      cellRenderer: this.PoliceCaseRenderer,
-    },
+    // {
+    //   headerName: "Police Case ?",
+    //   field: "IsPoliceCase",
+    //   width: 90,
+    //   cellRenderer: this.PoliceCaseRenderer,
+    // },
     {
       headerName: "Actions",
       field: "",
@@ -586,6 +598,14 @@ export class NursingGridColSetting {
       cellRenderer: this.GetNursingActionsByPermission,
     },
   ];
+
+  InsPatientIconRenderer(params) {
+    var template = "";
+    if (params.data.IsInsurancePatient) {
+      template = `<img title="Insurance Patient" style="width:24px;height:24px;" src='/themes/theme-default/images/insurance-patient-icon.png'></img>`;
+    }
+    return template;
+  }
 
   GetNursingActionsByPermission(params) {
     let tmplate = "";
@@ -705,5 +725,4 @@ export class NursingGridColSetting {
       return template
     }
   }
-
 }

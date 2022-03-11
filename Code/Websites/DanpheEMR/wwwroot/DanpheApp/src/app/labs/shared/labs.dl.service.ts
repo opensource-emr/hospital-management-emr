@@ -2,6 +2,8 @@ import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonFunctions } from "../../shared/common.functions";
 import { LabReportVM } from '../reports/lab-report-vm';
+import { Observable } from 'rxjs-compat';
+import { LoginToTelemed } from './labMasterData.model';
 
 @Injectable()
 export class LabsDLService {
@@ -21,14 +23,14 @@ export class LabsDLService {
   }
 
   //getting the requsitions.
-  public GetLabRequisition() {
-    return this.http.get<any>("/api/Lab?reqType=labRequisition", this.options)
+  public GetLabRequisition(frmdate, todate) {
+    return this.http.get<any>("/api/Lab?reqType=labRequisition&FromDate=" + frmdate + "&ToDate=" + todate, this.options)
   }
 
   //getting latest Sample code
-  public GetLatestSampleCode(visitType: string, sampleDate: string, runNumberType: string, patId: number) {
+  public GetLatestSampleCode(visitType: string, sampleDate: string, runNumberType: string, patId: number, underInsurance: boolean) {
     return this.http.get<any>("/api/Lab?reqType=latest-samplecode&visitType=" + visitType + '&SampleDate=' + sampleDate +
-      '&runNumberType=' + runNumberType + '&patientId=' + patId, this.options)
+      '&runNumberType=' + runNumberType + '&patientId=' + patId + '&hasInsurance=' + underInsurance, this.options)
   }
 
   public GetPrintIdfromTestComponentResult() {
@@ -41,13 +43,9 @@ export class LabsDLService {
   //}
 
   // gets lab samples with billstatus='paid' and orderstatus not final in Lab Sample collect Page
-  public GetLabSamplesWithCodeByPatientId(patientId: number, visitType: string, runNumberType: string, requisitionId: number, wardName: string) {
-    return this.http.get<any>("/api/Lab?patientId=" + patientId + "&reqType=LabSamplesWithCodeByPatientId&visitType=" + visitType + "&runNumberType=" + runNumberType + "&requisitionId=" + requisitionId + "&wardName=" + wardName, this.options);
-  }
-
-  // gets lab samples with billstatus='paid' and orderstatus not final. ///Not Used Modified to GetLabSamplesWithCodeByPatientId
-  public GetLabSamplesByPatientId(patientId: number, visitType: string) {
-    return this.http.get<any>("/api/Lab?patientId=" + patientId + "&reqType=LabSamplesByPatientId&visitType=" + visitType, this.options);
+  public GetLabSamplesWithCodeByPatientId(patientId: number, visitType: string, runNumberType: string, requisitionId: number, wardName: string, isUnderInsurance: boolean) {
+    return this.http.get<any>("/api/Lab?patientId=" + patientId + "&reqType=LabSamplesWithCodeByPatientId&visitType=" + visitType + "&runNumberType=" + runNumberType + "&requisitionId=" +
+      requisitionId + "&wardName=" + wardName + '&hasInsurance=' + isUnderInsurance, this.options);
   }
 
   //getting report for patient view..(used in view-report.component)
@@ -73,22 +71,45 @@ export class LabsDLService {
     return this.http.get<any>("/api/Lab?patientId=" + patientId + "&templateId=" + templateId, this.options)
   }
   //getting report for lab results which have pending results..(used in pendinding-lab-results.component)
-  public GetPendingLabResults() {
-    return this.http.get<any>("/api/Lab?reqType=pendingLabResults", this.options);
+  public GetPendingLabResults(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=pendingLabResults&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options);
 
   }
+
+  public GetPendingLabResultsForWorkList(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=pendingLabResultsForWorkList&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options);
+
+  }
+
   //getting report for pending templates in a single patient where isprint is false..(used in patient-template-list.component)
   public GetPatientTemplateList(patientId: number) {
     return this.http.get<any>("/api/Lab?patientId=" + patientId + "&reqType=patientTemplateList", this.options)
   }
 
-  public GetLabTestPendingReports(frmdate, todate) {
-    return this.http.get<any>("/api/Lab?&reqType=pending-reports&FromDate=" + frmdate + "&ToDate=" + todate, this.options)
+  public GetLabTestPendingReports(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?&reqType=pending-reports&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options)
   }
-  public GetLabTestFinalReports(frmdate, todate, searchtxt) {
-    return this.http.get<any>("/api/Lab?reqType=final-reports&FromDate=" + frmdate + "&ToDate=" + todate + "&search=" + searchtxt, this.options)
+  public GetLabTestFinalReports(frmdate, todate, searchtxt, catList, isForLabMaster) {
+    return this.http.get<any>("/api/Lab?reqType=final-reports&FromDate=" + frmdate + "&ToDate=" + todate + "&search=" + searchtxt + "&isForLabMaster=" + isForLabMaster + "&categoryIdList=" + catList, this.options)
+  }
+
+  public GetPatientListInLabFinalReports(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=final-report-patientlist&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options)
+  }
+
+  public GetPatientListForReportDispatch(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=patientListForReportDispatch&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options)
+  }
+
+  public GetFinalReportsInReportDispatchByPatId(patientId, frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=reportsByPatIdInReportDispatch&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList + "&patientId=" + patientId, this.options)
+  }
+
+  public GetPatientList(frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=filtered-patient-list&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options)
 
   }
+
   public GetAllLabCategory() {
     return this.http.get<any>("/api/Lab?reqType=all-lab-category", this.options)
 
@@ -102,23 +123,27 @@ export class LabsDLService {
   public GetEmpPreference(employeeId: number) {
     return this.http.get<any>("/api/Lab?reqType=employeePreference&employeeId=" + employeeId, this.options)
   }
-  public GetLastSampleCode(labTestSpecimen: string, requisitionId: number) {
-    return this.http.get<any>("/api/Lab?reqType=lastSampleCode&labTestSpecimen=" + labTestSpecimen + "&requisitionId=" + requisitionId, this.options)
-  }
+
 
   //getting sample code compared --yub 1st sept '18'
-  public GetSampleCodeCompared(SampleNumber: number, visitType: string, sampleCreatedOn: string, RunNumberType: string) {
+  public GetSampleCodeCompared(SampleNumber: number, visitType: string, sampleCreatedOn: string, RunNumberType: string, isUnderIns: boolean) {
     return this.http.get<any>("/api/Lab?reqType=check-samplecode&SampleCode=" + SampleNumber
       + '&visitType=' + visitType
-      + '&SampleDate=' + sampleCreatedOn + '&runNumberType=' + RunNumberType, this.options)
+      + '&SampleDate=' + sampleCreatedOn + '&runNumberType=' + RunNumberType + '&hasInsurance=' + isUnderIns, this.options)
   }
 
   public GetReportFromReqIdList(requisitionIdList: string) {
     return this.http.get<any>("/api/Lab?reqType=labReportFromReqIdList&requisitionIdList=" + requisitionIdList, this.options)
 
   }
-  public GetTestListOfSelectedInPatient(patId: number, patVisitId: number, module:string) {
-    return this.http.get<any>("/api/Billing?reqType=inPatientProvisionalItemList&patientId=" + patId + "&visitId=" + patVisitId + "&module=" +module, this.options)
+
+  public GetReportFromListOfReqIdList(requisitionIdList: string) {
+    return this.http.get<any>("/api/Lab?reqType=labReportFromListOfReqIdList&requisitionIdList=" + requisitionIdList, this.options)
+
+  }
+
+  public GetTestListOfSelectedInPatient(patId: number, patVisitId: number, module: string) {
+    return this.http.get<any>("/api/Billing?reqType=inPatientProvisionalItemList&patientId=" + patId + "&visitId=" + patVisitId + "&module=" + module, this.options)
   }
 
   public GetSpecimen(reqId: number) {
@@ -137,6 +162,10 @@ export class LabsDLService {
     return this.http.get<any>("/api/Lab?reqType=allLabDataFromPatientName&patientId=" + patientId, this.options);
   }
 
+  public GetTestListSummaryByPatientId(patientId: number, frmdate, todate, catList) {
+    return this.http.get<any>("/api/Lab?reqType=testListSummaryByPatientId&patientId=" + patientId + "&FromDate=" + frmdate + "&ToDate=" + todate + "&categoryIdList=" + catList, this.options);
+  }
+
   public GetLabRequisitionsFromReqIdList(requisitionIdList: string) {
     return this.http.get<any>("/api/Lab?reqType=labRequisitionFromRequisitionIdList&requisitionIdList=" + requisitionIdList, this.options);
   }
@@ -146,10 +175,10 @@ export class LabsDLService {
   public GetAllPatientList() {
     return this.http.get<any>("/api/Patient", this.options);
   }
-  public GetAllTestsForExternalLabs(){
+  public GetAllTestsForExternalLabs() {
     return this.http.get<any>("/api/Lab?reqType=allTestListForExternalLabs", this.options);
   }
-  public GetAllTestsSendToExternalVendors(){
+  public GetAllTestsSendToExternalVendors() {
     return this.http.get<any>("/api/Lab?reqType=allTestListSendToExternalLabs", this.options);
   }
 
@@ -193,9 +222,9 @@ export class LabsDLService {
   }
 
   // Update IsPrinted Value in LabReport Table
-     public UpdateIsPrintedFlag(reportId: number, reqListStr: string) {
-      return this.http.put<any>("/api/Lab?reqType=update-reportPrintedFlag&reportId=" + reportId +'&requisitionIdList=' + reqListStr , this.options);
-    }
+  public UpdateIsPrintedFlag(reportId: number, reqListStr: string) {
+    return this.http.put<any>("/api/Lab?reqType=update-reportPrintedFlag&reportId=" + reportId + '&requisitionIdList=' + reqListStr, this.options);
+  }
 
   //adding the samplecode
   public PutSampleCode(req, CurrentUser: number) {
@@ -266,14 +295,14 @@ export class LabsDLService {
     return this.http.put<any>('/api/Lab?reqType=cancelInpatientLabTest', data, this.options);
   }
 
-  public CancelLabItem(data){
+  public CancelLabItem(data) {
     return this.http.put<any>('/api/Billing?reqType=cancelInpatientItemFromWard', data, this.options);
   }
 
   //sud: 4-Nov-2018--to send lab sticker to server for file creation.
-  public PostLabStickerHTML(printerName: string, fileName: string, stickerHtmlContent: string, numOfCopies: number) {
-    return this.http.post<any>("/api/Lab?reqType=saveLabSticker&PrinterName=" + printerName + "&fileName=" + fileName  + "&numOfCopies=" + numOfCopies, stickerHtmlContent, this.options);
-    }
+  public PostLabStickerHTML(printerName: string, filePath: string, stickerHtmlContent: string, numOfCopies: number) {
+    return this.http.post<any>("/api/Lab?reqType=saveLabSticker&PrinterName=" + printerName + "&filePath=" + filePath + "&numOfCopies=" + numOfCopies, stickerHtmlContent, this.options);
+  }
 
   // this.http.post<any>("/api/Billing?reqType=saveHTMLfile&PrinterName=" + PrinterName + "&FilePath=" + filePath, printableHTML, this.options)
   //.map(res => res).subscribe(res => {
@@ -331,4 +360,70 @@ export class LabsDLService {
 
   //end: sud:16May'19--for lab-external vendors.
 
+
+  //activate lab 
+  public ActivateLab(labId: number, labName: string) {
+    return this.http.put<any>("/api/Security?reqType=activateLab&labId=" + labId + "&labName=" + labName, this.options);
+  }
+
+  public DeactivateLab() {
+    return this.http.put<any>("/api/Security?reqType=deactivateLab", this.options);
+  }
+
+  public TransfertToLab(reqId: number, labTypeName: string) {
+    return this.http.put<any>("/api/Lab?reqType=transfertoLab&reqId=" + reqId + "&labTypeName=" + labTypeName, this.options);
+  }
+
+  public GetSamplesCollectedData(fromDate, toDate) {
+    return this.http.get<any>("/api/Lab?reqType=allSamplesCollectedData&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+  }
+
+  public GetSMSApplicableTest(fromDate, toDate) {
+    return this.http.get<any>("/api/Lab?reqType=allSmsApplicableTest&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+  }
+
+  public PostSMS(reqId: string) {
+    return this.http.post<any>("/api/Lab?reqType=postSMS", reqId, this.options);
+  }
+
+  public GetSMSToBeSendMsg(reqId: number) {
+    return this.http.get<any>("/api/Lab?reqType=getSMSMessage&requisitionId=" + reqId, this.options);
+  }
+
+  // public PutSampleCode(req, CurrentUser: number) {
+  //   return this.http.put<any>("/api/Lab?reqType=updateSampleCode&CurrentUser=" + CurrentUser, req, this.options);
+  // }
+
+  public GenerateSampleRunNumber(data, CurrentUser: number) {
+    return this.http.post<any>("/api/Lab?reqType=updateSampleCodeAutomatically&CurrentUser=" + CurrentUser, data, this.options);
+  }
+
+  public SendPdf(data, reqId: number) {
+    return this.http.post<any>("/api/Lab?reqType=sendCovidPdfReport&requisitionId=" + reqId, data, this.options);
+  }
+  public SendEmail(formData: any) {
+    let data = formData;
+    try {
+      return this.http.post<any>("/api/Lab?reqType=sendEmail", data, this.options)
+    } catch (exception) {
+      throw exception;
+    }
+  }
+  uploadFile<T>(url:any,patient: any, formData: FormData): Observable<T> {
+    var fullUrl = url +'api/LabReport';
+    var reqHeader = new HttpHeaders({ 
+      'Authorization': 'Bearer ' + (sessionStorage.getItem('TELEMED_Token'))
+   });
+    return this.http.post<T>(`${fullUrl}/${patient.firstName}/${patient.lastName}/${patient.phoneNumber}/${patient.email}`, formData, { headers: reqHeader});
+  }
+
+  TeleMedicineLogin(url:any,login:LoginToTelemed){
+    var fullUrl = url + 'api/account/login';
+    return this.http.post<any>(fullUrl, JSON.stringify(login),{headers : new HttpHeaders({ 'Content-Type': 'application/json' })});
+  }
+
+  public UpdateFileUploadStatus(requisitionIdList: string) {
+    return this.http.put<any>("/api/Lab/updateFileUploadStatus?requisitionIdList=" + requisitionIdList, this.options)
+
+  }
 }

@@ -37,7 +37,6 @@ import { RPT_RAD_CategoryWiseImagingReportComponent } from "./radiology/category
 import { RPT_APPT_DeptWiseAppointmentReportComponent } from "./appointment/dept-wise/deptwise-appointment-report.component";
 import { RPT_LAB_CategoryWiseLabReportComponent } from "./lab/category-wise/category-wise-lab-report.component";
 import { RPT_LAB_TotalRevenueFromLabComponent } from "./lab/revenue/total-revenue-from-lab.component";
-import { RPT_GOVT_GovReportSummaryComponent } from "./government/summary/govt-reports-summary.component";
 import { RPT_ADT_ADTReportsMainComponent } from "./adt/adt-reports-main.component";
 import { RPT_BIL_BillingReportsMainComponent } from "./billing/billing-reports-main.component";
 import { RPT_APPT_AppointmentReportsMainComponent } from "./appointment/appointment-reports-main.component";
@@ -49,9 +48,6 @@ import { RPT_BIL_ReturnBillReportComponent } from "./billing/return-bills/return
 import { RPT_BIL_BillCancelSummaryComponent } from "./billing/cancel-summary/bill-cancel-summary.component";
 import { RPT_BIL_IncomeSegregationComponent } from "./billing/income-segregation/income-segregation.component";
 import { RPT_BIL_DoctorReferralComponent } from "./billing/doctor-referral/doctor-referral.component";
-import { RPT_GOVT_GovernmentMainComponent } from "./government/govt-reports-main.component";
-import { RPT_GOVT_LaboratoryServicesComponent } from "./government/lab-services/laboratory-services.component";
-import { RPT_GOVT_InpatientOutcomeComponent } from "./government/inpatient-outcome/inpatient-outcome.component";
 import { RPT_ADT_DischargeBillBreakupComponent } from "./adt/discharge/discharge-bill-breakup.component";
 import { RPT_BIL_PatientCensusReportComponent } from "./billing/pat-census/patient-census-report.component";
 import { RPT_APPT_DoctorwiseOutPatientReportComponent } from "./appointment/doctor-wise/doctorwise-outpatient-report.component";
@@ -85,7 +81,21 @@ import { RPT_LAB_ItemCountComponent } from "./lab/total-count-report/itemwise-co
 import { RPT_ADT_InpatientCensusComponent } from "./adt/inpatient-census/inpatient-census.component";
 import { RPT_LAB_StatusWiseItemCountComponent } from "./lab/status-wise-count-report/status-wise-item-count-report.component";
 import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.component";
-import { KeysPipe } from "./government/lab-services/laboratory.pipe";
+import { RPT_TotalDailyCovidCasesReport } from "./lab/covid-summary-report/total-daily-cases.component";
+import { RPT_CovidTestsSummaryReport } from "./lab/covid-summary-report/covid-tests-summary.component";
+import { RPT_HIVTestDetailReport } from "./lab/hiv-test-report/hiv-test-detail-report.component";
+import { RPT_LabCultureReport } from "./lab/culture-report/culture-report.component";
+import { RPT_LabTypeWiseTestCountReport } from "./lab/labtype-wise-test-count/labtype-wise-test-count.component";
+import { RPT_BIL_DepositTransactionComponent } from "./billing/deposit-transactions/deposit-transactions.component";
+import { LabStatusFilterComponent } from './lab/shared/lab-status-filter/lab-status-filter.component';
+import { RPTADTAdmissionAndDischargeListComponent } from './adt/admission-and-discharge-report/rpt-adt-admission-and-discharge-list/rpt-adt-admission-and-discharge-list.component';
+import { RPT_BIL_DiscountSchemeReportComponent } from "./billing/discount-scheme-report/discount-scheme-report.component";
+import { RPT_BIL_DepartmentWiseDiscountSchemeReportComponent } from "./billing/department-wise-discount-scheme-report/department-wise-discount-scheme-report.component";
+import { RPT_BIL_UserWiseCashCollectionComponent } from "./billing/user-wise-cash-collection-report/user-wise-cash-collection.component";
+import { RPT_BIL_CreditSettlementReport } from "./billing/credit-settlement-report/credit-settlement-report.component";
+import { CreditSettlementReportViewDetails } from "./billing/credit-settlement-report/credit-settlement-rpt-view-details.component";
+import { RPT_BIL_EHSBillReportComponent } from "./billing/EHS-billing-report/ehs-bill-report.component";
+import { EditedPatientDetailReport } from "./patient/edited-patient-detail/edited-patient-detail-report.component";
 
 @NgModule({
   providers: [
@@ -108,10 +118,13 @@ import { KeysPipe } from "./government/lab-services/laboratory.pipe";
   ],
   declarations: [
     RPT_BIL_DepositBalanceComponent,
+    RPT_BIL_DepositTransactionComponent,
     RPT_BIL_DoctorRevenueComponent,
     RPT_BIL_DoctorReportComponent,
     RPT_BIL_UserCollectionReportComponent,
     RPT_BIL_DiscountReportComponent,
+    RPT_BIL_DiscountSchemeReportComponent,
+    RPT_BIL_DepartmentWiseDiscountSchemeReportComponent,
     RPT_BIL_TotalItemsBillComponent,
     RPT_BIL_SalesDaybookComponent,
     RPT_BIL_DepartmentSalesDaybookComponent,
@@ -128,7 +141,6 @@ import { KeysPipe } from "./government/lab-services/laboratory.pipe";
     RPT_APPT_DeptWiseAppointmentReportComponent,
     RPT_LAB_CategoryWiseLabReportComponent,
     RPT_LAB_TotalRevenueFromLabComponent,
-    RPT_GOVT_GovReportSummaryComponent,
     RPT_ADT_ADTReportsMainComponent,
     RPT_BIL_BillingReportsMainComponent,
     RPT_APPT_AppointmentReportsMainComponent,
@@ -140,9 +152,6 @@ import { KeysPipe } from "./government/lab-services/laboratory.pipe";
     RPT_BIL_BillCancelSummaryComponent,
     RPT_BIL_IncomeSegregationComponent,
     RPT_BIL_DoctorReferralComponent,
-    RPT_GOVT_GovernmentMainComponent,
-    RPT_GOVT_LaboratoryServicesComponent,
-    RPT_GOVT_InpatientOutcomeComponent,
     RPT_ADT_DischargeBillBreakupComponent,
     RPT_BIL_PatientCensusReportComponent,
     RPT_APPT_DoctorwiseOutPatientReportComponent,
@@ -176,8 +185,19 @@ import { KeysPipe } from "./government/lab-services/laboratory.pipe";
     RPT_LAB_ItemCountComponent,
     RPT_ADT_InpatientCensusComponent,
     RPT_LAB_StatusWiseItemCountComponent,
-    KeysPipe,
-    RPT_PoliceCaseReportComponent
+    RPT_PoliceCaseReportComponent,
+    RPT_TotalDailyCovidCasesReport,
+    RPT_CovidTestsSummaryReport,
+    RPT_HIVTestDetailReport,
+    RPT_LabCultureReport,
+    RPT_LabTypeWiseTestCountReport,
+    LabStatusFilterComponent,
+    RPTADTAdmissionAndDischargeListComponent,
+    RPT_BIL_UserWiseCashCollectionComponent,
+    RPT_BIL_CreditSettlementReport,
+    CreditSettlementReportViewDetails,
+    RPT_BIL_EHSBillReportComponent,
+    EditedPatientDetailReport
   ],
   bootstrap: [RPT_ReportingMainComponent],
 })

@@ -6,7 +6,7 @@
       <div [ngClass]="isPopUp ? 'modelbox-div':''">
         <div class="modelbox-body">
           <div>
-            <table class="table table-striped table-bordered table-hover">
+            <table class="table table-striped table-bordered table-hover col-md-12">
               <tr>
                 <th sortable-header>
                   <b>{{selectedBedInfo.Name}}({{selectedBedInfo.PatientCode}})</b>
@@ -21,30 +21,17 @@
                       Requesting Department <b class="color-red"> * </b><b style="float: right;">&nbsp;:&nbsp; </b>
                     </td>
                     <td>
-                      <input danphe-auto-complete
-                             class="form-control cstm-form-control"
-                             formControlName="RequestingDeptId"
-                             [ngClass]="{'border-red': newBedInfo.IsDirty('RequestingDeptId') && !newBedInfo.IsValidCheck('RequestingDeptId','required') && !newBedInfo.IsValidReqDepartment }"
-                             [(ngModel)]="selectedReqDept"
-                             [source]="allDepartments"
-                             placeholder="Enter Department Name"
-                             display-property-name="DepartmentName"
-                             value-property-name="null"
-                             [list-formatter]="deptListFormatter"
-                             match-formatted="true"
-                             (focusout)="AssignSelectedDepartment()"
-                             onClick="this.select();"
-                             max-num-list="10" />
+                      <input danphe-auto-complete class="form-control cstm-form-control"
+                        formControlName="RequestingDeptId" id="DepartmentName"
+                        [ngClass]="{'border-red': newBedInfo.IsDirty('RequestingDeptId') && !newBedInfo.IsValidCheck('RequestingDeptId','required') && !newBedInfo.IsValidReqDepartment }"
+                        [(ngModel)]="selectedReqDept" [source]="allDepartments" placeholder="Enter Department Name"
+                        display-property-name="DepartmentName" value-property-name="null" [min-chars]="1"
+                        [list-formatter]="deptListFormatter" match-formatted="true" [grid-sort]="'DepartmentName'"
+                        (keyup.enter)="FocusNext(selectedReqDept,'SecondaryDoctorName','DepartmentName')"
+                        (focusout)="AssignSelectedDepartment()" onClick="this.select();" max-num-list="10" />
 
-                      <!--<select [(ngModel)]="newBedInfo.RequestingDeptId"
-                              class="form-control"
-                              formControlName="RequestingDeptId">
-                          <option *ngFor="let dept of allDepartments" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
-                      </select>-->
-
-                      <div style="color: red;"
-                           *ngIf="newBedInfo.IsDirty('RequestingDeptId')"
-                           [hidden]="newBedInfo.IsValidCheck('RequestingDeptId','required')">
+                      <div style="color: red;" *ngIf="newBedInfo.IsDirty('RequestingDeptId')"
+                        [hidden]="newBedInfo.IsValidCheck('RequestingDeptId','required')">
                         Select Department from the List.
                       </div>
                     </td>
@@ -62,17 +49,12 @@
                       Secondary Doctor: <b class="color-red"> </b><b style="float: right;">&nbsp;:&nbsp; </b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <input danphe-auto-complete
-                             class="form-control cstm-form-control"
-                             [(ngModel)]="selectedDoctor"
-                             [ngModelOptions]="{standalone: true}"
-                             [source]="filteredDocList"
-                             placeholder="Enter Secondary Doctor Name"
-                             display-property-name="ProviderName"
-                             [list-formatter]="DocListFormatter"
-                             (valueChanged)="AssignSelectedDoctor()"
-                             onClick="this.select()"
-                             (focus)="AssignSelectedDoctor()" />
+                      <input danphe-auto-complete class="form-control cstm-form-control" [(ngModel)]="selectedDoctor"
+                        [ngModelOptions]="{standalone: true}" [source]="filteredDocList" id="SecondaryDoctorName"
+                        placeholder="Enter Secondary Doctor Name" display-property-name="ProviderName"
+                        [list-formatter]="DocListFormatter" (valueChanged)="AssignSelectedDoctor()"
+                        onClick="this.select()" (focus)="AssignSelectedDoctor()" [min-chars]="1"
+                        (keyup.enter)="FocusNext(selectedReqDept,'WardId','WardId')" />
                     </td>
                   </tr>
                   <tr>
@@ -80,18 +62,16 @@
                       Ward: <b class="color-red"> *</b><b style="float: right;">&nbsp;:&nbsp; </b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <select [(ngModel)]="newBedInfo.WardId"
-                              formControlName="WardId"
-                              class="form-control bedInfo"
-                              (ngModelChange)="WardChanged(newBedInfo.WardId)">
-                        <option *ngFor="let ward of wardList"
-                                value="{{ward.WardId}}">
+                      <select [(ngModel)]="newBedInfo.WardId" formControlName="WardId" class="form-control bedInfo"
+                        (ngModelChange)="WardChanged(newBedInfo.WardId)" id="WardId"
+                        (change)="FocusNext(newBedInfo.WardId,'BedFeatureId','WardId')">
+                        <option [ngValue]="null">Select Ward</option>
+                        <option *ngFor="let ward of wardList" value="{{ward.WardId}}">
                           {{ward.WardName}}
                         </option>
                       </select>
-                      <div style="color: red;"
-                           *ngIf="newBedInfo.IsDirty('WardId')"
-                           [hidden]="newBedInfo.IsValidCheck('WardId','required')">
+                      <div style="color: red;" *ngIf="newBedInfo.IsDirty('WardId')"
+                        [hidden]="newBedInfo.IsValidCheck('WardId','required')">
                         Select Ward
                       </div>
                     </td>
@@ -101,19 +81,18 @@
                       Select Bed Feature <b class="color-red"> *</b><b style="float: right;"> &nbsp;:&nbsp; </b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <select [(ngModel)]="newBedInfo.BedFeatureId"
-                              formControlName="BedFeatureId"
-                              class="form-control bedInfo"
-                              (ngModelChange)="GetAvailableBeds(newBedInfo.WardId,newBedInfo.BedFeatureId)">
-                        <option *ngFor="let bedFeature of bedFeatureList"
-                                value="{{bedFeature.BedFeatureId}}"
-                                [disabled]="disableBedType">
+                      <select [(ngModel)]="newBedInfo.BedFeatureId" formControlName="BedFeatureId"
+                        class="form-control bedInfo" id="BedFeatureId"
+                        (ngModelChange)="GetAvailableBeds(newBedInfo.WardId,newBedInfo.BedFeatureId)"
+                        (change)="FocusNext(newBedInfo.BedFeatureId,'BedId','BedFeatureId')">
+                        <option [ngValue]="null">Select Bed Feature</option>
+                        <option *ngFor="let bedFeature of bedFeatureList" value="{{bedFeature.BedFeatureId}}"
+                          [disabled]="disableBedType">
                           {{bedFeature.BedFeatureName}}
                         </option>
                       </select>
-                      <div style="color: red;"
-                           *ngIf="newBedInfo.IsDirty('BedFeatureId')"
-                           [hidden]="newBedInfo.IsValidCheck('BedFeatureId','required')">
+                      <div style="color: red;" *ngIf="newBedInfo.IsDirty('BedFeatureId')"
+                        [hidden]="newBedInfo.IsValidCheck('BedFeatureId','required')">
                         Select Bed Feature
                       </div>
                     </td>
@@ -130,13 +109,13 @@
                       Select Bed <b class="color-red"> *</b><b style="float: right;">&nbsp;:&nbsp; </b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <select [(ngModel)]="newBedInfo.BedId"
-                              class="form-control bedInfo"
-                              formControlName="BedId" (change)="BedChanged($event.target.value)">
+                      <select [(ngModel)]="newBedInfo.BedId" class="form-control bedInfo" formControlName="BedId"
+                        (ngModelChange)="BedChanged(newBedInfo.BedId)" id="BedId"
+                        (change)="FocusNext(newBedInfo.BedId,'Remarks','BedId')">
+                        <option [ngValue]="null">Select Bed</option>
                         <ng-container *ngFor="let bed of bedList">
-                          <option [ngClass]="bed.IsReserved ? 'reserved':'not-reserved'"
-                                  value="{{bed.BedId}}"
-                                  [disabled]="disableBed">
+                          <option [ngClass]="bed.IsReserved ? 'reserved':'not-reserved'" value="{{bed.BedId}}"
+                            [disabled]="disableBed">
                             {{bed.BedCode}}
                             <ng-container *ngIf="bed && bed.IsReserved">
                               (Reserved)
@@ -144,9 +123,8 @@
                           </option>
                         </ng-container>
                       </select>
-                      <div style="color: red;"
-                           *ngIf="newBedInfo.IsDirty('BedId')"
-                           [hidden]="newBedInfo.IsValidCheck('BedId','required')">
+                      <div style="color: red;" *ngIf="newBedInfo.IsDirty('BedId')"
+                        [hidden]="newBedInfo.IsValidCheck('BedId','required')">
                         Select Bed
                       </div>
                     </td>
@@ -156,12 +134,13 @@
                       Transfer Date <b style="float: right;">&nbsp;:&nbsp;</b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <danphe-date-picker [(ngModel)]="newBedInfo.StartedOn" (ngModelChange)="compareDate()" [ngModelOptions]="{standalone: true}"
-                                          [showTime]="true" [CalendarTypes]="'en,np'">
-                      </danphe-date-picker>                      
+                      <danphe-date-picker [(ngModel)]="newBedInfo.StartedOn" (ngModelChange)="compareDate()"
+                        [ngModelOptions]="{standalone: true}" [showTime]="true" [CalendarTypes]="'en,np'">
+                      </danphe-date-picker>
                       <span class="color-red font-sm" *ngIf="!validDate">Enter Valid Date.</span><br />
                       <span class="color-red font-sm" *ngIf="!validDate">
-                        {{this.selectedBedInfo.BedInformation.Action}} Date was {{this.selectedBedInfo.BedInformation.StartedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}.
+                        {{this.selectedBedInfo.BedInformation.Action}} Date was
+                        {{this.selectedBedInfo.BedInformation.StartedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}.
                       </span>
                     </td>
                   </tr>
@@ -181,23 +160,26 @@
                   </tr>-->
                   <tr>
                     <td style="padding-top: 10px;">
-                      Transfer Remarks  <b *ngIf="isTransferRemarksCompulsory" class="color-red"> * </b><b style="float: right;">
+                      Transfer Remarks <b *ngIf="isTransferRemarksCompulsory" class="color-red"> * </b><b
+                        style="float: right;">
                         &nbsp;:&nbsp;
                       </b>
                     </td>
                     <td style="padding-top: 10px;">
-                      <textarea name="Remarks"
-                                max="100"
-                                class="form-control"
-                                [ngClass]="{'border-red': newBedInfo.IsDirty('Remarks') && (!newBedInfo.IsValidCheck('Remarks','maxlength') || (isTransferRemarksCompulsory && !newBedInfo.IsValidCheck('Remarks','required')) )}"
-                                [(ngModel)]="newBedInfo.Remarks"
-                                formControlName="Remarks"></textarea>
+                      <!-- <textarea name="Remarks" max="100" class="form-control" id="Remarks"
+                        [ngClass]="{'border-red': newBedInfo.IsDirty('Remarks') && (!newBedInfo.IsValidCheck('Remarks','maxlength') || (isTransferRemarksCompulsory && !newBedInfo.IsValidCheck('Remarks','required')) )}"
+                        [(ngModel)]="newBedInfo.Remarks" formControlName="Remarks"
+                        (keyup.enter)="setFocusById('btn_transfer')"></textarea> -->
+                      <input type="text" name="Remarks" max="100" class="form-control" id="Remarks"
+                        [ngClass]="{'border-red': newBedInfo.IsDirty('Remarks') && (!newBedInfo.IsValidCheck('Remarks','maxlength') || (isTransferRemarksCompulsory && !newBedInfo.IsValidCheck('Remarks','required')) )}"
+                        [(ngModel)]="newBedInfo.Remarks" formControlName="Remarks" onClick="this.select();"
+                        (keyup.enter)="setFocusById('btn_transfer')" />
 
-                       <div style="color:red" *ngIf="isTransferRemarksCompulsory && newBedInfo.IsDirty('Remarks')" [hidden]="newBedInfo.IsValidCheck('Remarks','required')">Remarks is required.</div>
+                      <div style="color:red" *ngIf="isTransferRemarksCompulsory && newBedInfo.IsDirty('Remarks')"
+                        [hidden]="newBedInfo.IsValidCheck('Remarks','required')">Remarks is required.</div>
 
-                      <span class="color-red"
-                            *ngIf="newBedInfo.IsDirty('Remarks')"
-                            [hidden]="newBedInfo.IsValidCheck('Remarks','maxlength')">
+                      <span class="color-red" *ngIf="newBedInfo.IsDirty('Remarks')"
+                        [hidden]="newBedInfo.IsValidCheck('Remarks','maxlength')">
                         Remarks should be less than 100 characters.
                       </span>
                     </td>
@@ -205,28 +187,20 @@
                 </table>
               </form>
               <div>
-                <input type="button"
-                       class="btn blue"
-                       name="name"
-                       value="Transfer"
-                       [disabled]="loading"
-                       (click)="Transfer()" />
+                <input type="button" class="btn green btn-success" name="name" id="btn_transfer" value="Transfer"
+                  [disabled]="loading" (click)="Transfer()" />
               </div>
             </div>
             <div class="col-md-7">
-              <patient-admission-history *ngIf="showAdmissionHistory"
-                                         [ipVisitid]="selectedBedInfo.PatientVisitId"
-                                         (change-started-date)="UpgradeStartedDate($event)">
+              <patient-admission-history *ngIf="showAdmissionHistory" [ipVisitid]="selectedBedInfo.PatientVisitId"
+                (change-started-date)="UpgradeStartedDate($event)">
               </patient-admission-history>
             </div>
           </div>
         </div>
 
         <div class="close-modelbox">
-          <a *ngIf="isPopUp"
-             class="btn btn-danger history-del-btn"
-             (click)="Close()"
-             title="close window">X</a>
+          <a *ngIf="isPopUp" class="btn btn-danger history-del-btn" (click)="Close()" title="close window">X</a>
         </div>
 
         <!--Model Box Body End-->
@@ -234,13 +208,13 @@
     </div>
   </div>
 </div>
-<div class="popup-static portlet box portlet-fullscreen inv_modal"
-     *ngIf="showReceipt">
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showReceipt">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
         <div class="modelbox-div">
-          <a class="btn btn-danger history-del-btn" (click)="Close()" title="close... route to admitted patient list">X</a>
+          <a class="btn btn-danger history-del-btn" (click)="Close()"
+            title="close... route to admitted patient list">X</a>
           <div class="form-body">
             <div *ngIf="showReceipt">
               <div id="Receipt">
@@ -253,7 +227,8 @@
                         <b>InPatient No</b>&nbsp;: {{selectedBedInfo.VisitCode}}
                       </p>
                       <p>
-                        <b>Age/Sex</b>&nbsp;:{{selectedBedInfo.DateOfBirth | DanpheDateTime:'age'}}/{{selectedBedInfo.Gender}}
+                        <b>Age/Sex</b>&nbsp;:{{selectedBedInfo.DateOfBirth |
+                        DanpheDateTime:'age'}}/{{selectedBedInfo.Gender}}
                       </p>
                       <p>
                         <b>Address/Contact No</b>&nbsp;:
@@ -286,7 +261,8 @@
                       <div style="float: right;">
                         <p><b>Previous Status</b></p>
                         <p>
-                          <b>Started On</b>&nbsp;:&nbsp;{{selectedBedInfo.BedInformation.StartedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}}
+                          <b>Started On</b>&nbsp;:&nbsp;{{selectedBedInfo.BedInformation.StartedOn |
+                          DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}}
                         </p>
                         <p>
                           <b>Department</b>&nbsp;:

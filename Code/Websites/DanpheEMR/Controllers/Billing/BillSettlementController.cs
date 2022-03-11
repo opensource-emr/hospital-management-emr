@@ -16,6 +16,8 @@ using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Data;
 using DanpheEMR.Enums;
+using System.Data.SqlClient;
+using DanpheEMR.ServerModel.BillingModels;
 
 namespace DanpheEMR.Controllers
 {
@@ -33,7 +35,7 @@ namespace DanpheEMR.Controllers
 
 
         [HttpGet]
-        public string Get(string reqType, int? patientId, int? settlementId)
+        public string Get(string reqType, int? patientId, int? settlementId, int billingTransactionId)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             string ipDataString = this.ReadPostData();
@@ -63,6 +65,36 @@ namespace DanpheEMR.Controllers
 
                     //responseData.Results = allBillSettlement;
                 }
+                else if (reqType != null && reqType == "getAllBillingInfoOfPatientForSettlement" && patientId != null && patientId != 0)
+                {
+                    PatientModel currPatient = billingDbContext.Patient.Where(pat => pat.PatientId == patientId).FirstOrDefault();
+                    if (currPatient != null)
+                    {
+                        List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@PatientId", patientId),
+                    };
+                        DataSet dsBillingInfoOfPatientForSettlement = DALFunctions.GetDatasetFromStoredProc("SP_BIL_GetAllBillingInfoOfPatientForSettlement", paramList, billingDbContext);
+
+                        DataTable dtPatientInfo = dsBillingInfoOfPatientForSettlement.Tables[0];
+                        DataTable dtCreditInvoices = dsBillingInfoOfPatientForSettlement.Tables[1];
+                        DataTable dtDepositInfo = dsBillingInfoOfPatientForSettlement.Tables[2];
+                        DataTable dtProvisionalInfo = dsBillingInfoOfPatientForSettlement.Tables[3];
+
+                        var billingInfoToReturn = new
+                        {
+                            PatientInfo = Settlement_PatientInfoVM.MapDataTableToSingleObject(dtPatientInfo),
+                            CreditInvoiceInfo = dtCreditInvoices,
+                            DepositInfo = Settlement_DepositInfoVM.MapDataTableToSingleObject(dtDepositInfo),
+                            ProvisionalInfo = Settlement_ProvisionalInfoVM.MapDataTableToSingleObject(dtProvisionalInfo)
+
+                        };
+                        responseData.Status = "OK";
+                        responseData.Results = billingInfoToReturn;
+
+                    }
+
+                }
+
                 else if (reqType != null && reqType == "unpaidInvoiceByPatientId" && patientId != null && patientId != 0)
                 {
                     PatientModel currPatient = billingDbContext.Patient.Where(pat => pat.PatientId == patientId).FirstOrDefault();
@@ -88,8 +120,37 @@ namespace DanpheEMR.Controllers
                                             //if IsInsuranceBilling is null then true by default, else IsInsuranceBilling should be false.  
                                             //&& bill.IsInsuranceBilling == null ?  true : bill.IsInsuranceBilling==false                
                                             && (bill.IsInsuranceBilling.HasValue ? (bill.IsInsuranceBilling.Value == false) : true)
-
                                             select bill).ToList<BillingTransactionModel>().OrderBy(b => b.BillingTransactionId);
+
+                    //Added by ANISH: Start: 13 August, View Detail of Patient from Settlement Deducting Returned Amount based upon Quantity---
+                    var returnedItems = (from ret in billingDbContext.BillInvoiceReturnItems
+                                         where ret.PatientId == patientId
+                                         group ret by ret.BillingTransactionItemId into dt
+                                         select new
+                                         {
+                                             BillingTransactionItemId = dt.Key,
+                                             RetQuantity = dt.Sum(d => d.RetQuantity)
+                                         }).ToDictionary(k => k.BillingTransactionItemId, v => v.RetQuantity);
+
+                    var returnedItemsBillItemId = returnedItems.Keys.ToList();
+
+                    foreach (var transaction in patCreditInvoice)
+                    {
+                        foreach (var item in transaction.BillingTransactionItems)
+                        {
+                            if (returnedItems.ContainsKey(item.BillingTransactionItemId))
+                            {
+                                var perUnitPrice = item.TotalAmount.Value / item.Quantity;
+                                item.ReturnQty = Convert.ToInt32(returnedItems[item.BillingTransactionItemId]);
+                                item.Quantity -= item.ReturnQty;
+                                item.TotalAmount = item.Quantity * perUnitPrice;
+                            }
+                        }
+                        transaction.TotalAmount = transaction.BillingTransactionItems.Select(i => i.TotalAmount).Sum();
+                        transaction.BillingTransactionItems = transaction.BillingTransactionItems.Where(b => b.Quantity > 0).ToList();
+                    }
+                    //Added by ANISH: Start: 13 August, END---------
+
 
                     AdmissionDbContext admissionDbContext = new AdmissionDbContext(base.connString);
 
@@ -118,7 +179,7 @@ namespace DanpheEMR.Controllers
                 {
                     RbacDbContext rbacDbContext = new RbacDbContext(connString);
 
-                    BillSettlementModel currSettlmnt = billingDbContext.BillSettlements.Include("BillingTransactions").Include("Patient").Include("Patient.CountrySubDivision")
+                    /*BillSettlementModel currSettlmnt = billingDbContext.BillSettlements.Include("BillingTransactions").Include("Patient").Include("Patient.CountrySubDivision")
                         .Where(b => b.SettlementId == settlementId.Value)
                         .FirstOrDefault();
                     if (currSettlmnt != null)
@@ -136,17 +197,64 @@ namespace DanpheEMR.Controllers
                         }
 
                     }
-                    responseData.Results = currSettlmnt;
+                    responseData.Results = currSettlmnt;*/
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@SettlementId", settlementId),
+                    };
+
+                    DataSet dsSettlementDetails = DALFunctions.GetDatasetFromStoredProc("SP_Get_Settlement_Details_By_SettlementId", paramList, billingDbContext);
+                    DataTable dtPatientInfo = dsSettlementDetails.Tables[0];
+                    DataTable dtSettlementInfo = dsSettlementDetails.Tables[1];
+                    DataTable dtSalesInfo = dsSettlementDetails.Tables[2];
+                    DataTable dtSalesReturn = dsSettlementDetails.Tables[3];
+                    DataTable dtCashDiscountReturn = dsSettlementDetails.Tables[4];
+                    //DataTable dtDepositReturn = dsSettlementDetails.Tables[5];
+                    DataTable dtDepositInfo = dsSettlementDetails.Tables[5];
+
+
+
+                    var settlementPreview = new
+                    {
+                        PatientInfo = Settlement_PatientInfoVM.MapDataTableToSingleObject(dtPatientInfo),
+                        SettlementInfo = Settlement_Info_VM.MapDataTableToSingleObject(dtSettlementInfo),
+                        SalesInfo = dtSalesInfo,
+                        SalesReturn = dtSalesReturn,
+                        CashDiscountReturn = dtCashDiscountReturn,
+                        //DepositReturn = dtDepositReturn,
+                        DepositInfo = dtDepositInfo
+                    };
+
+                    string billingUser = rbacDbContext.Users.Where(u => u.EmployeeId == settlementPreview.SettlementInfo.CreatedBy).Select(u => u.UserName).FirstOrDefault();
+                    settlementPreview.SettlementInfo.BillingUser = billingUser;
+                    responseData.Status = "OK";
+                    responseData.Results = settlementPreview;
 
                 }
-                else
+                else if (reqType == "get-settlement-single-invoice-preview")
                 {
-                    responseData.Status = "Failed";
-                    responseData.ErrorMessage = "billTransactionitems is invalid";
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@BillingTransactionId", billingTransactionId),
+                    };
+                    DataSet dsInvoicePreview = DALFunctions.GetDatasetFromStoredProc("SP_BIL_Settlement_GetBillAndReturnItemsOfInvoiceForPreview", paramList, billingDbContext);
+
+                    DataTable dtInvoiceInfo = dsInvoicePreview.Tables[0];
+                    DataTable dtInvoiceItemInfo = dsInvoicePreview.Tables[1];
+                    DataTable dtCreditNotes = dsInvoicePreview.Tables[2];
+                    DataTable dtCreditNoteItems = dsInvoicePreview.Tables[3];
+
+                    var settlmntInvoicePreview = new
+                    {
+                        InvoiceInfo = Settlement_InvoicePreview_InvoiceInfoVM.MapDataTableToSingleObject(dtInvoiceInfo),
+                        InvoiceItems = dtInvoiceItemInfo,
+                        CreditNotes = dtCreditNotes,
+                        CreditNoteItems = dtCreditNoteItems
+                    };
+                    responseData.Status = "OK";
+                    responseData.Results = settlmntInvoicePreview;
+
                 }
-
-
-                //responseData.Results = null;
             }
             catch (Exception ex)
             {
@@ -183,22 +291,63 @@ namespace DanpheEMR.Controllers
                             //step:0, As EF automatically Inserts Child collection (billingtransactionmodel) while inserting settlement
                             // we have to first create a new list and set settlement.BillingTransactions as null.
                             List<BillingTransactionModel> newTxnList = new List<BillingTransactionModel>();
+
                             foreach (BillingTransactionModel txn in txns)
                             {
-                                BillingTransactionModel newTxn = BillingTransactionModel.GetCloneWithItems(txn);
+                                //BillingTransactionModel newTxn = BillingTransactionModel.GetCloneWithItems(txn);
+                                //newTxnList.Add(newTxn);
+
+
+                                BillingTransactionModel newTxn = billingDbContext.BillingTransactions
+                                    .Where(b => b.BillingTransactionId == txn.BillingTransactionId).FirstOrDefault();
                                 newTxnList.Add(newTxn);
+
                             }
                             settlement.BillingTransactions = null;
 
                             //Step1: assign server side values to the input model and Save the settlementModel 
                             settlement.SettlementReceiptNo = GetSettlementReceiptNo(billingDbContext);
-                            settlement.CreatedOn = System.DateTime.Now;
-                            settlement.SettlementDate = System.DateTime.Now;
+                            DateTime currentDateTime = DateTime.Now;
+                            settlement.CreatedOn = currentDateTime;
+                            settlement.SettlementDate = currentDateTime;
                             settlement.FiscalYearId = BillingBL.GetFiscalYear(billingDbContext).FiscalYearId;
                             settlement.CreatedBy = currentUser.EmployeeId;
 
                             billingDbContext.BillSettlements.Add(settlement);
                             billingDbContext.SaveChanges();
+
+                            //adding CollectionFrom Receivable as InAmount into EmpCashTransaction table.. 
+                            if (settlement.CollectionFromReceivable.HasValue && settlement.CollectionFromReceivable.Value > 0)
+                            {
+                                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                empCashTransaction.TransactionType = "CollectionFromReceivable";
+                                empCashTransaction.ReferenceNo = settlement.SettlementId;
+                                empCashTransaction.InAmount = settlement.CollectionFromReceivable;
+                                empCashTransaction.OutAmount = 0;
+                                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                empCashTransaction.TransactionDate = currentDateTime;
+                                empCashTransaction.CounterID = settlement.CounterId;
+
+                                BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                            }
+
+                            //adding CashDiscountGiven during settlement as OutAmount into EmpCashTransaction table.. 
+                            if (settlement.DiscountAmount.HasValue && settlement.DiscountAmount.Value > 0)
+                            {
+                                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                empCashTransaction.TransactionType = "CashDiscountGiven";
+                                empCashTransaction.ReferenceNo = settlement.SettlementId;
+                                empCashTransaction.InAmount =  0;
+                                empCashTransaction.OutAmount = settlement.DiscountAmount;
+                                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                empCashTransaction.TransactionDate = currentDateTime;
+                                empCashTransaction.CounterID = settlement.CounterId;
+
+                                BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                            }
+
+
+
                             if (newTxnList != null && newTxnList.Count > 0)
                             {
                                 //step2: Update necessary fields of BillingTransaction acc to above Settlement Object
@@ -262,29 +411,87 @@ namespace DanpheEMR.Controllers
                                     PatientId = settlement.PatientId,
                                     DepositBalance = 0,
                                     ReceiptNo = BillingBL.GetDepositReceiptNo(connString),
-                                    PaymentMode = "cash",//yubraj 4th July '19
+                                    //PaymentMode = "cash",//yubraj 4th July '19
+                                    PaymentMode = ENUM_BillPaymentMode.cash //krishna 26th NOV'21
                                 };
 
                                 billingDbContext.BillingDeposits.Add(depositModel);
                                 billingDbContext.SaveChanges();
 
-                                ////update iscurrent and isactive in deposit table for settlement 
-                                //List<BillingDeposit> depositDetail= (from dep in billingDbContext.BillingDeposits
-                                //                                   where dep.PatientId==settlement.PatientId  &&
-                                //                                   dep.IsCurrent==true &&
-                                //                                   dep.IsActive==true
-                                //                                   select dep).ToList();
+                                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                empCashTransaction.TransactionType = ENUM_BillDepositType.DepositDeduct;
+                                empCashTransaction.ReferenceNo = depositModel.DepositId;
+                                empCashTransaction.InAmount = 0;
+                                empCashTransaction.OutAmount = depositModel.Amount;
+                                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                empCashTransaction.TransactionDate = DateTime.Now;
+                                empCashTransaction.CounterID = depositModel.CounterId;
 
-                                //if (depositDetail != null)
-                                //{
-                                //    depositDetail.ForEach(d =>
-                                //    {
-                                //        //d.IsActive = false;
-                                //        d.IsCurrent = false;
-                                //        billingDbContext.SaveChanges();
-                                //    });
-                                //}
+                                BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+
+
                             }
+
+
+                            //Add new row to Deposit table if there is refundable amount.
+                            if (settlement.RefundableAmount != null && settlement.RefundableAmount > 0)
+                            {
+                                VisitModel patientVisit = billingDbContext.Visit.Where(visit => visit.PatientId == settlement.PatientId)
+                                    .OrderByDescending(a => a.PatientVisitId)
+                                    .FirstOrDefault();
+                                BillingDeposit depositModel = new BillingDeposit()
+                                {
+                                    Amount = settlement.RefundableAmount,
+                                    DepositType = ENUM_BillDepositType.ReturnDeposit,// "returnDeposit",
+                                    IsActive = true,
+                                    FiscalYearId = BillingBL.GetFiscalYear(billingDbContext).FiscalYearId,
+                                    Remarks = "Deposit used in Settlement Receipt No. SR" + settlement.SettlementReceiptNo + " on " + settlement.SettlementDate,
+                                    CreatedBy = currentUser.EmployeeId,
+                                    CreatedOn = DateTime.Now,
+                                    CounterId = settlement.CounterId,
+                                    PatientVisitId = patientVisit != null ? (int?)patientVisit.PatientVisitId : null,
+                                    SettlementId = settlement.SettlementId,
+                                    PatientId = settlement.PatientId,
+                                    DepositBalance = 0,
+                                    ReceiptNo = BillingBL.GetDepositReceiptNo(connString),
+                                    //PaymentMode = "cash",//yubraj 4th July '19
+                                    PaymentMode = ENUM_BillPaymentMode.cash //Krishna 26th NOV'21
+
+                                };
+
+                                billingDbContext.BillingDeposits.Add(depositModel);
+                                billingDbContext.SaveChanges();
+                              
+                                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                empCashTransaction.TransactionType = ENUM_BillDepositType.ReturnDeposit; //depositReturn
+                                empCashTransaction.ReferenceNo = depositModel.DepositId;
+                                empCashTransaction.InAmount = 0;
+                                empCashTransaction.OutAmount = depositModel.Amount;
+                                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                empCashTransaction.TransactionDate = DateTime.Now;
+                                empCashTransaction.CounterID = depositModel.CounterId;
+
+                                BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                            }
+
+
+                            
+                            
+
+                            //to update BillReturnInvoice table by updating SettlementId for the rows that are being settled.
+                            if (settlement.BillReturnIdsCSV.Count > 0)
+                            {
+                                BillInvoiceReturnModel billInvoiceReturnModel = new BillInvoiceReturnModel();
+                                foreach (int stl in settlement.BillReturnIdsCSV)
+                                {
+                                    billInvoiceReturnModel = billingDbContext.BillInvoiceReturns.Where(b => b.BillReturnId == stl).FirstOrDefault();
+                                    billInvoiceReturnModel.SettlementId = settlement.SettlementId;
+                                    billingDbContext.Entry(billInvoiceReturnModel).Property(a => a.SettlementId).IsModified = true;
+                                }
+                                billingDbContext.SaveChanges();
+                            }
+
+
 
                             dbTransaction.Commit();
 

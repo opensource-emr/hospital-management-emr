@@ -29,9 +29,11 @@ import { CountrySubdivision } from "../../settings-new/shared/country-subdivisio
 import { Admission } from '../../adt/shared/admission.model';
 import { PatientFilesModel } from './patient-files.model';
 import { NepaliDate } from '../../shared/calendar/np/nepali-dates';
+import { SSU_InformationModel } from '../../ssu/shared/SSU_Information.model';
 
 export class Patient {
     public PatientId: number = 0;
+    public PatientName: string = "";
     public PatientNo: number = 0;//added: sud-24May'18
     public Salutation: string = null;
     public FirstName: string = "";
@@ -44,6 +46,7 @@ export class Patient {
     public WardName: string = "";
     public WardId: string = "";
     public BedNo: number = 0;
+    public BedCode: string = null;
     //try to hide the audit trail properties from client models..sudarshan:15July
     public CreatedOn: string = null;
     public CreatedBy: number = null;
@@ -66,7 +69,7 @@ export class Patient {
     public BloodGroup: string = null;
     public Email: string = null;
     public CountryId: number = 0;
-    public CountryName: string =  null;
+    public CountryName: string = null;
     public CountrySubDivisionId: number = null;
     public Age: string = null;
     public AgeUnit: string = 'Y'; //used only in client side
@@ -78,12 +81,18 @@ export class Patient {
     public Address: string = null;
     public IsDialysis: boolean = false;
     public DialysisCode: number = null;
+    public DischargeDate: string = null; // added to fix production build error EMR_V2.1.8
 
     //display purpose only
     public CountrySubDivisionName: string = null;
 
     public CountrySubDivision: CountrySubdivision = new CountrySubdivision();
+    public Ins_HasInsurance: boolean = null;
+    public Ins_NshiNumber: string = null;
+    public Ins_InsuranceBalance: number = 0;
+    public ClaimCode: number = null;
 
+    public Ins_InsuranceCurrentBalance: number = 0;
     // form group
 
     //Patient Registration
@@ -117,8 +126,8 @@ export class Patient {
     public ImagingItemRequisitions: Array<ImagingItemRequisition> = new Array<ImagingItemRequisition>();
     //updated changed from array<patientmemberships> to singular entity.
     public MembershipTypeId: number = null;//remove this hardcoded value : sudarshan: 6July2017
-    public MembershipTypeName: string=null;
-    public MembershipDiscountPercent:number=0;
+    public MembershipTypeName: string = null;
+    public MembershipDiscountPercent: number = 0;
 
     public PANNumber: string = "";
     public PatientValidator: FormGroup = null;
@@ -143,9 +152,21 @@ export class Patient {
     public LatestVisitId: string = null;
     public LatestVisitDate: string = null;
     public IsValidMembershipTypeName: boolean = true; //Yubraj 2019 2nd August 
-    
+
     public IsPoliceCase: boolean = false;
-    
+    public NSHI: string = null;
+
+    // Bikash 17th-Feb'21, fields added for SSU patient information
+    public IsSSUPatient: boolean = false;
+    public SSU_IsActive: boolean = false;
+    public SSU_Information: SSU_InformationModel = new SSU_InformationModel();
+    public FatherName: string;
+    public MotherName: string;
+
+    //Anjana :14May'21, Required to show municipality 
+    public MunicipalityId: number = 0;
+    public MunicipalityName: string = null;
+
     constructor() {
         var _formBuilder = new FormBuilder();
         this.PatientValidator = _formBuilder.group({
@@ -157,13 +178,13 @@ export class Patient {
             'DateOfBirth': ['', Validators.compose([Validators.required, this.dateValidators]),],
             'Gender': ['', Validators.required],
             'CountrySubDivisionId': ['', Validators.required],
-             'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')],
-           'PhoneNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
-           'PassportNumber': ['', Validators.compose([Validators.maxLength(12)])],
-           'LandLineNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,9}$')])],
+            'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')],
+            'PhoneNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
+            'PassportNumber': ['', Validators.compose([Validators.maxLength(12)])],
+            'LandLineNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,9}$')])],
             'CountryId': ['', Validators.required],
             //'Address': ['', Validators.required],
-            'PANNumber': ['', Validators.compose([Validators.pattern('^[0-9]{9,9}$')])],
+            'PANNumber': ['', Validators.compose([ Validators.maxLength(20)])],
             //'MembershipTypeId': ['', Validators.required],
         });
 
@@ -179,7 +200,7 @@ export class Patient {
 
     }
 
-    public IsValid():boolean{if(this.PatientValidator.valid){return true;}else{return false;}} 
+    public IsValid(): boolean { if (this.PatientValidator.valid) { return true; } else { return false; } }
     public IsValidCheck(fieldname, validator): boolean {
         // this is used to check for patient form is valid or not 
         if (this.PatientValidator.valid) {
@@ -251,6 +272,16 @@ export class Patient {
         else {
             this.PatientValidator.controls['DateOfBirth'].validator = Validators.compose([Validators.required, this.dateValidators]);
             this.PatientValidator.controls['Age'].validator = Validators.compose([]);
+        }
+        this.PatientValidator.controls[formControlName].updateValueAndValidity();
+
+    }
+
+    public UpdatePhoneValidator(onOff: string, formControlName: string) {
+        if (formControlName == "PhoneNumber" && onOff == "on") {
+            this.PatientValidator.controls['PhoneNumber'].validator = Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')]);
+        } else {
+            this.PatientValidator.controls['PhoneNumber'].validator = Validators.compose([]);
         }
         this.PatientValidator.controls[formControlName].updateValueAndValidity();
 

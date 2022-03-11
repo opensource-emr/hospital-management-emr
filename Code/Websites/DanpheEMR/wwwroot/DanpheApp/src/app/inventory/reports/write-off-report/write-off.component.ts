@@ -8,6 +8,7 @@ import { ReportingService } from "../../../reporting/shared/reporting-service";
 import * as moment from 'moment/moment';
 import { InventoryBLService } from '../../shared/inventory.bl.service';
 import { WriteOffReport } from '../shared/write-off-report.model';
+import { ActivateInventoryService } from '../../../shared/activate-inventory/activate-inventory.service';
 @Component({
   //selector: 'my-app',
   templateUrl: "../../../view/inventory-view/Reports/WriteOffReport.html"  //"/InventoryReports/WriteOff"
@@ -30,6 +31,7 @@ export class WriteOffComponent implements OnInit {
     public inventoryDLService: InventoryReportsDLService,
     public inventoryService: InventoryBLService,
     public reportServ: ReportingService,
+    private _activeInventoryService: ActivateInventoryService,
     public msgBoxServ: MessageboxService) {
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
@@ -54,35 +56,22 @@ export class WriteOffComponent implements OnInit {
   }
 
   LoadItemList(): void {
-    this.inventoryService.GetItemList()
-      .subscribe(
-        res =>
-          this.CallBackGetItemList(res));
-
-
-  }
-
-
-
-  CallBackGetItemList(res) {
-    if (res.Status == 'OK') {
-      this.ItemList = [];
-      if (res && res.Results) {
-        res.Results.forEach(a => {
-          this.ItemList.push({
-            "ItemId": a.ItemId, "ItemName": a.ItemName, StandardRate: a.StandardRate, VAT: a.VAT
-          });
+    this.inventoryService.GetItemListByStoreId(this._activeInventoryService.activeInventory.StoreId)
+      .subscribe( res => {
+          if (res.Status == 'OK') {
+            this.ItemList = [];
+            if (res && res.Results) {
+              res.Results.forEach(a => {
+                this.ItemList.push({
+                  "ItemId": a.ItemId, "ItemName": a.ItemName, StandardRate: a.StandardRate, VAT: a.VAT
+                });
+              });
+            }
+          }
+          else {
+            this.msgBoxServ.showMessage("failed", ['failed to get Item.. please check log for details.']);
+          }
         });
-
-      }
-
-    }
-    else {
-      err => {
-        this.msgBoxServ.showMessage("failed", ['failed to get Item.. please check log for details.']);
-
-      }
-    }
   }
 
   SelectItemFromSearchBox(Item) {
@@ -91,7 +80,7 @@ export class WriteOffComponent implements OnInit {
   }
 
   ShowWriteOffReport() {
-    this.filteredWriteOffReport =null; 
+    this.filteredWriteOffReport = null;
 
     this.inventoryBLService.ShowWriteOffReport(this.CurrentWriteOff.ItemId)
       .map(res => res)

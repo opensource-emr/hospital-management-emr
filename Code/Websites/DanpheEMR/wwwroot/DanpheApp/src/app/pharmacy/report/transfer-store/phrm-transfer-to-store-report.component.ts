@@ -17,6 +17,7 @@ export class PHRMTransferToStoreReportComponent {
     PHRMTransferToStoreReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+    public pharmacy:string = "pharmacy";
 
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
         this.PHRMTransferToStoreReportColumn = PHRMReportsGridColumns.PHRMTransferToStoreReport;

@@ -21,37 +21,37 @@
           <thead>
             <tr>
               <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Paid Amount</b></th>
-              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.PaidAmount}}</th>
+              <th sortable-header col="quantity">{{coreService.currencyUnit}} {{patBillHistory.PaidAmount}}</th>
             </tr>
             <tr>
               <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Unpaid</b></th>
-              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CreditAmount}}</th>
+              <th sortable-header col="itemnames">{{coreService.currencyUnit}} {{patBillHistory.CreditAmount}}</th>
             </tr>
             <tr>
               <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Provisional Amount</b>
               </th>
-              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</th>
+              <th sortable-header col="quantity">{{coreService.currencyUnit}} {{patBillHistory.ProvisionalAmt}}</th>
             </tr>
             <tr>
               <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Deposit Balance</b></th>
-              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.DepositBalance}}</th>
+              <th sortable-header col="itemnames">{{coreService.currencyUnit}} {{patBillHistory.DepositBalance}}</th>
             </tr>
             <tr>
               <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Balance Amount</b></th>
-              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.BalanceAmount}}</th>
+              <th sortable-header col="quantity">{{coreService.currencyUnit}} {{patBillHistory.BalanceAmount}}</th>
             </tr>
             <tr>
               <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Total Due</b></th>
-              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.TotalDue}}</th>
+              <th sortable-header col="quantity">{{coreService.currencyUnit}} {{patBillHistory.TotalDue}}</th>
             </tr>
             <tr>
               <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Returned Amount</b></th>
-              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.ReturnedAmount}}</th>
+              <th sortable-header col="itemnames">{{coreService.currencyUnit}} {{patBillHistory.ReturnedAmount}}</th>
             </tr>
             <tr>
               <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Cancelled Amount</b>
               </th>
-              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CancelAmount}}</th>
+              <th sortable-header col="itemnames">{{coreService.currencyUnit}} {{patBillHistory.CancelAmount}}</th>
             </tr>
           </thead>
         </table>
@@ -886,7 +886,7 @@
                       Paid Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.PaidAmount}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.PaidAmount}}</td>
                   </tr>
                   <tr>
                     <th
@@ -894,7 +894,7 @@
                       Unpaid Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.CreditAmount}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.CreditAmount}}</td>
                   </tr>
                   <tr>
                     <th
@@ -902,7 +902,7 @@
                       Returned Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.ReturnedAmount}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.ReturnedAmount}}</td>
                   </tr>
                   <tr>
                     <th
@@ -910,7 +910,7 @@
                       Provisional Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.ProvisionalAmt}}</td>
                   </tr>
                   <tr>
                     <th
@@ -918,7 +918,7 @@
                       Total Cancelled Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.CancelAmount}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.CancelAmount}}</td>
                   </tr>
                   <tr>
                     <th
@@ -926,7 +926,7 @@
                       Balance:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      <b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
+                      <b>{{coreService.currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
                   </tr>
                 </table>
               </div>
@@ -938,7 +938,7 @@
                       Total Discount Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.DiscountAmount}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.DiscountAmount}}</td>
                   </tr>
                   <tr>
                     <th
@@ -946,7 +946,7 @@
                       Deposit Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.DepositBalance}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.DepositBalance}}</td>
                   </tr>
                   <tr>
                     <th
@@ -954,7 +954,7 @@
                       Total Due:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      {{currencyUnit}} {{patBillHistory.TotalDue}}</td>
+                      {{coreService.currencyUnit}} {{patBillHistory.TotalDue}}</td>
                   </tr>
                   <tr *ngIf="RefundAmount">
                     <th
@@ -962,7 +962,7 @@
                       Total Refund Amount:</th>
                     <td
                       style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
-                      <b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
+                      <b>{{coreService.currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
                   </tr>
                 </table>
               </div>

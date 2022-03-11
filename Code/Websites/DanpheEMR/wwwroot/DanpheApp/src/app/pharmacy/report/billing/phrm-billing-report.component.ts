@@ -1,4 +1,4 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Directive, ViewChild } from '@angular/core';
 import { DLService } from "../../../shared/dl.service"
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -7,6 +7,8 @@ import { PharmacyBLService } from "../../shared/pharmacy.bl.service";
 import PHRMReportsGridColumns from "../../shared/phrm-reports-grid-columns";
 import { PHRMReportsModel } from '../../shared/phrm-reports-model';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { DispensaryService } from '../../../dispensary/shared/dispensary.service';
+import { PHRMStoreModel } from '../../shared/phrm-store.model';
 
 @Component({
     selector: 'my-app',
@@ -23,12 +25,21 @@ export class PHRMBillingReportComponent {
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
-    constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService, public msgBoxServ: MessageboxService) {
+    public footerContent = '';
+    public dateRange: string = "";
+
+    dispensaryList: any[] = [];
+    storeWiseBillingSummary: { StoreName: string, SubTotal: number, Discount: number, TotalAmount: number }[] = [];
+    public loading: boolean = false;
+
+
+
+    constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService, public msgBoxServ: MessageboxService,
+        public changeDetector: ChangeDetectorRef, public dispensaryService: DispensaryService) {
         this.PHRMBillingReportColumns = PHRMReportsGridColumns.PHRMBillingReport;
-        this.phrmReports.FromDate = moment().format('YYYY-MM-DD');
-        this.phrmReports.ToDate = moment().format('YYYY-MM-DD');
         this.InvoiceNumber = null;
-        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
+        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("InvoiceDate"));
+        this.getAllDispensaries();
     }
 
 
@@ -37,9 +48,22 @@ export class PHRMBillingReportComponent {
         fileName: 'BillingReport_' + moment().format('YYYY-MM-DD') + '.xls',
     };
 
+    getAllDispensaries() {
+        this.dispensaryService.GetAllDispensaryList().subscribe(res => {
+            if (res.Status == "OK") {
+                this.dispensaryList = res.Results;
+            }
+            else {
+                this.msgBoxServ.showMessage("Failed", ["Failed to load the dispensaries."]);
+            }
+        });
+    }
+
     //////Function Call on Button Click of Report
     GetReportData() {
+        this.loading = true;
         if (this.phrmReports.FromDate && this.phrmReports.ToDate) {
+            this.PHRMBillingReportData = [];
             this.pharmacyBLService.GetPharmacyBillingReport(this.phrmReports, this.InvoiceNumber)
                 .subscribe(res => {
                     if (res.Status == 'OK' && res.Results.length > 0) {
@@ -47,23 +71,40 @@ export class PHRMBillingReportComponent {
                         this.PHRMBillingReportColumns = PHRMReportsGridColumns.PHRMBillingReport;
                         ////Assign  Result to PHRMBillingReportData
                         this.PHRMBillingReportData = res.Results;
+                        this.calulateSummaryData();
+
+                        this.changeDetector.detectChanges();
+                        this.footerContent = document.getElementById("print_summary").innerHTML;
                     }
                     if (res.Status == 'OK' && res.Results.length == 0) {
-                        this.msgBoxServ.showMessage("error", ["No Data is Available for Selected Record"]);
-                        this.PHRMBillingReportData = [];
+                        this.msgBoxServ.showMessage("Notice-Message", ["No Data is Available for Selected Record"]);
                     }
+                    this.loading = false;
 
                 });
         }
-        //else
-        //{
-        //    this.msgBoxServ.showMessage("error", ["0 Invoice Id is Wrong "]);
-        //    this.PHRMBillingReportData = [];
     }
 
+    calulateSummaryData() {
+        this.storeWiseBillingSummary = [];
+        this.dispensaryList.forEach(dispensary => {
+            var storeWiseReportData = this.PHRMBillingReportData.filter(a => a.StoreId == dispensary.StoreId);
 
+            var storeWiseSubtotalAmount = storeWiseReportData.reduce((a, b) => a + b.SubTotal, 0);
+            var storeWiseTotalDiscount = storeWiseReportData.reduce((a, b) => a + b.DiscountAmount, 0);
+            var storeWiseTotalAmount = storeWiseReportData.reduce((a, b) => a + b.TotalAmount, 0);
+            this.storeWiseBillingSummary.push(
+                { StoreName: dispensary.Name, SubTotal: storeWiseSubtotalAmount, Discount: storeWiseTotalDiscount, TotalAmount: storeWiseTotalAmount }
+            );
+        });
 
-
+        var grandSubTotal = this.PHRMBillingReportData.reduce((a, b) => a + b.SubTotal, 0);
+        var grandTotalDiscount = this.PHRMBillingReportData.reduce((a, b) => a + b.DiscountAmount, 0);
+        var grandTotalAmount = this.PHRMBillingReportData.reduce((a, b) => a + b.TotalAmount, 0);
+        this.storeWiseBillingSummary.push(
+            { StoreName: "All", SubTotal: grandSubTotal, Discount: grandTotalDiscount, TotalAmount: grandTotalAmount }
+        );
+    }
 
     ////on click grid export button we are catching in component an event.. 
     ////and in that event we are calling the server excel export....
@@ -89,6 +130,7 @@ export class PHRMBillingReportComponent {
     OnFromToDateChange($event) {
         this.phrmReports.FromDate = $event ? $event.fromDate : this.phrmReports.FromDate;
         this.phrmReports.ToDate = $event ? $event.toDate : this.phrmReports.ToDate;
+        this.dateRange = "<b>Date:</b>&nbsp;" + this.phrmReports.FromDate + "&nbsp;<b>To</b>&nbsp;" + this.phrmReports.ToDate;
     }
 }
 

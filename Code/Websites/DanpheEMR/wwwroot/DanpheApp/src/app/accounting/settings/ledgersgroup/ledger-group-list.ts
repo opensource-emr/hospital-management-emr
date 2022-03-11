@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef } from "@angular/core";
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -7,6 +7,7 @@ import { ledgerGroupModel } from '../shared/ledgerGroup.model';
 import { AccountingLedgerVoucherMapViewModel } from '../shared/ledgergroup-voucherledgergroupmap-view.model';
 import { AccountingSettingsBLService } from '../shared/accounting-settings.bl.service';
 import { VoucherModel } from "../shared/voucher.model";
+import { AccountingService } from "../../shared/accounting.service";
 
 @Component({
     selector: 'ledgergroup-list',
@@ -25,23 +26,18 @@ export class LedgerGroupListComponent {
     public selectedLedgers: ledgerGroupModel = null;
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public msgBox: MessageboxService,
-        public changeDetector: ChangeDetectorRef) {
+        public changeDetector: ChangeDetectorRef,
+        public accountingService: AccountingService) {
         this.ledgerGroupGridColumns = GridColumnSettings.ledgerGroupList;
         this.getLedgerGroupList();
     }
     public getLedgerGroupList() {
-        this.accountingSettingsBLService.GetLedgerGroup()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.ledgerGroupList = res.Results;
-                    this.showGrid = true;
-                    this.showLedgerGroupList = true;
-                }
-                else {
-                    alert("Failed ! " + res.ErrorMessage);
-                }
-
-            });
+            if(!!this.accountingService.accCacheData.LedgerGroups && this.accountingService.accCacheData.LedgerGroups.length>0){//mumbai-team-june2021-danphe-accounting-cache-change
+                this.ledgerGroupList = this.accountingService.accCacheData.LedgerGroups;//mumbai-team-june2021-danphe-accounting-cache-change
+                this.ledgerGroupList = this.ledgerGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+                this.showGrid = true;
+                this.showLedgerGroupList = true;
+            }
     }
 
     AddLedgerGroup() {
@@ -51,13 +47,7 @@ export class LedgerGroupListComponent {
     }
 
     CallBackAdd($event) {
-        let tempLed = $event.currentLedger;
-        //this.tempLedgerGrpList = $event.currentLedger[0];
-        this.ledgerGroupList.push(tempLed);
-        if (this.index)
-            this.ledgerGroupList.splice(this.index, 1);
-        this.ledgerGroupList = this.ledgerGroupList.slice();
-        this.changeDetector.detectChanges();
+      this.getLedgerGroupList();//mumbai-team-june2021-danphe-accounting-cache-change
         this.showAddPage = false;
         this.selectedLedgerGroup = null;
         this.index = null;
@@ -67,6 +57,7 @@ export class LedgerGroupListComponent {
             case "activateDeactivateBasedOnStatus": {
                 if ($event.Data != null) {
                     this.selectedLedgerGroup = null;
+                    this.index = $event.RowIndex;//mumbai-team-june2021-danphe-accounting-cache-change
                     this.selectedLedgerGroup = $event.Data;
                     this.ActivateDeactivateLedgerStatus(this.selectedLedgerGroup);
                     this.showLedgerGroupList = true;
@@ -79,9 +70,9 @@ export class LedgerGroupListComponent {
                 if ($event.Data != null) {
                     this.selectedLedgerGroup = null;
                     this.showAddPage = false;
-                    this.index = $event.RowIndex;
-                    this.changeDetector.detectChanges();
+                    //this.index = $event.RowIndex;
                     this.selectedLedgerGroup = $event.Data;
+                    this.changeDetector.detectChanges();
                     this.showLedgerGroupList = true;
                     this.showAddPage = true;
                 }

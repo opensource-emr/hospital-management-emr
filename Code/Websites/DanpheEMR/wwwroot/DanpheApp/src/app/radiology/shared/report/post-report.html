@@ -1,19 +1,23 @@
 <style>
   img {
-    border: 1px solid #ddd; /* Gray border */
-    border-radius: 4px; /* Rounded border */
-    padding: 10px; /* Some padding */
-    width: 150px; /* Set a small width */
+    border: 1px solid #ddd;
+    /* Gray border */
+    border-radius: 4px;
+    /* Rounded border */
+    padding: 10px;
+    /* Some padding */
+    width: 150px;
+    /* Set a small width */
     cursor: pointer;
   }
 
-    /* Add a hover effect (blue shadow) */
-    img:hover {
-      box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
-      transform: scale(1.0);
-      -moz-transform: scale(1.0);
-      -webkit-transform: scale(1.0);
-    }
+  /* Add a hover effect (blue shadow) */
+  img:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+    transform: scale(1.0);
+    -moz-transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
 
 
   .key-shortcut-info {
@@ -51,34 +55,35 @@
     font-size: 13px;
   }
 
-    .lbl-choose-file:hover {
-      background-color: rgba(0, 140, 186, 0.5);
-    }
+  .lbl-choose-file:hover {
+    background-color: rgba(0, 140, 186, 0.5);
+  }
 </style>
 <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showreport">
   <div class="portlet-body form">
     <div class="row">
-		<div class="col-md-10 col-md-offset-1">
-      <div class="modelbox-div clearfix">        
-			<div class="caption custom-caption">
-				<h3> <span>Add report of {{report.ImagingItemName}} ({{report.ImagingTypeName}})</span></h3>
-				<a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> 
-			</div>        
-       
-        <div class="modelbox-body">
-          <div class="rad-pat-info margin-15-bt">
-            <div class="flex-container flex-align-center">
-              <div class="flex-2 single-flx">
-                <strong>Patient Name: </strong>&nbsp;{{patient.ShortName}}( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}} )
-              </div>
-              <div class="flex-1 single-flx">
-                <strong>Hospital No: </strong>&nbsp;{{patient.PatientCode}}
-              </div>
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Add report of {{report.ImagingItemName}} ({{report.ImagingTypeName}})</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
 
-              <div class="flex-2 single-flx">
-                <div class="flex-container flex-align-center">
-                  <div class="flex-1 txt-autocomp"><strong>Ref. by</strong></div>
-                  <!-- <div class="flex-3">
+          <div class="modelbox-body">
+            <div class="rad-pat-info margin-15-bt">
+              <div class="flex-container flex-align-center">
+                <div class="flex-2 single-flx">
+                  <strong>Patient Name: </strong>&nbsp;{{patient.ShortName}}( {{patient.DateOfBirth |
+                  DanpheDateTime:'age' }}/{{patient.Gender}} )
+                </div>
+                <div class="flex-1 single-flx">
+                  <strong>Hospital No: </strong>&nbsp;{{patient.PatientCode}}
+                </div>
+
+                <div class="flex-2 single-flx">
+                  <div class="flex-container flex-align-center">
+                    <div class="flex-1 txt-autocomp"><strong>Ref. by</strong></div>
+                    <!-- <div class="flex-3">
                     <input class="form-control" danphe-auto-complete
                            style="font-weight:bold;"
                            [(ngModel)]="selReferredByDr"
@@ -91,86 +96,103 @@
                            onClick="this.select();"
                            max-num-list="10" />
                   </div>-->
-                  <div class="flex-3 margin-15-tp">
-                    <select-referrer [selected-ref-id]="selectedRefId" [selected-ref-name]="selectedRefName" [allow-external]="ExtRefSettings.EnableExternal"
-                                     [allow-free-text]="ExtRefSettings.AllowFreeText" [default-external]="ExtRefSettings.DefaultExternal" (on-referrer-change)="OnReferrerChanged($event)">
+                    <div class="flex-3 margin-15-tp">
+                      <select-referrer [selected-ref-id]="selectedRefId" [selected-ref-name]="selectedRefName"
+                        [allow-external]="ExtRefSettings.EnableExternal"
+                        [allow-free-text]="ExtRefSettings.AllowFreeText"
+                        [default-external]="ExtRefSettings.DefaultExternal"
+                        (on-referrer-change)="OnReferrerChanged($event)">
 
-                    </select-referrer>
+                      </select-referrer>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="flex-container flex-align-center margin-5-tp">
-              <div class="flex-2 single-flx">
-                <strong>Address: </strong>&nbsp; {{patient.Address}}
-              </div>
-              <div class="flex-1 single-flx">
-                <strong>Phone No: </strong>&nbsp;{{patient.PhoneNumber}}
-              </div>
-              <div class="flex-2 single-flx">
-                <div class="flex-container flex-align-center">
-                  <div class="flex-1 txt-autocomp"><strong>Requested On: </strong></div>
-                  <div class="flex-3">
-                    {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+              <div class="flex-container flex-align-center margin-5-tp">
+                <div class="flex-2 single-flx">
+                  <strong>Address: </strong>&nbsp; {{report.Address}}<span *ngIf= "report.Address">,</span>{{report.Muncipality}}<span *ngIf= "report.Muncipality">,</span>{{report.CountrySubDivision}}
+                </div>
+                <div class="flex-1 single-flx">
+                  <strong>Phone No: </strong>&nbsp;{{patient.PhoneNumber}}
+                </div>
+                <div class="flex-2 single-flx">
+                  <div class="flex-container flex-align-center">
+                    <div class="flex-1">
+                      <div class="flex-container flex-align-center">
+                        <div class="flex-3">
+                          <strong>Req. On: </strong>
+                          {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex-1">
+                      <div class="flex-container flex-align-center">
+                        <div class="flex-3">
+                          <strong>Scanned On: </strong>
+                          {{report.ScannedOn |
+                          DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
-          </div>
+            <div [ngClass]="hospitalCode" class="misc-fields">
+              <div class="flex-container flex-align-center margin-15-tp">
+                <div class="flex-2 single-flx">
+                  <strong>Report Template: </strong>&nbsp;
+                  <span *ngIf="report.TemplateName">{{report.TemplateName}}</span>
+                  <span *ngIf="!report.TemplateName">Not Set</span>
+                </div>
+                <div class="flex-1 single-flx">
+                  <a *ngIf="!changeReportTemplate" (click)="GetAllReportTemplates()"
+                    title="click to change report template" style="color:#b56714;font-size:13px;">
+                    Select different template ?
+                  </a>
+                  <input *ngIf="changeReportTemplate" class="form-control" danphe-auto-complete
+                    [(ngModel)]="selectedTemplate" [list-formatter]="ReportTempListFormatter" [source]="reportTemplates"
+                    placeholder="search template" display-property-name="TemplateName" value-property-name=null
+                    match-formatted="true" (valueChanged)="AssignSelectedReport()" onClick="this.select();"
+                    max-num-list="10" />
+                </div>
+                <div class="flex-2 single-flx text-center">
+                  <a class="dontshow" *ngIf="enableDicomImages" (click)="GetAllDicomImageList()"
+                    title="click to select Dicom Images" style="color:#b56714;font-size:13px;">
+                    Select Dicom Images ?
+                  </a>
+                </div>
+              </div>
 
-          <div [ngClass]="hospitalCode" class="misc-fields">
-            <div class="flex-container flex-align-center margin-15-tp">
-              <div class="flex-2 single-flx">
-                <strong>Report Template: </strong>&nbsp;
-                <span *ngIf="report.TemplateName">{{report.TemplateName}}</span>
-                <span *ngIf="!report.TemplateName">Not Set</span>
-              </div>
-              <div class="flex-1 single-flx">
-                <a *ngIf="!changeReportTemplate" (click)="GetAllReportTemplates()" title="click to change report template"
-                   style="color:#b56714;font-size:13px;">
-                  Select different template ?
-                </a>
-                <input *ngIf="changeReportTemplate" class="form-control" danphe-auto-complete
-                       [(ngModel)]="selectedTemplate"
-                       [list-formatter]="ReportTempListFormatter"
-                       [source]="reportTemplates"
-                       placeholder="search template"
-                       display-property-name="TemplateName"
-                       value-property-name=null
-                       match-formatted="true"
-                       (valueChanged)="AssignSelectedReport()"
-                       onClick="this.select();"
-                       max-num-list="10" />
-              </div>
-              <div class="flex-2 single-flx text-center">
-                <a class="dontshow" *ngIf="enableDicomImages" (click)="GetAllDicomImageList()" title="click to select Dicom Images"
-                   style="color:#b56714;font-size:13px;">
-                  Select Dicom Images ?
-                </a>
-              </div>
-            </div>
-
-            <div class="row margin-5-tp">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="row">
-                      <div class="col-md-7">
-                        <div class="row">
-                          <div class="col-md-3"><p class="lineheight-3 margin-0-vr">Indication:</p></div>
-                          <div class="col-md-9"><input class="form-control" [(ngModel)]="report.Indication" type="text" placeholder="Indication" /></div>
+              <div class="row margin-5-tp">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="row">
+                        <div class="col-md-7">
+                          <div class="row">
+                            <div class="col-md-3">
+                              <p class="lineheight-3 margin-0-vr">Indication:</p>
+                            </div>
+                            <div class="col-md-9"><input class="form-control" [(ngModel)]="report.Indication"
+                                type="text" placeholder="Indication" /></div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="col-md-5">
-                        <div class="row">
-                          <div class="col-md-4"><p class="lineheight-3 margin-0-vr">MRI/CT/X-ray No:</p></div>
-                          <div class="col-md-5"><input class="form-control" [(ngModel)]="report.RadiologyNo" type="text" placeholder="MRI/CT/X-ray Number"/></div>
+                        <div class="col-md-5">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <p class="lineheight-3 margin-0-vr">MRI/CT/X-ray No:</p>
+                            </div>
+                            <div class="col-md-5"><input class="form-control" [(ngModel)]="report.RadiologyNo"
+                                type="text" placeholder="MRI/CT/X-ray Number" /></div>
+                          </div>
                         </div>
-                      </div>
-                      <!--<div class="col-md-3"></div>-->
-                      <!--<div class="col-md-5">
+                        <!--<div class="col-md-3"></div>-->
+                        <!--<div class="col-md-5">
                         <div *ngIf="enableImgUpload" class="row">
                           <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
                           <div class="col-md-8">
@@ -179,118 +201,125 @@
                         </div>
                       </div>-->
 
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
 
-          <div class="editor-content">
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12" style="min-height:460px;">
-                <danphe-ckeditor [readonly]="isReadOnly"
-                                 (get-html-content)="onChangeEditorData($event)"
-                                 (get-shortcut)="onShortCutPressed($event)"
-                                 [set-html-content]="report.ReportText">
-                </danphe-ckeditor>
+            <div class="editor-content">
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12" style="min-height:460px;">
+                  <danphe-ckeditor [readonly]="isReadOnly" (get-html-content)="onChangeEditorData($event)"
+                    (get-shortcut)="onShortCutPressed($event)" [set-html-content]="report.ReportText">
+                  </danphe-ckeditor>
+                </div>
               </div>
             </div>
-          </div>
 
 
-          <div class="rad-report-footer">
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div *ngIf="selectedTemplate" class="row">
-                  <div class="col-md-12" style=" margin-top: 20px; padding-right: 30px;">
-                    <p *ngIf="selectedTemplate.FooterNote"><small><strong>Footer Disclaier</strong>{{selectedTemplate.FooterNote}}</small></p>
+            <div class="rad-report-footer">
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div *ngIf="selectedTemplate" class="row">
+                    <div class="col-md-12" style=" margin-top: 20px; padding-right: 30px;">
+                      <p *ngIf="selectedTemplate.FooterNote"><small><strong>Footer
+                            Disclaier</strong>{{selectedTemplate.FooterNote}}</small></p>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-12 margin-20-tp">
+                      <danphe-signatories ngDefaultControl [(ngModel)]="report.Signatories"
+                        [defaultEmployeeIdList]="defaultSigEmpIdList" [displayMode]="'edit'"
+                        [departmentName]="'radiology'">
+                      </danphe-signatories>
+                      <!--<div class="color-red font-sm" *ngIf="IsDirty('Signatories')" [hidden]="IsValidCheck('Signatories','required')"> Please select Reporting Doctors.</div>-->
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+
+            <div class="image-table-holder">
+              <div *ngIf="enableImgUpload" class="row">
+                <div class="col-md-6">
+                  <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b
+                      class="color-red">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-8">
+
+                    <input class="form-control hidden" #fileInput type="file" value="" id="chooseFile" multiple
+                      (change)="fileChangeEvent($event)" />
+                    <label for="chooseFile" class="lbl-choose-file">
+                      Choose Files..
+                    </label>
                   </div>
                 </div>
-
-                <div class="row">
-                  <div class="col-md-12 margin-20-tp">
-                    <danphe-signatories ngDefaultControl [(ngModel)]="report.Signatories" [defaultEmployeeIdList]="defaultSigEmpIdList" [displayMode]="'edit'" [departmentName]="'radiology'">
-                    </danphe-signatories>
-                    <!--<div class="color-red font-sm" *ngIf="IsDirty('Signatories')" [hidden]="IsValidCheck('Signatories','required')"> Please select Reporting Doctors.</div>-->
-                  </div>
-                </div>
-
               </div>
-            </div>
-          </div>
+              <div class="row">
 
-
-          <div class="image-table-holder">
-            <div *ngIf="enableImgUpload" class="row">
-              <div class="col-md-6">
-                <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
-                <div class="col-md-8">
-
-                  <input class="form-control hidden" #fileInput type="file" value="" id="chooseFile" multiple (change)="fileChangeEvent($event)" />
-                  <label for="chooseFile" class="lbl-choose-file">
-                    Choose Files..
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-
-              <div class="table-responsive">
-                <table class="table table-striped table-hover" style="background-color:initial; margin:0px;">
-                  <tr>
-                    <th *ngFor="let image of album; let i=index">
-<!--
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" style="background-color:initial; margin:0px;">
+                    <tr>
+                      <th *ngFor="let image of album; let i=index">
+                        <!--
                       <div>
                         <button class="btn btn-sm red" (click)="RemoveSingleImage(i)" title="Click to Remove this image">
                           X
                         </button>
                       </div>
 -->
-                      <div>
-                        <img style="width:200px; height:200px; object-fit:contain;" (click)="open(i)" [src]="image.src" />
-                      </div>
-                      <div>
-                        {{image.caption}}
-                      </div>
+                        <div>
+                          <img style="width:200px; height:200px; object-fit:contain;" (click)="open(i)"
+                            [src]="image.src" />
+                        </div>
+                        <div>
+                          {{image.caption}}
+                        </div>
 
-                    </th>
-                  </tr>
-                </table>
+                      </th>
+                    </tr>
+                  </table>
+                </div>
               </div>
+            </div>
+
+
+
+          </div>
+
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+
+              <input *ngIf="buttonsList.indexOf('save')>-1" type="button" class="btn btn-primary margin-7-hr"
+                (click)="SaveReport()" value="Save" [disabled]="loading" />
+              <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('submit')>-1" type="button"
+                class="btn btn-primary margin-7-hr" (click)="SubmitAndPrintReport()" value="Submit & Print"
+                [disabled]="loading" />
+              <!-- <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('print')>-1" type="button" class="btn btn-primary" (click)="AddReport(orderStatus='print')" value="Print" [disabled]="loading" /> -->
+              <!--<input *ngIf="enableImgUpload && album && album.length>0" type="button" class="btn btn-danger margin-7-hr" (click)="DeleteImagesAndSave('pending')" value="Delete Images" [disabled]="loading" />-->
+
+              <label class="mt-checkbox mt-checkbox-outline" *ngIf="enableDicomImages">
+                <input id="allImages" name="allImages" type="checkbox" value="" [disabled]="loading"
+                  [(ngModel)]="allImagSelect" (ngModelChange)="SelectDeselectAllImages()">
+                <span style="border: solid 0.5px black;"></span> &nbsp;All Images
+              </label>
+
             </div>
           </div>
 
-
-
-        </div>
-
-        <div class="modelbox-footer">
-          <div class="all-buttons text-right">
-
-            <input *ngIf="buttonsList.indexOf('save')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SaveReport()" value="Save" [disabled]="loading" />
-            <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('submit')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SubmitAndPrintReport()" value="Submit & Print" [disabled]="loading" />
-            <!-- <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('print')>-1" type="button" class="btn btn-primary" (click)="AddReport(orderStatus='print')" value="Print" [disabled]="loading" /> -->
-            <!--<input *ngIf="enableImgUpload && album && album.length>0" type="button" class="btn btn-danger margin-7-hr" (click)="DeleteImagesAndSave('pending')" value="Delete Images" [disabled]="loading" />-->
-
-            <label class="mt-checkbox mt-checkbox-outline" *ngIf="enableDicomImages">
-              <input id="allImages" name="allImages" type="checkbox" value="" [disabled]="loading"
-                     [(ngModel)]="allImagSelect" (ngModelChange)="SelectDeselectAllImages()">
-              <span style="border: solid 0.5px black;"></span> &nbsp;All Images
-            </label>
-
-          </div>
-        </div>
-
-<!--
+          <!--
         <div class="close-modelbox">
           <button class="btn btn-danger" (click)="Close()">X</button>
         </div>
 -->
+        </div>
       </div>
     </div>
-	  </div>
 
   </div>
 </div>
@@ -306,7 +335,8 @@
               <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
               <span class="caption-subject font-red-sunglo bold uppercase">Dicom&nbsp;Image&nbsp;List</span>
               <a style="float:right;  margin-top:0px;" class="btn btn-danger" (click)="ClosePat()" title="Cancel">X</a>
-              <div class="col-md-12" style="margin-bottom: 5px; border-bottom: 1px solid black;  line-height:2; margin-left:0px">
+              <div class="col-md-12"
+                style="margin-bottom: 5px; border-bottom: 1px solid black;  line-height:2; margin-left:0px">
                 <div class="col-md-4">
                   Patient Name: <span> <b> {{patient.ShortName}}</b> </span>
                   <b>( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}} )</b>
@@ -350,7 +380,8 @@
                 </tbody>
               </table>
             </div>
-            <input style="float:initial;  padding:10px;" type="button" class="btn btn-primary" (click)="AddDicomImage()" value="Add" />
+            <input style="float:initial;  padding:10px;" type="button" class="btn btn-primary" (click)="AddDicomImage()"
+              value="Add" />
 
           </div>
         </div>

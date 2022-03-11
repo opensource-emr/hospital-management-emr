@@ -9,7 +9,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 
 @Component({
     selector: 'unitofmeasurement-add',
-    templateUrl: './unit-of-measurement-add.html'
+    templateUrl: './unit-of-measurement-add.html',
+    host: { '(window:keyup)': 'hotkeys($event)' }
 
 })
 export class UnitOfMeasurementAddComponent {
@@ -66,8 +67,10 @@ export class UnitOfMeasurementAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('UOMName');
                 });
         }
+        this.FocusElementById('UOMName');
     }
     //adding new department
     Update() {
@@ -91,8 +94,10 @@ export class UnitOfMeasurementAddComponent {
                 err => {
                     this.logError(err);
                     this.loading = false;
+                    this.FocusElementById('UOMName');
                 });
         }
+        this.FocusElementById('UOMName');
     }
 
     Close() {
@@ -122,7 +127,19 @@ export class UnitOfMeasurementAddComponent {
     logError(err: any) {
         console.log(err);
     }
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+    hotkeys(event){
+        if(event.keyCode==27){
+            this.Close()
+        }
+    }
 
 
 }

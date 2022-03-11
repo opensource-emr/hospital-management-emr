@@ -5,10 +5,11 @@ import { Guarantor } from "../shared/guarantor.model";
 
 import * as moment from 'moment/moment';
 import { NepaliCalendarService } from '../../shared/calendar/np/nepali-calendar.service';
+import { InsuranceVM } from '../../billing/shared/patient-billing-context-vm';
 @Injectable()
 export class PatientService {
 
-
+  public Insurance: InsuranceVM;
   constructor(public router: Router,
     public npCalendarService: NepaliCalendarService) { }
 
@@ -93,7 +94,8 @@ export class PatientService {
     pat.Admissions = currPatient.Admissions;
     pat.IsOutdoorPat = currPatient.IsOutdoorPat;
     pat.Allergies = currPatient.Allergies;
-
+    pat.MunicipalityId = currPatient.MunicipalityId;
+    pat.MunicipalityName = currPatient.MunicipalityName;
     //guarantor is having a lot of problems.. neet to check them carefully--sudarshan:5May'17
     if (currPatient.Guarantor != null && currPatient.Guarantor.GuarantorName != null) {
 

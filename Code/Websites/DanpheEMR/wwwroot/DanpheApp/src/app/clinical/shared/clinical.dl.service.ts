@@ -368,6 +368,12 @@ export class ClinicalDLService {
     let data = JSON.stringify(NoteMaster);
     return this.http.post<any>("/api/Clinical?reqType=posthistoryandphysicalnote", data, this.options);
   }
+  public PostOpdExamination(NoteMaster: NotesModel) {
+    console.log("Note Master in dl:");
+    console.log(NoteMaster);
+    let data = JSON.stringify(NoteMaster);
+    return this.http.post<any>("/api/Clinical?reqType=postopdexamination", data, this.options);
+  }
   public PostEmergencyNoteTemplate(NoteMaster) {
     let data = JSON.stringify(NoteMaster);
     return this.http.post<any>("/api/Clinical?reqType=postemergencynote", data, this.options);
@@ -402,6 +408,9 @@ export class ClinicalDLService {
   }
   public GetHistoryAndPhysicalNoteById(NotesId) {
     return this.http.get<any>("/api/Clinical?reqType=getHistoryAndPhysicalNoteById&NotesId=" + NotesId, this.options);
+  }
+  public GetOpdExaminationdetailsById(patientId,patientVisitid,notesId) {
+    return this.http.get<any>("/api/Clinical?reqType=getopdExaminationById&patientVisitId=" + patientVisitid + "&patientId=" + patientId + "&notesId="+ notesId, this.options);
   }
   public GetEmergencyNoteById(NotesId) {
     return this.http.get<any>("/api/Clinical?reqType=getEmergencyNoteById&NotesId=" + NotesId, this.options);

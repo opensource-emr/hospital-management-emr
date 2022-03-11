@@ -151,7 +151,6 @@ export class HomeMedicationAddComponent {
                 });
     }
     CallBackAddUpdate(_homeMedication) {
-
         this.CurrentHomeMedication = new HomeMedication();
         this.medicineSelected = null;
         this.callbackAddUpdate.emit({ "homeMedication": _homeMedication });
@@ -160,5 +159,10 @@ export class HomeMedicationAddComponent {
     myListFormatter(data: any): string {
         let html = data["MedicineName"];
         return html;
+    }
+
+    close(_homeMedication){
+        this.showMedicationAddBox = false
+        this.callbackAddUpdate.emit({ "medication": _homeMedication });
     }
 }

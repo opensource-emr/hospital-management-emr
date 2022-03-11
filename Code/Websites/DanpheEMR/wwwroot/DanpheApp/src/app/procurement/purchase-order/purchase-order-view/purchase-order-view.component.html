@@ -1,0 +1,352 @@
+<style>
+    .printStyle {
+        border: dotted 1px;
+        margin: 10px 100px;
+    }
+
+    .print-border-top {
+        border-top: dotted 1px;
+    }
+
+    .print-border-bottom {
+        border-bottom: dotted 1px;
+    }
+
+    .print-border {
+        border: dotted 1px;
+    }
+
+    .center-style {
+        text-align: center;
+    }
+
+    .border-up-down {
+        border-top: dotted 1px;
+        border-bottom: dotted 1px;
+    }
+
+    .qr-code {
+        position: relative;
+        left: 70px;
+        top: 3px;
+    }
+
+    @media print {
+        .qr-code {
+            left: 70px;
+        }
+    }
+
+    table {
+        /* border: 1px solid #000; */
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 15px;
+        font-size: 12px;
+    }
+
+    table tr td,
+    table tr th {
+        /* border: 1px solid #000; */
+        padding: 1px;
+        height: 15px;
+    }
+
+    .logo {
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .img-responsive {
+        position: static;
+        width: 100%;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="left">
+            <button class="btn btn-primary btn-sm" (click)="purchaseorderList()">
+                <i class="fa fa-backward"></i> &nbsp;&nbsp;&nbsp; Back to Purchase Order
+                List
+            </button>
+        </div>
+        <div class="right">
+            <button class="btn btn-success" (click)="sendEmail()" style="display: none;">
+                <i class="glyphicon glyphicon-envelope"></i> &nbsp;&nbsp;&nbsp; Send Email
+            </button>
+            <button id="printbtn" class="btn btn-primary btn-sm" (keyup.enter)="print()" (click)="print()"><i class="fa fa-print"></i>Print</button>
+        </div>
+    </div>
+</div>
+<!-- Nepali View -->
+<app-purchase-order-np-view *ngIf="showNepaliReceipt; else englishViewTemplate" [purchase-order]="purchaseorderDetails"></app-purchase-order-np-view>
+<!-- English View -->
+<ng-template #englishViewTemplate>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="modelbox-div clearfix">
+                <!--Model Box Body Start-->
+                <div id="printpage" class="row printStyle print-border">
+                    <!-- <div class="row" style="margin-bottom: 10px" *ngIf="!purchaseorderDetails?.InvoiceHeaderId"> -->
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="logo" style="width: 18%; padding: 0px 20px 0px 20px; float: left">
+                            <img class="img-responsive" style="max-height: 70px" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                        </div>
+                        <div style="width: 64%; float: left; padding-bottom: 0px">
+                            <div class="text-center bill-head" style=" text-align: center; font-family: sans-serif; margin-top: 10px;">
+                                <span style="font-size: 15px"><strong>{{ headerDetail.hospitalName }}</strong></span><br />
+                                <span style="font-size: 15px">{{ headerDetail.address }}</span><br />
+                                <span style="font-size: 13px">PAN no: {{ headerDetail.PANno }} , Tel:
+                                    {{ headerDetail.tel }}</span><br />
+                                <span style="font-size: 15px"><strong> Procurement Unit </strong></span><br />
+                            </div>
+                        </div>
+                        <div style="float: left">
+                            <div class="qr-code">
+                                <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                            </div>
+                        </div>
+                        <!--Billing Header-->
+                        <div style="clear: left"></div>
+                    </div>
+                    <table width="100%" style="border: 1px solid #ccc;">
+                        <!-- <tr>
+              
+            </tr> -->
+                        <tr>
+                            <td colspan="3" style="text-align: center; text-transform: uppercase; padding: 0 5px;"> <strong style="font-weight: bold; font-size: 18px;">PURCHASE ORDER</strong>
+                            </td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td style="width:250px; padding: 0 5px;"><b>Vendor's Name:</b></td>
+                            <td style="padding: 0 5px;" colspan="2">{{purchaseorderDetails.VendorName}}</td>
+                            <td style="padding: 0 5px;">PO No.:{{purchaseorderDetails.PurchaseOrderNo}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 5px;"><b>Address:</b></td>
+                            <td style="padding: 0 5px;" colspan="1">{{purchaseorderDetails.VendorAddress}}</td>
+                            <td style="padding: 0 5px;"><b>Payment Mode:</b></td>
+                            <td style="padding: 0 5px;"><span>Credit</span></td>
+
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 5px;"><b>Contact Person:</b></td>
+                            <td style="padding: 0 5px;"></td>
+                            <td style="padding: 0 5px;"><b>PO Date:</b></td>
+                            <td style="padding: 0 5px;">{{purchaseorderDetails.PoDate}}</td>
+
+                        </tr>
+
+                        <tr>
+                            <td style="padding: 0 5px;"><b>Contact /Mobile Number:</b></td>
+                            <td style="padding: 0 5px;">{{purchaseorderDetails.VendorNo}}</td>
+                            <td></td>
+                            <td></td>
+                            <!-- <td style="padding: 0 5px;"><b>PO Classification :</b></td>
+              <td style="padding: 0 5px;">{{purchaseorderDetails.POClassification}}</td> -->
+
+
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 5px;"><b>Email:</b></td>
+                            <td style="padding: 0 5px;">{{purchaseorderDetails.Email}}</td>
+                            <td style="padding: 0 5px;"><b>Currency:</b></td>
+                            <td style="padding: 0 5px;">{{purchaseorderDetails.CurrencyCode}}</td>
+
+                        </tr>
+
+                        <tr>
+                            <th style="padding: 0 5px;">Invoicing Address</th>
+                            <td style="padding: 0 5px;white-space: pre-line; text-align: left;">{{purchaseorderDetails.InvoicingAddress}}</td>
+                            <th style="padding: 0 5px;"><b>Reference No:</b></th>
+                            <td style="padding: 0 5px;white-space: pre-line; text-align: left;">{{purchaseorderDetails.ReferenceNo}}</td>
+
+                        </tr>
+                        <tr>
+                            <th style="padding: 0 5px;">Delivery Address</th>
+                            <td style="padding: 0 5px;white-space: pre-line; text-align: left;">{{purchaseorderDetails.DeliveryAddress}}</td>
+                            <th>Contact Person Name and office Email</th>
+                            <td style="padding: 0 5px;">{{purchaseorderDetails.ContactPersonName}}<br>{{purchaseorderDetails.ContactPersonEmail}}</td>
+                        </tr>
+                        <tr>
+                            <th style="padding: 0 5px;" *ngIf="poEximCodeParameterValue.showEximCode">EXIM CODE
+                            </th>
+                            <td style="padding: 0 5px;white-space: pre-line; text-align: left;" *ngIf="poEximCodeParameterValue.showEximCode">{{poEximCodeParameterValue.EXIMCODE}}</td>
+
+                        </tr>
+                    </table>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 0 5px;" colspan="4">We are pleased to place this order for below mentioned materials to your above stated company/firm.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0" colspan="4">
+                                <table style="width: 100%; margin: 0;">
+                                    <tr style="text-align: center;">
+                                        <th style="padding: 0 5px;"><b>SN</b></th>
+                                        <th style="padding: 0 5px;" *ngIf="poFormParameterValue.showVendorItemCode"><b> Code</b></th>
+                                        <th style="padding: 0 5px;"><b>Item Name</b></th>
+                                        <th style="padding: 0 5px;" *ngIf="poFormParameterValue.showMSSNO"><b>MSS No</b></th>
+                                        <th style="padding: 0 5px;" *ngIf="poFormParameterValue.showHSNCODE"><b>HSN Code</b></th>
+                                        <!-- <td style="padding: 0 5px;"><b>Item Code</b></td> -->
+                                        <th style="padding: 0 5px;"><b>Order Quantity</b></th>
+                                        <th style="padding: 0 5px;"><b>UOM</b></th>
+                                        <th style="padding: 0 5px;"><b>Standard Rate</b></th>
+                                        <th style="padding: 0 5px;"><b>Vat %</b></th>
+                                        <th style="padding: 0 5px;"><b>Total Amount</b></th>
+                                        <td style="padding: 0 5px;"><b>Delivery Days</b></td>
+                                        <td style="padding: 0 5px;"> <b>Item Status</b></td>
+                                    </tr>
+                                    <tr style="text-align: center;" *ngFor="let row of purchaseorderItemsDetails; let i = index ">
+                                        <td style="padding: 0 5px;">{{i+1}}</td>
+                                        <td style="padding: 0 5px;" *ngIf="poFormParameterValue.showVendorItemCode">{{row.VendorItemCode}}</td>
+                                        <td style="padding: 0 5px;">{{row.ItemName}}</td>
+                                        <td style="padding: 0 5px;" *ngIf="poFormParameterValue.showMSSNO">{{row.MSSNO}}</td>
+                                        <td style="padding: 0 5px;" *ngIf="poFormParameterValue.showHSNCODE">{{row.HSNCODE}}</td>
+                                        <td style="padding: 0 5px;">{{row.Quantity}}</td>
+                                        <td style="padding: 0 5px;">{{row.UOMName}}</td>
+                                        <td style="padding: 0 5px;">{{row.StandardRate }}</td>
+                                        <td style="padding: 0 5px;">{{row.VatPercentage}}</td>
+                                        <td style="padding: 0 5px;">{{row.ItemTotalAmount }}</td>
+                                        <td style="padding: 0 5px;">{{ row.DeliveryDays }}</td>
+                                        <td style="padding: 0 5px;">{{ row.POItemStatus }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 5px; text-align: center;" class="text-capitalize" [colSpan]="colspan" rowspan="6">Total Value in words:&nbsp;({{purchaseorderDetails.CurrencyCode}})&nbsp;{{purchaseorderDetails.TotalAmount | NumberInWords }}Only. </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 20px;" colspan="4">&nbsp; <b>Sub Total</b></td>
+                                        <td style="padding: 0 5px; text-align: center;"><b>{{purchaseorderDetails.SubTotal | number: "1.2-2"}}</b>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 20px;" colspan="4">&nbsp; <b>VAT Amount</b></td>
+                                        <td style="padding: 0 5px; text-align: center;"><b>{{purchaseorderDetails.VATAmount | number: "1.2-4"}}</b>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 20px;" colspan="4">&nbsp; <b>Total Amount</b>&nbsp;&nbsp;({{purchaseorderDetails.CurrencyCode}})</td>
+                                        <td style="padding: 0 5px; text-align: center;"><b>{{purchaseorderDetails.TotalAmount | number: "1.2-2"}}</b></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="pagebreak"> </div>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 0 5px;" colspan="3">
+                                <strong style="width:50%;text-align:left;margin-left:0; font-weight: bold; font-size: 10px;">Terms &
+                                    Conditions:</strong>
+                                <div class="tc-notes" style="font-style: italic" [innerHtml]="purchaseorderDetails.Terms"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 5px; text-align: left;">
+                                <strong style="font-weight: bold;"> Generated By:</strong>
+                            </td>
+                            <td style="padding: 0 5px; text-align: center; ">
+                                <strong style="font-weight: bold;"> Checked By:</strong>
+                            </td>
+                            <td style="padding: 0 5px; text-align: right;">
+                                <strong style="font-weight: bold;"> Approved By:</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0 5px; text-align: left; height: 50px;">
+                                <div>{{creator.Name}}</div>
+                            </td>
+                            <td style="padding:0 5px; text-align: center; height: 50px;">
+                                <div *ngIf="verifiers.length > 0">
+                                    <div>{{CheckedBy.VerifiedBy.FullName}}</div>
+                                    <div>({{CheckedBy.VerifiedBy.EmployeeRole.EmployeeRoleName}})</div>
+                                    <div><b>Checked On :</b>{{CheckedBy.VerifiedOn | date:'medium'}}</div>
+                                    <div><b>Status :</b>{{CheckedBy.VerificationStatus}}</div>
+                                    <div *ngIf="CheckedBy.VerificationRemarks != ''"><b>Remarks :</b>{{CheckedBy.VerificationRemarks}}</div>
+
+                                </div>
+                            </td>
+                            <td style="padding:0 5px; text-align: right; height: 50px;">
+                                <div *ngIf="verifiers.length > 1">
+                                    <div>{{ApprovedBy.VerifiedBy.FullName}}</div>
+                                    <div>({{ApprovedBy.VerifiedBy.EmployeeRole.EmployeeRoleName}})</div>
+                                    <div><b>Checked On :</b>{{ApprovedBy.VerifiedOn | date:'medium'}}</div>
+                                    <div><b>Status :</b>{{ApprovedBy.VerificationStatus}}</div>
+                                    <div *ngIf="ApprovedBy.VerificationRemarks != ''"><b>Remarks :</b>{{ApprovedBy.VerificationRemarks}}</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="panel-footer" style="background:transparent">
+                        <div style="display: flex; justify-content: center;">Note:This is computer generated Purchase Order signature not required.</div>
+                    </div>
+                </div>
+                <div class="row center-style">
+                    <div class="col-md-12 col-xs-12" *ngIf="purchaseorderDetails != null">
+                        <a class="btn btn-danger" *ngIf="purchaseorderDetails.IsModificationAllowed == true" data-toggle="modal" data-target="#CancelPopup">
+                            Withdraw
+                            <i class="glyphicon glyphicon-floppy-remove"></i> </a><span> </span><span> </span> &nbsp;
+                        <a (click)="EditPurchaseOrder(purchaseorderDetails.POStatus)" class="btn btn-warning" *ngIf="purchaseorderDetails.IsModificationAllowed == true">
+                            Edit
+                            <i class="glyphicon glyphicon-edit"></i> </a><span> </span><span> </span> &nbsp;
+                        <!-- <a (click)="print()" class="btn btn-default">
+                Print
+                <i class="glyphicon glyphicon-print"></i>
+              </a><span> </span><span> </span>
+              &nbsp;
+                <a (click)="purchaseorderList()" class="btn btn-primary">
+                Purchase Order List
+                <i class="glyphicon glyphicon-share-alt"></i>
+              </a>  -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<!-- @**** BELOW <div> IS FOR PRINTING PURCHASE ORDER DETAILS ****@
+@**** BELOW <div> was removed because printing purchase is done from the upper div as suggested by Abhisek Dhakal Sir ****@ -->
+<!-- Modal for cancel gr -->
+<!--We can check this out here for more information.
+  https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
+<div id="CancelPopup" class="modal fade inv_modal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="caption lb-caption">
+                <h3><span>Warning</span></h3>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                    X
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this Purchase Order?</p>
+                <i>If yes, Remarks is mandatory.</i>
+                <form action="" class="hm-form mt20 clearfix">
+                    <div class="form-group">
+                        <div class="row">
+                            <label class="control-label col-md-3">Cancellation Remarks <sup>*</sup><b>:</b></label>
+                            <div class="col-md-9">
+                                <textarea style="width: 100%" type="text" name="cancelRemarks" [(ngModel)]="purchaseorderDetails.CancelRemarks" rows="5"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal" [disabled]="purchaseorderDetails.CancelRemarks == ''" (click)="WithdrawPO(purchaseorderDetails.POStatus)">
+                    Yes
+                </button>
+                <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

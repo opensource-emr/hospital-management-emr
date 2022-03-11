@@ -8,15 +8,16 @@ import { SecurityService } from '../../../security/shared/security.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 //import { RouteFromService } from "../../../shared/routefrom.service";
 //Parse, validate, manipulate, and display dates and times in JS.
-import * as moment from 'moment/moment';
 import { CompanyModel } from "../shared/company/company.model";
 import { CompanyService } from "../shared/company/company.service";
-import { ItemSubCategoryListComponent } from "../itemsubcategory/item-subcategory-list";
 import { ItemSubCategoryModel } from "../shared/item-subcategory.model";
 import { InventoryService } from "../../shared/inventory.service";
 import { CoreService } from "../../../core/shared/core.service";
 import { trigger, transition, style, animate } from "@angular/animations";
 import { UnitOfMeasurementModel } from "../shared/unit-of-measurement.model";
+import { VendorsModel } from "../shared/vendors.model";
+import { ENUM_GRItemCategory } from "../../../shared/shared-enums";
+import { ActivateInventoryService } from "../../../shared/activate-inventory/activate-inventory.service";
 @Component({
   selector: 'item-add',
   animations: [
@@ -33,7 +34,8 @@ import { UnitOfMeasurementModel } from "../shared/unit-of-measurement.model";
     ]
     )
   ],
-  templateUrl: './item-add.html'
+  templateUrl: './item-add.html',
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class ItemAddComponent {
 
@@ -52,7 +54,8 @@ export class ItemAddComponent {
   public ItemSubCategoryList: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
   public filteredSubCategoryList: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
   public GetCompanyList: Array<CompanyModel> = new Array<CompanyModel>();
-
+  public vendorList: Array<VendorsModel> = new Array<VendorsModel>();
+  public selectedVendor: VendorsModel = new VendorsModel();
   //to track the change in subcategory. just in case subcategory changes and again same subcategory is selected.
   public trackSubCategoryId: number;
   public trackSubCategoryCode: string;
@@ -65,10 +68,14 @@ export class ItemAddComponent {
   public showAddSubCategoryPopUp: boolean = false;
   public VATPercent: number = 0;
   public loading: boolean = false;
+  public roleList: any[] = [];
+  public selectedMaintenanceOwner: any;
+  activeInventories: any[] = [];
 
   constructor(
     public invSettingBL: InventorySettingBLService,
     public inventoryService: InventoryService,
+    private _activeInventory: ActivateInventoryService,
     public securityService: SecurityService,
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
@@ -82,19 +89,37 @@ export class ItemAddComponent {
     this.GetPackagingType();
     this.GetUnitOfMeasurement();
     this.GetCompany();
+    this.GetVendorList();
+    this.getAllRoles();
+    this.getInventoryList();
   }
+  private getInventoryList() {
+    let currentInventory = this._activeInventory.activeInventory;
+    this.activeInventories = [{ StoreId: null, Name: "Common", }, { StoreId: currentInventory.StoreId, Name: currentInventory.Name }];
+  }
+
+  private getAllRoles() {
+    this.invSettingBL.getAllRoles().subscribe(res => {
+      if (res.Status == "OK") {
+        this.roleList = res.Results;
+      }
+    });
+  }
+
   @Input("showAddPage")
   public set value(val: boolean) {
     this.showAddPage = val;
     if (this.selectedItem) {
       this.update = true;
       this.CurrentItem = Object.assign(this.CurrentItem, this.selectedItem);
+      this.selectedVendor = this.vendorList.find(x => x.VendorId == this.selectedItem.VendorId);
       this.CurrentItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.CurrentItem.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.filterSubCategory();
       this.CurrentItem = Object.assign(this.CurrentItem, this.selectedItem);//to show the subcategoryId selected
       this.trackSubCategoryId = this.CurrentItem.SubCategoryId;
       this.trackSubCategoryCode = this.CurrentItem.Code;
+      this.selectedMaintenanceOwner = this.roleList.find(a => a.RoleId == this.CurrentItem.MaintenanceOwnerRoleId);
     }
     else {
       this.CurrentItem = new ItemModel();
@@ -127,7 +152,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetAccountHead(true)
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetAccountHeadList = res.Results.filter(a=> a.IsActive == true);
+          this.GetAccountHeadList = res.Results.filter(a => a.IsActive == true);
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -147,7 +172,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetPackagingType()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetPackagingTypeList = res.Results.filter(a=> a.IsActive == true);
+          this.GetPackagingTypeList = res.Results.filter(a => a.IsActive == true);
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -158,7 +183,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetUnitOfMeasurement()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.UOMList = res.Results.filter(a=> a.IsActive == true);
+          this.UOMList = res.Results.filter(a => a.IsActive == true);
           //this.CurrentVendor.DefaultCurrencyId = 1;
         } else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -187,11 +212,27 @@ export class ItemAddComponent {
         }
       });
   }
+
+  GetVendorList() {
+    try {
+      this.vendorList = this.inventoryService.allVendorList;
+      if (this.vendorList.length == 0) {
+        this.msgBoxServ.showMessage("Failed", ["Failed to load the vendor list."]);
+      }
+    } catch (ex) {
+      this.msgBoxServ.showMessage("Failed", ["Something went wrong while loading vendor list."]);
+    }
+  }
+
   //adding new Item
   AddItem() {
     var checkIsValid = true;
     if (this.CurrentItem.IsVATApplicable == true && this.CurrentItem.VAT == null) {
       this.showMessageBox("Warning", "VAT is required.");
+      checkIsValid = false;
+    }
+    if (this.registerPageNumberRequired == true && this.CurrentItem.RegisterPageNumber == null) {
+      this.showMessageBox("Error", this.registerPageNumberLabel + " is required");
       checkIsValid = false;
     }
     //for checking validations, marking all the fields as dirty and checking the validity.
@@ -212,24 +253,33 @@ export class ItemAddComponent {
             if (res.Status == "OK") {
               this.showMessageBox("success", "Item Added");
               this.CurrentItem = new ItemModel();
+              this.selectedMaintenanceOwner = null;
               this.CallBackAddItem(res)
             }
             else {
               this.showMessageBox("Failed", "Item Add Failed.");
+              this.FocusElementById('ddlItemCategory');
             }
             this.loading = false;
+            this.FocusElementById('ddlItemCategory');
           },
           err => {
             this.logError(err);
             this.loading = false;
+            this.FocusElementById('ddlItemCategory');
           });
     }
+    this.FocusElementById('ddlItemCategory');
   }
   //adding new Item
   Update() {
     var checkIsValid = true;
     if (this.CurrentItem.IsVATApplicable == true && this.CurrentItem.VAT == null) {
       this.showMessageBox("Warning", "VAT is required.");
+      checkIsValid = false;
+    }
+    if (this.registerPageNumberRequired == true && this.CurrentItem.RegisterPageNumber == null) {
+      this.showMessageBox("Error", this.registerPageNumberLabel + " is required");
       checkIsValid = false;
     }
     //for checking validations, marking all the fields as dirty and checking the validity.
@@ -246,14 +296,17 @@ export class ItemAddComponent {
           res => {
             this.showMessageBox("success", "Item Updated");
             this.CurrentItem = new ItemModel();
+            this.selectedMaintenanceOwner = null;
             this.CallBackAddItem(res);
             this.loading = false;
           },
           err => {
             this.logError(err);
             this.loading = false;
+            this.FocusElementById('ItemCategoryId');
           });
     }
+    this.FocusElementById('ItemCategoryId');
   }
 
   Close() {
@@ -262,6 +315,7 @@ export class ItemAddComponent {
     this.filteredSubCategoryList = null;
     this.trackSubCategoryCode = "";
     this.trackSubCategoryId = null;
+    this.selectedMaintenanceOwner = null;
     this.showAddPage = false;
   }
   //after adding Item is succesfully added  then this function is called.
@@ -271,6 +325,11 @@ export class ItemAddComponent {
       ////since itemList is already referencing to the allItemList, it automatically pushed newly added item to allItemList.
       var item: ItemModel = res.Results;
       item.UOMName = this.UOMList.find(uom => uom.UOMId == item.UnitOfMeasurementId).UOMName;
+      let subCategory=this.filteredSubCategoryList.find(sc=> sc.SubCategoryId== item.SubCategoryId);
+
+      if(subCategory)
+        item.SubCategoryName=subCategory.SubCategoryName;
+
       //find the index of currently added/updated item in the list of all items (grid)
       this.AddtoGlobalItemList(item);
       this.callbackAdd.emit({ item: item });
@@ -282,7 +341,7 @@ export class ItemAddComponent {
   }
   public AddtoGlobalItemList(item: ItemModel) {
     let index = this.itemList.findIndex(a => a.ItemId == item.ItemId);
-    //index will be -1 when this item is currently added. 
+    //index will be -1 when this item is currently added.
     if (index < 0) {
       this.itemList.splice(0, 0, item); //this will add this item to 0th index.
     }
@@ -309,8 +368,12 @@ export class ItemAddComponent {
       this.filteredSubCategoryList = this.ItemSubCategoryList.filter(a => a.IsConsumable == true);
     }
     this.CurrentItem.SubCategoryId = (this.update == false) ? null : this.CurrentItem.SubCategoryId;
+
+    this.UpdateRegisterPageNumberControl();
   }
+
   //Assign AccountHead to CurrentItem once the SubCategory is selected
+  //Sud:25Sep'21--ItemCode is now generated from server side.. below logic is used only for ClientSide.. we can show this itemcode as (Not Final)
   AssignItemCode() {
     // var AccountHeadId = this.filteredSubCategoryList.find(a => a.SubCategoryId == this.CurrentItem.SubCategoryId).AccountHeadId;
     // this.CurrentItem.AccountHeadId = AccountHeadId;
@@ -338,6 +401,18 @@ export class ItemAddComponent {
       this.VATPercent = 0;
       this.CurrentItem.VAT = 0;
     }
+  }
+  AssignSelectedVendor() {
+    this.CurrentItem.VendorId = this.selectedVendor.VendorId;
+  }
+  AssignMaintenanceOwner() {
+    this.CurrentItem.MaintenanceOwnerRoleId = this.selectedMaintenanceOwner.RoleId;
+  }
+  VendorListFormatter(data: any): string {
+    return `${data["VendorName"]}`;
+  }
+  RoleAutocompleteFormatter(data: any): string {
+    return `${data["RoleName"]}`;
   }
   AddCompanyPopUp() {
     this.showAddCompanyPopUp = false;
@@ -411,4 +486,87 @@ export class ItemAddComponent {
     this.UOMList = this.UOMList.slice();
     this.CurrentItem.UnitOfMeasurementId = UnitOfMeasurement.UOMId;
   }
+  public hotkeys(event) {
+    //For ESC key => close the pop up
+    if (event.keyCode == 27) {
+      this.Close();
+    }
+  }
+  FocusElementById(id: string) {
+    let filterId = "";
+    if (id == "RegisterPageNumber") {
+      filterId = (this.showRegisterPageNumber == true) ? "RegisterPageNumber" : "MinStockQuantity";
+    } else {
+      filterId = id;
+    }
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(filterId);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, );
+  }
+  public showRegisterPageNumber: boolean = false;
+  public registerPageNumberLabel: string = '';
+  public registerPageNumberRequired: boolean = false;
+  public registerNoDisplayParam: any = null;
+  public UpdateRegisterPageNumberControl() {
+    try {
+      this.changeDetector.detectChanges();
+      this.registerNoDisplayParam = this.GetInvItemRegisterPageNODisplaySetting();
+      if (this.registerNoDisplayParam && this.registerNoDisplayParam.RegisterPageNumber && this.registerNoDisplayParam.RegisterPageNumber.Show == true) {
+        this.registerPageNumberLabel = this.registerNoDisplayParam.RegisterPageNumber.LabelDisplayName;
+        this.registerPageNumberRequired = false;
+        this.showRegisterPageNumber = true;
+        this.UpdateRegisterPageNumberValidator();
+      } else {
+        this.showRegisterPageNumber = false;
+        this.registerPageNumberLabel = '';
+        this.registerPageNumberRequired = false;
+      }
+      this.changeDetector.detectChanges();
+    } catch (exception) {
+      this.msgBoxServ.showMessage("error", [exception])
+    }
+  }
+  //we add / remove required validation on RegisterPageNumber form control
+  //it's depend on selected item category
+  public UpdateRegisterPageNumberValidator() {
+    try {
+      let showRequired = false;
+      if (this.CurrentItem.ItemCategoryId > 0 && this.registerNoDisplayParam && this.showRegisterPageNumber == true) {
+        let selectedItemcategory = this.ItemCategoryList.find(i => i.ItemCategoryId == this.CurrentItem.ItemCategoryId);
+        if (selectedItemcategory.ItemCategoryName == ENUM_GRItemCategory.Consumables) {//check selected category is consumable
+          this.registerPageNumberRequired = (this.registerNoDisplayParam.RegisterPageNumber.IsMandatory_Consumable == true) ? true : false;  //check  required validation is mandatory for consumable
+        }
+        else if (selectedItemcategory.ItemCategoryName == ENUM_GRItemCategory.CapitalGoods) {//check selected category is capital goods
+          this.registerPageNumberRequired = (this.registerNoDisplayParam.RegisterPageNumber.IsMandatory_CapitalGoods == true) ? true : false; //check  required validation is mandatory for capital goods
+        }
+      } else {
+        this.registerPageNumberRequired = false;
+      }
+
+    }
+    catch (exception) {
+      this.msgBoxServ.showMessage("error", [exception])
+    }
+  }
+
+  public GetInvItemRegisterPageNODisplaySetting() {
+    var param = this.coreService.Parameters.find(
+      (val) =>
+        val.ParameterName == "ItemAddDisplaySettings" &&
+        val.ParameterGroupName.toLowerCase() == "inventory"
+    );
+    if (param) {
+      return JSON.parse(param.ParameterValue);
+    } else {
+      this.msgBoxServ.showMessage("warning", [
+        "Please set ItemAddDisplaySettings for Inventory module in parameters",
+      ]);
+      return null;
+    }
+  }
+
+
 }

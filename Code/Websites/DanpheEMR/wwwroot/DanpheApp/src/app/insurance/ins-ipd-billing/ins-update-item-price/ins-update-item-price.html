@@ -1,0 +1,122 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3><span>Edit Items For</span></h3>
+            <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()"
+              style="padding: 0 !important; display: block;">X</a>
+          </div>
+          <div class="p1">
+            <div *ngIf="patientDetails">
+              <div class="tbl-primary">
+                <div class="row">
+                  <div class="col-md-6 text-left">
+                    <h1 class="header" style="color: #1bbc9b;"><i
+                        class="fa fa-user"></i>{{patientDetails.PatientName || patientDetails.ShortName}}</h1>
+
+                  </div>
+                  <div class="col-md-6 text-right">
+                    <p class="text-muted"><span><i
+                          class="fa fa-male"></i>{{patientDetails.DateOfBirth | DanpheDateTime:'age'}} &nbsp;|&nbsp;
+                        {{patientDetails.Gender}}</span> &nbsp;|&nbsp; <i class="fa fa-phone"></i>
+                      {{patientDetails.PhoneNumber}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pat-hdr table-header">
+              <table class="table table-striped table-hover custom_table padLess_table table-bordered"
+                style="width:100%;" border="0" *ngIf="filteredItems && filteredItems.length>0">
+                <thead style="background-color: #d0d9d0;">
+                  <tr>
+                    <th align="right" width="20">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected"
+                          (ngModelChange)="OnChangeSelectAll()" />
+                        <span></span>
+                      </label>
+                    </th>
+                    <th align="center"> SNo. </th>
+                    <th>Date</th>
+                    <th>AssignedTo Dr.</th>
+                    <th> ItemName </th>
+                    <th style="width:100px;"> Quantity </th>
+                    <th> Price </th>
+                    <th style="width:100px;text-align:center;"> Sub Total </th>
+                    <th *ngIf="!IsInsurance"> Discount % </th>
+                    <th> Total Amount </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let itm of filteredItems;let i=index;">
+                    <td>
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input type="checkbox" name="selectItems" [(ngModel)]="itm.IsSelected"
+                          (ngModelChange)="OnChangeItemSelect()" />
+                        <span></span>
+                      </label>
+                    </td>
+                    <td> {{i+1}} </td>
+                    <td>
+                      <date-lbl [value]="itm.CreatedOn" [show-time]="true"></date-lbl>
+                      <!-- {{itm.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD hh:mm'}} -->
+
+                    </td>
+                    <td>
+                      <form [formGroup]="itm.BillingTransactionItemValidator">
+                        <input danphe-auto-complete class="form-control cstm-form-control" formControlName="ProviderId"
+                          [(ngModel)]="itm.DocObj" [list-formatter]="ProviderListFormatter" [source]="providerList"
+                          placeholder="Search Doctor Name" display-property-name="FullName" value-property-name=null
+                          onClick="this.select();" (focusout)="DoctorChange(itm)" max-num-list="10" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('ProviderId')"
+                          [hidden]="itm.IsValidCheck('ProviderId','required')">Assigned Doctor is mandatory</div>
+                      </form>
+                    </td>
+                    <td align="left">
+                      {{itm.ItemName}}
+                      <!--<div *ngIf="itm.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{itm.ProviderName}}) </span> </div>-->
+                    </td>
+                    <td>
+                      <form [formGroup]="itm.BillingTransactionItemValidator">
+                        <input type="number" style="width:75px;float:left;" [(ngModel)]="itm.Quantity"
+                          (ngModelChange)="CalculateTotal(i)" onClick="this.select();" formControlName="Quantity"
+                          (wheel)="coreService.PreventNumberChangeOnScroll($event)" class="form-control" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('Quantity')"
+                          [hidden]="itm.IsValidCheck('Quantity','invalidNumber')">Invalid number.</div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="itm.BillingTransactionItemValidator">
+                        <input type="number" style="width:100px;float:left;" [(ngModel)]="itm.Price"
+                          (ngModelChange)="CalculateTotal(i)" formControlName="Price"  onClick="this.select();"
+                          (wheel)="coreService.PreventNumberChangeOnScroll($event)" class="form-control" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('Price')"
+                          [hidden]="itm.IsValidCheck('Price','invalidNumber')">Invalid number.</div>
+                      </form>
+                    </td>
+                    <td> {{itm.SubTotal}} </td>
+                    <td *ngIf="!IsInsurance">
+                      <form [formGroup]="itm.BillingTransactionItemValidator">
+                        <input [attr.disabled]="true" type="number" class="form-control" style="width:75px;float:left;"
+                          [(ngModel)]="itm.DiscountPercent" (ngModelChange)="CalculateTotal(i)"
+                          formControlName="DiscountPercent" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('DiscountPercent')"
+                          [hidden]="itm.IsValidCheck('DiscountPercent','invalidPercent')">Invalid Percent</div>
+                      </form>
+                    </td>
+                    <td> {{itm.TotalAmount}} </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <input type="button" class="btn btn-sm blue" value="Update" [disabled]="loading" (click)="UpdatePrice()" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

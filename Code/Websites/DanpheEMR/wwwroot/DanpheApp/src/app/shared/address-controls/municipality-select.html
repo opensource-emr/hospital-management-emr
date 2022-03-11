@@ -1,0 +1,22 @@
+<!-- <div class="wrapper"> -->
+            <!-- <div class="col-md-4"> -->
+                <!-- <select id="municipality" [(ngModel)]="patient.MunicipalityId" (change)="SetFocusById('txtAddress')">
+                    <option value=1>Pokhara</option>
+                    <option value=2>Kathmandu</option>
+                    <option value=3>Bhaktapur</option>
+                    <option value=4>Lalitpur</option>
+                </select> -->
+
+                <input id="municipality" #inputElement class="form-control" danphe-auto-complete
+                [ngModelOptions]="{standalone: true}"
+                [(ngModel)]="bindedMunicipality"
+                [list-formatter]="municipalityListFormatter" [source]="municipalityList" placeholder="Municipality"
+                display-property-name="MunicipalityName" value-property-name=null
+                match-formatted="true"
+                (focusout)="AssignSelectedMunicipality()"
+                onClick="this.select();" max-num-list="10"
+                (keyup.enter)="SetFocusById('address')"/>
+                <span class="color-red font-sm" *ngIf="municipalityId==0" [hidden]="isInitailLoad">Invalid Muncipality</span>
+
+            <!-- </div> -->
+<!-- </div> -->

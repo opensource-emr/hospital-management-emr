@@ -1,4 +1,4 @@
-﻿ using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         public int? InvoiceReturnId { get; set; }
         public int? InvoiceItemId { get; set; }
         public int? InvoiceId { get; set; }
+        public int StoreId { get; set; }
         public string BatchNo { get; set; }
         public double? Quantity { get; set; }
         public decimal? MRP { get; set; }
@@ -35,14 +36,16 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string FiscalYear { get; set; }
         public int? FiscalYearId { get; set; }
-        public int? ReturnedQty { get; set; }
+        public double? ReturnedQty { get; set; }
         [NotMapped]
         public bool? IsInsert { get; set; }
         [NotMapped]
         public int? GRItemId { get; set; }
-        
+
         [NotMapped]
         public string ItemName { get; set; }
+        [NotMapped]
+        public string GenericName { get; set; }
         [NotMapped]
         public double? SaledQty { get; set; }
         [NotMapped]
@@ -56,5 +59,5 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string PANNumber { get; set; }
 
-    }  
+    }
 }

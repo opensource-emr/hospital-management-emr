@@ -28,6 +28,7 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
         tot_SubTotal: 0, tot_Discount: 0, tot_Refund: 0, tot_Provisonal: 0,
         tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0
     };
+    public headerProperties:any;
 
     constructor(
         _http: HttpClient,
@@ -115,6 +116,10 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
             let HeaderParms = allParams.find(a => a.ParameterGroupName == "Common" && a.ParameterName == "CustomerHeader");
             if (HeaderParms) {
                 this.headerDetail = JSON.parse(HeaderParms.ParameterValue);
+                let header = allParams.find(a => a.ParameterGroupName == 'BillingReport' && a.ParameterName == 'TableExportSetting');
+                if(header){
+                    this.headerProperties = JSON.parse(header.ParameterValue)["DoctorwiseIncomeSummary"];
+                }
             }
         }
     }
@@ -134,20 +139,58 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
         popupWinindow.document.close();
     }
 
-    ExportToExcel() {
-        this.dlService.ReadExcel("/ReportingNew/ExportToExcelDoctorwiseIncomeSummary?FromDate="
-            + this.fromDate + "&ToDate=" + this.toDate)
-            .map(res => res)
-            .subscribe(data => {
-                let blob = data;
-                let a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = "DoctorwiseIncomeSummary_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
-                document.body.appendChild(a);
-                a.click();
-            },
-                err => this.ErrorMsg(err));
-    }
+    // ExportToExcel() {
+    //     this.dlService.ReadExcel("/ReportingNew/ExportToExcelDoctorwiseIncomeSummary?FromDate="
+    //         + this.fromDate + "&ToDate=" + this.toDate)
+    //         .map(res => res)
+    //         .subscribe(data => {
+    //             let blob = data;
+    //             let a = document.createElement("a");
+    //             a.href = URL.createObjectURL(blob);
+    //             a.download = "DoctorwiseIncomeSummary_" + moment().format("DD-MMM-YYYY_HHmmA") + '.xls';
+    //             document.body.appendChild(a);
+    //             a.click();
+    //         },
+    //             err => this.ErrorMsg(err));
+    // }
+    ExportToExcel(tableId){
+        if(tableId){
+          let workSheetName = 'Doctor wise income summary Report';
+          //let Heading = 'Doctor Wise Income Summary';
+          let filename = 'DoctorWiseIncomeSummary';
+          var Heading;
+          var phoneNumber;
+          var hospitalName;
+          var address;
+          if(this.headerProperties.HeaderTitle!=null){
+            Heading = this.headerProperties.HeaderTitle;
+          }else{
+            Heading = 'Doctor Wise Income Summary';
+          }
+    
+          if(this.headerProperties.ShowHeader == true){
+             hospitalName = this.headerDetail.hospitalName;
+             address = this.headerDetail.address;
+          }else{
+            hospitalName = null;
+            address = null;
+          }
+    
+          if(this.headerProperties.ShowPhone == true){
+            phoneNumber = this.headerDetail.tel; 
+          }else{
+            phoneNumber = null;
+          }
+        //   let hospitalName = this.headerDetail.hospitalName;
+        //   let address = this.headerDetail.address;
+          //NBB-send all parameters for now 
+          //need enhancement in this function 
+          //here from date and todate for show date range for excel sheet data
+          CommonFunctions.ConvertHTMLTableToExcelForBilling(tableId, this.fromDate, this.toDate, workSheetName,
+            Heading, filename, hospitalName,address,phoneNumber,this.headerProperties.ShowHeader,this.headerProperties.ShowDateRange);
+        }
+        
+      }
 
     ErrorMsg(err) {
         this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);

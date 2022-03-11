@@ -253,7 +253,7 @@ table.billing-table tr td {
               <tr class="ht-managed">
                 <td></td>
                 <td>Change/Return :</td>
-                <td><span>{{currencyUnit}}<b>{{model.Change}}</b></span></td>
+                <td><span>{{coreService.currencyUnit}}<b>{{model.Change}}</b></span></td>
               </tr>
               <tr class="ht-managed">
                 <td></td>
@@ -346,3 +346,4 @@ table.billing-table tr td {
 <insurance-update-balance *ngIf="showInsBalanceUpdate"
                           [insurance-detail]="this.currBillingContext.Insurance" (callback-update-balance)="CloseInsBalancePopup($event)"> </insurance-update-balance>
 <past-test-list *ngIf="showPastBillHistory" [patientId]="model.PatientId"> </past-test-list></div>
+

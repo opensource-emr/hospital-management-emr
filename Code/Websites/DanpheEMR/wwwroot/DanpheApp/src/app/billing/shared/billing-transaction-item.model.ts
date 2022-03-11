@@ -60,7 +60,6 @@ export class BillingTransactionItem {
   //Below variable only for check duplicate item or not
   public IsDuplicateItem: boolean = false;
 
-
   public Patient: Patient = new Patient();
   public ServiceDepartment = null;///service deparatment comes as a part of .Include() in billing controller.
 
@@ -100,7 +99,8 @@ export class BillingTransactionItem {
   public SrvDeptIntegrationName: string = null;
 
   public IsDoctorMandatory: boolean = false;//sud:6Feb'18--for ward billing, used only in client side.
-
+  public IsZeroPriceAllowed: boolean = false;//pratik: 2Feb'21--for Zero Price Allowed billitems, used only in client side.
+  public IsPriceValid: boolean = true;//pratik: 12 May,2021 --chech validation on price, highlight price if  IsZeroPriceAllowed false and price is zero
   //Price Category includes: Normal, Foreigner, EHS, SAARCCitizen, GovtInsurance, etc.. 
   public PriceCategory: string = "Normal";//sud: 25Feb'19-- default value is Normal
 
@@ -140,8 +140,14 @@ export class BillingTransactionItem {
   public DocObj: any = { EmployeeId: null, FullName: '' };//only for client side.
 
   public OrderStatus: string = null;//pratik: 7 Aug 2020
-  public AllowCancellation: boolean = null;//Anish: 14 Aug 2020
+  public AllowCancellation: boolean = false;//Anish: 14 Aug 2020
 
+  public LabTypeName: string = 'op-lab';//default value for lab-typename.
+  public GovtInsurancePrice: number = 0;
+  public InsBillItemPriceEditable : boolean = false; //aniket: 25 Mar 21- only for client side
+
+  public ShowProviderName : boolean = false; //To show or hide provider name in the invoice.
+  public IsValidIPItemLevelDisocunt : boolean = true; //To validate the item level discount percent in IP billing..
   constructor() {
     var _formBuilder = new FormBuilder();
     this.BillingTransactionItemValidator = _formBuilder.group({
@@ -191,6 +197,9 @@ export class BillingTransactionItem {
     let validator = null;
     if (validatorType == 'required' && onOff == "on") {
       validator = Validators.compose([Validators.required]);
+    }
+    else if(validatorType=="invalidNumber" && onOff=="on"){
+      validator =  Validators.compose([this.positiveNumberValdiator]);
     }
     else {
       validator = Validators.compose([]);

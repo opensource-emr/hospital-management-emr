@@ -1,0 +1,328 @@
+<style>
+  .invoice-title {
+    position: relative;
+    right: 198px;
+    top: 110px;
+  }
+
+  .main-info {
+    margin-top: 15px;
+  }
+
+
+  .receipt-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .receipt-print-main .print-detail {
+    width: 100%;
+  }
+
+  .receipt .bill-itms thead {
+    border-bottom: none;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="col-md-12" id="billing-reciept">
+    <div id="divBilInvoicePrintPage" style="text-align:center;">
+      <div class="receipt">
+        <table class="bill-itms">
+          <thead *ngIf="!InvoiceDisplaySettings.ShowHeader">
+            <tr>
+              <td colspan="5">
+                <div [ngClass]="'op-billing-header-gap-' + hospitalCode"></div>
+              </td>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td colspan="5">
+                <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+                <div class="qr-code" style="position: absolute;right: 15px;top: 20px;"
+                  *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.ShowQR">
+                  <qr-code *ngIf="'ShowQRCode' | booleanParameter : 'Billing'" [value]="patientQRCodeInfo" [size]="90"
+                    [backgroundAlpha]="0"></qr-code>
+                </div>
+                <div class="clearfix"></div>
+                <div class="bill-patinfo" style="padding-top: 7px;">
+                  <p style="text-align:center;">
+                    <span>
+                      <span *ngIf="!isInsurance">
+                        <b>
+                          {{Invoice_Label}}
+                        </b>
+                      </span>
+                      <span *ngIf="isInsurance">
+                        <b>
+                          Health Insurance Credit Invoice
+                        </b>
+                      </span>
+                    </span>
+                    <span *ngIf="invoice.InvoiceInfo.PrintCount > 0">
+                      <b>
+                        | COPY({{invoice.InvoiceInfo.PrintCount}}) OF ORIGINAL
+                      </b>
+                    </span>
+                  </p>
+                </div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-12 main-info receipt-print-main" style="padding:0px;">
+                  <div class="left-div print-detail">
+                    <p class="no-margin" style="text-align:left; ">
+                      Invoice No: {{invoice.InvoiceInfo.InvoiceNumFormatted}}
+                    </p>
+                    <p class="no-margin" style="text-align:left; ">
+                      <strong>Hospital No:</strong> <span> <strong>{{invoice.PatientInfo.PatientCode}}</strong></span>
+                    </p>
+                    <p class="no-margin" style="text-align: left;display:block;font-size: 11px;">
+                      <strong>Patient's Name:&nbsp;{{invoice.PatientInfo.ShortName}}</strong>
+                    </p>
+
+                    <p class="no-margin" style="text-align:left; font-size:11px;">
+                      Address:<span *ngIf = "showMunicipality">{{ invoice.PatientInfo.MunicipalityName}} <span *ngIf="invoice.PatientInfo.MunicipalityName">,</span></span> {{invoice.PatientInfo.Address}}<span
+                        *ngIf="invoice.PatientInfo.Address">,</span>{{invoice.PatientInfo.CountrySubDivisionName}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:11px;"
+                      *ngIf="invoice.PatientInfo.PhoneNumber">
+                      Contact
+                      No: {{invoice.PatientInfo.PhoneNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="ipdNumber">
+                      IP Number:{{this.ipdNumber}}
+                    </p>
+
+                    <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="isInsurance">
+                      NSHI: {{invoice.PatientInfo.Ins_NshiNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:12px;text-transform: uppercase;"
+                      *ngIf="labCount > 1 && invoice.InvoiceInfo.LabTypeName && showLabType">
+                      <b> LAB TYPE: {{invoice.InvoiceInfo.LabTypeName}}</b>
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:12px;"
+                      *ngIf="InvoiceDisplaySettings.ShowPriceCategory">
+                      <b *ngIf="invoice.InvoiceItems && invoice.InvoiceItems.length>0 && invoice.InvoiceItems[0].PriceCategory && invoice.InvoiceItems[0].PriceCategory.toLowerCase() !='normal'"> 
+                        Price Category:
+                        {{invoice.InvoiceItems[0].PriceCategory}}</b>
+                    </p>
+                  </div>
+
+
+                  <div class="right-div print-detail">
+                    <p class="no-margin" style="text-align:right;">
+                      Transaction Date:
+                      {{invoice.InvoiceInfo.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                    </p>
+                    <p class="no-margin" style="text-align:right; ">
+                      Invoice Date: {{
+                      invoice.InvoiceInfo.TransactionDate |
+                      DanpheDateTime:'format':'YYYY-MM-DD'
+                      }}
+                    </p>
+                    <p class="no-margin" style="text-align:right;"> ({{localDateTime}})</p>
+                    <p class="no-margin" style="text-align:right; font-size:11px;">
+                      Age/Sex : {{finalAge }}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;" *ngIf="isInsurance">
+                      Claim Code:{{invoice.InvoiceInfo.ClaimCode}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;" *ngIf="invoice.PatientInfo.PANNumber">
+                      Purchaser's PAN: {{invoice.PatientInfo.PANNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;">
+                      <b>Method of payment:</b> <span style="text-transform:uppercase;">
+                        {{invoice.InvoiceInfo.PaymentMode }}
+                      </span>
+                    </p>
+
+                  </div>
+                </div>
+
+                <div class="clear"></div>
+                <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+                </div>
+                <div class="col-md-12" *ngIf="invoice.InvoiceInfo.PackageName"
+                  style="padding:0px;text-align: left;font-weight: bold;">
+                  Billing Package: {{invoice.InvoiceInfo.PackageName}}
+                </div>
+                <div class="clear footer"></div>
+              </td>
+            </tr>
+
+
+            <tr>
+              <td width="30px" class="print-sn"><strong>Sn.</strong></td>
+              <td width="170px" class="print-par"><strong>Particular(s)</strong></td>
+              <td width="20px" class="text-right print-qty"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Unit">
+                <strong>Unit</strong>
+              </td>
+              <td width="20px" class="text-right print-qty" *ngIf="!invoice.InvoiceInfo.PackageName">
+                <strong>Unit</strong>
+              </td>
+              <td width="60px" class="text-right print-rate"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Price">
+                <strong>Price</strong>
+              </td>
+              <td width="60px" class="text-right print-rate" *ngIf="!invoice.InvoiceInfo.PackageName">
+                <strong>Price</strong>
+              </td>
+              <td width="60px" class="text-right print-amt"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Amount">
+                <strong>Amount</strong>
+              </td>
+              <td width="60px" class="text-right print-amt" *ngIf="!invoice.InvoiceInfo.PackageName">
+                <strong>Amount</strong>
+              </td>
+            </tr>
+            <tr *ngFor="let row of invoice.InvoiceItems; let i=index">
+              <td>{{i+1}}</td>
+              <td style="font-size:11px; text-transform: uppercase;">
+                {{row.ItemName}}<span *ngIf="row.ProviderName!=null && ShowProviderName"> ({{row.ProviderName}})</span>
+              </td>
+              <td class="text-right print-qty" style="font-size:11px"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Unit">{{row.Quantity}}
+              </td>
+              <td class="text-right print-qty" style="font-size:11px" *ngIf="!invoice.InvoiceInfo.PackageName">
+                {{row.Quantity}}
+              </td>
+              <td class="text-right print-rate" style="font-size:11px" align="right"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Price">
+                {{row.Price | number : "1.2-2"}}
+              </td>
+              <td class="text-right print-rate" style="font-size:11px" align="right"
+                *ngIf="!invoice.InvoiceInfo.PackageName">
+                {{row.Price | number : "1.2-2"}}
+              </td>
+              <td class="text-right print-amt" style="font-size:11px" align="right"
+                *ngIf="invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Amount">
+                {{row.Quantity * row.Price | number : "1.2-2"}}
+              </td>
+              <td class="text-right print-amt" style="font-size:11px" align="right"
+                *ngIf="!invoice.InvoiceInfo.PackageName">
+                {{row.Quantity * row.Price | number : "1.2-2"}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="col-md-12 bill-summ-div">
+          <div class="text-capitalize"
+            style="padding: 10px 0px 0px 5px;text-align:left; width:46%;display:inline-block;vertical-align:top; ">
+            <span *ngIf="invoice.InvoiceInfo.TotalAmount!=0">In Words : {{ invoice.InvoiceInfo.TotalAmount | number:
+              "1.2-2" | NumberInWords | uppercase}} ONLY</span>
+          </div>
+          <div style="padding: 0px;width:54%;display:inline-block;">
+            <table class="bil-summ" style="width:100%">
+              <tr
+                *ngIf="(invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.SubTotal) || (!invoice.InvoiceInfo.PackageName)"
+                style="border-top: 0px;">
+                <td style="border-top: none"> SubTotal </td>
+                <td style="text-align:right; border-top: none; border-right: 0px;" align="right">
+                  {{
+                  invoice.InvoiceInfo.SubTotal |
+                  number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+
+              <tr
+                *ngIf="(billingService.BillingFlow=='normal') && ((invoice.InvoiceInfo.PackageName && BillingPackageInvoiceColumnSelection.Discount) || (!invoice.InvoiceInfo.PackageName))">
+                <td> Discount </td>
+                <td style="text-align:right;border-right: 0px; border-right: none;" align="right">
+                  {{invoice.InvoiceInfo.DiscountAmount | number : "1.2-2"}}
+                </td>
+              </tr>
+
+              <tr *ngIf="invoice.InvoiceInfo.TaxableAmount">
+                <td>Net Amount </td>
+                <td style="text-align:right;border-right: 0px;" align="right">{{invoice.InvoiceInfo.TaxableAmount}}</td>
+              </tr>
+              <tr *ngIf="invoice.InvoiceInfo.TaxTotal">
+                <td>{{taxLabel}} </td>
+                <td style="text-align:right;border-right: 0px;" align="right">{{invoice.InvoiceInfo.TaxTotal}}</td>
+              </tr>
+              <tr style="border-bottom: 0px;">
+                <td style="border-bottom: none;">Total Amount </td>
+                <td style="text-align:right; border-bottom: none;border-right: 0px;" align="right">
+                  {{invoice.InvoiceInfo.TotalAmount | number : "1.2-2"}}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
+          <span *ngIf="invoice.InvoiceInfo.DepositUsed > 0">
+            Deposit: [Deducted: {{invoice.InvoiceInfo.DepositUsed}}/Balance:{{invoice.InvoiceInfo.DepositBalance}}]
+          </span>
+          <span *ngIf="invoice.InvoiceInfo.Tender > 0">
+            Tender: {{invoice.InvoiceInfo.Tender | number : "1.2-2"}} <br />
+          </span>
+          <span *ngIf="invoice.InvoiceInfo.Change">
+            Change/Return: {{invoice.InvoiceInfo.Change}}<br />
+          </span>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding:0px !important;">
+
+          <div class="col-md-4" style="padding:0px !important;">
+            <span class="right" style="font-size:11px;" *ngIf="invoice.InvoiceInfo.Remarks"> Remarks :
+              {{invoice.InvoiceInfo.Remarks}}</span>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-left: 0px; padding-right: 0px;"
+          *ngIf="invoice.InvoiceInfo.CrOrganizationName">
+          <div class="left" *ngIf="CreditInvoiceDisplaySettings.ShowPatAmtForCrOrganization">
+            Patient Amount: {{CreditInvoiceDisplaySettings.PatAmtValue}}
+          </div>
+          <div class="right"> Credit Organization : {{invoice.InvoiceInfo.CrOrganizationName}} </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;"
+          *ngIf="invoice.VisitInfo.ItemsRequestingDoctors && (invoice.VisitInfo.ItemsRequestingDoctors != null) && ShowProviderName">
+          <div class="left" style="font-size:11px;">
+            Consulting Doctor: {{invoice.VisitInfo.ItemsRequestingDoctors}}
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;">
+          <div class="left" style="font-size:11px;"> User: {{invoice.InvoiceInfo.UserName}} </div>
+          <div class="right" style="font-size:11px;">
+            Time: {{
+            invoice.InvoiceInfo.TransactionDate | DanpheDateTime:'format':'hh:mm A'
+            }}
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;" *ngIf="InvoiceFooterNoteSettings.ShowFooter">
+          <div style="width: 100%;text-align: center;margin-top: 20px;">
+            <b *ngIf="InvoiceFooterNoteSettings.ShowEnglish"> {{InvoiceFooterNoteSettings.EnglishText}} </b> <br />
+            <b *ngIf="InvoiceFooterNoteSettings.ShowNepali"> {{InvoiceFooterNoteSettings.NepaliText}} </b>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+      <button class="btn green btn-success" value="" [disabled]="loading" (click)="print()" id="btnPrintRecipt">
+        <span>Print Receipt</span>&nbsp;&nbsp;
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+
+    <select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-invoice-default'"
+      (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj"
+  (print-sucess)="UpdatePrintCount($event)">
+</app-print-page>

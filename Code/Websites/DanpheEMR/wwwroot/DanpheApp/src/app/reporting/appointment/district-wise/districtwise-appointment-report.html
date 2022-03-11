@@ -1,43 +1,50 @@
+<style>
+  .summ-title {
+    font-weight: bold;
+    font-size: 16px;
+  }
+</style>
+
 <div class="wrapper">
   <div class="row">
     <form [formGroup]="districtwiseappointment.DistrictwiseAppointmentValidator" class="form-horizontal">
       <div class="form-body">
-        <div class="col-md-12">
-          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">District Wise Report</span> </div>
-          <!--<div class="col-md-5 col-xs-12">
-            <div class="form-group">
-              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
-              <div class="col-md-9">
-                <danphe-date-picker [(ngModel)]="districtwiseappointment.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
-                <span class="color-red font-sm" *ngIf="districtwiseappointment.IsDirty('fromDate')" [hidden]="districtwiseappointment.IsValidCheck('fromDate','required')"> From Date is required</span><br />
-                <span class="color-red font-sm" *ngIf="districtwiseappointment.IsDirty('fromDate')" [hidden]="districtwiseappointment.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+        <div>
+          <div class="col-md-12">
+            <div class="caption custom-caption" style="float: left;"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                class="caption-subject">District Wise Appointment Report</span>
+            </div>
+            <div style="float: right;font-size: 13px;color: grey;">
+              *Note: Inpatient Visits (Admissions) are not included in this report.
             </div>
           </div>
-          <div class="col-md-5 col-xs-12">
-            <div class="form-group">
-              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
-              <div class="col-md-9">
-                <danphe-date-picker [(ngModel)]="districtwiseappointment.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
-                <span class="color-red font-sm" *ngIf="districtwiseappointment.IsDirty('toDate')" [hidden]="districtwiseappointment.IsValidCheck('toDate','required')"> To Date is required</span><br />
-                <span class="color-red font-sm" *ngIf="districtwiseappointment.IsDirty('toDate')" [hidden]="districtwiseappointment.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
-            </div>
-          </div>-->
-          <div class="row">
-            <div class="col-md-6 col-xs-12">
+
+          <div>
+            <div class="col-md-5 col-xs-12">
               <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
             </div>
-            <div class="col-md-4 col-xs-12">
+            <div class="col-md-3 col-xs-12">
               <div class="form-group row">
-                <label class="control-label col-md-4">District Name<b style="float:right;">:</b></label>
+                <label class="control-label col-md-4">District<b style="float:right;">:</b></label>
                 <div class="col-md-8">
                   <input class="form-control" value="" [(ngModel)]="districtwiseappointment.distProvider"
-                       [ngModelOptions]="{standalone: true}" placeholder="Enter District Name" />
+                    [ngModelOptions]="{standalone: true}" placeholder="Enter District Name" />
                 </div>
               </div>
             </div>
+            <div class="col-md-2">
+              Gender:
+              <select [(ngModel)]="selGenderName" id="ddlGender" [ngModelOptions]="{standalone: true}">
+                <option value="all">All</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
             <div class="col-md-2 col-xs-12">
               <div class="form-group">
-                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                <button class="btn green btn-success" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show
+                  Report
+                </button>
               </div>
             </div>
           </div>
@@ -48,8 +55,37 @@
   <div class="row">
     <div class="col-lg-12 col-sm-12">
       <danphe-grid [grid-colDefaults]="DistrictWiseAppointmentReportColumns"
-                   [grid-data]="DistrictWiseAppointmentReportData"
-                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+        [grid-data]="DistrictWiseAppointmentReportData" [grid-exportOptions]="gridExportOptions"
+        [grid-showExport]="true"  [report-for]="'appointment'"  [grid-date-range]="dateRange"> </danphe-grid>
+    </div>
+    <div class="col-md-12" style="margin-bottom: 50px;margin-top: 20px;">
+      <div id="dvDistApptSummary"
+        *ngIf="DistrictWiseAppointmentReportData && DistrictWiseAppointmentReportData.length>0">
+        <div>
+          <label class="summ-title"> Summary </label>
+          &nbsp;&nbsp;&nbsp;
+          <label *ngIf="selGenderName !='all'" class="summ-title"
+            style="text-transform: uppercase;">({{selGenderName}})</label>
+        </div>
+        <table border="1" style="width: 40%;">
+          <thead>
+            <tr>
+              <th>New</th>
+              <th>Followup</th>
+              <th>Referral</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{summary.tot_new}}</td>
+              <td>{{summary.tot_followup}}</td>
+              <td>{{summary.tot_referral}}</td>
+              <td>{{summary.tot_all}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { InsuranceVM } from '../shared/patient-billing-context-vm';
 import { BillItemPriceVM } from './billing-view-models';
 import { CreditOrganization } from '../../settings-new/shared/creditOrganization.model';
+import { PatientLatestVisitContext } from '../../patients/shared/patient-lastvisit-context';
 
 @Injectable()
 export class BillingService {
@@ -18,6 +19,17 @@ export class BillingService {
   public BillingFlow: string = "normal";//normal for normal billing and insurance for insurance billing
   public Insurance: InsuranceVM;
   public isInsuranceBilling: boolean = false;
+  public BillingMainDotMatrixPrinterPageDimension: any;
+  public DepositReceiptDotMatrixPageDimension: any;
+  public OpdStickerDotMatrixPageDimension: any;
+  public EmergencyStickerDotMatrixPageDimension: any;
+  public DischargeBillPageDimension: any;
+  //public defaultPrinterName: string = null;
+
+  public adtAdditionalBillItms: Array<BillItemPriceVM>;
+  //sud:9sept'21--needed to centralize the visit context of current patient.
+  public PatLastVisitContext: PatientLatestVisitContext = new PatientLatestVisitContext();
+
   constructor(public coreService: CoreService, public msgBoxServ: MessageboxService) {
     this.GetTaxDetails();
     this.GetCurrencyUnit();
@@ -111,5 +123,7 @@ export class BillingService {
     this.AllCreditOrganizationsList = creditOrgFromServer;
   }
 
-
+  public SetAdtAdditionalBillItms(items: Array<BillItemPriceVM>) {
+    this.adtAdditionalBillItms = items;
+  }
 }

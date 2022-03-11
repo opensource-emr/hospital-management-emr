@@ -49,7 +49,10 @@ namespace DanpheEMR.AccTransfer
         static private List<LedgerMappingModel> BillingCreditOrganizations = new List<LedgerMappingModel>();
         static private List<ConsultantIncentiveModel> INCTVConsultantIncentive = new List<ConsultantIncentiveModel>();
         static private List<EmployeeModel> EmployeeLedger = new List<EmployeeModel>();
+        static private List<ServiceDepartmentModel> ServiceDepartment = new List<ServiceDepartmentModel>();
+        static private List<BillItemPrice> BillItems = new List<BillItemPrice>();
         static private List<ItemSubCategoryMasterModel> InventorySubCategory = new List<ItemSubCategoryMasterModel>();
+        static private List<AccountingBillLedgerMappingModel> BillingIncomeLedger = new List<AccountingBillLedgerMappingModel>();
         static int EmployeeId;
         static private bool IsVatRegistered;
         ///for check true of false in maping tbl
@@ -112,6 +115,7 @@ namespace DanpheEMR.AccTransfer
                 Name = p.Name,
                 LedgerType = p.LedgerType
             }).ToList();
+
 
             // Get billing credit organization                     
             var billingCreditOrganizations = (from ledM in accountingDBContext.LedgerMappings
@@ -313,6 +317,26 @@ namespace DanpheEMR.AccTransfer
                 LedgerType = p.LedgerType,
             }).ToList();
 
+            var billingIncomeLedger = (from m in accountingDBContext.AccountBillLedgerMapping
+                                       join led in accountingDBContext.Ledgers on m.LedgerId equals led.LedgerId
+                                       where led.IsActive == true
+                                       select new
+                                       {
+                                           m.ItemId,
+                                           m.LedgerId,
+                                           m.ServiceDepartmentId,
+                                           LedgerName = led.LedgerName,
+                                           HospitalId = m.HospitalId
+                                       }).ToList();
+            BillingIncomeLedger = billingIncomeLedger.Select(p => new AccountingBillLedgerMappingModel()
+            {
+                ItemId = p.ItemId,
+                LedgerName = p.LedgerName,
+                LedgerId = p.LedgerId,
+                HospitalId = p.HospitalId,
+                ServiceDepartmentId = p.ServiceDepartmentId
+            }).ToList();
+
             var vatRegistered = accountingDBContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "VatRegisteredHospital").Select(a => a.ParameterValue).FirstOrDefault();
             IsVatRegistered = (vatRegistered == "true") ? true : false;
             //--custome voucher means , deposit add and deposit return saving as sales voucher 
@@ -384,6 +408,7 @@ namespace DanpheEMR.AccTransfer
             //Billing Section
             else if (sectionId == 2)
             {
+
                 isbilling = GetBillingTxnData(SelectedDate, currHospitalId);
                 if (isbilling)
                 {
@@ -589,7 +614,7 @@ namespace DanpheEMR.AccTransfer
                     {
                         accountingDBContext.Configuration.AutoDetectChangesEnabled = false;
                         Transaction = txndata;
-                        List<string> updateReferenceIds = new List<string>(); 
+                        List<string> updateReferenceIds = new List<string>();
                         Hashtable allReferenceIdWithTypeList = new Hashtable();
                         List<AccountingReferenceTypeViewModel> AllReferenceIds = new List<AccountingReferenceTypeViewModel>();
                         string refBillingSyncIds = "";
@@ -693,51 +718,51 @@ namespace DanpheEMR.AccTransfer
                             {//inventory
                              //List<string> allReferenceIds = new List<string>();     
                                 Transaction.ForEach(txn =>
-                                 {
-                                     txn.IsCustomVoucher = IsCustomVoucher;
-                                     txn.TUId = Tuid;
-                                     txn.IsActive = true;
-                                     txn.VoucherNumber = (IsingalVoucher) ? voucherNumberList.Find(s => s.VoucherId == txn.VoucherId && s.TransactionDate == txn.TransactionDate).VoucherNumber.ToString()
-                                                                          : GetVoucherNumber(accountingDBContext, txn.VoucherId, txn.TransactionDate, sectionId, IsingalVoucher, currHospitalId);
+                                {
+                                    txn.IsCustomVoucher = IsCustomVoucher;
+                                    txn.TUId = Tuid;
+                                    txn.IsActive = true;
+                                    txn.VoucherNumber = (IsingalVoucher) ? voucherNumberList.Find(s => s.VoucherId == txn.VoucherId && s.TransactionDate == txn.TransactionDate).VoucherNumber.ToString()
+                                                                         : GetVoucherNumber(accountingDBContext, txn.VoucherId, txn.TransactionDate, sectionId, IsingalVoucher, currHospitalId);
 
-                                     if (txn.TransactionType == "INVCreditGoodReceipt" || txn.TransactionType == "INVCashGoodReceipt1")
-                                     {
-                                         var IdGroupBy = (isGroupbyData != "") ? Convert.ToBoolean(isGroupbyData) : true;
-                                         txn.IsGroupTxn = (IdGroupBy) ? IdGroupBy : false;
-                                     }                                   
-                                     TransactionModel txntemp = ProcessTransactions(txn, currHospitalId);
-                                     txntemp.HospitalId = currHospitalId;
+                                    if (txn.TransactionType == "INVCreditGoodReceipt" || txn.TransactionType == "INVCashGoodReceipt1")
+                                    {
+                                        var IdGroupBy = (isGroupbyData != "") ? Convert.ToBoolean(isGroupbyData) : true;
+                                        txn.IsGroupTxn = (IdGroupBy) ? IdGroupBy : false;
+                                    }
+                                    TransactionModel txntemp = ProcessTransactions(txn, currHospitalId);
+                                    txntemp.HospitalId = currHospitalId;
 
-                                     for (int i = 0; i < txntemp.TransactionItems.Count; i++)
-                                     {
-                                         txntemp.TransactionItems[i].HospitalId = currHospitalId;
-                                     }
-                                     accountingDBContext.Transactions.Add(txntemp);
-                                     accountingDBContext.SaveChanges();
-                                     //code for add tarnsaction into transaction history tbl for Synced.
-                                     AccountingTransactionHistoryModel ToSynce = new AccountingTransactionHistoryModel();
-                                     ToSynce.TransactionDate = txn.TransactionDate;
-                                     ToSynce.SyncedOn = txn.CreatedOn;
-                                     ToSynce.SyncedBy = txn.CreatedBy;
-                                     ToSynce.SectionId = txn.SectionId;
-                                     ToSynce.TransactionType = txn.TransactionType;
-                                     accountingDBContext.AccountingTransactionHistory.Add(ToSynce);
-                                     accountingDBContext.SaveChanges();
-                                     for (int i = 0; i < txntemp.TransactionItems.Count; i++)
-                                     {
-                                         txntemp.TransactionItems[i].IsActive = true;
+                                    for (int i = 0; i < txntemp.TransactionItems.Count; i++)
+                                    {
+                                        txntemp.TransactionItems[i].HospitalId = currHospitalId;
+                                    }
+                                    accountingDBContext.Transactions.Add(txntemp);
+                                    accountingDBContext.SaveChanges();
+                                    //code for add tarnsaction into transaction history tbl for Synced.
+                                    AccountingTransactionHistoryModel ToSynce = new AccountingTransactionHistoryModel();
+                                    ToSynce.TransactionDate = txn.TransactionDate;
+                                    ToSynce.SyncedOn = txn.CreatedOn;
+                                    ToSynce.SyncedBy = txn.CreatedBy;
+                                    ToSynce.SectionId = txn.SectionId;
+                                    ToSynce.TransactionType = txn.TransactionType;
+                                    accountingDBContext.AccountingTransactionHistory.Add(ToSynce);
+                                    accountingDBContext.SaveChanges();
+                                    for (int i = 0; i < txntemp.TransactionItems.Count; i++)
+                                    {
+                                        txntemp.TransactionItems[i].IsActive = true;
 
-                                         if (txntemp.TransactionItems[i].IsTxnDetails == true)
-                                         {
-                                             for (int j = 0; j < txntemp.TransactionItems[i].TransactionItemDetails.Count; j++)
-                                             {
-                                                 TransactionItemDetailModel tmpTxnDetail = txntemp.TransactionItems[i].TransactionItemDetails[j];
-                                                 tmpTxnDetail.TransactionItemId = txntemp.TransactionItems[i].TransactionItemId;
-                                                 accountingDBContext.TransactionItemDetails.Add(tmpTxnDetail);
-                                             }
-                                         }
-                                     }
-                                 });
+                                        if (txntemp.TransactionItems[i].IsTxnDetails == true)
+                                        {
+                                            for (int j = 0; j < txntemp.TransactionItems[i].TransactionItemDetails.Count; j++)
+                                            {
+                                                TransactionItemDetailModel tmpTxnDetail = txntemp.TransactionItems[i].TransactionItemDetails[j];
+                                                tmpTxnDetail.TransactionItemId = txntemp.TransactionItems[i].TransactionItemId;
+                                                accountingDBContext.TransactionItemDetails.Add(tmpTxnDetail);
+                                            }
+                                        }
+                                    }
+                                });
                                 accountingDBContext.SaveChanges();
                                 List<string> TransactionType = new List<string>();
                                 var distinctTxnTypeList = Transaction.Select(a => a.TransactionType).ToList().Distinct().ToList();
@@ -746,14 +771,14 @@ namespace DanpheEMR.AccTransfer
                                 {
                                     var filteredData = (from t in Transaction
                                                         where t.TransactionType == distinctTxnTypeList[i]
-                                                        select t).ToList();                                    
+                                                        select t).ToList();
                                     List<string> allReferenceIds = new List<string>();
                                     List<string> allReferenceIdsOne = new List<string>();//NageshBB:20Aug2020
                                     filteredData.ForEach(txn =>
                                     {
-                                        var refId = txn.TransactionLinks.Select(s => s.ReferenceId).ToList();                                        
+                                        var refId = txn.TransactionLinks.Select(s => s.ReferenceId).ToList();
                                         refId.ForEach(newId => allReferenceIds.Add((string)newId));
-                                        
+
                                         var refIdOne = txn.TransactionLinks.Select(tone => tone.ReferenceIdOne).ToList();//NageshBB:20Aug2020
                                         refIdOne.ForEach(newId => allReferenceIdsOne.Add((string)newId));//NageshBB:20Aug2020
                                     });
@@ -761,16 +786,16 @@ namespace DanpheEMR.AccTransfer
                                     string refIdOneStr = string.Join(",", allReferenceIdsOne.Select(p => p));//NageshBB:20Aug2020
                                     if (refIdOneStr.Length > 0) //NageshBB:20Aug2020
                                     {
-                                        AllReferenceIds.Add(new AccountingReferenceTypeViewModel 
+                                        AllReferenceIds.Add(new AccountingReferenceTypeViewModel
                                         {
                                             Type = distinctTxnTypeList[i],
                                             ReferenceIds = refIdStr,
                                             ReferenceIdsOne = refIdOneStr
                                         });
-                                    }                                  
+                                    }
                                     ReferenceIdWithTypeList.Add(distinctTxnTypeList[i], refIdStr);
                                 }
-                                
+
                                 updateReferenceIds = distinctTxnTypeList;
                                 allReferenceIdWithTypeList = ReferenceIdWithTypeList;
                                 accountingDBContext.SaveChanges();
@@ -836,14 +861,7 @@ namespace DanpheEMR.AccTransfer
                                     string refIdStr = string.Join(",", allReferenceIds.Select(p => p));
                                     ReferenceIdWithTypeList.Add(distinctTxnTypeList[i], refIdStr);
                                 }
-
-                                //if (distinctTxnTypeList.Count > 0)
-                                //{
-                                //    foreach (string txnType in distinctTxnTypeList)
-                                //    {
-                                //        UpdateIsTransferToACC(ReferenceIdWithTypeList[txnType].ToString(), txnType);
-                                //    }
-                                //}
+                              
                                 updateReferenceIds = distinctTxnTypeList;
                                 allReferenceIdWithTypeList = ReferenceIdWithTypeList;
                                 accountingDBContext.SaveChanges();
@@ -906,7 +924,7 @@ namespace DanpheEMR.AccTransfer
                                     });
                                     string refIdStr = string.Join(",", allReferenceIds.Select(p => p));
                                     ReferenceIdWithTypeList.Add(distinctTxnTypeList[i], refIdStr);
-                                }                               
+                                }
                                 updateReferenceIds = distinctTxnTypeList;
                                 allReferenceIdWithTypeList = ReferenceIdWithTypeList;
                                 accountingDBContext.SaveChanges();
@@ -975,37 +993,37 @@ namespace DanpheEMR.AccTransfer
         private static string GetVoucherNumber(AccountingDbContext accountingDBContext, int? voucherId, DateTime? transactionDate, int? SectionId, bool IsSingleVoucher, int currHospitalId)
         {
             {
-                
+
                 var FiscalyearId = GetFiscalYearIdByDate(accountingDBContext, transactionDate, currHospitalId);
                 int? sameDayMaxVNo = (from txn in accountingDBContext.Transactions
-                              where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
-                              txn.VoucherId == voucherId && txn.SectionId == SectionId && txn.TransactionDate == transactionDate
-                              select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
+                                      where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
+                                      txn.VoucherId == voucherId && txn.SectionId == SectionId && txn.TransactionDate == transactionDate
+                                      select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
 
                 var voucherCode = (from v in accountingDBContext.Vouchers
                                    where v.VoucherId == voucherId
                                    select v.VoucherCode).FirstOrDefault();
 
                 var sectionCode = (from s in SectionList.AsEnumerable()
-                                   where s.SectionId == SectionId && s.HospitalId==currHospitalId
+                                   where s.SectionId == SectionId && s.HospitalId == currHospitalId
                                    select s.SectionCode).FirstOrDefault();
                 if (IsSingleVoucher)
                 {
-                    if (sameDayMaxVNo > 0 )
-                    {                        
-                        return sectionCode+'-'+voucherCode+'-'+ sameDayMaxVNo;
+                    if (sameDayMaxVNo > 0)
+                    {
+                        return sectionCode + '-' + voucherCode + '-' + sameDayMaxVNo;
                     }
                     else
-                    {                     
+                    {
                         int? lastDayMaxVNo = (from txn in accountingDBContext.Transactions
-                                                where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
-                                                txn.VoucherId == voucherId && txn.SectionId == SectionId
-                                                select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
+                                              where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
+                                              txn.VoucherId == voucherId && txn.SectionId == SectionId
+                                              select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
 
                         if (lastDayMaxVNo > 0)
                         {
                             int? newNo = lastDayMaxVNo + 1;
-                            return sectionCode + '-' + voucherCode + '-' + newNo;                          
+                            return sectionCode + '-' + voucherCode + '-' + newNo;
                         }
                         else
                         {
@@ -1014,15 +1032,15 @@ namespace DanpheEMR.AccTransfer
                     }
                 }
                 else
-                {                    
+                {
                     int? lastDayMaxVcNo = (from txn in accountingDBContext.Transactions
-                                         where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
-                                         txn.VoucherId == voucherId && txn.SectionId == SectionId
-                                         select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
+                                           where txn.HospitalId == currHospitalId && txn.FiscalyearId == FiscalyearId &&
+                                           txn.VoucherId == voucherId && txn.SectionId == SectionId
+                                           select txn.VoucherSerialNo).DefaultIfEmpty(0).Max();
                     if (lastDayMaxVcNo > 0)
                     {
                         int? newNo1 = lastDayMaxVcNo + 1;
-                        return sectionCode + '-' + voucherCode + '-' + newNo1 ;
+                        return sectionCode + '-' + voucherCode + '-' + newNo1;
                     }
                     else
                     {
@@ -1073,7 +1091,7 @@ namespace DanpheEMR.AccTransfer
                             accountingDBContext.LedgerMappings.Add(ledgerMapping);
                             accountingDBContext.SaveChanges();
                         }
-                        LedgerAddUpdateInBalanceHisotry(led, accountingDBContext, false, currHospitalId,EmployeeId);
+                        LedgerAddUpdateInBalanceHisotry(led, accountingDBContext, false, currHospitalId, EmployeeId);
                     });
                     unavailableLedgerList = new List<LedgerModel>();
                     if (isUpdateList == true)
@@ -1216,111 +1234,123 @@ namespace DanpheEMR.AccTransfer
 
                 List<SyncBillingAccountingModel> sync = JsonConvert.DeserializeObject<List<SyncBillingAccountingModel>>(strDataBilling);
 
-                billingSyncList = new List<SyncBillingAccountingModel>();
-                //NageshBB on 16 March 2020commented below code , which was used for convert datatable to list object
-
-                //List<SyncBillingAccountingModel> sync = allBillingRecords.AsEnumerable().Select(
-                //                            dataRow => new SyncBillingAccountingModel
-                //                            {
-                //                                BillingAccountingSyncId = dataRow.Field<int>("BillingAccountingSyncId"),
-                //                                TransactionDate = dataRow.Field<DateTime>("TransactionDate"),
-                //                                TransactionType = dataRow.Field<string>("TransactionType"),
-                //                                ReferenceModelName = dataRow.Field<string>("ReferenceModelName"),
-                //                                ReferenceId = dataRow.Field<int>("ReferenceId"),
-                //                                ServiceDepartmentId = dataRow.Field<int?>("ServiceDepartmentId"),
-                //                                ItemId = dataRow.Field<int?>("ItemId"),
-                //                                IncomeLedgerName = dataRow.Field<string>("IncomeLedgerName"),
-                //                                PatientId = dataRow.Field<int>("PatientId"),
-                //                                PaymentMode = dataRow.Field<string>("PaymentMode"),
-                //                                SubTotal = dataRow.Field<double?>("SubTotal"),
-                //                                TaxAmount = dataRow.Field<double?>("TaxAmount"),
-                //                                DiscountAmount = dataRow.Field<double?>("DiscountAmount"),
-                //                                TotalAmount = dataRow.Field<double?>("TotalAmount"),
-                //                                SettlementDiscountAmount = dataRow.Field<double?>("SettlementDiscountAmount"),
-                //                                CreatedOn = dataRow.Field<DateTime?>("CreatedOn"),
-                //                                CreatedBy = dataRow.Field<int?>("CreatedBy"),
-                //                                IsTransferedToAcc = dataRow.Field<bool?>("IsTransferedToAcc"),
-                //                                CreditOrganizationId = (isCredtiOrganizationAccounting) ? dataRow.Field<int?>("CreditOrganizationId") :null
-                //                            }).ToList();
-
-                var billitm = sync.GroupBy(a => new
+                // START:VIKAS:31 dec 2020: Get unique ledger group id from the parameters
+                var Billingledgergroupuniquename = "";
+                var BillparameterValue = accountingDBContext.CFGParameters.Where(ap => ap.ParameterGroupName == "Accounting" && ap.ParameterName == "LedgerGroupMapping").FirstOrDefault().ParameterValue;
+                List<UniqueLedgerGroupModel> billuniqueLedger = JsonConvert.DeserializeObject<List<UniqueLedgerGroupModel>>(BillparameterValue);
+                foreach (var data in billuniqueLedger)
                 {
-                    a.TransactionType,
-                    Convert.ToDateTime(a.TransactionDate).Date,
-                    a.IncomeLedgerName,
-                    a.CreditOrganizationId,
-                    PaymentMode = (a.PaymentMode == "card" || a.PaymentMode == "cheque") ? "bank" : a.PaymentMode
-                })
-                    .Select(itm => new
+                    if (data.LedgerType == "billingincomeledger")
                     {
-                        TransactionDate = itm.Select(a => a.TransactionDate).FirstOrDefault(),
-                        IncomeLedgerName = itm.Select(a => a.IncomeLedgerName).FirstOrDefault(),
-                        TransactionType = itm.Select(a => a.TransactionType).FirstOrDefault(),
-                        PaymentMode = itm.Select(a => a.PaymentMode).FirstOrDefault(),
-                        SalesAmount = itm.Select(a => a.SubTotal).Sum(),
-                        TaxAmount = itm.Select(a => a.TaxAmount).Sum(),
-                        DiscountAmount = itm.Select(a => a.DiscountAmount).Sum(),
-                        SettlementDiscountAmount = itm.Select(a => a.SettlementDiscountAmount).Sum(),
-                        TotalAmountCreditBillPaid = itm.Where(a => a.TransactionType == "CreditBillPaid").Select(a => a.TotalAmount).Sum() - itm.Where(a => a.TransactionType == "CreditBillPaid").Select(a => a.SettlementDiscountAmount).Sum(),
-                        TotalAmount = itm.Where(a => a.TransactionType != "CreditBillPaid").Select(a => a.TotalAmount).Sum(),
-                        BillTxnItemIds = itm.Select(a => a.ReferenceId).ToList(),
-                        BillSyncs = itm.Select(a => new { a.BillingAccountingSyncId, a.PatientId, a.TotalAmount, a.CreatedBy, a.ReferenceModelName }).ToList(),
-                        Remarks = "Transaction for " + itm.Select(a => a.IncomeLedgerName).FirstOrDefault()
-                        + " income ledger : " + itm.Select(a => a.TransactionType).FirstOrDefault(),
-                        //CreditOrganizationId = itm.Key.CreditOrganizationId
-                        CreditOrganizationId = (isCredtiOrganizationAccounting) ? itm.Key.CreditOrganizationId : null
-                    }).OrderBy(s => s.TransactionDate).ThenBy(s => s.IncomeLedgerName).ToList();
-
-                if (billitm.Count > 0)
-                {
-                    var Syncbill = new List<SyncBillingAccountingModel>();
-                    Syncbill = billitm.Select(p => new SyncBillingAccountingModel()
-                    {
-                        TransactionDate = p.TransactionDate,
-                        IncomeLedgerName = p.IncomeLedgerName,
-                        TransactionType = p.TransactionType,
-                        PaymentMode = p.PaymentMode,
-                        SalesAmount = p.SalesAmount != null ? p.SalesAmount : 0,
-                        TaxAmount = p.TaxAmount != null ? p.TaxAmount : 0,
-                        SettlementDiscountAmount = p.SettlementDiscountAmount != null ? p.SettlementDiscountAmount : 0,
-                        TotalAmount = p.TotalAmountCreditBillPaid > 0 ? p.TotalAmountCreditBillPaid : p.TotalAmount,
-                        BillTxnItemIds = p.BillTxnItemIds,
-                        Remarks = p.Remarks,
-                        DiscountAmount = p.DiscountAmount != null ? p.DiscountAmount : 0,
-                        BillSyncs = p.BillSyncs.Select(x => new SyncBillingAccountingModel()
-                        {
-                            BillingAccountingSyncId = x.BillingAccountingSyncId,
-                            PatientId = x.PatientId,
-                            TotalAmount = x.TotalAmount,
-                            CreatedBy = x.CreatedBy,
-                            ReferenceModelName = x.ReferenceModelName,
-                        }).ToList(),
-                        CreditOrganizationId = p.CreditOrganizationId
-                    }).ToList();
-                    Syncbill.ForEach(a =>
-                    {
-                        //a.VoucherId = (IsCustomVoucher == true) ? RuleMappingList.Find(c => c.Description == a.TransactionType).CustomVoucherId.Value : RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value;
-                        //// a.VoucherId = RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value;
-                        //a.VoucherName = voucherList.Find(c => c.VoucherId == a.VoucherId).VoucherName;
-                        a.VoucherId = (RuleMappingList.Where(r => r.Description == a.TransactionType).ToList().Count > 0) ? RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value : 0;
-                        a.VoucherName = (a.VoucherId != 0) ? voucherList.Find(c => c.VoucherId == a.VoucherId).VoucherName : null;
-                    });
-                    //billingSyncList = Syncbill;
-                    foreach (var itm in Syncbill)
-                    {
-                        if (itm.VoucherId != 0)
-                        {
-                            billingSyncList.Add(itm);
-                        }
+                        Billingledgergroupuniquename = data.LedgergroupUniqueName;
                     }
                 }
-                if (billingSyncList.Count > 0)
+                var ledgergroupId = accountingDBContext.LedgerGroups.Where(lg => lg.Name == Billingledgergroupuniquename).FirstOrDefault().LedgerGroupId;
+                // START:VIKAS:31 dec 2020: Get unique ledger group id from the parameters
+
+                ClearUnavailableLedgerList();
+
+                // Findout ledgers are available in billing mapping
+                sync.ForEach(itm =>
                 {
-                    return true;
+
+                    if (itm.TransactionType == "CashBill" || itm.TransactionType == "CreditBill"
+                    || itm.TransactionType == "CashBillReturn" || itm.TransactionType == "CreditBillReturn")
+                    {
+                        GetLedgerIdFromServiceDepartment(itm.ServiceDepartmentId, ledgergroupId, itm.ItemId, currHospitalId);
+
+                    }
+                });
+
+                if (unavailableLedgerList.Count() > 0)
+                {
+                    return false;
                 }
                 else
                 {
-                    return false;
+                    billingSyncList = new List<SyncBillingAccountingModel>();
+
+                    var billitm = sync.GroupBy(a => new
+                    {
+                        a.TransactionType,
+                        Convert.ToDateTime(a.TransactionDate).Date,
+                        a.LedgerId,
+                        a.CreditOrganizationId,
+                        PaymentMode = (a.PaymentMode == "card" || a.PaymentMode == "cheque") ? "bank" : a.PaymentMode
+                    })
+                        .Select(itm => new
+                        {
+                            TransactionDate = itm.Select(a => a.TransactionDate).FirstOrDefault(),
+                            //IncomeLedgerName = itm.Select(a => a.IncomeLedgerName).FirstOrDefault(),
+                            TransactionType = itm.Select(a => a.TransactionType).FirstOrDefault(),
+                            PaymentMode = itm.Select(a => a.PaymentMode).FirstOrDefault(),
+                            SalesAmount = itm.Select(a => a.SubTotal).Sum(),
+                            TaxAmount = itm.Select(a => a.TaxAmount).Sum(),
+                            DiscountAmount = itm.Select(a => a.DiscountAmount).Sum(),
+                            SettlementDiscountAmount = itm.Select(a => a.SettlementDiscountAmount).Sum(),
+                            TotalAmountCreditBillPaid = itm.Where(a => a.TransactionType == "CreditBillPaid").Select(a => a.TotalAmount).Sum() - itm.Where(a => a.TransactionType == "CreditBillPaid").Select(a => a.SettlementDiscountAmount).Sum(),
+                            TotalAmount = itm.Where(a => a.TransactionType != "CreditBillPaid").Select(a => a.TotalAmount).Sum(),
+                            BillTxnItemIds = itm.Select(a => a.ReferenceId).ToList(),
+                            BillSyncs = itm.Select(a => new { a.BillingAccountingSyncId, a.PatientId, a.TotalAmount, a.CreatedBy, a.ReferenceModelName }).ToList(),
+                            // Remarks = "Transaction for " + itm.Select(a => a.IncomeLedgerName).FirstOrDefault()  + " income ledger : " + itm.Select(a => a.TransactionType).FirstOrDefault(),
+                            Remarks = "Transaction for billing : " + itm.Select(a => a.TransactionType).FirstOrDefault(),
+                            CreditOrganizationId = (isCredtiOrganizationAccounting) ? itm.Key.CreditOrganizationId : null,
+                            ItemId = itm.Select(a => a.ItemId).FirstOrDefault(),
+                            ServiceDepartmentId = itm.Select(a => a.ServiceDepartmentId).FirstOrDefault(),
+                            LedgerId = itm.Select(a => a.LedgerId).FirstOrDefault(),
+                        }).OrderBy(s => s.TransactionDate).ToList();//.ThenBy(s => s.IncomeLedgerName).ToList();
+
+                    if (billitm.Count > 0)
+                    {
+                        var Syncbill = new List<SyncBillingAccountingModel>();
+                        Syncbill = billitm.Select(p => new SyncBillingAccountingModel()
+                        {
+                            TransactionDate = p.TransactionDate,
+                            //IncomeLedgerName = p.IncomeLedgerName,
+                            TransactionType = p.TransactionType,
+                            PaymentMode = p.PaymentMode,
+                            SalesAmount = p.SalesAmount != null ? p.SalesAmount : 0,
+                            TaxAmount = p.TaxAmount != null ? p.TaxAmount : 0,
+                            SettlementDiscountAmount = p.SettlementDiscountAmount != null ? p.SettlementDiscountAmount : 0,
+                            TotalAmount = p.TotalAmountCreditBillPaid > 0 ? p.TotalAmountCreditBillPaid : p.TotalAmount,
+                            BillTxnItemIds = p.BillTxnItemIds,
+                            Remarks = p.Remarks,
+                            DiscountAmount = p.DiscountAmount != null ? p.DiscountAmount : 0,
+                            BillSyncs = p.BillSyncs.Select(x => new SyncBillingAccountingModel()
+                            {
+                                BillingAccountingSyncId = x.BillingAccountingSyncId,
+                                PatientId = x.PatientId,
+                                TotalAmount = x.TotalAmount,
+                                CreatedBy = x.CreatedBy,
+                                ReferenceModelName = x.ReferenceModelName,
+                            }).ToList(),
+                            CreditOrganizationId = p.CreditOrganizationId,
+                            ItemId = p.ItemId,
+                            ServiceDepartmentId = p.ServiceDepartmentId,
+                            LedgerId = p.LedgerId
+                        }).ToList();
+                        Syncbill.ForEach(a =>
+                        {
+                            a.VoucherId = (RuleMappingList.Where(r => r.Description == a.TransactionType).ToList().Count > 0) ? RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value : 0;
+                            a.VoucherName = (a.VoucherId != 0) ? voucherList.Find(c => c.VoucherId == a.VoucherId).VoucherName : null;
+                        });
+                        //billingSyncList = Syncbill;
+                        foreach (var itm in Syncbill)
+                        {
+                            if (itm.VoucherId != 0)
+                            {
+                                billingSyncList.Add(itm);
+                            }
+                        }
+                    }
+                    if (billingSyncList.Count > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
             catch (Exception ex)
@@ -1344,13 +1374,12 @@ namespace DanpheEMR.AccTransfer
                     transaction.SectionId = 2;
                     transaction.TransactionDate = record.TransactionDate;
                     transaction.BillSyncs = record.BillSyncs;
-                    transaction.VoucherHeadId = 0;//voucherHeadList.Find(s => s.VoucherHeadName == "Hospital").VoucherHeadId;
-                    //accTxntemp.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+                    transaction.VoucherHeadId = 0;
                     transaction.VoucherId = record.VoucherId;
                     var referenceIdArray = record.BillTxnItemIds;
                     transaction.TransactionLinks = new List<TransactionLinkModel>();
                     TransactionLinkModel txnLink = new TransactionLinkModel();
-                    txnLink.ReferenceId = string.Join(",", referenceIdArray);                    
+                    txnLink.ReferenceId = string.Join(",", referenceIdArray);
                     transaction.TransactionLinks.Add(txnLink);
 
 
@@ -1386,7 +1415,7 @@ namespace DanpheEMR.AccTransfer
                                         else if (ruleRow.Description == "DepositAddPatientDeposits(Liability)")
                                         {
                                             accTxnItems.Amount = record.TotalAmount;
-                                            ledId = ledId = GetLedgerId(GetLedgerName("LCL_PATIENT_DEPOSITS_(LIABILITY)_ADVANCE_FROM_PATIENT", currHospitalId), ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
+                                            ledId = GetLedgerId(GetLedgerName("LCL_PATIENT_DEPOSITS_(LIABILITY)_ADVANCE_FROM_PATIENT", currHospitalId), ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
                                             accTxnItems.TransactionItemDetails = new List<TransactionItemDetailModel>();
                                             transaction.BillSyncs.ForEach(itm =>
                                             {
@@ -1476,7 +1505,8 @@ namespace DanpheEMR.AccTransfer
                                         if (ruleRow.Description == "CashBillSales")
                                         {
                                             accTxnItems.Amount = record.SalesAmount;
-                                            ledId = GetLedgerIdFromServiceDepartment(record.IncomeLedgerName, ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);    //here service deptname are income ledgers for Hospital
+                                            ledId = (int)record.LedgerId;
+
                                         }
                                         else if (ruleRow.Description == "CashBillCashInHand" || ruleRow.Name == "ACA_BANK")
                                         {
@@ -1509,7 +1539,6 @@ namespace DanpheEMR.AccTransfer
                                         accTxnItems.DrCr = ruleRow.DrCr;
                                         transaction.TransactionType = record.TransactionType;
                                         accTxnItems.LedgerId = (ledId > 0) ? ledId : 0;
-                                        //  accTxnItems.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
                                         transaction.TransactionItems.Add(accTxnItems);
                                     });
                                 }
@@ -1528,7 +1557,7 @@ namespace DanpheEMR.AccTransfer
                                         if (ruleRow.Description == "CreditBillSales")
                                         {
                                             accTxnItems.Amount = record.SalesAmount;
-                                            ledId = GetLedgerIdFromServiceDepartment(record.IncomeLedgerName, ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);    //here service deptname are income ledgers for Hospital
+                                            ledId = (int)record.LedgerId;
                                         }
                                         else if (ruleRow.Description == "CreditBillSundryDebtors")
                                         {
@@ -1545,7 +1574,6 @@ namespace DanpheEMR.AccTransfer
                                             transaction.BillSyncs.ForEach(r =>
                                             {
                                                 var accTxnItemDetail = new TransactionItemDetailModel();
-                                                //   accTxnItemDetail.PatientId = r.PatientId;
                                                 accTxnItemDetail.ReferenceId = r.PatientId;
                                                 accTxnItemDetail.ReferenceType = "Patient";
                                                 accTxnItemDetail.Amount = r.TotalAmount;
@@ -1586,7 +1614,7 @@ namespace DanpheEMR.AccTransfer
                                         if (ruleRow.Description == "CashBillReturnSales")
                                         {
                                             accTxnItems.Amount = record.SalesAmount;
-                                            ledId = GetLedgerIdFromServiceDepartment(record.IncomeLedgerName, ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);    //here service deptname are income ledgers for Hospital
+                                            ledId = (int)record.LedgerId;
                                         }
                                         else if (ruleRow.Description == "CashBillReturnCashInHand" || ruleRow.Name == "ACA_BANK")
                                         {
@@ -1595,15 +1623,15 @@ namespace DanpheEMR.AccTransfer
                                             ledId = GetLedgerId(ledName, ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
                                             accTxnItems.TransactionItemDetails = new List<TransactionItemDetailModel>();
                                             transaction.BillSyncs.ForEach(r =>
-                                               {
-                                                   var accTxnItemDetail = new TransactionItemDetailModel();
-                                                   //  accTxnItemDetail.PatientId = r.PatientId;
-                                                   accTxnItemDetail.ReferenceId = r.CreatedBy;
-                                                   accTxnItemDetail.ReferenceType = "User";
-                                                   accTxnItemDetail.Amount = r.TotalAmount;
-                                                   accTxnItemDetail.Description = "CashBillReturn->Cash -> Created By";
-                                                   accTxnItems.TransactionItemDetails.Add(accTxnItemDetail);
-                                               });
+                                            {
+                                                var accTxnItemDetail = new TransactionItemDetailModel();
+                                                //  accTxnItemDetail.PatientId = r.PatientId;
+                                                accTxnItemDetail.ReferenceId = r.CreatedBy;
+                                                accTxnItemDetail.ReferenceType = "User";
+                                                accTxnItemDetail.Amount = r.TotalAmount;
+                                                accTxnItemDetail.Description = "CashBillReturn->Cash -> Created By";
+                                                accTxnItems.TransactionItemDetails.Add(accTxnItemDetail);
+                                            });
                                             accTxnItems.IsTxnDetails = true;
                                         }
                                         else if (ruleRow.Description == "CashBillReturnDutiesandTaxes")
@@ -1667,15 +1695,15 @@ namespace DanpheEMR.AccTransfer
                                             }
                                             accTxnItems.TransactionItemDetails = new List<TransactionItemDetailModel>();
                                             transaction.BillSyncs.ForEach(r =>
-                                    {
-                                        var accTxnItemDetail = new TransactionItemDetailModel();
-                                        //   accTxnItemDetail.PatientId = r.PatientId;
-                                        accTxnItemDetail.ReferenceId = r.PatientId;
-                                        accTxnItemDetail.ReferenceType = "Patient";
-                                        accTxnItemDetail.Amount = r.TotalAmount;
-                                        accTxnItemDetail.Description = "CreditBillPaid->Sundry Debtors->Receivable";
-                                        accTxnItems.TransactionItemDetails.Add(accTxnItemDetail);
-                                    });
+                                            {
+                                                var accTxnItemDetail = new TransactionItemDetailModel();
+                                                //   accTxnItemDetail.PatientId = r.PatientId;
+                                                accTxnItemDetail.ReferenceId = r.PatientId;
+                                                accTxnItemDetail.ReferenceType = "Patient";
+                                                accTxnItemDetail.Amount = r.TotalAmount;
+                                                accTxnItemDetail.Description = "CreditBillPaid->Sundry Debtors->Receivable";
+                                                accTxnItems.TransactionItemDetails.Add(accTxnItemDetail);
+                                            });
                                             accTxnItems.IsTxnDetails = true;
                                         }
                                         //} else if (ruleRow.LedgerGroupName == "Duties and Taxes") {
@@ -1718,7 +1746,7 @@ namespace DanpheEMR.AccTransfer
                                         if (ruleRow.Description == "CreditBillReturnSales")
                                         {
                                             accTxnItems.Amount = record.SalesAmount;
-                                            ledId = GetLedgerIdFromServiceDepartment(record.IncomeLedgerName, ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);    //here service deptname are income ledgers for Hospital
+                                            ledId = (int)record.LedgerId;
                                         }
                                         else if (ruleRow.Description == "CreditBillReturnSundryDebtors")
                                         {
@@ -1785,49 +1813,105 @@ namespace DanpheEMR.AccTransfer
         }
 
         //method for get service departments as a income ledger
-        private static int GetLedgerIdFromServiceDepartment(string ledgerNameString, int ledgerGroupId, int? ledgerReferenceId, int currHospitalId)
+        //private static int GetLedgerIdFromServiceDepartment(string ledgerNameString, int ledgerGroupId, int? ledgerReferenceId, int currHospitalId)
+        //{
+        //    try
+        //    {
+        //        if (ledgerGroupId > 0)
+        //        {
+
+        //            var ledger = LedgerList.Find(x => x.LedgerName == ledgerNameString);          //   this.ledgerList.filter(x => x.LedgerName == ledgerNameString)[0];
+        //            if (ledger != null)
+        //            {
+        //                return ledger.LedgerId;
+        //            }
+        //            else
+        //            {
+        //                var ledGrp = LedgergroupList.Find(y => y.LedgerGroupId == ledgerGroupId);
+        //                var tempLed = new LedgerModel();
+        //                tempLed.PrimaryGroup = ledGrp.PrimaryGroup;
+        //                tempLed.COA = ledGrp.COA;
+        //                tempLed.LedgerGroupId = ledgerGroupId;
+        //                tempLed.LedgerGroupName = ledGrp.LedgerGroupName;
+        //                tempLed.LedgerName = ledgerNameString;
+        //                tempLed.LedgerReferenceId = ledgerReferenceId;
+        //                tempLed.Description = "Income Ledger";
+        //                var flag = true;
+        //                tempLed.IsMapLedger = false;
+        //                unavailableLedgerList.ForEach(l =>
+        //                {
+        //                    if (l.PrimaryGroup == tempLed.PrimaryGroup && l.COA == tempLed.COA && l.LedgerGroupId == tempLed.LedgerGroupId
+        //                        && l.LedgerName == tempLed.LedgerName)
+        //                    {
+        //                        flag = false;
+        //                    }
+        //                });
+        //                if (flag)
+        //                {
+        //                    unavailableLedgerList.Add(tempLed);
+        //                    // AddLedgersFromAcc(currHospitalId);  // Vikas: 23Jul2020 : To display unavailble list on clien side
+        //                }
+        //                //  return LedgerList.Find(a => a.LedgerName == ledgerNameString).LedgerId;
+        //                return 0;
+        //            }
+        //        }
+        //        return 0;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        private static int GetLedgerIdFromServiceDepartment(int? serviceDepId, int ledgerGroupId, int? itemId, int currHospitalId)
         {
             try
             {
-                if (ledgerGroupId > 0)
+
+                bool ledgerid = false;
+                if (BillingIncomeLedger?.Count > 0)
+                {
+                    ledgerid = BillingIncomeLedger.Exists(a => a.ServiceDepartmentId == serviceDepId && a.ItemId == itemId);
+                }
+                if (ledgerid == true)
+                {
+                    return BillingIncomeLedger.Find(a => a.ServiceDepartmentId == serviceDepId && a.ItemId == itemId).LedgerId;
+                }
+                else
                 {
 
-                    var ledger = LedgerList.Find(x => x.LedgerName == ledgerNameString);          //   this.ledgerList.filter(x => x.LedgerName == ledgerNameString)[0];
-                    if (ledger != null)
+                    var billItm = (from itm in accountingDBContext.BillItemPrice
+                                   join dep in accountingDBContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
+                                   where itm.ItemId == itemId && dep.ServiceDepartmentId == serviceDepId
+                                   select new
+                                   {
+                                       ItemId = itm.ItemId,
+                                       ItemName = itm.ItemName,
+                                       ServiceDepartmentId = itm.ServiceDepartmentId,
+                                       ServiceDepartmentName = dep.ServiceDepartmentName
+                                   }).FirstOrDefault();
+
+                    // var billItm = billItems.Where(itm => itm.ItemId == itemId && itm.ServiceDepartmentId == serviceDepId).FirstOrDefault() ;
+                    var ledGrp = LedgergroupList.Find(y => y.LedgerGroupId == ledgerGroupId);
+                    var tempLed = new LedgerModel();
+                    tempLed.PrimaryGroup = ledGrp.PrimaryGroup;
+                    tempLed.COA = ledGrp.COA;
+                    tempLed.LedgerGroupId = ledgerGroupId;
+                    tempLed.LedgerGroupName = ledGrp.LedgerGroupName;
+                    tempLed.LedgerName = billItm.ServiceDepartmentName.ToString() + " Or " + billItm.ItemName.ToString();
+                    tempLed.LedgerReferenceId = serviceDepId; // default service department as a ledger but user must create ledger from accounting=> setting=> create ledger (Billing ledger tab)
+                    tempLed.LedgerType = "billingincomeledger";
+                    bool flag = true;
+                    tempLed.IsMapLedger = false;
+
+                    if (flag)
                     {
-                        return ledger.LedgerId;
+                        unavailableLedgerList.Add(tempLed);
+
                     }
-                    else
-                    {
-                        var ledGrp = LedgergroupList.Find(y => y.LedgerGroupId == ledgerGroupId);
-                        var tempLed = new LedgerModel();
-                        tempLed.PrimaryGroup = ledGrp.PrimaryGroup;
-                        tempLed.COA = ledGrp.COA;
-                        tempLed.LedgerGroupId = ledgerGroupId;
-                        tempLed.LedgerGroupName = ledGrp.LedgerGroupName;
-                        tempLed.LedgerName = ledgerNameString;
-                        tempLed.LedgerReferenceId = ledgerReferenceId;
-                        tempLed.Description = "Income Ledger";
-                        var flag = true;
-                        tempLed.IsMapLedger = false;
-                        unavailableLedgerList.ForEach(l =>
-                        {
-                            if (l.PrimaryGroup == tempLed.PrimaryGroup && l.COA == tempLed.COA && l.LedgerGroupId == tempLed.LedgerGroupId
-                                && l.LedgerName == tempLed.LedgerName)
-                            {
-                                flag = false;
-                            }
-                        });
-                        if (flag)
-                        {
-                            unavailableLedgerList.Add(tempLed);
-                            // AddLedgersFromAcc(currHospitalId);  // Vikas: 23Jul2020 : To display unavailble list on clien side
-                        }
-                        //  return LedgerList.Find(a => a.LedgerName == ledgerNameString).LedgerId;
-                        return 0;
-                    }
+                    return 0;
                 }
-                return 0;
+
             }
             catch (Exception ex)
             {
@@ -1900,6 +1984,8 @@ namespace DanpheEMR.AccTransfer
                 var goodreceiptdata = DataTableToList.ToDynamic(dataset.Tables[0]);
                 InvGoodRecipt = new List<GoodsReceiptModel>();
                 var IsAllowGroupByVoucher = Convert.ToBoolean(InvetoryIntegrationParameters["IsAllowGroupByVoucher"].ToString());
+                //PaymentMode="Cash" && ItemType="Capital Goods" =>INVCashGoodReceiptFixedAsset1 else => INVCashGoodReceipt1
+                //PaymentMode != "credit" && ItemType="Capital Goods" => INVCreditGoodReceiptFixedAsset" else => INVCreditGoodReceipt
                 if (!IsAllowGroupByVoucher)
                 {
                     var goodsReceiptItems = (from gr in goodreceiptdata.AsEnumerable()
@@ -1925,7 +2011,7 @@ namespace DanpheEMR.AccTransfer
                                                  ItemDetails = x.GroupBy(a => new { a.gr.ItemId }).Select(a => new { a.Key.ItemId, TotalAmount = a.Select(b => (decimal)b.gr.TotalAmount).Sum() }).ToList(),
                                                  Remarks = "Inventory " + (x.Select(a => a.gr.PaymentMode).FirstOrDefault()) + " good receipt voucher for Bill No: " + (x.Select(a => a.gr.BillNo).FirstOrDefault()) + " and Goods Receipt No. : " + (x.Select(a => a.gr.GoodsReceiptNo).FirstOrDefault()) + " on GoodsReceipt date: " + (x.Select(a => a.gr.CreatedOn).FirstOrDefault()),
                                                  ReferenceIds = x.Select(a => (int)a.gr.GoodsReceiptItemId).Distinct().ToList(), //we are using GoodsReceiptItemId as a referenceId
-                                              }).ToList();
+                                             }).ToList();
                     if (goodsReceiptItems.Count > 0)
                     {
                         var invItem = new List<GoodsReceiptModel>();
@@ -1964,7 +2050,7 @@ namespace DanpheEMR.AccTransfer
                     }
                 }
                 else
-                {
+                {                    
                     var goodsReceiptItems = (from gr in goodreceiptdata.AsEnumerable()
                                              group new { gr } by new
                                              {
@@ -1989,7 +2075,7 @@ namespace DanpheEMR.AccTransfer
                                                  ItemDetails = x.GroupBy(a => new { a.gr.ItemId }).Select(a => new { a.Key.ItemId, TotalAmount = a.Select(b => (decimal)b.gr.TotalAmount).Sum() }).ToList(),
                                                  Remarks = "Inventory " + (x.Select(a => a.gr.PaymentMode).FirstOrDefault()) + " good receipt voucher for Bill No: " + (x.Select(a => a.gr.BillNo).FirstOrDefault()) + " and Goods ReceiptNo. : " + (x.Select(a => a.gr.GoodsReceiptNo).FirstOrDefault()) + " on GoodsReceipt date: " + (x.Select(a => a.gr.CreatedOn).FirstOrDefault()),
                                                  ReferenceIds = x.Select(a => (int)a.gr.GoodsReceiptItemId).Distinct().ToList(), //we are using GoodsReceiptItemId as a referenceId
-                                              }).ToList();
+                                             }).ToList();
                     if (goodsReceiptItems.Count > 0)
                     {
                         var invItem = new List<GoodsReceiptModel>();
@@ -2030,7 +2116,7 @@ namespace DanpheEMR.AccTransfer
                     }
                 }
 
-
+                //INVWriteOff
                 var writeoffdata = DataTableToList.ToDynamic(dataset.Tables[1]);
 
                 var writeOffItems = (from wf in writeoffdata.AsEnumerable()
@@ -2075,6 +2161,7 @@ namespace DanpheEMR.AccTransfer
                     }
                 }
 
+                //PaymentMode == "Cash" ? "INVReturnToVendorCashGR" : "INVReturnToVendorCreditGR"
                 var returntovenderdata = DataTableToList.ToDynamic(dataset.Tables[2]);
 
                 var returnToVender = (from ret in returntovenderdata.AsEnumerable()
@@ -2128,7 +2215,7 @@ namespace DanpheEMR.AccTransfer
 
 
                 var WARD_INV_Transaction = DataTableToList.ToDynamic(dataset.Tables[3]);
-
+                //TransactionType-> NVDispatchToDept
                 var dispatchToDept = (from wtxn in WARD_INV_Transaction
                                       group new { wtxn } by new
                                       {
@@ -2138,7 +2225,7 @@ namespace DanpheEMR.AccTransfer
                                       select new
                                       {
                                           CreatedOn = x.Key.CreatedOn,
-                                          TransactionType = x.Key.TransactionType,
+                                          TransactionType = x.Key.TransactionType,//NVDispatchToDept
                                           TotalAmount = x.Select(a => (decimal)a.wtxn.Price * (int)a.wtxn.Quantity).Sum(),
                                           Remarks = "Transaction of INVDispatchToDept (Dispatch items) Items on date: " + Convert.ToString(Convert.ToDateTime(x.Key.CreatedOn).Date),
                                           ReferenceIds = x.Select(a => (int)a.wtxn.TransactionId).Distinct().ToList(), // we are using TransactionId from WARD_INV_Transaction as referenceId 
@@ -2181,7 +2268,7 @@ namespace DanpheEMR.AccTransfer
                                               x.Key.CreatedOn,
                                               x.Key.SubCategoryId,
                                               TransactionType = "INVDeptConsumedGoods",
-                                              TotalAmount = x.Select(a=> (decimal) a.csm.TotalAmount).Sum(), 
+                                              TotalAmount = x.Select(a => (decimal)a.csm.TotalAmount).Sum(),
                                               Remarks = "Inventory Transaction entries to Accounting for consumption: ",
                                               ReferenceIds = x.Select(a => (int)a.csm.TransactionId).Distinct().ToList(),  //we are using GoodsReceiptItemId as a referenceId
                                           }).ToList();
@@ -2192,50 +2279,50 @@ namespace DanpheEMR.AccTransfer
                     //var dispDept = new List<GoodsReceiptModel>();
                     var consumption = new GoodsReceiptModel();
                     consumption.CreatedOn = ConsumedGoodsItems[0].CreatedOn;
-                    consumption.TransactionType= ConsumedGoodsItems[0].TransactionType;
-                    consumption.Remarks= ConsumedGoodsItems[0].Remarks;
+                    consumption.TransactionType = ConsumedGoodsItems[0].TransactionType;
+                    consumption.Remarks = ConsumedGoodsItems[0].Remarks;
                     consumption.VoucherId = (RuleMappingList.Where(r => r.Description == consumption.TransactionType).ToList().Count > 0) ? RuleMappingList.Find(c => c.Description == consumption.TransactionType).VoucherId.Value : 0;
                     consumption.VoucherName = (consumption.VoucherId != 0) ? voucherList.Find(c => c.VoucherId == consumption.VoucherId).VoucherName : null;
                     consumption.GoodsReceiptItem = new List<GoodsReceiptItemsModel>();
                     consumption.ReferenceIds = new List<int>();
-                    ConsumedGoodsItems.ForEach(cItm=> {
+                    ConsumedGoodsItems.ForEach(cItm => {
                         consumption.ReferenceIds.AddRange(cItm.ReferenceIds);
                         consumption.TotalAmount = consumption.TotalAmount + cItm.TotalAmount;
                     });
                     consumption.GoodsReceiptItem = ConsumedGoodsItems.Select(p => new GoodsReceiptItemsModel()
-                    {                        
-                        GoodsReceiptItemId = p.SubCategoryId,                                                                    
-                        TotalAmount = (decimal)p.TotalAmount,                        
-                    }).ToList();                  
+                    {
+                        GoodsReceiptItemId = p.SubCategoryId,
+                        TotalAmount = (decimal)p.TotalAmount,
+                    }).ToList();
                     if (consumption.VoucherId != 0)
                     {
                         InvGoodRecipt.Add(consumption);
-                    }                   
+                    }
                 }
 
                 //Table-6 INVStockManageOut
                 var invStockManageOut = DataTableToList.ToDynamic(dataset.Tables[5]);
                 var invStockManageOutItems = (from stkMOut in invStockManageOut.AsEnumerable()
-                                          group new { stkMOut } by new
-                                          {
-                                              CreatedOn = Convert.ToDateTime(stkMOut.CreatedOn).Date,
-                                              SubCategoryId = stkMOut.SubCategoryId
-                                          } into x
-                                          select new
-                                          {
-                                              x.Key.CreatedOn,
-                                              x.Key.SubCategoryId,
-                                              TransactionType = "INVStockManageOut",
-                                              TotalAmount = x.Select(a => (decimal)a.stkMOut.TotalAmount).Sum(),
-                                              Remarks = "Inventory stock manage out from mainstore and substore ",
-                                              ReferenceIds = x.Select(a => (int)a.stkMOut.TransactionId).Distinct().ToList(), //WARD_INV_Transaction-TransactionId
-                                              ReferenceIdsOne = x.Select(a => (int)a.stkMOut.StockTxnId).Distinct().ToList(),//INV_TXN_StockTransaction-StockTxnId
-                                          }).ToList();
+                                              group new { stkMOut } by new
+                                              {
+                                                  CreatedOn = Convert.ToDateTime(stkMOut.CreatedOn).Date,
+                                                  SubCategoryId = stkMOut.SubCategoryId
+                                              } into x
+                                              select new
+                                              {
+                                                  x.Key.CreatedOn,
+                                                  x.Key.SubCategoryId,
+                                                  TransactionType = "INVStockManageOut",
+                                                  TotalAmount = x.Select(a => (decimal)a.stkMOut.TotalAmount).Sum(),
+                                                  Remarks = "Inventory stock manage out from mainstore and substore ",
+                                                  ReferenceIds = x.Select(a => (int)a.stkMOut.TransactionId).Distinct().ToList(), //WARD_INV_Transaction-TransactionId
+                                                  ReferenceIdsOne = x.Select(a => (int)a.stkMOut.StockTxnId).Distinct().ToList(),//INV_TXN_StockTransaction-StockTxnId
+                                              }).ToList();
 
 
                 if (invStockManageOutItems.Count > 0)
-                {                    
-                    var stkManageOut  = new GoodsReceiptModel();
+                {
+                    var stkManageOut = new GoodsReceiptModel();
                     stkManageOut.CreatedOn = invStockManageOutItems[0].CreatedOn;
                     stkManageOut.TransactionType = invStockManageOutItems[0].TransactionType;
                     stkManageOut.Remarks = invStockManageOutItems[0].Remarks;
@@ -2298,9 +2385,9 @@ namespace DanpheEMR.AccTransfer
                     var referenceIdArray = record.ReferenceIds;
                     var referenceIdOneArray = record.ReferenceIdsOne;
                     transaction.TransactionLinks = new List<TransactionLinkModel>();
-                    TransactionLinkModel txnLink = new TransactionLinkModel();                    
-                    txnLink.ReferenceId = (referenceIdArray.Count > 0) ?string.Join(",", referenceIdArray):null;
-                    txnLink.ReferenceIdOne =(referenceIdOneArray!=null && referenceIdOneArray.Count >0)? string.Join(",", referenceIdOneArray):null;
+                    TransactionLinkModel txnLink = new TransactionLinkModel();
+                    txnLink.ReferenceId = (referenceIdArray.Count > 0) ? string.Join(",", referenceIdArray) : null;
+                    txnLink.ReferenceIdOne = (referenceIdOneArray != null && referenceIdOneArray.Count > 0) ? string.Join(",", referenceIdOneArray) : null;
                     transaction.TransactionLinks.Add(txnLink);
                     switch (record.TransactionType)
                     {
@@ -2930,11 +3017,11 @@ namespace DanpheEMR.AccTransfer
                                     transaction.TransactionType = record.TransactionType;
                                     transaction.TransactionItems = new List<TransactionItemModel>();
                                     transferRule.ForEach(ruleRow =>
-                                    {                                                                              
+                                    {
                                         // DR: 
                                         if (ruleRow.Description == "INVConsumptionParent")
                                         {
-                                            record.GoodsReceiptItem.ForEach(gritm=> {
+                                            record.GoodsReceiptItem.ForEach(gritm => {
                                                 var accTxnItems = new TransactionItemModel();
                                                 accTxnItems.IsTxnDetails = false;
                                                 var ledId = 0;
@@ -2943,7 +3030,7 @@ namespace DanpheEMR.AccTransfer
                                                 accTxnItems.DrCr = ruleRow.DrCr;
                                                 accTxnItems.LedgerId = (ledId > 0) ? ledId : 0;
                                                 transaction.TransactionItems.Add(accTxnItems);
-                                            });                                            
+                                            });
                                         }
                                         else if (ruleRow.Description == "INVConsumptionInventoryLG")
                                         {
@@ -2955,7 +3042,7 @@ namespace DanpheEMR.AccTransfer
                                             accTxnItems.DrCr = ruleRow.DrCr;
                                             accTxnItems.LedgerId = (ledId > 0) ? ledId : 0;
                                             transaction.TransactionItems.Add(accTxnItems);
-                                        }                                       
+                                        }
                                     });
                                 }
                                 break;
@@ -3079,22 +3166,16 @@ namespace DanpheEMR.AccTransfer
             {
                 DataSet dataset = PhrmTxnItemsDateWise(SelectedDate, currHospitalId);
                 var PHRMItem = new List<PHRMGoodsReceiptModel>();
-
-                //var PHRMInvoiceTransaction = DataTableToList.ConvertToList<PHRMInvoiceTransactionModel>(dataset.Tables[0]);                         //Table 1
-                //var PHRMInvoiceTransactionItems = DataTableToList.ConvertToList<PHRMInvoiceTransactionItemsModel>(dataset.Tables[1]);               //Table 2
-                //var PHRMInvoiceReturnItemsModel = DataTableToList.ConvertToList<PHRMInvoiceReturnItemsModel>(dataset.Tables[2]);                         //Table 3
-                //var PHRMGoodsReceipt = DataTableToList.ConvertToList<PHRMGoodsReceiptModel>(dataset.Tables[3]);                                     //Table 4
-                //var PHRMWriteOff = DataTableToList.ConvertToList<PHRMWriteOffModel>(dataset.Tables[4]);                                             //Table 5
-                //var PHRMStockTransactionModel = DataTableToList.ConvertToList<PHRMStockTransactionItemsModel>(dataset.Tables[5]);                   //Table 6
-
+               
                 var PHRMInvoiceTransaction = DataTableToList.ToDynamic(dataset.Tables[0]);
-                var PHRMInvoiceTransactionItems = DataTableToList.ToDynamic(dataset.Tables[1]);
+                //var PHRMInvoiceTransactionItems = DataTableToList.ToDynamic(dataset.Tables[1]);//12 July
                 var PHRMInvoiceReturnItemsModel = DataTableToList.ToDynamic(dataset.Tables[2]);
                 var PHRMGoodsReceipt = DataTableToList.ToDynamic(dataset.Tables[3]);
                 var PHRMWriteOff = DataTableToList.ToDynamic(dataset.Tables[4]);
                 var PHRMStockTransactionModel = DataTableToList.ToDynamic(dataset.Tables[5]);
                 var grvatdisamount = DataTableToList.ToDynamic(dataset.Tables[6]);
 
+                //TransactionTypes => "PHRMCreditInvoice1" : "PHRMCashInvoice1"
                 var CashInvoice = (from invo in PHRMInvoiceTransaction.AsEnumerable()
                                        //where invo.IsTransferredToACC != true
                                        //&& (Convert.ToDateTime(invo.CreateOn).Date >= FromDate && Convert.ToDateTime(invo.CreateOn).Date <= ToDate)
@@ -3141,8 +3222,7 @@ namespace DanpheEMR.AccTransfer
                         Remarks = p.Remarks,
                         Type = p.Type,
                         GrVATAmount = p.GrAmount.Select(a => a.GrVatAmount).Sum(),
-                        GrCOGSAmount = p.GrAmount.Select(a => a.GrCOGSAmount).Sum(),
-                        //GrDiscountAmount = p.GrAmount.Select(a => a.GrDisAmount).Sum(),
+                        GrCOGSAmount = p.GrAmount.Select(a => a.GrCOGSAmount).Sum(),                        
                         BillSyncs = p.BillSyncs.Select(x => new SyncBillingAccountingModel()
                         {
                             PatientId = x.PatientId,
@@ -3150,30 +3230,59 @@ namespace DanpheEMR.AccTransfer
                         }).ToList()
                     }).ToList();
                     invItem.ForEach(a =>
-                    {
-                        //a.VoucherId = RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value;
-                        //a.VoucherName = voucherList.Find(c => c.VoucherId == a.VoucherId).VoucherName;
+                    {                        
                         a.VoucherId = (RuleMappingList.Where(r => r.Description == a.TransactionType).ToList().Count > 0) ? RuleMappingList.Find(c => c.Description == a.TransactionType).VoucherId.Value : 0;
                         a.VoucherName = (a.VoucherId != 0) ? voucherList.Find(c => c.VoucherId == a.VoucherId).VoucherName : null;
 
                     });
                     foreach (var itm in invItem)
                     {
-                        if(itm.VoucherId != 0)
+                        if (itm.VoucherId != 0)
                         {
                             PHRMItem.Add(itm);
-                        }                       
+                        }
                     }
                 }
-                var CashInvoiceReturn = (from invo in pharmacyDbContext.PHRMInvoiceTransaction.AsEnumerable()
+
+                //NageshBB/Sanjit sir: 12-July 2021: commented and updated as per new changes in lph pharmacy
+                //"PHRMCreditInvoiceReturn1" : "PHRMCashInvoiceReturn1",
+                //var CashInvoiceReturn = (from invo in pharmacyDbContext.PHRMInvoiceTransaction.AsEnumerable()
+                //                         join invReturnItm in PHRMInvoiceReturnItemsModel.AsEnumerable()
+                //                         on invo.InvoiceId equals invReturnItm.InvoiceId
+                //                         where invo.IsReturn == true
+                //                         //  (Convert.ToDateTime(invReturnItm.CreatedOn).Date >= FromDate && Convert.ToDateTime(invReturnItm.CreatedOn).Date <= ToDate)
+                //                         group new { invReturnItm, invo } by new
+                //                         {
+                //                             CreatedOn = Convert.ToDateTime(invReturnItm.CreatedOn).Date,
+                //                             PaymentMode = invo.PaymentMode
+                //                         } into x
+                //                         select new
+                //                         {
+                //                             x.Key.CreatedOn,
+                //                             TransactionType = x.Key.PaymentMode == "credit" ? "PHRMCreditInvoiceReturn1" : "PHRMCashInvoiceReturn1",
+                //                             Type = x.Key.PaymentMode == "credit" ? "Credit Invoice Return" : "Cash Invoice Return",
+                //                             SalesAmount = x.Select(a => (decimal)a.invReturnItm.SubTotal).Sum(),
+                //                             TotalAmount = x.Select(a => (decimal)a.invReturnItm.TotalAmount).Sum(),
+                //                             VATAmount = x.Select(c => (((decimal)c.invReturnItm.SubTotal - (((decimal)c.invReturnItm.SubTotal * (Convert.ToDecimal((decimal)c.invReturnItm.DiscountPercentage))) / 100)) * Convert.ToDecimal((decimal)c.invReturnItm.VATPercentage)) / 100).Sum(),
+                //                             DiscountAmount = x.Select(b => (decimal)b.invReturnItm.SubTotal * (Convert.ToDecimal((decimal)b.invReturnItm.DiscountPercentage / 100))).Sum(),
+                //                             Remarks = "Transaction of " + x.Key.PaymentMode + " Invoice return Items on date: ", // + DbFunctions.TruncateTime(x.Key.CreatedOn),
+                //                             ReferenceIds = x.Select(a => a.invo.InvoiceId).Distinct().ToList(),
+                //                             GrAmount = (from gr in grvatdisamount
+                //                                         join itm in x.Select(a => a.invo.InvoiceId).Distinct().ToList() on gr.InvoiceId equals itm
+                //                                         select new
+                //                                         {
+                //                                             GrVatAmount = (decimal)gr.GrVATAmount,
+                //                                             //GrDisAmount = (decimal)gr.GrDiscountAmount,
+                //                                             GrCOGSAmount = (decimal)gr.GrCOGSAmount
+                //                                         }).ToList(),
+                //                         }).ToList();
+                var CashInvoiceReturn = (from invReturn in pharmacyDbContext.PHRMInvoiceReturnModel.AsEnumerable()
                                          join invReturnItm in PHRMInvoiceReturnItemsModel.AsEnumerable()
-                                         on invo.InvoiceId equals invReturnItm.InvoiceId
-                                         where invo.IsReturn == true
-                                         //  (Convert.ToDateTime(invReturnItm.CreatedOn).Date >= FromDate && Convert.ToDateTime(invReturnItm.CreatedOn).Date <= ToDate)
-                                         group new { invReturnItm, invo } by new
+                                         on invReturn.InvoiceReturnId equals invReturnItm.InvoiceReturnId                                                                                  
+                                         group new { invReturnItm, invReturn} by new
                                          {
                                              CreatedOn = Convert.ToDateTime(invReturnItm.CreatedOn).Date,
-                                             PaymentMode = invo.PaymentMode
+                                             PaymentMode = invReturn.PaymentMode
                                          } into x
                                          select new
                                          {
@@ -3184,15 +3293,14 @@ namespace DanpheEMR.AccTransfer
                                              TotalAmount = x.Select(a => (decimal)a.invReturnItm.TotalAmount).Sum(),
                                              VATAmount = x.Select(c => (((decimal)c.invReturnItm.SubTotal - (((decimal)c.invReturnItm.SubTotal * (Convert.ToDecimal((decimal)c.invReturnItm.DiscountPercentage))) / 100)) * Convert.ToDecimal((decimal)c.invReturnItm.VATPercentage)) / 100).Sum(),
                                              DiscountAmount = x.Select(b => (decimal)b.invReturnItm.SubTotal * (Convert.ToDecimal((decimal)b.invReturnItm.DiscountPercentage / 100))).Sum(),
-                                             Remarks = "Transaction of " + x.Key.PaymentMode + " Invoice return Items on date: ", // + DbFunctions.TruncateTime(x.Key.CreatedOn),
-                                             ReferenceIds = x.Select(a => a.invo.InvoiceId).Distinct().ToList(),
+                                             Remarks = "Transaction of " + x.Key.PaymentMode + " Invoice return Items on date: ",
+                                             ReferenceIds = x.Select(a => a.invReturn.InvoiceReturnId).Distinct().ToList(),
                                              GrAmount = (from gr in grvatdisamount
-                                                         join itm in x.Select(a => a.invo.InvoiceId).Distinct().ToList() on gr.InvoiceId equals itm
+                                                         //join itm in x.Select(a => a.invReturn.InvoiceId).Distinct().ToList() on gr.InvoiceId equals itm
                                                          select new
                                                          {
-                                                             GrVatAmount = (decimal)gr.GrVATAmount,
-                                                             //GrDisAmount = (decimal)gr.GrDiscountAmount,
-                                                             GrCOGSAmount = (decimal)gr.GrCOGSAmount
+                                                             GrVatAmount = 0, //(decimal)gr.GrVATAmount,                                                             
+                                                             GrCOGSAmount =0 //(decimal)gr.GrCOGSAmount
                                                          }).ToList(),
                                          }).ToList();
                 if (CashInvoiceReturn.Count > 0)
@@ -3210,8 +3318,7 @@ namespace DanpheEMR.AccTransfer
                         Remarks = p.Remarks,
                         Type = p.Type,
                         GrVATAmount = p.GrAmount.Select(a => a.GrVatAmount).Sum(),
-                        GrCOGSAmount = p.GrAmount.Select(a => a.GrCOGSAmount).Sum(),
-                        //GrDiscountAmount = p.GrAmount.Select(a => a.GrDisAmount).Sum(),
+                        GrCOGSAmount = p.GrAmount.Select(a => a.GrCOGSAmount).Sum(),                        
                     }).ToList();
                     invRTItem.ForEach(a =>
                     {
@@ -3227,6 +3334,7 @@ namespace DanpheEMR.AccTransfer
                         }
                     }
                 }
+                //"Credit" ? "PHRMCreditGoodReceipt" : "PHRMCashGoodReceipt"
                 var goodsReceiptItems = (from gr in PHRMGoodsReceipt.AsEnumerable()
                                          group new { gr } by new
                                          {
@@ -3279,6 +3387,8 @@ namespace DanpheEMR.AccTransfer
                         }
                     }
                 }
+
+                //return to supplier "PHRMCreditReturnToSupplier" : "PHRMCashReturnToSupplier"
                 var gritems = (from gr in pharmacyDbContext.PHRMGoodsReceipt.AsEnumerable()
                                join gritm in pharmacyDbContext.PHRMGoodsReceiptItems.AsEnumerable() on gr.GoodReceiptId equals gritm.GoodReceiptId
                                join supp in pharmacyDbContext.PHRMReturnToSupplierItem.AsEnumerable() on gritm.GoodReceiptItemId equals supp.GoodReceiptItemId
@@ -3393,12 +3503,9 @@ namespace DanpheEMR.AccTransfer
                         }
                     }
                 }
-
-                var dispatchToDept = (from stxn in PHRMStockTransactionModel.AsEnumerable()
+                //PHRMDispatchToDept
+                 var dispatchToDept = (from stxn in PHRMStockTransactionModel.AsEnumerable()
                                       where DBNull.Equals(stxn.TransactionType, "wardsupply")
-
-                                      //&& stxn.IsTransferredToACC != true
-
                                       group new { stxn } by new
                                       {
                                           CreatedOn = Convert.ToDateTime(stxn.CreatedOn).Date
@@ -3439,7 +3546,7 @@ namespace DanpheEMR.AccTransfer
                         }
                     }
                 }
-
+                //PHRMDispatchToDeptReturn
                 var dispatchToDeptRet = (from stxn in PHRMStockTransactionModel.AsEnumerable()
                                          where DBNull.Equals(stxn.TransactionType, "WardToPharmacy")
                                          //&& stxn.IsTransferredToACC != true
@@ -3848,11 +3955,13 @@ namespace DanpheEMR.AccTransfer
                                         {
                                             accTxnItems.Amount = (IsVatRegistered == true) ? (double)record.SalesAmount - (double)record.DiscountAmount : (double)record.TotalAmount; //   (double)record.TotalAmount;
                                             ledId = GetLedgerId(GetLedgerName("ACA_INVENTORY_INVENTORY_PHARMACY", currHospitalId), ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
+                                            transaction.TransactionType = record.TransactionType;
                                         }
                                         else if (ruleRow.Description == "PHRMCreditGoodReceiptDutiesandTaxes")
                                         {
                                             accTxnItems.Amount = (IsVatRegistered == true) ? (double)record.VATAmount : 0;
                                             ledId = GetLedgerId(GetLedgerName("LCL_DUTIES_AND_TAXES_VAT", currHospitalId), ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
+                                            transaction.TransactionType = record.TransactionType;
                                         }
                                         accTxnItems.DrCr = ruleRow.DrCr;
                                         //  accTxnItems.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
@@ -4391,12 +4500,12 @@ namespace DanpheEMR.AccTransfer
                                     {
                                         var accTxnItems = new TransactionItemModel();
                                         accTxnItems.IsTxnDetails = false;
-                                        var ledId = 0;                                       
+                                        var ledId = 0;
                                         transaction.TransactionType = record.TransactionType;
                                         var isMinus = (record.TotalAmount < 0) ? true : false;
                                         if (ruleRow.Description == "ConsultantIncentiveMEDICALDIRECTEXPENSES" && ruleRow.DrCr == true)
                                         {
-                                            accTxnItems.Amount =  record.TotalAmount+ record.TotalTDS;                                           
+                                            accTxnItems.Amount = record.TotalAmount + record.TotalTDS;
                                             ledId = GetLedgerId(GetLedgerName("EE_MEDICAL_DIRECT_EXPENSESCOMMISSION_EXPENSES_(TECHNICAL_DISTRIBUTION)", currHospitalId), ruleRow.LedgerGroupId.Value, ruleRow.LedgerReferenceId, currHospitalId);
                                         }
                                         else if (ruleRow.Description == "ConsultantIncentiveCONSULTANTTDS" && ruleRow.DrCr == false)
@@ -4409,19 +4518,19 @@ namespace DanpheEMR.AccTransfer
                                             accTxnItems.Amount = record.TotalAmount;
                                             ledId = GetLedgerIdFromConsultant(record.EmployeeId, ruleRow.LedgerGroupId.Value, currHospitalId);
                                         }
-                                        
+
                                         accTxnItems.DrCr = ruleRow.DrCr;
                                         accTxnItems.LedgerId = (ledId > 0) ? ledId : 0;
-                                        if (isMinus==true)
+                                        if (isMinus == true)
                                         {
-                                            accTxnItems.DrCr = (ruleRow.DrCr == true ) ? false : true;
-                                            accTxnItems.Amount = Convert.ToDouble( Decimal.Negate(Convert.ToDecimal( accTxnItems.Amount.Value)));
+                                            accTxnItems.DrCr = (ruleRow.DrCr == true) ? false : true;
+                                            accTxnItems.Amount = Convert.ToDouble(Decimal.Negate(Convert.ToDecimal(accTxnItems.Amount.Value)));
                                         }
                                         transaction.TransactionItems.Add(accTxnItems);
                                     });
 
-                                   
-                                }                                
+
+                                }
                                 break;
                             }
 
@@ -4594,12 +4703,12 @@ namespace DanpheEMR.AccTransfer
         /// <param name="currHospitalId"></param>
         /// <returns></returns>
         public static int GetFiscalYearIdByDate(AccountingDbContext accountingdBContext, DateTime? date, int currHospitalId)
-        {            
+        {
             var fiscalYearId = accountingdBContext.FiscalYears.Where(f => f.StartDate <= date && f.EndDate >= date && f.HospitalId == currHospitalId && f.IsActive == true).Select(fs => fs.FiscalYearId).FirstOrDefault();
             return fiscalYearId;
         }
         #endregion
-        public static bool LedgerAddUpdateInBalanceHisotry(LedgerModel ledgerModel, AccountingDbContext accountingDBContext, bool IsBackDateEntry, int currHospitalId,int CurrentUserId)
+        public static bool LedgerAddUpdateInBalanceHisotry(LedgerModel ledgerModel, AccountingDbContext accountingDBContext, bool IsBackDateEntry, int currHospitalId, int CurrentUserId)
         {
             try
             {
@@ -4610,7 +4719,7 @@ namespace DanpheEMR.AccTransfer
                 //update ledger details in balance history table
                 // Update Ledger method will update OpeningBalance, OpeningBalanceType,etc
                 var currentFiscalYearId = GetFiscalYearIdByDate(accountingDBContext, DateTime.Now.Date, currHospitalId);
-                var FYId= GetFiscalYearIdForOpeningBalance(accountingDBContext, currentFiscalYearId, currHospitalId);
+                var FYId = GetFiscalYearIdForOpeningBalance(accountingDBContext, currentFiscalYearId, currHospitalId);
                 var existLed = accountingDBContext.LedgerBalanceHistory.Where(l => l.LedgerId == ledgerModel.LedgerId && l.FiscalYearId == FYId).FirstOrDefault();
                 if (existLed != null)
                 {
@@ -4662,12 +4771,17 @@ namespace DanpheEMR.AccTransfer
         {
             try
             {
-                var code = (from led in accountingDBContext.Ledgers
-                            where led.HospitalId == currHospitalId
-                            select led.Code).ToList().Max();
-                if (code != null && code.Length > 0)
+                //var code = (from led in accountingDBContext.Ledgers
+                //            where led.HospitalId == currHospitalId
+                //            select led.Code).ToList().Max();
+                var code = "";
+                
+                var maxCode = accountingDBContext.Ledgers.AsQueryable()
+                                            .Where(t => t.HospitalId == currHospitalId && t.Code.Length>0)
+                                            .Select(i => i.Code).DefaultIfEmpty().ToList().Max(t => Convert.ToInt32(t));
+                if (maxCode != 0)
                 {
-                    code = Convert.ToString(Convert.ToInt32(code) + 1);
+                    code = Convert.ToString(maxCode + 1);
                 }
                 else
                 {
@@ -4719,19 +4833,35 @@ namespace DanpheEMR.AccTransfer
                 {
                     //means fiscal year is not closed . 
                     //In this case check previous fiscal year . 
-                    //if previous fiscal year not found or closed then send current fiscal year id .                     
-                    var preFiscalYearId = GetFiscalYearIdByDate(accountingDbContext, fiscalYear.StartDate.AddDays(-10), currHospitalId);
-                    if (preFiscalYearId > 0)
+                    //if previous fiscal year not found or closed then send current fiscal year id . 
+
+                    //var preFiscalYearId = GetFiscalYearIdByDate(accountingDbContext, fiscalYear.StartDate.AddDays(-10), currHospitalId);
+                    //if (preFiscalYearId > 0)
+                    //{
+                    //    var preFYear = (from fy in accountingDbContext.FiscalYears
+                    //                    where fy.FiscalYearId == preFiscalYearId && fy.HospitalId == currHospitalId
+                    //                    select fy).FirstOrDefault();
+                    //    correctFiscalYearId = (preFYear.IsClosed == true) ? selFiscalYearId : preFYear.FiscalYearId;
+                    //}
+                    //else
+                    //{
+                    //    correctFiscalYearId = selFiscalYearId;
+                    //}
+
+                    //NBB-21 sep 2021-we need to send last opened fiscal year from db 
+
+                 
+                    var lastOpenedFiscalYear = (from fy in accountingDbContext.FiscalYears
+                                                where fy.HospitalId == currHospitalId && fy.IsClosed == false  && fy.IsActive == true
+                                               select fy).OrderBy(f => f.FiscalYearId).FirstOrDefault();
+                    if (lastOpenedFiscalYear != null)
                     {
-                        var preFYear = (from fy in accountingDbContext.FiscalYears
-                                        where fy.FiscalYearId == preFiscalYearId && fy.HospitalId == currHospitalId
-                                        select fy).FirstOrDefault();
-                        correctFiscalYearId = (preFYear.IsClosed == true) ? selFiscalYearId : preFYear.FiscalYearId;
+                        correctFiscalYearId = lastOpenedFiscalYear.FiscalYearId;
                     }
-                    else
-                    {
+                    else {
                         correctFiscalYearId = selFiscalYearId;
                     }
+                    //GetFiscalYearIdByDate(accountingDbContext, fiscalYear.StartDate.AddDays(-10), currHospitalId);
                 }
                 return correctFiscalYearId;
             }
@@ -4748,11 +4878,11 @@ namespace DanpheEMR.AccTransfer
         {
             try
             {
-                var accHospital  = _accDbContext.CFGParameters.Where(a => a.ParameterGroupName.ToLower() == "accounting" && a.ParameterName.ToLower() == "accprimaryhospitalshortname").FirstOrDefault().ParameterValue;
+                var accHospital = _accDbContext.CFGParameters.Where(a => a.ParameterGroupName.ToLower() == "accounting" && a.ParameterName.ToLower() == "accprimaryhospitalshortname").FirstOrDefault().ParameterValue;
                 var hospId = (from h in _accDbContext.Hospitals
                               where h.HospitalShortName.ToLower() == accHospital.ToLower() && h.IsActive == true
                               select h.HospitalId).FirstOrDefault();
-                return hospId;                
+                return hospId;
             }
             catch (Exception ex)
             {
@@ -4761,5 +4891,99 @@ namespace DanpheEMR.AccTransfer
         }
         #endregion
 
+        //NageshBB-20 Jan 2021
+        #region Function for insert Ledger(s) into LedgerBalance History table for closed fiscal Year
+        /// <summary>
+        /// This is reusable function which check ledger entry into ledger balance history table for closed fiscal years
+        /// not for IsActive=false fiscal years
+        /// Problem
+        /// =======================
+        /// -Suppose fiscal year 2076-77 is closed and now 2077-78 is opened active fiscal year
+        /// and user created one ledger i.e. LedgerABC
+        /// Now we have this ledger in ledger table and Ledger baalnce history table with current fiscal year 2077-78
+        /// if user want data for LedgerABC with closed fiscal years using  ledger report , trial balance, etc then we have issue because 
+        /// LedgerABC not available in Ledger balance history with old fiscal year         
+        /// solution
+        /// ==================
+        /// when user insert new ledger check this ledger is available into ledger balance hsitory table with all closed fiscal years
+        /// if yes then no need to insert. if not then insert ledger into ledger balance history with every closed fiscal year
+        /// </summary>
+        /// <param name="_accDbContext"></param>
+        /// <param name="_ledgerModelData"></param>
+        /// <returns></returns>
+        public static void AddLedgerForClosedFiscalYears(AccountingDbContext _accDbContext, LedgerModel _ledgerModelData)
+        {
+            try
+            {
+                if (_ledgerModelData.LedgerId > 0)
+                {
+                    var closedFiscalYears = (from fy in _accDbContext.FiscalYears
+                                             where fy.IsClosed == true && fy.IsActive == true
+                                             select new
+                                             {
+                                                 fy.FiscalYearId,
+                                                 fy.FiscalYearName,
+                                                 fy.IsActive,
+                                                 fy.IsClosed
+                                             }).ToList();
+                    closedFiscalYears.ForEach(f =>
+                    {
+                        bool exists = _accDbContext.LedgerBalanceHistory.Any(t => t.LedgerId == _ledgerModelData.LedgerId && t.FiscalYearId == f.FiscalYearId && t.HospitalId == _ledgerModelData.HospitalId);
+                        if (exists == false)
+                        {
+                            LedgerBalanceHistoryModel ledgerObj = new LedgerBalanceHistoryModel();
+                            ledgerObj.FiscalYearId = f.FiscalYearId;
+                            ledgerObj.LedgerId = _ledgerModelData.LedgerId;
+                            ledgerObj.OpeningBalance = 0;
+                            ledgerObj.OpeningDrCr = true;
+                            ledgerObj.ClosingBalance = 0;
+                            ledgerObj.ClosingDrCr = true;
+                            ledgerObj.CreatedBy = _ledgerModelData.CreatedBy;
+                            ledgerObj.CreatedOn = System.DateTime.Now;
+                            ledgerObj.HospitalId = _ledgerModelData.HospitalId;
+                            _accDbContext.LedgerBalanceHistory.Add(ledgerObj);
+                            _accDbContext.SaveChanges();
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
+        //AniketJadhav-21 Jul 2021
+        #region get autogenerated code for coa
+        public static string GetAutoGeneratedCodeForCOA(AccountingDbContext accountingDbContext, ChartOfAccountModel coa)
+        {
+            try
+            {
+                var pg = accountingDbContext.PrimaryGroup.FirstOrDefault(a => a.PrimaryGroupId == coa.PrimaryGroupId).PrimaryGroupName.ToUpper();
+                var name = coa.ChartOfAccountName.Replace(" ", "").ToUpper().Trim();
+                return pg + "_" + name;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
+        public static bool DuplicateCheckByLedgerName(AccountingDbContext accountingDbContext, LedgerModel ledger, int currentHospitalId)
+        {
+            try
+            {
+                var matchedLedger = accountingDbContext.Ledgers.Where(l => l.LedgerGroupId == (int)ledger.LedgerGroupId && l.LedgerName.Trim().ToLower() == ledger.LedgerName.Trim().ToLower() && l.HospitalId == currentHospitalId).FirstOrDefault();
+                return (matchedLedger == null) ? false : true;
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
+
 }

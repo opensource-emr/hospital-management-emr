@@ -1,19 +1,30 @@
 import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PHRMDepositModel } from '../shared/phrm-deposit.model';
+import { PHRMDepositModel } from '../../dispensary/dispensary-main/patient-main/patient-deposit-add/phrm-deposit.model';
+import { store } from '@angular/core/src/render3';
 
 
 @Injectable()
 export class PharmacyDLService {
-  public options = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
-  };
+  public options = { headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' }) };
+  public optionJson = { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) };
   constructor(public http: HttpClient) {
 
   }
+  public GetSettlementSummaryReport(FromDate,ToDate,StoreId){
+    return this.http.get<any>("/PharmacyReport/SetlementSummaryReport?FromDate="
+      + FromDate + "&ToDate=" + ToDate + "&StoreId=" + StoreId, this.options)
+  }
+  public GetPatientWiseSettlementSummaryReport(FromDate,ToDate,PatientId){
+    return this.http.get<any>("/PharmacyReport/PatientWiseSettlementSummaryReport?FromDate="
+      + FromDate + "&ToDate=" + ToDate +"&PatientId="+PatientId, this.options)
+  }
 
-  public GetPHRMPendingBillsForSettlement() {
-    return this.http.get<any>("/api/Pharmacy?reqType=pending-bills-for-settlements");
+  public GetPHRMPendingBillsForSettlement(storeId) {
+    return this.http.get<any>(`/api/Pharmacy?reqType=pending-bills-for-settlements&storeId=${storeId}`);
+  }
+  public GetPHRMSettlements(storeId,FromDate,ToDate) {
+    return this.http.get<any>("/api/Pharmacy?reqType=allPHRMSettlements&storeId="+storeId+"&FromDate="+FromDate+"&Todate="+ToDate);
   }
   // get pharmacy settlement duplicate records. 
   public GetPHRMSettlementDuplicatePrints() {
@@ -71,9 +82,9 @@ export class PharmacyDLService {
     return this.http.get<any>('/api/Pharmacy?reqType=GetItemType', this.options);
   }
   //GET: List of ItemTypes with all Child Items Master data
-  public GetItemTypeListWithItems() {
+  public GetItemTypeListWithItems(dispensaryId?) {
     try {
-      return this.http.get<any>('/api/Pharmacy?reqType=itemtypeListWithItems', this.options);
+      return this.http.get<any>('/api/Pharmacy?reqType=itemtypeListWithItems&DispensaryId=' + dispensaryId, this.options);
     }
     catch (ex) {
       throw ex;
@@ -101,8 +112,8 @@ export class PharmacyDLService {
   public GetItemListByItemTypeId(itemTypeId) {
     return this.http.get<any>("/api/Pharmacy?reqType=GetItemListByItemTypeId&itemTypeId=" + itemTypeId, this.options);
   }
-  public GetAllItems() {
-    return this.http.get<any>("/api/Pharmacy?reqType=GetAllItems");
+  public GetStockForItemDispatch() {
+    return this.http.get<any>("/api/Pharmacy/GetStockForItemDispatch");
   }
 
 
@@ -114,9 +125,13 @@ export class PharmacyDLService {
   public GetItemList() {
     return this.http.get<any>("/api/Pharmacy?reqType=item");
   }
-  //GET: Stock->Store Requisition: list of items
-  public GetItemListForStoreRequisition() {
-    return this.http.get<any>("/api/Pharmacy?reqType=get-items-store-requisition");
+  //Get Only Master Items
+  public GetItemMasterList() {
+    return this.http.get<any>("/api/Pharmacy?reqType=GetAllItems");
+  }
+  //GET: Get Store Details
+  public GetActiveStore() {
+    return this.http.get<any>("/api/PharmacyReport/GetActiveStores");
   }
   //GET: setting-tax manage : list of tax
   public GetTAXList() {
@@ -127,12 +142,12 @@ export class PharmacyDLService {
   }
 
   //GET:patient List from Patient controller
-  public GetPatients(searchTxt) {
+  public GetPatients(searchTxt: string = '', isInsurance: boolean = false) {
     // return this.http.get<any>("/api/Patient", this.options);
-    return this.http.get<any>("/api/Patient?reqType=patient-search-by-text&search=" + searchTxt, this.options);
+    return this.http.get<any>(`/api/Pharmacy/GetPatientList?SearchText=${searchTxt}&IsInsurance=${isInsurance}`, this.options);
   }
-  public GetPatientsListForSaleItems() {
-    return this.http.get<any>("/api/Patient?reqType=phrm-sale-patient", this.options);
+  public GetPatientsListForSaleItems(isInsurnaceDispensary) {
+    return this.http.get<any>(`/api/Pharmacy/GetPharmacySalePatient/${isInsurnaceDispensary}`, this.options);
   }
   //GET:deposit
   public GetDeposit() {
@@ -164,8 +179,8 @@ export class PharmacyDLService {
   }
 
   ///GET: POList by Passing Status 
-  public GetPHRMPurchaseOrderList(status: string) {
-    return this.http.get<any>("/api/Pharmacy?reqType=getPHRMOrderList&status=" + status, this.options)
+  public GetPHRMPurchaseOrderList(status: string, fromDate: string, toDate: string) {
+    return this.http.get<any>("/api/Pharmacy?reqType=getPHRMOrderList&status=" + status + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options)
   }
   ///GET: POItemsList By Passing PurchaseOrderId
   public GetPHRMPOItemsByPOId(purchaseOrderId) {
@@ -225,6 +240,10 @@ export class PharmacyDLService {
   public GetGoodsReceiptList() {
     return this.http.get<any>("/api/Pharmacy?reqType=goodsreceipt");
   }
+  //Get GR List with Date Filtered
+  GetDateFilteredGoodsReceiptList(fromDate: string, toDate: string) {
+    return this.http.get<any>("/api/Pharmacy/GetDateFilteredGoodsReceiptList?FromDate=" + fromDate + "&ToDate=" + toDate, this.optionJson);
+  }
 
   public GetAccountDetailsList() {
     return this.http.get<any>("/api/Pharmacy?reqType=get-goods-receipt-groupby-supplier");
@@ -237,9 +256,22 @@ export class PharmacyDLService {
   public GetMainStore() {
     return this.http.get<any>("/api/Pharmacy?reqType=getMainStore");
   }
+  //Get : all the main store stock
+  public GetMainStoreStock(showAllStock: boolean = false) {
+    return this.http.get<any>(`/api/Pharmacy/GetMainStoreStock/${showAllStock}`);
+  }
+  //Get : all the unconfirmed stock for main store
+  public GetMainStoreIncomingStock(fromDate, toDate) {
+    return this.http.get<any>("/api/Pharmacy/GetMainStoreIncomingStock?FromDate=" + fromDate + "&ToDate=" + toDate, this.optionJson);
+  }
+  //receiveIncomingStock
+  ReceiveIncomingStock(dispatchId: number, receivingRemarks: string) {
+    var remarks = JSON.stringify(receivingRemarks);
+    return this.http.put<any>(`/api/Pharmacy/ReceiveIncomingStock/${dispatchId}`, remarks, this.optionJson);
+  }
   ///GET: Return  To Supplier
-  public GetReturnToSupplier(suppId?, grNo?, batchNo?, invcId?, fromDate?, toDate?) {
-    return this.http.get<any>("/api/Pharmacy?reqType=returnToSupplier&supplierId=" + suppId + "&gdprintId=" + grNo + "&batchNo=" + batchNo + "&invoiceid=" + invcId + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+  public GetReturnToSupplier(suppId?, grNo?, invcId?, fromDate?, toDate?) {
+    return this.http.get<any>("/api/Pharmacy?reqType=returnToSupplier&supplierId=" + suppId + "&gdprintId=" + grNo + "&invoiceNo=" + invcId + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
   }
 
   ///GET: Return Items To Supplier List
@@ -262,8 +294,8 @@ export class PharmacyDLService {
     }
   }
   ////Get Stock Details List
-  public GetStockDetailsList() {
-    return this.http.get<any>("/api/Pharmacy?reqType=itemtypeListWithItems");
+  public GetStockDetailsList(dispensaryId?) {
+    return this.http.get<any>("/api/Pharmacy?reqType=itemtypeListWithItems&DispensaryId=" + dispensaryId);
   }
 
   ////Get Narcotics Stock Details List(sales)
@@ -278,14 +310,106 @@ export class PharmacyDLService {
   public GetItemsList() {
     return this.http.get<any>("/api/Pharmacy?reqType=item");
   }
-  //
+  // Get only the item Name List
+  public getOnlyItemNameList() {
+    return this.http.get<any>("/api/PharmacyReport/getOnlyItemNameList");
+  }
+  public getItemListForManualReturn() {
+    return this.http.get<any>("/api/pharmacy/getItemListForManualReturn");
+  }
+  public getAvailableBatchesByItemId(itemId: number) {
+    return this.http.get<any>(`/api/pharmacy/getAvailableBatchesByItemId/${itemId}`);
+  }
+  //Get: Get Users for Return from Customer Report.
 
+  public getPharmacyUsers() {
+    return this.http.get<any>("/api/PharmacyReport/GetPharmacyUsersForReturnFromCustomerReport");
+  }
+  //GET: Get Return From Customer Report.
+  public getReturnFromCustomerReport(userId, dispensaryId, fromDate, toDate) {
+    try {
+      return this.http.get<any>("/PharmacyReport/ReturnFromCustomerReport?fromDate=" + fromDate + "&toDate=" + toDate + "&userId=" + userId + "&dispensaryId=" + dispensaryId, this.options);
+    }
+    catch (ex) { throw ex; }
 
+  }
+
+  //GET: Get Sales Statement Report
+  public getSalesStatementReport(fromDate, toDate) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/SalesStatementReport?FromDate=${fromDate}&ToDate=${toDate}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
+
+  //GET: Get Sales Summary
+  public getSalesSummaryReport(fromDate, toDate) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/SalesSummaryReport?FromDate=${fromDate}&ToDate=${toDate}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
+
+  //GET: Get Purchase Summary
+  public getPurchaseSummaryReport(fromDate, toDate) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/PurchaseSummaryReport?FromDate=${fromDate}&ToDate=${toDate}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
+
+  //GET: Get Purchase Summary
+  public getStockSummarySecondReport(tillDate) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/StockSummarySecondReport?TillDate=${tillDate}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
+
+  //GET: Get Ins Patient Report
+  public getInsPatientBimaReport(fromDate, toDate, counterId, userId, claimCode, nshiNumber) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/InsurancePatientBimaReport?FromDate=${fromDate}&ToDate=${toDate}&CounterId=${counterId}&UserId=${userId}&ClaimCode=${claimCode}&NSHINumber=${nshiNumber}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
+
+  //GET: Get Patient Sales Detail Report
+  public getPatientSalesDetailReport(fromDate, toDate, patientId, counterId, userId, storeId) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/PatientSalesDetailReport?FromDate=${fromDate}&ToDate=${toDate}&PatientId=${patientId}&CounterId=${counterId}&UserId=${userId}&StoreId=${storeId}`, this.options);
+    }
+    catch (ex) { throw ex; }
+  }
 
   ////Get:  Get Daily Sales Summary Report Data test
-  public GetDailySalesSummaryReport(FromDate, ToDate, itemId) {
+  public GetDailySalesSummaryReport(FromDate, ToDate, itemId, storeId, counterId, userId) {
     try {
-      return this.http.get<any>("/PharmacyReport/PHRMDailySalesReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId, this.options);
+      return this.http.get<any>(`/PharmacyReport/PHRMDailySalesReport?FromDate=${FromDate}&ToDate=${ToDate}&itemId=${itemId}&storeId=${storeId}&CounterId=${counterId}&UserId=${userId}`, this.options);
+    }
+    catch (ex) { throw ex; }
+
+  }
+  //GET:  Get Item Wise Purchase Report Data
+  public GetItemWisePurchaseReport(FromDate, ToDate, itemId, invoiceNo?, grNo?, supplierId?) {
+    try {
+      return this.http.get<any>("/PharmacyReport/PHRMItemWisePurchaseReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId + "&invoiceNo=" + invoiceNo + "&grNo=" + grNo + "&supplierId=" + supplierId, this.options);
+    }
+    catch (ex) { throw ex; }
+
+  }
+  //GET:  Get Stock Transfers Report Data
+  public getStockTransfersReport(FromDate, ToDate, itemId, sourceStoreId, targetStoreId, notReceivedStocks) {
+    try {
+      return this.http.get<any>("/PharmacyReport/PHRMStockTransfersReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId + "&sourceStoreId=" + sourceStoreId + "&targetStoreId=" + targetStoreId + "&notReceivedStocks=" + notReceivedStocks, this.options);
+    }
+    catch (ex) { throw ex; }
+
+  }
+  //GET:  Get Supplier Wise Stock Report Data
+  public getSupplierWiseStockReport(FromDate, ToDate, itemId, storeId, supplierId) {
+    try {
+      return this.http.get<any>("/PharmacyReport/PHRMSupplierWiseStockReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId + "&storeId=" + storeId + "&supplierId=" + supplierId, this.options);
     }
     catch (ex) { throw ex; }
 
@@ -293,9 +417,9 @@ export class PharmacyDLService {
 
 
   ///// get Daliy Salse Report for Narcotics Date
-  public GetNarcoticsDailySalesReport(FromDate, ToDate, itemId) {
+  public GetNarcoticsDailySalesReport(FromDate, ToDate, itemId, storeId) {
     try {
-      return this.http.get<any>("/PharmacyReport/PHRMNarcoticsDailySalesReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId, this.options);
+      return this.http.get<any>("/PharmacyReport/PHRMNarcoticsDailySalesReport?FromDate=" + FromDate + "&ToDate=" + ToDate + "&itemId=" + itemId + "&storeId=" + storeId, this.options);
     }
     catch (ex) { throw ex; }
 
@@ -312,6 +436,10 @@ export class PharmacyDLService {
   //GET: order-goods receipt items-view by GR-Id
   public GetGRItemsByGRId(goodsReceiptId) {
     return this.http.get<any>("/api/Pharmacy?reqType=GRItemsViewByGRId&goodsReceiptId=" + goodsReceiptId, this.options);
+  }
+  //GET:purchase order-items -view by PO-ID
+  public GetPODetailsByPOID(purchaseOrderId) {
+    return this.http.get<any>(`/api/Pharmacy/GetPODetailsByPOID/${purchaseOrderId}`, this.options);
   }
   //GET: order-goods receipt items-view by GR-Id
   public GetGRItemsForEdit(goodsReceiptId) {
@@ -344,13 +472,13 @@ export class PharmacyDLService {
   ////GET: Get User Report
   public GetPHRMUserwiseCollectionReport(phrmReports) {
     return this.http.get<any>("/PharmacyReport/PHRMUserwiseCollectionReport?FromDate="
-      + phrmReports.FromDate + "&ToDate=" + phrmReports.ToDate + "&CounterId=" + phrmReports.CounterId + "&CreatedBy=" + phrmReports.CreatedBy, this.options)
+      + phrmReports.FromDate + "&ToDate=" + phrmReports.ToDate + "&CounterId=" + phrmReports.CounterId + "&CreatedBy=" + phrmReports.CreatedBy + "&StoreId=" + phrmReports.StoreId, this.options)
   }
 
   ////GET: Get Cash Collection Summary Report
   public GetPHRMCashCollectionSummaryReport(phrmReports) {
     return this.http.get<any>("/PharmacyReport/PHRMCashCollectionSummaryReport?FromDate="
-      + phrmReports.FromDate + "&ToDate=" + phrmReports.ToDate, this.options)
+      + phrmReports.FromDate + "&ToDate=" + phrmReports.ToDate + "&StoreId=" + phrmReports.StoreId, this.options)
   }
 
   ////GET: Get Sale Return Report
@@ -472,9 +600,9 @@ export class PharmacyDLService {
   }
 
   //GET: Get all Sale invoice data list
-  public GetSaleInvoiceList(fromDate, toDate) {
+  public GetSaleInvoiceList(fromDate, toDate, dispensaryId) {
     try {
-      return this.http.get<any>("/api/Pharmacy?reqType=getsaleinvoicelist&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+      return this.http.get<any>(`/api/Pharmacy?reqType=getsaleinvoicelist&FromDate=${fromDate}&ToDate=${toDate}&DispensaryId=${dispensaryId}`, this.options);
     }
     catch (ex) {
       throw ex;
@@ -482,9 +610,9 @@ export class PharmacyDLService {
   }
 
   //GET: Get all Sale invoice data list
-  public GetSaleReturnList(fromDate, toDate) {
+  public GetSaleReturnList(fromDate, toDate, dispensaryId) {
     try {
-      return this.http.get<any>("/api/Pharmacy?reqType=getsalereturnlist&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
+      return this.http.get<any>(`/api/Pharmacy?reqType=getsalereturnlist&FromDate=${fromDate}&ToDate=${toDate}&DispensaryId=${dispensaryId}`, this.options);
     }
     catch (ex) {
       throw ex;
@@ -534,9 +662,9 @@ export class PharmacyDLService {
   //GET: Get ReturnFromCustomer Invoice Model data for Return from customer functionality fulfill
   //passing Invoice Id and getting InvoiceReturnItemsModel
   //this for return from customer to pharmacy                
-  public GetReturnFromCustomerModelDataByInvoiceId(InvoiceId: number, fiscYrId) {
+  public GetReturnFromCustomerModelDataByInvoiceId(InvoiceId: number, fiscYrId, storeId: number) {
     try {
-      return this.http.get<any>("/api/Pharmacy?reqType=getReturnFromCustDataModelByInvId&invoiceId=" + InvoiceId + "&FiscalYearId=" + fiscYrId, this.options);
+      return this.http.get<any>("/api/Pharmacy?reqType=getReturnFromCustDataModelByInvId&invoiceId=" + InvoiceId + "&FiscalYearId=" + fiscYrId + "&storeId=" + storeId, this.options);
     }
     catch (ex) {
       throw ex;
@@ -621,9 +749,9 @@ export class PharmacyDLService {
 
   }
   ////Get:  Get Expiry Report Data
-  public GetExpiryReport(itemName) {
+  public GetExpiryReport(itemId, storeId, fromDate, toDate) {
     try {
-      return this.http.get<any>("/PharmacyReport/PHRMExpiryStockReport?ItemName=" + itemName, this.options);
+      return this.http.get<any>("/PharmacyReport/PHRMExpiryStockReport?ItemId=" + itemId + " &StoreId=" + storeId + "&FromDate=" + fromDate + "&ToDate=" + toDate, this.options);
     }
     catch (ex) { throw ex; }
 
@@ -663,9 +791,17 @@ export class PharmacyDLService {
   }
 
   ////Get:  Get Supplier Stock Report Data
-  public GetSupplierStockReport(fromDate, toDate, supplierName) {
+  public GetSupplierStockReport(fromDate, toDate, supplierId) {
     try {
-      return this.http.get<any>(`/PharmacyReport/PHRMSupplierStockReport?FromDate=${fromDate}&ToDate=${toDate}&SupplierName=${supplierName}`, this.options);
+      return this.http.get<any>(`/PharmacyReport/PHRMSupplierStockReport?FromDate=${fromDate}&ToDate=${toDate}&SupplierId=${supplierId}`, this.options);
+    }
+    catch (ex) { throw ex; }
+
+  }
+  //GET:  Get DateWise Purcahase Report Data
+  public GetDateWisePurchaseReport(fromDate, toDate, supplierId) {
+    try {
+      return this.http.get<any>(`/PharmacyReport/PHRMDateWisePurchaseReport?FromDate=${fromDate}&ToDate=${toDate}&supplierId=${supplierId}`, this.options);
     }
     catch (ex) { throw ex; }
 
@@ -705,7 +841,7 @@ export class PharmacyDLService {
   ////Get:  Get  Stock Summary Report Data
   public GetStockSummaryReport(phrmReports) {
     try {
-      return this.http.get<any>("/PharmacyReport/PHRMStockSummaryReport?FromDate=" + phrmReports.FromDate + "&ToDate=" + phrmReports.ToDate, this.options);
+      return this.http.get<any>(`/PharmacyReport/PHRMStockSummaryReport?FromDate=${phrmReports.FromDate}&ToDate=${phrmReports.ToDate}&FiscalYearId=${phrmReports.FiscalYearId}&StoreId=${phrmReports.StoreId}`, this.options);
     }
     catch (ex) { throw ex; }
   }
@@ -738,8 +874,8 @@ export class PharmacyDLService {
   // GET: Stock Details with 0, null or > 0 Quantity
   //this stock details with all unique (by ItemId,ExpiryDate,BatchNo)  records with sum of Quantity
   //items with 0 quantity or more than 0 showing in list
-  public GetAllItemsStockDetailsList() {
-    return this.http.get<any>("/api/Pharmacy?reqType=allItemsStockDetails");
+  public GetAllItemsStockDetailsList(dispensaryId) {
+    return this.http.get<any>("/api/Pharmacy?reqType=allItemsStockDetails&DispensaryId=" + dispensaryId);
   }
 
   //Get ward stock details
@@ -769,22 +905,20 @@ export class PharmacyDLService {
   public GetItemwiseRequistionList() {
     return this.http.get<any>("/api/Pharmacy?reqType=itemwiseRequistionList", this.options);
   }
-
-  //GET: Dept wise Requisition List by Status
-  public GetDeptwiseRequisitionList(status: string) {
-    return this.http.get<any>('/api/Pharmacy?reqType=deptwiseRequistionList&status=' + status, this.options);
-  }
   //Get: Single Requisition Details (RequisitionItems) by RequisitionId for View
   public GetRequisitionItemsByRID(RequisitionId: number) {
     return this.http.get<any>('/api/Pharmacy?reqType=requisitionItemsForView&requisitionId=' + RequisitionId);
   }
   //GET: Get Requisition and Requisition Items with Stock Records for Dispatch Items
-  public GetRequisitionWithRItemsById(RequisitionId: number) {
-    return this.http.get<any>("/api/Pharmacy?reqType=RequisitionById&requisitionId=" + RequisitionId, this.options);
+  public GetRequisitionDetailsForDispatch(RequisitionId: number) {
+    return this.http.get<any>("/api/Pharmacy/GetRequisitionDetailsForDispatch/" + RequisitionId, this.options);
   }
 
   public GetDispatchDetails(RequisitionId: number) {
     return this.http.get<any>('/api/Pharmacy?reqType=dispatchview&requisitionId=' + RequisitionId);
+  }
+  public GetMainStoreIncomingStockById(DispatchId: number) {
+    return this.http.get<any>(`/api/Pharmacy/GetMainStoreIncomingStockById/${DispatchId}`);
   }
   public GetDispatchItemByDispatchId(DispatchId: number) {
     return this.http.get<any>('/api/Pharmacy?reqType=dispatchviewbyDispatchId&DispatchId=' + DispatchId);
@@ -907,7 +1041,7 @@ export class PharmacyDLService {
   //POST:
   public PostInvoiceDetails(data: string) {
     try {
-      return this.http.post<any>("/api/Pharmacy?reqType=postinvoice", data, this.options);
+      return this.http.post<any>("/api/Pharmacy/PostInvoice", data, this.optionJson);
     } catch (ex) {
       throw ex;
     }
@@ -931,7 +1065,14 @@ export class PharmacyDLService {
   //POST:return from customer invoice data to post server
   public PostReturnFromCustomerData(data: string) {
     try {
-      return this.http.post<any>("/api/Pharmacy?reqType=returnfromcustomer", data, this.options);
+      return this.http.post<any>("/api/Pharmacy/PostReturnFromCustomer", data, this.optionJson);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  public postManualReturn(data: string) {
+    try {
+      return this.http.post<any>("/api/pharmacy/postManualReturn", data, this.optionJson);
     } catch (ex) {
       throw ex;
     }
@@ -984,6 +1125,15 @@ export class PharmacyDLService {
     }
   }
   //POST:update goods receipt cancelation
+  //post to stock transaction items
+  PostGoodsReceiptCancelDetail(goodsReceiptId: number, cancelRemarks: string) {
+    try {
+      return this.http.post<any>(`/api/Pharmacy?reqType=cancel-goods-receipt&goodsReceiptId=${goodsReceiptId}&CancelRemarks=${cancelRemarks}`, this.options);
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
   //Post drugs request data from nursing to pharmacy invoice item table.
   public PostProvisonalItems(requisitionObjString: string) {
     return this.http.post<any>("/api/Pharmacy?reqType=post-provisional-item", requisitionObjString, this.options);
@@ -1001,7 +1151,7 @@ export class PharmacyDLService {
   public UpdateStockExpiryDateandBatchNo(ExpiryDateandBatchNoUpdatedStock) {
     try {
       let data = JSON.stringify(ExpiryDateandBatchNoUpdatedStock);
-      return this.http.put<any>("/api/Pharmacy/UpdateStockExpiryDateandBatchNo", data, this.options);
+      return this.http.put<any>("/api/Pharmacy/UpdateStockExpiryDateandBatchNo", data, this.optionJson);
     }
     catch (ex) {
       throw ex;
@@ -1101,7 +1251,7 @@ export class PharmacyDLService {
   public UpdateStockMRP(MRPUpdatedStock) {
     try {
       let data = JSON.stringify(MRPUpdatedStock);
-      return this.http.put<any>("/api/Pharmacy/UpdateStockMRP", data, this.options);
+      return this.http.put<any>("/api/Pharmacy/UpdateStockMRP", data, this.optionJson);
     }
     catch (ex) {
       throw ex;
@@ -1118,34 +1268,25 @@ export class PharmacyDLService {
       throw ex;
     }
   }
-  //put to cancel goods receipt by GoodsReceiptId
-  CancelGoodsReceipt(goodsReceiptId, cancelRemarks) {
-    try {
-      return this.http.put<any>(`/api/Pharmacy/CancelGoodsReceipt?GoodsReceiptId=${goodsReceiptId}&CancelRemarks=${cancelRemarks}`, this.options);
-    }
-    catch (ex) {
-      throw ex;
-    }
-  }
 
 
 
   ///Abhishek: 4Sept'18 -- for credit billing
 
-  public GetAllCreditSummary() {
-    return this.http.get<any>("/api/Pharmacy?reqType=listpatientunpaidtotal");
+  public GetAllCreditSummary(fromDate, toDate, dispensaryId) {
+    return this.http.get<any>("/api/Pharmacy?reqType=listpatientunpaidtotal&FromDate=" + fromDate + "&ToDate=" + toDate + "&DispensaryId=" + dispensaryId);
   }
   //
-  public GetAllProvisionalReturn(fromDate, toDate) {
-    return this.http.get<any>("/api/Pharmacy?reqType=provisional-return-list&fromDate=" + fromDate + "&toDate=" + toDate, this.options);
+  public GetAllProvisionalReturn(fromDate, toDate, dispensaryId) {
+    return this.http.get<any>(`/api/Pharmacy?reqType=provisional-return-list&FromDate=${fromDate}&ToDate=${toDate}&DispensaryId=${dispensaryId}`, this.options);
   }
   // GetAllProvisionalReturnDuplicatePrint
   public GetAllProvisionalReturnDuplicatePrint(PatientId) {
     return this.http.get<any>("/api/Pharmacy?reqType=provisional-return-duplicate-print&patientId=" + PatientId);
   }
 
-  public GetPatientCreditItems(patientId: number) {
-    return this.http.get<any>("/api/Pharmacy?reqType=provisionalItemsByPatientId&patientId=" + patientId);
+  public GetPatientCreditItems(patientId: number, storeId: number) {
+    return this.http.get<any>("/api/Pharmacy?reqType=provisionalItemsByPatientId&patientId=" + patientId + "&DispensaryId=" + storeId);
   }
   public GetStoreRackNameByItemId(itemId: number) {
     return this.http.get<any>("/api/Rack/GetStoreRackNameByItemId/" + itemId);
@@ -1154,7 +1295,7 @@ export class PharmacyDLService {
   //POST:
   public PostCreditItemsDetails(data: string, requisitionId: number) {
     try {
-      return this.http.post<any>("/api/Pharmacy?reqType=postCreditItems&requisitionId=" + requisitionId, data, this.options);
+      return this.http.post<any>("/api/Pharmacy?reqType=postProvisional&requisitionId=" + requisitionId, data, this.options);
     } catch (ex) {
       throw ex;
     }
@@ -1206,9 +1347,8 @@ export class PharmacyDLService {
     return this.http.post<any>("/api/Pharmacy?reqType=StoreRequisition", data, this.options);
   }
   //POST:Save dispatched Items to database
-  public PostToDispatchItems(DispatchItemsObjString: string) {
-    let data = DispatchItemsObjString;
-    return this.http.post<any>("/api/Pharmacy?reqType=StoreDispatchItems", data, this.options);
+  public PostDispatch(dispatchItems) {
+    return this.http.post<any>("/api/Pharmacy/PostStoreDispatch", dispatchItems, this.optionJson);
   }
   //Start: REGION: FOR BillSettlements APIS
   public PutSettlementPrintCount(settlmntId: number) {
@@ -1218,10 +1358,27 @@ export class PharmacyDLService {
   public GetGoodReceiptHistory() {
     return this.http.get<any>("/api/Pharmacy/getGoodReceiptHistory", this.options);
   }
-  public GetGRDetailsByGRId(goodsReceiptId: number) {
-    return this.http.get<any>(`/api/Pharmacy/GetGRDetailsByGRId/${goodsReceiptId}`, this.options);
+  public GetGRDetailsByGRId(goodsReceiptId: number, isGRCancelled) {
+    return this.http.get<any>(`/api/Pharmacy/GetGRDetailsByGRId?GoodsReceiptId=${goodsReceiptId}&IsGRCancelled=${isGRCancelled}`, this.options);
+
   }
   public GetInvoiceReceiptByInvoiceId(invoiceId: number) {
     return this.http.get<any>(`/api/Pharmacy/GetInvoiceReceiptByInvoiceId/${invoiceId}`, this.options);
+  }
+  //POST Direct Dispatch
+  public PostDirectDispatch(dispatchItems: any[]) {
+    let data = JSON.stringify(dispatchItems);
+    return this.http.post<any>("/api/Pharmacy/PostDirectDispatch", data, this.optionJson);
+  }
+  //get PHRM Items Rate History
+  public getItemRateHistory() {
+    return this.http.get<any>('/api/Pharmacy/getItemRateHistory', this.options);
+  }
+  public getMRPHistory() {
+    return this.http.get<any>('/api/Pharmacy/getMRPHistory', this.options);
+  }
+
+  public GetSettlementSingleInvoicePreview(InvoiceId: number) {
+    return this.http.get<any>("/api/Pharmacy?reqType=get-settlement-single-invoice-preview" + "&invoiceId=" + InvoiceId, this.options);
   }
 }

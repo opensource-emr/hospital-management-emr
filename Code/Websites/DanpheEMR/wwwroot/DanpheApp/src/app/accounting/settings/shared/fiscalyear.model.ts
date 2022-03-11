@@ -29,6 +29,7 @@ export class FiscalYearModel {
     public nStartDate: string = null;
     public nEndDate: string = null;    
     public Remark:string = "";
+    public showreopen: boolean = true;
 
     
     public EnglishFiscalYearName: string = null;

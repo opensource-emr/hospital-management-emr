@@ -12,7 +12,9 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int PurchaseOrderId { get; set; }
-        public int SupplierId { get; set; }        
+        public int SupplierId { get; set; }   
+        public int FiscalYearId { get; set; }
+        public int? PurchaseOrderNo { get; set; }
         public DateTime? PODate { get; set; }
         public string POStatus { get; set; }
         public decimal SubTotal { get; set; }
@@ -22,6 +24,8 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
+        public int? ModifiedBy { get; set; }
         public int? TermsId { get; set; } //sanjit: 18May'20 to add dynamic terms id.
         public virtual List<PHRMPurchaseOrderItemsModel> PHRMPurchaseOrderItems { get; set; }
         public virtual PHRMSupplierModel PHRMSupplier  { get; set; }

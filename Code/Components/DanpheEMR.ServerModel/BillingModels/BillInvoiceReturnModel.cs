@@ -22,7 +22,7 @@ namespace DanpheEMR.ServerModel
         public int BillReturnId { get; set; }
         public int? CreditNoteNumber { get; set; }
         public int RefInvoiceNum { get; set; }
-        public int? PatientId { get; set; }
+        public int PatientId { get; set; }
         public string FiscalYear { get; set; }
         public int? FiscalYearId { get; set; }
         public int? BillingTransactionId { get; set; }
@@ -53,5 +53,22 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public int? PartialReturnTxnId { get; set; }
+
+        [NotMapped]
+        public List<BillInvoiceReturnItemsModel> ReturnInvoiceItems { get; set; }//sud:1May'21
+
+        public string PaymentMode { get; set; }//sud:1May'21--This is needed for CashTransactionTracking
+        public bool? IsInsuranceBilling { get; set; }//sud:3May'21--needed to track from Insurance Billing.
+        public int? InsuranceProviderId { get; set; }//sud:4May'21--needed to track from Insurance Billing.
+        public string BillStatus { get; set; }//sud:4May'21--needed to decide whether or not to deduct cash during bill return.
+
+
+        [NotMapped]
+        public int? DiscountReturnAmount { get; set; }
+        [NotMapped]
+        public int? DiscountFromSettlement { get; set; }
+
+        public int? SettlementId { get; set; }
+
     }
 }

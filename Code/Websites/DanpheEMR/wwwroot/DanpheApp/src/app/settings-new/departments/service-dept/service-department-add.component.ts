@@ -16,7 +16,8 @@ import { CommonFunctions } from "../../../shared/common.functions";
 
 @Component({
   selector: "service-department-add",
-  templateUrl: "./service-department-add.html"
+  templateUrl: "./service-department-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 })
 //testing
 export class ServiceDepartmentAddComponent {
@@ -63,6 +64,7 @@ export class ServiceDepartmentAddComponent {
     this.GetDepartments();
     this.LoadIntegrationNameList();
     this.GetSrvDeptList();
+    this.GoToNextInput("DepartmentId");
   }
 
   ngOnInit() {
@@ -215,19 +217,19 @@ export class ServiceDepartmentAddComponent {
   Update() {
     //for checking validations, marking all the fields as dirty and checking the validity.
     this.settingsBLService.UpdateServDepartment(this.CurrentServiceDepartment)
-        .subscribe(
-          res => {
-            //pushing service department in core service-- yubraj 6th Oct '18
-            if (res.Status == "OK" && res.Results) {
-              this.showMessageBox("success", "Service Department Updated");
-              this.CurrentServiceDepartment = new ServiceDepartment();
-              this.CallBackAddUpdateSrvDept(res)
+      .subscribe(
+        res => {
+          //pushing service department in core service-- yubraj 6th Oct '18
+          if (res.Status == "OK" && res.Results) {
+            this.showMessageBox("success", "Service Department Updated");
+            this.CurrentServiceDepartment = new ServiceDepartment();
+            this.CallBackAddUpdateSrvDept(res)
 
-            }
-          },
-          err => {
-            this.logError(err);
-          });
+          }
+        },
+        err => {
+          this.logError(err);
+        });
   }
 
   Close() {
@@ -284,5 +286,19 @@ export class ServiceDepartmentAddComponent {
 
   logError(err: any) {
     console.log(err);
+  }
+
+  GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event) {
+    if (event.keyCode == 27) { // For ESCAPE_KEY =>close pop up
+      this.Close();
+    }
   }
 }

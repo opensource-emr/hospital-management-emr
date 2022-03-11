@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
-   public class PurchaseRequestItemModel
+    public class PurchaseRequestItemModel
     {
         [Key]
         public int PurchaseRequestItemId { get; set; }
@@ -16,6 +16,8 @@ namespace DanpheEMR.ServerModel
         public int ItemId { get; set; }
         public int? VendorId { get; set; }
         public double RequestedQuantity { get; set; }
+        [NotMapped]
+        public double? AvailableQuantity { get; set; }
         public string RequestItemStatus { get; set; }
         public string Remarks { get; set; }
         public int? CancelledBy { get; set; }
@@ -34,5 +36,13 @@ namespace DanpheEMR.ServerModel
         public string UOMName { get; set; }
         [NotMapped]
         public bool IsEdited { get; set; }
+
+        public string SupplyRequiredBefore { get; set; }//Rajib: 11/25/2020 Tilaganga Hospital
+        public DateTime? QuantityVerifiedOn { get; set; }//Rajib: 11/25/2020 Tilaganga Hospital
+        [NotMapped]
+        public string MSSNO { get; set; }
+        [NotMapped]
+        public double? POQuantity { get; set; }
+        public string ItemCategory { get; set; }
     }
 }

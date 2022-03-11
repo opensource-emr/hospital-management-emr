@@ -75,27 +75,28 @@ img_11:hover {
                   </div>
                   <!--below class is added inside print-window (check printfunction in view-report.component):sud-4thJan'19-->
                   <div [ngClass]="hospitalCode" class="rad-hdr-gap" *ngIf="!reportHeader || !reportHeader.show"> </div>
-                  <div class="border-wrap" style="width: 100%;">
-                    <div class="flex-container justify-sp-between flex-align-center">
-                      <div class="rad-hdr-flex-col"> Name :<b>{{PatientNameToDisplay}}({{report.PatientCode}})</b>
+                  <div  class="border-wrap" style="width: 100%;">
+                    <div  class="flex-container justify-sp-between flex-align-center">
+                      <div class="rad-hdr-flex-col">Name :<b>{{PatientNameToDisplay}}({{report.PatientCode}})</b>
                         <div *ngIf="RptHdrSettng.LocalNameEnabled && !showEmailDataBox" id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span (click)="switchLocalLang()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;"> <i class="fa fa-refresh"></i> </span>
                           <p class="tooltiptext ttptextdown no-print">Switch language of Patient Name</p>
                         </div>
                       </div>
-                      <div class="rad-hdr-flex-col"> Date : <b> {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} ({{report.CreatedOn | nepaliDate }})</b> </div>
+                      <div class="rad-hdr-flex-col">Rep. Date : <b> {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} ({{report.CreatedOn | nepaliDate }})</b></div>
                     </div>
                     <div class="flex-container justify-sp-between flex-align-center">
-                      <div class="rad-hdr-flex-col"> Age/Sex : <b>{{report.DateOfBirth | DanpheDateTime:'age' }}/{{report.Gender}}</b> </div>
-                      <div class="rad-hdr-flex-col"> Ref. by : <b> {{report.ProviderName}}</b>
+                      <div class="rad-hdr-flex-col">Age/Sex : <b>{{report.DateOfBirth | DanpheDateTime:'age' }}/{{report.Gender}}</b></div>
+                      <div class="rad-hdr-flex-col">Ref. by : <b> {{report.ProviderName}}</b>
                         <div *ngIf="!showEmailDataBox" id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span (click)="OpenChangeDocPopup()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;"> <i class="fa fa-edit edit-ic"></i> </span>
                           <p class="tooltiptext ttptextdown no-print">Click to Change Referred By Dr.</p>
                         </div>
                       </div>
                     </div>
                     <div class="flex-container justify-sp-between flex-align-center">
-                      <div class="rad-hdr-flex-col"> Address/Contact No : <b>{{report.Address}}/{{report.PhoneNumber}}</b> </div>
-                      <div class="rad-hdr-flex-col"> MRI/CT/X-ray No.: <b> {{report.RadiologyNo}} </b> </div>
-                      <div *ngIf="report.Indication" class="rad-hdr-flex-col"> Indication : <b> {{report.Indication}}</b> </div>
+                      <div class="rad-hdr-flex-col"> Address/Contact No : <b>{{report.Address}}<span *ngIf= "report.Address">,</span>{{report.Muncipality}}<span *ngIf= "report.Muncipality">,</span>{{report.CountrySubDivision}}/{{report.PhoneNumber}}</b></div>
+                      <div class="rad-hdr-flex-col" *ngIf="report.RadiologyNo">MRI/CT/X-ray No.: <b> {{report.RadiologyNo}} </b> </div>
+                      <div class="rad-hdr-flex-col" *ngIf="report.BillingDate">Date: <b> {{report.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} ({{report.BillingDate | nepaliDate }})</b></div>
+                      <div *ngIf="report.Indication" class="rad-hdr-flex-col"> Indication : <b> {{report.Indication}}</b></div>
                     </div>
                   </div>
                   <div class="rad-report-holder">
@@ -260,3 +261,5 @@ img_11:hover {
     </div></div>
   </div>
 </div>
+<app-print-page *ngIf="showPrint"[print-data-header]="printDetails" (print-sucess)="callBackPrint()"></app-print-page>
+

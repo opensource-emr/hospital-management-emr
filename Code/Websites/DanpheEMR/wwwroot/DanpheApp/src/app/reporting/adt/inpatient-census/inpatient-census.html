@@ -126,7 +126,7 @@
             <div class="modelbox-body">
               <danphe-grid [grid-colDefaults]="DischargedPatientColumns" [grid-data]="DischargedPatientData"
                 [grid-exportOptions]="gridExportOptionsDischarged" [grid-showExport]="true"
-                [NepaliDateInGridParams]="NepaliDateInDischargedGridSettings"> </danphe-grid>
+                [NepaliDateInGridParams]="NepaliDateInDischargedGridSettings"  [report-for]="'admission'"  [grid-date-range]="dateRange" > </danphe-grid>
             </div>
             <div class="close-modelbox"> <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
           </div>

@@ -1,0 +1,209 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="ShowDepositAdd">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption no-margin">
+            <h3>
+              <span>Add Deposit</span>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Patient Name<b>:</b></label>
+                <div class="col-md-7">
+                  {{selectedPatient.ShortName}}
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-md-6">
+                  <div class="row">
+                    <label class="control-label col-md-5">Age<b>:</b></label>
+                    <div class="col-md-7">
+                      {{selectedPatient.Age}}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="row">
+                    <label class="control-label col-md-5">Gender<b>:</b></label>
+                    <div class="col-md-7">
+                      {{selectedPatient.Gender}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Deposit Type<b>:</b></label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="depositData.DepositType" [ngModelOptions]="{standalone: true}">
+                    <option value="deposit" selected>Add Deposit</option>
+                    <option *ngIf="depositData.DepositBalance>0" value="depositreturn">Return Deposit</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Amount<b>:</b></label>
+                <div class="col-md-7">
+                  <input [(ngModel)]="depositData.DepositAmount" class="form-control" placeholder="DepositAmount" name="DepositAmount" type="number" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Remarks<span *ngIf="depositData.DepositType !='depositreturn'">(Optional)</span><sup *ngIf="depositData.DepositType =='depositreturn'">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <form [formGroup]="depositData.DepositValidator">
+                    <textarea [(ngModel)]="depositData.Remark" [ngModelOptions]="{standalone: true}" name="Remark" type="text"></textarea>
+                    <!--<div style="color:red" *ngIf="depositData.IsDirty('Remark')" [hidden]="depositData.IsValid('Remark')">Remark is required</div>-->
+                  </form>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Payment Mode<b>:</b></label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="depositData.PaymentMode" name="pay_mode" id="pay_mode" (change)="onPaymentModeChange()">
+                    <option value="cash" selected>Cash</option>
+                    <option value="cheque">Cheque</option>
+                    <option *ngIf="depositData.DepositType=='depositadd'" value="card">Smart Card</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Payment Details <b>:</b></label>
+                <div class="col-md-7">
+                  <form [formGroup]="depositData.DepositValidator">
+                    <textarea [(ngModel)]="depositData.PaymentDetails" formControlName="PaymentDetails" name="PaymentDetails" type="text"></textarea>
+                    <!--<div style="color:red" *ngIf="depositData.IsDirty('PaymentDetails')" [hidden]="depositData.IsValid('PaymentDetails','required')">Enter PaymentDetails</div>-->
+                  </form>
+                </div>
+              </div>
+              <div class="form-actions no-gutters">
+                <div class="col-md-12">
+                  <input type="button"class="btn green btn-success"  (click)="SubmitDeposit(true)" [disabled]="loading" value="{{depositData.DepositType == 'deposit' ? 'Add Deposit' : 'Return Deposit' }} and Print" />
+                  <input type="button" class="btn green btn-success"  (click)="SubmitDeposit(false)" [disabled]="loading" value="{{depositData.DepositType == 'deposit' ? 'Add Deposit' : 'Return Deposit' }}" />
+                </div>
+                <div class="col-md-12 no-gutters">
+                  <div class="deposit_bal">
+                    <h3>Deposit Balance: <b> {{depositData.DepositBalance}}</b></h3>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+popup for print deposit
+-->
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="ShowPrint">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption no-border" style="text-align:center; color:black; text-decoration:underline;">
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="form-body">
+            <!--
+        <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+        </div>-->
+
+
+            <div id="printpage" style="text-align:center;">
+              <div class="receipt">
+                <p class="no-margin" style="text-align:center;text-decoration:underline">
+                  <span>
+                    <b *ngIf="printDepositData.DepositType=='deposit'">Deposit Receipt</b>
+                    <b *ngIf="printDepositData.DepositType=='depositreturn'">Deposit Return Receipt</b>
+                  </span>
+                </p>
+                <billing-header></billing-header>
+                <div style="display:inline-block" class="col-md-12 right">
+                </div>
+                <div class="col-md-12">
+                  <div class="left">
+                    <p class="no-margin" style="text-align:left">
+                      Receipt No: {{printDepositData.FiscalYear}} - {{ printDepositData.ReceiptNo}}
+                    </p>
+                  </div>
+                  <div class="right">
+                    <p class="no-margin" style="text-align:right">
+                      Date: {{printDepositData.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                    </p>
+                  </div>
+                </div>
+                <div class="clear"></div>
+                <div class="col-md-12">
+                  <hr style="border-top: dotted 1px;" />
+                </div>
+                <div class="col-md-12" style="text-align:left;">
+                  <p *ngIf="printDepositData.DepositType=='deposit'" style="text-align:left;">
+                    Deposit of <b>{{coreService.currencyUnit}} {{printDepositData.DepositAmount}}</b>
+                    received from <b>{{selectedPatient.ShortName}} ({{selectedPatient.PatientCode}})</b>
+                  </p>
+                  <p *ngIf="printDepositData.DepositType=='depositreturn'" style="text-align:left;">
+                    Deposit of <b>{{coreService.currencyUnit}} {{printDepositData.DepositAmount}}</b>
+                    returned to <b>{{selectedPatient.ShortName}} ({{selectedPatient.PatientCode}})</b>
+                  </p>
+                  <p>
+                    <b>Deposit Balance: {{printDepositData.DepositBalance}}</b>
+                  </p>
+                  <p *ngIf="printDepositData.Remark">
+                    <b>Remarks:</b> {{printDepositData.Remark}}
+                  </p>
+                  <p>
+                    Payment Mode: {{printDepositData.PaymentMode}}
+                  </p>
+                  <p *ngIf="printDepositData.PaymentDetails">
+                    Payment Details: {{printDepositData.PaymentDetails}}
+                  </p>
+                </div>
+                <div class="col-md-12">
+                  <hr style="border-top: dotted 1px;" />
+                  <div class="left">
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <p class="no-margin" style="text-align:center">{{printDepositData.DepositType=='deposit' ? 'Deposited By':'Received By'}}</p>
+                    <p class="no-margin" style="text-align:center"> Signature</p>
+                  </div>
+                  <div class="right">
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <p class="no-margin" style="text-align:center">{{printDepositData.DepositType=='deposit' ? 'Received By':'Returned By'}}</p>
+                    <p class="no-margin" style="text-align:center">{{user}}</p>
+                    <p class="no-margin" style="text-align:center"> Signature</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row m1">
+              <div class="col-md-12">
+                <p style="text-align:center; background-color:white">
+                  <button class="btn blue" (click)="Print()">
+                    Print Receipt
+                    <i class="glyphicon glyphicon-print"></i>
+                  </button>
+                </p>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,574 +1,737 @@
 <style media="Print">
-@media screen {
-  div.divFooter {
-    display: none;
+  @media screen {
+    div.divFooter {
+      display: none;
+    }
   }
-}
-@media print {
+
+  @media print {
     table {
-        border: solid #000 !important;
-        border-width: 1px 0 0 1px !important;
+      border: solid #000 !important;
+      border-width: 1px 0 0 1px !important;
     }
-    th, td {
-        border: solid #000 !important;
-        border-width: 0 1px 1px 0 !important;
-    }
-}
 
+    th,
+    td {
+      border: solid #000 !important;
+      border-width: 0 1px 1px 0 !important;
+    }
+  }
 </style>
+<!-- Provisional Receipt -->
 <div *ngIf="receipt.ReceiptPrintNo==0">
-    <div class="col-md-12" id="pharma-reciept">
-        <div id="printpage" style="text-align:center;">
-            <!--<div class="receipt">-->
-            <div class="receipt" >
-                <div class="row" style="margin-bottom: 10px;">
-                  <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;">
-                    <img class="img-responsive" style="max-height:90px; position:relative; top:10px" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                    <img class="img-watermark" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                  </div>
-                    <div style="width: 64%;float: left;padding-bottom:  0px;">
-                      <div class="text-center bill-head" style="text-align: center; margin-top: 10px;">
-                        <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-                        <span style="font-size:13px;">{{headerDetail.address}}</span><br />
+  <div class="col-md-12" id="pharma-reciept">
+    <div id="printpage1" style="text-align:center;">
+      <!--<div class="receipt">-->
+      <div class="receipt">
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;">
+            <img class="img-responsive" style="max-height:90px; position:relative; top:10px" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+            <img class="img-watermark" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+          </div>
+          <div style="width: 64%;float: left;padding-bottom:  0px;">
+            <div class="text-center bill-head" style="text-align: center; margin-top: 10px;">
+              <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+              <span style="font-size:13px;">{{headerDetail.address}}</span><br />
+              <span style="font-size:13px;">Telephone: {{ headerDetail.tel}}</span><br />
+              <span style="font-size:13px;">PAN no: {{headerDetail.PANno}}</span><br />
+              <span style="font-size:11px;"><strong>DDA:{{headerDetail.DDA}}</strong></span><br />
+              <span style="font-size:13px; margin-bottom: 15px;"><strong>PHARMACY UNIT</strong></span>
+            </div>
+          </div>
+          <div style="width: 18%;float: left;">
+          </div>
+        </div>
+        <div class="qr-code" style="position: absolute;right: 15px;  top:15px;">
+          <qr-code [value]="patientQRCodeInfo" [backgroundAlpha]="0"></qr-code>
+        </div>
+        <div class="clear"></div>
+        <div class="bill-patinfo" id="pharma-pat-info" style="font-size: 13px;padding-top: 0px; margin-top: auto;">
+          <p class="" style="text-align:center; margin-bottom: 15px; margin-top: 0px;">
+            <span id="invoice-head">
+              <b *ngIf="receipt.IsReturned==false">Provisional Bill</b>
+              <!-- <b *ngIf="receipt.IsReturned==true">INVOICE</b> -->
+            </span>
 
-                        <span style="font-size:13px;">Telephone: {{ headerDetail.tel}}</span><br />
-                        <span style="font-size:13px;">PAN no: {{headerDetail.PANno}}</span><br/>
-                        <span style="font-size:11px;"><strong>DDA:{{headerDetail.DDA}}</strong></span><br />
-                        <span style="font-size:13px; margin-bottom: 15px;"><strong>PHARMACY UNIT</strong></span>
-                      </div>
-                    </div>
-                    <div style="width: 18%;float: left;">
-                    </div>
-                </div>
-                <div class="qr-code" style="position: absolute;right: 15px;  top:15px;">
-                    <qr-code [value]="patientQRCodeInfo" [backgroundAlpha]="0"></qr-code>
-                </div>
-                <div class="clear"></div>
-                <div class="bill-patinfo" id="pharma-pat-info" style="font-size: 13px;padding-top: 0px; margin-top: auto;">
-                    <p class="" style="text-align:center; margin-bottom: 15px; margin-top: 0px;">
-                      <span id="invoice-head">
-                        <b *ngIf="receipt.IsReturned==false">Provisional Bill</b>
-                        <b *ngIf="receipt.IsReturned==true">INVOICE</b>
-                      </span>
+          </p>
 
-                    </p>
-
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left">
-                            <!--<p class="no-margin" style="text-align:left">Invoice No: 2075/2076 - {{ receipt.ReceiptPrintNo}}  </p>-->
-                            <p class="no-margin" style="text-align:left;">
-                                <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
-                            </p>
-                        </div>
-                        <div class="right">
-                            <p class="no-margin" style="text-align:right;">Transaction Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
-                            <!--<p class="no-margin" style="text-align:right">
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left">
+              <!--<p class="no-margin" style="text-align:left">Invoice No: 2075/2076 - {{ receipt.ReceiptPrintNo}}  </p>-->
+              <p class="no-margin" style="text-align:left;" *ngIf="receipt.Patient.PatientId > 0; else anony">
+                <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
+              </p>
+              <ng-template #anony>
+                <p class="no-margin" style="text-align:left;">Hospital No: N/A
+              </ng-template>
+            </div>
+            <div class="right">
+              <p class="no-margin" style="text-align:right;">Transaction Date: {{receipt.ReceiptDate |
+                DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+              <!--<p class="no-margin" style="text-align:right">
                 Invoice Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
             </p>-->
-                        </div>
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;padding-top: 0px;">
 
-                        <div class="left" style="width:69%" id="pat-name">
-                            <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/"><strong>Patient's Name:</strong></div>
-                            <div style="display: inline-block;width: 69%;text-align: left;">
-                                <strong>{{receipt.Patient.ShortName}}</strong>
-                            </div>
-                        </div>
-                        <div class="right" style="width:31%">
-                            <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width: 69%;">
-                            <p class="no-margin" style="text-align:left;">Address: {{receipt.Patient.Address}}, {{receipt.Patient.CountrySubDivisionName}} </p>
-                        </div>
-                        <div class="right" style="width:31%">
-                            <p class="no-margin" style="text-align:right;"> Age/Sex : {{receipt.Patient.DateOfBirth | DanpheDateTime:'age'  }}/{{receipt.Patient.Gender}}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width:50%">
-                            <p class="no-margin" style="text-align:left;">
-                                Contact No: {{receipt.Patient.PhoneNumber}}
-                            </p>
-                        </div>
-                        <div class="right" style="width:50%">
-                            <p class="no-margin" style="text-align:right;">
-                                Purchaser's PAN: {{receipt.Patient.PANNumber}}
-                            </p>
-                        </div>
+            <div class="left" style="width:69%" id="pat-name">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;">
+                <strong>Patient's Name:</strong>
+              </div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                <strong>{{receipt.Patient.ShortName}}</strong>
+              </div>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+            <div class="left" style="width:69%" id="provider-name" *ngIf="receipt.ProviderName">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/">
+                Provider's Name:</div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                {{receipt.ProviderName}}
+              </div>
+            </div>
+            <div class="right" style="width:31%" *ngIf="receipt.ProviderNMCNumber">
+              <p class="no-margin" style="text-align:right;"> NMCNumber: {{receipt.ProviderNMCNumber}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;" *ngIf="receipt.Patient.PatientId > 0">
+            <div class="left" style="width: 69%;">
+              <p class="no-margin" style="text-align:left;">Address: {{receipt.Patient.Address}},
+                {{receipt.Patient.CountrySubDivisionName}} </p>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right;"> Age/Sex : {{receipt.Patient.DateOfBirth |
+                DanpheDateTime:'age' }}/{{receipt.Patient.Gender}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width:50%">
+              <p class="no-margin" style="text-align:left;">
+                Contact No: {{receipt.Patient.PhoneNumber}}
+              </p>
+              <p class="no-margin" style="text-align:left;" *ngIf="IsCurrentDispensaryInsurace">
+                ClaimCode: {{receipt.ClaimCode}}
+              </p>
+            </div>
+            <div class="right" style="width:50%">
+              <p class="no-margin" style="text-align:right;" *ngIf="receipt.Patient.PANNumber">
+                Purchaser's PAN: {{receipt.Patient.PANNumber}}
+              </p>
+              <p class="no-margin" style="text-align:right;" *ngIf="IsCurrentDispensaryInsurace">
+                NSHI Number: {{receipt.Patient.NSHINumber}}
+              </p>
+            </div>
 
-                    </div>
+          </div>
 
-                    <!--<div class="col-md-12" style="padding:0px;">
+          <!--<div class="col-md-12" style="padding:0px;">
         <p style="text-align: center;">Method of payment: <span style="text-transform:capitalize;"> Cash </span></p>
     </div>-->
-                    <div class="clear footer"></div>
-                    <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
-                        <tr>
-                            <th width="30px" class="print-sn"><strong>Sn.</strong></th>
-                            <th width="160px" class="print-par"><strong>Particular(s)</strong></th>
-                            <th width="20px" class="text-right print-qty"><strong>Qty</strong></th>
-                            <th width="120px" class="text-right print-qty"><strong>Expiry</strong></th>
-                            <th width="60px" class="text-right print-qty"><strong>Batch</strong></th>
-                            <th width="60px" class="text-right print-rate"><strong>Rate</strong></th>
-                            <th width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis"><strong>Discount Amount</strong></th>
-                            <th width="60px" class="text-right print-amt"><strong>Amount</strong></th>
-                        </tr>
+          <div class="clear footer"></div>
+          <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
+            <tr>
+              <th width="30px" class="print-sn"><strong>Sn.</strong></th>
+              <th width="160px" class="print-par"><strong>Particular(s)</strong></th>
+              <th width="20px" class="text-right print-qty"><strong>Qty</strong></th>
+              <th width="120px" class="text-right print-qty"><strong>Expiry</strong></th>
+              <th width="60px" class="text-right print-qty"><strong>Batch</strong></th>
+              <th width="60px" class="text-right print-rate"><strong>Rate</strong></th>
+              <th width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis"><strong>Discount Amount</strong></th>
+              <th width="60px" class="text-right print-amt"><strong>Amount</strong></th>
+            </tr>
 
-                        <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
-                            <td>{{i+1}}</td>
-                            <td>{{row.ItemName}}</td>
-                            <td class="text-right print-qty">{{row.Quantity}}</td>
-                            <td class="text-right print-qty" style="width: 17%;">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
-                            <td class="text-right print-qty" style=" text-align: right;">{{row.BatchNo}}</td>
-                            <td class="text-right print-rate" style=" text-align: right;">{{row.MRP | number : "1.2-2"}}</td>
-                            <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis">{{row.TotalDisAmt | number : "1.2-2"}}</td>
-                            <td class="text-right print-amt" style=" text-align: right;">{{row.TotalAmount | number : "1.2-2"}}</td>
-                        </tr>
-                    </table>
-                    <div class="col-md-12 bill-summ-div">
-                        <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;font-size:12px;">
-                            In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
-                        </div>
-                        <div style="padding: 0px;width:54%;display:inline-block;">
-                            <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
-                                <tr style="border-bottom: 0px;">
-                                    <td>Total Amount  </td>
-                                    <td style=" text-align: right;">Rs. {{receipt.TotalAmount | number: "1.2-2"}}</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
-                      <span *ngIf="receipt.DepositDeductAmount > 0">
-                        Deposit Deduct/Return: {{receipt.DepositDeductAmount | number: "1.2-2"}}
-                        <br />
-                      </span>
-                      <span *ngIf="receipt.Tender > 0 && receipt.PaymentMode != 'credit'">Tender: {{receipt.Tender | number : "1.2-2"}} <br /></span>
-                      <span *ngIf="receipt.Change && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change | number: "1.2-2"}}<br /></span>
-                      <span *ngIf="receipt.DepositDeductAmount > 0">Deposit Balance: {{receipt.DepositBalance | number: "1.2-2"}}<br /></span>
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="text-align:right;" *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
-                        Remarks : {{receipt.Remarks}}
-                    </div>
-                    <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
-                      Credit Organization: {{receipt.CreditOrganizationName}}
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="padding-top: 5px;">
-                        <div class="left">
-                            User: {{receipt.BillingUser}}
-                        </div>
-                        <div class="right">
-                            Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
-                        </div>
-                    </div>
-                </div>
-
+            <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
+              <td>{{i+1}}</td>
+              <!-- <td>{{row.ItemName}}</td> -->
+              <td style="width:300px; ">
+                {{row.ItemName}}
+              </td>
+              <td class="text-right print-qty">{{row.Quantity}}</td>
+              <td class="text-right print-qty" style="width: 17%;">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+              <td class="text-right print-qty" style=" text-align: right;">{{row.BatchNo}}</td>
+              <td class="text-right print-rate" style=" text-align: right;">{{row.MRP | number : "1.2-2"}}</td>
+              <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis">{{row.TotalDisAmt |
+                number : "1.2-2"}}</td>
+              <td class="text-right print-amt" style=" text-align: right;">{{row.TotalAmount | number : "1.2-2"}}</td>
+            </tr>
+          </table>
+          <div class="col-md-12 bill-summ-div">
+            <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;font-size:12px;">
+              In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
             </div>
+            <div style="padding: 0px;width:54%;display:inline-block;">
+              <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
+                <tr style="border-bottom: 0px;">
+                  <td>Total Amount </td>
+                  <td style=" text-align: right;">{{coreService.currencyUnit}} {{receipt.TotalAmount | number: "1.2-2"}}</td>
+                </tr>
+              </table>
+            </div>
+
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
+            <span *ngIf="receipt.DepositDeductAmount > 0">
+              Deposit Deduct/Return: {{receipt.DepositDeductAmount | number: "1.2-2"}}
+              <br />
+            </span>
+            <span *ngIf="receipt.Tender > 0 && receipt.PaymentMode != 'credit'">Tender: {{receipt.Tender | number :
+              "1.2-2"}} <br /></span>
+            <span *ngIf="receipt.Change && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change | number:
+              "1.2-2"}}<br /></span>
+            <span *ngIf="receipt.DepositDeductAmount > 0">Deposit Balance: {{receipt.DepositBalance | number:
+              "1.2-2"}}<br /></span>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="text-align:right;" *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
+            Remarks : {{receipt.Remarks}}
+          </div>
+          <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
+            Credit Organization: {{receipt.CreditOrganizationName}}
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding-top: 5px;">
+            <div class="left">
+              User: {{receipt.BillingUser}}
+            </div>
+            <div class="right">
+              Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
+            </div>
+          </div>
         </div>
-        <p style="text-align:center;">
-            <button id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print()">
-                Print Receipt
-                <i class="glyphicon glyphicon-print"></i>
-            </button>
-        </p>
 
-        
+      </div>
     </div>
-</div>
+    <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-invoice'" (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
 
+    <p style="text-align:center;">
+      <button id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print('printpage1')">
+        Print Receipt
+        <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </p>
+
+
+  </div>
+</div>
+<!-- Cash Or Credit Invoice Copy -->
 <div *ngIf="receipt.ReceiptPrintNo!=0 && receipt.PrintCount > 0">
-    <div class="col-md-12" id="pharma-reciept">
-        <div id="printpage" style="text-align:center;">
-            <div class="receipt">
-                <div *ngIf="receipt.PrintCount > 0">
-                    <p class="no-margin" style="text-align:right;font-style:italic;">COPY({{receipt.PrintCount}}) OF ORIGINAL</p>
-                </div>
-                <div class="row" style="margin-bottom: 10px;">
-                  <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left; ">
-                    <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                    <img class="img-watermark" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                  </div>
-                    <div style="width: 64%;float: left;padding-bottom:  0px;">
-                      <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
-                        <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-                        <span style="font-size:12px;">{{headerDetail.address}}</span><br />
-                        <span style="font-size:12px;">PAN no: {{headerDetail.PANno}}</span><br/> <span>Tel: {{ headerDetail.tel}}</span><br />
-                        <span style="font-size:12px;"><strong>DDA: {{headerDetail.DDA}}</strong></span><br />
-                        <span style="font-size:13px;"><strong>PHARMACY UNIT</strong></span>
-                      </div>
-                    </div>
-                    <div style="width: 18%;float: left;">
-                    </div>
-                </div>
-                <div class="qr-code" style="position: absolute;right: 15px;  top:35px;">
-                    <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
-                </div>
-                <div class="clear"></div>
-                <!--<billing-header></billing-header>-->
-                <div class="bill-patinfo" id="pharma-pat-info" style="padding-top: 7px;">
-                    <p class="no-margin" style="text-align:center;">
-                        <span id="invoice-head">
-                            <b>INVOICE</b>
-                        </span>
-
-                    </p><br/>
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left">
-                            <p class="no-margin" style="text-align:left; ">Invoice No: {{receipt.CurrentFinYear}} - PH{{receipt.ReceiptPrintNo}}  </p>
-                            <p class="no-margin" style="text-align:left; ">
-                                <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
-                            </p>
-                        </div>
-                        <div class="right">
-                            <p class="no-margin" style="text-align:right; ">Transaction Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
-                            <p class="no-margin" style="text-align: right;
-">
-                                Invoice Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="padding:0px;padding-top: 0px;">
-
-                        <div class="left" style="width:69%" id="pat-name">
-                            <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/"><strong>Patient's Name:&nbsp;</strong></div>
-                            <div style="display: inline-block;width: 69%;text-align: left;">
-                                <strong>{{receipt.Patient.ShortName}}</strong>
-                            </div>
-                        </div>
-                        <div class="right" style="width:31%">
-                            <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width: 69%;">
-                            <p class="no-margin" style="text-align:left; ">Address: {{receipt.Patient.Address}}, {{receipt.Patient.CountrySubDivisionName}} </p>
-                        </div>
-                        <div class="right" style="width:31%">
-                            <p class="no-margin" style="text-align:right; "> Age/Sex : {{receipt.Patient.DateOfBirth | DanpheDateTime:'age'  }}/{{receipt.Patient.Gender}}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width:50%">
-                            <p class="no-margin" style="text-align:left; ">
-                                Contact No: {{receipt.Patient.PhoneNumber}}
-                            </p>
-                        </div>
-                        <div class="right" style="width:50%">
-                            <p class="no-margin" style="text-align:right; ">
-                                Purchaser's PAN: {{receipt.Patient.PANNumber}}
-                            </p>
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-12" style="padding:0px;">
-                        <p style="text-align: center;">Method of payment: <span style="text-transform:capitalize;"> {{receipt.PaymentMode}} </span></p>
-                    </div>
-                    <div class="clear footer"></div>
-                    <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
-                        <tr>
-                            <td width="30px" class="print-sn"><strong>Sn.</strong></td>
-                            <td width="160px" class="print-par"><strong>Particular(s)</strong></td>
-                            <td width="20px" class="text-right print-qty"><strong>Qty</strong></td>
-                            <td width="120px" class="text-right print-qty"><strong>Expiry</strong></td>
-                            <td width="60px" class="text-right print-qty"><strong>Batch</strong></td>
-                            <td width="60px" class="text-right print-rate"><strong>Rate</strong></td>
-                            <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis"><strong>Discount Amount</strong></td>
-                            <td width="60px" class="text-right print-amt"><strong>Amount</strong></td>
-                        </tr>
-
-                        <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
-                            <td>{{i+1}}</td>
-                            <td>{{row.ItemName}}</td>
-                            <td class="text-right print-qty" >{{row.Quantity}}</td>
-                            <td class="text-right print-qty" style="width: 17%; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
-                            <td style=" text-align: right" class="text-right print-qty">{{row.BatchNo}}</td>
-                            <td style=" text-align: right" class="text-right print-rate">{{row.MRP | number: "1.2-2"}}</td>
-                            <td style=" text-align: right;" class="text-right print-amt" *ngIf="IsitemlevlDis">{{row.TotalDisAmt | number : "1.2-2"}}</td>
-                            <td style=" text-align: right" class="text-right print-amt">{{row.TotalAmount | number: "1.2-2"}}</td>
-                        </tr>
-                    </table>
-                    <div class="col-md-12 bill-summ-div">
-                        <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top; font-size:12px;">
-                            In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
-                        </div>
-                        <div style="padding: 0px;width:54%;display:inline-block;">
-                            <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
-                                <tr style="border-top: 0px;">
-                                    <td style="border-top: none;">
-                                        SubTotal
-                                    </td>
-                                    <td style=" text-align: right; border-right: none; border-top: none">
-                                      {{receipt.SubTotal | number: "1.2-2"}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                  <td style="border-top: none;">
-                                    Discount {{receipt.DiscountPercent | number: "1.2-2"}}
-                                  </td>
-                                  <td style=" text-align: right; border-right: none">
-                                    {{receipt.DiscountAmount | number: "1.2-2"}}
-                                  </td>
-                                </tr>
-                                <tr *ngIf="receipt.TaxableAmount">
-                                  <td style="border-top: none;">Net Amount  </td>
-                                  <td style=" text-align: right; border-right: none;">{{receipt.TaxableAmount | number: "1.2-2"}}</td>
-                                </tr>
-                                <tr *ngIf="receipt.TaxTotal">
-                                  <td style="border-top: none;">{{taxLabel}}  </td>
-                                  <td style=" text-align: right; border-right: none;">{{receipt.TaxTotal | number: "1.2-2"}}</td>
-                                </tr>
-                                <tr style="border-bottom: 0px;">
-                                  <td style="border-bottom: none;">Total Amount  </td>
-                                  <td style=" text-align: right; border-right: none; border-bottom: none;">Rs. {{receipt.TotalAmount | number: "1.2-2"}}</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
-                        <span> <br /></span>
-                        <span *ngIf="receipt.Tender > 0 && receipt.PaymentMode != 'credit'">Tender: Rs. {{receipt.Tender | number: "1.2-2"}} <br /></span>
-                        <span *ngIf="receipt.Change > 0 && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change | number: "1.2-2"}}<br /></span>
-
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="text-align:right; " *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
-                        Remarks : {{receipt.Remarks}}
-                    </div>
-                    <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
-                      Credit Organization: {{receipt.CreditOrganizationName}}
-                    </div>
-                    <div class="clear"></div>
-                    <div class="col-md-12" style="padding-top: 5px; ">
-                        <div class="left">
-                            User: {{receipt.BillingUser}}
-                        </div>
-                        <div class="right">
-                            Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
-                        </div>
-                    </div>
-                </div>
+  <div class="col-md-12" id="pharma-reciept">
+    <div id="printpage2" style="text-align:center;">
+      <div class="receipt">
+        <div *ngIf="receipt.PrintCount > 0">
+          <p class="no-margin" style="text-align:right;font-style:italic;">COPY({{receipt.PrintCount}}) OF ORIGINAL</p>
+        </div>
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left; ">
+            <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+            <img class="img-watermark" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+          </div>
+          <div style="width: 64%;float: left;padding-bottom:  0px;">
+            <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+              <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+              <span style="font-size:12px;">{{headerDetail.address}}</span><br />
+              <span style="font-size:12px;">PAN no: {{headerDetail.PANno}}</span><br /> <span>Tel: {{
+                headerDetail.tel}}</span><br />
+              <span style="font-size:12px;"><strong>DDA: {{headerDetail.DDA}}</strong></span><br />
+              <span style="font-size:13px;"><strong>PHARMACY UNIT</strong></span>
             </div>
-                </div>
-        <p style="text-align:center;">
-            <button id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print()">
-                Print Receipt
-                <i class="glyphicon glyphicon-print"></i>
-            </button>
-        </p>
+          </div>
+          <div style="width: 18%;float: left;">
+          </div>
+        </div>
+        <div class="qr-code" style="position: absolute;right: 15px;  top:35px;">
+          <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+        </div>
+        <div class="clear"></div>
+        <!--<billing-header></billing-header>-->
+        <div class="bill-patinfo" id="pharma-pat-info" style="padding-top: 7px;">
+          <p class="no-margin" style="text-align:center;">
+            <span id="invoice-head">
+              <b *ngIf="!receipt.IsReturned">TAX INVOICE</b>
+              <b *ngIf="receipt.IsReturned">Credit Note</b>
+            </span>
 
+          </p><br />
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left">
+              <p *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">CRN No:
+                {{receipt.CurrentFinYear}}-CR-PH{{receipt.CRNNo}} </p>
+              <p *ngIf="!receipt.IsReturned" class="no-margin" style="text-align:left; ">Invoice No:
+                {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}} </p>
+              <p *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">Reference No:
+                {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}} </p>
+              <p *ngIf="receipt.Patient.PatientId > 0; else anony" class="no-margin" style="text-align:left; ">
+                <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
+              </p>
+              <ng-template #anony>
+                <p class="no-margin" style="text-align:left; ">Hospital No: N/A</p>
+              </ng-template>
+            </div>
+            <div class="right">
+              <p class="no-margin" style="text-align:right; ">Transaction Date: {{receipt.ReceiptDate |
+                DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+              <p class="no-margin" style="text-align: right;"> Invoice Date: {{receipt.ReceiptDate |
+                DanpheDateTime:'format':'YYYY-MM-DD'}} </p>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;padding-top: 0px;">
 
+            <div class="left" style="width:69%" id="pat-name">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/">
+                <strong>Patient's Name:&nbsp;</strong>
+              </div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                <strong>{{receipt.Patient.ShortName}}</strong>
+              </div>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+            <div class="left" style="width:69%" id="provider-name" *ngIf="receipt.ProviderName">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/">
+                Provider's Name:</div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                {{receipt.ProviderName}}
+              </div>
+            </div>
+            <div class="right" style="width:31%" *ngIf="receipt.ProviderNMCNumber">
+              <p class="no-margin" style="text-align:right;"> NMCNumber: {{receipt.ProviderNMCNumber}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;" *ngIf="receipt.Patient.PatientId > 0">
+            <div class="left" style="width: 69%;">
+              <p class="no-margin" style="text-align:left; ">Address: {{receipt.Patient.Address}},
+                {{receipt.Patient.CountrySubDivisionName}} </p>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right; "> Age/Sex : {{receipt.Patient.DateOfBirth |
+                DanpheDateTime:'age' }}/{{receipt.Patient.Gender}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width:50%">
+              <p class="no-margin" style="text-align:left; ">
+                Contact No: {{receipt.Patient.PhoneNumber}}
+              </p>
+              <p class="no-margin" style="text-align:left;" *ngIf="IsCurrentDispensaryInsurace">
+                ClaimCode: {{receipt.ClaimCode}}
+              </p>
+            </div>
+            <div class="right" style="width:50%">
+              <p class="no-margin" style="text-align:right; " *ngIf="receipt.Patient.PANNumber">
+                Purchaser's PAN: {{receipt.Patient.PANNumber}}
+              </p>
+              <p class=" no-margin" style="text-align:right;" *ngIf="IsCurrentDispensaryInsurace">
+                NSHI Number: {{receipt.Patient.NSHINumber}}
+              </p>
+            </div>
+
+          </div>
+
+          <p class="no-margin" style="text-align: center;clear: both;">Method of payment: <span style="text-transform:capitalize;"> {{receipt.PaymentMode}} </span></p>
+          <div class="clear footer"></div>
+          <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
+            <tr>
+              <td width="30px" class="print-sn"><strong>Sn.</strong></td>
+              <td width="160px" class="print-par"><strong>Particular(s)</strong></td>
+              <td width="20px" class="text-right print-qty" *ngIf="!receipt.IsReturned"><strong>Qty</strong></td>
+              <td width="20px" class="text-right print-qty" *ngIf="receipt.IsReturned"><strong>Ret.Qty</strong></td>
+              <td width="120px" class="text-right print-qty"><strong>Expiry</strong></td>
+              <td width="60px" class="text-right print-qty"><strong>Batch</strong></td>
+              <td width="60px" class="text-right print-rate"><strong>Rate</strong></td>
+              <!-- <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis">
+                <strong>Discount Amount</strong>
+              </td>
+              <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && !receipt.IsReturned &&showDis">
+                <strong>Discount Amount</strong>
+              </td> -->
+              <td width="60px" class="text-right print-amt"><strong>Amount</strong></td>
+            </tr>
+
+            <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
+              <td>{{i+1}}</td>
+              <!-- <td>{{row.ItemName}}</td> -->
+              <td style="width:300px; ">
+                {{row.ItemDisplayName}}
+              </td>
+              <td class="text-right print-qty" *ngIf="!receipt.IsReturned">{{row.Quantity}}</td>
+              <td class="text-right print-qty" *ngIf="receipt.IsReturned">{{row.ReturnedQty}}</td>
+              <td class="text-right print-qty" style="width: 17%; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+              <td style=" text-align: right" class="text-right print-qty">{{row.BatchNo}}</td>
+              <td style=" text-align: right" class="text-right print-rate">{{row.MRP | number: "1.2-2"}}</td>
+              <!-- <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis">{{row.DiscountAmount | number : "1.2-2"}}</td>
+              <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && !receipt.IsReturned && showDis">{{row.TotalDisAmt | number : "1.2-2"}}</td> -->
+              <td style=" text-align: right" class="text-right print-amt">{{row.SubTotal | number: "1.2-2"}}</td>
+            </tr>
+          </table>
+          <div class="col-md-12 bill-summ-div">
+            <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top; font-size:12px;">
+              In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
+            </div>
+            <div style="padding: 0px;width:54%;display:inline-block;">
+              <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
+                <tr style="border-top: 0px;">
+                  <td style="border-top: none;">
+                    SubTotal
+                  </td>
+                  <td style=" text-align: right; border-right: none; border-top: none">
+                    {{receipt.SubTotal | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.DiscountAmount && IsitemlevlDis || isMainDiscountAvailable">
+                  <td style="border-top: none;">
+                    Discount {{receipt.DiscountPercent | number: "1.2-2"}}
+                  </td>
+                  <td style=" text-align: right; border-right: none">
+                    {{receipt.DiscountAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">
+                    Taxable Amount
+                  </td>
+                  <td style=" text-align: right; border-right: none">
+                    {{receipt.TaxableAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">
+                    Non Taxable Amount
+                  </td>
+                  <td style=" text-align: right; border-right: none">
+                    {{receipt.NonTaxableAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">
+                    VAT ({{receipt.VATPercentage | number: "1.0-2"}}%)
+                  </td>
+                  <td style=" text-align: right; border-right: none">
+                    {{receipt.VATAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr style="border-bottom: 0px;">
+                  <td style="border-bottom: none;">Total Amount </td>
+                  <td style=" text-align: right; border-right: none; border-bottom: none;">{{coreService.currencyUnit}} {{receipt.TotalAmount |
+                    number: "1.2-2"}}</td>
+                </tr>
+              </table>
+            </div>
+
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
+            <span> <br /></span>
+            <span *ngIf="receipt.Tender > 0 && receipt.PaymentMode != 'credit'">Tender: {{coreService.currencyUnit}} {{receipt.Tender | number:
+              "1.2-2"}} <br /></span>
+            <span *ngIf="receipt.Change > 0 && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change |
+              number: "1.2-2"}}<br /></span>
+
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="text-align:right; " *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
+            Remarks : {{receipt.Remarks}}
+          </div>
+          <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
+            Credit Organization: {{receipt.CreditOrganizationName}}
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding-top: 5px; ">
+            <div class="left">
+              User: {{receipt.BillingUser}}
+            </div>
+            <div class="right">
+              Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
+            </div>
+          </div>
+          <div class="col-md-12" style="padding-top: 5px;text-align: center;" *ngIf="showFooter && receipt.IsReturned != true">
+            <div class="center" *ngIf="showEnglish">
+              {{englishText}}
+            </div>
+            <div class="center" *ngIf="showNepali">
+              {{nepaliText}}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-invoice'" (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+    <p style="text-align:center;">
+      <button id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print('printpage2')">
+        Print Receipt
+        <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </p>
+  </div>
 </div>
 
-<!-- -->
+<!--Cash Or Credit Invoice Original -->
 <div *ngIf="receipt.ReceiptPrintNo!=0 && receipt.PrintCount == 0">
-    <div class="col-md-12" id="pharma-reciept">
-        <div id="printpage" style="text-align:center;">
-                <div class="receipt" [class.hidden]="loop_number == 1">
-                    <div class="row" style="margin-bottom: 10px;">
-                      <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;">
-                        <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                        <img class="img-watermark" src="../../../themes/theme-default/images/hams-logo.PNG" />
-                      </div>
-                        <div style="width: 64%;float: left;padding-bottom:  0px;">
-                          <div class="text-center bill-head" style="text-align: center;margin-top: 10px;">
-                            <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-                            <span style="font-size:13px;">{{headerDetail.address}}</span><br />
-                            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}}</span><br/>
-                            <span>Tel: {{ headerDetail.tel}}</span><br />
-                            <span style="font-size:11px;"><strong>DDA: {{headerDetail.DDA}}</strong></span><br />
-                            <span style="font-size:13px;"><strong>PHARMACY UNITS</strong></span>
-                          </div>
-                        </div>
-                        <div style="width: 18%;float: left;">
-                        </div>
-                    </div>
-                    <div class="qr-code" style="position: absolute;right: 15px;  top:15px;">
-                        <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
-                    </div>
-                    <div class="clear"></div>
-                    <!--<billing-header></billing-header>-->
-                    <div class="bill-patinfo" id="pharma-pat-info" style="padding-top: 7px;">
-                      <p class="no-margin" style="text-align:center;">
-                        <span id="invoice-head">
-                          <b *ngIf="!receipt.IsReturned">INVOICE</b>
-                          <b *ngIf="receipt.IsReturned">Credit Note</b>
-                        </span>
-
-                      </p><br />
-                      <div class="col-md-12" style="padding:0px;">
-                        <div class="left">
-                          <p *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">CRN No: {{receipt.CurrentFinYear}}-CR-PH{{receipt.CRNNo}}  </p>
-                          <p  *ngIf="!receipt.IsReturned" class="no-margin" style="text-align:left; ">Invoice No: {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}}  </p>
-                          <p  *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">Reference No: {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}}  </p>
-                          <p class="no-margin" style="text-align:left; ">
-                            <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
-                          </p>
-                        </div>
-                        <div class="right">
-                          <p class="no-margin" style="text-align:right; ">Transaction Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
-                          <p class="no-margin" style="text-align:right; ">
-                            Invoice Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
-                          </p>
-                        </div>
-                      </div>
-                      <div class="clear"></div>
-                      <div class="col-md-12" style="padding:0px;padding-top: 4px;">
-
-                        <div class="left" style="width:69%" id="pat-name">
-                          <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/"><strong>Patient's Name:</strong></div>
-                          <div style="display: inline-block;width: 69%;text-align: left;">
-                            <strong>{{receipt.Patient.ShortName}}</strong>
-                          </div>
-                        </div>
-                        <div class="right" style="width:31%">
-                          <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
-                        </div>
-                      </div>
-                      <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width: 69%;">
-                          <p class="no-margin" style="text-align:left;">Address: {{receipt.Patient.Address}}, {{receipt.Patient.CountrySubDivisionName}} </p>
-                        </div>
-                        <div class="right" style="width:31%">
-                          <p class="no-margin" style="text-align:right;"> Age/Sex : {{receipt.Patient.DateOfBirth | DanpheDateTime:'age'  }}/{{receipt.Patient.Gender}}</p>
-                        </div>
-                      </div>
-                      <div class="col-md-12" style="padding:0px;">
-                        <div class="left" style="width:50%">
-                          <p class="no-margin" style="text-align:left;">
-                            Contact No: {{receipt.Patient.PhoneNumber}}
-                          </p>
-                        </div>
-                        <div class="right" style="width:50%">
-                          <p class="no-margin" style="text-align:right;">
-                            Purchaser's PAN: {{receipt.Patient.PANNumber}}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="col-md-12" style="padding:0px;">
-                        <p style="text-align: center;"><strong>Method of payment:</strong> <span style="text-transform:capitalize;"><strong> {{receipt.PaymentMode}}</strong> </span></p>
-                      </div>
-                      <div class="clear footer"></div>
-                      <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
-                        <tr>
-                          <td width="30px" class="print-sn"><strong>Sn.</strong></td>
-                          <td width="300px" style="width:300px; " class="print-par"><strong>Particular(s)</strong></td>
-                          <td width="20px" class="text-right print-qty" *ngIf="!receipt.IsReturned"><strong>Qty</strong></td>
-                          <td width="20px" class="text-right print-qty" *ngIf="receipt.IsReturned" ><strong>Ret.Qty</strong></td>
-                          <td width="120px" class="text-right print-qty"><strong>Expiry</strong></td>
-                          <td width="60px" class="text-right print-qty"><strong>Batch</strong></td>
-                          <td width="60px" class="text-right print-rate"><strong>Rate</strong></td>
-                          <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis"><strong>Discount Amount</strong></td>
-                          <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && !receipt.IsReturned &&showDis"><strong>Discount Amount</strong></td>
-                          <td width="60px" class="text-right print-amt"><strong>Amount</strong></td>
-                        </tr>
-                        
-                        <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
-                          <td>{{i+1}}</td>
-                          <td style="width:300px; ">{{row.ItemName}}</td>
-                          <td class="text-right print-qty"*ngIf="!receipt.IsReturned">{{row.Quantity}}</td>
-                          <td class="text-right print-qty" *ngIf="receipt.IsReturned">{{row.ReturnedQty}}</td>
-                          <td class="text-right print-qty" style="width: 17%; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
-                          <td class="text-right print-qty">{{row.BatchNo}}</td>
-                          <td class="text-right print-rate" style=" text-align: right">{{row.MRP | number: "1.2-2"}}</td>
-                          <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis">{{row.DiscountAmount | number : "1.2-2"}}</td>
-                          <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && !receipt.IsReturned && showDis">{{row.TotalDisAmt | number : "1.2-2"}}</td>
-                          <td class="text-right print-amt" style=" text-align: right">{{row.TotalAmount | number: "1.2-2"}}</td>                         
-                        </tr>
-                      </table>
-                      <div class="col-md-12 bill-summ-div">
-                        <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
-                          In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
-                        </div>
-                        <div style="padding: 0px;width:56%;display:inline-block;">
-                          <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
-                            <tr style="border-top: 0px;">
-                              <td style="border-top: none;">
-                                SubTotal
-                              </td>
-                              <td style=" text-align:right; border-right: none; border-top: none;">
-                                {{receipt.SubTotal | number: "1.2-2"}}
-                              </td>
-                            </tr>
-                            <tr *ngIf="showDis">
-                              <td style="border-top: none;">
-                                Discount {{receipt.DiscountPercent | number: "1.2-2"}}
-                              </td>
-                              <td style=" text-align: right; border-right: none;" >
-                                {{receipt.DiscountAmount | number: "1.2-2"}}
-                              </td>
-                            </tr>
-                            <tr *ngIf="receipt.TaxableAmount">
-                              <td style="border-top: none;">Net Amount  </td>
-                              <td style=" text-align: right; border-right: none;">{{receipt.TaxableAmount | number: "1.2-2"}}</td>
-                            </tr>
-                            <tr *ngIf="receipt.TaxTotal">
-                              <td style="border-top: none;">{{taxLabel}}  </td>
-                              <td style=" text-align:right; border-right: none;">{{receipt.TaxTotal | number: "1.2-2"}}</td>
-                            </tr>
-                            <tr style="border-bottom: 0px;">
-                              <td style="border-bottom: none;">Total Amount  </td>
-                              <td style=" text-align: right; border-right: none; border-bottom: none">Rs. {{receipt.TotalAmount | number: "1.2-2"}}</td>
-                            </tr>
-                          </table>
-                        </div>
-
-                      </div>
-                      <div class="clear"></div>
-
-                      <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
-                        <span *ngIf="receipt.DepositDeductAmount > 0">
-                          Deposit Deduct/Return: {{receipt.DepositDeductAmount | number: "1.2-2"}}
-                          <br />
-                        </span>
-                        <span *ngIf=" receipt.PaymentMode != 'credit'">Tender: {{receipt.Tender | number : "1.2-2"}} <br /></span>
-                        <span *ngIf="receipt.Change && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change | number: "1.2-2"}}<br /></span>
-                        <span *ngIf="receipt.DepositDeductAmount > 0">Deposit Balance: {{receipt.DepositBalance | number: "1.2-2"}}<br /></span>
-                      </div>
-                      <div class="clear"></div>
-                      <div class="col-md-12" style="text-align:right;" *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
-                        Remarks : {{receipt.Remarks}}
-                      </div>
-                      <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
-                        Credit Organization: {{receipt.CreditOrganizationName}}
-                      </div>
-                      <div class="clear"></div>
-                      <div class="col-md-12" style="padding-top: 5px;">
-                        <div class="left">
-                          User: {{receipt.UserName}}
-                        </div>
-                        <div class="right">
-                          Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
-                        </div>
-                      </div>
-                    </div>
-
-                </div>
+  <div class="col-md-12" id="pharma-reciept">
+    <div id="printpage3" style="text-align:center;">
+      <div class="receipt" [class.hidden]="loop_number == 1">
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;">
+            <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+            <img class="img-watermark" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+          </div>
+          <div style="width: 64%;float: left;padding-bottom:  0px;">
+            <div class="text-center bill-head" style="text-align: center;margin-top: 10px;">
+              <span style="font-size:14px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+              <span style="font-size:13px;">{{headerDetail.address}}</span><br />
+              <span style="font-size:13px;">PAN no: {{headerDetail.PANno}}</span><br />
+              <span>Tel: {{ headerDetail.tel}}</span><br />
+              <span style="font-size:11px;"><strong>DDA: {{headerDetail.DDA}}</strong></span><br />
+              <span style="font-size:13px;"><strong>PHARMACY UNITS</strong></span>
+            </div>
+          </div>
+          <div style="width: 18%;float: left;">
+          </div>
         </div>
-        <div style="text-align: center; margin-bottom: 15px;">
-            <button class="btn blue" id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print()" >
-                Print Receipt
-                <i class="glyphicon glyphicon-print"></i>
-            </button>
-            <button class="btn purple" *ngIf= "receipt.IsReturned" [disabled]="loading" (click)="CreateCopyForResale()">
-              <i></i>
-              Copy Items for Resale
-            </button>  
+        <div class="qr-code" style="position: absolute;right: 15px;  top:15px;">
+          <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
         </div>
-    </div>  
+        <div class="clear"></div>
+        <!--<billing-header></billing-header>-->
+        <div class="bill-patinfo" id="pharma-pat-info" style="padding-top: 7px;">
+          <p class="no-margin" style="text-align:center;">
+            <span id="invoice-head">
+              <b *ngIf="!receipt.IsReturned">TAX INVOICE</b>
+              <b *ngIf="receipt.IsReturned">Credit Note</b>
+            </span>
+
+          </p><br />
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left">
+              <p *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">CRN No:
+                {{receipt.CurrentFinYear}}-CR-PH{{receipt.CRNNo}} </p>
+              <p *ngIf="!receipt.IsReturned" class="no-margin" style="text-align:left; ">Invoice No:
+                {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}} </p>
+              <p *ngIf="receipt.IsReturned" class="no-margin" style="text-align:left; ">Reference No:
+                {{receipt.CurrentFinYear}} - PH{{ receipt.ReceiptPrintNo}} </p>
+              <p *ngIf="receipt.Patient.PatientId > 0; else anony" class="no-margin" style="text-align:left; ">
+                <strong>Hospital No: {{receipt.Patient.PatientCode}}</strong>
+              </p>
+              <ng-template #anony>
+                <p class="no-margin" style="text-align:left; ">Hospital No: N/A</p>
+              </ng-template>
+            </div>
+            <div class="right">
+              <p class="no-margin" style="text-align:right; ">Transaction Date: {{receipt.ReceiptDate |
+                DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+              <p class="no-margin" style="text-align:right; ">
+                Invoice Date: {{receipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </p>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+
+            <div class="left" style="width:69%" id="pat-name">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/">
+                <strong>Patient's Name:</strong>
+              </div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                <strong>{{receipt.Patient.ShortName}}</strong>
+              </div>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right;"> ({{receipt.ReceiptDate | nepaliDate }})</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+            <div class="left" style="width:69%" id="provider-name" *ngIf="receipt.ProviderName">
+              <div class="no-margin" style="text-align: left;display: inline-block;float: left;/*width: 31%;*/">
+                Provider's Name:</div>
+              <div style="display: inline-block;width: 69%;text-align: left;">
+                {{receipt.ProviderName}}
+              </div>
+            </div>
+            <div class="right" style="width:31%" *ngIf="receipt.ProviderNMCNumber">
+              <p class="no-margin" style="text-align:right;"> NMCNumber: {{receipt.ProviderNMCNumber}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;" *ngIf="receipt.Patient.PatientId > 0">
+            <div class="left" style="width: 69%;">
+              <p class="no-margin" style="text-align:left;">Address: {{receipt.Patient.Address}},
+                {{receipt.Patient.CountrySubDivisionName}} </p>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right;"> Age/Sex : {{receipt.Patient.DateOfBirth |
+                DanpheDateTime:'age' }}/{{receipt.Patient.Gender}}</p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width:50%">
+              <p class="no-margin" style="text-align:left;">
+                Contact No: {{receipt.Patient.PhoneNumber}}
+              </p>
+              <p class="no-margin" style="text-align:left;" *ngIf="IsCurrentDispensaryInsurace">
+                ClaimCode: {{receipt.ClaimCode}}
+              </p>
+            </div>
+            <div class="right" style="width:50%">
+              <p class="no-margin" style="text-align:right;" *ngIf="receipt.Patient.PANNumber">
+                Purchaser's PAN: {{receipt.Patient.PANNumber}}
+              </p>
+              <p class="no-margin" style="text-align:right;" *ngIf="IsCurrentDispensaryInsurace">
+                NSHI Number: {{receipt.Patient.NSHINumber}}
+              </p>
+            </div>
+          </div>
+
+          <p style="text-align: center;clear: both;"><strong>Method of payment:</strong> <span style="text-transform:capitalize;"><strong> {{receipt.PaymentMode}}</strong> </span></p>
+          <div class="clear footer"></div>
+          <table class="bill-itms" id="phrm-bill-table" style="margin-top: 25px;">
+            <tr>
+              <td width="30px" class="print-sn"><strong>Sn.</strong></td>
+              <td width="300px" style="width:300px; " class="print-par"><strong>Particular(s)</strong></td>
+              <td width="20px" class="text-right print-qty" *ngIf="!receipt.IsReturned"><strong>Qty</strong></td>
+              <td width="20px" class="text-right print-qty" *ngIf="receipt.IsReturned"><strong>Ret.Qty</strong></td>
+              <td width="120px" class="text-right print-qty"><strong>Expiry</strong></td>
+              <td width="60px" class="text-right print-qty"><strong>Batch</strong></td>
+              <td width="60px" class="text-right print-rate"><strong>Rate</strong></td>
+              <!-- <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis">
+                <strong>Discount Amount</strong>
+              </td>
+              <td width="60px" class="text-right print-rate" *ngIf="IsitemlevlDis && !receipt.IsReturned &&showDis">
+                <strong>Discount Amount</strong>
+              </td> -->
+              <td width="60px" class="text-right print-amt"><strong>Amount</strong></td>
+            </tr>
+
+            <tr *ngFor="let row of receipt.InvoiceItems; let i=index">
+              <td>{{i+1}}</td>
+              <!-- <td style="width:300px; ">{{row.GenericName}}{{'('+row.ItemName+')'}}</td> -->
+
+              <td style="width:300px; ">
+                {{row.ItemDisplayName}}
+              </td>
+              <td class="text-right print-qty" *ngIf="!receipt.IsReturned">{{row.Quantity}}</td>
+              <td class="text-right print-qty" *ngIf="receipt.IsReturned">{{row.ReturnedQty}}</td>
+              <td class="text-right print-qty" style="width: 17%; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+              <td class="text-right print-qty">{{row.BatchNo}}</td>
+              <td class="text-right print-rate" style=" text-align: right">{{row.MRP | number: "1.2-2"}}</td>
+              <!-- <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && receipt.IsReturned && showDis">{{row.DiscountAmount | number : "1.2-2"}}</td>
+              <td class="text-right print-amt" style=" text-align: right;" *ngIf="IsitemlevlDis && !receipt.IsReturned && showDis">{{row.TotalDisAmt | number : "1.2-2"}}</td> -->
+              <td class="text-right print-amt" style=" text-align: right">{{row.SubTotal | number: "1.2-2"}}</td>
+            </tr>
+          </table>
+          <div class="col-md-12 bill-summ-div">
+            <div style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
+              In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
+            </div>
+            <div style="padding: 0px;width:56%;display:inline-block;">
+              <table class="bil-summ" id="pharma-bill-sum" style="width:100%">
+                <tr style="border-top: 0px;">
+                  <td style="border-top: none;">
+                    SubTotal
+                  </td>
+                  <td style=" text-align:right; border-right: none; border-top: none;">
+                    {{receipt.SubTotal | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.DiscountAmount  && IsitemlevlDis || isMainDiscountAvailable">
+                  <td style="border-top: none;">
+                    Discount {{receipt.DiscountPercent | number: "1.2-2"}}
+                  </td>
+                  <td style=" text-align: right; border-right: none;">
+                    {{receipt.DiscountAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">Taxable Amount </td>
+                  <td style=" text-align: right; border-right: none;">{{receipt.TaxableAmount | number: "1.2-2"}}</td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">Non Taxable Amount </td>
+                  <td style=" text-align: right; border-right: none;">{{receipt.NonTaxableAmount | number: "1.2-2"}}</td>
+                </tr>
+                <tr *ngIf="receipt.VATAmount && isItemLevelVATApplicable">
+                  <td style="border-top: none;">
+                    VAT ({{receipt.VATPercentage | number: "1.0-2"}}%)
+                  </td>
+                  <td style=" text-align: right; border-right: none">
+                    {{receipt.VATAmount | number: "1.2-2"}}
+                  </td>
+                </tr>
+                <tr style="border-bottom: 0px;">
+                  <td style="border-bottom: none;">Total Amount </td>
+                  <td style=" text-align: right; border-right: none; border-bottom: none">{{coreService.currencyUnit}} {{receipt.TotalAmount |
+                    number: "1.2-2"}}</td>
+                </tr>
+              </table>
+            </div>
+
+          </div>
+          <div class="clear"></div>
+
+          <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
+            <span *ngIf="receipt.DepositDeductAmount > 0">
+              Deposit Deduct/Return: {{receipt.DepositDeductAmount | number: "1.2-2"}}
+              <br />
+            </span>
+            <span *ngIf=" receipt.PaymentMode != 'credit'">Tender: {{receipt.Tender | number : "1.2-2"}} <br /></span>
+            <span *ngIf="receipt.Change && receipt.PaymentMode != 'credit'">Change/Return: {{receipt.Change | number:
+              "1.2-2"}}<br /></span>
+            <span *ngIf="receipt.DepositDeductAmount > 0">Deposit Balance: {{receipt.DepositBalance | number:
+              "1.2-2"}}<br /></span>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="text-align:right;" *ngIf="receipt.Remarks != null && receipt.Remarks != '' && receipt.Remarks != undefined">
+            Remarks : {{receipt.Remarks}}
+          </div>
+          <div class="col-md-12 text-right" *ngIf="receipt.CreditOrganizationName">
+            Credit Organization: {{receipt.CreditOrganizationName}}
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding-top: 5px;">
+            <div class="left">
+              User: {{receipt.BillingUser}}
+            </div>
+            <div class="right">
+              Time: {{receipt.ReceiptDate | DanpheDateTime:'format':'HH:mm'}}
+            </div>
+          </div>
+          <div class="col-md-12" style="padding-top: 5px;text-align: center" *ngIf="showFooter && receipt.IsReturned != true">
+            <div class="center" *ngIf="showEnglish">
+              {{englishText}}
+            </div>
+            <div class="center" *ngIf="showNepali">
+              {{nepaliText}}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-invoice'" (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+    <div style="text-align: center; margin-bottom: 15px;">
+      <button class="btn blue" id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print('printpage3')">
+        Print Receipt
+        <i class="glyphicon glyphicon-print"></i>
+      </button>
+      <button class="btn purple" *ngIf="receipt.IsReturned" [disabled]="loading" (click)="CreateCopyForResale()">
+        <i></i>
+        Copy Items for Resale
+      </button>
+    </div>
+  </div>
 </div>
 
-<!--<app-print-page *ngIf="showPrintPopup" [print-data]="printContentForPopup"></app-print-page>--> 
+<!--<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackBillPrint($event)"></app-print-page> -->
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj" (print-sucess)="callBackBillPrint($event)">
+</app-print-page>

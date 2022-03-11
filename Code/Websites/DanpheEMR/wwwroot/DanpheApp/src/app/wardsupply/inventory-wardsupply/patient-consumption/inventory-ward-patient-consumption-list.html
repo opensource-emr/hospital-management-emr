@@ -1,0 +1,105 @@
+<div class="row">
+  <div class="col-md-3">
+    <a class="btn btn-primary btn-sm m1" name="name" value="" (click)="AddNewConsumption()"><span
+        class="glyphicon glyphicon-plus"> </span> New Patient Consumption</a>
+  </div>
+</div>
+<div>
+  <div class="row" *ngIf="showComsumptionList">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="consumptionListDetailsGridColumns" [grid-data]="consumptionListDetails"
+        (grid-actions)="ConsumptionListGridAction($event)" [rangeType]="dateRange" (onDateChange)="onDateChange($event)"
+        [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px" *ngIf="showConsumpList">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+
+        <div style="padding:10px">
+          <i class="btn btn-danger pull-right" style="margin-top:10px; margin-right:-10px;" (click)="Close()">X</i>
+        </div>
+        <div class="panel panel-default">
+
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <table class="table table-striped table-hover" style="margin-bottom: 15px !important;">
+                <tr>
+                  <td align="left" border="0" style="border: none !important">
+                    <img class="img-responsive" style="max-height:70px; width: auto;"
+                      src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                  </td>
+                  <td align="center"
+                    style="text-align: center; font-size: 25px; text-transform: capitalize; padding: 15px 0; border: none !important">
+                    <strong style="margin-bottom: 10px;">{{headerDetail.hospitalName}}</strong><br />
+                    <!-- <br><strong style="font-size: 70%;">The Fred Hollows Intraocular Lens Laboratory</strong><br> -->
+                    <strong style="font-size:15px;">{{headerDetail.address}}</strong><br />
+                    <strong style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                      headerDetail.tel}}</strong><br />
+                  </td>
+
+                  <td align="right" border="0" style="border: none !important">
+                    <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="text-align: center; text-transform: uppercase;"> <strong>Patient Consumption
+                      Receipt</strong>
+                  </td>
+                </tr>
+              </table>
+              <table class="table table-hover" style="margin-bottom: 45px !important;">
+                <tr>
+                  <td style="width:130px;">Receipt No.:</td>
+                  <td colspan="2"><b> {{selectedPatConsumptionReceipt.ConsumptionReceiptNo}}</b></td>
+                  <td style="text-align: right;">Receipt Date: <b>{{selectedPatConsumptionReceipt.ConsumptionDate |
+                      date}}</b></td>
+                </tr>
+                <tr>
+                  <td>Patient Name:</td>
+                  <td colspan="2">{{selectedPatConsumptionReceipt.PatientName}}</td>
+                  <td style="text-align: right;">Hospital No.: <b>{{selectedPatConsumptionReceipt?.HospitalNo}}</b></td>
+
+                </tr>
+              </table>
+              <table class="table table-striped table-hover"
+                style="background-color:initial; margin:0px;margin-bottom: 5px;">
+                <thead>
+                  <tr class="tbl-td-padding">
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of patientConsumptionList">
+                    <td>
+                      {{ row.Code }}
+                    </td>
+                    <td>
+                      {{ row.ItemName }}
+                    </td>
+                    <td>
+                      {{ row.Quantity }}
+                    </td>
+                    <td>
+                      {{row.Unit}}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

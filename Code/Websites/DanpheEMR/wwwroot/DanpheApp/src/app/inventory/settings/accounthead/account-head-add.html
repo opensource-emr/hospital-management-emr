@@ -23,7 +23,8 @@
                                            [(ngModel)]="CurrentAccountHead.AccountHeadName"
                                            formControlName="AccountHeadName"
                                            id="AccountHeadName"
-                                           placeholder="AccountHead Name" />
+                                           placeholder="AccountHead Name" 
+                                           (keyup.enter)="FocusElementById('AddAccountHead')" />
                                     <span class="color-red font-sm" [hidden]="CurrentAccountHead.IsValidCheck('AccountHeadName','required') || !(CurrentAccountHead.IsDirty('AccountHeadName'))">Name is required</span>
                                     <span class="color-red font-sm" *ngIf="CurrentAccountHead.IsDirty('AccountHeadName')" [hidden]="CurrentAccountHead.IsValidCheck('AccountHeadName','maxlength')"> Length is not proper</span>
                                 </div>
@@ -55,8 +56,8 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <input type="button" class="btn primary-btn" *ngIf="!update" [disabled]="loading" (click)="AddAccountHead()" value="Add AccountHead" />
-                                <input type="button" class="btn primary-btn" *ngIf="update" [disabled]="loading" (click)="Update()" value="Update" />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" [disabled]="loading" (click)="AddAccountHead()" value="Add AccountHead" id="AddAccountHead" />
+                                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" [disabled]="loading" (click)="Update()" value="Update" id="AddAccountHead" />
                             </div>
                         </div>
                     </form>

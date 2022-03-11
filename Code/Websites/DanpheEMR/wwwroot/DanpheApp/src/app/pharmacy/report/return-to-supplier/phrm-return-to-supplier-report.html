@@ -27,7 +27,10 @@
             </div> -->
         <div class="col-md-2 col-xs-12">
           <div class="form-group">
-            <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
+            <button class="btn blue" type="button" (click)="Load()" [disabled]="loading">
+              <span *ngIf="!loading"> Show Report</span>
+              <span *ngIf="loading"> Loading...</span>
+              </button>
           </div>
         </div>
       </div>
@@ -39,6 +42,8 @@
     <danphe-grid [grid-colDefaults]="PHRMReturnToSupplierReportColumn"
                      [grid-data]="PHRMReturnToSupplierReportData"
                      [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                     [grid-date-range]="dateRange"
+                     [report-for]="pharmacy"> </danphe-grid>
   </div>
 </div>

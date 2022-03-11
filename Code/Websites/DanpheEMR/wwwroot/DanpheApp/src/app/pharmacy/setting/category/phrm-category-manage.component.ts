@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
+﻿import { Component, ChangeDetectorRef, Input, Output, EventEmitter, OnInit, Renderer2 } from "@angular/core";
 
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
@@ -13,7 +13,7 @@ import * as moment from 'moment/moment';
     templateUrl: "./phrm-category-manage.html"
 
 })
-export class PHRMCategoryManageComponent {
+export class PHRMCategoryManageComponent implements OnInit {
     public CurrentCategory: PHRMCategoryModel = new PHRMCategoryModel();
     public selectedItem: PHRMCategoryModel = new PHRMCategoryModel();
     public categoryList: Array<PHRMCategoryModel> = new Array<PHRMCategoryModel>();
@@ -22,6 +22,9 @@ export class PHRMCategoryManageComponent {
     public showCategoryAddPage: boolean = false;
     public update: boolean = false;
     public index: number;
+    public globalListenFunc: Function;
+    public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
+
 
     // @Input("selectcategory")
     // public selectcategory: PHRMCategoryModel;
@@ -37,11 +40,18 @@ export class PHRMCategoryManageComponent {
         public pharmacyBLService: PharmacyBLService,
         public changeDetector: ChangeDetectorRef,
         public securityService: SecurityService,
-        public msgBoxServ: MessageboxService) {
+        public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
         this.categoryGridColumns = PHRMGridColumns.PHRMCategoryList;
         this.getCategoryList();
     }
 
+    ngOnInit() {
+        this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
+            if (e.keyCode == this.ESCAPE_KEYCODE) {
+                this.Close()
+            }
+        });
+    }
     public getCategoryList() {
         this.pharmacyBLService.GetCategoryList()
             .subscribe(res => {
@@ -90,6 +100,7 @@ export class PHRMCategoryManageComponent {
         this.showCategoryAddPage = false;
         this.changeDetector.detectChanges();
         this.showCategoryAddPage = true;
+        this.setFocusById('cat');
     }
     //to send sms
     sendSMS() {
@@ -99,7 +110,7 @@ export class PHRMCategoryManageComponent {
                 res => {
                     if (res.Status == "OK") {
                         this.msgBoxServ.showMessage("success", ["SMS sent."]);
-                        
+
                     }
                     else {
                         this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
@@ -215,6 +226,10 @@ export class PHRMCategoryManageComponent {
         this.update = false;
         this.showCategoryAddPage = false;
     }
+    setFocusById(IdToBeFocused) {
+        window.setTimeout(function () {
+            document.getElementById(IdToBeFocused).focus();
+        }, 20);
+    }
 
-   
 }

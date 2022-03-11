@@ -123,12 +123,12 @@ namespace DanpheEMR.Controllers.ReportingNew
             }
         }
 
-        public FileContentResult ExportToExcelTotalItemsBill(DateTime FromDate, DateTime ToDate, string BillStatus, string ServiceDepartmentName, string ItemName, string SummaryData, string SummaryHeader, bool IsInsurance = false)
+        public FileContentResult ExportToExcelTotalItemsBill(DateTime FromDate, DateTime ToDate, string billingType, string ServiceDepartmentName, string ItemName, string SummaryData, string SummaryHeader)
         {
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable totalitembill = reportingDbContext.TotalItemsBill(FromDate, ToDate, BillStatus, ServiceDepartmentName, ItemName, IsInsurance);
+                DataTable totalitembill = reportingDbContext.TotalItemsBill(FromDate, ToDate, billingType, ServiceDepartmentName, ItemName);
 
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
                 List<ColumnMetaData> columnamesForTotalItemBill = new List<ColumnMetaData>();
@@ -513,43 +513,39 @@ namespace DanpheEMR.Controllers.ReportingNew
         }
 
 
-        public FileContentResult ExportToExcelIncomeSegregation(DateTime FromDate, DateTime ToDate, bool IsInsurance = false)
+        public FileContentResult ExportToExcelIncomeSegregation(DateTime FromDate, DateTime ToDate, string billingType)
         {
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable incomesegregation = reportingDbContext.Get_Bill_IncomeSegregationStaticReport(FromDate, ToDate, IsInsurance);
+                DataTable incomesegregation = reportingDbContext.Get_Bill_IncomeSegregationStaticReport(FromDate, ToDate, billingType);
 
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
                 //creating list for adding the column 
                 List<ColumnMetaData> columnamesForIncomeSegregation = new List<ColumnMetaData>();
 
-                //// passing the name and the function we have to perform like sum,count etc 
-                //columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "FromDate", ColDisplayName = "From Date", Formula = ColumnFormulas.Date });
-                //columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "ToDate", ColDisplayName = "To Date", Formula = ColumnFormulas.Date });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "ServDeptName", ColDisplayName = "Department Name", });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "Unit", ColDisplayName = "Unit", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "CashSales", ColDisplayName = "Cash Sales", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "CashDiscount", ColDisplayName = "Cash Discount", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "CreditSales", ColDisplayName = "Credit Sales", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "CreditDiscount", ColDisplayName = "Credit Discount", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "ReturnQuantity", ColDisplayName = "Return Unit", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 7, ColName = "ReturnAmount", ColDisplayName = "Return Amount", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 8, ColName = "ReturnDiscount", ColDisplayName = "Return Discount", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 9, ColName = "GrossSales", ColDisplayName = "Gross Sales", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 10, ColName = "Discount", ColDisplayName = "Discount", Formula = ColumnFormulas.Sum });
-                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 11, ColName = "NetSales", ColDisplayName = "Net Sales", Formula = ColumnFormulas.Sum });
+
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "ServDeptName", ColDisplayName = "Department", });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "CashSales", ColDisplayName = "Cash Sales", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "CashDiscount", ColDisplayName = "Cash Discount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "CreditSales", ColDisplayName = "Credit Sales", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "CreditDiscount", ColDisplayName = "Credit Discount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "GrossSales", ColDisplayName = "Gross Sales", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "TotalDiscount", ColDisplayName = "Total Discount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 7, ColName = "ReturnCashSales", ColDisplayName = "Return CashSales", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 8, ColName = "ReturnCashDiscount", ColDisplayName = "Return CashDiscount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 9, ColName = "ReturnCreditSales", ColDisplayName = "Return Credit Sales", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 10, ColName = "ReturnCreditDiscount", ColDisplayName = "Return CreditDiscount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 11, ColName = "TotalSalesReturn", ColDisplayName = "Total Sales Return", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 12, ColName = "TotalReturnDiscount", ColDisplayName = "Total Return Discount", Formula = ColumnFormulas.Sum });
+                columnamesForIncomeSegregation.Add(new ColumnMetaData() { DisplaySeq = 13, ColName = "NetSales", ColDisplayName = "Net Sales", Formula = ColumnFormulas.Sum });
+
                 ////Sorted ColMetadata in DisplaySequenceOrder 
                 //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
                 var FinalColsForIncomSegInSorted = columnamesForIncomeSegregation.OrderBy(x => x.DisplaySeq).ToList();
                 string header = "Income Segragation Report  From:" + FromDate.ToString("yyyy-MM-dd") + " To:" + ToDate.ToString("yyyy-MM-dd");
                 List<string> RemoveColName = new List<string>();
-                RemoveColName.Add("FromDate");
-                RemoveColName.Add("ToDate");
-                RemoveColName.Add("PaidHST");
-                RemoveColName.Add("ReturnHST");
-
 
                 //passing the collection in exportExcelHelper 
                 export.LoadFromDataTable(FinalColsForIncomSegInSorted, incomesegregation, header, true, true);
@@ -1353,12 +1349,12 @@ namespace DanpheEMR.Controllers.ReportingNew
         }
         #endregion
 
-        public FileContentResult ExportToExcelCategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
+        public FileContentResult ExportToExcelCategoryWiseLabReport(DateTime FromDate, DateTime ToDate, String orderStatus)
         {
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable CategoryWiseLabReport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate);
+                DataTable CategoryWiseLabReport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate ,orderStatus);
 
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
@@ -1469,7 +1465,7 @@ namespace DanpheEMR.Controllers.ReportingNew
                            new SqlParameter("@StoreIds", StoreIds),
                            new SqlParameter("@FromDate", FromDate),
                            new SqlParameter("@ToDate", ToDate)
-                           
+
                 };
 
                 DataTable allData = DALFunctions.GetDataTableFromStoredProc("SP_INV_RPT_GetSubstoreDispConsumption_Summary", paramList, reportingDbContext);
@@ -1477,7 +1473,7 @@ namespace DanpheEMR.Controllers.ReportingNew
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
                 List<ColumnMetaData> columnamesForTotalItemBill = new List<ColumnMetaData>();
 
-                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SubCategoryName", ColDisplayName = "Sub Category Name"});
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SubCategoryName", ColDisplayName = "Sub Category Name" });
                 columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "ItemName", ColDisplayName = "ItemName", });
                 columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "ItemType", ColDisplayName = "ItemType", });
                 columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "Unit", ColDisplayName = "Unit", });

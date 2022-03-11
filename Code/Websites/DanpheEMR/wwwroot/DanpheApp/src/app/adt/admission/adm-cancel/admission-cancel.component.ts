@@ -15,7 +15,8 @@ import { CoreService } from '../../../core/shared/core.service';
 
 @Component({
   selector: 'admission-cancel',
-  templateUrl: "./admission-cancel.html"
+  templateUrl: "./admission-cancel.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class AdmissionCancelComponent {
@@ -32,7 +33,7 @@ export class AdmissionCancelComponent {
   public admissionCancel: AdmissionCancelVM = new AdmissionCancelVM(); //to post cancelled information i.e, remarks and date
   public cancelDate: NepaliDate;
   public loading: boolean = false;
-  public currencyUnit: string;
+  // public currencyUnit: string;
   public showReceipt: boolean = false;
   public showReceiptPopUp: boolean = false;
   public showpatientInfoPopUp: boolean = false;
@@ -51,7 +52,7 @@ export class AdmissionCancelComponent {
   }
 
   ngOnInit() {
-    this.currencyUnit = this.admissionBLService.currencyUnit;
+    //this.currencyUnit = this.admissionBLService.currencyUnit;
     if (this.ipVisitId && this.patientId) {
       this.LoadCancelPatientInfo(this.patientId, this.ipVisitId);
       this.admissionCancel.PatientVisitId = this.ipVisitId;
@@ -106,7 +107,7 @@ export class AdmissionCancelComponent {
             this.ClosePopUp(false);
           }
           if (this.returnDepositInfo && this.returnDepositInfo.Amount)
-            this.msgBoxServ.showMessage("success", ["Cancelled and Amount " + this.currencyUnit + this.returnDepositInfo.Amount + " returned successfully."]);
+            this.msgBoxServ.showMessage("success", ["Cancelled and Amount " + this.coreService.currencyUnit + this.returnDepositInfo.Amount + " returned successfully."]);
           else
             this.msgBoxServ.showMessage("success", ["Cancelled Successfully."]);
 
@@ -168,6 +169,12 @@ export class AdmissionCancelComponent {
     }
     else {
       this.cancel.emit({ CloseWindow: true });
+    }
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.ClosePopUp();
     }
   }
 }

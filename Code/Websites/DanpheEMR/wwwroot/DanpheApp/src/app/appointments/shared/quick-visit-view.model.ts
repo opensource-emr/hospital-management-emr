@@ -49,4 +49,5 @@ export class ListVisitsVM {
   public AppointmentType: string = null;
   public BillStatus: string = null;
   public Patient: Patient = null;
+  public BillingTransaction : BillingTransaction = null;
 }

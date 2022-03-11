@@ -22,6 +22,11 @@ using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
 using System.Threading.Tasks;
 using DanpheEMR.Enums;
+using System.Transactions;
+using System.Data.SqlClient;
+using System.Data;
+using DanpheEMR.ServerModel.InsuranceModels;
+using DanpheEMR.ViewModel.ADT;
 
 namespace DanpheEMR.Controllers
 {
@@ -128,83 +133,50 @@ namespace DanpheEMR.Controllers
 
                     UpdateNotReceivedTransferredBed(dbContext);
 
-                    var result = (from admission in dbContext.Admissions.Include(a => a.Visit.Patient)
-                                  join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
-                                  join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
-                                  join summary in dbContext.DischargeSummary on admission.PatientVisitId equals summary.PatientVisitId into dischargeSummaryTemp
-                                  from dischargeSummary in dischargeSummaryTemp.DefaultIfEmpty()
-                                  join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
-                                  where admission.AdmissionStatus == admissionStatus
-                                  select new
-                                  {
-                                      VisitCode = admission.Visit.VisitCode,
-                                      PatientVisitId = admission.Visit.PatientVisitId,
-                                      PatientId = admission.Visit.Patient.PatientId,
-                                      PatientAdmissionId = admission.PatientAdmissionId,
-                                      AdmittedDate = admission.AdmissionDate,
-                                      DischargedDate = admission.DischargeDate,
-                                      DischargedBy = admission.DischargedBy,
-                                      //  DischargedByEmployee = (from emp in employeeslist where emp.EmployeeId == admission.DischargedBy select emp.EmployeeName).ToString().AsEnumerable(),  // employeeslist.Where(a => a.EmployeeId == admission.DischargedBy).Select(a => a.EmployeeName).AsEnumerable().ToString(),
-                                      //AdmissionNotes = admission.AdmissionNotes,
-                                      PatientCode = admission.Visit.Patient.PatientCode,
-                                      AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = admDoctor.Salutation + ". " + admDoctor.FirstName + " " + (string.IsNullOrEmpty(admDoctor.MiddleName) ? "" : admDoctor.MiddleName + " ") + admDoctor.LastName,
-                                      Address = admission.Visit.Patient.Address,
-                                      AdmissionStatus = admission.AdmissionStatus,
-                                      BillStatusOnDischarge = admission.BillStatusOnDischarge,
-                                      //use ShortName instead of this when possible
-                                      Name = admission.Visit.Patient.FirstName + " " + (string.IsNullOrEmpty(admission.Visit.Patient.MiddleName) ? "" : admission.Visit.Patient.MiddleName + " ") + admission.Visit.Patient.LastName,
-                                      DateOfBirth = admission.Visit.Patient.DateOfBirth,
-                                      PhoneNumber = admission.Visit.Patient.PhoneNumber,
-                                      Gender = admission.Visit.Patient.Gender,
-                                      IsSubmitted = dischargeSummary.IsSubmitted,
-                                      DischargeSummaryId = dischargeSummary != null ? dischargeSummary.DischargeSummaryId : 0,
-                                      DepartmentId = department.DepartmentId,
-                                      Department = department.DepartmentName,
-                                      GuardianName = admission.CareOfPersonName,
-                                      GuardianRelation = admission.CareOfPersonRelation,
-                                      IsPoliceCase = admission.IsPoliceCase.HasValue ? admission.IsPoliceCase :false,
-                                      BedInformation = (from bedInfos in dbContext.PatientBedInfos
-                                                        where bedInfos.PatientVisitId == admission.Visit.PatientVisitId
-                                                        && bedInfos.IsActive == true
-                                                        select new
-                                                        {
-                                                            BedId = bedInfos.BedId,
-                                                            PatientBedInfoId = bedInfos.PatientBedInfoId,
-                                                            WardId = bedInfos.WardId,
-                                                            Ward = bedInfos.Ward.WardName,
-                                                            BedFeatureId = bedInfos.BedFeatureId,
-                                                            Action = bedInfos.Action.Substring(0, 1).ToUpper() + bedInfos.Action.Substring(1),
-                                                            BedFeature = bedInfos.BedFeature.BedFeatureName,
-                                                            BedCode = bedInfos.Bed.BedCode,
-                                                            BedNumber = bedInfos.Bed.BedNumber,
-                                                            StartedOn = bedInfos.StartedOn,
-                                                            BedOnHoldEnabled = bedInfos.BedOnHoldEnabled,
-                                                            ReceivedBy = bedInfos.ReceivedBy
-                                                        }).OrderByDescending(a => a.PatientBedInfoId).FirstOrDefault(),
-                                      //start2: sud:18Feb'20-these fields are implemented from client side, we can remove it after checking the impacts.
-                                      //TransferButton = transferBtn,
-                                      //StickerButton = stickerBtn,
-                                      //ChangeDoctorButton = changeDctBtn,
-                                      //ChangeBedButton = changeBedBtn,
-                                      //BillHistoryButton = billHistoryBtn,
-                                      //CancelAdmButton = cancelAdmBtn,
-                                      //PrintWristButton = printWristBtn,
-                                      //GenericStickerButton = genericStickerBtn,
-                                      //AdmitButton = admitBtn
-                                      //end2: sud:18Feb'20-these fields are implemented from client side, we can remove it after checking the impacts.
-                                  }).ToList();
-                    if (admissionStatus == "admitted")
-                    {
-                        responseData.Results = result.OrderByDescending(r => r.AdmittedDate);
-                    }
-                    if (patientVisitId > 0)
-                    {
-                        responseData.Results = result.Where(a => a.PatientVisitId == patientVisitId).FirstOrDefault();
-                    }
+                    //var isDepartmentLevelAppointmentEnabled = EnableDepartmentLevelAppointment
+
+                    DataTable result = dbContext.GetAllAdmittedPatients(admissionStatus, patientVisitId);
+
+                    //map data coming from the SP to the VM...
+                    List<GetAdmittedListVm> response = GetAdmittedList_ResultFromSP_VM.MapDataTableToSingleObject(result);
+
+                    responseData.Results = response;
+
                     responseData.Status = "OK";
                 }
-
+                else if (reqType == "WardList")
+                {
+                    var result = (from ward in dbContext.Wards.Where(a => a.IsActive == true)
+                                  select new
+                                  {
+                                      WardId = ward.WardId,
+                                      WardName = ward.WardName
+                                  }).ToList();
+                    responseData.Results = result;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "DepartmentList")
+                {
+                    var result = (from dept in dbContext.Department.Where(a => a.IsActive == true)
+                                  select new
+                                  {
+                                      DepartmentId = dept.DepartmentId,
+                                      DepartmentName = dept.DepartmentName
+                                  }).ToList();
+                    responseData.Results = result;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "BedFeatureList")
+                {
+                    var result = (from bedf in dbContext.BedFeatures.Where(a => a.IsActive == true)
+                                  select new
+                                  {
+                                      BedFeatureId = bedf.BedFeatureId,
+                                      BedFeatureName = bedf.BedFeatureName
+                                  }).ToList();
+                    responseData.Results = result;
+                    responseData.Status = "OK";
+                }
                 else if (reqType == "DischargedPatientsList")
                 {
                     var employeeslist = dbContext.Employees.Select(a => new
@@ -213,12 +185,15 @@ namespace DanpheEMR.Controllers
                         EmployeeName = a.FirstName + " " + a.LastName,
                     }).ToList().AsEnumerable();
                     var result = (from admission in dbContext.Admissions.Include(a => a.Visit.Patient)
-                                  join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
-                                  join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
+                                      //join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
+                                      //join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
                                   join summary in dbContext.DischargeSummary on admission.PatientVisitId equals summary.PatientVisitId into dischargeSummaryTemp
                                   from dischargeSummary in dischargeSummaryTemp.DefaultIfEmpty()
-                                  join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
+                                      // join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
                                   where admission.AdmissionStatus == admissionStatus && (DbFunctions.TruncateTime(admission.DischargeDate) >= FromDate && DbFunctions.TruncateTime(admission.DischargeDate) <= ToDate)
+
+                                  let empName = dbContext.Employees.Where(doc => doc.EmployeeId == admission.AdmittingDoctorId).Select(d => d.FullName).FirstOrDefault() ?? string.Empty
+                                  let deptName = dbContext.Department.Where(d => d.DepartmentId == admission.Visit.DepartmentId).Select(n => n.DepartmentName).FirstOrDefault() ?? string.Empty
                                   select new
                                   {
                                       VisitCode = admission.Visit.VisitCode,
@@ -230,7 +205,7 @@ namespace DanpheEMR.Controllers
                                       DischargedBy = admission.DischargedBy,
                                       PatientCode = admission.Visit.Patient.PatientCode,
                                       AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = admDoctor.Salutation + ". " + admDoctor.FirstName + " " + (string.IsNullOrEmpty(admDoctor.MiddleName) ? "" : admDoctor.MiddleName + " ") + admDoctor.LastName,
+                                      AdmittingDoctorName = empName,  //admDoctor.Salutation + ". " + admDoctor.FirstName + " " + (string.IsNullOrEmpty(admDoctor.MiddleName) ? "" : admDoctor.MiddleName + " ") + admDoctor.LastName,
                                       Address = admission.Visit.Patient.Address,
                                       AdmissionStatus = admission.AdmissionStatus,
                                       BillStatusOnDischarge = admission.BillStatusOnDischarge,
@@ -240,16 +215,18 @@ namespace DanpheEMR.Controllers
                                       PhoneNumber = admission.Visit.Patient.PhoneNumber,
                                       Gender = admission.Visit.Patient.Gender,
                                       IsSubmitted = dischargeSummary.IsSubmitted,
-                                      IsPoliceCase = admission.IsPoliceCase != null ? admission.IsPoliceCase : false,
+                                      IsPoliceCase = admission.AdmissionCase != null ? admission.AdmissionCase == "Police Case" : false,
                                       DischargeSummaryId = dischargeSummary != null ? dischargeSummary.DischargeSummaryId : 0,
+                                      IsInsurancePatient = admission.IsInsurancePatient != null ? admission.IsInsurancePatient : false,
                                       //DischargeSummaryId = dischargeSummary.DischargeSummaryId,
                                       MedicalRecordId = (from mr in dbContext.MedicalRecords
                                                          where mr.PatientId == admission.Visit.Patient.PatientId
                                                          && mr.PatientVisitId == admission.Visit.PatientVisitId
                                                          select mr.MedicalRecordId).FirstOrDefault(),
-                                      Department = department.DepartmentName,
+                                      Department = deptName,
                                       GuardianName = admission.CareOfPersonName,
                                       GuardianRelation = admission.CareOfPersonRelation,
+                                      IsSelected = false,
                                       BedInformation = (from bedInfos in dbContext.PatientBedInfos
                                                         where bedInfos.PatientVisitId == admission.Visit.PatientVisitId && bedInfos.IsActive == true
                                                         select new
@@ -277,12 +254,14 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "AdmittedPatientsList")
                 {
                     var result = (from admission in dbContext.Admissions.Include(a => a.Visit.Patient)
-                                  join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
-                                  join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
+                                      //join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
+                                      //join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
                                   join summary in dbContext.DischargeSummary on admission.PatientVisitId equals summary.PatientVisitId into dischargeSummaryTemp
                                   from dischargeSummary in dischargeSummaryTemp.DefaultIfEmpty()
-                                  join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
+                                      //join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
                                   where admission.AdmissionStatus == admissionStatus && (DbFunctions.TruncateTime(admission.AdmissionDate) >= FromDate && DbFunctions.TruncateTime(admission.AdmissionDate) <= ToDate)
+                                  let empName = dbContext.Employees.Where(doc => doc.EmployeeId == admission.AdmittingDoctorId).Select(d => d.FullName).FirstOrDefault() ?? string.Empty
+                                  let deptName = dbContext.Department.Where(d => d.DepartmentId == admission.Visit.DepartmentId).Select(n => n.DepartmentName).FirstOrDefault() ?? string.Empty
                                   select new
                                   {
                                       VisitCode = admission.Visit.VisitCode,
@@ -294,7 +273,7 @@ namespace DanpheEMR.Controllers
                                       DischargedBy = admission.DischargedBy,
                                       PatientCode = admission.Visit.Patient.PatientCode,
                                       AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = admDoctor.Salutation + ". " + admDoctor.FirstName + " " + (string.IsNullOrEmpty(admDoctor.MiddleName) ? "" : admDoctor.MiddleName + " ") + admDoctor.LastName,
+                                      AdmittingDoctorName = empName, //admDoctor.Salutation + ". " + admDoctor.FirstName + " " + (string.IsNullOrEmpty(admDoctor.MiddleName) ? "" : admDoctor.MiddleName + " ") + admDoctor.LastName,
                                       Address = admission.Visit.Patient.Address,
                                       AdmissionStatus = admission.AdmissionStatus,
                                       BillStatusOnDischarge = admission.BillStatusOnDischarge,
@@ -310,7 +289,7 @@ namespace DanpheEMR.Controllers
                                                          where mr.PatientId == admission.Visit.Patient.PatientId
                                                          && mr.PatientVisitId == admission.Visit.PatientVisitId
                                                          select mr.MedicalRecordId).FirstOrDefault(),
-                                      Department = department.DepartmentName,
+                                      Department = deptName,
                                       GuardianName = admission.CareOfPersonName,
                                       GuardianRelation = admission.CareOfPersonRelation,
                                       BedInformation = (from bedInfos in dbContext.PatientBedInfos
@@ -345,14 +324,16 @@ namespace DanpheEMR.Controllers
                     //    EmployeeName = a.FirstName + " " + a.LastName,
                     //}).ToList().AsEnumerable();
                     var result = (from admission in dbContext.Admissions.Include(a => a.Visit.Patient)
-                                  join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
-                                  join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
+                                      //join employee in dbContext.Employees on admission.AdmittingDoctorId equals employee.EmployeeId
+                                      //join department in dbContext.Department on employee.DepartmentId equals department.DepartmentId
                                   join summary in dbContext.DischargeSummary on admission.PatientVisitId equals summary.PatientVisitId into dischargeSummaryTemp
                                   from dischargeSummary in dischargeSummaryTemp.DefaultIfEmpty()
                                   join note in dbContext.Notes on admission.PatientVisitId equals note.PatientVisitId into noteTemp
                                   from notes in noteTemp.DefaultIfEmpty()
                                       //join admDoctor in dbContext.Employees on admission.AdmittingDoctorId equals admDoctor.EmployeeId
                                   where admission.PatientVisitId == patientVisitId && admission.PatientId == patientId
+                                  let empName = dbContext.Employees.Where(doc => doc.EmployeeId == admission.AdmittingDoctorId).Select(d => d.FullName).FirstOrDefault() ?? string.Empty
+                                  let deptName = dbContext.Department.Where(d => d.DepartmentId == admission.Visit.DepartmentId).Select(n => n.DepartmentName).FirstOrDefault() ?? string.Empty
                                   select new
                                   {
                                       VisitCode = admission.Visit.VisitCode,
@@ -364,7 +345,7 @@ namespace DanpheEMR.Controllers
                                       DischargedBy = admission.DischargedBy,
                                       PatientCode = admission.Visit.Patient.PatientCode,
                                       AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = employee.Salutation + ". " + employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
+                                      AdmittingDoctorName = empName,//employee.Salutation + ". " + employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
                                       Address = admission.Visit.Patient.Address,
                                       AdmissionStatus = admission.AdmissionStatus,
                                       BillStatusOnDischarge = admission.BillStatusOnDischarge,
@@ -382,7 +363,7 @@ namespace DanpheEMR.Controllers
                                                          where mr.PatientId == admission.Visit.Patient.PatientId
                                                          && mr.PatientVisitId == admission.Visit.PatientVisitId
                                                          select mr.MedicalRecordId).FirstOrDefault(),
-                                      Department = department.DepartmentName,
+                                      Department = deptName,//department.DepartmentName,
                                       GuardianName = admission.CareOfPersonName,
                                       GuardianRelation = admission.CareOfPersonRelation,
                                       BedInformation = (from bedInfos in dbContext.PatientBedInfos
@@ -484,7 +465,7 @@ namespace DanpheEMR.Controllers
                                   where admission.AdmissionStatus == "admitted" &&
                                   (admission.Visit.Patient.FirstName + " " + (string.IsNullOrEmpty(admission.Visit.Patient.MiddleName) ? "" : admission.Visit.Patient.MiddleName + " ")
                                   + admission.Visit.Patient.LastName + admission.Visit.Patient.PatientCode + admission.Visit.Patient.PhoneNumber).Contains(search)
-                                  join emp in dbContext.Employees on admission.AdmittingDoctorId equals emp.EmployeeId
+                                  let emp = dbContext.Employees.Where(e => e.EmployeeId == admission.AdmittingDoctorId).FirstOrDefault()
                                   select new
                                   {
                                       VisitCode = admission.Visit.VisitCode,
@@ -499,9 +480,10 @@ namespace DanpheEMR.Controllers
                                       PhoneNumber = admission.Visit.Patient.PhoneNumber,
                                       Gender = admission.Visit.Patient.Gender,
                                       AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = emp.FullName,
+                                      AdmittingDoctorName = emp == null ? "" : emp.FullName,
                                       CreatedOn = admission.CreatedOn,
                                       IsPoliceCase = admission.IsPoliceCase != null ? admission.IsPoliceCase : false,
+                                      IsInsurancePatient = admission.IsInsurancePatient,
                                       BedInformation = (from bedInfos in dbContext.PatientBedInfos
                                                         where bedInfos.PatientVisitId == admission.Visit.PatientVisitId
                                                         && bedInfos.IsActive == true
@@ -522,7 +504,8 @@ namespace DanpheEMR.Controllers
                                                             BedOnHoldEnabled = bedInfos.BedOnHoldEnabled,
                                                             //AdmittedDate = bedInfos.ad,
                                                             //StartedOn = bedInfos.StartedOn,
-                                                            Ward = bedInfos.Ward
+                                                            Ward = bedInfos.Ward,
+                                                            IsInsurancePatient = admission.IsInsurancePatient
                                                         }).OrderByDescending(a => a.PatientBedInfoId).FirstOrDefault()
 
                                   }).OrderByDescending(r => r.AdmittedDate).AsQueryable();
@@ -629,10 +612,11 @@ namespace DanpheEMR.Controllers
 
                     var result = (from admission in dbContext.Admissions.Include(a => a.Visit.Patient)
                                   where admission.AdmissionStatus == "admitted"
-                                  join emp in dbContext.Employees on admission.AdmittingDoctorId equals emp.EmployeeId
+                                  //join emp in dbContext.Employees on admission.AdmittingDoctorId equals emp.EmployeeId
                                   join bedInfo in dbContext.PatientBedInfos on admission.PatientVisitId equals bedInfo.PatientVisitId
                                   where bedInfo.IsActive == true && bedInfo.Action == "transfer"
                                   && (!bedInfo.ReceivedBy.HasValue) && bedInfo.BedOnHoldEnabled == true
+                                  let empName = dbContext.Employees.Where(doc => doc.EmployeeId == admission.AdmittingDoctorId).Select(d => d.FullName).FirstOrDefault() ?? string.Empty
                                   select new
                                   {
                                       VisitCode = admission.Visit.VisitCode,
@@ -647,7 +631,7 @@ namespace DanpheEMR.Controllers
                                       PhoneNumber = admission.Visit.Patient.PhoneNumber,
                                       Gender = admission.Visit.Patient.Gender,
                                       AdmittingDoctorId = admission.AdmittingDoctorId,
-                                      AdmittingDoctorName = emp.FullName,
+                                      AdmittingDoctorName = empName,//emp.FullName,
                                       CreatedOn = admission.CreatedOn,
                                       BedInformation = (from bedInfos in dbContext.PatientBedInfos
                                                         where bedInfos.PatientVisitId == admission.Visit.PatientVisitId
@@ -793,6 +777,8 @@ namespace DanpheEMR.Controllers
                                    join anaesthetists in dbContext.Employees on dis.AnaesthetistsId equals anaesthetists.EmployeeId into anaesthistTemp
                                    from anesthist in anaesthistTemp.DefaultIfEmpty()
                                    join disType in dbContext.DischargeType on dis.DischargeTypeId equals disType.DischargeTypeId
+                                   join depart in dbContext.Department on visit.DepartmentId equals depart.DepartmentId
+                                   join pat in dbContext.Patients on visit.PatientId equals pat.PatientId
                                    where dis.PatientVisitId == patientVisitId
                                    select new
                                    {
@@ -804,12 +790,16 @@ namespace DanpheEMR.Controllers
                                        Certificate = dbContext.PatientCertificate.Where(a => a.DischargeSummaryId == dis.DischargeSummaryId).Select(a => a).ToList(),
                                        DrInchargeNMC = incharge.MedCertificationNo,
                                        DrInchargeLongSignature = incharge.LongSignature,
+                                       DrInchargeSignImgPath = string.IsNullOrEmpty(incharge.SignatoryImageName) ? null : "\\fileuploads\\EmployeeSignatures\\" + incharge.SignatoryImageName,
                                        ResidenceDrNMC = residenceDr.MedCertificationNo,
                                        ResidenceDrLongSignature = residenceDr.LongSignature,
+                                       ResidenceDrSignImgPath = string.IsNullOrEmpty(residenceDr.SignatoryImageName) ? null : "\\fileuploads\\EmployeeSignatures\\" + residenceDr.SignatoryImageName,
                                        ConsultantNMC = consultant.MedCertificationNo,
                                        ConsultantLongSignature = consultant.LongSignature,
-                                       AnaesthetistsNMC = anesthist.MedCertificationNo,
+                                       ConsultantSignImgPath = string.IsNullOrEmpty(consultant.SignatoryImageName) ? null : "\\fileuploads\\EmployeeSignatures\\" + consultant.SignatoryImageName,
+                                       AnaesthetistNMC = anesthist.MedCertificationNo,
                                        AnaesthetistLongSignature = anesthist.LongSignature,
+                                       AnaesthetistSignImgPath = string.IsNullOrEmpty(anesthist.SignatoryImageName) ? null : "\\fileuploads\\EmployeeSignatures\\" + anesthist.SignatoryImageName,
                                        DoctorInchargeName = incharge.Salutation + ". " + incharge.FirstName + " " + (string.IsNullOrEmpty(incharge.MiddleName) ? "" : incharge.MiddleName + " ") + incharge.LastName,
                                        Anaesthetists = anesthist.Salutation + ". " + anesthist.FirstName + " " + (string.IsNullOrEmpty(anesthist.MiddleName) ? "" : anesthist.MiddleName + " ") + anesthist.LastName,
                                        ConsultantName = consultant.Salutation + ". " + consultant.FirstName + " " + (string.IsNullOrEmpty(consultant.MiddleName) ? "" : consultant.MiddleName + " ") + consultant.LastName,
@@ -818,6 +808,8 @@ namespace DanpheEMR.Controllers
                                        BabyBirthCondition = dbContext.BabyBirthConditions.Where(A => A.BabyBirthConditionId == dis.BabyBirthConditionId).Select(a => a.BirthConditionType).FirstOrDefault(),
                                        DeathType = dbContext.DeathTypes.Where(a => a.DeathTypeId == dis.DeathTypeId).Select(a => a.DeathType).FirstOrDefault(),
                                        DeliveryType = dbContext.DeliveryTypes.Where(A => A.DeliveryTypeId == dis.DeliveryTypeId).Select(a => a.DeliveryTypeName).FirstOrDefault(),
+                                       depart.DepartmentName,
+                                       pat.Address,
 
                                    }).FirstOrDefault();
                     responseData.Status = "OK";
@@ -1089,11 +1081,14 @@ namespace DanpheEMR.Controllers
                     var admissionDetail = (from admission in dbContext.Admissions
                                            join visit in dbContext.Visits on admission.PatientVisitId equals visit.PatientVisitId
                                            join patient in dbContext.Patients on admission.PatientId equals patient.PatientId
-                                           join doctor in dbContext.Employees on admission.AdmittingDoctorId equals doctor.EmployeeId
                                            join bedInfos in dbContext.PatientBedInfos on admission.PatientVisitId equals bedInfos.PatientVisitId
                                            join ward in dbContext.Wards on bedInfos.WardId equals ward.WardId
                                            join bed in dbContext.Beds on bedInfos.BedId equals bed.BedId
+                                           join dept in dbContext.Department on visit.DepartmentId equals dept.DepartmentId
                                            where admission.PatientVisitId == patientVisitId
+
+                                           let empList = dbContext.Employees.Where(d => d.IsActive == true)
+                                           //join doctor in dbContext.Employees on admission.AdmittingDoctorId equals doctor.EmployeeId
                                            select new
                                            {
                                                PatientCode = patient.PatientCode,
@@ -1104,7 +1099,7 @@ namespace DanpheEMR.Controllers
                                                PhoneNumber = patient.PhoneNumber,
                                                CountrySubDivisionId = patient.CountrySubDivisionId,
                                                InPatientNo = visit.VisitCode,
-                                               AdmittingDoctor = doctor.Salutation + ". " + doctor.FirstName + " " + (string.IsNullOrEmpty(doctor.MiddleName) ? "" : doctor.MiddleName + " ") + doctor.LastName,
+                                               AdmittingDoctor = admission.AdmittingDoctorId.HasValue ? empList.Where(e => e.EmployeeId == admission.AdmittingDoctorId).Select(dc => dc.FullName).FirstOrDefault() : "",
                                                AdmissionDate = admission.AdmissionDate,
                                                bedInfos.PatientBedInfoId,
                                                Ward = ward.WardName,
@@ -1114,7 +1109,11 @@ namespace DanpheEMR.Controllers
                                                CareOfPersonPhoneNo = admission.CareOfPersonPhoneNo,
                                                CareOfPersonRelation = admission.CareOfPersonRelation,
 
-                                               UserId = admission.CreatedBy
+                                               UserId = admission.CreatedBy,
+                                               DepartmentName = dept.DepartmentName,
+                                               Ins_HasInsurance = visit.Ins_HasInsurance,
+                                               ClaimCode = visit.ClaimCode,
+                                               Ins_NshiNumber = patient.Ins_NshiNumber
                                            }).ToList();
 
                     var stickerDetail = (from adt in admissionDetail
@@ -1137,12 +1136,14 @@ namespace DanpheEMR.Controllers
                                              Ward = adt.Ward,
                                              BedCode = adt.BedCode,
 
-
+                                             RequestingDepartmentName = adt.DepartmentName,
                                              CareOfPersonName = adt.CareOfPersonName,
                                              CareOfPersonPhoneNo = adt.CareOfPersonPhoneNo,
                                              CareOfPersonRelation = adt.CareOfPersonRelation,
-
-                                             User = user.UserName
+                                             User = user.UserName,
+                                             Ins_HasInsurance = adt.Ins_HasInsurance,
+                                             ClaimCode = adt.ClaimCode,
+                                             Ins_NshiNumber = adt.Ins_NshiNumber
                                          }).OrderByDescending(a => a.PatientBedInfoId).FirstOrDefault();
                     responseData.Status = "OK";
                     //using double query since it was throwing exception 'Only primitive types or enumeration types are supported in this context' (when using userList and subDivList in the first query)
@@ -1162,11 +1163,12 @@ namespace DanpheEMR.Controllers
                     var wristBandInfo_Temp = (from admission in dbContext.Admissions
                                               join visit in dbContext.Visits on admission.PatientVisitId equals visit.PatientVisitId
                                               join patient in dbContext.Patients on admission.PatientId equals patient.PatientId
-                                              join doctor in dbContext.Employees on admission.AdmittingDoctorId equals doctor.EmployeeId
+                                              //join doctor in dbContext.Employees on admission.AdmittingDoctorId equals doctor.EmployeeId
                                               //join bedInfos in dbContext.PatientBedInfos on admission.PatientVisitId equals bedInfos.PatientVisitId
                                               //join ward in dbContext.Wards on bedInfos.WardId equals ward.WardId
                                               //join bed in dbContext.Beds on bedInfos.BedId equals bed.BedId
                                               where admission.PatientVisitId == patientVisitId
+                                              let empName = dbContext.Employees.Where(doc => doc.EmployeeId == admission.AdmittingDoctorId).Select(d => d.FullName).FirstOrDefault() ?? string.Empty
                                               select new
                                               {
                                                   PatientCode = patient.PatientCode,
@@ -1178,7 +1180,7 @@ namespace DanpheEMR.Controllers
                                                   PhoneNumber = patient.PhoneNumber,
                                                   CountrySubDivisionId = patient.CountrySubDivisionId,
                                                   InPatientNo = visit.VisitCode,
-                                                  AdmittingDoctor = doctor.Salutation + ". " + doctor.FirstName + " " + (string.IsNullOrEmpty(doctor.MiddleName) ? "" : doctor.MiddleName + " ") + doctor.LastName,
+                                                  AdmittingDoctor = empName,//doctor.Salutation + ". " + doctor.FirstName + " " + (string.IsNullOrEmpty(doctor.MiddleName) ? "" : doctor.MiddleName + " ") + doctor.LastName,
                                                   AdmissionDate = admission.AdmissionDate,
 
                                                   BedInfo = (
@@ -1314,8 +1316,13 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "get-active-FiscalYear")
                 {
-                    var year = dbContext.BillingFiscalYears.Where(a => a.IsActive == true).Select(a => a.FiscalYearName).ToList().LastOrDefault();
-                    responseData.Results = year;
+                    //below is the logic to get currentFiscalYear: sud-6May'21 
+                    DateTime currentDate = DateTime.Now.Date;
+                    var currFiscYearName = dbContext.BillingFiscalYears.Where(fsc => fsc.StartYear <= currentDate && fsc.EndYear >= currentDate)
+                                       .Select(a => a.FiscalYearName).FirstOrDefault();
+
+                    //var year = dbContext.BillingFiscalYears.Where(a => a.IsActive == true).Select(a => a.FiscalYearName).ToList().LastOrDefault();
+                    responseData.Results = currFiscYearName;
                     responseData.Status = "OK";
                 }
                 else if (reqType == "get-Certificate")
@@ -1398,36 +1405,6 @@ namespace DanpheEMR.Controllers
                     var preferenceValue = (from preference in dbContext.EmployeePreferences
                                            where preference.EmployeeId == empId &&
                                            preference.PreferenceName == "Patientpreferences" &&
-                                           preference.IsActive == true
-                                           select preference.PreferenceValue).FirstOrDefault();
-                    if (preferenceValue != null)
-                    {
-                        XmlDocument prefXmlDocument = new XmlDocument();
-                        prefXmlDocument.LoadXml(preferenceValue);
-                        // selecting the node of xml Document with tag LabTestId
-
-                        XmlNodeList nodes = prefXmlDocument.GetElementsByTagName("PatientId");
-                        List<int> patientIds = new List<int>();
-                        for (int i = 0; i < nodes.Count; i++)
-                        {
-                            int patId = Convert.ToInt32(nodes[i].InnerXml);
-                            patientIds.Add(patId);
-                        }
-
-                        responseData.Results = patientIds;
-                    }
-                    responseData.Status = "OK";
-                }
-                else if (reqType == "get-emp-followup")
-                {
-                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-                    int empId = currentUser.EmployeeId;
-
-                    List<OrderItemsVM> retList = new List<OrderItemsVM>();
-
-                    var preferenceValue = (from preference in dbContext.EmployeePreferences
-                                           where preference.EmployeeId == empId &&
-                                           preference.PreferenceName == "Followuppreferences" &&
                                            preference.IsActive == true
                                            select preference.PreferenceValue).FirstOrDefault();
                     if (preferenceValue != null)
@@ -1533,7 +1510,7 @@ namespace DanpheEMR.Controllers
                     WardId = uniqueBedGroup.Key,
                     TotalBed = uniqueBedGroup.Count(),
                     Occupied = uniqueBedGroup.Count(bed => bed.IsOccupied == true),
-                    Vacant = uniqueBedGroup.Count(bed => bed.IsOccupied == false)
+                    Vacant = uniqueBedGroup.Count(bed => (bed.IsOccupied == false) && (bed.IsActive == true))
                 }).ToListAsync();
                 if (wardBedInfoList == null)
                 {
@@ -1577,25 +1554,30 @@ namespace DanpheEMR.Controllers
                     var pattNm = dbContext.Patients.ToList().Where(a => a.PatientId == clientAdt.PatientId).FirstOrDefault();
                     var bedcode = clientAdt.PatientBedInfos[0].Bed.BedCode;
 
-                    SmsModel smsmdl = new SmsModel();
-                    EmployeeModel docinfo = DanpheJSONConvert.DeserializeObject<EmployeeModel>(ipDataString);
-                    var docname = dbContext.Employees.ToList().Where(a => a.EmployeeId == clientAdt.AdmittingDoctorId).Select(a => a.FullName).FirstOrDefault();
-                    var patcode = dbContext.Patients.ToList().Where(a => a.PatientId == clientAdt.PatientId).Select(a => a.PatientCode).FirstOrDefault();
-                    var smsmsg = "Dear,";
-                    var smsmsg1 = "has been admitted to";
-                    smsmdl.SmsInformation = smsmsg;
-                    smsmdl.PatientId = clientAdt.PatientId;
-                    smsmdl.DoctorId = clientAdt.AdmittingDoctorId;
-                    smsmdl.CreatedOn = clientAdt.CreatedOn;
-                    smsmdl.CreatedBy = clientAdt.CreatedBy;
+                    if (clientAdt.AdmittingDoctorId.HasValue && clientAdt.AdmittingDoctorId > 0)
+                    {
+                        SmsModel smsmdl = new SmsModel();
+                        EmployeeModel docinfo = DanpheJSONConvert.DeserializeObject<EmployeeModel>(ipDataString);
+                        var docname = dbContext.Employees.ToList().Where(a => a.EmployeeId == clientAdt.AdmittingDoctorId).Select(a => a.FullName).FirstOrDefault();
+                        var patcode = dbContext.Patients.ToList().Where(a => a.PatientId == clientAdt.PatientId).Select(a => a.PatientCode).FirstOrDefault();
+                        var smsmsg = "Dear,";
+                        var smsmsg1 = "has been admitted to";
+                        smsmdl.SmsInformation = smsmsg;
+                        smsmdl.PatientId = clientAdt.PatientId;
+                        smsmdl.DoctorId = clientAdt.AdmittingDoctorId;
+                        smsmdl.CreatedOn = clientAdt.CreatedOn;
+                        smsmdl.CreatedBy = clientAdt.CreatedBy;
 
-                    smsmdl.SmsInformation = smsmsg + " " + docname + ",\n" + pattNm.FirstName + " " + pattNm.LastName + " (" + patcode + ") " + smsmsg1 + " " + bedcode;
+                        smsmdl.SmsInformation = smsmsg + " " + docname + ",\n" + pattNm.FirstName + " " + pattNm.LastName + " (" + patcode + ") " + smsmsg1 + " " + bedcode;
 
-                    var docnum = dbContext.Employees.ToList().Where(a => a.EmployeeId == clientAdt.AdmittingDoctorId).Select(a => a.ContactNumber).FirstOrDefault();
-
-                    responseData.Results = res;
-                    Task.Run(() => PostSMS(smsmdl, docname, dbContext));
-
+                        var docnum = dbContext.Employees.ToList().Where(a => a.EmployeeId == clientAdt.AdmittingDoctorId).Select(a => a.ContactNumber).FirstOrDefault();
+                        responseData.Results = res;
+                        Task.Run(() => PostSMS(smsmdl, docname, dbContext));
+                    }
+                    else
+                    {
+                        responseData.Results = res;
+                    }
 
                     //clientAdt.CreatedOn = DateTime.Now;
                     //clientAdt.PatientBedInfos[0].CreatedOn = DateTime.Now;
@@ -1808,6 +1790,104 @@ namespace DanpheEMR.Controllers
                     }
 
                 }
+                else if (reqType == "discharge-zero-item")
+                {
+                    ZeroItemDischargeModel data = DanpheJSONConvert.DeserializeObject<ZeroItemDischargeModel>(ipDataString);
+                    BillingDeposit deposit = new BillingDeposit();
+
+                    //int patId = dbContext.Visits.AsNoTracking().Where(v => v.PatientVisitId == visitId).Select(s => s.PatientId).FirstOrDefault();
+                    using (TransactionScope trans = new TransactionScope())
+                    {
+                        try
+                        {
+                            var admissionDetail = dbContext.Admissions.Where(a => a.PatientVisitId == data.PatientVisitId).FirstOrDefault();
+                            admissionDetail.DischargedBy = currentUser.EmployeeId;
+                            admissionDetail.DischargeDate = data.DischargeDate;
+                            admissionDetail.AdmissionStatus = ENUM_AdmissionStatus.discharged;
+                            if (data.DischargeFrom == "insurance")
+                            {
+                                admissionDetail.BillStatusOnDischarge = ENUM_BillingStatus.unpaid;
+                            }
+                            else if (data.DischargeFrom == "billing")
+                            {
+                                admissionDetail.BillStatusOnDischarge = ENUM_BillingStatus.paid;
+                            }
+                            admissionDetail.DischargeRemarks = data.DischargeRemarks;
+                            dbContext.Entry(admissionDetail).Property(a => a.DischargedBy).IsModified = true;
+                            dbContext.Entry(admissionDetail).Property(a => a.DischargeDate).IsModified = true;
+                            dbContext.Entry(admissionDetail).Property(a => a.AdmissionStatus).IsModified = true;
+                            dbContext.Entry(admissionDetail).Property(a => a.BillStatusOnDischarge).IsModified = true;
+                            dbContext.Entry(admissionDetail).Property(a => a.DischargeRemarks).IsModified = true;
+                            dbContext.SaveChanges();
+
+
+                            var patBedInfo = dbContext.PatientBedInfos.Where(b => (b.PatientVisitId == data.PatientVisitId) && !b.EndedOn.HasValue && (b.OutAction == null)).OrderByDescending(o => o.PatientBedInfoId).FirstOrDefault();
+                            patBedInfo.OutAction = ENUM_AdmissionStatus.discharged;
+                            patBedInfo.EndedOn = data.DischargeDate;
+                            dbContext.Entry(patBedInfo).Property(a => a.OutAction).IsModified = true;
+                            dbContext.Entry(patBedInfo).Property(a => a.EndedOn).IsModified = true;
+                            dbContext.SaveChanges();
+
+
+                            var bed = dbContext.Beds.Where(b => b.BedId == patBedInfo.BedId).FirstOrDefault();
+                            //set bed to not occupied
+                            bed.IsOccupied = false;
+                            bed.OnHold = null;
+                            bed.HoldedOn = null;
+                            bed.IsReserved = false;
+                            dbContext.Entry(bed).Property(a => a.IsOccupied).IsModified = true;
+                            dbContext.Entry(bed).Property(a => a.OnHold).IsModified = true;
+                            dbContext.Entry(bed).Property(a => a.HoldedOn).IsModified = true;
+                            dbContext.Entry(bed).Property(a => a.IsReserved).IsModified = true;
+                            dbContext.SaveChanges();
+
+
+                            if (data.DepositBalance > 0)
+                            {
+                                deposit.PatientId = data.PatientId;
+                                deposit.PatientVisitId = data.PatientVisitId;
+                                deposit.Amount = data.DepositBalance;
+                                deposit.DepositBalance = 0;
+                                deposit.CounterId = data.CounterId;
+                                deposit.DepositType = ENUM_BillDepositType.ReturnDeposit;
+                                deposit.CreatedOn = System.DateTime.Now;
+                                deposit.CreatedBy = currentUser.EmployeeId;
+                                BillingFiscalYear fiscYear = BillingBL.GetFiscalYear(connString);
+                                deposit.FiscalYearId = fiscYear.FiscalYearId;
+                                deposit.ReceiptNo = BillingBL.GetDepositReceiptNo(connString);
+                                deposit.FiscalYear = fiscYear.FiscalYearFormatted;
+                                EmployeeModel currentEmp = dbContext.Employees.Where(emp => emp.EmployeeId == currentUser.EmployeeId).AsNoTracking().FirstOrDefault();
+                                deposit.BillingUser = currentEmp.FullName;
+                                deposit.IsActive = true;
+
+                                dbContext.BillDeposit.Add(deposit);
+                                dbContext.SaveChanges();
+
+                                EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                                empCashTransaction.TransactionType = deposit.DepositType;
+                                empCashTransaction.ReferenceNo = deposit.DepositId;
+                                empCashTransaction.InAmount = 0;
+                                empCashTransaction.OutAmount = deposit.Amount;
+                                empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                                empCashTransaction.TransactionDate = DateTime.Now;
+                                empCashTransaction.CounterID = deposit.CounterId;
+                                empCashTransaction.IsActive = true;
+
+                                dbContext.EmpCashTransactions.Add(empCashTransaction);
+                                dbContext.SaveChanges();
+                            }
+
+                            trans.Complete();
+                        }
+                        catch (Exception ex)
+                        {
+                            trans.Dispose();
+                            throw (ex);
+                        }
+                    }
+                    responseData.Status = "OK";
+                    responseData.Results = deposit;
+                }
                 else
                 {
                     responseData.Status = "Failed";
@@ -1883,6 +1963,9 @@ namespace DanpheEMR.Controllers
                     BillingFiscalYear fiscalYear = BillingBL.GetFiscalYear(base.connString);
                     var currentDate = DateTime.Now;
 
+                    var billingTransaction = admissionFromClient.BillingTransaction;
+                    var billingTransactionItems = admissionFromClient.BillingTransaction.BillingTransactionItems;
+
                     //add visit
                     var visit = VisitBL.GetVisitItemsMapped(admissionFromClient.PatientId,
                         "inpatient",
@@ -1890,9 +1973,33 @@ namespace DanpheEMR.Controllers
                         admissionFromClient.AdmissionDate,
                         currentUser.EmployeeId,
                         connString);
+                    visit.Ins_HasInsurance = admissionFromClient.Ins_HasInsurance;
+
+                    if (visit.Ins_HasInsurance.HasValue && visit.Ins_HasInsurance.Value == true)
+                    {
+                        //Need to generate new claimcode when LastClaimCode is not used..
+                        if (admissionFromClient.IsLastClaimCodeUsed == false)
+                        {
+                            INS_NewClaimCodeDTO newClaimObj = InsuranceBL.GetGovInsNewClaimCode(admissionDb);
+                            visit.ClaimCode = newClaimObj.NewClaimCode;
+                        }
+                        else
+                        {
+                            visit.ClaimCode = admissionFromClient.ClaimCode;
+                        }
+                    }
+
+
                     visit.DepartmentId = admissionFromClient.RequestingDeptId;
                     admissionDb.Visits.Add(visit);
                     admissionDb.SaveChanges();
+
+                    //update latest claimcode in patient table only after visit is saved..
+                    if (visit.Ins_HasInsurance == true)
+                    {
+                        InsuranceBL.UpdateLatestClaimCode(connString, visit.PatientId, visit.ClaimCode, currentUser.EmployeeId);
+                        admissionFromClient.ClaimCode = visit.ClaimCode;//actual claimcode is generated and already assigned to visit object.. we need to reuse that.
+                    }
 
                     //adding admission
                     admissionFromClient.CreatedOn = currentDate;
@@ -1901,6 +2008,8 @@ namespace DanpheEMR.Controllers
                     admissionFromClient.PatientBedInfos[0].CreatedOn = currentDate;
                     admissionFromClient.PatientBedInfos[0].CreatedBy = currentUser.EmployeeId;
                     admissionFromClient.PatientBedInfos[0].PatientVisitId = visit.PatientVisitId;
+                    var checkInsurancePatient = visit.Ins_HasInsurance.HasValue ? visit.Ins_HasInsurance : false;
+                    admissionFromClient.IsInsurancePatient = (checkInsurancePatient == true) ? true : false;
 
                     admissionDb.Admissions.Add(admissionFromClient);
 
@@ -2008,6 +2117,8 @@ namespace DanpheEMR.Controllers
 
                             admissionDb.BillDeposit.Add(returnOutPat);
                             admissionDb.SaveChanges();
+
+                            returnOutPat.FiscalYear = fiscalYear.FiscalYearName;
                         }
 
 
@@ -2033,9 +2144,11 @@ namespace DanpheEMR.Controllers
 
                             admissionDb.BillDeposit.Add(InPatDeposit);
                             admissionDb.SaveChanges();
+
                         }
                     }
 
+                    BillingDbContext billingDbContext = new BillingDbContext(connString);
                     //adding deposit
                     if (admissionFromClient.BilDeposit.Amount > 0)
                     {
@@ -2046,6 +2159,18 @@ namespace DanpheEMR.Controllers
                         admissionFromClient.BilDeposit.FiscalYearId = fiscalYear.FiscalYearId;
                         admissionFromClient.BilDeposit.ReceiptNo = depositReceiptNo;
                         admissionDb.BillDeposit.Add(admissionFromClient.BilDeposit);
+                        admissionDb.SaveChanges();
+
+                        EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                        empCashTransaction.TransactionType = ENUM_BillDepositType.Deposit;
+                        empCashTransaction.ReferenceNo = admissionFromClient.BilDeposit.DepositId;
+                        empCashTransaction.InAmount = admissionFromClient.BilDeposit.Amount;
+                        empCashTransaction.OutAmount = 0;
+                        empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                        //empCashTransaction.Description = billingTransaction.de;
+                        empCashTransaction.TransactionDate = DateTime.Now;
+                        empCashTransaction.CounterID = admissionFromClient.BilDeposit.CounterId;
+                        BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
                     }
                     //adding admission related charges
                     var admissionBillItems = GetADTBillingTransactionItems(admissionDb,
@@ -2062,18 +2187,139 @@ namespace DanpheEMR.Controllers
                         {
                             itm.Quantity = 0;
                         }
+                        if (admissionFromClient.Ins_HasInsurance == true)
+                        {
+                            var billItm = admissionDb.BillItemPrice.Where(a => a.ItemId == itm.ItemId && a.ServiceDepartmentId == itm.ServiceDepartmentId).FirstOrDefault();
+                            itm.IsInsurance = true;
+                            itm.Price = billItm.GovtInsurancePrice ?? 0;
+                        }
+                        else
+                        {
+                            itm.IsInsurance = false;
+                        }
                         admissionDb.BillTxnItem.Add(itm);
                     }
                     admissionDb.SaveChanges();
+
+                    if (admissionFromClient.IsBillingEnabled == true)
+                    {
+                        var billItems = billingTransaction.BillingTransactionItems;
+
+                        billingTransaction.PatientId = admissionFromClient.PatientId;
+                        billingTransaction.PatientVisitId = visit.PatientVisitId;
+                        billingTransaction.FiscalYearId = fiscalYear.FiscalYearId;
+                        billingTransaction.FiscalYear = fiscalYear.FiscalYearName;
+                        billingTransaction.InvoiceCode = (visit.Ins_HasInsurance == true) ? "INS" : "BL";
+                        billingTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
+                        billingTransaction.TransactionType = "inpatient";
+                        billingTransaction.CreatedBy = currentUser.EmployeeId;
+                        billingTransaction.CreatedOn = currentDate;
+
+                        if (!visit.Ins_HasInsurance.HasValue || (visit.Ins_HasInsurance == false))
+                        {
+                            if (billingTransaction.PaymentMode == "credit")
+                            {
+                                billingTransaction.BillStatus = ENUM_BillingStatus.unpaid;
+                                billingTransaction.PaidAmount = 0;
+                                billingTransaction.PaidDate = null;
+                                billingTransaction.PaymentReceivedBy = null;
+                                billingTransaction.PaidCounterId = null;
+                            }
+                            else if (billingTransaction.PaymentMode == "cash")
+                            {
+                                billingTransaction.BillStatus = ENUM_BillingStatus.paid;
+                                billingTransaction.PaidDate = currentDate;
+                                billingTransaction.PaymentReceivedBy = currentUser.EmployeeId;
+                                billingTransaction.PaidCounterId = billingTransaction.CounterId;
+                                billingTransaction.PaidAmount = billingTransaction.TotalAmount;
+                            }
+                            else
+                            {
+                                throw new Exception("Unhandled Payment Mode found");
+                            }
+                        }
+                        else
+                        {
+                            billingTransaction.BillStatus = ENUM_BillingStatus.unpaid;
+                            billingTransaction.InsuranceProviderId = 1; ///for now there is only one provider, which is Gov Insurance so given 1
+                            billingTransaction.ClaimCode = admissionFromClient.ClaimCode;
+                        }
+                        billingTransaction.InvoiceType = "ip-partial";
+                        billingTransaction.BillingTransactionItems = new List<BillingTransactionItemModel>();
+                        admissionDb.BillingTransactions.Add(billingTransaction);
+                        admissionDb.SaveChanges();
+
+
+                        if (billingTransaction.PaymentMode == "cash")
+                        { //If transaction is done with Depositor paymentmode is credit we don't have to add in EmpCashTransaction table
+                            EmpCashTransactionModel empCashTransaction = new EmpCashTransactionModel();
+                            empCashTransaction.TransactionType = "CashSales";
+                            empCashTransaction.ReferenceNo = billingTransaction.BillingTransactionId;
+                            empCashTransaction.InAmount = billingTransaction.TotalAmount;
+                            empCashTransaction.OutAmount = 0;
+                            empCashTransaction.EmployeeId = currentUser.EmployeeId;
+                            empCashTransaction.TransactionDate = DateTime.Now;
+                            empCashTransaction.CounterID = billingTransaction.CounterId;
+
+                            BillingBL.AddEmpCashTransaction(billingDbContext, empCashTransaction);
+                        }
+
+                        foreach (var item in billItems)
+                        {
+                            item.BillStatus = (visit.Ins_HasInsurance == true) ? ENUM_BillingStatus.unpaid : ENUM_BillingStatus.paid;
+                            item.BillingTransactionId = billingTransaction.BillingTransactionId;
+                            item.PatientId = billingTransaction.PatientId;
+                            item.PatientVisitId = billingTransaction.PatientVisitId;
+                            item.DiscountSchemeId = admissionFromClient.DiscountSchemeId;
+                            item.CounterId = billingTransaction.CounterId;
+                            if (!visit.Ins_HasInsurance.HasValue || (visit.Ins_HasInsurance == false))
+                            {
+                                item.PaidDate = currentDate;
+                                item.PaymentReceivedBy = currentUser.EmployeeId;
+                                item.PaidCounterId = billingTransaction.CounterId;
+                            }
+                            item.VisitType = ENUM_VisitType.inpatient;
+                            item.BillingType = ENUM_BillingType.inpatient;
+                            item.CreatedBy = currentUser.EmployeeId;
+                            item.CreatedOn = currentDate;
+                            admissionDb.BillTxnItem.Add(item);
+                        }
+
+                        admissionDb.SaveChanges();
+                    }
+
+
                     //commit transaction
                     dbContextTransaction.Commit();
+
+                    //check and update invoice number only when BillingInvoice is generated from the Frontend..
+                    //else no need.
+                    //Remarks: Also need to add condition check for Transaction committed or not. 
+                    if (admissionFromClient.IsBillingEnabled != null && admissionFromClient.IsBillingEnabled.Value == true)
+                    {
+                        //Starts: This code is for Temporary solution for Checking and Updating the Invoice Number if there is duplication Found
+                        List<SqlParameter> paramList = new List<SqlParameter>() {
+                                new SqlParameter("@fiscalYearId", billingTransaction.FiscalYearId),
+                                new SqlParameter("@billingTransactionId", billingTransaction.BillingTransactionId),
+                                new SqlParameter("@invoiceNumber", billingTransaction.InvoiceNo)
+                            };
+
+                        DataSet dataFromSP = DALFunctions.GetDatasetFromStoredProc("SP_BIL_Update_Duplicate_Invoice_If_Exists", paramList, billingDbContext);
+                        var data = new List<object>();
+                        if (dataFromSP.Tables.Count > 0)
+                        {
+                            billingTransaction.InvoiceNo = Convert.ToInt32(dataFromSP.Tables[0].Rows[0]["LatestInvoiceNumber"].ToString());
+                        }
+                    }
 
                     var userId = admissionFromClient.BilDeposit.CreatedBy;
                     var username = (from user in userList
                                     where user.EmployeeId == userId
                                     select user.UserName).FirstOrDefault();
-
                     admissionFromClient.BilDeposit.BillingUser = username;
+                    admissionFromClient.BilDeposit.FiscalYear = fiscalYear.FiscalYearName;
+                    admissionFromClient.BillingTransaction = billingTransaction;
+
                     return admissionFromClient;
                 }
                 catch (Exception ex)
@@ -2256,6 +2502,7 @@ namespace DanpheEMR.Controllers
                 throw new Exception(ex.Message);
             }
         }
+
         private void UpdateBillTxnQuantity(PatientBedInfo newBedInfo, int bedInfoId, AdmissionDbContext dbContext)
         {
             try
@@ -2514,6 +2761,7 @@ namespace DanpheEMR.Controllers
 
                     //updating bedPatInfo
                     var bedInfo = admissionDbContext.PatientBedInfos.Where(a => a.PatientVisitId == cancelDischarge.PatientVisitId).Select(a => a).OrderByDescending(a => a.PatientBedInfoId).FirstOrDefault();
+                    bedInfo.OutAction = null;
                     bedInfo.EndedOn = null;
                     admissionDbContext.Entry(bedInfo).Property(a => a.EndedOn).IsModified = true;
 
@@ -2522,7 +2770,7 @@ namespace DanpheEMR.Controllers
                     bed.IsOccupied = true;
                     admissionDbContext.Entry(bed).Property(a => a.IsOccupied).IsModified = true;
 
-                    
+
                     //restoring patient deposits, if exists
                     var deposits = admissionDbContext.BillDeposit.Where(a => a.PatientVisitId == cancelDischarge.PatientVisitId && a.DepositType != "Deposit").Select(a => a).ToList();
                     if (deposits.Count > 0)
@@ -2545,7 +2793,7 @@ namespace DanpheEMR.Controllers
                                 adv.ReceiptNo = BillingBL.GetDepositReceiptNo(connString);
                                 adv.Remarks = null;
                                 adv.CounterId = cancelDischarge.CounterId;
-                                adv.PrintCount =0;
+                                adv.PrintCount = 0;
                                 adv.PaymentMode = "cash";
                                 adv.BillingTransactionId = null;
                                 admissionDbContext.BillDeposit.Add(adv);
@@ -2568,8 +2816,13 @@ namespace DanpheEMR.Controllers
 
                         var billtxn = admissionDbContext.BillingTransactions.Where(a => a.BillingTransactionId == tempTxnId && a.InvoiceType != "ip-partial").Select(a => a).FirstOrDefault();
 
+
+                        //var currFiscYear = admissionDbContext.BillingFiscalYears.Where(a => a.IsActive == true).Select(a => a).FirstOrDefault();
+                        //below is the logic to get currentFiscalYear: sud-6May'21
+                        DateTime currentDate = DateTime.Now.Date;
+                        var currFiscYear = admissionDbContext.BillingFiscalYears.Where(fsc => fsc.StartYear <= currentDate && fsc.EndYear >= currentDate).FirstOrDefault();
+
                         //Return Entry for billtxnitms
-                        var currFiscYear = admissionDbContext.BillingFiscalYears.Where(a => a.IsActive == true).Select(a => a).FirstOrDefault();
                         //generate credit note no for return bills 
                         int? maxCreditNoteNum = admissionDbContext.BillReturns.Where(a => a.FiscalYearId == currFiscYear.FiscalYearId).Max(a => a.CreditNoteNumber);
                         BillInvoiceReturnModel retBill = new BillInvoiceReturnModel();
@@ -2713,6 +2966,7 @@ namespace DanpheEMR.Controllers
                            .FirstOrDefault();
 
                     int oldBedId = oldBedInfo.BedId;
+                    int patVisitId = oldBedInfo.PatientVisitId;
 
                     using (var dbTransaction = dbContext.Database.BeginTransaction())
                     {
@@ -2724,14 +2978,11 @@ namespace DanpheEMR.Controllers
                             { oldBedInfo.EndedOn = newBedInfo.StartedOn; }
 
                             newBedInfo.BedOnHoldEnabled = false;
-
                             oldBedInfo.OutAction = "transfer";
-
                             dbContext.Entry(oldBedInfo).State = EntityState.Modified;
                             dbContext.Entry(oldBedInfo).Property(x => x.CreatedOn).IsModified = false;
                             dbContext.Entry(oldBedInfo).Property(x => x.StartedOn).IsModified = false;
                             dbContext.Entry(oldBedInfo).Property(x => x.CreatedBy).IsModified = false;
-
 
                             var oldBed = dbContext.Beds.Where(b => b.BedId == oldBedId).FirstOrDefault();
                             oldBed.IsOccupied = false;
@@ -2766,12 +3017,8 @@ namespace DanpheEMR.Controllers
                                     dbContext.Entry(newBed).Property(x => x.HoldedOn).IsModified = true;
                                 }
                             }
-
-
                             dbContext.Entry(oldBed).Property(x => x.IsOccupied).IsModified = true;
-
                             dbContext.Entry(newBed).Property(x => x.IsOccupied).IsModified = true;
-
                             dbContext.SaveChanges();
 
                             CoreDbContext coreDbContext = new CoreDbContext(connString);
@@ -2780,28 +3027,34 @@ namespace DanpheEMR.Controllers
                             //this is the json format for parameter value of this:  {"DoAutoAddBillingItems":false,"DoAutoAddBedItem":false,"ItemList":[{ "ServiceDepartmentId":2,"ItemId":10}]"}
                             //we need to first read the value from this parameter.. 
                             bool isAutoAddBedItems = CommonFunctions.GetCoreParameterValueByKeyName_Boolean(coreDbContext, "ADT", "AutoAddBillingItems", "DoAutoAddBedItem");
-
+                            newBedInfo.CreatedOn = DateTime.Now;
+                            dbContext.PatientBedInfos.Add(newBedInfo);
 
                             //sud:30Apr'20--update billtxnqty only if autoaddbeditems is true..
                             if (isAutoAddBedItems == true)
                             {
-                                UpdateBillTxnQuantity(newBedInfo, bedInfoId, dbContext);
+                                var allBedItemsOfPatientByVisit = dbContext.BillTxnItem.Where(b => (b.PatientVisitId == patVisitId)
+                                                        && (b.ServiceDepartment.IntegrationName.ToLower() == "bed charges") && (b.BillStatus.ToLower() == "provisional")
+                                                        ).OrderBy(o => o.RequisitionDate).ToList();
+
+                                var existingBedBillItem = allBedItemsOfPatientByVisit.Where(b => b.ItemId == newBedInfo.BedFeatureId).FirstOrDefault();
+                                if (existingBedBillItem == null)
+                                {
+                                    BillingFiscalYear fiscYear = BillingBL.GetFiscalYear(connString);
+                                    newBedInfo.BedChargeBilItm.ProvisionalFiscalYearId = fiscYear.FiscalYearId;
+                                    newBedInfo.BedChargeBilItm.RequisitionDate = newBedInfo.StartedOn;
+                                    newBedInfo.BedChargeBilItm.CreatedOn = System.DateTime.Now;
+                                    newBedInfo.BedChargeBilItm.Quantity = 1;
+
+                                    newBedInfo.BedChargeBilItm.IsInsurance = newBedInfo.IsInsurancePatient.HasValue ? newBedInfo.IsInsurancePatient : false;
+
+                                    dbContext.BillTxnItem.Add(newBedInfo.BedChargeBilItm);
+                                    dbContext.SaveChanges();
+                                }
+                                //UpdateBillTxnQuantity(patVisitId, dbContext);
                             }
 
 
-                            newBedInfo.CreatedOn = DateTime.Now;
-                            dbContext.PatientBedInfos.Add(newBedInfo);
-
-
-                            //sud:30Apr'20--update BedChargeBilItm only if autoaddbeditems is true..
-                            if (isAutoAddBedItems == true && newBedInfo.BedChargeBilItm.ItemId > 0)
-                            {
-                                //bed charges billing txn item
-                                newBedInfo.BedChargeBilItm.RequisitionDate = System.DateTime.Now;
-                                newBedInfo.BedChargeBilItm.CreatedOn = System.DateTime.Now;
-                                newBedInfo.BedChargeBilItm.Quantity = 0;
-                                dbContext.BillTxnItem.Add(newBedInfo.BedChargeBilItm);
-                            }
 
                             dbContext.SaveChanges();
                             dbTransaction.Commit();
@@ -2996,6 +3249,8 @@ namespace DanpheEMR.Controllers
                                 admission.ModifiedBy = currentUser.EmployeeId;
                                 admission.ModifiedOn = DateTime.Now;
                                 admission.ProcedureType = dischargeDetail.ProcedureType;
+                                admission.DiscountSchemeId = dischargeDetail.DiscountSchemeId;
+                                admission.DischargeRemarks = dischargeDetail.Remarks;
 
                                 FreeBed(bedInfo.PatientBedInfoId, dischargeDetail.DischargeDate, admission.AdmissionStatus);
 
@@ -3005,6 +3260,7 @@ namespace DanpheEMR.Controllers
                                 dbContext.Entry(admission).Property(a => a.BillStatusOnDischarge).IsModified = true;
                                 dbContext.Entry(admission).Property(a => a.ModifiedBy).IsModified = true;
                                 dbContext.Entry(admission).Property(a => a.ProcedureType).IsModified = true;
+                                dbContext.Entry(admission).Property(a => a.DischargeRemarks).IsModified = true;
                                 //dbContext.Entry(admission).Property(a => a.ModifiedBy).IsModified = true;
                                 dbContext.SaveChanges();
                                 dbContextTransaction.Commit(); //end of transaction
@@ -3807,7 +4063,4 @@ namespace DanpheEMR.Controllers
 
         }
     }
-
-
-
 }

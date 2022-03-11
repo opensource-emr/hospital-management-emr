@@ -1,0 +1,67 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="col-md-6">
+      <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <button class="btn green btn-success" type="button" (click)="LoadSaleInvoiceReturnList()" [disabled]="loading">
+          <span *ngIf="!loading">Load Data</span>
+          <span *ngIf="loading">Loading...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="saleGridColumns" [grid-data]="pharmListfiltered" (grid-actions)="SaleReturnListGridActions($event)" [show-print-button]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div class=" col-sm-12 col-md-12" style="margin-bottom: 10px !important; display: flex;justify-content: center; margin-top: 20px;">
+  <div class="table-responsive table-wrapper" id="print_summary">
+    <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+      <thead>
+        <tr>
+          <th colspan="4" style="text-align: center;">
+            <span style="font-size:large;"> Summary </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:bold; color:blue"> Total Return Amount </td>
+          <td> {{(returnSaleListSummary.totalReturnAmount) | number : '1.0-2'}} </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!--START:  Popup for show selected Invoice items details show -->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSaleItemsPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-close"></i></a>
+          <div class="form-body">
+            <div class="col-md-12">
+              <div id="printpage" class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt"> </pharmacy-receipt>
+                </div>
+              </div>
+              <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

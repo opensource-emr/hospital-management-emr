@@ -10,6 +10,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import * as moment from 'moment/moment';
 import { CoreService } from '../../../core/shared/core.service'
 import { SecurityService } from "../../../security/shared/security.service";
+import { AccountingService } from "../../shared/accounting.service";
 @Component({
     selector: 'fiscalyear-list',
     templateUrl: './fiscalyear-list.html',
@@ -27,7 +28,7 @@ export class FiscalYearListComponent {
     constructor(
         public accountingSettingsBLService: AccountingSettingsBLService,
         public msgBox: MessageboxService,
-        public changeDetector: ChangeDetectorRef, private coreService: CoreService,public securityService:SecurityService) {
+        public changeDetector: ChangeDetectorRef, private coreService: CoreService,public securityService:SecurityService,public accountingService:AccountingService) {
         this.getFiscalYearList();
     }
     ngOnInit(){
@@ -36,7 +37,7 @@ export class FiscalYearListComponent {
     public getFiscalYearList() {
         var gridcolumns = new GridColumnSettings(this.securityService);
         this.fiscalYearGridColumns = gridcolumns.FiscalYearList;
-        this.fiscalYearList = this.coreService.accFiscalYearList;
+        this.fiscalYearList = this.accountingService.accCacheData.FiscalYearList;
         for (var i = 0; i < this.fiscalYearList.length; i++) {
             this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
             this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
@@ -153,14 +154,24 @@ export class FiscalYearListComponent {
                                     this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
                                   
                                 }
+                                for (var i = 0; i < this.fiscalYearList.length; i++) {
+                                    this.fiscalYearList[i].showreopen = (this.fiscalYearList[i].IsClosed == true) ? true : false;
+                                }
+                                this.accountingService.accCacheData.FiscalYearList.forEach(fy =>{
+                                let fiscalyear = this.fiscalYearList.filter(f => f.FiscalYearId == fy.FiscalYearId);
+                                fy.IsClosed = (fiscalyear.length > 0) ? fiscalyear[0].IsClosed : true;
+                                fy.showreopen = fy.IsClosed;
+                                });
                             });
                             this.securityService.AccHospitalInfo.FiscalYearList.forEach(fy=>{
                                 if(fy.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
                                     fy.IsClosed=false;
+                                    fy.showreopen=false;
                                 }
                             });
                             if(this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
                                 this.securityService.AccHospitalInfo.CurrFiscalYear.IsClosed=false;
+                                this.securityService.AccHospitalInfo.CurrFiscalYear.showreopen = false;
                             }
                             this.msgBox.showMessage("Success", [this.selectedFiscalYear.FiscalYearName + ' open now.']);
                             this.closepopup();

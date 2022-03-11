@@ -44,10 +44,6 @@ import { RPT_LAB_LabReportsMainComponent } from "./lab/laboratory-reports-main.c
 import { RPT_LAB_CategoryWiseLabReportComponent } from "./lab/category-wise/category-wise-lab-report.component";
 import { RPT_LAB_TotalRevenueFromLabComponent } from "./lab/revenue/total-revenue-from-lab.component";
 import { RPT_DOC_DoctorWiseEncounterPatientReportComponent } from "./doctors/doctorwise-encounter-patient-report.component";
-import { RPT_GOVT_GovernmentMainComponent } from "./government/govt-reports-main.component";
-import { RPT_GOVT_GovReportSummaryComponent } from "./government/summary/govt-reports-summary.component";
-import { RPT_GOVT_LaboratoryServicesComponent } from "./government/lab-services/laboratory-services.component";
-import { RPT_GOVT_InpatientOutcomeComponent } from "./government/inpatient-outcome/inpatient-outcome.component";
 import { RPT_LAB_ItemWiseLabReportComponent } from "./lab/item-wise/item-wise-lab-report.component";
 import { RPT_ADT_DiagnosisWisePatientReportComponent } from "./adt/diagnosis/diagnosis-wise-patient-report.component";
 import { RPT_BIL_ReferralSummaryMainComponent } from "./billing/referral-reports/bill-referral-report-main.component";
@@ -62,6 +58,19 @@ import { RPT_ADT_InpatientCensusComponent } from "./adt/inpatient-census/inpatie
 import { PageNotFound } from "../404-error/404-not-found.component";
 import { RPT_LAB_StatusWiseItemCountComponent } from "./lab/status-wise-count-report/status-wise-item-count-report.component";
 import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.component";
+import { RPT_TotalDailyCovidCasesReport } from "./lab/covid-summary-report/total-daily-cases.component";
+import { RPT_CovidTestsSummaryReport } from "./lab/covid-summary-report/covid-tests-summary.component";
+import { RPT_HIVTestDetailReport } from "./lab/hiv-test-report/hiv-test-detail-report.component";
+import { RPT_LabCultureReport } from "./lab/culture-report/culture-report.component";
+import { RPT_LabTypeWiseTestCountReport } from "./lab/labtype-wise-test-count/labtype-wise-test-count.component";
+import { RPT_BIL_DepositTransactionComponent } from "./billing/deposit-transactions/deposit-transactions.component";
+import { RPTADTAdmissionAndDischargeListComponent } from "./adt/admission-and-discharge-report/rpt-adt-admission-and-discharge-list/rpt-adt-admission-and-discharge-list.component";
+import { RPT_BIL_DiscountSchemeReportComponent } from "./billing/discount-scheme-report/discount-scheme-report.component";
+import { RPT_BIL_DepartmentWiseDiscountSchemeReportComponent } from "./billing/department-wise-discount-scheme-report/department-wise-discount-scheme-report.component";
+import { RPT_BIL_UserWiseCashCollectionComponent } from "./billing/user-wise-cash-collection-report/user-wise-cash-collection.component";
+import { RPT_BIL_CreditSettlementReport } from "./billing/credit-settlement-report/credit-settlement-report.component";
+import { RPT_BIL_EHSBillReportComponent } from "./billing/EHS-billing-report/ehs-bill-report.component";
+import { EditedPatientDetailReport } from "./patient/edited-patient-detail/edited-patient-detail-report.component";
 
 @NgModule({
   imports: [
@@ -105,8 +114,12 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
                 component: RPT_ADT_InpatientCensusComponent,
                 canActivate: [AuthGuardService],
               },
-              { path: "**", component: PageNotFound }
-
+              {
+                path: "AdmissionAndDischargeList",
+                component: RPTADTAdmissionAndDischargeListComponent,
+                canActivate: [AuthGuardService],
+              },
+              { path: "**", component: PageNotFound },
             ],
           },
           {
@@ -169,6 +182,10 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
             component: RPT_BIL_DepositBalanceComponent,
           },
           {
+            path: "BillingMain/DepositTransaction",
+            component: RPT_BIL_DepositTransactionComponent,
+          },
+          {
             path: "BillingMain/PatientCreditSummary",
             component: RPT_BIL_PatientCreditSummaryComponent,
             canActivate: [AuthGuardService],
@@ -196,6 +213,16 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
           {
             path: "BillingMain/DiscountReport",
             component: RPT_BIL_DiscountReportComponent,
+            canActivate: [AuthGuardService],
+          },
+          {
+            path: "BillingMain/DiscountSchemeReport",
+            component: RPT_BIL_DiscountSchemeReportComponent,
+            canActivate: [AuthGuardService],
+          },
+          {
+            path: "BillingMain/DepartmentWiseDiscountSchemeReport",
+            component: RPT_BIL_DepartmentWiseDiscountSchemeReportComponent,
             canActivate: [AuthGuardService],
           },
           {
@@ -255,6 +282,21 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
             component: RPT_BIL_ItemSummaryReportComponent,
           },
           {
+            path: "BillingMain/UserWiseCashCollection",
+            component: RPT_BIL_UserWiseCashCollectionComponent,
+            canActivate: [AuthGuardService],
+          },
+          {
+            path: "BillingMain/CreditSettlementReport",
+            component: RPT_BIL_CreditSettlementReport,
+            canActivate: [AuthGuardService],
+          },
+          {
+            path: "BillingMain/EHSBillReport",
+            component: RPT_BIL_EHSBillReportComponent,
+            canActivate: [AuthGuardService],
+          },
+          {
             path: "AppointmentMain",
             component: RPT_APPT_AppointmentReportsMainComponent,
             canActivate: [AuthGuardService],
@@ -289,8 +331,7 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
                 component: RPT_APPT_PhoneBookAppointmentReportComponent,
                 canActivate: [AuthGuardService],
               },
-              { path: "**", component: PageNotFound }
-
+              { path: "**", component: PageNotFound },
             ],
           },
           {
@@ -309,8 +350,7 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
                 component: RPT_RAD_CategoryWiseImagingReportComponent,
                 canActivate: [AuthGuardService],
               },
-              { path: "**", component: PageNotFound }
-
+              { path: "**", component: PageNotFound },
             ],
           },
           {
@@ -347,7 +387,26 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
             path: "LabMain/LabTestStatusDetailReport",
             component: RPT_LAB_StatusWiseItemCountComponent,
           },
-
+          {
+            path: "LabMain/CovidCasesDetailReport",
+            component: RPT_TotalDailyCovidCasesReport,
+          },
+          {
+            path: "LabMain/CovidTestsSummaryReport",
+            component: RPT_CovidTestsSummaryReport,
+          },
+          {
+            path: "LabMain/HIVTestDetailsReport",
+            component: RPT_HIVTestDetailReport,
+          },
+          {
+            path: "LabMain/LabCultureDetailsReport",
+            component: RPT_LabCultureReport,
+          },
+          {
+            path: "LabMain/LabTypeWiseTestCountReport",
+            component: RPT_LabTypeWiseTestCountReport,
+          },
           {
             path: "DoctorsMain",
             component: RPT_DOC_DoctorsReportMainComponent,
@@ -363,29 +422,7 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
                 component: RPT_DOC_DoctorWiseEncounterPatientReportComponent,
                 canActivate: [AuthGuardService],
               },
-              { path: "**", component: PageNotFound }
-
-            ],
-          },
-          {
-            path: "GovernmentMain",
-            component: RPT_GOVT_GovernmentMainComponent,
-            children: [
-              { path: "", redirectTo: "Summary", pathMatch: "full" },
-              {
-                path: "Summary",
-                component: RPT_GOVT_GovReportSummaryComponent,
-              },
-              {
-                path: "LaboratoryServices",
-                component: RPT_GOVT_LaboratoryServicesComponent,
-              },
-              {
-                path: "InpatientOutcome",
-                component: RPT_GOVT_InpatientOutcomeComponent,
-              },
-              { path: "**", component: PageNotFound }
-
+              { path: "**", component: PageNotFound },
             ],
           },
           {
@@ -401,8 +438,11 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
                 path: "Patient/RegistrationReport",
                 component: RPT_PAT_PatientRegistrationReportComponent,
               },
-              { path: "**", component: PageNotFound }
-
+              {
+                path: "EditedPatientDetailReport",
+                component: EditedPatientDetailReport,
+              },
+              { path: "**", component: PageNotFound },
             ],
           },
 
@@ -413,11 +453,11 @@ import { RPT_PoliceCaseReportComponent } from "./police-case/police-case-report.
           },
           {
             path: "PoliceCase",
-            component: RPT_PoliceCaseReportComponent
-          }
+            component: RPT_PoliceCaseReportComponent,
+          },
         ],
       },
-      { path: "**", component: PageNotFound }
+      { path: "**", component: PageNotFound },
     ]),
   ],
   exports: [RouterModule],

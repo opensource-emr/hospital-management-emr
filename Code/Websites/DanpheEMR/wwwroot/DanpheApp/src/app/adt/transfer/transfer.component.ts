@@ -14,8 +14,6 @@ import { Department } from "../../settings-new/shared/department.model";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { Patient } from "../../patients/shared/patient.model";
 import { BillingTransactionItem } from "../../billing/shared/billing-transaction-item.model";
-import { Number, Object } from "core-js";
-import { element } from "@angular/core/src/render3";
 import { CoreService } from "../../core/shared/core.service";
 import {
   ENUM_BillingStatus,
@@ -24,7 +22,7 @@ import {
 } from "../../shared/shared-enums";
 import { VisitBLService } from "../../appointments/shared/visit.bl.service";
 import { VisitService } from "../../appointments/shared/visit.service";
-import { Validators } from "@angular/forms";
+import { FormControl, Validators } from "@angular/forms";
 
 @Component({
   selector: "danphe-bed-transfer",
@@ -36,6 +34,7 @@ import { Validators } from "@angular/forms";
       }
     `,
   ],
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class TransferComponent {
   //public showTransferPage: boolean = false;
@@ -87,7 +86,7 @@ export class TransferComponent {
 
   public transferDateNep: NepaliDate;
 
-  public allDepartments: Array<any> = [];
+  //public allDepartments: Array<any> = [];
   public selectedReqDept: any = null; //added yub 26th sept 2018
 
   public departmentlist: Department = new Department();
@@ -102,6 +101,9 @@ export class TransferComponent {
   requestFrom: string;
   @Input("isPopUp") public isPopUp: boolean = true;
   @Input("currentModule") public currentModule: any = null;
+
+  @Input("all-Departments")
+  public allDepartments: Array<any> = [];
 
   public patVisitId: any;
 
@@ -122,6 +124,7 @@ export class TransferComponent {
     //this.LoadDepartments(); // this function has been called in getDocts() function
     //this.getDocts(); // this function has been called after getting data from @Input("selectedBedInfo")
   }
+
   ngOnInit() {
     if (this.currentModule && this.currentModule.trim() != "") {
       this.requestFrom = this.currentModule;
@@ -133,11 +136,15 @@ export class TransferComponent {
     this.validDate = true;
     this.newBedInfo = new PatientBedInfo();
     if (this.isTransferRemarksCompulsory) {
-      this.newBedInfo.PatientBedInfoValidator.controls['Remarks'].setValidators([Validators.maxLength(100), Validators.required]);
+      this.newBedInfo.PatientBedInfoValidator.controls['Remarks'].setValidators([Validators.maxLength(100), Validators.required, this.noWhitespaceValidator]);
     }
-    
+    else {
+      this.newBedInfo.PatientBedInfoValidator.controls['Remarks'].setValidators([Validators.maxLength(100)]);
+    }
+
     this.newBedInfo.PatientId = this.selectedBedInfo.PatientId;
     this.newBedInfo.PatientVisitId = this.selectedBedInfo.PatientVisitId;
+    this.newBedInfo.IsInsurancePatient = this.selectedBedInfo.IsInsurancePatient;
     this.newBedInfo.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
     this.newBedInfo.StartedOn = moment().format("YYYY-MM-DDTHH:mm:ss");
     this.selectedBedInfo.BedInformation.StartedOn = moment(
@@ -145,14 +152,40 @@ export class TransferComponent {
     ).format("YYYY-MM-DD HH:mm:ss");
     this.selectedReqDept = null;
     this.showAdmissionHistory = true;
+    this.setFocusById("DepartmentName");
+
+    this.GetRequestingDepartmentByVisitId();
   }
 
   @Input("selectedBedInfo")
-  public set ObtainSelectedBedInfo(data:any) {
-    this.selectedBedInfo = data;    
-    this.getDocts();     
-    
+  public set ObtainSelectedBedInfo(data: any) {
+    this.selectedBedInfo = data;
+    this.getDocts();
   }
+
+
+  GetRequestingDepartmentByVisitId() {
+    //this.newBedInfo.PatientVisitId
+    this.visitBLService
+      .GetRequestingDepartmentByVisitId(this.newBedInfo.PatientVisitId)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK") {
+          let selectedDept = this.allDepartments.find(d => d.DepartmentId == res.Results.DepartmentId);
+          this.selectedReqDept = selectedDept.DepartmentName;
+          this.AssignSelectedDepartment();
+        } else {
+          this.msgBoxServ.showMessage("error", ["Cannot load the requesting department."]);
+        }
+      });
+  }
+
+
+  public noWhitespaceValidator(control: FormControl) {
+    const isWhitespace = (control.value || '').trim().length === 0;
+    const isValid = !isWhitespace;
+    return isValid ? null : { 'whitespace': true };
+  }
+
 
   //above in ngOnInit
   //@Input("showTransferPage")
@@ -186,23 +219,36 @@ export class TransferComponent {
           this.doctorList = this.visitService.ApptApplicableDoctorsList;
 
           // awaitting for doctors response data
-          this.LoadDepartments();
+          //this.LoadDepartments();
+          //bikash:28May'20: awaitting for departments response data
+          if (this.doctorList && this.doctorList.length > 0) {
+            let primaryDoctor = this.doctorList.find(a => a.ProviderId == this.selectedBedInfo.AdmittingDoctorId);
+            if (primaryDoctor) {
+              let selectedDepartmentId = primaryDoctor.DepartmentId; // getting primary doctors department id
+              if (this.allDepartments) {
+                this.AssignDepartmentOnDocSectionBasis(selectedDepartmentId); // assigning department according to primary doctor
+              }
+            }
+          }
 
         } else {
-          this.LoadDepartments();
+          // this.LoadDepartments();
         }
       });
   }
-  public AssignDepartmentOnDocSectionBasis(docDepartmentId) {    
+  public AssignDepartmentOnDocSectionBasis(docDepartmentId) {
     let dept = this.allDepartments.find(a => a.DepartmentId == docDepartmentId);
-    this.selectedReqDept = dept.DepartmentName;
-    this.AssignSelectedDepartment();
+    if (dept) {
+      this.selectedReqDept = dept.DepartmentName;
+      this.AssignSelectedDepartment();
+    }
+
   }
   public AssignSelectedDoctor() {
     //this.filteredDocList = this.doctorList = this.visitService.ApptApplicableDoctorsList;
     let doctor = null;
     if (this.selectedDoctor == "" || this.selectedDoctor == undefined) {
-      this.filteredDocList = this.doctorList = this.visitService.ApptApplicableDoctorsList;      
+      this.filteredDocList = this.doctorList = this.visitService.ApptApplicableDoctorsList;
       //this.aptList = new Array<Appointment>();
       //this.CurrentAppointment.IsValidSelProvider = true;
 
@@ -374,20 +420,20 @@ export class TransferComponent {
   }
 
   Transfer() {
+
     if (this.CheckSelectionFromAutoComplete()) {
       if (this.newBedInfo) {
+        if (this.newBedInfo.Remarks) {
+          this.newBedInfo.Remarks = this.newBedInfo.Remarks.trim();
+        }
+
         this.compareDate();
         for (var i in this.newBedInfo.PatientBedInfoValidator.controls) {
           this.newBedInfo.PatientBedInfoValidator.controls[i].markAsDirty();
-          this.newBedInfo.PatientBedInfoValidator.controls[
-            i
-          ].updateValueAndValidity();
+          this.newBedInfo.PatientBedInfoValidator.controls[i].updateValueAndValidity();
         }
 
-        if (
-          this.newBedInfo.IsValidCheck(undefined, undefined) &&
-          this.validDate
-        ) {
+        if (this.newBedInfo.IsValidCheck(undefined, undefined) && this.validDate) {
           this.bedList.forEach((a) => {
             if (a.BedId == this.newBedInfo.BedId) {
               this.SelectedBedNum = a.BedNumber;
@@ -396,34 +442,36 @@ export class TransferComponent {
           this.StartedOn = moment(this.newBedInfo.StartedOn).format(
             "YYYY-MM-DDTHH:mm:ss"
           );
+
+
+          if (typeof this.selectedReqDept == 'string') {
+            let dept = this.allDepartments.find(d => d.DepartmentName == this.selectedReqDept);
+            this.selectedReqDept = dept;
+          }
+
           this.InitializeBedBilItem();
           this.loading = true;
-          this.admissionBLService
-            .TransferBed(
-              this.newBedInfo,
-              this.selectedBedInfo.BedInformation.PatientBedInfoId,
-              this.bedChargeBilTxnItem,
-              this.requestFrom
-            )
-            .subscribe(
-              (res) => {
-                if (res.Status == "OK") {
-                  this.msgBoxServ.showMessage("success", [
-                    "Patient transfered to new bed.",
-                  ]);
-                  this.transfer.emit({ newBedInfo: res.Results });
-                  this.notifyAdt.emit(false);
-                  // this.showReceipt = true;
-                  this.CheckTransferPrintReceipt();
-                  this.newBedInfo = new PatientBedInfo();
-                  this.wardList = new Array<Ward>();
-                  this.bedFeatureList = new Array<BedFeature>();
-                  this.loading = false;
-                } else {
-                  this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
-                  this.loading = false;
-                }
-              },
+
+          this.admissionBLService.TransferBed(this.newBedInfo, this.selectedBedInfo.BedInformation.PatientBedInfoId, this.bedChargeBilTxnItem,
+            this.requestFrom)
+            .subscribe((res) => {
+              if (res.Status == "OK") {
+                this.msgBoxServ.showMessage("success", [
+                  "Patient transfered to new bed.",
+                ]);
+                this.transfer.emit({ newBedInfo: res.Results });
+                this.notifyAdt.emit(false);
+                // this.showReceipt = true;
+                this.CheckTransferPrintReceipt();
+                this.newBedInfo = new PatientBedInfo();
+                this.wardList = new Array<Ward>();
+                this.bedFeatureList = new Array<BedFeature>();
+                this.loading = false;
+              } else {
+                this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+                this.loading = false;
+              }
+            },
               (err) => {
                 this.msgBoxServ.showMessage("error", [err.ErrorMessage]);
                 this.loading = false;
@@ -443,7 +491,7 @@ export class TransferComponent {
       return true;
     } else {
       this.msgBoxServ.showMessage("failed", [
-        "Invalid Request Department. Please select Department from the list.",
+        "Invalid Requesting Department. Please choose one from the list.",
       ]);
       this.loading = false;
       return false;
@@ -478,27 +526,30 @@ export class TransferComponent {
   }
 
   //sud: 20Jun'18
-  LoadDepartments() {
-    this.admissionBLService
-      .GetDepartments()
-      .subscribe((res: DanpheHTTPResponse) => {
-        this.allDepartments = res.Results;
+  // LoadDepartments() {
+  //   this.admissionBLService
+  //     .GetDepartments()
+  //     .subscribe((res: DanpheHTTPResponse) => {
+  //       this.allDepartments = res.Results;
 
-        //bikash:28May'20: awaitting for departments response data
-        if (this.doctorList) {
-          let primaryDoctor = this.doctorList.find(a => a.ProviderId == this.selectedBedInfo.AdmittingDoctorId);
-          let selectedDepartmentId = primaryDoctor.DepartmentId; // getting primary doctors department id
-          if (this.allDepartments) {
-            this.AssignDepartmentOnDocSectionBasis(selectedDepartmentId); // assigning department according to primary doctor
-          }
-        }
-        
-      });
-  }
+  //       //bikash:28May'20: awaitting for departments response data
+  //       if (this.doctorList && this.doctorList.length > 0) {
+  //         let primaryDoctor = this.doctorList.find(a => a.ProviderId == this.selectedBedInfo.AdmittingDoctorId);
+  //         if (primaryDoctor) {
+  //           let selectedDepartmentId = primaryDoctor.DepartmentId; // getting primary doctors department id
+  //           if (this.allDepartments) {
+  //             this.AssignDepartmentOnDocSectionBasis(selectedDepartmentId); // assigning department according to primary doctor
+  //           }
+  //         }
+  //       }
+
+  //     });
+  // }
 
   public InitializeBedBilItem() {
     let isPresent = false;
     this.bedChargeBilTxnItem = new BillingTransactionItem();
+    this.bedChargeBilTxnItem.IsInsurance = this.newBedInfo.IsInsurancePatient;//sud:3-Oct'21--
     for (var i = 0; i < this.existingBedFeatures.length; i++) {
       if (
         this.existingBedFeatures[i].BedFeatureId == this.newBedInfo.BedFeatureId
@@ -555,6 +606,7 @@ export class TransferComponent {
       bilItm.ProcedureCode = bedData.ProcedureCode;
       bilItm.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
       bilItm.VisitType = ENUM_VisitType.inpatient; // "inpatient";
+      bilItm.IsInsurance = this.selectedBedInfo.IsInsurancePatient;//sud:3-Oct'21--check if this fix the issue or not..
 
       this.bedChargeItemInfo = bilItm;
     }
@@ -597,6 +649,7 @@ export class TransferComponent {
       this.newBedInfo.IsValidReqDepartment = false;
     }
   }
+
   public printReceipt() {
     let popupWinindow;
     var printContents = document.getElementById("Receipt").innerHTML;
@@ -620,13 +673,47 @@ export class TransferComponent {
     //this.AfterPrintAction();
   }
 
-  public BedChanged(bed: any) {
-    var bedRes = this.bedList.find(b => b.BedId == bed && b.IsReserved);
+  public BedChanged(bedId: any) {
+    if (this.bedList)
+      var bedRes = this.bedList.find(b => b.BedId == bedId && b.IsReserved);
     if (bedRes) {// && (this.reservedBedIdByPat != bedRes.BedId)
       this.msgBoxServ.showMessage("error", ['Cannot reserve this bed. This bed is already reserved by '
         + bedRes.ReservedByPatient + ' for date: ' + moment(bedRes.ReservedForDate).format('YYYY-MM-DD HH:mm')]);
       this.changeDetector.detectChanges();
       this.newBedInfo.BedId = null;
     }
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {
+      this.Close();
+    }
+  }
+
+  //common function to focus on element dynamically 
+  public FocusNext(value: any, target: string, orElseTarget: string) {
+    if (value) {
+      if (typeof (value) == 'string' && value.trim() == '') {
+        this.setFocusById(orElseTarget);
+      }
+      else {
+        this.setFocusById(target);
+      }
+    }
+    else {
+      this.setFocusById(orElseTarget);
+    }
+  }
+
+
+  //common function to set focus on  given Element. 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
   }
 }

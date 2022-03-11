@@ -12,7 +12,8 @@ import { SecurityService } from '../../../security/shared/security.service';
 
 @Component({
   selector: 'update-items',
-  templateUrl: "./update-item-price.html"
+  templateUrl: "./update-item-price.html",
+  host: { '(window:keydown)': 'hotkeys($event)' }
 })
 
 export class UpdateItemPriceComponent implements OnInit {
@@ -133,6 +134,9 @@ export class UpdateItemPriceComponent implements OnInit {
     if (this.filteredItems) {
       for (var i = 0; i < this.filteredItems.length; i++) {
         let currTxnItem = this.filteredItems[i];
+        if (currTxnItem.IsZeroPriceAllowed) {
+          currTxnItem.UpdateValidator('off', 'Price', null);
+        }
         currTxnItem.EnableControl("ItemName", false);
         currTxnItem.EnableControl("ServiceDepartmentId", false);
         currTxnItem.EnableControl("RequestedBy", false);
@@ -143,7 +147,9 @@ export class UpdateItemPriceComponent implements OnInit {
         else {
           currTxnItem.UpdateValidator('off', 'ProviderId', null);
         }
-
+        if (this.filteredItems[i].IsZeroPriceAllowed) {
+          currTxnItem.UpdateValidator('off', 'Price', null);
+        }
 
         for (var valCtrls in currTxnItem.BillingTransactionItemValidator.controls) {
           currTxnItem.BillingTransactionItemValidator.controls[valCtrls].markAsDirty();
@@ -255,7 +261,7 @@ export class UpdateItemPriceComponent implements OnInit {
         this.providerList = doclist.map(a => {
           return { EmployeeId: a.EmployeeId, FullName: a.EmployeeName }
         });
-       // this.providerList.unshift({ EmployeeId: 0, FullName: "--Select--" });
+        // this.providerList.unshift({ EmployeeId: 0, FullName: "--Select--" });
       }
     }
     else {
@@ -273,5 +279,11 @@ export class UpdateItemPriceComponent implements OnInit {
   DoctorChange(itm: BillingTransactionItem) {
     itm.ProviderId = itm.DocObj.EmployeeId;
     itm.ProviderName = itm.DocObj.FullName;
+  }
+
+  public hotkeys(event) {
+    if (event.keyCode == 27) {//key->ESC
+      this.CloseGroupDiscountPopUp();
+    }
   }
 }

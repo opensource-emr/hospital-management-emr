@@ -107,7 +107,7 @@ export enum ENUM_Requisition_VerificationStatus {
 export enum ENUM_InvoiceType {
   inpatientPartial = "ip-partial",
   inpatientDischarge = "ip-discharge",
-  outpatient = "op-invoice"
+  outpatient = "op-normal"
 }
 
 export enum ENUM_TermsApplication {
@@ -119,7 +119,7 @@ export enum ENUM_StockLocations {
   Dispensary = 1,
   Store = 2
 }
-export enum ENUM_GRCategory {
+export enum ENUM_GRItemCategory {
   Consumables = "Consumables",
   CapitalGoods = "Capital Goods"
 }
@@ -128,4 +128,37 @@ export enum ENUM_OrderStatusNumber {
   active = 1,
   pending = 2,
   final = 3
+}
+export enum ENUM_DispensaryType {
+  normal = "normal",
+  insurance = "insurance"
+}
+export enum ENUM_ACC_ADDLedgerLedgerType{
+  Default="ledger",
+  PharmacySupplier= 'pharmacysupplier' ,
+  InventoryVendor='inventoryvendor',
+  Consultant='consultant',
+  CreditOrganization= 'creditorganization',
+  InventorySubCategory= 'inventorysubcategory',
+  BillingPriceItem ='billingincomeledger'
+}
+export enum ENUM_ACC_ReportStaticName{
+  LedgerReport="LedgerReport",
+  DailyTransactionReport= 'DailyTransactionReport' ,
+  TrailBalanceReport='TrailBalanceReport',
+  ProfitLossReport='ProfitLossReport',
+  BalanceSheetReport= 'BalanceSheetReport',
+  CashFlowReport= 'CashFlowReport',
+  GroupStatementReport ='GroupStatementReport',
+  BankReconciliation = 'BankReconciliation'
+}
+export enum ENUM_ACC_ReportName{
+  LedgerReport="/Accounting/Reports/LedgerReport",
+  DailyTransactionReport= '/Accounting/Reports/DailyTransactionReport' ,
+  TrailBalanceReport='/Accounting/Reports/TrailBalanceReport',
+  ProfitLossReport='/Accounting/Reports/ProfitLossReport',
+  BalanceSheetReport= '/Accounting/Reports/BalanceSheetReport',
+  CashFlowReport= '/Accounting/Reports/CashFlowReport',
+  GroupStatementReport ='/Accounting/Reports/GroupStatementReport',
+  BankReconciliation = '/Accounting/Reports/BankReconciliation'
 }

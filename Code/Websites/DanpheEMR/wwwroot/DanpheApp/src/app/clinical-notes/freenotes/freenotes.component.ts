@@ -106,7 +106,7 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
 
     //get the child routes of Doctors/PatientOverviewMain from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Doctors/PatientOverviewMain");
-    this.currentModule = this.securityService.currentModule.toLowerCase();
+    this.currentModule = this.securityService.currentModule;
 
     if (this.visitService.globalVisit.ConcludeDate) {
       this.isVisitConcluded = true;
@@ -312,6 +312,8 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
         break;
       }
       case "Prescription Note": {
+        this.notes.PatientId = this.notes.ClinicalPrescriptionNote.PatientVisitId = this.patientVisitId;
+        this.notes.PatientVisitId = this.notes.ClinicalPrescriptionNote.PatientId = this.patientService.getGlobal().PatientId;
         this.showPrescriptionNote = true;
         this.showHandP = false;
         this.showFreeText = false;
@@ -348,18 +350,6 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
   }
   public NoteTypeFormatter(data: any): string {
     return data["NoteType"];
-  }
-
-  public OnNoteTypeChange() {
-
-    if (this.selectedNoteType) {
-      this.selTemplateList = this.templateList.find(t => t.TemplateName == this.selectedNoteType.NoteType);
-      if (!this.selTemplateList) {
-        this.selTemplateList = this.templateList.find(t => t.TemplateName == "Free Text");
-      }
-      this.SelectTemplate(this.selTemplateList.TemplateName);
-    }
-
   }
 
   public AssignSelectedTemplate(event: any) {
@@ -418,13 +408,9 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
         .subscribe(res => {
           if (res.Status == "OK") {
             if (res.Results.length) {
-              if (this.currentModule == 'nursing') {
-                this.noteTypeList = res.Results;
-                this.noteTypeList = this.noteTypeList.filter(nt => nt.IsForNursing == true);
-              } else {
-                this.noteTypeList = res.Results;
-                this.noteTypeList = this.noteTypeList.filter(nt => nt.NoteType != 'Nursing Note');
-              }
+
+              this.noteTypeList = res.Results;
+
             }
             else {
               console.log(res.Errors);
@@ -445,13 +431,11 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
           if (res.Status == "OK") {
             if (res.Results.length) {
               this.templateList = res.Results;
-              if (this.currentModule == 'nursing') {
-                this.templateList = this.templateList.filter(nt => nt.IsForNursing == true);
-              } else {
-                this.templateList = this.templateList.filter(nt => nt.TemplateName != 'Nursing Note');
-              }
-
-
+              //if (this.notetemplateBLService.NotesId != 0 && this.notes.NotesId != 0) {
+              //  this.selTemplateList = this.templateList.find(temp => temp.TemplateId == this.notes.TemplateId);
+              //  this.AssignSelectedTemplate();
+              //  this.SelectTemplate(this.selTemplateList.TemplateName);
+              //}
             }
             else {
               //  console.log(res.Errors);
@@ -513,16 +497,19 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
 
 
   PostTemplate() {
+    this.notes.ClinicalPrescriptionNote.PatientId = this.patVisit.PatientId;
+    this.notes.ClinicalPrescriptionNote.PatientVisitId = this.patVisit.PatientVisitId;
     this.notes.TemplateId = this.selTemplateList.TemplateId;
     this.notes.NoteTypeId = this.selectedNoteType ? this.selectedNoteType.NoteTypeId : null;
     //this.notes.WrittenBy = this.loggedInUser.UserName;
     //this.notes.TemplateName = this.templateList.find(a => a.TemplateId == this.TemplateId).TemplateName;
     this.notes.TemplateName = this.selTemplateList.TemplateName;
     this.notes.SecondaryDoctorId = this.selectedSecondaryDoctor ? this.selectedSecondaryDoctor.ProviderId : null;
-    this.notes.ProviderId = this.patVisit.ProviderId;
+    this.notes.ProviderId = this.patVisit.ProviderId ? this.patVisit.ProviderId : 0;
 
     this.notes.PatientId = this.patVisit.PatientId;
     this.notes.PatientVisitId = this.patVisit.PatientVisitId;
+
 
     //Logic for posting Progress Note
     if (this.notes.TemplateId == 1 || this.notes.TemplateName == "Progress Note") {
@@ -585,24 +572,7 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
       if (this.notes.IsPending) { // if notes are are pending then, empty fields are allowed to post 
         this.PostHistoryAndPhysical();
       } else {
-        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote) {
-
-          this.PostHistoryAndPhysical();
-        } else {
-          this.msgBoxServ.showMessage("Warning", ["Submit can't be done with all fields empty !"]);
-        }
-      }
-    }
-    if (this.notes.TemplateName == "Consult Note") {
-
-      if (this.notes.ClinicalDiagnosis) {
-        this.MapAllOrdersAndAssign();
-      }
-
-      if (this.notes.IsPending) { // if notes are are pending then, empty fields are allowed to post 
-        this.PostHistoryAndPhysical();
-      } else {
-        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote) {
+        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote && this.notes.AllIcdAndOrders.length > 0) {
 
           this.PostHistoryAndPhysical();
         } else {
@@ -653,6 +623,8 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
 
   PutTemplate() {
 
+    this.notes.ClinicalPrescriptionNote.PatientId = this.patVisit.PatientId;
+    this.notes.ClinicalPrescriptionNote.PatientVisitId = this.patVisit.PatientVisitId;
     this.notes.TemplateId = this.selTemplateList.TemplateId;
     this.notes.NoteTypeId = this.selectedNoteType.NoteTypeId;
     //this.notes.TemplateName = this.templateList.find(a => a.TemplateId == this.TemplateId).TemplateName;
@@ -723,26 +695,7 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
       if (this.notes.IsPending) { // if notes are are pending then, empty fields are allowed to post 
         this.PutHistoryAndPhysicalNote();
       } else {
-        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote) {
-
-          this.PutHistoryAndPhysicalNote();
-        } else {
-          this.msgBoxServ.showMessage("Warning", ["Submit can't be done with all fields empty !"]);
-        }
-      }
-
-    }
-    if (this.notes.TemplateName == "Consult Note") {
-      //this.msgBoxServ.showMessage("Warning", ["Update of History and physical is work in progress !"]);
-
-      if (this.notes.ClinicalDiagnosis) {
-        this.MapAllOrdersAndAssign();
-      }
-
-      if (this.notes.IsPending) { // if notes are are pending then, empty fields are allowed to post 
-        this.PutHistoryAndPhysicalNote();
-      } else {
-        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote) {
+        if (this.notes.SubjectiveNote && this.notes.ObjectiveNote && this.notes.AllIcdAndOrders.length > 0) {
 
           this.PutHistoryAndPhysicalNote();
         } else {
@@ -791,8 +744,8 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
 
 
   public ManagePrescriptionData() {
-    this.notes.ClinicalPrescriptionNote.PatientId = this.notes.PatientId;
-    this.notes.ClinicalPrescriptionNote.PatientVisitId = this.notes.PatientVisitId;
+    this.notes.ClinicalPrescriptionNote.PatientId = this.patVisit.PatientId;
+    this.notes.ClinicalPrescriptionNote.PatientVisitId = this.patVisit.PatientVisitId;
     this.notes.ClinicalPrescriptionNote.OrdersSelected = JSON.stringify(this.notes.ClinicalPrescriptionNote.SelectedOrderItems);
     this.notes.ClinicalPrescriptionNote.ICDSelected = JSON.stringify(this.notes.ClinicalPrescriptionNote.ICDList);
 
@@ -1102,9 +1055,6 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
     this.notes.FollowUp = data.FollowUp;
     this.notes.FollowUpUnit = data.FollowUpUnit;
     this.notes.Remarks = data.Remarks;
-    if (data && data.ICDList && data.ICDList.length > 0) {
-      this.notes.ICDSelected = JSON.stringify(data.ICDList);
-    }
   }
 
   getPatientPlusBedInfo() {

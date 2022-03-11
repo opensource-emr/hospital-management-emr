@@ -7,7 +7,8 @@ import { CommonFunctions } from '../../shared/common.functions';
 
 @Component({
     selector: 'change-visit-type',
-    templateUrl: "./change-visit-type.html"
+    templateUrl: "./change-visit-type.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class ChangeVisitTypeComponent {
 
@@ -39,4 +40,9 @@ export class ChangeVisitTypeComponent {
         this.onClose.emit({ CloseWindow: true, EventName: "close" });
     }
 
+    public hotkeys(event) {
+        if (event.keyCode == 27) {//key->ESC
+            this.OnPopupClosed();
+        }
+    }
 }

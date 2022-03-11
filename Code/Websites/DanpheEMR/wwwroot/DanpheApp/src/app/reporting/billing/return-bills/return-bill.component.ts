@@ -26,8 +26,22 @@ export class RPT_BIL_ReturnBillReportComponent {
   ReturnBillData: Array<any> = new Array<any>();
   dlService: DLService = null;
 
+  public loading: boolean = false;
+
   public reportHeaderHtml: string = '';
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public dateRange: string = "";
+
+  public SummaryData = {
+    "TotalReturnAmount":0,
+    "TotalDiscountAmount":0,
+    "NetReturnAmount":0
+  };
+  public ShowReturnBillsDetail:boolean = false;
+  public IsReturnBillDetailsLoaded:boolean = false;
+  public ReturnBillDetail:any;
+  public ReturnBillRowData:any;
+  public footerContent:any;
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService,
     public reportServ: ReportingService, public coreService: CoreService) {
@@ -41,11 +55,17 @@ export class RPT_BIL_ReturnBillReportComponent {
   };
 
 
+
+  ngAfterViewChecked() {
+    if (document.getElementById("summary") != null)
+      this.footerContent = document.getElementById("summary").innerHTML;
+  }
   Load() {
     if (this.currentReturnBill.fromDate != null && this.currentReturnBill.toDate != null) {
       this.dlService.Read("/BillingReports/ReturnBillReport?FromDate="
         + this.currentReturnBill.fromDate + "&ToDate=" + this.currentReturnBill.toDate)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => this.Success(res),
           res => this.Error(res));
     }
@@ -80,6 +100,9 @@ export class RPT_BIL_ReturnBillReportComponent {
       }
 
       this.ReturnBillData = res.Results;
+      if(this.ReturnBillData.length>0){
+        this.CalculateReturnBillSummary(this.ReturnBillData);
+      }
     }
     else if (res.Status == "OK" && res.Results.length == 0) {
       this.msgBoxServ.showMessage("notice-message", ['No Data is Available Between Selected Parameters....Try Different Dates'])
@@ -91,6 +114,19 @@ export class RPT_BIL_ReturnBillReportComponent {
     }
   }
 
+  CalculateReturnBillSummary(returnBillData){
+    if(returnBillData){
+      let netReturnAmount = 0;
+
+      let totalReturnAmount = returnBillData.reduce(function(acc,itm) { return acc + itm.SubTotal; }, 0)
+      let totalDiscountAmount = returnBillData.reduce(function(acc,itm) { return acc + itm.DiscountAmount; }, 0)
+      netReturnAmount = (totalReturnAmount - totalDiscountAmount);
+
+      this.SummaryData.TotalReturnAmount = CommonFunctions.parseAmount(totalReturnAmount);
+      this.SummaryData.TotalDiscountAmount = CommonFunctions.parseAmount(totalDiscountAmount);
+      this.SummaryData.NetReturnAmount = CommonFunctions.parseAmount(netReturnAmount);
+    }
+  }
 
   //on click grid export button we are catching in component an event.. 
   //and in that event we are calling the server excel export....
@@ -120,6 +156,45 @@ export class RPT_BIL_ReturnBillReportComponent {
 
     this.currentReturnBill.fromDate = this.fromDate;
     this.currentReturnBill.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
+  }
+
+  public ReturnBillGridActions($event:GridEmitModel){
+    switch($event.Action){
+      case 'view':{
+        this.ShowReturnBillsDetail = true;
+        var data = $event.Data;
+        if(data){
+          this.IsReturnBillDetailsLoaded = true;
+           this.ReturnBillRowData = data;
+          this.LoadReturnBillDetail(data.BillReturnId);
+
+        }
+        break;
+      }
+    }
+  }
+
+ public CloseDetailsPopup(){
+  this.ShowReturnBillsDetail = false;
+  }
+
+  public LoadReturnBillDetail(billReturnId:number){
+    if (billReturnId) {
+      this.dlService.Read("/BillingReports/ReturnBillReportViewDetail?BillReturnId="+billReturnId)
+        .map(res => res)
+        .finally(() => { this.loading = false; })
+        .subscribe(res => this.GotReturnBillData(res),
+          res => this.Error(res));
+    }
+    else {
+      this.msgBoxServ.showMessage("error", ['Bill Return Is not Available']);
+    }
+  }
+  GotReturnBillData(res){
+    if (res.Status == "OK" && res.Results.length > 0) {
+      this.ReturnBillDetail = res.Results; 
+      }
   }
 
 }

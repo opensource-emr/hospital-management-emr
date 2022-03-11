@@ -1,20 +1,19 @@
-<div *ngIf="showSticker">
-    <div id="EmergencySticker" style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;">
-        <div id="emergencyStickerPrint" style="width:370px; height:180px;margin:0px;display:block;font-family:sans-serif;">
+<style>
+    .btnPrintSticker {
+        margin: 15px;
+    }
+</style>
+<div *ngIf="showSticker" class="clearfix">
+    <div id="EmergencySticker"
+        style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;font-size: 12px;">
+        <div id="emergencyStickerPrint" style="width:370px; margin:0px;display:block;font-family:sans-serif;">
             <div style="width:100%;">
                 <div>
-                    <div style="font-size:14px;">
-                        <span>
-                            <b>Emergency</b>
-                        </span>
-                        <span *ngIf="stickerDetail.ProviderName">
-                            <b>/ {{stickerDetail.ProviderName}}</b>
-                        </span>
-                    </div>
-                    <div style="font-size:14px;">
+                    <div style="font-size:12px;">
                         <div>
                             <span>
-                                Date: {{stickerDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD' }} ( {{stickerDetail.VisitDate | nepaliDate }})
+                                Date: {{stickerDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD' }} (
+                                {{stickerDetail.VisitDate | nepaliDate }})
                             </span>
                             <span style="float:right">
                                 Time: {{stickerDetail.VisitTime}}
@@ -25,55 +24,79 @@
                             <span>
                                 Hospital No: <b>{{stickerDetail.PatientCode}}</b>
                             </span>
-                           <span  style="float:right">
-                               ER No: <b>{{stickerDetail.VisitCode}}</b>
-                           </span>
+                            <span style="float:right">
+                                ER No: <b>{{stickerDetail.VisitCode}}</b>
+                            </span>
                         </div>
                     </div>
-                    <div>
-                        <div style="display:inline-block;width: 15%;vertical-align: top;">
-                            Name&nbsp;:&nbsp;
-                        </div>
-                        <div style="font-size:16px;display:inline-block;font-weight:bold;text-transform:uppercase">
-                            <div style="display:inline-block;">
-                                {{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp;
-                            </div>
-                            <div style="display:inline-block;font-style:italic;font-size:15px;">
-                                {{stickerDetail.DateOfBirth | DanpheDateTime:'age' }}/{{stickerDetail.Gender | slice:0:1}}
-                            </div>
-                        </div>
-                    </div>
-                    <div style="width: 80%;font-size:14px;display: inline-block;">
+                    <div style="display: flex; justify-content: space-between;">
                         <div>
-                            Address&nbsp;:&nbsp;{{stickerDetail.Address}}, {{stickerDetail.CountrySubDivisionName}}
+                            <span style="font-size:15px;">
+                                Name:{{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp;
+                            </span>
+                            <span>{{stickerDetail.DateOfBirth | DanpheDateTime:'age' }}/{{stickerDetail.Gender |
+                                slice:0:1}}</span>
+                        </div>
+
+                        <div style="font-size:12px;" *ngIf="showRoomNumber">
+                            {{roomNo}}:{{stickerDetail.DeptRoomNumber}}
+                        </div>
+
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            Address&nbsp;:&nbsp; <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}},</span>
+                            {{stickerDetail.CountrySubDivisionName}}
+                        </div>
+                        <div *ngIf="stickerDetail.PhoneNumber">
+                            <span style="display:inline-block;">
+                                Contact : {{stickerDetail.PhoneNumber}}
+                            </span>
+                        </div>
+
+                    </div>
+                    <hr style="border:0.5px solid black;margin:0px;" />
+                    <div style="display: flex; justify-content: space-between;">
+                        <div *ngIf="stickerDetail.ProviderName">
+                            <b style="text-transform:uppercase">
+                                {{stickerDetail.ProviderName}}
+                            </b>
                         </div>
                         <div>
                             <span style="display:inline-block;">
-                                Contact :  {{stickerDetail.PhoneNumber}}
-                            </span>
-                            <span style="float:right;font-size:14px;padding-right: 5px;">
-                                {{stickerDetail.User}}
+                                Department: Emergency
                             </span>
                         </div>
                     </div>
+
+                    <div style="display: flex; justify-content: space-between; padding-top: 20px;">
+                        <div *ngIf="EnableShowTicketPrice && stickerDetail.OpdTicketCharge>0"
+                            style="font-weight: bold;">
+                            <span> Ticket Charge: {{coreService.currencyUnit}} {{stickerDetail.OpdTicketCharge}}</span>
+                        </div>
+                        <div>
+                            User: {{stickerDetail.User}}
+                        </div>
+                    </div>
+
                     <div style="width: 20%; display: inline-block;">
-                      <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+                        <!-- <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code> -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <p style="text-align:center;width: 400px;">
-        <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()">
-            Print Sticker
-            <i class="glyphicon glyphicon-print"></i>
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+        <button class="btn green btn-success" value="" (click)="print()" id="btnPrintSticker" [disabled]="coreService.loading">
+          <span>Print</span>&nbsp;&nbsp;
+          &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
         </button>
-        <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="loading">
-            Print Sticker
-            <i class="glyphicon glyphicon-print"></i>
-        </button>
-    </p>
-    <p *ngIf="showLoading" style="text-align:center;width:400px;">
-        please wait while printing is in progress...
-    </p>
+      </div>
+  
+      <select-printer [group-name]="'reg-sticker'" [storage-key]="'er-sticker'"
+        (on-printer-change)="OnPrinterChanged($event)">
+      </select-printer>
 </div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

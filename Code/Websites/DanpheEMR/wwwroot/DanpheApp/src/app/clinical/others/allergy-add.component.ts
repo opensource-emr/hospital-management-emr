@@ -70,7 +70,6 @@ export class AllergyAddComponent {
         this.reactionSelected = null;
         this.allergenSelected = null;
         this.showValidationMsg = false;
-        this.CurrentAllergy.AllergyValidator.controls["AllergyType"].setValue("Allergy");
     }
 
     GetMedicineList() {

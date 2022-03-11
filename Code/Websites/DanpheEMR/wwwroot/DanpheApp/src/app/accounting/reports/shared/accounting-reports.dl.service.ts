@@ -28,6 +28,9 @@ public options =  {
     public GetTrailBalanceReport(fromDate: string, toDate: string,fiscalYearId) {
         return this.http.get<any>("/api/AccountingReport?reqType=trailBalanceReport&FromDate=" + fromDate + "&ToDate=" + toDate + "&FiscalYearId="+fiscalYearId);
     }
+    public GetGroupStatementReport(fromDate: string, toDate: string,fiscalYearId: number, ledgerGroupId:number) {
+        return this.http.get<any>("/api/AccountingReport?reqType=groupStatementReport&FromDate=" + fromDate + "&ToDate=" + toDate + "&FiscalYearId="+fiscalYearId + "&LedgerGroupId="+ ledgerGroupId);
+    }         
     public GetProfitLossReport(frmDt, toDt,fiscalYearId) {
         return this.http.get<any>("/api/AccountingReport?reqType=profitLossReport&FromDate=" + frmDt + "&ToDate=" + toDt + "&FiscalYearId="+fiscalYearId);
     }
@@ -66,5 +69,29 @@ public options =  {
             throw ex;
         }
     }
-        
+
+    //get all ledgergroup list here (included IsActive=false also)
+    public GetLedgerGroup() {
+        return this.http.get<any>("/api/AccountingSettings?reqType=GetLedgerGroups");
+    }
+    public GetBankReconcillationReport(ledgerId: number, fromDate: string, toDate: string, fiscalYearId) {
+        return this.http.get<response>('/api/AccountingReport?reqType=bank-reconcilation-report&ledgerId=' + ledgerId + "&FromDate=" + fromDate + "&ToDate=" + toDate + "&FiscalYearId=" + fiscalYearId);
+    }
+    public GetReconciliationCategory() {
+        return this.http.get<response>('/api/Accounting?reqType=get-bank-reconciliation-category');
+    }
+    public GetReconciliationHistory(VoucherNumber, secId, fsYearId) {
+
+        return this.http.get<any>(
+          "/api/AccountingReport?reqType=Bank-Reconciliation-history&VoucherNumber=" + VoucherNumber + "&sectionId=" + secId + "&FiscalYearId=" + fsYearId,
+          this.options
+        );
+      } 
+	 public PostReconciliation(data) {
+        try {
+            return this.http.post<response>('/api/AccountingReport?reqType=post-reconciliation',data);
+        } catch (ex) {
+            throw ex;
+        }
+    }  
 }

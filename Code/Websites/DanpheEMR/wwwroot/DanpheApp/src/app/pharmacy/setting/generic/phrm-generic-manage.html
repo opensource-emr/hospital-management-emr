@@ -1,7 +1,8 @@
 <input type="button" class="btn btn-primary" (click)="ShowAddNewPage()" value="Add New Generic Name" />
 <div class="row">
   <div class="col-md-12 col-xs-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="genericGridColumns" [grid-data]="genericList" (grid-actions)="GenericGridActions($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="genericGridColumns" [grid-data]="genericList"
+      (grid-actions)="GenericGridActions($event)"> </danphe-grid>
   </div>
 </div>
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showGenericAddPage">
@@ -11,66 +12,59 @@
         <div class="modelbox-div clearfix">
           <div class="caption lb-caption">
             <h3> <span *ngIf="!update">Add Generic Name</span> <span *ngIf="update">Update Generic Name</span></h3>
-            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> </div>
-          
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+
           <!--Model Box Body Start-->
           <form [formGroup]="currentGeneric.GenericValidator" class="form-horizontal hm-form">
             <div class="form-body">
               <div class="form-group">
                 <label class="control-label col-md-5">Generic Name<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text"
-                                         [(ngModel)]="currentGeneric.GenericName"
-                                         formControlName="GenericName"
-                                         value=""
-                                         placeholder="Enter Generic Name" />
-                  <span class="color-red font-sm" [hidden]="currentGeneric.IsValidCheck('GenericName','required') || !(currentGeneric.IsDirty('GenericName'))">Generic Name is required</span> </div>
+                  <input id="genericname" class="form-control" type="text" [(ngModel)]="currentGeneric.GenericName"
+                    formControlName="GenericName" value="" (keyup.enter)="setFocusById('categoryname')"
+                    placeholder="Enter Generic Name" />
+                  <span class="color-red font-sm"
+                    [hidden]="currentGeneric.IsValidCheck('GenericName','required') || !(currentGeneric.IsDirty('GenericName'))">Generic
+                    Name is required</span>
+                </div>
               </div>
               <div class="form-group">
                 <label class="control-label col-md-5">Select Category<sup>*</sup><b>:</b></label>
                 <div class="col-md-7">
-                  <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
-                                         [(ngModel)]="selCategory"
-                                         [source]="categoryList"
-                                         placeholder="  Category Type"
-                                         formControlName="CategoryId"
-                                         display-property-name="CategoryName"
-                                         value-property-name="CategoryId"
-                                         (valueChanged)="AssignSelectedCategory()"
-                                         [list-formatter]="CategoryListFormatter"
-                                         max-num-list="100"
-                                         style="width:100%;" />
-                  <div class="color-red font-sm" [hidden]="currentGeneric.IsValidCheck('CategoryId','required') || !(currentGeneric.IsDirty('CategoryId'))">Category is required</div>
+                  <input id="categoryname" danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                    [(ngModel)]="selCategory" [source]="categoryList" placeholder="  Category Type"
+                    formControlName="CategoryId" display-property-name="CategoryName" value-property-name="CategoryId"
+                    (valueChanged)="AssignSelectedCategory()" [list-formatter]="CategoryListFormatter"
+                    max-num-list="100" (keyup.enter)="setFocusById('categoryno')" style="width:100%;" />
+                  <div class="color-red font-sm"
+                    [hidden]="currentGeneric.IsValidCheck('CategoryId','required') || !(currentGeneric.IsDirty('CategoryId'))">
+                    Category is required</div>
                 </div>
               </div>
               <div class="form-group">
                 <label class="control-label col-md-5">General Category Number<b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text"
-                                         [(ngModel)]="currentGeneric.GeneralCategory"
-                                         [ngModelOptions]="{standalone: true}"
-                                         value=""
-                                         placeholder="Enter Generic Category" />
+                  <input id="categoryno" class="form-control" type="text" [(ngModel)]="currentGeneric.GeneralCategory"
+                    [ngModelOptions]="{standalone: true}" value="" (keyup.enter)="setFocusById('TherapeuticCatNo')"
+                    placeholder="Enter Generic Category" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="control-label col-md-5">Therapeutic Category Number<b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text"
-                                         [(ngModel)]="currentGeneric.TherapeuticCategory"
-                                         [ngModelOptions]="{standalone: true}"
-                                         value=""
-                                         placeholder="Enter Therapeutic Category" />
+                  <input id="TherapeuticCatNo" class="form-control" type="text"
+                    [(ngModel)]="currentGeneric.TherapeuticCategory" [ngModelOptions]="{standalone: true}" value=""
+                    (keyup.enter)="setFocusById('counsellingno')" placeholder="Enter Therapeutic Category" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="control-label col-md-5">Counseling Number<b>:</b></label>
                 <div class="col-md-7">
-                  <input class="form-control" type="text"
-                                         [(ngModel)]="currentGeneric.Counseling"
-                                         [ngModelOptions]="{standalone: true}"
-                                         value=""
-                                         placeholder="Enter Counseling" />
+                  <input id="counsellingno" class="form-control" type="text" [(ngModel)]="currentGeneric.Counseling"
+                    [ngModelOptions]="{standalone: true}" value=""
+                    (keyup.enter)="!update?setFocusById('savegen'):setFocusById('updategen')"
+                    placeholder="Enter Counseling" />
                 </div>
               </div>
               <div class="form-group">
@@ -79,20 +73,23 @@
                   <div class="input-group">
                     <div class="icheck-inline">
                       <label class="mt-checkbox mt-checkbox-outline">
-                        <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="currentGeneric.IsActive" [ngModelOptions]="{standalone: true}">
+                        <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="currentGeneric.IsActive"
+                          [ngModelOptions]="{standalone: true}">
                         <span></span> </label>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />
-                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+              <div class="all-buttons text-right">
+                <button type="button" id="savegen" class="btn green btn-success" *ngIf="!update"
+                  (click)="Add()">Save</button>
+                <button type="button" id="updategen" class="btn green btn-success" *ngIf="update"
+                  (click)="Update()">Update</button>
               </div>
             </div>
           </form>
-          <!--</form>--> 
-          <!--Model Box Body End--> 
+          <!--</form>-->
+          <!--Model Box Body End-->
         </div>
       </div>
     </div>

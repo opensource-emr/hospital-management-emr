@@ -10,7 +10,8 @@ import { CommonFunctions } from "../../../shared/common.functions";
 
 @Component({
   selector: "user-add",
-  templateUrl: "./user-add.html"
+  templateUrl: "./user-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 
 })
 export class UserAddComponent {
@@ -39,6 +40,7 @@ export class UserAddComponent {
     public changeDetector: ChangeDetectorRef) {
     this.GetEmpList();
     this.selectedItem = new User();
+    this.GoToNextInput("EmployeeId");
   }
 
 
@@ -102,16 +104,20 @@ export class UserAddComponent {
             if (res.Status == "OK") {
               this.msgBoxServ.showMessage("success", ['User Added Successfully.']);
               this.CurrentUser = new User();
-              this.Close();
+              
               this.GetEmpList();
               //we're getting new user as res.Results.
               let newUser: User = res.Results;
               this.callbackAdd.emit({ user: newUser });
               this.selEmployee = null;
+              this.Close();
 
+            }else if(res.Status == "Failed"){
+              this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
+              console.log(res.ErrorMessage);
             }
             else {
-              //this.msgBoxServ.showMessage("error", ["Something Wrong" + res.ErrorMessage]);
+             
               this.msgBoxServ.showMessage("Failed", ["UserName or email already exists"]);
 
             }
@@ -166,8 +172,7 @@ export class UserAddComponent {
     this.selectedItem = null;
     this.update = false;
     this.showAddPage = false;
-    this.callbackAdd.emit({ });
-
+    this.callbackAdd.emit({  });
   }
   public AssignSelectedEmployee() {
     try {
@@ -193,6 +198,19 @@ export class UserAddComponent {
       this.msgBoxServ.showMessage("error", ["Check error in Console log !"]);
       console.log("Error Messsage =>  " + ex.message);
       console.log("Stack Details =>   " + ex.stack);
+    }
+  }
+   GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event){
+    if(event.keyCode == 27){ // For ESCAPE_KEY =>close pop up
+      this.Close(); 
     }
   }
 

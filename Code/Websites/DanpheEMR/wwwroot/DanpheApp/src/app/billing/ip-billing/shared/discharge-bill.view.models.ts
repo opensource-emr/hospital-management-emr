@@ -4,6 +4,8 @@ export class DischargeBillVM {
   public AdmissionDetail: AdmissionDetailVM = new AdmissionDetailVM();
   public PatientDetail: PatientDetailVM = new PatientDetailVM();
   public BillingTransactionDetail: BillingTransactionDetailVM = new BillingTransactionDetailVM();
+  //sud:11May'21--Deposit history is not required, we're managing only from fields available in BillingTransaction table. 
+  //need to bring this again at the time of merging LPH with EMR.
   public DepositDetails: Array<DepositDetailVM> = new Array<DepositDetailVM>();
   public BillItemSummary: Array<BillItemSummary> = new Array<BillItemSummary>();
   public TotalAmount: number = 0;
@@ -69,7 +71,7 @@ export class BillingTransactionDetailVM {
   public InvoiceNumber: string;
   public BillingDate: string;
   public PaymentMode: string;
-  public DepositDeductAmount: number;
+  //public DepositDeductAmount: number;
   public DepositBalance: number;
   public User: string;
   public Remarks: string;
@@ -80,6 +82,13 @@ export class BillingTransactionDetailVM {
   public ExchangeRate: number;
   public Tender: number;
   public Change: number;
+  public LabTypeName: string;
+
+  //sud:11May'21:New fields added in BillingTxn Table.
+  public DepositAvailable: number = 0;
+  public DepositUsed: number = 0;
+  public DepositReturnAmount: number = 0;
+
 
 }
 
@@ -124,6 +133,7 @@ export class DischargeDetailBillingVM {
   public DischargeDate: string = null;
   public BillStatus: string = null;
   public Remarks: string = null;
+  public DiscountSchemeId: number = null;
 
   public DischargeDateNepali: NepaliDate = null; //only used in client side.
   public AdmittedDays: string = null;

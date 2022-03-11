@@ -17,6 +17,9 @@ export class PHRMReturnToSupplierReportComponent {
     PHRMReturnToSupplierReportData: Array<any> = new Array<PHRMReportsModel>();
     public phrmReports: PHRMReportsModel = new PHRMReportsModel();
     public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+    public dateRange: string = "";
+    public pharmacy: string = "pharmacy";
+    public loading: boolean;
 
     constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService) {
         this.PHRMReturnToSupplierReportColumn = PHRMReportsGridColumns.PHRMReturnToSupplierReport;
@@ -32,6 +35,7 @@ export class PHRMReturnToSupplierReportComponent {
     };
 
     Load() {
+        this.loading = true;
         this.pharmacyBLService.GetPHRMReturnToSupplierReport(this.phrmReports)
             .subscribe(res => {
                 if (res.Status == 'OK') {
@@ -42,11 +46,13 @@ export class PHRMReturnToSupplierReportComponent {
 
                     this.msgBoxServ.showMessage("failed", [res.ErrorMessage])
                 }
+                this.loading = false;
             });
     }
 
     OnFromToDateChange($event) {
         this.phrmReports.FromDate = $event ? $event.fromDate : this.phrmReports.FromDate;
         this.phrmReports.ToDate = $event ? $event.toDate : this.phrmReports.ToDate;
+        this.dateRange = "<b>Date:</b>&nbsp;" + this.phrmReports.FromDate + "&nbsp;<b>To</b>&nbsp;" + this.phrmReports.ToDate;
     }
 }

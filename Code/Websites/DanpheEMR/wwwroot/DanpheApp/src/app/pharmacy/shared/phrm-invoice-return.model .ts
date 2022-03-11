@@ -8,15 +8,16 @@ import {
 } from '@angular/forms'
 import * as moment from 'moment/moment';
 
-import { PHRMInvoiceReturnItemsModel} from './phrm-invoice-return-items.model'
+import { PHRMInvoiceReturnItemsModel } from './phrm-invoice-return-items.model'
 import { PHRMNarcoticRecordModel } from './phrm-narcotic-record';
 import { PHRMPatient } from "./phrm-patient.model";
 export class PHRMInvoiceReturnModel {
-    public InvoiceReturnId: number =0;
+    public InvoiceReturnId: number = 0;
     public InvoiceId: number = 0;
+    public StoreId: number;
     public PatientId: number = null;
     public CounterId: number = null;
-    public CreditNoteId:number = 0;
+    public CreditNoteId: number = 0;
     public SubTotal: number = 0;
     public Tender: number = 0;
     public Change: number = 0;
@@ -43,7 +44,18 @@ export class PHRMInvoiceReturnModel {
     //only for show in list
     public PatientName: string = "";
 
-   public InvoiceReturnValidator: FormGroup = null;
+    public InvoiceReturnValidator: FormGroup = null;
+    public ClaimCode: number;
+    // added for Manual Return
+    IsManualReturn: boolean;
+    ReferenceInvoiceNo: string;
+    ReferenceInvoiceDate: string = moment().format('YYYY-MM-DD');
+    VATPercentage: number = 0;
+    TaxableAmount: number = 0;
+    NonTaxableAmount: number = 0;
+
+    CashDiscount: number = 0;
+    SettlementId: number = null;
     //Constructor of class
     constructor() {
         var _formBuilder = new FormBuilder();
@@ -84,5 +96,5 @@ export class PHRMInvoiceReturnModel {
                 currCtrol.disable();
             }
         }
-     }
+    }
 }

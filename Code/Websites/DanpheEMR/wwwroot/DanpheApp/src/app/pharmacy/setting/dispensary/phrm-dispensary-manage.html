@@ -1,3 +1,20 @@
+<style>
+  .billing-header-animation {
+    animation-name: fade-in;
+    animation-duration: 300ms;
+    animation-timing-function: ease-in;
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+
+    30% {
+      opacity: 0.7;
+    }
+  }
+</style>
 <input type="button" class="btn btn-primary" (click)="AddDispensary()" value="Add Dispensary" />
 <div class="row">
   <div class="col-md-12 col-xs-12 col-sm-12">
@@ -8,101 +25,154 @@
 <!--Model Box Starting Here-->
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showDispensaryAddPage">
   <div class="portlet-body form">
-   <div class="row">
-	  <div class="col-md-4 col-md-offset-4"> 
-		 <div class="modelbox-div clearfix"> 
-			 <div class="caption lb-caption">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
             <h3> <span *ngIf="!update">Add Dispensary</span>
-                <span *ngIf="update">Update Dispensary</span></h3>
-            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> </div>
-			 <!--Model Box Body Start-->
-    <form [formGroup]="CurrentDispensary.DispensaryValidator" class="form-horizontal hm-form">
-      <div class="form-body">
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Dispensary Name<sup>*</sup><b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="50"
-                           [(ngModel)]="CurrentDispensary.Name" formControlName="Name"
-                           value=""
-                           placeholder="Enter Dispensary Name" />
-                    <span class="color-red font-sm" [hidden]="CurrentDispensary.IsValidCheck('Name','required') || !(CurrentDispensary.IsDirty('Name'))">Dispensary name is required</span>
-                    <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('Name')" [hidden]="CurrentDispensary.IsValidCheck('Name','maxlength')"> Length is not proper</span>
-                  </div>
+              <span *ngIf="update">Update Dispensary</span>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentDispensary.StoreValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Dispensary Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text" maxlength="50" id="dispensaryName" [(ngModel)]="CurrentDispensary.Name" formControlName="Name" value="" placeholder="Enter Dispensary Name" (keyup.enter)="setFocusById('SubCategory')" />
+                  <span class="color-red font-sm" [hidden]="CurrentDispensary.IsValidCheck('Name','required') || !(CurrentDispensary.IsDirty('Name'))">Dispensary name is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('Name')" [hidden]="CurrentDispensary.IsValidCheck('Name','maxlength')"> Length is not proper</span>
                 </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Contact Address<b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="100"
-                           [(ngModel)]="CurrentDispensary.Address" [ngModelOptions]="{standalone: true}"
-                           value=""
-                           placeholder="Enter Contact Address" />
-                  </div>
+              </div>
+              <div class="form-group">
+                <label for="Type" class="control-label col-md-5">Dispensary Type <sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <select style="width: -webkit-fill-available;" name="SubCategory" id="SubCategory" [(ngModel)]="CurrentDispensary.SubCategory" [ngModelOptions]="{standalone : true}" (change)="OnCategoryChange()">
+                    <option *ngFor="let dispensaryType of dispensaryTypes | keyvalue" [value]="dispensaryType.value">
+                      {{dispensaryType.value}}
+                    </option>
+                  </select>
                 </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Contact Number<sup>*</sup><b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="10"
-                           [(ngModel)]="CurrentDispensary.ContactNo"
-                           formControlName="ContactNo"
-                           value=""
-                           placeholder="Enter Contact number" />
-                    <span class="color-red font-sm" [hidden]="CurrentDispensary.IsValidCheck('ContactNo','required') || !(CurrentDispensary.IsDirty('ContactNo'))">Contact number is required</span>
-                    <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('ContactNo')" [hidden]="CurrentDispensary.IsValidCheck('ContactNo','pattern')"> Contact number must be of 10 digits</span>
-                  </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text" maxlength="100" id="description" [(ngModel)]="CurrentDispensary.StoreDescription" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter Description" (keyup.enter)="setFocusById('label')" />
                 </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Email<b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="100"
-                           [(ngModel)]="CurrentDispensary.Email"
-                           formControlName="Email"
-                           value=""
-                           placeholder="Enter Email" />
-                    <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('Email')" [hidden]="CurrentDispensary.IsValidCheck('Email','pattern')">Email ID is not proper</span>
-                  </div>
-                </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Description<b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="100"
-                           [(ngModel)]="CurrentDispensary.DispensaryDescription" [ngModelOptions]="{standalone: true}"
-                           value=""
-                           placeholder="Enter Description" />
-                  </div>
-                </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">Label<b>:</b></label>
-                  <div class="col-md-7">
-                    <input class="form-control" type="text" maxlength="100"
-                           [(ngModel)]="CurrentDispensary.DispensaryLabel" [ngModelOptions]="{standalone: true}"
-                           value=""
-                           placeholder="Enter Label" />
-                  </div>
-                </div>
-		  <div class="form-group">
-                  <label class="control-label col-md-5">IsActive<b>:</b></label>
-                  <div class="col-md-7">
-                    <div class="input-group">
-                      <div class="icheck-inline">
-                        <label class="mt-checkbox mt-checkbox-outline">
-                          <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentDispensary.IsActive" [ngModelOptions]="{standalone: true}">
-                          <span></span>
-                        </label>
-                      </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">IsActive<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="IsActive" id="isActive" [(ngModel)]="CurrentDispensary.IsActive" [ngModelOptions]="{standalone: true}" (keyup.enter)="setFocusById('UseSeparateBillingHeader')">
+                        <span></span>
+                      </label>
                     </div>
                   </div>
                 </div>
-		  <div class="form-actions">
-                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />
-                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
-              </div>        
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Use separate invoice header<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="UseSeparateInvoiceHeader" id="UseSeparateInvoiceHeader" [(ngModel)]="CurrentDispensary.UseSeparateInvoiceHeader" [ngModelOptions]="{standalone: true}" (ngModelChange)="checkIfValidationNeededForBillingHeaderInfo()" (keyup.enter)="setFocusById('btn_Save')">
+                        <span></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Invoice Header Information Start -->
+              <div class="portlet box blue-hoki billing-header-animation" *ngIf="CurrentDispensary.UseSeparateInvoiceHeader == true">
+                <div class="portlet-title cstm-portlet-title">
+                  <div class="caption custom-caption">
+                    <h3> <span style="color: white !important;">
+                        <i style="color: white !important;" class="fa fa-gear"></i>Billing Header</span>
+                    </h3>
+                  </div>
+                </div>
+                <div class="portlet-body" style="border: 1px solid #a9d4da;">
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Label<sup>*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" type="text" maxlength="100" id="label" formControlName="StoreLabel" [(ngModel)]="CurrentDispensary.StoreLabel" value="" placeholder="Enter Label" (keyup.enter)="setFocusById('PanNo')" />
+                      <span class="color-red font-sm" [hidden]="CurrentDispensary.IsValidCheck('StoreLabel','required') || !(CurrentDispensary.IsDirty('StoreLabel'))">Dispensary label is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('StoreLabel')" [hidden]="CurrentDispensary.IsValidCheck('StoreLabel','maxlength')"> Length is not proper</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="PanNo" class="control-label col-md-5">PAN No<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" type="text" maxlength="100" id="PanNo" [(ngModel)]="CurrentDispensary.PanNo" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter PAN No" (keyup.enter)="setFocusById('address')" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Contact Address<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" type="text" maxlength="100" id="address" [(ngModel)]="CurrentDispensary.Address" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter Contact Address" (keyup.enter)="setFocusById('contactNumber')" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Contact Number<sup>*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" type="text" maxlength="10" id="contactNumber" [(ngModel)]="CurrentDispensary.ContactNo" formControlName="ContactNo" value="" placeholder="Enter Contact number" (keyup.enter)="setFocusById('email')" />
+                      <span class="color-red font-sm" [hidden]="CurrentDispensary.IsValidCheck('ContactNo','required') || !(CurrentDispensary.IsDirty('ContactNo'))">Contact number is required</span>
+                      <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('ContactNo')" [hidden]="CurrentDispensary.IsValidCheck('ContactNo','pattern')"> Contact number must be of 10 digits</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-5">Email<b>:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" type="text" maxlength="100" id="email" [(ngModel)]="CurrentDispensary.Email" formControlName="Email" value="" placeholder="Enter Email" (keyup.enter)="setFocusById('btn_Save')" />
+                      <span class="color-red font-sm" *ngIf="CurrentDispensary.IsDirty('Email')" [hidden]="CurrentDispensary.IsValidCheck('Email','pattern')">Email ID is not proper</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Invoice Header Information End -->
+              <div class="form-actions">
+                <input type="button" class="btn primary-btn" *ngIf="!update" id="btn_Save" class="btn green btn-success" (click)="Add()" value="Add" />
+                <input type="button" class="btn primary-btn" *ngIf="update" id="btn_Save" class="btn green btn-success" (click)="Update()" value="Update" />
+              </div>
+            </div>
+          </form>
+          <!--</form>-->
+          <!--Model Box Body End-->
+        </div>
       </div>
-    </form>
-    <!--</form>-->
-    <!--Model Box Body End-->
-		  </div>
-	  </div>
-	  </div>
+    </div>
   </div>
 </div>
 
+
+<!-- Dispatch Pop Up -->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPaymentModesPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix" style="zoom: 0.9; padding: 5rem;">
+          <a class="btn btn-danger history-del-btn" (click)="onPaymentModesPopUpClose()" title="Close">
+            <i class="fa fa-times"></i>
+          </a>
+          <h2><u>Available Payment Modes</u></h2>
+          <p>Store Name : <b>{{selectedItem.Name}}</b> </p>
+          <table class="table table-bordered">
+            <tr>
+              <th>Payment Mode</th>
+              <th>Is Remarks Mandatory for Sale</th>
+            </tr>
+            <tr *ngFor="let paymentModes of selectedItem.AvailablePaymentModes">
+              <td>{{paymentModes.PaymentModeName}} <span *ngIf="paymentModes.PaymentModeName == selectedItem.DefaultPaymentMode">(Default)</span></td>
+              <td>{{paymentModes.IsRemarksMandatory}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

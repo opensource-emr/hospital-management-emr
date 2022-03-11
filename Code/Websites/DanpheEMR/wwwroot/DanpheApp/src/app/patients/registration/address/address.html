@@ -11,7 +11,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Address Type<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <select class="form-control" required [(ngModel)]="currentAddress.AddressType" formControlName="AddressType">
+                      <select class="form-control"   required value="" (change)="GoToNextInput('Street')" required [(ngModel)]="currentAddress.AddressType" formControlName="AddressType">
                         <option value="Temporary">Temporary</option>
                         <option value="Permanent">Permanent</option>
                       </select>
@@ -20,7 +20,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Street 1<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" formControlName="Street1" [(ngModel)]="currentAddress.Street1"
+                      <input class="form-control" id="Street" autofocus (keyup.enter)="GoToNextInput('ddlCountrySubDivision')" type="text" formControlName="Street1" [(ngModel)]="currentAddress.Street1"
                                    required value="" placeholder="street 1" />
                       <span class="color-red" *ngIf="currentAddress.IsDirty('Street1')" [hidden]="currentAddress.IsValidCheck('Street1','required')"> Street1 is required </span> <span class="color-red" *ngIf="currentAddress.IsDirty('Street1')" [hidden]="currentAddress.IsValidCheck('Street1','maxlength')"> Street1 must be less than 30 characters </span> </div>
                   </div>
@@ -33,7 +33,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">Birth Country<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <select id="ddlCountry" class="form-control" [(ngModel)]="currentAddress.CountryId" formControlName="CountryId" (ngModelChange)="GetCountrySubDivision(currentAddress)">
+                      <select id="ddlCountry" class="form-control"  (change)="GoToNextInput('ddlCountrySubDivision')" [(ngModel)]="currentAddress.CountryId" formControlName="CountryId" (ngModelChange)="GetCountrySubDivision(currentAddress)">
                         <option *ngFor="let Country of Countries" value="{{Country.CountryId}}">{{Country.CountryName}}</option>
                       </select>
                       <span class="color-red" *ngIf="currentAddress.IsDirty('CountryId')" [hidden]="currentAddress.IsValidCheck('CountryId','required')"> Country is required</span> </div>
@@ -41,7 +41,7 @@
                   <div *ngIf ="currentAddress.CountryId == 1" class="form-group">
                     <label class="control-label col-md-4">District/State<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <select id="ddlCountrySubDivision" class="form-control" [(ngModel)]="currentAddress.CountrySubDivisionId" formControlName="CountrySubDivisionId">
+                      <select id="ddlCountrySubDivision" (change)="GoToNextInput('City')" class="form-control" [(ngModel)]="currentAddress.CountrySubDivisionId" formControlName="CountrySubDivisionId">
                         <option *ngFor="let div of CountrySubDivisionList" value="{{div.CountrySubDivisionId}}" [disabled]="disableTextBox">{{div.CountrySubDivisionName}}</option>
                       </select>
                       <span class="color-red" *ngIf="currentAddress.IsDirty('CountrySubDivisionId')" [hidden]="currentAddress.IsValidCheck('CountrySubDivisionId','required')"> District/State is required</span> </div>
@@ -49,7 +49,7 @@
                   <div class="form-group">
                     <label class="control-label col-md-4">City<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" type="text" value="" [(ngModel)]="currentAddress.City" formControlName="City" />
+                      <input class="form-control" type="text" id="City" value="" [(ngModel)]="currentAddress.City" formControlName="City" />
                       <span class="color-red" *ngIf="currentAddress.IsDirty('City')" [hidden]="currentAddress.IsValidCheck('City','required')"> City is required</span> </div>
                   </div>
                   <div class="form-group">

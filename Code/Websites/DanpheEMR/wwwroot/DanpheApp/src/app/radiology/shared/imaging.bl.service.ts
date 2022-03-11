@@ -21,6 +21,14 @@ export class ImagingBLService {
     public securityService: SecurityService) {
   }
 
+
+  public GetFilmTypeData(){
+    return this.imagingDLService.GetFilmTypeData()
+    .map((responseData) => {
+      return responseData;
+    });
+  }
+
   //this returns a promise, the calling component can subscribe and do the needful
   //get the items by type
   //imaging-requisition.component
@@ -334,5 +342,6 @@ export class ImagingBLService {
     return this.imagingDLService.PutScannedDetails(reqId)
       .map(res => { return res });
   }
+
 }
 

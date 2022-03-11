@@ -25,7 +25,8 @@ export class PHRMStockItemsReportComponent {
   public summary: any = { tot_Quantity: 0, tot_TotalAmount: 0 };
 
   public selectedLocation: number = 1;
-
+  public pharmacy:string = "pharmacy";
+  
   constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService,
     public msgBoxServ: MessageboxService) {
     this.PHRMStockItemsReportColumns = PHRMReportsGridColumns.PHRMStockItemsReport;

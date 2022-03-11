@@ -61,7 +61,7 @@ export class ProvisionalBillingComponent {
   public showPatBillHistory: boolean = false;
   public checkouttimeparameter: string;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-  
+
   public patBillHistory = {
     IsLoaded: false,
     PatientId: null,
@@ -101,6 +101,7 @@ export class ProvisionalBillingComponent {
   public isCancelRuleEnabled: boolean;
 
   public cancellationNumber: number = 0;
+  public showInvoicePrintPage: boolean = false;//sud:16May'21--to print from same page.
 
   constructor(public billingService: BillingService,
     public routeFromService: RouteFromService,
@@ -118,12 +119,12 @@ export class ProvisionalBillingComponent {
       this.callbackservice.CallbackRoute = '/Billing/UnpaidBills';
       this.router.navigate(['/Billing/CounterActivate']);
     } else {
-      this.CheckAndLoadBillItemPrice();
-      this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
-      this.GetUnpaidTotalBills();
-      this.SetDoctorsList();
+      // this.CheckAndLoadBillItemPrice();
+      // this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
+      // this.GetUnpaidTotalBills();
+      // this.SetDoctorsList();
 
-      this.SetBillingParameters();
+      // this.SetBillingParameters();
 
     }
     this.setCheckOutParameter();
@@ -135,7 +136,21 @@ export class ProvisionalBillingComponent {
       this.billingCancellationRule.labStatus = this.overallCancellationRule.LabItemsInBilling;
       this.billingCancellationRule.radiologyStatus = this.overallCancellationRule.ImagingItemsInBilling;
     }
+  }
 
+  ngOnInit() {
+    console.log(this.patientService.globalPatient);
+    if (this.routeFromService.RouteFrom == "BillingTransactionProvisional") {
+      this.CheckAndLoadBillItemPrice();//need this to ensure billitem price are set to the item list.
+      var data = this.patientService.globalPatient;
+      this.filteredPendingItems = [];
+      this.ShowPatientProvisionalItems(data);
+    }
+    this.CheckAndLoadBillItemPrice();
+    this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
+    this.GetUnpaidTotalBills();
+    this.SetDoctorsList();
+    this.SetBillingParameters();
   }
 
   public enablNewItmAddInProvisional: boolean = false;
@@ -207,7 +222,7 @@ export class ProvisionalBillingComponent {
       .subscribe((res: DanpheHTTPResponse) => {
 
         if (res.Status == "OK") {
-         
+
           this.receiptDetails = res.Results.CreditItems;
           this.patientService.globalPatient = res.Results.Patient;
           if (printProvisional) {
@@ -271,7 +286,7 @@ export class ProvisionalBillingComponent {
     patient.PhoneNumber = row.PhoneNumber;
     this.currBillingContext = null;
     this.admissionDetail = null;
-    
+
     this.GetPatientProvisionalItems(patient.PatientId);
     this.LoadPatientBillingContext(patient.PatientId);
   }
@@ -300,8 +315,21 @@ export class ProvisionalBillingComponent {
         if (item)
           curBilTxnItm.IsTaxApplicable = item.TaxApplicable;
         billingTransaction.BillingTransactionItems.push(curBilTxnItm);
+
+        //if (bil.DiscountSchemeId not in distinct)
+        //distinct.push(array[i].age)
+
       }
+
     });
+    const arr = billingTransaction.BillingTransactionItems.map(p => p.DiscountSchemeId); 
+    const s = new Set(arr); //  a set removes duplications, but it's still a set
+    const unique2 = Array.from(s); // use Array.from to transform a set into an array
+
+    if (unique2 && unique2.length > 1) {
+      this.msgBoxServ.showMessage("Notice", ["Provisional billing was done using Multiple Schemes. Please change to the correct one during Final Invoice."]);
+    }
+
     if (this.currBillingContext.BillingType.toLowerCase() == ENUM_BillingType.inpatient)
       this.routeFromService.RouteFrom = "inpatient";
     this.router.navigate(['/Billing/BillingTransactionItem']);
@@ -340,7 +368,8 @@ export class ProvisionalBillingComponent {
     txnReceipt.ReceiptType = "provisional";
     txnReceipt.DepositBalance = CommonFunctions.parseAmount(this.patBillHistory.DepositBalance);
     this.billingService.globalBillingReceipt = txnReceipt;
-    this.router.navigate(['Billing/ReceiptPrint']);
+    this.showInvoicePrintPage = true;
+    // this.router.navigate(['Billing/ReceiptPrint']);
   }
   BackToGrid() {
     this.showAllPatient = true;
@@ -493,11 +522,11 @@ export class ProvisionalBillingComponent {
 
     var selItemDetails = this.itemList.find(a => a.ItemId == itmId && a.ItemName == itmName)
     this.discountApplicable = selItemDetails.DiscountApplicable;
-    
+
     this.selItemForEdit.SrvDeptIntegrationName = this.selItemForEdit.ServiceDepartment.IntegrationName;
     this.selItemForEdit.AllowCancellation = true;
     console.log(this.selItemForEdit);
-    if(this.selItemForEdit.OrderStatus == null){
+    if (this.selItemForEdit.OrderStatus == null) {
       this.selItemForEdit.OrderStatus = 'active';
     }
     if (this.isCancelRuleEnabled && this.selItemForEdit.SrvDeptIntegrationName && this.selItemForEdit.RequisitionId > 0) {
@@ -507,7 +536,7 @@ export class ProvisionalBillingComponent {
       }
     }
     this.showEditItemsPopup = true;
-    
+
 
   }
   //this will be called when Item's edit window is closed.
@@ -645,15 +674,6 @@ export class ProvisionalBillingComponent {
   }
 
 
-  //  <ward-billitem - request * ngIf="showNewItemsPopup"[counterId] = "1"[billItems] = "allBillItems"
-  //[patientId] = "selectedPatient.PatientId"[visitId] = "selectedPatient.PatientVisitId"
-  //[visitType] = "'inpatient'"[billingType] = "'inpatient'"
-  //  (emit - billItemReq) = "OrderRequested()" > </ward-billitem-request>
-
-
-  //public showNewItemsPopup: boolean = false;
-
-
   LoadInitialValues() {
 
   }
@@ -675,5 +695,11 @@ export class ProvisionalBillingComponent {
     this.showNewItemsPopup = false;
   }
 
+
+  //sud:16May'21--Moving Invoice Printing as Popup
+  public CloseInvoicePrint() {
+    this.showInvoicePrintPage = false;
+    this.router.navigate(["/Billing/UnpaidBills"]);
+  }
 
 }

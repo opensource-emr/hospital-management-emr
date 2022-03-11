@@ -1,25 +1,50 @@
 <div class="wrapper">
-  <button class="btn btn-cancel" *ngIf="showReport && enableEdit" style="float:right" (click)="EditReport()"> Edit Result <i class="fa fa-edit"></i> </button>
-  <button class="btn primary-btn pull-left margin-7-lft"  *ngIf="showAddEditResult && isEditResult"  (click)="BackToViewReport()"> <i class="fa fa-arrow-left"></i> Back To Report View </button>
+  <!--enableResultEdit-->
+  <button class="btn btn-cancel" *ngIf="enableResultEdit && !showAddEditResult && securityService.HasPermission('btn-lab-final-reports-tests-edit')" style="float:right"
+    (click)="EditReport()" [rbac-permission]='{"name":"btn-lab-final-reports-tests-edit","actionOnInvalid":"remove"}'>
+    Edit Result <i class="fa fa-edit"></i> </button>
+  <!--<button class="btn btn-cancel" *ngIf="enableResultEdit" style="float:right" (click)="EditReport()"> Edit Result <i class="fa fa-edit"></i> </button>-->
+
+
+  <button class="btn primary-btn pull-left margin-7-lft" *ngIf="showAddEditResult && isEditResult"
+    (click)="BackToViewReport()"> <i class="fa fa-arrow-left"></i> Back To Report View </button>
   <danphe-lab-add-result *ngIf="showAddEditResult" [templateReport]="templateReport"
-                       [showAddEditResult]="showAddEditResult"
-                       [isEditResult]="isEditResult"
-                       (callback-addupdate)="CallBackAddUpdate($event)"
-                       (callback-cancel)="CallbackCancel($event)"></danphe-lab-add-result>
-  <danphe-lab-view-report  *ngIf="showReport && labReportFormat == 'format1'" [templateReport]="templateReport"
-                        [showReport]="showReport"
-                        [showHeader]="showHeader"
-                        [showSignatories]="showSignatories"
-                        [enableEdit]="enableEdit"
-                        [verificationRequired]="verificationRequired"
-                        [printReportFromGrid]="printReportFromGrid"
-                        (callbackBackToGrid)="CallBackBackToGrid($event)"></danphe-lab-view-report>
+    [showAddEditResult]="showAddEditResult" [isEditResult]="isEditResult"
+    (callback-addupdate)="CallBackAddUpdate($event)" (callback-cancel)="CallbackCancel($event)"></danphe-lab-add-result>
+  <danphe-lab-view-report *ngIf="showReport && labReportFormat == 'format1'" [templateReport]="templateReport"
+    [hidePrintButton]="hidePrintButton" [showReport]="showReport" [showHeader]="showHeader" [showUplaodToTeleMedicine] = "showUplaodToTeleMedicine"
+    [showSignatories]="showSignatories" [enableEdit]="enableEdit" [verificationRequired]="verificationRequired" [IsFileUploaded] = "IsFileUploaded"
+    [printReportFromGrid]="printReportFromGrid" (callBackToReportAddUpdate)="ReportAddUpdateSuccess($event)"
+    (callbackBackToGrid)="CallBackBackToGrid($event)" (callBackUplaod) = "exportToPdf()">
+  </danphe-lab-view-report>
   <danphe-lab-view-report-format2 *ngIf="showReport && labReportFormat == 'format2'" [templateReport]="templateReport"
-                        [showReport]="showReport"
-                        [showHeader]="showHeader"
-                        [showSignatories]="showSignatories"
-                        [enableEdit]="enableEdit"
-                        [verificationRequired]="verificationRequired"
-                        [printReportFromGrid]="printReportFromGrid"
-                        (callbackBackToGrid)="CallBackBackToGrid($event)"></danphe-lab-view-report-format2>
+    [showReport]="showReport" [showHeader]="showHeader" [showSignatories]="showSignatories" [enableEdit]="enableEdit" [IsFileUploaded] = "IsFileUploaded"
+    [hidePrintButton]="hidePrintButton" [verificationRequired]="verificationRequired" [showUplaodToTeleMedicine] = "showUplaodToTeleMedicine"
+    [printReportFromGrid]="printReportFromGrid" (callbackBackToGrid)="CallBackBackToGrid($event)" (callBackUplaod) = "exportToPdf()">
+  </danphe-lab-view-report-format2>
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showReUploadPopup">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr" style="color: rgb(184, 73, 73);">Attention !!!</h4>
+        </div>
+        <div class="modelbox-body">
+          <p style="color:green;">This Report Is Alredy Uploaded. Are You Sure To Upload It Again ???</p>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-success btn-sm horizontal-space" (click)="UploadLabReportToTeleMedicine()"> Yes
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="closeConfirmationPopUp()"> No
+            </button>
+          </div>
+        </div>
+        <div class="close-modelbox lb-close-btn">
+          <button class="btn btn-danger" (click)="closeConfirmationPopUp()">X</button>
+        </div>
+      </div>
+    </div>
+</div>  
+
 </div>

@@ -20,28 +20,16 @@ export class VER_INV_PurchaseRequestDetailComponent implements OnInit, OnDestroy
   public VerificationRemarks: string = "";
   public isVerificationAllowed: boolean = false;
   public loading: boolean = false;
-  public headerDetail: { hospitalName; address; email; PANno; tel; DDA };
+  public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public nextVerifiersPermission: string = "";
-  public CopyOfRequisitionItemsQuantity: Array<{
-    RequisitionItemId;
-    Quantity;
-  }> = [];
-  constructor(
-    public verificationService: VerificationService,
-    public verificationBLService: VerificationBLService,
-    public coreService: CoreService,
-    public securityService: SecurityService,
-    public messageBoxService: MessageboxService,
-    public router: Router,
-    public routeFromService: RouteFromService,
-    public changeDetector: ChangeDetectorRef
-  ) { this.GetInventoryBillingHeaderParameter(); }
-
+  public CopyOfRequisitionItemsQuantity: Array<{ RequisitionItemId; Quantity; }> = [];
+  constructor(public verificationService: VerificationService, public verificationBLService: VerificationBLService, public coreService: CoreService, public securityService: SecurityService, public messageBoxService: MessageboxService, public router: Router, public routeFromService: RouteFromService, public changeDetector: ChangeDetectorRef) {
+    this.GetInventoryBillingHeaderParameter();
+  }
   ngOnDestroy(): void {
     this.verificationService.PurchaseRequest = new PurchaseRequestModel();
     this.routeFromService.RouteFrom = "";
   }
-
   ngOnInit() {
     this.PurchaseRequest = this.verificationService.PurchaseRequest;
     this.CheckForVerificationApplicable(); //even if this is false, we must show the details, but features like edit,cancel will not be available.
@@ -63,7 +51,6 @@ export class VER_INV_PurchaseRequestDetailComponent implements OnInit, OnDestroy
         }
       });
   }
-
   private CopyRequestedItemsQuantity() {
     this.PurchaseRequestVM.RequestedItemList.forEach(item => {
       var CopyItem = { RequisitionItemId: item.PurchaseRequestItemId, Quantity: item.RequestedQuantity };
@@ -138,9 +125,7 @@ export class VER_INV_PurchaseRequestDetailComponent implements OnInit, OnDestroy
     }
   }
   GetInventoryBillingHeaderParameter() {
-    var paramValue = this.coreService.Parameters.find(
-      a => a.ParameterName == "Inventory BillingHeader"
-    ).ParameterValue;
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == "Inventory Receipt Header").ParameterValue;
     if (paramValue) this.headerDetail = JSON.parse(paramValue);
     else
       this.messageBoxService.showMessage("error", [
@@ -203,7 +188,6 @@ export class VER_INV_PurchaseRequestDetailComponent implements OnInit, OnDestroy
   }
   Print() {
     //this is used to print the receipt
-
     let popupWinindow;
     var printContents = document.getElementById("printpage").innerHTML;
     popupWinindow = window.open(

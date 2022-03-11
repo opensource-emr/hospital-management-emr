@@ -29,9 +29,10 @@
             <div class="col-md-5 col-xs-12">
                 <div class="col-md-2 col-xs-12">
                     <div class="form-group">
-                        <button class="btn blue" type="button" (click)="Load()">
-                            <i class="fa fa-search"></i>
-                            Show Report
+                        <button class="btn blue" type="button" (click)="Load()" [disabled]="loading">
+                            <i class="fa fa-search"></i>&nbsp;
+                            <span *ngIf="!loading">Show Report</span>
+                            <span *ngIf="loading">Loading...</span>
                         </button>
                     </div>
                 </div>
@@ -71,7 +72,9 @@
         <danphe-grid [grid-colDefaults]="PHRMPurchaseOrderReportColumns"
                      [grid-data]="PHRMPurchaseOrderReportData" [paginationPageSize]="50"
                      [NepaliDateInGridParams]="NepaliDateInGridSettings"
-                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                     [grid-date-range]="dateRange"
+                     [report-for]="pharmacy">
         </danphe-grid>
     </div>
 </div>

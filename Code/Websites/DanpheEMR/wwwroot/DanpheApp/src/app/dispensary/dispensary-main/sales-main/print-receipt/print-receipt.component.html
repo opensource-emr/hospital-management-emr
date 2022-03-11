@@ -1,0 +1,29 @@
+<!-- <div class="col-md-12" style="align-content:center;">
+  <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt" [BillGenerate]="noOfBillGenerate">
+  </pharmacy-receipt>
+</div> -->
+
+
+
+<!-- Popup for provisional bill--By Rohit -->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="popUp">
+    <div class="portlet-body" style="background-color:white">
+      <div class="col-md-12">
+        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div style="padding:10px">
+            <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+                <pharmacy-receipt *ngIf="pharmacyReceipt !=null" [receipt]="pharmacyReceipt" [BillGenerate]="noOfBillGenerate">
+                </pharmacy-receipt>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

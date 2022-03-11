@@ -20,6 +20,7 @@ export class RPT_BIL_DiscountReportComponent {
 
   public fromDate: string = null;
   public toDate: string = null;
+  public dateRange: string = "";
 
   public CounterId: number = 0;
   public CreatedBy: string = "";
@@ -35,6 +36,11 @@ export class RPT_BIL_DiscountReportComponent {
   public counterlist: any;
   public gridExportOptions: any;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+
+  public UserName: any = null;
+  public EmployeeList: Array<any> = [];
+
+  public loading: boolean = false;
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService, public reportServ: ReportingService, public coreService: CoreService, public coreBlService: CoreBLService) {
     this.dlService = _dlService;
@@ -54,6 +60,7 @@ export class RPT_BIL_DiscountReportComponent {
         + this.currentdiscount.fromDate + "&ToDate=" + this.currentdiscount.toDate
         + "&CounterId=" + this.currentdiscount.CounterId + "&CreatedBy=" + this.currentdiscount.CreatedBy)
         .map(res => res)
+        .finally(() => { this.loading = false; })
         .subscribe(res => this.Success(res),
           res => this.Error(res));
     } else {
@@ -153,5 +160,11 @@ export class RPT_BIL_DiscountReportComponent {
 
     this.currentdiscount.fromDate = this.fromDate;
     this.currentdiscount.toDate = this.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
+  }
+
+  UserListFormatter(data: any): string {
+    let html = data["ItemName"];
+    return html;
   }
 }

@@ -65,7 +65,13 @@ export class AccountingSettingsDLService {
             throw ex
         }
     }
-
+    GetBillingItemsList() {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=get-billings-ledgers", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
     //fiscal year activity detaols
     public getfsyearactivitydetail() {
         return this.http.get<any>("/api/Accounting?reqType=get-fsyearactivity");
@@ -172,6 +178,9 @@ export class AccountingSettingsDLService {
     public GetChartofAccount() {
         return this.http.get<any>("/api/AccountingSettings?reqType=GetChartofAccount");
     }
+    public getTrasferRuleData(sectionId) {
+        return this.http.get<any>("/api/AccountingSettings?reqType=getTrasferRuleDataBySectionId&SectionId=" + sectionId);
+    }
     //POST
     public PostVouchers(CurrentVoucher) {
         let data = JSON.stringify(CurrentVoucher);
@@ -244,6 +253,11 @@ export class AccountingSettingsDLService {
     PutLedgersGroup(currentLedgerGroup) {
         let data = JSON.stringify(currentLedgerGroup);
         return this.http.put<any>("/api/AccountingSettings?reqType=updateLedgerGroup", data);
+    }
+
+    public PutTransferRuleIsActive(ruleName) {
+        let data = JSON.stringify(ruleName);
+        return this.http.put<any>("/api/AccountingSettings?reqType=UpdateTransferRulesActive", data);
     }
     //#endregion LedgerGroup Settings Calls
 }

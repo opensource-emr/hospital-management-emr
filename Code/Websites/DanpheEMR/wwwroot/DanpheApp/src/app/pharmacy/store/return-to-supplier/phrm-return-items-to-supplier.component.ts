@@ -1,6 +1,6 @@
 
 import { Component, ChangeDetectorRef } from '@angular/core'
-import { Router, RouterOutlet, RouterModule, ActivatedRoute } from '@angular/router'
+import { Router, ActivatedRoute } from '@angular/router'
 import { SecurityService } from "../../../security/shared/security.service";
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
@@ -13,12 +13,10 @@ import * as moment from 'moment/moment';
 import { BillingFiscalYear } from '../../../billing/shared/billing-fiscalyear.model';
 import { BillingBLService } from '../../../billing/shared/billing.bl.service';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
-import { PHRMInvoiceReturnItemsModel } from '../../shared/phrm-invoice-return-items.model';
 import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { PHRMGoodsReceiptModel } from '../../shared/phrm-goods-receipt.model';
 import { PharmacyService } from '../../shared/pharmacy.service';
-import { NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { CoreService } from '../../../core/shared/core.service';
 
 @Component({
@@ -33,8 +31,6 @@ export class PHRMReturnItemsToSupplierComponent {
     public tempRetSuppModel: PHRMReturnToSupplierModel = new PHRMReturnToSupplierModel();
     ///For Binding ---this is for current ReturnSupplierItems
     public curtRetSuppItemModel: PHRMReturnToSupplierItemModel = new PHRMReturnToSupplierItemModel();
-    //this is to add or delete the number of row in ui
-    public rowCount: number = 0;
     //For Binding --this is for current ReturnItemsInvoice
     public currGRDetail: PHRMGoodsReceiptModel = new PHRMGoodsReceiptModel();
     public currGRItemDetail: PHRMGoodsReceiptItemsModel = new PHRMGoodsReceiptItemsModel();
@@ -42,15 +38,12 @@ export class PHRMReturnItemsToSupplierComponent {
     public ItemList: Array<any> = [];
     public RetItmToSuppList: Array<PHRMReturnToSupplierItemModel> = [];
     public AllItemList: Array<any> = [];
-    ///temp item list for Storing original itm and Remove Item whose Qty is <= zero
-    public tempItemList: any;
     public ItemListOfSelectedSupplier: Array<any> = [];
     //itemlevel discount
     public IsitemlevlDis: boolean;
     ///For Checking Items is Alredy Added or Not
     public checkIsItemPresent: boolean = false;
     public showDangerBox: boolean = false;
-    validRoutes: any;
     selSupplier: any;
     invoiceno: any;
     supplierName: any;
@@ -63,17 +56,11 @@ export class PHRMReturnItemsToSupplierComponent {
     public currentSupplier: PHRMSupplierModel = new PHRMSupplierModel();
     public returnToSupplierData: Array<any> = [];
     public showReturnSupp: boolean;
-    public fiscyrId?: any;
     public grNo?: any;
     public batchNo?: any;
     public invcno?: any;
     public suppId?: any;
-    public itmLst: Array<any> = [];
-    public returnType = [{ id: 1, name: "Breakage" }, { id: 2, name: "Expiry" }, { id: 3, name: "Breakage and Expiry" }];
-    public selectedGoodReceiptItems: Array<PHRMGoodsReceiptItemsModel> = [];
-    public GoodReceiptData: PHRMGoodsReceiptModel;
     public showGoodReceipt: boolean;
-    selectedValue: any;
     public totalAmount: number = null;
     public subTotal: number = null;
     public discountTotal: number = null;
@@ -83,9 +70,12 @@ export class PHRMReturnItemsToSupplierComponent {
     public goodsReceiptItemsList: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
     public checked: boolean;
     public dateRange: string = "last1Week";  //by default show last 1 week data.;
-    public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-    public userName: any;
-    public time: any;
+    IsNepali: boolean;
+    showPopUp: boolean;
+    showFreeQty: boolean;
+    showCCCharge: boolean;
+    invoiceNo: string = null;
+    itemList: any[];
     constructor(public securityService: SecurityService,
         public changeDetectorRef: ChangeDetectorRef,
         public pharmacyBLService: PharmacyBLService,
@@ -94,15 +84,16 @@ export class PHRMReturnItemsToSupplierComponent {
         , public msgserv: MessageboxService, public route: ActivatedRoute,
         public pharmacyService: PharmacyService, public coreService: CoreService) {
         this.returnToSupplierListGridColumns = PHRMGridColumns.PHRMReturnToSupplier;
+        //this.getReturnToSupplier();
         this.GetSupplierList();
-        this.AddRowRequest(0);
+        this.AddRowRequest();
         this.GetItemListForReturnToSupplier();
         this.SetCurrentFiscalYear();
         this.GetAllFiscalYrs();
         this.getGoodsReceiptList();
         this.showitemlvldiscount();
-        // this.getReturnToSupplier();
-        // this.GetReturnToSupplierItemsofExistingGR();
+        this.ShowReceiptInNepali();
+        this.checkReturnCustomization();
     }
     //Get: get return to supplier items of existing gr
     GetReturnToSupplierItemsofExistingGR() {
@@ -110,7 +101,6 @@ export class PHRMReturnItemsToSupplierComponent {
             .subscribe(res => {
                 if (res.Status == 'OK') {
                     this.AllItemList = res.Results;
-
                 }
                 else {
                     this.msgserv.showMessage("failed", ['Failed to get Return to supplier list.' + res.ErrorMessage]);
@@ -125,19 +115,22 @@ export class PHRMReturnItemsToSupplierComponent {
         switch ($event.Action) {
             case "return": {
                 this.currentSupplier = Object.assign({}, $event.Data);
-                this.currentSupplier["Remarks"] = $event.Data.Remarks;
                 this.showReturnSupp = true;
                 this.curtRetSuppModel.ReferenceNo = $event.Data.GoodReceiptPrintId;
                 this.curtRetSuppModel.GoodReceiptId = $event.Data.GoodReceiptId;
                 this.invoiceno = $event.Data.InvoiceNo;
-                this.supplierName = this.currentSupplier.SupplierName;
                 this.gdRptNo = $event.Data.GoodReceiptPrintId;
-                this.ShowRetSuppDetailsByRetGRNo($event.Data.GoodReceiptPrintId);
+                this.ShowRetSuppDetailsByRetGRNo($event.Data.GoodReceiptId);
                 break;
             }
             case "preview": {
                 this.currentSupplier = Object.assign({}, $event.Data);
-                this.showGoodReceipt = true;
+                if (this.IsNepali == true) {
+                    this.showPopUp = true;
+                }
+                else {
+                    this.showGoodReceipt = true;
+                }
                 break;
             }
             default:
@@ -148,8 +141,23 @@ export class PHRMReturnItemsToSupplierComponent {
         this.showGoodReceipt = false;
     }
 
+    ShowReceiptInNepali() {
+        this.IsNepali = true;
+        let receipt = this.coreService.Parameters.find(lang =>
+            lang.ParameterName == 'NepaliReceipt' &&
+            lang.ParameterGroupName == 'Common').ParameterValue;
+        if (receipt == "true") {
+            this.IsNepali = true;
+        }
+        else {
+            this.IsNepali = false;
+        }
+    }
+    OnGRViewPopUpClose() {
+        this.showPopUp = false;
+    }
+
     public getGoodsReceiptList() {
-        var today = new Date(this.toDate);
         this.pharmacyBLService.GetGoodsReceiptList()
             .subscribe(res => {
                 if (res.Status == "OK") {
@@ -195,54 +203,47 @@ export class PHRMReturnItemsToSupplierComponent {
     //show or hide GR item level discount
     showitemlvldiscount() {
         this.IsitemlevlDis = true;
-        let itmdis = this.coreService.Parameters.find(
-            (p) =>
-                p.ParameterName == "PharmacyItemlvlDiscount" &&
-                p.ParameterGroupName == "Pharmacy"
-        ).ParameterValue;
-        if (itmdis == "true") {
-            this.IsitemlevlDis = true;
-        } else {
-            this.IsitemlevlDis = false;
-        }
+        let discountParameter = this.coreService.Parameters.find((p) => p.ParameterName == "PharmacyDiscountCustomization" && p.ParameterGroupName == "Pharmacy").ParameterValue;
+        discountParameter = JSON.parse(discountParameter);
+        this.IsitemlevlDis = (discountParameter.EnableItemLevelDiscount == true);
     }
-    ShowRetSuppDetailsByRetGRNo(GRNo) {
-        //this.curtRetSuppItemModel = new PHRMReturnToSupplierItemModel();
-        //this.changeDetectorRef.detectChanges();
+    ShowRetSuppDetailsByRetGRNo(grId) {
         var todayDate = new Date();
-        var itemList: Array<any> = [];
+        this.itemList = [];
         this.curtRetSuppModel.CreditNoteId = null;
-        this.curtRetSuppModel.ReturnStatus = 0;
         this.curtRetSuppModel.returnToSupplierItems = [];
-        itemList = this.itmLst.filter(a => a.GoodReceiptPrintId == GRNo);
-        for (let i = 0; i < itemList.length; i++) {
+        this.itemList = this.ItemList.filter(a => a.GoodReceiptId == grId);
+        if(this.itemList.length == 0){
+            this.showReturnSupp = false;
+            this.msgserv.showMessage("Info", ["This GoodsReceipt is already returned"]);
+        }
+        for (let i = 0; i < this.itemList.length; i++) {
             var curretsupitemModel: PHRMReturnToSupplierItemModel = new PHRMReturnToSupplierItemModel();
-            curretsupitemModel.SelectedItem = itemList[i].ItemName;
-            curretsupitemModel.ItemName = itemList[i].ItemName;
-            curretsupitemModel.TotalAvailableQuantity = itemList[i].ReceivedQuantity;
-            curretsupitemModel.BatchNo = itemList[i].BatchNo;
-            curretsupitemModel.ItemPrice = itemList[i].ItemPrice;
-            curretsupitemModel.OldItemPrice = itemList[i].ItemPrice;
-            curretsupitemModel.BatchWiseAvailableQuantity = itemList[i].BatchWiseAvailableQuantity;
-            curretsupitemModel.VATPercentage = itemList[i].VATPercentage;
-            curretsupitemModel.GoodReceiptItemId = itemList[i].GoodReceiptItemId;
-            curretsupitemModel.ItemId = itemList[i].ItemId;
-            curretsupitemModel.CCCharge = itemList[i].CCCharge;
-            curretsupitemModel.MRP = itemList[i].MRP;
-            curretsupitemModel.FreeQuantity = itemList[i].FreeQuantity;
-            curretsupitemModel.DiscountPercentage = itemList[i].DiscountPercentage;
-            this.curtRetSuppModel.SupplierId = itemList[i].SupplierId;
-            var expdate = itemList[i].ExpiryDate;
-            //curretsupitemModel.ExpiryDate = this.DateOfExpiry(expdate);
+            curretsupitemModel.SelectedItem = this.itemList[i].ItemName;
+            curretsupitemModel.ItemName = this.itemList[i].ItemName;
+            curretsupitemModel.TotalAvailableQuantity = this.itemList[i].ReceivedQuantity;
+            curretsupitemModel.BatchNo = this.itemList[i].BatchNo;
+            curretsupitemModel.ItemPrice = this.itemList[i].ItemPrice;
+            curretsupitemModel.OldItemPrice = this.itemList[i].ItemPrice;
+            curretsupitemModel.BatchWiseAvailableQuantity = this.itemList[i].BatchWiseAvailableQuantity;
+            curretsupitemModel.VATPercentage = this.itemList[i].VATPercentage;
+            curretsupitemModel.GoodReceiptItemId = this.itemList[i].GoodReceiptItemId;
+            curretsupitemModel.ItemId = this.itemList[i].ItemId;
+            curretsupitemModel.CCCharge = this.itemList[i].CCCharge;
+            curretsupitemModel.MRP = this.itemList[i].MRP;
+            curretsupitemModel.FreeQuantity = this.itemList[i].FreeQuantity;
+            curretsupitemModel.DiscountPercentage = this.itemList[i].DiscountPercentage;
+            this.curtRetSuppModel.SupplierId = this.itemList[i].SupplierId;
+            var expdate = this.itemList[i].ExpiryDate;
             curretsupitemModel.ExpiryDate = moment(expdate).format('ll');
 
             this.curtRetSuppModel.ReturnDate = moment(todayDate).format('YYYY-MM-DD');
             this.curtRetSuppModel.returnToSupplierItems.push(curretsupitemModel);
             this.curtRetSuppModel.returnToSupplierItems = this.curtRetSuppModel.returnToSupplierItems.slice();
+         
         }
     }
     public getBG_Color(expdate) {
-        let expiryDate = expdate;
         let expiryDate1 = new Date(expdate)
         let date = new Date();
         let datenow = date.setMonth(date.getMonth() + 0);
@@ -262,7 +263,6 @@ export class PHRMReturnItemsToSupplierComponent {
         }
     }
     public getColor(expdate) {
-        let expiryDate = expdate;
         let expiryDate1 = new Date(expdate)
         let date = new Date();
         let datenow = date.setMonth(date.getMonth() + 0);
@@ -282,38 +282,30 @@ export class PHRMReturnItemsToSupplierComponent {
         }
     }
     public getReturnToSupplier() {
-        // this.fiscyrId = this.selFiscYrId;
-        this.grNo = this.currGRDetail.GoodReceiptPrintId;
-        this.batchNo = this.curtRetSuppItemModel.BatchNo;
-        this.invcno = this.currGRDetail.InvoiceNo;
+        let grNo = this.currGRDetail.GoodReceiptPrintId ? this.currGRDetail.GoodReceiptPrintId : null;
+        this.invoiceNo = this.currGRDetail.InvoiceNo ? this.currGRDetail.InvoiceNo : null;
+
         if (this.selSupplier != null) {
             this.suppId = this.selSupplier.SupplierId;
         }
         else {
             this.suppId = null;
         }
-        if ((this.suppId != null) || (this.batchNo != null) || (this.grNo != 0) || (this.invcno != null) || ((this.fromDate != null) && (this.toDate != null))) {
-            this.pharmacyBLService.GetReturnToSupplier(this.suppId, this.grNo, this.batchNo, this.invcno, this.fromDate, this.toDate)
-                .subscribe(res => {
-                    if (res.Status == "OK") {
-                        this.returnToSupplierData = res.Results;
-                        //this.returnToSupplierData.filter(a=>a.SupplierId ==this.suppId);
-                        this.selSupplier = null;
-                        this.curtRetSuppItemModel.BatchNo = null;
-                        this.currGRDetail.GoodReceiptPrintId = 0;
-                        // this.returnToSupplierData.filter(a=>{a.SupplierId ==this.suppId || a.InvoiceNo == this.invcno || a.batchNo==this.batchNo || a.GoodReceiptPrintId == this.grNo});
-                    }
-                    else {
-                        this.msgserv.showMessage("error", ["Failed to get Return  To Supplier. " + res.ErrorMessage]);
-                    }
-                },
-                    err => {
-                        this.msgserv.showMessage("error", ["Failed to get Return  To Supplier111. " + err.ErrorMessage]);
-                    });
-        }
-        else {
-            this.msgserv.showMessage("error", ["Data provided is not proper"]);
-        }
+        this.pharmacyBLService.GetReturnToSupplier(this.suppId, grNo, this.invoiceNo, this.fromDate, this.toDate)
+            .subscribe(res => {
+                if (res.Status == "OK") {
+                    this.returnToSupplierData = res.Results;
+                    this.selSupplier = null;
+                    this.curtRetSuppItemModel.BatchNo = null;
+                    this.currGRDetail.GoodReceiptPrintId = 0;
+                }
+                else {
+                    this.msgserv.showMessage("error", ["Failed to get Return  To Supplier. " + res.ErrorMessage]);
+                }
+            },
+                err => {
+                    this.msgserv.showMessage("error", ["Failed to get Return  To Supplier111. " + err.ErrorMessage]);
+                });
 
     }
 
@@ -374,7 +366,7 @@ export class PHRMReturnItemsToSupplierComponent {
             )
     }
     ////Add New Row To UI 
-    AddRowRequest(index) {
+    AddRowRequest() {
 
         if (this.curtRetSuppModel.returnToSupplierItems.length == 0) {
             this.curtRetSuppModel.returnToSupplierItems.push(this.curtRetSuppItemModel);
@@ -389,8 +381,6 @@ export class PHRMReturnItemsToSupplierComponent {
                 }
 
             }
-            ////row can be added if only if the item is selected is last row
-            this.rowCount++;
             this.curtRetSuppItemModel = new PHRMReturnToSupplierItemModel();
             this.curtRetSuppModel.returnToSupplierItems.push(this.curtRetSuppItemModel);
         }
@@ -418,31 +408,7 @@ export class PHRMReturnItemsToSupplierComponent {
         this.pharmacyBLService.GetItemListWithTotalAvailableQty()
             .subscribe(res => {
                 if (res.Status == "OK") {
-                    this.ItemList = [];
-                    this.itmLst = res.Results;
-                    res.Results.forEach(a => {
-                        this.ItemList.push({
-                            "ItemId": a.ItemId, "ItemName": a.ItemName, "FiscalYearId": a.FiscalYearId, "SupplierId": a.SupplierId, BatchNo: a.BatchNo, TotalAvailableQuantity: a.TotalAvailableQuantity,
-                            BatchWiseAvailableQuantity: a.BatchWiseAvailableQuantity, ItemPrice: a.ItemPrice, ExpiryDate: a.ExpiryDate,
-                            GoodReceiptItemId: a.GoodsReceiptItemId, MRP: a.MRP
-                        });
-                    });
-                    /////Here Is Logic To remove Item From ItemList Whose TotalAvailbleQty is Zero because there no importance to keep item whose TotalQty is Zero
-                    ////Empty Current Array list
-                    this.tempItemList = [];
-                    this.ItemList.forEach(b => {
-                        //////Push Actual Items To Temporary Model
-                        this.tempItemList.push(b);
-                    });
-                    //////Clear all Items From Actual Obj .....and Check in Temp Obj .....and Pass those Items From Temp to Actual obj whose Quantity is not equal to Zero
-                    this.ItemList = [];
-                    this.tempItemList.forEach(b => {
-                        if (b.TotalAvailableQuantity != 0) {
-                            ////Now Current Return Obj has Those Item Whose TotalAvailableQunatity Is Greater Then Zero
-                            this.ItemList.push(b);
-                        }
-                    });
-
+                    this.ItemList = res.Results;
                 }
                 else {
                     this.msgserv.showMessage("notice-message", ["No Items Avaliable for Return To Supplier"]);
@@ -607,8 +573,6 @@ export class PHRMReturnItemsToSupplierComponent {
             //this Vat is the coversion of VATPercentage
             let Vat = this.curtRetSuppModel.returnToSupplierItems[index].VATPercentage / 100;
             ///Calculate ReturnItem VatAmount by using Formula VatAmount = ((GRPrice*Quantity) - (DiscountAmt))*Vat;
-            let VatAmount = (((this.curtRetSuppModel.returnToSupplierItems[index].ItemPrice * (row.Quantity)) - (this.curtRetSuppModel.returnToSupplierItems[index].DiscountedAmount)) * (Vat));
-            let totAmt = ((this.curtRetSuppModel.returnToSupplierItems[index].ItemPrice * (row.Quantity)) - (this.curtRetSuppModel.returnToSupplierItems[index].DiscountedAmount)) + this.curtRetSuppModel.returnToSupplierItems[index].FreeAmountReturn;
             ///Calculate ReturnItem TotalAmount by using Formula TotalAmount = ((GRPrice*Quantity) - (DiscountAmt))+VatAmount;
             this.curtRetSuppModel.returnToSupplierItems[index].TotalAmount = CommonFunctions.parseAmount(this.curtRetSuppModel.returnToSupplierItems[index].SubTotal - this.curtRetSuppModel.returnToSupplierItems[index].DiscountedAmount);
             this.CalculationForPHRMReturnToSupplier();
@@ -620,7 +584,6 @@ export class PHRMReturnItemsToSupplierComponent {
     CalculationForPHRMReturnToSupplier() {
         let STotal: number = 0;
 
-        let TAmount: number = 0;
         let VAmount: number = 0;
         let DAmount: number = 0;
         var DsAmt: number;
@@ -695,24 +658,8 @@ export class PHRMReturnItemsToSupplierComponent {
         //if the CheckIsValid == true the validation is proper else no
 
         var CheckIsValid = true;
-        if (this.selectedValue == 'Breakage') {
-            this.curtRetSuppModel.ReturnStatus = this.returnType[0].id;
-            this.curtRetSuppModel.ReturnToSupplierValidator.controls['ReturnStatus'].disable();
-        }
-        else if (this.selectedValue == 'Expiry') {
-            this.curtRetSuppModel.ReturnStatus = this.returnType[1].id;
-            this.curtRetSuppModel.ReturnToSupplierValidator.controls['ReturnStatus'].disable();
-        }
-        else if (this.selectedValue == 'Breakage and Expiry') {
-            this.curtRetSuppModel.ReturnStatus = this.returnType[2].id;
-            this.curtRetSuppModel.ReturnToSupplierValidator.controls['ReturnStatus'].disable();
-        }
-        else {
+        if (this.curtRetSuppModel.ReturnStatus == undefined) {
             alert("Please fill the Return Status");
-        }
-
-        if (this.curtRetSuppModel.SupplierId != null && this.curtRetSuppModel.SupplierId != 0) {
-            this.curtRetSuppModel.ReturnToSupplierValidator.controls['SupplierId'].disable();
         }
         if (this.curtRetSuppModel.IsValidCheck(undefined, undefined) == false) {
             // for loop is used to show ReturnToSupplierValidator message ..if required  field is not filled
@@ -733,10 +680,6 @@ export class PHRMReturnItemsToSupplierComponent {
                 }
                 CheckIsValid = false;
             }
-            //if (this.curtRetSuppModel.returnToSupplierItems[i].CheckQty == true)
-            //{
-            //    CheckIsValid = false;
-            //}
         }
 
 
@@ -745,42 +688,26 @@ export class PHRMReturnItemsToSupplierComponent {
         }
 
         if (CheckIsValid == true && this.curtRetSuppModel.returnToSupplierItems != null) {
-            ////Push Actual ReturnItems To Temporary Model
-            for (var i = 0; i < this.curtRetSuppModel.returnToSupplierItems.length; i++) {
-                this.tempRetSuppModel.returnToSupplierItems.push(this.curtRetSuppModel.returnToSupplierItems[i]);
-            }
-            ////Clear all Items From Actual Obj .....and Check in Temp Obj .....and Pass those Items From Temp to Actual obj whose Quantity is not equal to Zero
-            this.curtRetSuppModel.returnToSupplierItems = [];
+            //Check if there is some quantity to be returned, i.e. with Quantity > 0
+            if (this.curtRetSuppModel.returnToSupplierItems.some(item => item.Quantity > 0)) {
+                //Filter out all the items with no return quantity and only send the items with return quantity > 0 in the server
+                this.curtRetSuppModel.returnToSupplierItems = this.curtRetSuppModel.returnToSupplierItems.filter(item => item.Quantity > 0);
 
-            for (var i = 0; i < this.tempRetSuppModel.returnToSupplierItems.length; i++) {
-                this.tempRetSuppModel.returnToSupplierItems[i].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                if (this.tempRetSuppModel.returnToSupplierItems[i].Quantity != 0) {
-                    ////Now Current Return Obj has Those Item Whose Qunatity Is Greater Then Zero
-                    this.curtRetSuppModel.returnToSupplierItems.push(this.tempRetSuppModel.returnToSupplierItems[i]);
-
-                }
-
-            }
-
-            /////Take Server Call
-            if (this.curtRetSuppModel.returnToSupplierItems.length) {
                 this.curtRetSuppModel.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                //this.curtRetSuppModel.userName = this.securityService.GetLoggedInUser().UserName;
+                this.curtRetSuppModel.returnToSupplierItems.forEach(item => item.CreatedBy = this.curtRetSuppModel.CreatedBy);
+
                 ////Function to Update Available Quantity Of GoodsReceiptItem
                 this.UpdateAvailableQtyOfGRItem();
                 this.pharmacyBLService.PostReturnToSupplierItems(this.curtRetSuppModel).
                     subscribe(res => {
                         if (res.Status == 'OK') {
-                            var suppId = this.curtRetSuppModel.SupplierId;
                             this.msgserv.showMessage("success", ["Return Order is Generated and Saved"]);
                             this.changeDetectorRef.detectChanges();
                             this.curtRetSuppModel.returnToSupplierItems = new Array<PHRMReturnToSupplierItemModel>();
                             this.curtRetSuppModel = new PHRMReturnToSupplierModel();
                             this.curtRetSuppItemModel = new PHRMReturnToSupplierItemModel();
                             this.curtRetSuppModel.returnToSupplierItems.push(this.curtRetSuppItemModel);
-                            // this.pharmacyService.Id =suppId;
                             this.router.navigate(['/Pharmacy/Store/ReturnItemsToSupplierList']);
-                            //this.router.navigate(['/Pharmacy/Store/ReturnItemsToSupplierList'], { queryParams: { RefNo:this.curtRetSuppModel.ReferenceNo,RetSupId:this.curtRetSuppModel.ReturnToSupplierId } });
                         }
                         else {
                             this.msgserv.showMessage("failed", ['failed to add Return Item To Supplier.. please check log for details.']);
@@ -788,14 +715,8 @@ export class PHRMReturnItemsToSupplierComponent {
                         }
                     });
             }
-            else {   ////This is For Loading Page With One Row Item Selection
-                if (this.curtRetSuppModel.returnToSupplierItems.length == 0) {
-                    this.curtRetSuppItemModel = new PHRMReturnToSupplierItemModel();
-                    this.curtRetSuppModel.returnToSupplierItems.push(this.curtRetSuppItemModel);
-                }
-                this.msgserv.showMessage("notice-message", ['All Selected Return Items Quantity is zero']);
-                this.router.navigate(['/Pharmacy/Store/ReturnItemsToSupplier']);
-
+            else {
+                this.msgserv.showMessage("notice-message", ['No Quantity to return.']);
             }
 
 
@@ -807,7 +728,6 @@ export class PHRMReturnItemsToSupplierComponent {
     }
     BackToReturnSupplier() {
         this.showReturnSupp = false;
-        this.rowCount = null;
         this.selSupplier = null;
         this.curtRetSuppModel.returnToSupplierItems = [];
         this.returnToSupplierData = [];
@@ -832,9 +752,8 @@ export class PHRMReturnItemsToSupplierComponent {
 
     Cancel() {
         this.curtRetSuppModel.returnToSupplierItems = [];
-        this.AddRowRequest(0);
+        this.AddRowRequest();
         this.showReturnSupp = false;
-        this.rowCount = null;
         this.selSupplier = null;
         this.curtRetSuppModel.returnToSupplierItems = [];
         this.returnToSupplierData = [];
@@ -865,6 +784,18 @@ export class PHRMReturnItemsToSupplierComponent {
                     }
                 }
             });
+    }
+    checkReturnCustomization() {
+        let GRParameterStr = this.coreService.Parameters.find(p => p.ParameterName == "GRFormCustomization" && p.ParameterGroupName == "Pharmacy");
+        if (GRParameterStr != null) {
+            let GRParameter = JSON.parse(GRParameterStr.ParameterValue);
+            if (GRParameter.showFreeQuantity == true) {
+                this.showFreeQty = true;
+            }
+            if (GRParameter.showCCCharge == true) {
+                this.showCCCharge = true;
+            }
+        }
     }
 }
 

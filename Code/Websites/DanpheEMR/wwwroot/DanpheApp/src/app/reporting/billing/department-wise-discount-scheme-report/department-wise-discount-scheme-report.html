@@ -1,0 +1,179 @@
+﻿<div class="wrapper">
+  <div class="row">
+    <div class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+              class="caption-subject">Department Wise Discount Scheme Report</span> </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()" id='btn_showReport'>
+                <i class="fa fa-search"></i> Show Report
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Service Department<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" danphe-auto-complete [(ngModel)]="ServiceDepartment"
+                    [ngModelOptions]="{standalone: true}" [source]="this.ServiceDepartmentList"
+                    placeholder="Search by Service Department" display-property-name="ServiceDepartmentName" [min-chars]="1"
+                    value-property-name=null max-num-list="10" [grid-sort]="'ServiceDepartmentName'"
+                    [list-formatter]="ServiceDepartmentListFormatter" match-formatted="true" onclick="this.select()" />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Scheme Name<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input danphe-auto-complete class="form-control" [(ngModel)]="DiscountScheme"
+                    [source]="DiscountSchemeList" [list-formatter]="DiscountSchemeListFormatter"
+                    placeholder="Enter Membership Type Name" [min-chars]="1" display-property-name="MembershipTypeName"
+                    value-property-name="MembershipTypeId" onClick="this.select();"
+                    [ngModelOptions]="{standalone: true}" match-formatted="true"
+                    (keyup.enter)="this.coreService.FocusInputById('btn_showReport')" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Select Payment Mode<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <select class="comm-list" [(ngModel)]="this.PaymentMode" [ngModelOptions]="{standalone: true}"
+                    style="margin-left: 5px;">
+                    <option value="All">All</option>
+                    <option value="cash">Cash</option>
+                    <option value="credit">Credit</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="DepartmentWiseDiscountSchemeGridColumns" 
+        [grid-data]="DepartmentWiseDiscountSchemeGridData" [grid-exportOptions]="gridExportOptions"
+        [grid-showExport]="true" [report-for]="'billing'" (grid-actions)="gridAction($event)"
+        [grid-date-range]="dateRange" [grid-footer-content]="footerContent">
+      </danphe-grid>
+    </div>
+  </div>
+
+  <div class="row" id="summaryFooter" style="margin-bottom: 60px;">
+    <div class="col-lg-12 col-sm-12">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+          <div style="padding-top:7px;">
+            <h4 style="font-weight:bold;">
+              Summary
+            </h4>
+            <div style=" margin: 0px auto">
+              <table class="tbl-summ" border="1" style="width:30%;">
+                <tr>
+                  <td style="text-align: center;">A</td>
+                  <td>Total Invoice Amount </td>
+                  <td> {{summaryFormatted.TotalAmount}} </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">B</td>
+                  <td>Total Discount</td>
+                  <td> {{summaryFormatted.TotalDiscount}} </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">C</td>
+                  <td>Net refund</td>
+                  <td> {{summaryFormatted.NetRefundAmount}} </td>
+                </tr>
+                <tr style="border: 2px solid;">
+                  <td></td>
+                  <td style="font-weight: bold;">Hospital Collection (A-(B+C)) </td>
+                  <td style="font-weight: bold;"> {{summaryFormatted.HospitalCollection}} </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--POPUP for Item Level  -->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetailsPopUp">
+    <div class="portlet-body form" style="background-color:white">
+      <div class="col-md-8">
+        <div class="modelbox-div col-md-offset-2" style="float:inherit;">
+          <div class="col-md-12">
+            <div class="caption" style="color:blue;">
+              <h3>Item Level Details</h3>
+            </div>
+            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+            <hr />
+          </div>
+          <div class="col-lg-12 col-sm-12">
+            <div class="row">
+            <danphe-grid [grid-colDefaults]="DepartmentWiseDiscountSchemeItemsDetailsGridColumns"
+              [grid-data]="DepartmentWiseDiscountSchemeItemsDetailsGridData" [grid-exportOptions]="gridExportOptionsForItemLevelreport"
+              [grid-showExport]="true" [report-for]="'billing'" [grid-footer-content]="itemLevelfooterContent">
+            </danphe-grid>
+            </div>
+            <div>
+              <div class="row" id="itemLevelSummaryFooter" style="margin-bottom: 60px;">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="row">
+                    <div class="col-md-12 col-xs-12">
+                      <div style="padding-top:7px;">
+                        <h4 style="font-weight:bold;">
+                          Summary
+                        </h4>
+                        <div style=" margin: 0px auto">
+                          <table class="tbl-summ" border="1" style="width:30%;">
+                            <tr>
+                              <td style="text-align: center;">A</td>
+                              <td>Total Invoice Amount </td>
+                              <td> {{summaryFormattedForItemsReport.TotalAmount}} </td>
+                            </tr>
+                            <tr>
+                              <td style="text-align: center;">B</td>
+                              <td>Total Discount</td>
+                              <td> {{summaryFormattedForItemsReport.TotalDiscount}} </td>
+                            </tr>
+                            <tr>
+                              <td style="text-align: center;">C</td>
+                              <td>Net refund</td>
+                              <td> {{summaryFormattedForItemsReport.NetRefundAmount}} </td>
+                            </tr>
+                            <tr style="border: 2px solid;">
+                              <td></td>
+                              <td style="font-weight: bold;">Hospital Collection (A-(B+C)) </td>
+                              <td style="font-weight: bold;"> {{summaryFormattedForItemsReport.HospitalCollection}} </td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,138 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>{{EditMode?'Update':'Add'}} Insurance Details</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form" [formGroup]="assetInsurance.InsuranceValidators">
+
+            <!--Start: Model Body-->
+            <div class="form-body clearfix">
+              <div class="row">
+                <!--Start: Header Details -->
+                <div class="col-md-10 col-md-offset-1">
+
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Item Code <b> : </b></label>
+                      <div class="col-md-7">
+                        {{selectedAsset.ItemCode}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Bar Code Number <b>:</b></label>
+                      <div class="col-md-7">
+                        {{selectedAsset.BarCodeNumber}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Item Name <b>:</b></label>
+                      <div class="col-md-7">
+                        {{selectedAsset.ItemName}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Policy Number<sup>*</sup><b>:</b></label>
+                      <div class="col-md-7">
+                        <input type="text" [(ngModel)]="assetInsurance.PolicyNumber" formControlName="PolicyNumber"
+                          class="col-md-12" placeholder="Enter Policy Number..." />
+
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('PolicyNumber','required') || !(assetInsurance.IsDirty('PolicyNumber'))">Policy
+                          Number is required !</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Insurer<sup>*</sup><b>:</b></label>
+                      <div class="col-md-7">
+                        <input type="text" [(ngModel)]="assetInsurance.Insurer" formControlName="Insurer"
+                          class="col-md-12" placeholder="Enter Insurer..." />
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('Insurer','required') || !(assetInsurance.IsDirty('Insurer'))">
+                          Insurer is required !</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Insured Value<sup>*</sup><b> :</b></label>
+                      <div class="col-md-7">
+                        <input type="text" [(ngModel)]="assetInsurance.InsuredValue" formControlName="InsuredValue"
+                          placeholder="Enter Insured Value.." class="col-md-12" />
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('InsuredValue','required') || !(assetInsurance.IsDirty('InsuredValue'))">
+                          Insurer is required !</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5"> Insurance Start Date<sup>*</sup><b> :</b></label>
+                      <div class="col-md-7">
+                        <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'"
+                          formControlName="InsuranceStartDate" [(ngModel)]="assetInsurance.InsuranceStartDate" [allow-future-date]="true"
+                          style="width:100px;"></danphe-date-picker>
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('InsuranceStartDate','required') || !(assetInsurance.IsDirty('InsuranceStartDate'))">
+                          Insurance Start Date is required !</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5"> Insurance End Date <sup>*</sup> <b>:</b></label>
+                      <div class="col-md-7">
+                        <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'" [allow-future-date]="true"
+                          formControlName="InsuranceEndDate" [(ngModel)]="assetInsurance.InsuranceEndDate"
+                          style="width:100px;"></danphe-date-picker>
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('InsuranceEndDate','required') || !(assetInsurance.IsDirty('InsuranceEndDate'))">
+                          Insurance End Date is required !</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Comprehensive Insurance <sup>*</sup> <b>:</b></label>
+                      <div class="col-md-7">
+                        <input type="text" [(ngModel)]="assetInsurance.ComprehensiveInsurance"
+                          formControlName="ComprehensiveInsurance" placeholder="Enter Comprehensive Insurance.."
+                          class="col-md-12" />
+                        <span Class="color-red font-sm"
+                          [hidden]="assetInsurance.IsValidCheck('ComprehensiveInsurance','required') || !(assetInsurance.IsDirty('ComprehensiveInsurance'))">
+                          Comprehensive Insurance is required !</span>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+                <!--End: Header Details -->
+
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+            <div class="form-group panel-footer text-right no-margin">
+              <button type="button" class="btn btn-success" (click)="Submit()" [disabled]="loading">
+                {{EditMode?"Update":"Add"}}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

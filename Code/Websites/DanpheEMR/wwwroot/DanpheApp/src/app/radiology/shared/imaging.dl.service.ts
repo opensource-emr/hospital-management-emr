@@ -11,6 +11,9 @@ export class ImagingDLService {
         headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
     constructor(public http: HttpClient) {
     }
+    public GetFilmTypeData(){
+        return this.http.get<any>('/api/radiology?reqType=getFilmTypeData', this.options);
+    }
 
     //this returns a promise, the calling component can map, subscribe and do the needful
     //imaging-requistion-component

@@ -23,6 +23,8 @@ namespace DanpheEMR.ServerModel
         public int VoucherHeadId { get; set; }
         //public int? ReferenceTransactionId { get; set; }
         public string VoucherNumber { get; set; }
+        public string PayeeName { get; set; }
+        public int? ChequeNumber { get; set; }
         public int? SectionId { get; set; }
         public virtual List<TransactionItemModel> TransactionItems { get; set; }
         public virtual List<TransactionLinkModel> TransactionLinks { get; set; }

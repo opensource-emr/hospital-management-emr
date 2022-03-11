@@ -1,0 +1,207 @@
+<div class="portlet-body form">
+  <div class="form-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="page-bar" style="padding: 25px;">
+          <form [formGroup]="handover.HandoverValidator">
+            <div>
+              <h3 class="header-sm inner-header-sm" style="margin-bottom: 15px;">Handover Summary</h3>
+            </div>
+            <!--<div *ngIf="!previousAmount" style='text-align: left;margin: 0px 10px 0px 20px;color:red;'>
+              <h5 style="font-weight: bold"> **Previous Amount is {{previousAmount}}</h5>
+            </div>-->
+            <div class="form-group">
+              <table border="0" align="left" class="table doc-tbl">
+                <tr>
+                  <td style="width: 150px;"> Handover Type <b class="color-red"> * </b><b style="float:right;"> &nbsp;:&nbsp; </b></td>
+                  <td><div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input name="HandoverType" type="radio" value="Account"
+                                 [(ngModel)]="handover.HandoverType"
+                                 formControlName="HandoverType">
+                          <span></span>Account </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input name="HandoverType" type="radio" value="User"
+                                 [(ngModel)]="handover.HandoverType"
+                                 formControlName="HandoverType">
+                          <span></span>User </label>
+                      </div>
+                    </div>
+                    <span class="error-msg" *ngIf="handover.IsDirty('HandoverType')"
+                          [hidden]="handover.IsValidCheck('HandoverType','required')"> Select Handover
+                    Type. </span></td>
+                </tr>
+                <tr>
+                  <td style="width: 150px;"> Select User: <b class="color-red"> *</b><b style="float:right;"> &nbsp;:&nbsp; </b></td>
+                  <!-- [ngClass]="{'border-red': handover.IsDirty('UserId') && !handover.IsValidCheck('UserId','required')}"
+                  [ngClass]="{'border-red': handover.IsDirty('UserId') && !handover.IsValidCheck('UserId','required'), 'border-red': !handover.IsValidSelAssignedToUser }" -->
+                  <td style="padding-top:10px;"><input danphe-auto-complete
+                           [ngClass]="{'border-red': handover.IsDirty('UserId') && !handover.IsValidCheck('UserId','required')}"
+                           class="form-control" [(ngModel)]="selUser" formControlName="UserId"
+                           [list-formatter]="myListFormatter" [source]="userlist"
+                           placeholder="Enter Employee Name" display-property-name="UserName"
+                           value-property-name=null (focusout)="SelectedUser()"
+                           onClick="this.select();" max-num-list="10" />
+                    <span class="error-msg" *ngIf="handover.IsDirty('UserId')"
+                          [hidden]="handover.IsValidCheck('UserId','required')"> Select User from the
+                    list. </span> <span class="error-msg" *ngIf="!handover.IsValidSelAssignedToUser"> Select User
+                    from the list. </span></td>
+                </tr>
+                <!--<tr *ngIf="previousAmount">
+                  <td>
+                    Previous Amount <b style="float:right;">&nbsp;:&nbsp;</b>
+                  </td>
+
+                  <!-- <td *ngIf="!previousAmount">
+                      <input [(ngModel)]="previousAmount" class="form-control" placeholder="Amount"
+                          [ngModelOptions]="{standalone: true}" name="amount" type="number"
+                          value="">
+                      <span class="error-msg" *ngIf="handover.IsDirty('PreviousAmount')" [hidden]="handover.IsValidCheck('PreviousAmount','invalidNumber')"> Enter Valid Number.</span>
+                  </td> 
+                  <td>
+                    <input [(ngModel)]="previousAmount" class="form-control" placeholder="Amount"
+                           name="amount" disabled type="number" [ngModelOptions]="{standalone: true}"
+                           value="">
+                     <span class="error-msg" *ngIf="handover.IsDirty('PreviousAmount')" [hidden]="handover.IsValidCheck('PreviousAmount','invalidNumber')"> Enter Valid Number.</span> 
+                  </td>
+
+                </tr>-->
+              </table>
+            </div>
+          </form>
+          <input style="width: 200px;" type="button" class="btn blue" name="name" value="Submit"
+                 [disabled]="showColInPag<1 && loading" (click)="Request()" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div id="denomPrint" class="page-bar">
+          <form>
+            <!-- <form [formGroup]="denomination.DenominationValidator"> -->
+            <div>
+              <h3 class="header-sm inner-header-sm" style="margin-bottom: 15px;"> Denomination </h3>
+            </div>
+            <div class="no-print"> 
+              <!--<h5 style="font-weight: bold"> **User Collection Amount is {{showColInPag}}</h5>
+              <hr />-->
+              <hr />
+              <h5 style="text-align: left;" class="header-sm inner-header-sm">My Cash: {{showColInPag}}</h5>
+              <!--<h5 style="font-weight: bold"> **Recevied as Handover {{previousAmount}}</h5>-->
+              <hr />
+            </div>
+            <!--<div style='text-align: left;margin: 0px 10px 0px 20px;color:red;'>
+              <h5 style="font-weight: bold"> **Recevied as Handover {{previousAmount}}</h5>
+              <hr />
+            </div>-->
+            <table border="0" align="left" class="doc-tbl" style="width: 100%;">
+              <thead>
+                <tr>
+                  <td align="left" width="150"><b>Currency Type</b></td>
+                  <td align="left" width="160"><b>Quantity</b></td>
+                  <td align="left" width="180"><b>Amount</b></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let deno of handover.denomination">
+                  <td align="left">{{deno.CurrencyType}}</td>
+                  <td align="left"><input class="no-print"
+                           [(ngModel)]="deno.Quantity" placeholder="Quantity"
+                           [ngModelOptions]="{standalone: true}" (ngModelChange)="AmountChange()"
+                           name="Quantity" min="0" onClick="this.select();" type="number" value="0"
+                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                    <br />
+                    <span class="print-only">{{deno.Quantity}}</span> 
+                    <!-- <span class="error-msg" *ngIf="denomination.IsDirty('Quantity')" [hidden]="denomination.IsValidCheck('Quantity','invalidNumber')"> Enter Valid Number.</span> --></td>
+                  <td align="left"> {{deno.Quantity * deno.CurrencyType}} 
+                    <!-- <input class="form-control" [(ngModel)]="deno.HandoverAmount" placeholder="Handover Amount" [ngModelOptions]="{standalone: true}"  name="Amount" type="number" value="0" disabled><br/> --></td>
+                </tr>
+                <tr>
+                  <td colspan="3" align="left"><h1 class="header-sm inner-header-sm">Total: &nbsp; <b>{{total}}</b></h1></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="margin-15-bt no-print text-right padding-15-hr">
+              <button (click)="print()" class="btn btn-primary">Print</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="ShowAlert">
+  <div class="portlet-body form">
+    <div class="modelbox-div">
+      <div>
+        <div>
+          <div class="col-md-12"> <a class="btn btn-danger"
+               (click)="ShowAlert=false" title="Cancel">X</a> </div>
+          <div class="text-left">
+            <h1>Warning !!!</h1>
+          </div>
+          <hr />
+        </div>
+        <div class="text-left">
+          <div class="alert alert-danger" role="alert">
+            <h4 style="color:red;font-style:normal;"> (Your <b>Handover Amount</b> didn't match with the <b>User Collection Amount</b>.) </h4>
+          </div>
+          <div class="alert alert-info" role="alert">
+            <h4> User collection amount by <b>{{userName}} </b> is <b>{{coreService.currencyUnit}} {{showColInPag}}</b><br />
+              Whereas Handover amount is <b>{{coreService.currencyUnit}} {{total}}</b> </h4>
+          </div>
+        </div>
+        <!-- <div class="text-left" style="padding:15px;">
+            <div class="text-left">
+                <div class="row">
+                    <div class="col-md-5">
+                        <p>
+                            User collection on <b>{{counterDayDate}}</b>
+                        </p>
+                        <div *ngFor="let usr of userDayCollection"
+                            style="padding-top:15px; padding-bottom:10px;color: black;">
+                            <h4 class="label label-success">{{usr.EmployeeName}}</h4> <b>:
+                                {{usr.UserDayCollection-handover.PreviousAmount}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+
+                        <table align="left">
+                            <tr>
+                                <td align="right">
+                                    <h4>Current Amount &nbsp;: &nbsp;</h4>
+                                </td>
+                                <td align="left">
+                                    <h4><b> {{total}}</b></h4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+                                    <h4>Previous Amount &nbsp;: &nbsp;</h4>
+                                </td>
+                                <td align="left">
+                                    <h4><b> {{previousAmount}}</b></h4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+                                    <h4><u>Total Amount</u> &nbsp;: &nbsp;</h4>
+                                </td>
+                                <td align="left">
+                                    <h4><u><b> {{total+previousAmount}}</b></u></h4>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <hr />
+        </div> -->
+        <hr />
+        <div class="text-left">
+          <button type="button" class="btn btn-danger" [disabled]="loading"
+                  (click)="ShowAlert=false;"> Close </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

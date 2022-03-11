@@ -8,7 +8,8 @@ import { CommonFunctions } from "../../../shared/common.functions";
 
 @Component({
   selector: "membership-add",
-  templateUrl: "./membership-add.html"
+  templateUrl: "./membership-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 })
 
 export class MembershipAddComponent {
@@ -30,6 +31,7 @@ export class MembershipAddComponent {
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
+      this.GoToNextInput("CommunityName");
   }
 
   ngOnInit() {
@@ -112,5 +114,19 @@ export class MembershipAddComponent {
   }
   showMessageBox(status: string, message: string) {
     this.msgBoxServ.showMessage(status, [message]);
+  }
+
+  private GoToNextInput(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+  KeysPressed(event){
+    if(event.keyCode == 27){ // For ESCAPE_KEY =>close pop up
+      this.Close(); 
+    }
   }
 }

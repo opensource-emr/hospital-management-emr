@@ -1,12 +1,4 @@
-import {
-    NgForm,
-    FormGroup,
-    FormControl,
-    Validators,
-    FormBuilder,
-    ReactiveFormsModule
-} from '@angular/forms'
-import * as moment from 'moment/moment';
+import { FormGroup, Validators, FormBuilder } from '@angular/forms'
 
 export class PHRMItemMasterModel {
     public ItemId: number = 0;
@@ -19,15 +11,16 @@ export class PHRMItemMasterModel {
     public ReOrderQuantity: number = 0;
     public MinStockQuantity: number = 0;
     public BudgetedQuantity: number = 0;
-    public VATPercentage: number = 0;
+    public PurchaseVATPercentage: number = 0;
+    public SalesVATPercentage: number = 0;
     public IsVATApplicable: boolean = false;
-    public PackingTypeId:number = null;
+    public PackingTypeId: number = null;
     public CreatedBy: number = null;
     public CreatedOn: string = null;
     public ModifiedBy: number = null;
     public ModifiedOn: string = null;
     public IsActive: boolean = true;
-    public IsInternationalBrand: boolean = false;   
+    public IsInternationalBrand: boolean = false;
     public GenericId: number = 0;
     public ABCCategory: string;
     public Dosage: string;
@@ -37,7 +30,10 @@ export class PHRMItemMasterModel {
     public SalesCategoryId: number = 0;
     public CCCharge: number = 0;
     public ItemValidator: FormGroup = null;
-    public IsNarcotic :boolean = false;
+    public IsNarcotic: boolean = false;
+    public IsInsuranceApplicable: boolean = false;
+    public GovtInsurancePrice: number;
+    public GenericName: string;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ItemValidator = _formBuilder.group({
@@ -48,10 +44,11 @@ export class PHRMItemMasterModel {
             'UOMId': ['', Validators.required],
             'GenericId': ['', Validators.required],
             'PackingTypeId': ['', Validators.required],
-            'ReOrderQuantity': ['', Validators.compose([ Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
+            'ReOrderQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
             'MinStockQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
             'BudgetedQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
-            'VATPercentage': ['', Validators.compose([ Validators.pattern('^(0|[1-9]{1}[0-9]{0,1})(\.[0-9]{2})?$')])],
+            'PurchaseVATPercentage': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]{0,1})(\.[0-9]{2})?$')])],
+            'SalesVATPercentage': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]{0,1})(\.[0-9]{2})?$')])],
         });
 
     }
@@ -62,7 +59,7 @@ export class PHRMItemMasterModel {
             return this.ItemValidator.controls[fieldName].dirty;
     }
 
-    public IsValid():boolean{if(this.ItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.ItemValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined)
             return this.ItemValidator.valid;
         else

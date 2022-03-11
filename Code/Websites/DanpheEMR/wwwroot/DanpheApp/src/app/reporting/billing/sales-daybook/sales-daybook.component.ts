@@ -16,23 +16,29 @@ export class RPT_BIL_SalesDaybookComponent {
 
   public fromDate: string = null;
   public toDate: string = null;
-  public tot_Sales: number = 0;
-  public tot_DiscountAmount: number = 0;
-  public tot_ReturnAmount: number = 0;
+  public tot_CashSales: number = 0;
+  public tot_CashDiscount: number = 0;
+  public tot_ReturnCashSales: number = 0;
+  public tot_ReturnCashDiscount: number = 0;
+  public tot_CreditSales: number = 0;
+  public tot_CreditDiscount: number = 0;
+  public tot_ReturnCreditSales: number = 0;
+  public tot_ReturnCreditDiscount: number = 0;
   public tot_GrossSales: number = 0;
-  public tot_Tax: number = 0;
-  public tot_CreditSalesTotal: number = 0;
-  public tot_CreditCancel: number = 0;
-  public tot_CreditTax: number = 0;
+  public tot_TotalDiscount: number = 0;
+  public tot_TotalSalesReturn: number = 0;
+  public tot_TotalReturnDiscount: number = 0;
   public tot_NetSales: number = 0;
-  public tot_AdvanceReceived: number = 0;
-  public tot_AdvanceSettlement: number = 0;
-  public tot_CashCollection: number = 0;
+  public tot_DepositReceived: number = 0;
+  public tot_DepositDeducted: number = 0;
+  public tot_DepositRefund : number = 0;
+  public tot_NetCashCollection: number = 0;
   SalesDaybookColumns: Array<any> = null;
   SalesDaybookData: Array<RPT_BIL_SalesDaybookModel> = new Array<RPT_BIL_SalesDaybookModel>();
   public currentsalesdaybook: RPT_BIL_SalesDaybookModel = new RPT_BIL_SalesDaybookModel();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
-
+  public footerContent='';
+  public dateRange:string="";	
   dlService: DLService = null;
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService,
     public coreService: CoreService, public reportServ: ReportingService) {
@@ -47,15 +53,21 @@ export class RPT_BIL_SalesDaybookComponent {
     fileName: 'SalesDayBookList_' + moment().format('YYYY-MM-DD') + '.xls',
   };
 
+  ngAfterViewChecked(){
+    if(document.getElementById("dailySalesSummary")!=null)
+    this.footerContent=document.getElementById("dailySalesSummary").innerHTML;  
+  }
 
   Load() {
     //this is syntactic sugar code
     //Reset all Global variable to Zero 
     ///because during the sum of the value of Coloumn ....Last Sum value is remain present because we have declare variable globally therefor we have to reset all global variable to Zero
     if (this.currentsalesdaybook.fromDate != null && this.currentsalesdaybook.toDate != null) {
-      this.tot_Sales = this.tot_DiscountAmount = this.tot_ReturnAmount = this.tot_GrossSales = this.tot_Tax = this.tot_CreditSalesTotal
-        = this.tot_CreditCancel = this.tot_CreditTax = this.tot_NetSales = this.tot_AdvanceReceived = this.tot_AdvanceSettlement = this.tot_CashCollection = 0;
-
+      this.tot_CashSales = this.tot_CashDiscount = this.tot_ReturnCashSales = this.tot_ReturnCashDiscount = 
+      this.tot_CreditSales = this.tot_CreditDiscount= this.tot_ReturnCreditSales = this.tot_ReturnCreditDiscount=
+      this.tot_GrossSales =  this.tot_TotalDiscount  = this.tot_TotalSalesReturn = this.tot_TotalReturnDiscount =
+      this.tot_NetSales = this.tot_DepositReceived = this.tot_DepositDeducted = this.tot_DepositRefund = 
+      this.tot_NetCashCollection = 0;
 
       this.dlService.Read("/BillingReports/SalesDaybook?FromDate="
         + this.currentsalesdaybook.fromDate + "&ToDate=" + this.currentsalesdaybook.toDate)
@@ -76,23 +88,25 @@ export class RPT_BIL_SalesDaybookComponent {
       this.SalesDaybookColumns = this.reportServ.reportGridCols.SalesDaybookReport;
       this.SalesDaybookData = res.Results;
       this.SalesDaybookData = this.SalesDaybookData.map(row => {
+        row.Paid_SubTotal= CommonFunctions.parseAmount(row.Paid_SubTotal);
+        row.Paid_DiscountAmount = CommonFunctions.parseAmount(row.Paid_DiscountAmount);
+        row.CashRet_SubTotal = CommonFunctions.parseAmount(row.CashRet_SubTotal);
+        row.CashRet_DiscountAmount = CommonFunctions.parseAmount(row.CashRet_DiscountAmount);
+        row.CrSales_SubTotal = CommonFunctions.parseAmount(row.CrSales_SubTotal);
+        row.CrSales_DiscountAmount = CommonFunctions.parseAmount(row.CrSales_DiscountAmount);
+        row.CrRet_SubTotal = CommonFunctions.parseAmount(row.CrRet_SubTotal);
+        row.CrRet_DiscountAmount = CommonFunctions.parseAmount(row.CrRet_DiscountAmount);
         row.SubTotal = CommonFunctions.parseAmount(row.SubTotal);
         row.DiscountAmount = CommonFunctions.parseAmount(row.DiscountAmount);
-        row.TaxableAmount = CommonFunctions.parseAmount(row.TaxableAmount);
-        row.TaxAmount = CommonFunctions.parseAmount(row.TaxAmount);
+        row.TotalSalesReturn = CommonFunctions.parseAmount(row.TotalSalesReturn);
+        row.TotalReturnDiscount = CommonFunctions.parseAmount(row.TotalReturnDiscount);
         row.TotalAmount = CommonFunctions.parseAmount(row.TotalAmount);
-        row.CashRet_TotalAmount = CommonFunctions.parseAmount(row.CashRet_TotalAmount);
-        row.CrSales_TotalAmount = CommonFunctions.parseAmount(row.CrSales_TotalAmount);
-        row.CrReceived_TotalAmount = CommonFunctions.parseAmount(row.CrReceived_TotalAmount);
         row.DepositReceived = CommonFunctions.parseAmount(row.DepositReceived);
-        row.DepositReturn = CommonFunctions.parseAmount(row.DepositReturn);
+        row.DepositDeducted = CommonFunctions.parseAmount(row.DepositDeducted);
+        row.DepositRefund = CommonFunctions.parseAmount(row.DepositRefund);
         row.CashCollection = CommonFunctions.parseAmount(row.CashCollection);
-        row.SettlDueAmount = CommonFunctions.parseAmount(row.SettlDueAmount);
-        row.SettlDiscountAmount = CommonFunctions.parseAmount(row.SettlDiscountAmount);
         return row;
       })
-
-
       this.CalculateSummaryofDifferentColoumnForSum();
     }
     else if (res.Status == "OK" && res.Results.length == 0) {
@@ -138,32 +152,25 @@ export class RPT_BIL_SalesDaybookComponent {
 
     //commentd: sud; 27May-- correct it after report's data fields are finalized.
     this.SalesDaybookData.forEach(SumVariable => {
-      this.tot_Sales += SumVariable.TotalAmount;
-      this.tot_DiscountAmount += SumVariable.DiscountAmount;
-      this.tot_ReturnAmount += SumVariable.CashRet_TotalAmount;
-      //this.tot_GrossSales += SumVariable.GrossSales;
-      this.tot_Tax += SumVariable.TaxAmount;
-      this.tot_CreditSalesTotal += SumVariable.CrSales_TotalAmount;
-      //this.tot_CreditCancel += SumVariable.CreditCancel;
-      //this.tot_CreditTax += SumVariable.CreditTax;
-      //this.tot_NetSales += SumVariable.NetSales;
-      this.tot_AdvanceReceived += SumVariable.DepositReceived;
-      this.tot_AdvanceSettlement += SumVariable.DepositReturn;
-      this.tot_CashCollection += SumVariable.CashCollection;
+      this.tot_CashSales += SumVariable.Paid_SubTotal;
+      this.tot_CashDiscount += SumVariable.Paid_DiscountAmount;
+      this.tot_ReturnCashSales += SumVariable.CashRet_SubTotal;
+      this.tot_ReturnCashDiscount += SumVariable.CashRet_DiscountAmount;
+      this.tot_CreditSales += SumVariable.CrSales_SubTotal;
+      this.tot_CreditDiscount += SumVariable.CrSales_DiscountAmount;
+      this.tot_ReturnCreditSales += SumVariable.CrRet_SubTotal;
+      this.tot_ReturnCreditDiscount += SumVariable.CrRet_DiscountAmount;
+      this.tot_GrossSales += SumVariable.SubTotal;
+      this.tot_TotalDiscount += SumVariable.DiscountAmount;
+      this.tot_TotalSalesReturn += SumVariable.TotalSalesReturn;
+      this.tot_TotalReturnDiscount += SumVariable.TotalReturnDiscount;
+      this.tot_NetSales += SumVariable.TotalAmount;
+      this.tot_DepositReceived += SumVariable.DepositReceived;
+      this.tot_DepositDeducted += SumVariable.DepositDeducted;
+      this.tot_DepositRefund += SumVariable.DepositRefund;
+      this.tot_NetCashCollection += SumVariable.CashCollection;
 
     });
-    this.tot_Sales = CommonFunctions.parseAmount(this.tot_Sales);
-    this.tot_DiscountAmount = CommonFunctions.parseAmount(this.tot_DiscountAmount);
-    this.tot_ReturnAmount = CommonFunctions.parseAmount(this.tot_ReturnAmount);
-    this.tot_GrossSales = CommonFunctions.parseAmount(this.tot_GrossSales);
-    this.tot_Tax = CommonFunctions.parseAmount(this.tot_Tax);
-    this.tot_CreditSalesTotal = CommonFunctions.parseAmount(this.tot_CreditSalesTotal);
-    this.tot_CreditCancel = CommonFunctions.parseAmount(this.tot_CreditCancel);
-    this.tot_CreditTax = CommonFunctions.parseAmount(this.tot_CreditTax);
-    this.tot_NetSales = CommonFunctions.parseAmount(this.tot_NetSales);
-    this.tot_AdvanceReceived = CommonFunctions.parseAmount(this.tot_AdvanceReceived);
-    this.tot_AdvanceSettlement = CommonFunctions.parseAmount(this.tot_AdvanceSettlement);
-    this.tot_CashCollection = CommonFunctions.parseAmount(this.tot_CashCollection);
 
   }
   //Anjana:10June'20--reusable From-ToDate-In Reports..
@@ -173,5 +180,6 @@ export class RPT_BIL_SalesDaybookComponent {
 
     this.currentsalesdaybook.fromDate = this.fromDate;
     this.currentsalesdaybook.toDate = this.toDate;
+    this.dateRange="<b>Date:</b>&nbsp;"+this.fromDate+"&nbsp;<b>To</b>&nbsp;"+this.toDate;
   }
 }

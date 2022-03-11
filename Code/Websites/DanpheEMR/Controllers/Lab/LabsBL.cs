@@ -21,9 +21,11 @@ namespace DanpheEMR.Labs
     public class LabsBL
     {
         public static List<EmployeeModel> empList;
-        public static LabReportVM GetLabReportVMForReqIds(LabDbContext labDbContext, List<Int64> reqIdList)
+        public static string CovidFileUrlCommon;
+        public static LabReportVM GetLabReportVMForReqIds(LabDbContext labDbContext, List<Int64> reqIdList, string covidFileUrlCommon)
         {
             empList = labDbContext.Employee.ToList();
+            CovidFileUrlCommon = covidFileUrlCommon;
             List<LabResult_Denormalized_VM> resultsDenormalized = GetResultsDenormalized(labDbContext, reqIdList);
             LabReportVM retReport = FormatResultsForLabReportVM(resultsDenormalized, labDbContext);
             return retReport;
@@ -49,6 +51,9 @@ namespace DanpheEMR.Labs
                                  where reqIdList.Contains(req.RequisitionId)
                                  select new LabResult_Denormalized_VM()
                                  {
+
+                                     Email = pat.Email,
+                                     LabTypeName = req.LabTypeName,
                                      PatientId = pat.PatientId,
                                      PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
                                      PatientCode = pat.PatientCode,
@@ -56,6 +61,12 @@ namespace DanpheEMR.Labs
                                      DOB = pat.DateOfBirth,
                                      PhoneNumber = pat.PhoneNumber,
                                      Address = pat.Address,
+                                     CountrySubDivisionName = (from subDiv in labDbContext.CountrySubdivisions
+                                                               where subDiv.CountrySubDivisionId == pat.CountrySubDivisionId
+                                                               select subDiv.CountrySubDivisionName).FirstOrDefault(),
+                                     MunicipalityName = (from mun in labDbContext.Municipalities
+                                                         where mun.MunicipalityId == pat.MunicipalityId
+                                                         select mun.MunicipalityName).FirstOrDefault(),
                                      ReferredById = (int?)req.ProviderId,
                                      //ashim: 06Sep2018 : Report details are saved only in final report. So we don't have report details in pending report.
                                      //ReferredByName will be: LongSignature (for internal), Or FullName (for external), or SELF for NULL, or Existing value based on conditions.
@@ -120,6 +131,7 @@ namespace DanpheEMR.Labs
                                      SampleCreatedOn = req.SampleCreatedOn,
                                      Signatories = rept.Signatories,
                                      VerifiedBy = req.VerifiedBy,
+                                     VerifiedOn = req.VerifiedOn,
                                      TemplateHTML = template.TemplateHTML,
                                      TemplateId = template.ReportTemplateID,
                                      TemplateType = template.TemplateType,
@@ -135,7 +147,9 @@ namespace DanpheEMR.Labs
                                      PrintCount = rept.PrintCount,
                                      PrintedBy = rept.PrintedBy,
                                      PrintedOn = rept.PrintedOn,
-                                     PrintedByName = ""
+                                     PrintedByName = "",
+                                     CovidFileUrl = string.IsNullOrEmpty(CovidFileUrlCommon) ? "" : CovidFileUrlCommon.Replace("GGLFILEUPLOADID", req.GoogleFileIdForCovid),
+                                     IsFileUploadedToTeleMedicine = req.IsFileUploadedToTeleMedicine
                                  }).ToList();
 
 
@@ -162,10 +176,14 @@ namespace DanpheEMR.Labs
                                        ReportCreatedOn = r.ReportCreatedOn,
                                        PrintCount = r.PrintCount,
                                        PrintedBy = r.PrintedBy,
+                                       HasInsurance = r.HasInsurance,
                                        PrintedByName = (from emp in empList
                                                         where emp.EmployeeId == r.PrintedBy
                                                         select emp.FirstName + " " + emp.LastName).FirstOrDefault(),
-                                       PrintedOn = r.PrintedOn
+                                       PrintedOn = r.PrintedOn,
+                                       CovidFileUrl = r.CovidFileUrl,
+                                       Email = r.Email,
+                                       IsFileUploadedToTeleMedicine = r.IsFileUploadedToTeleMedicine
                                    }).GroupBy(tmp => tmp.TemplateType).Select(group => group.First()).FirstOrDefault();
 
 
@@ -185,6 +203,7 @@ namespace DanpheEMR.Labs
             ReportLookup lookups = (from r in resultSets
                                     select new ReportLookup
                                     {
+                                        LabTypeName = r.LabTypeName,
                                         Address = r.Address,
                                         DOB = r.DOB,
                                         Gender = r.Gender,
@@ -199,8 +218,12 @@ namespace DanpheEMR.Labs
                                         SampleCode = r.SampleCode,
                                         SampleCodeFormatted = r.SampleCodeFormatted,
                                         SampleDate = r.SampleDate,
+                                        VerifiedOn = r.VerifiedOn,
                                         VisitType = r.VisitType,
-                                        RunNumberType = r.RunNumberType
+                                        RunNumberType = r.RunNumberType,
+                                        Specimen = r.Specimen,
+                                        MunicipalityName = r.MunicipalityName,
+                                        CountrySubDivisionName = r.CountrySubDivisionName
                                     }
                             ).FirstOrDefault();
             return lookups;
@@ -267,7 +290,8 @@ namespace DanpheEMR.Labs
                                                                       select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
                                                  SampleCollectedOn = r.SampleCreatedOn,
                                                  HasInsurance = r.HasInsurance,
-                                                 VerifiedBy = r.VerifiedBy
+                                                 VerifiedBy = r.VerifiedBy,
+                                                 VerifiedOn = r.VerifiedOn
                                              }).GroupBy(tmp => tmp.RequisitionId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();
             //Removed this to get same test for Multiple times for same patient
             //.GroupBy(tmp => tmp.LabTestId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();

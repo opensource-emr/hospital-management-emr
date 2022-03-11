@@ -33,7 +33,7 @@ export class CompanyListComponent {
     pushToList($event) {
         if ($event != null) {
             //find the index of currently added/updated company in the list of all companys (grid)
-            let index = this.companyList.findIndex(a => a.CompanyID == $event.newCompany.CompanyID);
+            let index = this.companyList.findIndex(a => a.CompanyId == $event.newCompany.CompanyId);
             //index will be -1 when this company is currently added. 
             if (index < 0) {
                 this.companyList.splice(0, 0, $event.newCompany);//this will add this company to 0th index.
@@ -80,6 +80,7 @@ export class CompanyListComponent {
                 this.showAddPage = false;
                 this.changeDetector.detectChanges();
                 this.showAddPage = true;
+                this.FocusElementById('CompanyName');
                 break;
             }
         }
@@ -102,8 +103,16 @@ export class CompanyListComponent {
         this.selIndex = null;
         this.company = null;
         this.showAddPage = false;
+        this.FocusElementById('CompanyName');
         this.changeDetector.detectChanges();
         this.showAddPage = true;
     }
-
+    FocusElementById(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 }

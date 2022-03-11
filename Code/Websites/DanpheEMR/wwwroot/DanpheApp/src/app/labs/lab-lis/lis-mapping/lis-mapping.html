@@ -1,0 +1,67 @@
+<div class="row">
+    <div class="col-lg-4 col-sm-4" style="text-align: left;">
+        <a class="btn green btn-success btn-sm" style="font-size: 14px;" name="name" (click)="AddNewMapping()">
+            <span class="glyphicon glyphicon-plus"></span>Add New Mapping
+        </a>
+    </div>
+    <div class="col-lg-8 col-sm-8" style="text-align: left;">
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="lisMappingGridCols" [grid-data]="allMappedData"
+            (grid-actions)="GridActions($event)"> </danphe-grid>
+    </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showMappingAdd">
+    <div class="portlet-body form">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="modelbox-div">
+                <div class="modelbox-header">
+                    <h4 class="margin-0-vr text-danger text-center">
+                        <strong>Add Mapping for Lab Component to Machine Component</strong>
+                    </h4>
+                </div>
+                <div class="modelbox-body">
+                    <lis-map-add [selectedMapId]="selectedLisCompMapId"
+                        (callback-AddUpdate)="CloseAddMappingPopUp($event)">
+                    </lis-map-add>
+                </div>
+                <div class="close-modelbox lb-close-btn">
+                    <button class="btn btn-danger" (click)="CloseAddMappingPopUp()">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showMappingDeleteAlert">
+    <div class="portlet-body form">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="modelbox-div">
+                <div class="modelbox-header">
+                    <h4 class="margin-0-vr text-danger text-center">
+                        <strong>Alert !!</strong>
+                    </h4>
+                </div>
+                <div class="modelbox-body">
+                    Are you sure you want to remove this mapping?
+                </div>
+                <div class="modelbox-footer">
+                    <button class="btn btn-cancel grey" id="btnCancelMachineChange"
+                        (click)="Remove(false)">Cancel</button>
+                    <button class="btn btn-success blue" id="btnProceed" (click)="Remove(true)">Yes</button>
+                </div>
+                <div class="close-modelbox lb-close-btn">
+                    <button class="btn btn-danger" (click)="Remove(false)">
+                        <i class=" fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

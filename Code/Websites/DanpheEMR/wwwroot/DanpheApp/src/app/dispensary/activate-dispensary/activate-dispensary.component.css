@@ -1,0 +1,79 @@
+li.horizontal-bar:hover > a {
+  background: none;
+}
+
+li.bil-hr-bar:hover ul.dropdown-menu li a {
+  background: none;
+  color: #6f6f6f !important;
+}
+
+.dropdown.bil-hr-bar.open a.dropdown-toggle {
+  background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
+  border-radius: 4px !important;
+}
+
+.dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+  color: #6f6f6f;
+}
+
+.hr-ddlCstm {
+  border-bottom: 1px solid #c5cbc5;
+}
+
+.bil-hr-dropdown li a:hover {
+  font-weight: 700;
+}
+
+.p-category .span2 {
+  min-width: 20.5%;
+}
+
+.padder-v {
+  border: 1px solid #ddd;
+  margin: 10px 10px 0px 0px;
+  background-color: #fff;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.b-r {
+  border-right: 1px solid #cfcfcf;
+}
+
+.b-light {
+  border-color: #e4e4e4;
+}
+
+.b-light i.text-white {
+  color: #fff;
+}
+
+.rpt-link-container {
+  width: 230px;
+  height: 70px;
+  background-color: white;
+}
+
+.rpt-link-container:hover {
+  background-color: skyblue;
+  cursor: pointer;
+}
+
+.bed-container {
+  height: 12rem;
+  width: 13rem;
+  float: left;
+  text-align: center;
+}
+
+.modal-content {
+  line-height: 2;
+  text-align: center;
+  color: #eceaea;
+  background-color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  left: 82%;
+  top: 90%;
+  border-radius: 4px !important;
+  z-index: 99;
+}

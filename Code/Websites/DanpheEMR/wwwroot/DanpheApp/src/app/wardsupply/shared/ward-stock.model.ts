@@ -1,10 +1,4 @@
-import {
-    NgForm,
-    FormGroup,
-    FormControl,
-    Validators,
-    FormBuilder
-} from '@angular/forms'
+import { NgForm, FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms'
 
 export class WardStockModel {
     public StockId: number = 0;
@@ -19,16 +13,16 @@ export class WardStockModel {
     public SubTotal: number = 0;
     public DispachedQuantity: number = 0;
     public Quantity: number = 0;
-    public Price:number = 0;
+    public Price: number = 0;
     public TotalAmount: number = 0;
     public WardName: string = "";
     public ItemName: string = "";
     public Remarks: string = "";
     public newWardId: number = 0;
     public IsSelected: boolean = false;
-    public StockType: string= "";
-    public DepartmentId: number= 0;
-    public DepartmentName: string= "";
+    public StockType: string = "";
+    public DepartmentId: number = 0;
+    public DepartmentName: string = "";
     public StockManageValidator: FormGroup = null;
     //Constructor of class
     constructor() {

@@ -1,0 +1,284 @@
+<div class="wrapper" *ngIf="showReceipt">
+  <div class="popup-static portlet box portlet-fullscreen popup-fixed inv_modal">
+    <div class="portlet-body form">
+      <div class="col-md-12">
+        <div class="modelbox-div">
+          <div class="caption lb-caption">
+            <h3 style="text-align: center;"><span>Settlement Receipt</span></h3>
+            <button class="btn btn-danger" (click)="CloseReceipt()">X</button>
+          </div>
+          <div class="modelbox-body p2">
+            <div id="printpage" style="text-align:center;">
+              <div class="receipt">
+                <!-- <div *ngIf="settlementInfo.PrintCount > 0">
+        <p class="no-margin" style="text-align:right;font-style:italic;font-size:13px;">COPY({{settlementInfo.PrintCount}}) OF ORIGINAL</p>
+      </div> -->
+                <billing-header></billing-header>
+                <div style="display:inline-block" class="right">
+                </div>
+                <p class="no-margin" style="text-align:center;padding-top: 10px;padding-bottom: 10px;clear: both;">
+                  <span>
+                    <b>Settlement Slip</b>
+                  </span>
+                </p>
+                <div class="col-md-12" style="padding:0px;">
+                  <div class="left">
+                    <p class="no-margin" style="text-align:left">Receipt No: SR{{ SettlementInfo.SettlementReceiptNo }} </p>
+                  </div>
+                  <div class="right">
+                    <p class="no-margin" style="text-align:right">
+                      Date: {{SettlementInfo.SettlementDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                      ({{localDate}})
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+                  <div class="left" style="width:69%">
+                    <p class="no-margin" style="text-align: left;">Patient's Name : {{PatientInfo.PatientName}} </p>
+                    
+                  </div>
+                  <div class="right" style="width:31%">
+                    <p class="no-margin" style="text-align:right"> Age/Sex : {{PatientInfo.DateOfBirth | DanpheDateTime:'age' }}/{{PatientInfo.Gender}}</p>
+                  </div>
+                </div>
+                <div class="col-md-12" style="padding:0px;">
+                  <div class="left" style="width:50%">
+                    <p class="no-margin" style="text-align:left">
+                      PatientCode: {{PatientInfo.PatientCode}}
+                    </p>
+                  </div>
+                  <div class="right" style="width:50%">
+                    <p class="no-margin" style="text-align:right">
+                      Contact No: {{PatientInfo.PhoneNumber}}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-12" style="padding:0px;">
+                  <div class="left" style="width: 69%;">
+                    <p class="no-margin" style="text-align:left">Address: {{PatientInfo.Address}} </p>
+                  </div>
+                </div>
+                <div class="clear"></div>
+                <div class="col-md-12" style="padding:0px;border-bottom: 1px dotted;">
+                  <p style="text-align: center;">Method of payment: <span style="text-transform:capitalize;"> {{SettlementInfo.PaymentMode }}</span></p>
+                </div>
+                <hr style="border-top: dotted 1px;margin:7px 0px;" />
+
+                <!-- <div class="col-md-12">
+        <table style="width:100%;" class="rect-table">
+          <tr *ngIf="settlementInfo.PHRMInvoiceTransactions">
+            <th>
+              S.No
+            </th>
+            <th>
+              Invoice Date
+            </th>
+            <th>
+              Invoice No.
+            </th>
+            <th>
+              Amount
+            </th>
+          </tr>
+          <tr *ngFor="let txn of settlementInfo.PHRMInvoiceTransactions;let i=index;">
+            <td>
+              {{i+1}}
+            </td>
+            <td>
+              {{txn.CreateOn | DanpheDateTime:'format':'YYYY-MM-DD'}}
+            </td>
+            <td>
+              {{txn.InvoiceCode}}{{txn.InvoicePrintId}}
+            </td>
+            <td>
+              {{txn.TotalAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr style="border-top: 1px solid;">
+            <td colspan="3" style="text-align:left;">
+              Total Amount
+            </td>
+            <td>
+              {{totalCrAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr *ngIf="settlementInfo.DepositDeducted > 0">
+            <td colspan="3" style="text-align:left;">
+              Less: Deposit Amount
+            </td>
+            <td>
+              {{settlementInfo.DepositDeducted | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" style="text-align:left;">
+              Balance Amount
+              <span *ngIf="settlementInfo.PayableAmount > 0" style="font-weight:bold;">
+                Payable
+              </span>
+              <span *ngIf="settlementInfo.RefundableAmount > 0" style="font-weight:bold;">
+                Refundable
+              </span>
+            </td>
+            <td>
+              {{settlementInfo.PayableAmount || settlementInfo.RefundableAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr *ngIf="settlementInfo.DiscountAmount > 0">
+            <td colspan="3" style="text-align:left;">Discount Amount</td>
+            <td>
+              {{settlementInfo.DiscountAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr *ngIf="settlementInfo.PaidAmount>0">
+            <td colspan="3" style="text-align:left;">
+              <span> Paid Amount</span>
+            </td>
+            <td>
+              {{ settlementInfo.PaidAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+          <tr *ngIf="settlementInfo.ReturnedAmount > 0">
+            <td colspan="3" style="text-align:left;">
+              <span>Returned Amount</span>
+
+            </td>
+            <td>
+              {{ settlementInfo.ReturnedAmount | number : "1.2-2"}}
+            </td>
+          </tr>
+        </table>
+      </div> -->
+                <div class="col-md-12">
+                  <table style="width:100%; text-align: left; border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;" class="rect-table" *ngIf="SalesInfo && SalesInfo.length">
+                    <tr>
+                      <th style="width: 30px;"> S.N </th>
+                      <th style="width: 140px;"> Particulars </th>
+                      <th style="width: 70px;"> Receipt No </th>
+                      <th style="width: 120px;"> Receipt Date </th>
+                      <th style="width: 120px;"> Amount </th>
+                    </tr>
+                    <tr *ngFor="let txn of SalesInfo;let i=index;" style="text-align: center;">
+                      <td> {{i+1}} </td>
+                      <td> Sales </td>
+                      <td> {{ txn.ReceiptNo }} </td>
+                      <td> {{txn.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </td>
+                      <td> {{txn.Amount}} </td>
+                    </tr>
+                    <tr *ngIf="SalesInfo && SalesInfo.length">
+                      <td colspan="4" style="text-align: right;"><b> Sales Total:</b> </td>
+                      <td style="text-align: center;">{{SalesTotal}}</td>
+                    </tr>
+                  </table>
+                  <table style="width:100%; text-align: left; border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;" class="rect-table" *ngIf="SalesReturnInfo && SalesReturnInfo.length">
+                    <tr>
+                      <th style="width: 30px;"> S.N </th>
+                      <th style="width: 140px;"> Particulars </th>
+                      <th style="width: 70px;"> Receipt No </th>
+                      <th style="width: 120px;"> Receipt Date </th>
+                      <th style="width: 120px;"> Amount </th>
+                    </tr>
+                    <tr *ngFor="let ret of SalesReturnInfo;let i=index;" style="text-align: center;">
+                      <td> {{i+1}} </td>
+                      <td> Sales Return </td>
+                      <td> {{ ret.ReceiptNo }} </td>
+                      <td> {{ret.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </td>
+                      <td> {{ret.Amount}} </td>
+                    </tr>
+                    <tr *ngIf="SalesReturnInfo && SalesReturnInfo.length">
+                      <td colspan="4" style="text-align: right;"><b> Sales Return Total:</b> </td>
+                      <td style="text-align: center;">{{SalesReturnTotal}}</td>
+                    </tr>
+                  </table>
+                  <table style="width:100%; text-align: left; " class="rect-table" *ngIf="SalesInfo && SalesInfo.length">
+                    <tr>
+                      <td colspan="4" style="text-align: right;">
+                        Net Amount:
+                      </td>
+                      <td style="text-align: right;">{{ NetAmount }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: right;">
+                        Cash Discount:
+                      </td>
+                      <td style="text-align: right;">{{ CashDiscount }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: right;">
+                        Payable Amount:
+                      </td>
+                      <td style="text-align: right;">{{ PayableAmount }}</td>
+                    </tr>
+                  </table>
+
+                  <table style="width:100%; text-align: left; border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;" class="rect-table" *ngIf="DepositInfo && DepositInfo.length">
+                    <tr>
+                      <th style="width: 30px;"> S.N </th>
+                      <th style="width: 140px;"> Particulars </th>
+                      <th style="width: 70px;"> Receipt No </th>
+                      <th style="width: 120px;"> Receipt Date </th>
+                      <th style="width: 120px;"> Amount </th>
+                    </tr>
+                    <tr *ngFor="let dep of DepositInfo;let i=index;" style="text-align: left;">
+                      <td> {{i+1}} </td>
+                      <td> {{ dep.DepositType}} </td>
+                      <td> {{ dep.ReceiptNo }} </td>
+                      <td> {{dep.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </td>
+                      <td> {{dep.DepositAmount}} </td>
+                    </tr>
+                  </table>
+                  <table style="width:100%; text-align: left; border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;" class="rect-table" *ngIf="CashDiscountReturnInfo && CashDiscountReturnInfo.length">
+                    <tr>
+                      <th style="width: 30px;"> S.N </th>
+                      <th style="width: 140px;"> Particulars </th>
+                      <th style="width: 70px;"> Receipt No </th>
+                      <th style="width: 120px;"> Receipt Date </th>
+                      <th style="width: 120px;"> Amount </th>
+                    </tr>
+                    <tr *ngFor="let row of CashDiscountReturnInfo;let i=index;" style="text-align: center;">
+                      <td> {{i+1}} </td>
+                      <td> Cash Discount Return </td>
+                      <td> {{ row.ReceiptNo }} </td>
+                      <td> {{row.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </td>
+                      <td> {{row.CashDiscountReceived}} </td>
+                    </tr>
+                  </table>
+                </div>
+
+                <div class="clear"></div>
+                <!-- <div class="col-md-12" style="text-align: left;" *ngIf="settlementInfo.PaymentDetails !=null && settlementInfo.PaymentDetails!=''">
+        <span style="font-style:italic;">Payment Details: {{settlementInfo.PaymentDetails}}</span>
+      </div> -->
+                <div class="col-md-12" style="border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;">
+                </div>
+                <div class="clear"></div>
+                <div class="col-md-12" style="padding:0px 0px 0px 15px;">
+                  <div class="left">
+                    <p class="no-margin" style="text-align:left">Processed By</p>
+                    <p class="no-margin" style="text-align:left">{{SettlementInfo.BillingUser}}</p>
+                    <p style="text-align:left">Time: {{SettlementInfo.SettlementDate | DanpheDateTime:'format':'HH:mm'}}</p>
+                  </div>
+                  <div class="right" style="width:50%;">
+                    <p class="no-margin" style="text-align:left">Acknowledged By</p>
+                    <p class="no-margin" style="text-align:left">Signature</p>
+                    <!-- <p class="no-margin" style="text-align:left">Remark: {{settlementInfo.Remarks}}</p> -->
+                  </div>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </div>
+            <p style="text-align:center;">
+              <button class="btn blue" (click)="print()">
+                Print Receipt
+                <i class="glyphicon glyphicon-print"></i>
+              </button>
+            </p>
+          </div>
+          <div class="modelbox-footer">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -12,7 +12,8 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int RequisitionId { get; set; }
-        public int StoreId { get; set; } //foreign key refering to PHRM_MST_Store
+        public int RequestFromStoreId { get; set; } //foreign key refering to PHRM_MST_Store
+        public int? RequestToStoreId { get; set; }
         public int? DepartmentId { get; set; } //since the stock is unique according to storeId not Department Id, so it is made nullable.
         public DateTime? RequisitionDate { get; set; }
         public int CreatedBy { get; set; }
@@ -23,9 +24,14 @@ namespace DanpheEMR.ServerModel
         public bool? IsCancel { get; set; }
         public string Remarks { get; set; }     //created for direct dispatch
         public string CancelRemarks { get; set; }
+       
         public int RequisitionNo { get; set; }
         public int? IssueNo { get; set; }
         public virtual List<RequisitionItemsModel> RequisitionItems { get; set; }
+        [NotMapped]
+        public DateTime? MatIssueDate { get; set; }
+        [NotMapped]
+        public string MatIssueTo { get; set; }
         public int? VerificationId { get; set; }
         [NotMapped]
         public  List<RequisitionItemsModel> CancelledItems { get; set; }
@@ -49,5 +55,11 @@ namespace DanpheEMR.ServerModel
         //public string NextVerifiersPermissionName { get; set; } //This is not necessary as per the requirement. sanjit: 6 April,2020
         [NotMapped]
         public bool NewDispatchAvailable { get; set; }
+
+        /// <summary>
+        /// Maintains sequence for RequisitionNo
+        /// </summary>
+        public int? ReqDisGroupId { get; set; }
+        public int FiscalYearId { get; set; }
     }
 }

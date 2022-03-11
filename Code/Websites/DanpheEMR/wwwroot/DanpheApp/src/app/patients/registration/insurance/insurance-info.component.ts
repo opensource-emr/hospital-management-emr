@@ -9,6 +9,7 @@ import { IRouteGuard } from '../../../shared/route-guard.interface';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { PatientsBLService } from "../../shared/patients.bl.service";
 import { InsuranceProviderModel } from '../../shared/insurance-provider.model';
+import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
   templateUrl: "./insurance-info.html"
@@ -26,12 +27,14 @@ export class InsuranceInfoComponent implements IRouteGuard {
 
     constructor(patientService: PatientService,
         public patientBlService: PatientsBLService,
-        public msgBoxServ: MessageboxService
+        public msgBoxServ: MessageboxService,
+        public coreService: CoreService
     ) {
         this.currentPatient = patientService.getGlobal();
         this.insurances = this.currentPatient.Insurances;
         this.SeedIdCardTypes();
         this.GetInsuranceProviderList();
+        this.GoToNextInput("InputId");
     }
 
     SeedIdCardTypes() {
@@ -41,6 +44,15 @@ export class InsuranceInfoComponent implements IRouteGuard {
         this.IdCardTypes.push({ IdCardTypeId: 3, IdCardTypeName: 'Driving License' });
         this.IdCardTypes.push({ IdCardTypeId: 4, IdCardTypeName: 'ID Card' });
     }
+
+    GoToNextInput(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
     public GetInsuranceProviderList() {
         this.patientBlService.GetInsuranceProviderList()
             .subscribe(res => {

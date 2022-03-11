@@ -4,12 +4,13 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import * as moment from 'moment/moment';
 @Component({
     selector: "app-update-mrp",
-    templateUrl: "./phrm-update-mrp.html"
+    templateUrl: "./phrm-update-mrp.html",
+    host: { '(window:keydown)': 'hotkeys($event)' }
 })
 export class PHRMUpdateMRPComponent implements OnInit {
     public oldMRP: number;
-    public oldExpiryDate:any;
-    public oldBatchNo:any;
+    public oldExpiryDate: any;
+    public oldBatchNo: any;
     @Input('currentStock')
     public currentStock: IMRPUpdatedStock;
     @Output('callback-update')
@@ -31,7 +32,7 @@ export class PHRMUpdateMRPComponent implements OnInit {
                             if (res.Status == "OK" && res.Results != null) {
                                 this.msgBoxServ.showMessage("success", ['Item MRP Updated.']);
                                 this.changeDetector.detectChanges();
-                                this.callBackUpdate.emit({ event:'update',stock: res.Results })
+                                this.callBackUpdate.emit({ event: 'update', stock: res.Results })
                             }
                             else {
                                 this.msgBoxServ.showMessage("failed", ["Something Wrong " + res.ErrorMessage]);
@@ -45,7 +46,7 @@ export class PHRMUpdateMRPComponent implements OnInit {
     }
     Close() {
         this.currentStock = null;
-        this.callBackUpdate.emit({event: 'close'})
+        this.callBackUpdate.emit({ event: 'close' })
     }
 
     CheckMRP() {
@@ -54,16 +55,23 @@ export class PHRMUpdateMRPComponent implements OnInit {
         if (this.currentStock.MRP <= 0) return false;
         return true;
     }
+    public hotkeys(event) {
+        //For ESC key => close the pop up
+        if (event.keyCode == 27) {
+            this.Close();
+        }
+    }
+
 }
 
 export interface IMRPUpdatedStock {
     StockId?: number;//for dispensary
-    ItemId?:number;//for store
+    ItemId?: number;//for store
     BatchNo?: string;//for store
     ExpiryDate?: string;//for store
     GoodsReceiptItemId?: number;//for store
     LocationId: number;
     MRP: number;
-    oldMRP:number;
-    StoreStockId:number;
-} 
+    oldMRP: number;
+    CostPrice: number;
+}

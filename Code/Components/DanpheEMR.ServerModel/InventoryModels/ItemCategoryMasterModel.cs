@@ -16,5 +16,8 @@ namespace DanpheEMR.ServerModel.InventoryModels
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public bool IsActive { get; set; }
+        //sud:18Sep'21--We can have different Codes for Different Categories.
+        //eg: as per Ma.Le.Pa:for CapitalGoods=४०८/४७,for Consumables=४०७/५२
+        public string CategoryCode { get; set; }
     }
 }

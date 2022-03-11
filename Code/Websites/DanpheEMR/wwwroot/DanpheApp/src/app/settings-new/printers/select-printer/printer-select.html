@@ -1,0 +1,22 @@
+<div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+  <div class="padding-15-bt padding-15-tp padding-7-hr" *ngIf="!showPrinterChange ">
+    <div>
+      <label>
+        Selected Printer: <b *ngIf="selPrinterObj">{{selPrinterObj.PrinterDisplayName}}</b>
+      </label>
+      <a (click)="ShowPrinterChange()">Change ?</a>
+    </div>
+  </div>
+
+  <div class="padding-15-bt padding-15-tp" *ngIf="showPrinterChange">
+    <label><b>Select Printer</b></label>
+    <select class="margin-7-hr" [(ngModel)]="printerSettId" id="ddlSelectPrinter">
+      <option *ngFor="let itm of printersArrByGroupName" [value]="itm.PrinterSettingId"
+        title="{{itm.PrintingType+'-'+itm.PrinterName+'-'+itm.ModelName}}">
+        {{itm.PrinterDisplayName}}
+      </option>
+    </select>
+    <button class="btn green btn-success" (click)="SaveSelectedPrinter()">OK</button>
+  </div>
+
+</div>

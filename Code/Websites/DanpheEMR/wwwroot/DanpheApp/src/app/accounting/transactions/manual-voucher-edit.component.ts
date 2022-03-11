@@ -28,7 +28,8 @@ export class ManualVoucherEditComponent {
     public changeDetectorRef: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public accountingBLService: AccountingBLService,
-    public routeFrom: RouteFromService, ) { 
+    public routeFrom: RouteFromService,
+    public accountingService:AccountingService ) { 
       this.getActiveFiscalYear();
     }
 
@@ -66,18 +67,17 @@ export class ManualVoucherEditComponent {
 
   getActiveFiscalYear() {
     try {
-        this.accountingBLService.GetFiscalYearList()
-            .subscribe(res => {
-                if (res.Results.length) {
-                    this.FiscalYearList = res.Results;                                    
-                    this.ActiveFiscalYearList = this.FiscalYearList.filter(f=> f.IsActive == true && f.IsClosed != true );
-                    this.fiscalYearId = this.FiscalYearList[0].FiscalYearId;
-                  }
-            });
+      if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
+        this.FiscalYearList = this.accountingService.accCacheData.FiscalYearList;//mumbai-team-june2021-danphe-accounting-cache-change
+        this.FiscalYearList = this.FiscalYearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.ActiveFiscalYearList = this.FiscalYearList.filter(f => f.IsActive == true && f.IsClosed != true);
+        this.ActiveFiscalYearList = this.ActiveFiscalYearList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+        this.fiscalYearId = this.FiscalYearList[0].FiscalYearId;
+      }
     } catch (ex) {
-        console.log(ex);
+      console.log(ex);
     }
-}
+  }
 // onFiscalYearChange() {
 //   var fs = this.FiscalYearList.filter(f => f.FiscalYearId == this.fiscalYearId);
 //   if (fs.length > 0) {

@@ -40,7 +40,7 @@ li.dropdown.bil-hr-bar:hover ul.dropdown-menu.bil-hr-dropdown {
   <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
     <!--Start: Primary Menu Items -->
     <li *ngFor="let route of primaryNavItems"> <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1"> <i class="{{route.Css}}"></i>{{route.DisplayName}} </a> </li>
-    
+    <!-- <li> <a routerLink="CreditNote" [routerLinkActive]="'link3-active'"> <i></i>Credit Note </a> </li> -->
     <!--End: Primary Menu Items --> 
     <!--Start: Secondary Menu Items-->
     <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;"> <a href="JavaScript:void(0);"> More... <span class="caret"></span> </a>

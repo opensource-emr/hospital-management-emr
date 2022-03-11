@@ -29,6 +29,7 @@ export class GuarantorComponent implements IRouteGuard {
         _serv: PatientService,
         public patientBLService: PatientsBLService,
         public msgBoxServ: MessageboxService) {
+        this.GoToNextInput("InputId");
         this.currentPatient = _serv.getGlobal();
         this.currentGuarantor = this.currentPatient.Guarantor;
 
@@ -67,6 +68,15 @@ export class GuarantorComponent implements IRouteGuard {
             this.guarantor = new Guarantor();
         }
     }
+
+    GoToNextInput(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
 
     CanRouteLeave() {
         // if the IsValid is false  then..it will show the validation message to the end user using the for loop..

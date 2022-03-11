@@ -40,6 +40,24 @@ export class Vitals {
 
     public VitalsValidator: FormGroup = null;
 
+    public  Nadi : number=0;
+    public  Mala :string=null;
+    public  Mutra :string=null
+    public  Jivha :string=null
+    public  Shabda :string=null
+    public  Sparsha :string=null
+    public  Drik :string=null
+    public  Akriti :string=null
+    public  LungField :string=null
+    public  HeartSounds :string=null
+    public  PA_Tenderness :string=null
+    public  Organomegaly :string=null
+    public  CNS_Consiousness :string=null
+    public  Power :string=null
+    public  Reflexes :string=null
+    public  Tone :string=null
+    public  Others:string=null
+
     constructor() {
 
         var _formBuilder = new FormBuilder();
@@ -57,12 +75,16 @@ export class Vitals {
     }
 
 
-    public IsValid():boolean{if(this.VitalsValidator.valid){return true;}else{return false;}} public IsValidCheck(): boolean {
+    public IsValid():boolean{if(this.VitalsValidator.valid){return true;}else{return false;}} 
+    public IsValidCheck(): boolean {
         let bpSys = this.VitalsValidator.controls["systolic"].value;
         let bpDias = this.VitalsValidator.controls["diastolic"].value;
 
         if (bpSys && bpDias) {
             if (bpSys < bpDias) {
+                return false;
+            }
+            else if(bpSys == bpDias){
                 return false;
             }
         }

@@ -10,6 +10,7 @@ export class AuthGuardService implements CanActivate {
   constructor(public _router: Router, public securityServ: SecurityService, public coreService: CoreService) {
   }
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    this.coreService.loading = false;
     // state.url return current routing url like '/Billing/Transaction'.
     let url: string = state.url;
     this.loggedInUser = this.securityServ.GetLoggedInUser();

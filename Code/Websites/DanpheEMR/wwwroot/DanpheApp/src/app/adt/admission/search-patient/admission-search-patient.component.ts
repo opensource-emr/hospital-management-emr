@@ -35,16 +35,19 @@ export class AdmissionSearchPatient {
 
   public patientId: number = null;
   public patientVisitId: number = null;
+  public showIsInsurancePatient: boolean = false;
+  public allPatientList = [];
+  public filteredPatientList = []
 
   constructor(
     public _patientservice: PatientService,
     public router: Router,
     public admissionBLService: ADT_BLService,
-    public msgBoxServ: MessageboxService, public coreService: CoreService, public changeDetRef: ChangeDetectorRef, public securityService:SecurityService) {
-    this.patGirdDataApi = APIsByType.PatByName;
+    public msgBoxServ: MessageboxService, public coreService: CoreService, public changeDetRef: ChangeDetectorRef, public securityService: SecurityService) {
+    this.patGirdDataApi = APIsByType.PatientListForRegNewVisit;  //sud:29Nov--For Testing.. Review this before pushing to server.
     this.getParamter();
     this.Load("");
-    this.adtGriColumns = new ADTGridColumnSettings(this.coreService,this.securityService);
+    this.adtGriColumns = new ADTGridColumnSettings(this.coreService, this.securityService);
     this.patientGridColumns = this.adtGriColumns.AdmissionSearchPatient;
   }
 
@@ -56,16 +59,18 @@ export class AdmissionSearchPatient {
     this.Load(this.searchText);
   }
 
-  getParamter(){
+  getParamter() {
     let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
-    var data= JSON.parse(parameterData);
+    var data = JSON.parse(parameterData);
     this.enableServerSideSearch = data["PatientSearchPatient"];
   }
   Load(searchTxt): void {
-    this.admissionBLService.GetPatients(searchTxt)
+    this.admissionBLService.GetPatientListForADT(searchTxt)
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.patients = res.Results;
+          //this.patients = res.Results;
+          this.allPatientList = res.Results;
+          this.filteredPatientList = res.Results;
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -81,7 +86,7 @@ export class AdmissionSearchPatient {
       case "admit": {
         var data = $event.Data;
         this.AdmitPatient(data);
-        
+
       }
         break;
       case "view-reserved-patient": {
@@ -99,7 +104,7 @@ export class AdmissionSearchPatient {
   public ReturnFromPatBedReservation($event) {
     if ($event.close) {
       this.CloseReservationPopUp();
-    }    
+    }
   }
 
   public CloseReservationPopUp() {
@@ -128,6 +133,9 @@ export class AdmissionSearchPatient {
       globalPatient.DateOfBirth = data.DateOfBirth;
       globalPatient.Gender = data.Gender;
       globalPatient.IsPoliceCase = data.IsPoliceCase;
+      globalPatient.Ins_HasInsurance = data.Ins_HasInsurance;
+      globalPatient.Ins_NshiNumber = data.Ins_NshiNumber;
+      globalPatient.Ins_InsuranceBalance = data.Ins_InsuranceBalance;
       this.router.navigate(["/ADTMain/CreateAdmission"]);
       //    }
       //},
@@ -140,5 +148,17 @@ export class AdmissionSearchPatient {
 
   public CloseWarningPopUp() {
     this.showProvisionalWarning = false;
+  }
+
+  public govPatientShow: boolean = false;
+  FilterGridItems(govPatientShow) {
+    this.filteredPatientList = [];
+    if (govPatientShow == true) {
+      this.filteredPatientList = this.allPatientList.filter(s => s.Ins_HasInsurance == true);
+    }
+    else {
+      this.filteredPatientList = this.allPatientList;
+    }
+    //this.patients = this.filteredPatientList;
   }
 }

@@ -1,0 +1,21 @@
+<div class="row mb20">
+  <div class="col-md-12" *ngIf="validRoutes != undefined">
+    <div class="col-md-3" *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" class="report_list">
+        <div class="span2 padder-v b-r b-light rpt-link-container">
+          <span class="fa-stack fa-2x report_icon">
+            <i class="fa fa-circle fa-stack-2x text-info"></i>
+            <i class="{{route.Css}}"></i>
+          </span>
+          <span class="report-name">
+            <i>{{route.DisplayName}}</i>
+            <i>Report</i>
+          </span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<router-outlet>
+</router-outlet>

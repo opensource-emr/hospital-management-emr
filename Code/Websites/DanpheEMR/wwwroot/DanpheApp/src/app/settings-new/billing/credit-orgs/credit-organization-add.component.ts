@@ -7,7 +7,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import * as moment from 'moment/moment';
 @Component({
     selector: "credit-organization-add",
-  templateUrl: "./credit-organization-add.html"
+  templateUrl: "./credit-organization-add.html",
+  host: { '(window:keydown)': 'KeysPressed($event)' }
 })
 export class CreditOrganizationAddComponent {
 
@@ -25,6 +26,7 @@ export class CreditOrganizationAddComponent {
         public securityService: SecurityService,
         public msgBoxServ: MessageboxService,
         public changeDetector: ChangeDetectorRef) {
+       
     }
     @Input("showAddPage")
     public set value(val: boolean) {
@@ -42,6 +44,7 @@ export class CreditOrganizationAddComponent {
             this.CurrentCreditOrganization.CreatedOn = moment().format('YYYY-MM-DD HH:mm');
             this.update = false;
         }
+        this.GoToNextInput("OrganizationName");
     }
     
     Add() {
@@ -103,5 +106,18 @@ export class CreditOrganizationAddComponent {
     showMessageBox(status: string, message: string) {
         this.msgBoxServ.showMessage(status, [message]);
     }
+    private GoToNextInput(id: string) {
+        window.setTimeout(function () {
+          let itmNameBox = document.getElementById(id);
+          if (itmNameBox) {
+            itmNameBox.focus();
+          }
+        }, 600);
+      }
+      KeysPressed(event){
+        if(event.keyCode == 27){ // For ESCAPE_KEY =>close pop up
+          this.Close(); 
+        }
+      }
 
 }

@@ -1,0 +1,922 @@
+<style type="text/css">
+  .Selected {
+    border-collapse: collapse;
+    border-spacing: 5px;
+  }
+
+  .Selected {
+    border: 1px solid black;
+    padding: 5px;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <div class="row ">
+        <form [formGroup]="currentLaboratoryServices.DyanamicValidator" class="form-horizontal">
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                  class="caption-subject">Laboratory Services </span> </div>
+              <!--  <div class="col-md-5 col-xs-12">
+                  <div class="form-group">
+                      <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                      <div class="col-md-7">
+                          <input class="form-control" type="date" value="" [(ngModel)]="fromDate"
+                                 [ngModelOptions]="{standalone: true}" placeholder="DD-MM-YYYY" />
+                      </div>
+                  </div>
+              </div>-->
+              <!--  <div class="col-md-5 col-xs-12">
+                  <div class="form-group">
+                      <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                      <div class="col-md-8">
+                          <input class="form-control" type="date" value="" [(ngModel)]="toDate"
+                                 [ngModelOptions]="{standalone: true}" placeholder="DD-MM-YYYY" />
+                      </div>
+                  </div>
+              </div>-->
+              <!--<div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3 left" style="padding-top: 1px;">From Date<b style="float:right;">:</b></label>
+                  <div class="col-md-9">
+                    <danphe-date-picker [(ngModel)]="currentLaboratoryServices.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+                    <span class="color-red font-sm" *ngIf="currentLaboratoryServices.IsDirty('fromDate')" [hidden]="currentLaboratoryServices.IsValidCheck('fromDate','required')"> From Date is required</span> <span class="color-red font-sm" *ngIf="currentLaboratoryServices.IsDirty('fromDate')" [hidden]="currentLaboratoryServices.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+                </div>
+              </div>
+              <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3 left" style="padding-top: 1px;">To Date<b style="float:right;">:</b></label>
+                  <div class="col-md-9">
+                    <danphe-date-picker [(ngModel)]="currentLaboratoryServices.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+                    <span class="color-red font-sm" *ngIf="currentLaboratoryServices.IsDirty('toDate')" [hidden]="currentLaboratoryServices.IsValidCheck('toDate','required')"> To Date is required</span> <span class="color-red font-sm" *ngIf="currentLaboratoryServices.IsDirty('toDate')" [hidden]="currentLaboratoryServices.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+                </div>
+              </div>-->
+              <div class="row">
+                <div class="col-md-6 col-xs-12">
+                  <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                  <div class="form-group">
+                    <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+  
+        <!--Report Table -->
+        <div *ngIf="displayReport">
+          <div class="col-md-12" id="printpageForLabReport">
+            <div class="multi-table-wrap">
+              <div class="report-title"><b>16.Laboratory Services</b></div>
+              <div class="table-row">
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">HAEMATOLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of hematology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">IMMUNOLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of immunology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">BIOCHEMISTRY</td>
+                      </tr>
+                      <tr *ngFor="let item of biochemistry | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                      </tr>
+
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">BACTERIOLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of bacteriology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                      </tr>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">VIROLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of virology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">PARASITOLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of parasitology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">HORMONE/ENDOCRINE</td>
+                      </tr>
+                      <tr *ngFor="let item of hormone | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">DRUG ANALYSIS</td>
+                      </tr>
+                      <tr *ngFor="let item of drugAnalysis | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">HISTOPATHOLOGY/CYTOLOGY</td>
+                      </tr>
+                      <tr *ngFor="let item of histopathology | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th width="50px">DE</th>
+                        <th colspan="2">Test</th>
+                        <th>No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-center bg-gray">
+                        <td colspan="4">IMMUNO-HISTO CHEMISTRY</td>
+                      </tr>
+                      <tr *ngFor="let item of immunoHistoChemistry | labKeys, let i = index">
+                        <ng-container *ngIf="!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td colspan="2">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+                        <ng-container *ngIf="!!item.InnerTestGroupName">
+                          <td width="50px">{{item.SerialNumber}}</td>
+                          <td rowspan="1">{{item.InnerTestGroupName}}</td>
+                          <td width="50px">{{item.DisplayName}}</td>
+                          <td width="50px">{{item.Count}}</td>
+                        </ng-container>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+
+            </div>
+
+            <p style="text-align:center;" class="no-print">
+              <button class="btn blue" (click)="Print()"> Print Report <i class="glyphicon glyphicon-print"></i>
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <div *ngIf="displayPreviousReport">
+
+          <!-----display when displayReport is TRUE----->
+          <div id="printpageold">
+            <table style="width:100%" align="center">
+              <tr>
+                <td class="Selected" align="center"><b>16. Laboratory Servies</b></td>
+              </tr>
+            </table>
+            <br />
+            <table style="width:100%">
+              <!------------HAEMATOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td rowspan="2" style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>HAEMATOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td colspan="4">TLC</td>
+                            <td colspan="7">DLC</td>
+                            <td rowspan="2">Retic</td>
+                            <td rowspan="2">ESR</td>
+                            <td rowspan="2">Parasites</td>
+                            <td rowspan="2">PCV</td>
+                            <td rowspan="2">MCV</td>
+                            <td rowspan="2">MCH</td>
+                            <td rowspan="2">MCHC</td>
+                            <td rowspan="2">BT</td>
+                            <td rowspan="2">CT</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Hb%</td>
+                            <td>RBC</td>
+                            <td>WBC</td>
+                            <td>Platelets</td>
+                            <td>Neutro</td>
+                            <td>lympho</td>
+                            <td>Mono</td>
+                            <td>Eosino</td>
+                            <td>Baso</td>
+                            <td>Bands</td>
+                            <td>Others</td>
+                          </tr>
+                          <tr>
+                            <td align="center" width="100px" *ngFor="let o of HaematologyTable0">{{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td rowspan="2">PT</td>
+                            <td rowspan="2">APTT</td>
+                            <td rowspan="2">PT-INR</td>
+                            <td rowspan="2">
+                              Blood <br />
+                              Group
+                            </td>
+                            <td rowspan="2">Rh Type</td>
+                            <td rowspan="2">
+                              BM CSF <br />
+                              Spleen Aspiratee
+                            </td>
+                            <td rowspan="2">Aldehyde</td>
+                            <td colspan="3">MP Total</td>
+                            <td rowspan="2">MF</td>
+                            <td rowspan="2">HbA1c</td>
+                            <td rowspan="2">
+                              Hb <br />
+                              Electrophoresis
+                            </td>
+                            <td rowspan="2">LE</td>
+                            <td rowspan="2">
+                              FDP/<br />
+                              D-dimer
+                            </td>
+                            <td rowspan="2">AEC</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of HaematologyTable1">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------IMMUNOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td rowspan="2" style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>IMMUNOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td colspan="3">Pregnancy Test</td>
+                            <td rowspan="2">ASO</td>
+                            <td colspan="3">CRP</td>
+                            <td rowspan="2">CRP Quant.</td>
+                            <td colspan="3">RA Factor</td>
+                            <td rowspan="2">RA Factor Quant.</td>
+                            <td rowspan="2">Anti CCP</td>
+                            <td rowspan="2">TPHA</td>
+                            <td rowspan="2">ANA</td>
+                            <td rowspan="2">DNA-ELISA</td>
+                            <td colspan="3">RPR-VDRL</td>
+                            <td rowspan="2">CEA</td>
+                            <td rowspan="2">CA-125</td>
+                            <td rowspan="2">Ca 19-9</td>
+                            <td rowspan="2">Ca 15.3</td>
+                            <td rowspan="2">TORCH IG-G/M</td>
+                            <td rowspan="2">MEASLES-IG-G</td>
+                            <td rowspan="2">RUBELLA-IGG</td>
+                            <td rowspan="2">Echino-coccus</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Reactive</td>
+                            <td>Non-Reactive</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of ImmunologyTable0">{{o.Quantity}}
+                            </td>
+                          </tr>
+                        </table>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td rowspan="2">Amoebiasis</td>
+                            <td rowspan="2">F-Protein</td>
+                            <td rowspan="2">PSA</td>
+                            <td rowspan="2">Ferritine</td>
+                            <td rowspan="2">Cysticercosis</td>
+                            <td rowspan="2">Brucella</td>
+                            <td rowspan="2">Thyroglobulin</td>
+                            <td rowspan="2">Electrophoresis</td>
+                            <td rowspan="2">Beta-HCG</td>
+                            <td rowspan="2">RK-39</td>
+                            <td rowspan="2">JE</td>
+                            <td colspan="3">Dengue</td>
+                            <td rowspan="2">Rapid MP Test</td>
+                            <td rowspan="2">Mantoux</td>
+                            <td colspan="3">Scrub Typhus</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of ImmunologyTable1">{{o.Quantity}}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------BIOCHEMISTRY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;" rowspan="2">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>BIOCHEMISTRY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td>Sugar-F</td>
+                            <td>Sugar-PP</td>
+                            <td>Sugar-R</td>
+                            <td>Blood Urea</td>
+                            <td>Creatinine</td>
+                            <td>Uric Acid</td>
+                            <td>Protein</td>
+                            <td>Albumin</td>
+                            <td>Micro albumin</td>
+                            <td>Total Choles</td>
+                            <td>HDL</td>
+                            <td>TG</td>
+                            <td>LDL</td>
+                            <td>VLDL</td>
+                            <td>Calcium</td>
+                            <td>Phos-phorous</td>
+                            <td>Amylase</td>
+                            <td>Gamma GT</td>
+                            <td>SGOT</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of BiochemistryTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td>SGPT</td>
+                            <td>Alk Phos</td>
+                            <td>Bili-T</td>
+                            <td>Bili-D</td>
+                            <td>Na+</td>
+                            <td>K+</td>
+                            <td>ADA</td>
+                            <td>Magnesium</td>
+                            <td>24hr Protein</td>
+                            <td>24hr Urine U/A</td>
+                            <td>Creatinine Clearance</td>
+                            <td>Lipid Profile</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of BiochemistryTable1">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------BACTERIOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>BACTERIOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td rowspan="4">Gm Stain </td>
+                            <td colspan="10">Culture</td>
+                            <td rowspan="4">Body Fluid AFB</td>
+                            <td rowspan="4">Sputum AFB</td>
+                            <td rowspan="4">Leprosy Smear</td>
+                            <td rowspan="4">Widal</td>
+                            <td rowspan="4">Fungus</td>
+                            <td rowspan="3" colspan="3">Leptospira</td>
+                            <td rowspan="3" colspan="3">H. Pylori</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td rowspan="3">Blood</td>
+                            <td rowspan="3">Urine C/S</td>
+                            <td rowspan="3">Body Fluid</td>
+                            <td rowspan="3">Swab</td>
+                            <td rowspan="3">Stool</td>
+                            <td rowspan="3">Water</td>
+                            <td rowspan="3">Pus</td>
+                            <td rowspan="3">Sputum</td>
+                            <td rowspan="3">ENT</td>
+                            <td rowspan="3">CSF</td>
+                          </tr>
+                          <tr style="text-align:center"> </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of BacteriologyTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------CYTOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>CYTOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td colspan="3">Smear</td>
+                            <td rowspan="2">FNAC</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>PAP</td>
+                            <td>Sputum</td>
+                            <td>Body Fluid</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of CytologyTable0">{{o.Quantity}}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------VIROLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>VIROLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td colspan="3">HIV</td>
+                            <td rowspan="2">HAV</td>
+                            <td colspan="3">HBsAg</td>
+                            <td colspan="3">HCV</td>
+                            <td rowspan="2">HEV</td>
+                            <td rowspan="2">Western blot</td>
+                            <td rowspan="2">CD4 Count</td>
+                            <td rowspan="2">Viral load</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Reactive</td>
+                            <td>Non-Reactive</td>
+                            <td>Total</td>
+                            <td>Reactive</td>
+                            <td>Non-Reactive</td>
+                            <td>Total</td>
+                            <td>Reactive</td>
+                            <td>Non-Reactive</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of VirologyTable0">{{o.Quantity}}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------IMMUNOHISTO CHEMISTRY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>
+                              IMMUNOHISTO<br />
+                              CHEMISTRY
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td>ER</td>
+                            <td>PR</td>
+                            <td>G-FAP</td>
+                            <td>s-100</td>
+                            <td>Vimentin</td>
+                            <td>Cytokeratin</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of ImmunohistochemistryTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------HISTOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>HISTOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td>Biopsy</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of HistologyTable0">{{o.Quantity}}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------PARASITOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>PARASITOLOGY</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td rowspan="2">Stool R/E</td>
+                            <td colspan="3">Occult blood</td>
+                            <td rowspan="2">Reducing Sugar</td>
+                            <td rowspan="2">Urine R/E</td>
+                            <td rowspan="2">Bile Salts</td>
+                            <td rowspan="2">Bile Pigments</td>
+                            <td rowspan="2">Urobilinogen</td>
+                            <td rowspan="2">Porphobilinogen</td>
+                            <td colspan="3">Acetone</td>
+                            <td rowspan="2">Chyle</td>
+                            <td rowspan="2">Semen Analysis</td>
+                            <td rowspan="2">Bence Jones Prot</td>
+                            <td rowspan="2">Sp. Gravity</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of ParasitologyTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------CARDIAC ENZYMES------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>
+                              CARDIAC<br />
+                              ENZYMES
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td rowspan="2">CPK-MB</td>
+                            <td rowspan="2">CPK-NAC</td>
+                            <td rowspan="2">LDH</td>
+                            <td colspan="3">Trop-I</td>
+                          </tr>
+                          <tr style="text-align:center">
+                            <td>Total</td>
+                            <td>Positive</td>
+                            <td>Negative</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of CardiacenzymesTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!------------HORMONES ENDOCRINOLOGY------------>
+              <tr>
+                <td style="padding-bottom:10px">
+                  <table border="1" class="Selected" style="width:100%">
+                    <tr>
+                      <td style="text-align:center;width:150px;">
+                        <table style="text-align:center;width:150px;">
+                          <tr>
+                            <td>
+                              HORMONES/<br />
+                              ENDOCRINOLOGY
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td>
+                        <table border="1" class="Selected">
+                          <tr style="text-align:center">
+                            <td>T3</td>
+                            <td>T4</td>
+                            <td>TSH</td>
+                            <td>Cortisol</td>
+                            <td>a feto protein</td>
+                            <td>LH</td>
+                            <td>FSH</td>
+                            <td>Pro-lactine</td>
+                            <td>Oestrogen</td>
+                            <td>Progesterone</td>
+                            <td>Testosterone</td>
+                            <td>Anti TPO</td>
+                            <td>Vitamin D</td>
+                            <td>Iron Profile</td>
+                            <td>PSA</td>
+                          </tr>
+                          <tr>
+                            <td style="text-align:center;width:100px;" *ngFor="let o of HormonesendocrinologyTable0">
+                              {{o.Quantity}}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p style="text-align:center;">
+            <button class="btn blue" (click)="Print()"> Print Report <i class="glyphicon glyphicon-print"></i> </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

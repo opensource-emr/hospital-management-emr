@@ -1,0 +1,9 @@
+.bill-action {
+  position: fixed;
+  right: 0%;
+  top: 120px;
+  width: 20%;
+  padding: 10px;
+  background-color: #b1c2d6;
+  border-radius: 10px 0px 0px 10px !important;
+}

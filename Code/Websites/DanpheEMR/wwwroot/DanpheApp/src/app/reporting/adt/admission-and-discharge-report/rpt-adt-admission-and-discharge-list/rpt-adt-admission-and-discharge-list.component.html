@@ -1,0 +1,170 @@
+<div class="wrapper">
+	<div class="row">
+		<div class="form-body">
+			<div class="col-md-12">
+				<div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Total Admission And Discharge List Report</span> </div>
+			</div>
+		</div>
+	</div>
+  <div class="row">
+    <div class="col-md-6">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+    </div>
+    <div class="col-md-6">
+      <div class="col-md-3" style="text-align: right;">
+        Search Patients :
+      </div>
+      <div class="col-md-9">
+        <input danphe-auto-complete class="form-control searchtbx"
+          [(ngModel)]="searchText" 
+          [list-formatter]="PatientListFormatter"
+          [source]="PatientSearchAsync.bind(this)"
+          [path-to-data]="'Results'"
+          placeholder="Search by Patient Number, Patient Name, Hospital No" 
+          display-property-name="PatientName" 
+          value-property-name=null
+          onClick="this.select();"
+          (ngModelChange)="assignPatientData()"
+          max-num-list="500"
+          [min-chars]="3" 
+          match-formatted="true"
+          [no-match-found-text]="'Patient Not found in IPD'"
+          [grid-sort]="'PatientName'" 
+          style="width: 100% !important;" />
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-5"
+        >Requesting Department<b style="float: right;">:</b></label
+      >
+        <div class="col-md-7">
+          <input
+          class="form-control"
+          danphe-auto-complete
+          [(ngModel)]="department"
+          [ngModelOptions]="{standalone: true}"
+          [list-formatter]="DepartmentListFormatter"
+          [source]="DepartmentList"
+          placeholder="Select Department"
+          display-property-name="DepartmentName"
+          value-property-name="null"
+          onclick="this.select()"
+          (focusout)="assignDepartmentId()"
+        />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-5"
+        >Ward Name<b style="float: right;">:</b></label
+      >
+        <div class="col-md-7">
+          <input
+          class="form-control"
+          danphe-auto-complete
+          [(ngModel)]="ward"
+          [ngModelOptions]="{standalone: true}"
+          [list-formatter]="WardListFormatter"
+          [source]="WardList"
+          placeholder="Select Ward"
+          display-property-name="WardName"
+          value-property-name="null"
+          onclick="this.select()"
+          (focusout)="assignWardId()"
+        />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-5"
+        >Bed Feature<b style="float: right;">:</b></label
+      >
+        <div class="col-md-7">
+          <input
+          class="form-control"
+          danphe-auto-complete
+          [(ngModel)]="bedFeature"
+          [ngModelOptions]="{standalone: true}"
+          [list-formatter]="BedFeatureListFormatter"
+          [source]="BedFeatureList"
+          placeholder="Select Bed Feature"
+          display-property-name="BedFeatureName"
+          value-property-name="null"
+          onclick="this.select()"
+          (focusout)="assignBedFeatureId()"
+        />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-5"
+        >Admission Status<b style="float: right;">:</b></label
+      >
+        <div class="col-md-7">
+          <select [(ngModel)]="admissionStatus">
+            <option selected value="All">All</option>
+            <option value="admitted">Admitted</option>
+            <option value="discharged">Discharged</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-6"></div>
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group">
+        <button style="float: right; margin-right: 50px;" class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+      </div>
+    </div>
+  </div>
+  <br>
+	<div class="row" *ngIf="showGrid">
+		<div class="col-lg-12 col-sm-12">
+			<danphe-grid [grid-colDefaults]="TotalAdmittedPatientColumns" 
+      [grid-data]="TotalPatientData"
+      [grid-exportOptions]="gridExportOptions"
+      [grid-showExport]="true" 
+      [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      [report-for]="'admission'"  [grid-date-range]="dateRange"
+      > </danphe-grid>
+		</div>
+	</div>
+  <div *ngIf="showSummary" style="margin-bottom: 25px; width: 100%; float: left;"  id="summaryFooter">
+    <div *ngIf="TotalPatientData.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+            <div style="padding-top:7px;">
+              <h4 style="font-weight:bold;">
+                Summary Report
+              </h4>
+              <div style=" margin: 0px auto">
+                <table class="tbl-summ" border="1" style="width:50%;">
+                  <tr>
+                    <td>Total Admitted Patient Count : </td>
+                    <td style="text-align: right;"> {{summaryFormatted.TotalAdmitted}} </td>
+                  </tr>
+                  <tr>
+                    <td>Total Discharged Patient Count : </td>
+                    <td style="text-align: right;"> {{summaryFormatted.TotalDischarged}} </td>
+                  </tr>
+                  <tr>
+                    <td>Gross Days of Admission : </td>
+                    <td style="text-align: right;"> {{summaryFormatted.TotalDays}} </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

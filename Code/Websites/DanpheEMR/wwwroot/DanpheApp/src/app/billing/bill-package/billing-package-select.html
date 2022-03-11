@@ -1,11 +1,12 @@
 <style>
-.item-holder-tbl {
-	max-height: 350px;
-	overflow-y: auto;
-	margin-bottom: 25px;
-	margin-top: 10px;
-}
-/*
+  .item-holder-tbl {
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 25px;
+    margin-top: 10px;
+  }
+
+  /*
 .modelbox-div {
 	padding-bottom: 25px;
 }
@@ -16,16 +17,18 @@
 <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSelectPage">
   <div class="portlet-body form">
     <div class="row">
-      <div class="col-md-8 col-md-offset-2"> 
+      <div class="col-md-8 col-md-offset-2">
         <!--Model Box Body Start-->
         <div class="modelbox-div clearfix">
           <div class="caption lb-caption">
             <h3> <span><i class="fa fa-folder-open"></i>{{headerName}} Select Package</span> </h3>
             <a class="btn btn-danger btn-round" (click)="Close()" title="Cancel" style="padding: 0 !important;
-    display: block;">X</a> </div>
+    display: block;">X</a>
+          </div>
           <div class="form-body">
             <div>
-              <input type="text" class="form-control" size="35" placeholder="Search By {{headerName}} Package Name" [(ngModel)]="filterBy" (input)="filterData()" />
+              <input type="text" class="form-control" size="35" placeholder="Search By {{headerName}} Package Name"
+                [(ngModel)]="filterBy" (input)="filterData()" />
             </div>
             <div *ngIf="billingPackageList.length">
               <div class="table-responsive item-holder-tbl table-wrapper">
@@ -41,11 +44,14 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let package of billingPackageList;let i = index">
-                      <td><div class="input-group">
+                      <td>
+                        <div class="input-group">
                           <label class="mt-checkbox mt-checkbox-outline" style="font-size: 12px;">
-                            <input name="packages" type="radio" value="{{package.BillingPackageId}}" [(ngModel)]="package.IsSelected" (ngModelChange)="AssignPackage(package)">
+                            <input name="packages" type="radio" value="{{package.BillingPackageId}}"
+                              [(ngModel)]="package.IsSelected" (ngModelChange)="AssignPackage(package)">
                             <span></span> {{package.BillingPackageName}} </label>
-                        </div></td>
+                        </div>
+                      </td>
                       <td> {{package.PackageCode}} </td>
                       <td> {{package.Description}} </td>
                       <td> {{package.TotalPrice}} </td>

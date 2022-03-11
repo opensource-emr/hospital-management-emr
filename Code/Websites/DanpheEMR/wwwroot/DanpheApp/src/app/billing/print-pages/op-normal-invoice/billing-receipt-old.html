@@ -1,0 +1,333 @@
+<style>
+  .invoice-title {
+    position: relative;
+    right: 198px;
+    top: 110px;
+  }
+
+  .main-info {
+    margin-top: 15px;
+  }
+
+  .circularDiv {
+    position: absolute;
+    left: 85%;
+    bottom: 60px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 35px;
+    text-align: center !important;
+    padding-top: 5px;
+  }
+
+  .receipt-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .receipt-print-main .print-detail {
+    width: 100%;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="col-md-12" id="billing-reciept">
+    <div id="printpage" style="text-align:center;">
+      <div class="receipt">
+
+        <table class="bill-itms">
+          <thead *ngIf="!InvoiceDisplaySettings.ShowHeader">
+            <tr>
+              <td colspan="5">
+                <div [ngClass]="'op-billing-header-gap-' + hospitalCode"></div>
+              </td>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+              <td colspan="5">
+                <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+
+                <div class="no-margin circularQueueDiv" *ngIf="receipt.QueueNo && QueueNoSetting.ShowInInvoice">
+                  <Strong *ngIf="receipt.QueueNo<10">0{{receipt.QueueNo}}</Strong> <Strong
+                    *ngIf="receipt.QueueNo>10">{{receipt.QueueNo}}</Strong>
+                </div>
+                <div class="qr-code" style="position: absolute;right: 15px;top: 20px;"
+                  *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.ShowQR">
+                  <qr-code *ngIf="'ShowQRCode' | booleanParameter : 'Billing'" [value]="patientQRCodeInfo" [size]="90"
+                    [backgroundAlpha]="0"></qr-code>
+                </div>
+                <div class="clearfix"></div>
+                <div class="bill-patinfo" style="padding-top: 7px;">
+                  <p style="text-align:center;">
+                    <span>
+                      <span *ngIf="!receipt.IsInsuranceBilling">
+                        <b>
+                          {{Invoice_Label}}
+                        </b>
+                      </span>
+                      <span *ngIf="receipt.IsInsuranceBilling">
+                        <b>
+                          Health Insurance Credit Invoice
+                        </b>
+                      </span>
+                    </span>
+                    <span *ngIf="receipt.PrintCount > 0">
+                      <b>
+                        | COPY({{receipt.PrintCount}}) OF ORIGINAL
+                      </b>
+                    </span>
+                  </p>
+                </div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-12 main-info receipt-print-main" style="padding:0px;">
+                  <div class="left-div print-detail">
+                    <p class="no-margin" style="text-align:left; ">
+                      Invoice No: {{receipt.CurrentFinYear}} - <span>
+                        {{receipt.InvoiceCode}}{{ receipt.InvoiceNo}}
+                      </span>
+                    </p>
+                    <p class="no-margin" style="text-align:left; ">
+                      <strong>Hospital No:</strong> <span> <strong>{{receipt.Patient.PatientCode}}</strong></span> <span
+                        *ngIf="receipt.Patient.DialysisCode">
+                        <strong>
+                          (HD:
+                          {{receipt.Patient.DialysisCode}})
+                        </strong>
+                      </span>
+                    </p>
+                    <p class="no-margin" style="text-align: left;display:block;font-size: 11px;">
+                      <strong>Patient's Name:&nbsp;{{receipt.Patient.ShortName}}</strong>
+                    </p>
+                    <p class="no-margin" style="text-align:left; font-size:11px;"
+                      *ngIf="receipt.Patient.CountryId != 1">
+                      Address: {{receipt.Patient.Address}}, {{receipt.Patient.CountryName}}
+                    </p>
+                    <p class="no-margin" style="text-align:left; font-size:11px;"
+                      *ngIf="receipt.Patient.CountryId == 1">
+                      Address: {{receipt.Patient.Address}}, {{receipt.Patient.CountrySubDivisionName}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="receipt.Patient.PhoneNumber">
+                      Contact
+                      No: {{receipt.Patient.PhoneNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="receipt.IpNumber">
+                      IP Number:
+                      {{receipt.IpNumber}}
+                    </p>
+
+                    <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="receipt.IsInsuranceBilling">
+                      NSHI:
+                      {{receipt.Ins_NshiNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:left;font-size:12px;text-transform: uppercase;"
+                      *ngIf="receipt.LabTypeName">
+                      <b> LAB TYPE: {{receipt.LabTypeName}}</b>
+                    </p>
+
+                  </div>
+
+
+                  <div class="right-div print-detail">
+                    <p class="no-margin" style="text-align:right;">
+                      Transaction Date:
+                      {{receipt.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                    </p>
+                    <p class="no-margin" style="text-align:right; ">
+                      Invoice Date: {{
+                      receipt.BillingDate |
+                      DanpheDateTime:'format':'YYYY-MM-DD'
+                      }}
+                    </p>
+                    <p class="no-margin" style="text-align:right;"> ({{receipt.InvIssueDateLocal}})</p>
+                    <p class="no-margin" style="text-align:right; font-size:11px;">
+                      Age/Sex :
+                      {{finalAge }}/{{receipt.Patient.Gender}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;" *ngIf="receipt.IsInsuranceBilling">
+                      Claim Code:{{receipt.ClaimCode}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;" *ngIf="receipt.Patient.PANNumber">
+                      Purchaser's PAN: {{receipt.Patient.PANNumber}}
+                    </p>
+                    <p class="no-margin" style="text-align:right;font-size:11px;">
+                      <b>Method of payment:</b> <span style="text-transform:uppercase;"> {{receipt.PaymentMode }}
+                      </span>
+                    </p>
+
+                  </div>
+                </div>
+
+                <div class="clear"></div>
+                <div class="col-md-12" style="padding:0px;padding-top: 0px;">
+                </div>
+                <div class="col-md-12" *ngIf="receipt.PackageId && receipt.PackageName"
+                  style="padding:0px;text-align: left;font-weight: bold;">
+                  Billing Package: {{receipt.PackageName}}
+                </div>
+                <div class="clear footer"></div>
+              </td>
+            </tr>
+
+
+            <tr>
+              <td width="30px" class="print-sn"><strong>Sn.</strong></td>
+              <td width="170px" class="print-par"><strong>Particular(s)</strong></td>
+              <td width="20px" class="text-right print-qty"><strong>Unit</strong></td>
+              <td width="60px" class="text-right print-rate"><strong>Price</strong></td>
+              <td width="60px" class="text-right print-amt"><strong>Amount</strong></td>
+            </tr>
+            <tr *ngFor="let row of receipt.BillingItems; let i=index">
+              <td>{{i+1}}</td>
+              <td style="font-size:11px">
+                {{row.ItemName}}<span *ngIf="row.ProviderName!=null && ShowProviderName">-({{row.ProviderName}})</span>
+              </td>
+              <td class="text-right print-qty" style="font-size:11px">{{row.Quantity}}</td>
+              <td class="text-right print-rate" style="font-size:11px" align="right">
+                {{row.Price | number : "1.2-2"}}
+              </td>
+              <td class="text-right print-amt" style="font-size:11px" align="right">
+                {{
+                row.Quantity * row.Price | number
+                : "1.2-2"
+                }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="col-md-12 bill-summ-div">
+          <div class="text-capitalize"
+            style="padding: 10px 0px 0px 5px;text-align:left; width:46%;display:inline-block;vertical-align:top; ">
+            In
+            Words : {{receipt.TotalAmount | NumberInWords | uppercase}} <span
+              *ngIf="receipt.TotalAmount !=0">ONLY</span>
+          </div>
+          <div style="padding: 0px;width:54%;display:inline-block;">
+            <table class="bil-summ" style="width:100%">
+              <tr style="border-top: 0px;">
+                <td style="border-top: none"> SubTotal </td>
+                <td style="text-align:right; border-top: none; border-right: 0px;" align="right">
+                  {{
+                  receipt.SubTotal |
+                  number : "1.2-2"
+                  }}
+                </td>
+              </tr>
+              <tr *ngIf="billingService.BillingFlow=='normal'">
+                <td> Discount </td>
+                <td style="text-align:right;border-right: 0px; border-right: none;" align="right">
+                  {{receipt.DiscountAmount | number : "1.2-2"}}
+                </td>
+              </tr>
+              <tr *ngIf="receipt.TaxableAmount">
+                <td>Net Amount </td>
+                <td style="text-align:right;border-right: 0px;" align="right">{{receipt.TaxableAmount}}</td>
+              </tr>
+              <tr *ngIf="receipt.TaxTotal">
+                <td>{{taxLabel}} </td>
+                <td style="text-align:right;border-right: 0px;" align="right">{{receipt.TaxTotal}}</td>
+              </tr>
+              <tr style="border-bottom: 0px;">
+                <td style="border-bottom: none;">Total Amount </td>
+                <td style="text-align:right; border-bottom: none;border-right: 0px;" align="right">
+                  {{receipt.TotalAmount | number : "1.2-2"}}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12 bill-summ-div" style="text-align:left;padding-left:10px;">
+          <span *ngIf="receipt.DepositUsed > 0">
+            Deposit: [Deducted: {{receipt.DepositUsed}}/Balance:{{receipt.DepositBalance}}]
+          </span>
+          <span *ngIf="receipt.Tender > 0">
+            Tender: {{receipt.Tender | number : "1.2-2"}} <br />
+          </span>
+          <span *ngIf="receipt.Change">
+            Change/Return: {{receipt.Change}}<br />
+          </span>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding:0px !important;">
+
+          <div class="col-md-4" style="padding:0px !important;">
+            <span class="right" style="font-size:11px;" *ngIf="receipt.Remarks"> Remarks : {{receipt.Remarks}}</span>
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-left: 0px; padding-right: 0px;"
+          *ngIf="receipt.OrganizationName != null && receipt.OrganizationName != '' && receipt.OrganizationName != undefined  && 'CreditOrganization' | booleanParameter : 'Billing'">
+          <div class="left" *ngIf="CreditInvoiceDisplaySettings.ShowPatAmtForCrOrganization">
+            Patient Amount: {{CreditInvoiceDisplaySettings.PatAmtValue}}
+          </div>
+          <div class="right"> Credit Organization : {{receipt.OrganizationName}} </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;">
+          <div class="left" style="font-size:11px;"> User: {{receipt.BillingUser}} </div>
+          <div class="right" style="font-size:11px;">
+            Time: {{
+            receipt.BillingDate | DanpheDateTime:'format':'hh:mm
+            A'
+            }}
+          </div>
+        </div>
+        <div class="clear"></div>
+        <div class="col-md-12" style="padding-top: 5px;" *ngIf="InvoiceFooterNoteSettings.ShowFooter">
+          <div style="width: 100%;text-align: center;margin-top: 20px;">
+            <b *ngIf="InvoiceFooterNoteSettings.ShowEnglish"> {{InvoiceFooterNoteSettings.EnglishText}} </b> <br />
+            <b *ngIf="InvoiceFooterNoteSettings.ShowNepali"> {{InvoiceFooterNoteSettings.NepaliText}} </b>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;"
+      *ngIf="Enable_Dotmatrix_Printer">
+      <div class="padding-15-bt padding-15-tp"
+        *ngIf="showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+        <label style="display: block; padding-left: 7px;"><b>Select Bill Printer</b></label>
+        <select class="margin-7-hr" [(ngModel)]="PrinterDisplayName" id="printerStkr">
+          <option *ngFor="let location of billingDotMatrixPrinters" [value]="location.DisplayName">
+            {{location.DisplayName}}
+          </option>
+        </select>
+        <div class="padding-15-tp margin-7-hr">
+          <button class="btn btn-small btn-cancel" (click)="ChangePrinterLocationName()">Select</button>
+        </div>
+      </div>
+      <div class="padding-15-bt padding-15-tp padding-7-hr"
+        *ngIf="!showPrinterChange && billingDotMatrixPrinters && billingDotMatrixPrinters.length > 1">
+        <div><label>Selected Printer: <b>{{PrinterDisplayName}}</b></label></div>
+        <div><a (click)="ShowPrinterLocationChange()">Change Printer</a></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;"
+      *ngIf="showPrintBtn">
+      <button class="btn green btn-success" value="" (click)="print()" id="btnPrintRecipt">
+        <span>Print Receipt</span>&nbsp;&nbsp;
+
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+      <span *ngIf="receipt.AppointmentType">
+        <button style="margin-right: 10px;" class="btn btn-primary"
+          *ngIf="'ShowBackButton' | booleanParameter : 'Appointment'" (click)="BackToAppointment()">
+          <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Go To New Visit
+        </button>
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="printDetaiils" (print-sucess)="callBackBillPrint($event)">
+</app-print-page>
