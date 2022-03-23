@@ -1,7 +1,7 @@
 
 Introduction
 ==============
-Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end.
+Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh). 
 
 Modules in Danphe EMR
 ==============
@@ -50,5 +50,11 @@ Installation
 #### Setting up project
 
 ### End User Setup
+
+Enterprise support.
+==============
+
+Where are we live
+==============
 
 
