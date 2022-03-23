@@ -1,11 +1,11 @@
 
-Opensource-emr
+Introduction
 ==============
-Danphe EMR is a web-based application which is enterprise wide software, which covers all aspects of Hospital management and day-to-day operations of a hospital. Accessibility of all information is role based. Effective management of information plays a significant role in delivery of health care services for health providers
+Danphe EMR is a web-based application which is enterprise wide software, which covers all aspects of Hospital management and day-to-day operations of a hospital. 
 
-### Danphe EMR has near about 40 modules
-`Here we have some names`
-
+Modules in Danphe EMR
+==============
+It has around 40 modules and below are important ones listed.
 
 + Registration/Patient 
 + Appointment 
@@ -26,7 +26,9 @@ Danphe EMR is a web-based application which is enterprise wide software, which c
 
 `and more...`
 
-## Demo
+Demo of Danphe EMR
+==============
+
 Click on below demo link and check out live application
 
 [Danphe EMR Live Application](http://opensource-healthcare.com/ "Click here for Danphe EMR Live!")
@@ -38,7 +40,8 @@ Use below `credentials` for login
    Password  : pass123
 ```   
 
-## Setup & Installation
+Installation
+==============
 
 ### Development Setup
 
