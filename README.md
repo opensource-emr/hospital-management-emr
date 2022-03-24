@@ -1,7 +1,7 @@
 
 Introduction
 ==============
-Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh). Any issues do send mail at shiv_koirala@yahoo.com 
+Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh). 
 
 ![danphelogin](https://user-images.githubusercontent.com/48054642/159859670-05cbe026-f0eb-43cf-811a-0404a36a76f7.jpg) ![danphepatientregistration](https://user-images.githubusercontent.com/48054642/159859505-84b59b71-d271-4e33-b504-1c15ecba3580.jpg)
 
@@ -43,16 +43,43 @@ Use below `credentials` for login
    Password  : pass123
 ```   
 
-Installation
+Need help?
 ==============
 
-### Development Setup
+Please read our document, If you don't find answer in document. Please , do send mail at shiv_koirala@yahoo.com 
 
-#### Prerequisities
 
-#### Setting up project
+Installation & Setup
+======================
+Getting start with **DanpheEMR** Please visit [Page](https://opensource-emr.github.io/hospital-management-emr/ "Click here for more details!") and read it carefully. 
+Here you have 2 types of setup
 
-### End User Setup
+
+#### Development Setup
+
++ This details for `developers` who wants to `clone DanpheEMR`, Use it and `help` us for improvements.
++ We have all details like software and tools `requirements`
++ Step by step guide for `build and run` project
++ Database creation 
+`and more..`
+
+#### End User Setup
+
++ This is `without source code` version
++ Here any person can easily install and use `DanpheEMR` with minimum computer knowledge
++ This is for any individual, Hospital, clinic, pharmacy, anyone. 
++ Please visit document and read all steps and you can use it without developer skills
+
+   [ :point_right: docs](https://opensource-emr.github.io/hospital-management-emr/ "Click here for document!")
+
+Credits
+========
+
+### Sponsors
+All sponsors are here. Thanks all sponsors for your contributions.
+
+[imaark digital](https://www.imarkdigital.com/)
+
 
 Enterprise support.
 ==============
@@ -60,4 +87,8 @@ Enterprise support.
 Where are we live
 ==============
 
+License
+==============
+
+See the [LICENSE](https://github.com/opensource-emr/hospital-management-emr/blob/master/LICENSE) file.
 
