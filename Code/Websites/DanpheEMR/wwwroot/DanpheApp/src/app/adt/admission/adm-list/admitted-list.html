@@ -268,3 +268,59 @@
     </div>
   </div>
 </div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDischargeAdmissionAlert">
+  <div class="portlet-body form">
+    <div class="col-md-5 col-md-offset-4">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr" style="color:#bd8111;font-size:18px"><strong>Alert!</strong></h4>
+        </div>
+        <div *ngIf="!dischargeInvalid" class="modelbox-body">
+          <div>
+            <b style="color:#bd8111;font-size:14px">
+              You're going to discharge a patient without billing, Are your Sure you want to proceed ?
+            </b>
+          </div>
+
+          <div>
+            Discharge Remarks <b style="color:red">*</b>:
+            <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeRemarks"
+              placeholder="Remarks"></textarea>
+          </div>
+        </div>
+        <div *ngIf="dischargeInvalid" class="modelbox-body">
+          <div>
+            <b *ngIf="hasBillAmount && !hasDepositAmount" style="color:red;font-size:14px">
+              This patient has unpaid bills.
+            </b>
+            <b *ngIf="hasDepositAmount && !hasBillAmount" style="color:red;font-size:14px">
+              This patient has Deposit amount.
+            </b>
+            <b *ngIf="hasDepositAmount && hasBillAmount" style="color:red;font-size:14px">
+              This patient has unpaid bills and Deposit amount.
+            </b>
+            <b style="color:red;font-size:14px">
+              Please clear it from billing and then discharge.
+            </b>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button *ngIf="dischargeInvalid" id="btnZeroItemCancel" type="button" class="btn btn-cancel margin-7-hr"
+              (click)="CloseZeroItemBillingPopUp()" [disabled]="loading"> Ok
+            </button>
+            <button *ngIf="!dischargeInvalid" id="btnZeroItemCancel" type="button" class="btn btn-cancel margin-7-hr"
+              (click)="CloseZeroItemBillingPopUp()" [disabled]="loading"> Cancel
+            </button>
+            <button *ngIf="!dischargeInvalid" id="btnZeroItemProceed" type="button" class="btn btn-primary margin-7-hr"
+              (click)="ProceedDischargeWithZeroItems()" [disabled]="loading"> Proceed </button>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseZeroItemBillingPopUp()">X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

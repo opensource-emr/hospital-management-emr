@@ -142,6 +142,13 @@ getBedFeature(res){
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
       this.TotalPatientData = res.Results;
+
+      for(var i =0; i< this.TotalPatientData.length; i++){
+        if(this.TotalPatientData[i].Diagnosis && this.TotalPatientData[i].Diagnosis.trim().length > 0){
+          this.TotalPatientData[i].DiagnosisList= JSON.parse(this.TotalPatientData[i].Diagnosis);
+          this.TotalPatientData[i].Diagnosis = this.TotalPatientData[i].DiagnosisList.map(e => e.ICD10Description).join(",");
+        }
+      }
       this.showGrid = true;
       this.getSummary(this.TotalPatientData);
       if(this.TotalPatientData.length>0){

@@ -1,0 +1,566 @@
+<style>
+  b {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  p {
+    font-weight: 500;
+    font-size: medium
+  }
+
+  label {
+    padding: 2px 5px;
+    margin-right: 5px;
+    background: #C0C0C0;
+    color: #fff;
+  }
+
+  .left-panel .panel-heading {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .left-panel .patient-hdr-label:nth-of-type(odd) {
+    padding: 10px 0;
+  }
+
+  body[onload="window.print()"] .left-panel .patient-hdr-label b,
+  body[onload="window.print()"] .p-relative b:before {
+    display: none !important;
+    color: #fff !important;
+    width: 0px !important;
+  }
+
+  .p-relative b:before {
+    display: none !important;
+    color: #fff !important;
+    width: 0px !important;
+  }
+
+  @media print {
+    .patient-hdr-label {
+      display: none !important;
+      color: #fff !important;
+      width: 1px !important;
+    }
+
+    .left-panel .panel-heading {
+      margin-top: 0;
+    }
+
+    .left-panel .patient-hdr-label {
+      font-weight: 600;
+      display: inline-block;
+      width: 33.33%;
+    }
+
+    /* ul.adviceSubList li .sub-main-cls .p-relative b:before {
+        display: none !important;
+      
+      } */
+    .left-panel .patient-hdr-label b:before {
+      content: '' !important;
+      display: none !important;
+      position: relative !important;
+      color: #fff !important;
+    }
+  }
+  #printpage #vitalTable table tr td{
+    border: none !important;
+  }
+  .table tbody tr td{
+    padding: 1px !important;
+  }
+</style>
+<div class="row" *ngIf="!patientVisitNote" style="margin:20px !important;">loading .......</div>
+
+<div >
+  <div>
+    <a (click)="printTemplate()" class="btn btn-primary "> Print <i class="glyphicon glyphicon-print"></i>
+    </a>
+    <i class="btn btn-primary " (click)="Close()" >Back</i>
+  </div>
+</div>
+
+
+<div id="printpage">
+  <div *ngIf="patientVisitNote">
+    <div class="">
+        
+          <div class="row" style="margin-bottom: 10px; margin-left: 10px;">
+            <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive"
+                style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+            <div style="width: 64%;float: left;padding-bottom:  0px;">
+              <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                  headerDetail.tel}}</span><br />
+                <span style="font-size:15px;"><strong> OPD Visit Summary </strong></span><br />
+              </div>
+            </div>
+            <div style="float: left;">
+              <div class="qr-code" style="margin-left:20px; top:35px;">
+                <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+              </div>
+            </div>
+            <!-- Billing Header  -->
+            <div style="clear:left"></div>
+          </div>
+          <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+          <div class="dsv-div">
+            <div class="left-panel view">
+              <div >
+                <h1 class="panel-heading">
+                  <i class="fa fa-user"></i>{{patientVisitNote?.patVisitNote?.PatientName}}
+                  ({{patientVisitNote?.patVisitNote?.PatientCode}})
+
+                </h1>
+              </div>
+              <div style="border-style: groove;border: 1px solid #c8c9c8;padding: 0px 5px;">
+                <p class="patient-hdr-label"><strong>Patient Name:</strong>:
+                  {{patientVisitNote?.patVisitNote?.PatientName}}</p>
+                <p class="patient-hdr-label"><strong>Hospital No.:</strong>:
+                  {{patientVisitNote?.patVisitNote?.PatientCode}}</p>
+                <p class="patient-hdr-label"><b>Visit Code:</b>: {{patVisitCode}}</p>
+                <p class="patient-hdr-label"><b>Age/ Sex:</b>:
+                  {{patientVisitNote?.patVisitNote?.Age}}/{{patientVisitNote?.patVisitNote?.Sex}}
+                </p>
+                <p class="patient-hdr-label"><b>Primary Doctor:</b>: {{patientVisitNote?.patVisitNote?.PrimaryDoctor}}
+                </p>
+                <p class="patient-hdr-label"><b>Written By</b>: {{patientVisitNote?.patVisitNote?.WrittenBy}}</p>
+                <p class="patient-hdr-label"><b>Date</b>: {{patientVisitNote?.patVisitNote?.PatientVisitNote?.CreatedOn
+                  | date:'yyyy-MM-dd'}}</p>
+                  <p class="patient-hdr-label"><b>Department</b>: {{patientVisitNote?.patVisitNote?.DepartmentName }}</p>
+                  
+
+              </div>
+            </div>
+          </div>
+
+          <div class="right-panel">
+            <!-- subjective notes start -->
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.ChiefComplaint">
+              <div class="p-relative">
+                <b>Chief Complaints</b>
+                <span
+                  class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.ChiefComplaint}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls"
+              *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.HistoryOfPresentingIllness">
+              <div class="p-relative">
+                <b>History of Presenting Illness</b>
+                <span
+                  class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.HistoryOfPresentingIllness}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.ReviewOfSystems">
+              <div class="p-relative">
+                <b>Review of Systems</b>
+                <span
+                  class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.ReviewOfSystems}}</span>
+              </div>
+            </div>
+            <!-- subjective notes end -->
+
+            <!-- objective notes start -->
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.HEENT">
+              <div class="p-relative">
+                <b>HEENT</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.HEENT}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Chest">
+              <div class="p-relative">
+                <b>Chest</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.Chest}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.CVS">
+              <div class="p-relative">
+                <b>CVS</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.CVS}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Abdomen">
+              <div class="p-relative">
+                <b>Abdomen</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.Abdomen}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Extremity">
+              <div class="p-relative">
+                <b>Extremity</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.Extremity}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Skin">
+              <div class="p-relative">
+                <b>Skin</b>
+                <span class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.Skin}}</span>
+              </div>
+            </div>
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Neurological">
+              <div class="p-relative">
+                <b>Neurological</b>
+                <span
+                  class="value content-data">{{patientVisitNote?.patVisitNote?.PatientVisitNote?.Neurological}}</span>
+              </div>
+            </div>
+            <!-- objective notes end -->
+
+            <!-- diagnosis start -->
+            <div class="sub-main-cls" *ngIf="(patientVisitNote?.patVisitNote?.PatientVisitNote?.Diagnosis.length>0)">
+              <div class="p-relative">
+                <b>Diagnosis</b>
+                <span class="value content-data">
+                  <ul>
+                    <li *ngFor="let diagnosis of patientVisitNote.diagnosisList; let i=  index;">
+                      &nbsp; {{diagnosis?.ICD10Description}} &nbsp; <br>
+                    </li>
+                  </ul>
+                </span>
+              </div>
+            </div>
+            <!-- diagnosis end -->
+            <!-- procedure note start -->
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote">
+              <div class="p-relative">
+                <b>Line & Invasive Procedure Note</b>
+                <span class="value content-data">
+                  <ul>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.ProsDate">
+                      ProsDate : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.ProsDate }} &nbsp; <br>
+                    </li>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.LinesProse">
+                      Lines/Prose : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.LinesProse }} &nbsp; <br>
+                    </li>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Site">
+                      Site : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.Site }} &nbsp; <br>
+                    </li>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.ProsRemarks">
+                      Remark : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.ProsRemarks }} &nbsp; <br>
+                    </li>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.FreeText">
+                      Other: &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.FreeText }} &nbsp; <br>
+                    </li>
+                  </ul>
+                </span>
+              </div>
+            </div>
+            <!-- procedure note end-->
+            <!-- instructions start -->
+            <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote.FollowUpUnit">
+              <div class="p-relative">
+                <b>Instructions</b>
+                <span class="value content-data">
+                  <ul>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.FollowUp">
+                      Followup : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.FollowUp}} &nbsp;
+                      {{patientVisitNote?.patVisitNote?.PatientVisitNote?.FollowUpUnit }}<br>
+                    </li>
+                    <li *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote?.Remarks">
+                      Remarks : &nbsp; {{patientVisitNote?.patVisitNote?.PatientVisitNote?.Remarks }} &nbsp; <br>
+                    </li>
+                  </ul>
+                </span>
+              </div>
+            </div>
+            <!-- instruction end  -->
+            
+            
+        </div>
+      <!-- vitals list start  -->
+        <div class="row" id="vitalTable" *ngIf="(patientVisitNote?.vitalsList.length>0)">
+          <div class="col-md-12">
+            <div class="form-body">
+              <div class="col-md-12 col-xs-12" style="padding-left: 0px;">
+                  <div class="portlet cstm-portlet portlet-with-collapse">
+                    <div class="portlet-title cstm-pt-title">
+                      <div class="cstm-portlet-caption">
+                        Vitals List
+                      </div>
+                    </div>
+                    <div class="cstm-portlet-body">
+                      <div class="table-responsive">
+                        <table class="table">
+                          <tbody>
+                            <tr>
+                              <td>Recorded On</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                <strong>
+                                  : <date-lbl [value]="vitals.CreatedOn" [show-time]="true"></date-lbl>
+                                </strong>
+                              </td>
+                              <td>Taken On</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                <strong>
+                                  : <date-lbl [value]="vitals.VitalsTakenOn" [show-time]="true"></date-lbl>
+                                </strong>
+                              </td>
+                              <td>Height</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i=index;">
+                                <div *ngIf="vitals.HeightUnit!='inch'">
+                                  : {{vitals.Height |HasValue: vitals.HeightUnit}}
+                                </div>
+                                <div *ngIf="vitals.HeightUnit=='inch'">
+                                  : {{vitals.Height}}
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Weight</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i = index;">
+                                : {{vitals.Weight | HasValue: vitals.WeightUnit}}
+                              </td>
+                              <td>BMI</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.BMI}}
+                              </td>
+                              <td>Temperature</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i=index;">
+                                : {{vitals.Temperature | HasValue: vitals.TemperatureUnit}}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Pulse</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Pulse | HasValue:'/min'}}
+                              </td>
+                              <td>Blood Pressure</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}
+                              </td>
+                              <td>Respiratory Rate</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.RespiratoryRatePerMin | HasValue:'/min'}}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>SpO2</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.SpO2 | HasValue:'percent'}}
+                              </td>
+                              <td>O<sub>2</sub> Deliver Method</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.OxygenDeliveryMethod}}
+                              </td>
+                              <td>Body Pain Data</td>
+                              <td *ngFor="let painList of patientVisitNote.bodyPainList">
+                                : {{painList.BodyPart}}-{{painList.PainScale}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>Nadi</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Nadi}}
+                              </td>
+                              <td>Mala</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Mala}}
+                              </td>
+                              <td>Mutra</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Mutra}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>Jivha</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Jivha}}
+                              </td>
+                              <td>Shabda</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Shabda}}
+                              </td>
+                              <td>Sparsha</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Sparsha}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>Drik</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Drik}}
+                              </td>
+                              <td>Akriti</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Akriti}}
+                              </td>
+                              <td>Lung field</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.LungField}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>Heart Sound</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.HeartSounds}}
+                              </td>
+                              <td>PA_Tenderness</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.PA_Tenderness}}
+                              </td>
+                              <td>Organomegaly</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Organomegaly}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>CNS_Consiousness</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.CNS_Consiousness}}
+                              </td>
+                              <td>Power</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Power}}
+                              </td>
+                              <td>Reflexes</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Reflexes}}
+                              </td>
+                            </tr>
+                            <tr *ngIf="showAyurvedVitals">
+                              <td>Tone</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Tone}}
+                              </td>
+                              <td>Others</td>
+                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                                : {{vitals.Others}}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+       <!-- vitals list end  -->            
+
+        <!-- medication list start -->
+        <div class="row" *ngIf="(patientVisitNote?.homeMedicationList.length>0)">
+          <div class="col-md-12">
+            <div class="form-body">
+              <div class="col-md-12 col-xs-12" style="padding-left: 0px;">
+                  <div class="portlet cstm-portlet portlet-with-collapse">
+                      <div class="portlet-title cstm-pt-title">
+                          <div class="cstm-portlet-caption">
+                              Medication List
+                          </div>
+                        
+                      </div>
+  
+                      <div class="cstm-portlet-body">
+                          <div class="table-responsive">
+                              <table class="table doc-tbl flip-content" style="margin-bottom: 0px;">
+                                  <thead class="flip-content">
+                                      <tr>
+                                          <th>Medication Name</th>
+                                          <th>Type</th>
+                                          <th>Dose</th>
+                                          <th>Route</th>
+                                          <th>Last Taken</th>
+                                          <th>Frequency</th>
+                                          <th>Anupana</th>
+                                          
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr *ngFor="let add of patientVisitNote.homeMedicationList; let i=index">
+                                          <td>{{add.MedicationName}}</td>
+                                          <td>{{add.MedicationType | uppercase}}</td>
+                                          <td>{{add.Dose}}</td>
+                                          <td>{{add.Route}}</td>
+                                          <td>{{add.LastTaken  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                          <td>{{add.Frequency}}</td>
+                                          <td>{{add.Comments}}</td>
+                                          
+                                      </tr>
+  
+                                  </tbody>
+                              </table>
+                          </div>
+  
+                      </div>
+  
+                  </div>
+  
+  
+              </div>
+  
+             
+          </div>
+      </div>
+      </div>
+      <!-- medication list end -->
+
+      <div class="row" *ngIf="(patientVisitNote?.labRequisitionList.length>0 ||  patientVisitNote?.imagingRequisitionList.length>0 || patientVisitNote?.otherOrderList.length>0 )">
+        <div class="col-md-12">
+          <div class="">
+            <div class="portlet">
+              <div class="portlet-title cstm-pt-title">
+                <div class="cstm-portlet-caption caption lb-caption no-padding"><h3><span><i class="fa fa-lightbulb-o"></i> Orders</span></h3></div>
+              </div>
+              <div class="cstm-portlet-body" style="margin-top: 10px;">
+                <div *ngIf="patientVisitNote != null" style="max-height: 400px;overflow-y: auto;">
+                  <table class="table table-responsive doc-tbl">
+                    <tr>
+                      <th>
+                        Type
+                      </th>
+                      <th>
+                        Name
+                      </th>
+                      <th>
+                        Status
+                      </th>
+                    </tr>
+                    <tr *ngFor="let res of patientVisitNote.labRequisitionList">
+                      <td>
+                        LAB
+                      </td>
+                      <td>{{res.LabTestName}}  on <span>{{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</span></td>
+                      <td>
+                        <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="res.OrderStatus=='final'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                        <span *ngIf="res.OrderStatus!='final'">{{res.OrderStatus}}</span>
+                      </td>
+                    </tr>
+                   
+                    <tr *ngFor="let req of patientVisitNote.imagingRequisitionList">
+                      <td>{{req.ImagingTypeName}}</td>
+                      <td>{{req.ImagingItemName}} &nbsp;&nbsp;{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                      <td>
+                        {{req.OrderStatus}}
+                      </td>
+    
+                    </tr>
+                    <tr *ngFor="let otherOdr of patientVisitNote.otherOrderList">
+                      <td>Others</td>
+                      <td>{{otherOdr.ItemName}} &nbsp;&nbsp;{{otherOdr.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                      <td>
+                        {{otherOdr.BillStatus}}
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          
+        </div>
+        </div>
+       
+          </div>
+          <!-- order end here -->
+
+
+
+
+    </div>
+
+  

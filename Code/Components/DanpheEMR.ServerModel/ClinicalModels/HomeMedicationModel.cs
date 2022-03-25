@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int HomeMedicationId { get; set; }
         public int PatientId { get; set; }
+        public int? PatientVisitId { get; set; }
         public int? MedicationId { get; set; }
         [NotMapped]
         public string MedicationName { get; set; }

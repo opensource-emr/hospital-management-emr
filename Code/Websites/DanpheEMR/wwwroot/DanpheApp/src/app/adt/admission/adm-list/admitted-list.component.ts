@@ -27,7 +27,7 @@ import { CommonValidators } from '../../../shared/common-validator';
 import { ENUM_ValidatorTypes } from '../../../shared/shared-enums';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
 import { DanpheHTTPResponse } from '../../../shared/common-models';
-
+import { DLService } from '../../../shared/dl.service';
 
 
 @Component({
@@ -72,7 +72,14 @@ export class AdmittedListComponent {
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   public showIsInsurancePatient: boolean = false;
   public allItemList = [];
-  public filteredItemList = []
+  public filteredItemList = [];
+  public admissionInfo: any = null;
+  public showDischargeAdmissionAlert: boolean = false;
+  public dischargeRemarks:any;
+  public DepositBalance:any;
+  public dischargeInvalid:boolean = false;
+  public hasDepositAmount:boolean = false;
+  public hasBillAmount:boolean = false; 
 
   constructor(
     public router: Router,
@@ -85,7 +92,8 @@ export class AdmittedListComponent {
     public msgBoxServ: MessageboxService,
     public callbackservice: CallbackService,
     public npCalendarService: NepaliCalendarService,
-    public coreService: CoreService) {
+    public coreService: CoreService,
+    public dlService: DLService) {
     //checking if counter is selected or not, as we need counterID while transfering patient
     if (this.securityService.getLoggedInCounter().CounterId < 1) {
       this.callbackservice.CallbackRoute = '/ADTMain/AdmittedList'
@@ -145,7 +153,10 @@ export class AdmittedListComponent {
         this.mapAdmission();
         CommonValidators.ComposeValidators(this.admission.AdmissionValidator, "DischargeRemarks", [ENUM_ValidatorTypes.required, ENUM_ValidatorTypes.maxLength100]);
         //this.admission.UpdateDischargeValidator(true);
-        this.CheckPatientCreditBill();
+        //this.CheckPatientCreditBill();
+        if (this.securityService.HasPermission('discharge-admission-button')){
+        this.LoadPatientBillingSummary(this.selectedAdmission.PatientId,this.selectedAdmission.PatientVisitId);
+        }
         break;
 
       }
@@ -439,5 +450,88 @@ export class AdmittedListComponent {
         this.allDepartments = res.Results;
 
       });
+  }
+
+  LoadPatientBillingSummary(patientId: number, patientVisitId: number) {
+    this.dlService.Read("/api/IpBilling?reqType=pat-pending-items&patientId=" + patientId + "&ipVisitId=" + patientVisitId)
+      .map(res => res)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK" && res.Results) {
+          this.showDischargeAdmissionAlert = true;
+          this.admissionInfo = res.Results.AdmissionInfo;
+          var PendingBillItems = res.Results.PendingBillItems;
+          //console.log(this.admissionInfo)
+          this.admissionInfo.AdmittedOn = this.admissionInfo.AdmittedOn;
+          this.admissionInfo.DischargedOn = moment(this.admissionInfo.DischargedOn).format('YYYY-MM-DDTHH:mm:ss');
+
+          this.DepositBalance = ((this.admissionInfo.DepositAdded || 0) - (this.admissionInfo.DepositReturned || 0));
+          if(this.DepositBalance == 0 && PendingBillItems.length == 0){
+            this.dischargeInvalid = false;
+          }
+          else{
+            this.dischargeInvalid = true;
+            if(this.DepositBalance != 0){
+              this.hasDepositAmount = true;
+            }
+            if(PendingBillItems.length != 0){
+              this.hasBillAmount = true;
+            }
+          }
+           this.coreService.loading = false;
+        }
+        else {
+          this.msgBoxServ.showMessage("failed", [" Unable to get bill summary."]);
+          console.log(res.ErrorMessage);
+          this.coreService.loading = false;
+        }
+      });
+  }
+
+  CloseZeroItemBillingPopUp() {
+    this.showDischargeAdmissionAlert = false;
+    this.dischargeInvalid = false;
+    this.hasDepositAmount = false;
+    this.hasBillAmount = false;
+    this.dischargeRemarks = null;
+  }
+
+  ProceedDischargeWithZeroItems() {
+    let currDate = moment().format('YYYY-MM-DD');
+    let disDate = moment(this.selectedAdmission.DischargeDate).format('YYYY-MM-DD');
+    if ((moment(currDate) < moment(disDate))) {
+      this.msgBoxServ.showMessage("notice", ["Invalid can't enter future date"]);
+      return;
+    }
+
+    if (disDate && this.dischargeRemarks) {
+      //this.loading = true;
+      let data = {
+        "PatientVisitId": this.admissionInfo.VisitId,
+        "PatientId": this.admissionInfo.PatientId,
+        "DischargeDate": this.admissionInfo.DischargedOn,
+        "CounterId": this.securityService.getLoggedInCounter().CounterId,
+        "DepositBalance": this.DepositBalance,
+        "DischargeRemarks": this.dischargeRemarks,
+        "DiscountSchemeId": this.admissionInfo.MembershipTypeId,
+        "DischargeFrom": "billing"
+      };
+      this.billingBLService.DischargePatientWithZeroItem(data)
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status == "OK") {
+            this.showDischargeAdmissionAlert = false;
+            this.dischargeInvalid = false;
+            this.hasDepositAmount = false;
+            this.hasBillAmount = false;
+            
+            this.msgBoxServ.showMessage("success", ["Patient discharge successfully."]);
+          }
+          else {
+            this.msgBoxServ.showMessage("failed", ["Patient discharge failed."]);
+            console.log(res.ErrorMessage);
+          }
+        });
+    } else {
+      this.msgBoxServ.showMessage("failed", ["Discharge Remarks is mandatory."]);
+    }
   }
 }

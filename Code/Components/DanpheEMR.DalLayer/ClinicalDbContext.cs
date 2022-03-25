@@ -89,6 +89,7 @@ namespace DanpheEMR.DalLayer
 
         public DbSet<PatientClinicalInfo> PatientClinicalInfos { get; set; }
         public DbSet<PrescriptionNotesModel> ClinicalPrescriptionNote { get; set; }
+        public DbSet<PatientVisitNote> PatientVisitNotes { get; set; }
 
 
 
@@ -175,6 +176,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<ICD10CodeModel>().ToTable("MST_ICD10");
             modelBuilder.Entity<PatientClinicalInfo>().ToTable("CLN_KV_PatientClinical_Info");
             modelBuilder.Entity<PrescriptionNotesModel>().ToTable("CLN_Notes_PrescriptionNote");
+            modelBuilder.Entity<PatientVisitNote>().ToTable("CLN_PatientVisit_Notes");
 
 
             modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");

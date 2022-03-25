@@ -55,7 +55,7 @@
                            [clinical-detail]="clinicalDetail" (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
         </div>
         <div class="col-md-12">
-           <div class="col-md-6">
+           <div class="col-md-6" style=" display: inline-block;  background: #fff;padding: 15px;">
               <div class="row form-group">
                   <div class="col-md-4">Clinical Notes</div>
                   <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.PrescriptionNoteText" class="form-control" /></div>
@@ -94,7 +94,7 @@
                   </div>
                 </div>
            </div>
-            <div class="col-md-6">
+            <div class="col-md-6"  style=" display: inline-block;  background: #fff;padding: 15px;">
                 <div class="each-card">
                     <div class="col-md-12 form-group">
                       <h3>Lab and Orders</h3>
@@ -204,27 +204,15 @@
             </div>
         </div>
         <!-- Objective Notes fields-->
+        <div class="col-md-12">
         <div class="tab-pane" id="objective">
           <objective-note [objective-note]="notes.ObjectiveNote"
                           [clinical-detail]="clinicalDetail" (callback-objectivenote)="CallBackObjective($event)"></objective-note>
         </div>
-     
+        </div>
         
-        <!-- Assessment-Plan -->
-        <!-- <div class="col-md-12" id="assessment">
-          <assessment-plan [editMode]="APeditMode"
-                           [assessments]="assessment"
-                           (callback-assessmentandplan)="CallBackAssesmentAndPlan($event)">
-      
-          </assessment-plan>
-        
-        </div> -->
-        <div class="col-md-12" >
-          <freetext [patDetail]="patVisit"
-                    [editFreeText]="notes.FreeTextNote"
-                    (callback-freetextnotes)="CallBackFreeTexts($event)"> </freetext>
-      </div>
-        <div class="col-md-12">
+       
+      <div class="col-md-12">
         <procedure-notes [editProcedureNote]="notes.ProcedureNote"
         [patDetail]="patVisit"
         (callback-procedurenotes)="CallBackProcedureNotes($event)">
@@ -304,6 +292,7 @@
             </div> -->
           </div>
         </div>
+
         <div *ngIf="showView" class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px">
             <div class="portlet-body" style="background-color: white">
               <div class="col-md-12">

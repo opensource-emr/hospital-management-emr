@@ -182,6 +182,7 @@
     <Compile Include="ClinicalModels\ObjectiveNoteModel.cs" />
     <Compile Include="ClinicalModels\PatientClinicalInfoModel.cs" />
     <Compile Include="ClinicalModels\PatientImages.cs" />
+    <Compile Include="ClinicalModels\PatientVisitNote.cs" />
     <Compile Include="ClinicalModels\PrescriptionNotesModel.cs" />
     <Compile Include="ClinicalModels\PrescriptionSlip\AcceptanceModel.cs" />
     <Compile Include="ClinicalModels\PrescriptionSlip\AdviceDiagnosisModel.cs" />

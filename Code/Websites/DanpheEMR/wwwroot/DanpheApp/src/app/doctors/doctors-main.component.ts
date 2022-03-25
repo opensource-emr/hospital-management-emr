@@ -4,6 +4,7 @@ import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { SecurityService } from "../security/shared/security.service"
 import { CoreService } from '../core/shared/core.service';
 import { MessageboxService } from '../shared/messagebox/messagebox.service';
+import { DanpheCache, MasterType } from '../shared/danphe-cache-service-utility/cache-services';
 //import { SessionStorageService } from 'ngx-webstorage';
 @Component({
     templateUrl: "./doctors-main.html" // "/DoctorsView/DashboardMain"
@@ -18,6 +19,7 @@ export class DoctorsMainComponent {
     public coreService: CoreService,
     //private sessionSt: SessionStorageService,
     public msgBoxServ: MessageboxService) {
+      DanpheCache.GetData(MasterType.ICD, null);
         //get the chld routes of doctors/PatientOverviewMain from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Doctors");
     this.GetMessageOfTheDay();

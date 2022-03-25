@@ -197,6 +197,87 @@ namespace DanpheEMR.Controllers.Clinical
                     responseData.Results = referralSourceList;
                     responseData.Status = "OK";
                 }
+                else if (reqType == "patient-visit-note" && patientVisitId != 0 && patientId != 0)
+                {
+                    PatientVisitNote patVisitNote = dbContext.PatientVisitNotes
+                                                .Where(p => p.PatientId == patientId && p.PatientVisitId == patientVisitId).FirstOrDefault();
+                    responseData.Status = (patVisitNote != null && patVisitNote.PatientVisitNoteId > 0) ? "OK" : "Failed";
+                    responseData.Results = (responseData.Status == "OK") ? patVisitNote : new PatientVisitNote();
+                    responseData.ErrorMessage = (responseData.Status == "OK") ? null : "Don't have visit note";
+                }
+                else if (reqType == "patient-visit-note-all-data" && patientVisitId != 0 && patientId != 0)
+                {
+                    var patVisitNote = (from visitNote in dbContext.PatientVisitNotes 
+                                        join pat in dbContext.Patients on visitNote.PatientId equals pat.PatientId
+                                        join emp in dbContext.Employee on visitNote.CreatedBy equals emp.EmployeeId
+                                        join primaryDoc in dbContext.Employee on visitNote.ProviderId equals primaryDoc.EmployeeId
+                                        join visit in dbContext.Visit on visitNote.PatientVisitId equals visit.PatientVisitId 
+                                        join dept in dbContext.Departments on visit.DepartmentId equals dept.DepartmentId into depts
+                                        from dept in depts.DefaultIfEmpty()
+                                        where visitNote.PatientId== patientId && visitNote.PatientVisitId == patientVisitId
+                                        select new
+                                        {
+                                            PatientVisitNote=visitNote,
+                                            PatientName = pat.FirstName + " " + (String.IsNullOrEmpty(pat.MiddleName) ? " " : pat.MiddleName) + " " + pat.LastName,
+                                            PrimaryDoctor=primaryDoc.FullName,
+                                            Age=pat.Age,
+                                            Sex=pat.Gender,
+                                            WrittenBy=emp.FullName,
+                                            PatientCode=pat.PatientCode,
+                                            DepartmentName=dept.DepartmentName
+                                        }).FirstOrDefault();
+                    if (patVisitNote != null)
+                    {
+                        //vitals
+                        var vitals = dbContext.Vitals
+                                                   .Where(p => p.PatientVisitId == patientVisitId).OrderByDescending(d => d.VitalsTakenOn).FirstOrDefault();
+                        List<VitalsModel> vitalsList = new List<VitalsModel>();
+                        vitalsList.Add(vitals);
+                        //lab requisitions
+                        List<LabRequisitionModel> labRequisitionList = dbContext.LabRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned" && a.BillingStatus != "cancel").ToList();
+                        //imaging requisition
+                        List<ImagingRequisitionModel> imagingRequisitionList = dbContext.ImagingRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned" && a.BillingStatus != "cancel").ToList();
+
+                        BillingDbContext billingDbContext = new BillingDbContext(base.connString);
+                        var otherOrderList = (from billItemRequisition in dbContext.BillItemRequisitions
+                                              where (billItemRequisition.PatientId == patientId
+                                              && billItemRequisition.PatientVisitId == patientVisitId
+                                              && (billItemRequisition.DepartmentName.ToLower() != "lab" && billItemRequisition.DepartmentName.ToLower() != "radiology"))
+                                              select billItemRequisition
+                                        ).ToList();
+                        //homemedication
+                        List<HomeMedicationModel> homeMedicationList = dbContext.HomeMedications
+                                                   .Where(p => p.PatientId == patientId && p.PatientVisitId == patientVisitId).ToList();
+                        //assigning the MedicaitonName
+                        PharmacyDbContext phrmDbContext = new PharmacyDbContext(connString);
+                        List<PHRMItemMasterModel> medicationList = phrmDbContext.PHRMItemMaster.ToList();
+
+                        foreach (var homeMed in homeMedicationList)
+                        {
+                            if (homeMed.MedicationId != 0)
+                            {
+                                homeMed.MedicationName = medicationList
+                                                          .Where(a => a.ItemId == homeMed.MedicationId).FirstOrDefault().ItemName;
+                            }
+                        }
+                        responseData.Status = "OK";
+                        responseData.Results = new
+                        {
+                           patVisitNote,
+                           vitalsList,
+                           labRequisitionList,
+                           imagingRequisitionList,
+                           otherOrderList,
+                           homeMedicationList
+                            
+                        };
+                    }
+                    else {
+                        responseData.Status = "Failed";
+                        responseData.ErrorMessage = "Don't have visit note";
+                    }
+                   
+                }
                 else if (reqType == "notes" && patientVisitId != 0 && patientId != 0)
                 {
 
@@ -907,7 +988,7 @@ namespace DanpheEMR.Controllers.Clinical
                                     select new
                                  {
                                         PatientCode = pat.PatientCode,
-                                        PatientName = pat.FirstName + "" +pat.MiddleName + "" +pat.LastName,
+                                        PatientName = pat.FirstName + "" +pat.MiddleName + "" + pat.LastName,
                                         AgeGender = pat.Age + "" + pat.Gender ,
                                         //Specialization = patVisit.DepartmentName,
                                         DoctorName = patVisit.ProviderName,
@@ -931,80 +1012,80 @@ namespace DanpheEMR.Controllers.Clinical
                                         PainScale = vital.PainScale,
                                         FollowUp = notes.FollowUp,
                                         Remarks = notes.Remarks,
-                                        MedicationPrescriptions = (from pres in dbContext.PHRMPrescriptionItems 
-                                                                   join item in dbContext.PHRMItemMaster on pres.ItemId equals item.ItemId 
+                                        MedicationPrescriptions = (from pres in dbContext.PHRMPrescriptionItems
+                                                                   join item in dbContext.PHRMItemMaster on pres.ItemId equals item.ItemId
                                                                    where pres.PatientId == pat.PatientId
-                                                                   select new { pres , item.ItemName}
+                                                                   select new { pres, item.ItemName }
                                                                    ).ToList()
                                     }).FirstOrDefault();
                     responseData.Results = subnotes;
                     responseData.Status = "OK";
                 }
-                else if (reqType== "getAllOrdersByNoteId")
+                else if (reqType == "getAllOrdersByNoteId")
                 {
-                    var allICDandOrders = ( from note in dbContext.Notes
-                                            where note.NotesId == NotesId
-                                            select new
-                                            {
-                                                note.NotesId,
-                                                note.PatientId,
-                                                note.PatientVisitId,
-                                                DiagnosisOrdersList = (from allDiagnosis in dbContext.ClinicalDiagnosis
-                                                                       where allDiagnosis.NotesId == NotesId && allDiagnosis.IsActive == true
-                                                                       select new
-                                                                       {
-                                                                           allDiagnosis.DiagnosisId,
-                                                                           IsEditable = true,
-                                                                           ICD = (from icd in dbContext.ICD10
-                                                                                  where icd.ICD10ID == allDiagnosis.ICD10ID
-                                                                                  select new
-                                                                                  {
-                                                                                      icd.ICD10Code,
-                                                                                      icd.ICD10Description,
-                                                                                      icd.ICD10ID,
-                                                                                      icd.ICDShortCode,
-                                                                                      icd.ValidForCoding
-                                                                                    }),
+                    var allICDandOrders = (from note in dbContext.Notes
+                                           where note.NotesId == NotesId
+                                           select new
+                                           {
+                                               note.NotesId,
+                                               note.PatientId,
+                                               note.PatientVisitId,
+                                               DiagnosisOrdersList = (from allDiagnosis in dbContext.ClinicalDiagnosis
+                                                                      where allDiagnosis.NotesId == NotesId && allDiagnosis.IsActive == true
+                                                                      select new
+                                                                      {
+                                                                          allDiagnosis.DiagnosisId,
+                                                                          IsEditable = true,
+                                                                          ICD = (from icd in dbContext.ICD10
+                                                                                 where icd.ICD10ID == allDiagnosis.ICD10ID
+                                                                                 select new
+                                                                                 {
+                                                                                     icd.ICD10Code,
+                                                                                     icd.ICD10Description,
+                                                                                     icd.ICD10ID,
+                                                                                     icd.ICDShortCode,
+                                                                                     icd.ValidForCoding
+                                                                                 }),
 
 
-                                                                           AllIcdLabOrders = (from allLab in dbContext.LabRequisitions
-                                                                                              where allLab.DiagnosisId == allDiagnosis.DiagnosisId && allLab.OrderStatus!="cancel"
-                                                                                              select new
-                                                                                              {
+                                                                          AllIcdLabOrders = (from allLab in dbContext.LabRequisitions
+                                                                                             where allLab.DiagnosisId == allDiagnosis.DiagnosisId && allLab.OrderStatus != "cancel"
+                                                                                             select new
+                                                                                             {
                                                                                                  ItemId = allLab.LabTestId,
                                                                                                  ItemName = allLab.LabTestName,
-                                                                                                 PreferenceType="Lab",
-                                                                                                  IsGeneric = false,
-                                                                                              }
-                                                                                            ).ToList(),
-                                                                           AllIcdImagingOrders = (from allImaging in dbContext.ImagingRequisitions
-                                                                                                  where allImaging.DiagnosisId == allDiagnosis.DiagnosisId && allImaging.OrderStatus != "cancel"
-                                                                                                  select new 
-                                                                                                  {
+                                                                                                 PreferenceType = "Lab",
+                                                                                                 IsGeneric = false,
+                                                                                             }
+                                                                                           ).ToList(),
+                                                                          AllIcdImagingOrders = (from allImaging in dbContext.ImagingRequisitions
+                                                                                                 where allImaging.DiagnosisId == allDiagnosis.DiagnosisId && allImaging.OrderStatus != "cancel"
+                                                                                                 select new
+                                                                                                 {
                                                                                                      ItemId = allImaging.ImagingItemId,
                                                                                                      ItemName = allImaging.ImagingItemName,
                                                                                                      allImaging.ImagingTypeId,
                                                                                                      PreferenceType = "Imaging",
-                                                                                                      IsGeneric = false,
+                                                                                                     IsGeneric = false,
 
-                                                                                                  }).ToList(),
-                                                                           AllIcdPrescriptionOrders = (from allMedication in dbContext.PHRMPrescriptionItems
-                                                                                                       where allMedication.DiagnosisId == allDiagnosis.DiagnosisId && allMedication.OrderStatus != "cancel"
-                                                                                                       select new 
-                                                                                                       {
-                                                                                                           allMedication.ItemId,
-                                                                                                           dbContext.PHRMItemMaster.FirstOrDefault(item => allMedication.ItemId == item.ItemId).ItemName,
-                                                                                                           allMedication.Quantity,
-                                                                                                           allMedication.Frequency,
-                                                                                                           allMedication.HowManyDays,
-                                                                                                           allMedication.Dosage,
-                                                                                                           allMedication.GenericId,
-                                                                                                           PreferenceType = "Medication",
-                                                                                                           IsGeneric =false,
-                                                                                                       }).ToList(),
+                                                                                                 }).ToList(),
+                                                                          AllIcdPrescriptionOrders = (from allMedication in dbContext.PHRMPrescriptionItems
+                                                                                                      where allMedication.DiagnosisId == allDiagnosis.DiagnosisId && allMedication.OrderStatus != "cancel"
+                                                                                                      select new
+                                                                                                      {
+                                                                                                          allMedication.ItemId,
+                                                                                                          dbContext.PHRMItemMaster.FirstOrDefault(item => allMedication.ItemId == item.ItemId).ItemName,
+                                                                                                          allMedication.Quantity,
+                                                                                                          allMedication.Frequency,
+                                                                                                          allMedication.HowManyDays,
+                                                                                                          allMedication.Dosage,
+                                                                                                          allMedication.GenericId,
+                                                                                                          PreferenceType = "Medication",
+                                                                                                          IsGeneric = false,
+                                                                                                      }).ToList(),
 
-                                                                       }).ToList()
-                                            });
+                                                                      }).ToList()
+                                           });
 
                     responseData.Status = "OK";
                     responseData.Results = allICDandOrders;
@@ -1012,101 +1093,101 @@ namespace DanpheEMR.Controllers.Clinical
                 else if (reqType == "getopdExaminationById")
                 {
                     var opdEx_Note = (from note in dbContext.Notes
-                                  join sNote in dbContext.SubjectiveNotes on note.NotesId equals sNote.NotesId into tempSubNote
-                                  from subjNote in tempSubNote.DefaultIfEmpty()
-                                  join obNote in dbContext.ObjectiveNotes on note.NotesId equals obNote.NotesId into tempObjNote
-                                  from objNote in tempObjNote.DefaultIfEmpty()
+                                      join sNote in dbContext.SubjectiveNotes on note.NotesId equals sNote.NotesId into tempSubNote
+                                      from subjNote in tempSubNote.DefaultIfEmpty()
+                                      join obNote in dbContext.ObjectiveNotes on note.NotesId equals obNote.NotesId into tempObjNote
+                                      from objNote in tempObjNote.DefaultIfEmpty()
 
-                                  join pat in dbContext.Patients on note.PatientId equals pat.PatientId
-                                  join primaryDoc in dbContext.Employee on note.ProviderId equals primaryDoc.EmployeeId
-                                  join sd in dbContext.Employee on note.SecondaryDoctorId equals sd.EmployeeId into secondaryDocTemp
-                                  from secondaryDoc in secondaryDocTemp.DefaultIfEmpty()
+                                      join pat in dbContext.Patients on note.PatientId equals pat.PatientId
+                                      join primaryDoc in dbContext.Employee on note.ProviderId equals primaryDoc.EmployeeId
+                                      join sd in dbContext.Employee on note.SecondaryDoctorId equals sd.EmployeeId into secondaryDocTemp
+                                      from secondaryDoc in secondaryDocTemp.DefaultIfEmpty()
 
-                                  join emp in dbContext.Employee on note.CreatedBy equals emp.EmployeeId
-                                  join nt in dbContext.NoteType on note.NoteTypeId equals nt.NoteTypeId into noteTypeTemp
-                                  from noteType in noteTypeTemp.DefaultIfEmpty()
+                                      join emp in dbContext.Employee on note.CreatedBy equals emp.EmployeeId
+                                      join nt in dbContext.NoteType on note.NoteTypeId equals nt.NoteTypeId into noteTypeTemp
+                                      from noteType in noteTypeTemp.DefaultIfEmpty()
 
-                                  join daignosis in dbContext.ClinicalDiagnosis on note.NotesId equals daignosis.NotesId into tempdaignosis
-                                  from clnd in tempdaignosis.DefaultIfEmpty()
+                                      join daignosis in dbContext.ClinicalDiagnosis on note.NotesId equals daignosis.NotesId into tempdaignosis
+                                      from clnd in tempdaignosis.DefaultIfEmpty()
 
-                                  join prescription in dbContext.ClinicalPrescriptionNote on note.NotesId equals prescription.NotesId into tempPre
-                                  from pre in tempPre.ToList()
-                                  where note.NotesId == notesId
-                                  select new
-                                  {
-                                      note.PatientId,
-                                      note.PatientVisitId,
-                                      note.NotesId,
-                                      note.IsPending,
-                                      note.FollowUp,
-                                      note.FollowUpUnit,
-                                      note.Remarks,
-                                      WrittenBy = emp.FullName,
-                                      noteType.NoteType,
-                                      PrimaryDoctor = primaryDoc.FullName,
-                                      SecondaryDoctor = secondaryDoc.FullName,
-                                      pat.Age,
-                                      Sex = pat.Gender,
-                                      PatientName = pat.FirstName + " " + (String.IsNullOrEmpty(pat.MiddleName) ? " " : pat.MiddleName) + " " + pat.LastName,
-                                      SubjectiveNote = subjNote,
-                                      ObjectiveNote = objNote,
-                                      Prescription = pre,
-                                      DiagnosisOrdersList = (from allDiagnosis in dbContext.ClinicalDiagnosis
-                                                             where allDiagnosis.NotesId == notesId && allDiagnosis.IsActive == true
-                                                             select new
-                                                             {
-                                                                 allDiagnosis.DiagnosisId,
-                                                                 IsEditable = true,
-                                                                 ICD = (from icd in dbContext.ICD10
-                                                                        where icd.ICD10ID == allDiagnosis.ICD10ID
-                                                                        select new
-                                                                        {
-                                                                            icd.ICD10Code,
-                                                                            icd.ICD10Description,
-                                                                            icd.ICD10ID,
-                                                                            icd.ICDShortCode,
-                                                                            icd.ValidForCoding
-                                                                        }),
+                                      join prescription in dbContext.ClinicalPrescriptionNote on note.NotesId equals prescription.NotesId into tempPre
+                                      from pre in tempPre.ToList()
+                                      where note.NotesId == notesId
+                                      select new
+                                      {
+                                          note.PatientId,
+                                          note.PatientVisitId,
+                                          note.NotesId,
+                                          note.IsPending,
+                                          note.FollowUp,
+                                          note.FollowUpUnit,
+                                          note.Remarks,
+                                          WrittenBy = emp.FullName,
+                                          noteType.NoteType,
+                                          PrimaryDoctor = primaryDoc.FullName,
+                                          SecondaryDoctor = secondaryDoc.FullName,
+                                          pat.Age,
+                                          Sex = pat.Gender,
+                                          PatientName = pat.FirstName + " " + (String.IsNullOrEmpty(pat.MiddleName) ? " " : pat.MiddleName) + " " + pat.LastName,
+                                          SubjectiveNote = subjNote,
+                                          ObjectiveNote = objNote,
+                                          Prescription = pre,
+                                          DiagnosisOrdersList = (from allDiagnosis in dbContext.ClinicalDiagnosis
+                                                                 where allDiagnosis.NotesId == notesId && allDiagnosis.IsActive == true
+                                                                 select new
+                                                                 {
+                                                                     allDiagnosis.DiagnosisId,
+                                                                     IsEditable = true,
+                                                                     ICD = (from icd in dbContext.ICD10
+                                                                            where icd.ICD10ID == allDiagnosis.ICD10ID
+                                                                            select new
+                                                                            {
+                                                                                icd.ICD10Code,
+                                                                                icd.ICD10Description,
+                                                                                icd.ICD10ID,
+                                                                                icd.ICDShortCode,
+                                                                                icd.ValidForCoding
+                                                                            }),
 
 
-                                                                 AllIcdLabOrders = (from allLab in dbContext.LabRequisitions
-                                                                                    where allLab.DiagnosisId == allDiagnosis.DiagnosisId && allLab.OrderStatus != "cancel"
-                                                                                    select new
-                                                                                    {
-                                                                                        ItemId = allLab.LabTestId,
-                                                                                        ItemName = allLab.LabTestName,
-                                                                                        PreferenceType = "Lab",
-                                                                                        IsGeneric = false,
-                                                                                    }
-                                                                                  ).ToList(),
-                                                                 AllIcdImagingOrders = (from allImaging in dbContext.ImagingRequisitions
-                                                                                        where allImaging.DiagnosisId == allDiagnosis.DiagnosisId && allImaging.OrderStatus != "cancel"
+                                                                     AllIcdLabOrders = (from allLab in dbContext.LabRequisitions
+                                                                                        where allLab.DiagnosisId == allDiagnosis.DiagnosisId && allLab.OrderStatus != "cancel"
                                                                                         select new
                                                                                         {
-                                                                                            ItemId = allImaging.ImagingItemId,
-                                                                                            ItemName = allImaging.ImagingItemName,
-                                                                                            allImaging.ImagingTypeId,
-                                                                                            PreferenceType = "Imaging",
+                                                                                            ItemId = allLab.LabTestId,
+                                                                                            ItemName = allLab.LabTestName,
+                                                                                            PreferenceType = "Lab",
                                                                                             IsGeneric = false,
+                                                                                        }
+                                                                                      ).ToList(),
+                                                                     AllIcdImagingOrders = (from allImaging in dbContext.ImagingRequisitions
+                                                                                            where allImaging.DiagnosisId == allDiagnosis.DiagnosisId && allImaging.OrderStatus != "cancel"
+                                                                                            select new
+                                                                                            {
+                                                                                                ItemId = allImaging.ImagingItemId,
+                                                                                                ItemName = allImaging.ImagingItemName,
+                                                                                                allImaging.ImagingTypeId,
+                                                                                                PreferenceType = "Imaging",
+                                                                                                IsGeneric = false,
 
-                                                                                        }).ToList(),
-                                                                 AllIcdPrescriptionOrders = (from allMedication in dbContext.PHRMPrescriptionItems
-                                                                                             where allMedication.DiagnosisId == allDiagnosis.DiagnosisId && allMedication.OrderStatus != "cancel"
-                                                                                             select new
-                                                                                             {
-                                                                                                 allMedication.ItemId,
-                                                                                                 dbContext.PHRMItemMaster.FirstOrDefault(item => allMedication.ItemId == item.ItemId).ItemName,
-                                                                                                 allMedication.Quantity,
-                                                                                                 allMedication.Frequency,
-                                                                                                 allMedication.HowManyDays,
-                                                                                                 allMedication.Dosage,
-                                                                                                 allMedication.GenericId,
-                                                                                                 PreferenceType = "Medication",
-                                                                                                 IsGeneric = false,
-                                                                                             }).ToList(),
+                                                                                            }).ToList(),
+                                                                     AllIcdPrescriptionOrders = (from allMedication in dbContext.PHRMPrescriptionItems
+                                                                                                 where allMedication.DiagnosisId == allDiagnosis.DiagnosisId && allMedication.OrderStatus != "cancel"
+                                                                                                 select new
+                                                                                                 {
+                                                                                                     allMedication.ItemId,
+                                                                                                     dbContext.PHRMItemMaster.FirstOrDefault(item => allMedication.ItemId == item.ItemId).ItemName,
+                                                                                                     allMedication.Quantity,
+                                                                                                     allMedication.Frequency,
+                                                                                                     allMedication.HowManyDays,
+                                                                                                     allMedication.Dosage,
+                                                                                                     allMedication.GenericId,
+                                                                                                     PreferenceType = "Medication",
+                                                                                                     IsGeneric = false,
+                                                                                                 }).ToList(),
 
-                                                             }).ToList()
-                                  }).FirstOrDefault();
+                                                                 }).ToList()
+                                      }).FirstOrDefault();
                     responseData.Results = opdEx_Note;
                     responseData.Status = "OK";
                 }
@@ -1137,40 +1218,40 @@ namespace DanpheEMR.Controllers.Clinical
                 var notesData = clinicalDbContext.Notes.Find(NotesId);
                 switch (notesData.TemplateName)
                 {
-                    case "Progress Note": 
+                    case "Progress Note":
                         {
                             notesData.ProgressNote = clinicalDbContext.ProgressNote.FirstOrDefault(PN => PN.NotesId == NotesId);
-                            break; 
+                            break;
                         }
-                    case "History & Physical": 
+                    case "History & Physical":
                         {
 
                             notesData.SubjectiveNote = clinicalDbContext.SubjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
                             notesData.ObjectiveNote = clinicalDbContext.ObjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
-                            
+
                             break;
                         }
-                    case "Consult Note": 
+                    case "Consult Note":
                         { break; }
-                    case "Free Text": 
+                    case "Free Text":
                         {
                             notesData.FreeTextNote = clinicalDbContext.FreeText.FirstOrDefault(FT => FT.NotesId == NotesId);
-                            break; 
+                            break;
                         }
-                    case "Discharge Note": 
+                    case "Discharge Note":
                         { break; }
-                    case "Emergency Note": 
+                    case "Emergency Note":
                         {
                             notesData.EmergencyNote = clinicalDbContext.EmergencyNote.FirstOrDefault(ft => ft.NotesId == NotesId);
                             notesData.SubjectiveNote = clinicalDbContext.SubjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
                             notesData.ObjectiveNote = clinicalDbContext.ObjectiveNotes.FirstOrDefault(ft => ft.NotesId == NotesId);
-                            
-                            break; 
+
+                            break;
                         }
-                    case "Procedure Note": 
+                    case "Procedure Note":
                         {
                             notesData.ProcedureNote = clinicalDbContext.ProcedureNote.FirstOrDefault(PN => PN.NotesId == NotesId);
-                            break; 
+                            break;
                         }
                     case "Prescription Note":
                         {
@@ -2246,9 +2327,9 @@ namespace DanpheEMR.Controllers.Clinical
                             ObjectiveNoteModel objectiveNote = NotesMaster.ObjectiveNote;
 
                             List<ClinicalDiagnosisModel> clinialDiagnosis = NotesMaster.AllIcdAndOrders;
-                                                        
+
                             if (subjectiveNote != null)
-                            {                                
+                            {
                                 subjectiveNote.NotesId = Notesid;
                                 subjectiveNote.PatientVisitId = NotesMaster.PatientVisitId;
                                 subjectiveNote.PatientId = NotesMaster.PatientId;
@@ -2430,7 +2511,7 @@ namespace DanpheEMR.Controllers.Clinical
                             EmergencyNoteModel emergencyNote = NotesMaster.EmergencyNote;
 
                             List<ClinicalDiagnosisModel> clinialDiagnosis = NotesMaster.AllIcdAndOrders;
-                                                       
+
                             if (subjectiveNote != null)
                             {
                                 subjectiveNote.NotesId = Notesid;
@@ -2656,7 +2737,7 @@ namespace DanpheEMR.Controllers.Clinical
 
 
                 }
-                
+
                 //post Prescription-Slip 
                 else if (reqType == "postprescriptionslipmaster")
                 {
@@ -2765,8 +2846,8 @@ namespace DanpheEMR.Controllers.Clinical
                     }
                     responseData.Status = "OK";
                 }
-                
-                else if(reqType == "post-clinicalprescription-note")
+
+                else if (reqType == "post-clinicalprescription-note")
                 {
                     string str = this.ReadPostData();
                     NotesModel NotesMaster = JsonConvert.DeserializeObject<NotesModel>(str);
@@ -2782,12 +2863,12 @@ namespace DanpheEMR.Controllers.Clinical
                             dbContext.Notes.Add(NotesMaster);
                             dbContext.SaveChanges();
 
-                            
+
                             prescription.NotesId = NotesMaster.NotesId;
                             prescription.CreatedBy = currentUser.EmployeeId;
                             prescription.CreatedOn = System.DateTime.Now;
 
-                            
+
                             subjective.NotesId = NotesMaster.NotesId;
                             subjective.PatientId = NotesMaster.PatientId;
                             subjective.PatientVisitId = NotesMaster.PatientVisitId;
@@ -2799,7 +2880,7 @@ namespace DanpheEMR.Controllers.Clinical
 
                             dbContext.SaveChanges();
                             dbContextTransaction.Commit();
-                           
+
                             responseData.Status = "OK";
                         }
                         catch (Exception ex)
@@ -2827,7 +2908,7 @@ namespace DanpheEMR.Controllers.Clinical
                             var location = (from dbc in dbContext.CFGParameters
                                             where dbc.ParameterGroupName.ToLower() == "clinical"
                                             && dbc.ParameterName == "ClinicalDocumentUploadLocation"
-                                            select dbc.ParameterValue ).FirstOrDefault();
+                                            select dbc.ParameterValue).FirstOrDefault();
 
                             if (!Directory.Exists(location))
                             {
@@ -2836,7 +2917,8 @@ namespace DanpheEMR.Controllers.Clinical
 
                             foreach (var file in files)
                             {
-                                if (file.Length > 0)                                {
+                                if (file.Length > 0)
+                                {
                                     /////Converting Files to Byte there for we require MemoryStream object
                                     using (var ms = new MemoryStream())
                                     {
@@ -2952,7 +3034,7 @@ namespace DanpheEMR.Controllers.Clinical
                                 dbContext.ClinicalPrescriptionNote.Add(prescription);
                                 dbContext.SaveChanges();
                             }
-                            if (procedure !=null)
+                            if (procedure != null)
                             {
                                 procedure.NotesId = Notesid;
                                 procedure.PatientVisitId = NotesMaster.PatientVisitId;
@@ -3101,6 +3183,30 @@ namespace DanpheEMR.Controllers.Clinical
                         }
 
                     }
+                }
+                //Patietn visit note
+                else if (reqType == "patient-visit-note")
+                {
+
+                    string str = this.ReadPostData();
+                    PatientVisitNote patientVisitNote = JsonConvert.DeserializeObject<PatientVisitNote>(str);
+                    var isExisting = dbContext.PatientVisitNotes.Where(p => p.PatientId == patientVisitNote.PatientId && p.PatientVisitId == patientVisitNote.PatientVisitId).FirstOrDefault();
+                    if (isExisting != null)
+                    {
+                       
+                        responseData.Status = "Failed";
+                        responseData.ErrorMessage = "Already have visit note , you can't add";
+                    }
+                    else
+                    {
+                        patientVisitNote.CreatedBy = currentUser.EmployeeId;
+                        patientVisitNote.CreatedOn = DateTime.Now;
+                        dbContext.PatientVisitNotes.Add(patientVisitNote);
+                        dbContext.SaveChanges();
+                        responseData.Results = patientVisitNote.PatientVisitNoteId;
+                        responseData.Status = "OK";
+                    }
+
                 }
                 else
                 {
@@ -3265,6 +3371,7 @@ namespace DanpheEMR.Controllers.Clinical
 
                         dbContext.Entry(clientHomeMedication).Property(u => u.CreatedBy).IsModified = false;
                         dbContext.Entry(clientHomeMedication).Property(u => u.CreatedOn).IsModified = false;
+                        dbContext.Entry(clientHomeMedication).Property(u => u.PatientVisitId).IsModified = false;
                         dbContext.SaveChanges();
 
                         PharmacyDbContext phrmDbContext = new PharmacyDbContext(connString);
@@ -4183,7 +4290,7 @@ namespace DanpheEMR.Controllers.Clinical
                                 SubjectiveNoteModel SubjectiveNote = NotesMaster.SubjectiveNote;
                                 var masterNote = dbContext.Notes.Where(i => i.NotesId == NotesMaster.NotesId).FirstOrDefault();
 
-                                if(masterNote != null)
+                                if (masterNote != null)
                                 {
                                     masterNote.ProviderId = NotesMaster.ProviderId;
                                     masterNote.FollowUp = NotesMaster.FollowUp;
@@ -4818,6 +4925,23 @@ namespace DanpheEMR.Controllers.Clinical
                         //dbContext.Entry(clientSurgicalHistory).Property(u => u.CreatedOn).IsModified = false;
                         dbContext.SaveChanges();
                         responseData.Results = vitals;
+                        responseData.Status = "OK";
+                    }
+                    else if (reqType == "patient-visit-note")
+                    {
+                        PatientVisitNote patientVisitNote = JsonConvert.DeserializeObject<PatientVisitNote>(str);
+                        patientVisitNote.ModifiedBy = currentUser.EmployeeId;
+                        patientVisitNote.ModifiedOn = DateTime.Now;
+                        patientVisitNote = dbContext.UpdateGraph(patientVisitNote);
+                        dbContext.Entry(patientVisitNote).Property(u => u.CreatedBy).IsModified = false;
+                        dbContext.Entry(patientVisitNote).Property(u => u.CreatedOn).IsModified = false;
+                        dbContext.Entry(patientVisitNote).Property(u => u.IsActive).IsModified = false;
+                        dbContext.Entry(patientVisitNote).Property(u => u.ProviderId).IsModified = false;
+                        dbContext.Entry(patientVisitNote).Property(u => u.PatientId).IsModified = false;
+                        dbContext.Entry(patientVisitNote).Property(u => u.PatientVisitId).IsModified = false;
+
+                        dbContext.SaveChanges();
+                        responseData.Results = patientVisitNote;
                         responseData.Status = "OK";
                     }
                     else

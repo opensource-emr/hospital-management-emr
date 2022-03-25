@@ -17,6 +17,8 @@ import { PrescriptionSlipComponent } from './eye-examination/prescription-slip/p
 import { PrescriptionSlipHistoryComponent } from './eye-examination/prescription-slip-history/presription-slip-history.component';
 import { ScanUploadComponent } from './eye-examination/scan-upload/scan-upload.component';
 import { PageNotFound } from '../404-error/404-not-found.component';
+import { PatientVisitNoteComponent } from './patient-visit-notes/patient-visit-notes.component';
+import { PatientVisitNoteViewComponent } from './patient-visit-notes/patient-visit-notes-view.component';
 // import { FreeNotesComponent } from './notes/freenotes/freenotes.component';
 
 @NgModule({
@@ -26,12 +28,14 @@ import { PageNotFound } from '../404-error/404-not-found.component';
                 path: '',//this is: '/Clinical'
                 component: ClinicalComponent,
                 children: [
-                    { path: '', redirectTo: 'Vitals', pathMatch: 'full' },
+                    { path: '', redirectTo: 'PatientVisitNote', pathMatch: 'full' },
                     { path: 'Vitals', component: VitalsListComponent },
                     { path: 'Allergy', component: AllergyListComponent },
                     { path: 'HomeMedication', component: HomeMedicationListComponent },
                     { path: 'InputOutput', component: InputOutputListComponent },
                     { path: 'DoctorsNotes', component: DoctorsNotesComponent },
+                    { path: 'PatientVisitNote', component: PatientVisitNoteComponent },
+                    { path: 'PatientVisitNoteView', component: PatientVisitNoteViewComponent },
                  
                     // {
                     //     path: 'Notes', component: ViewTemplateComponent,

@@ -63,6 +63,13 @@ export class RPT_APPT_DailyAppointmentReportComponent {
     if (res.Status == "OK") {
       if (res.Results && res.Results.length > 0) {
         this.DailyAppointmentReportData = res.Results;
+        
+        for(var i =0; i< this.DailyAppointmentReportData.length; i++){
+          if(this.DailyAppointmentReportData[i].Diagnosis && this.DailyAppointmentReportData[i].Diagnosis.trim().length > 0){
+            this.DailyAppointmentReportData[i].DiagnosisList= JSON.parse(this.DailyAppointmentReportData[i].Diagnosis);
+            this.DailyAppointmentReportData[i].Diagnosis = this.DailyAppointmentReportData[i].DiagnosisList.map(e => e.ICD10Description).join(",");
+          }
+        }
       }
       else {
         this.msgBoxServ.showMessage("notice-message", ['Data is Not Available Between Selected Parameter ....Try Different'])

@@ -42,7 +42,7 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         //public virtual PatientModel Patient { get; set; }
 
-        public int? Nadi { get; set; }
+        public string Nadi { get; set; }
         public string Mala { get; set; }
         public string Mutra { get; set; }
         public string Jivha { get; set; }

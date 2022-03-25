@@ -43,6 +43,7 @@ export class VitalsListComponent {
   public weightPound: Array<number> = [];
   public degFarenheit: Array<number> = [];
   public degCelsius: Array<number> = [];
+  public showAyurvedVitals: boolean = false;
 
   @Input("returnVitalsList") public returnVitalsList: boolean = false;
   @Output("vitalsEmitter") public vitalsEmitter: EventEmitter<object> = new EventEmitter<object>();
@@ -60,6 +61,7 @@ export class VitalsListComponent {
     this.hospitalName = this.coreService.GetHospitalName();
     this.vitalsPrintFormat = this.coreService.GetVitalsPrintFormat();
     this.AssignDoctorsPanel();
+    this.showAyurvedVitals = this.coreService.ShowAyurvedVitals();
   }
 
   ngOnInit() {

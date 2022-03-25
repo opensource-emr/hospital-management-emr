@@ -215,6 +215,9 @@ export class DoctorDashboardComponent implements OnDestroy {
     visitGlobal.VisitType = selectedVisit.VisitType;
     visitGlobal.ProviderName = selectedVisit.ProviderName;
     visitGlobal.ConcludeDate = selectedVisit.ConcludeDate;
+    visitGlobal.VisitCode=selectedVisit.VisitCode;
+    visitGlobal.DepartmentName=selectedVisit.DepartmentName;
+    visitGlobal.VisitType=selectedVisit.VisitType;
     this.currentVisit = visitGlobal;
   }
 

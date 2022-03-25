@@ -180,6 +180,13 @@ export class RPT_APPT_DeptWiseAppointmentReportComponent {
       if (res.Results && res.Results.length > 0) {
 
         this.DeptwiseAppointmentReportData = res.Results;
+
+        for(var i =0; i< this.DeptwiseAppointmentReportData.length; i++){
+          if(this.DeptwiseAppointmentReportData[i].Diagnosis && this.DeptwiseAppointmentReportData[i].Diagnosis.trim().length > 0){
+            this.DeptwiseAppointmentReportData[i].DiagnosisList= JSON.parse(this.DeptwiseAppointmentReportData[i].Diagnosis);
+            this.DeptwiseAppointmentReportData[i].Diagnosis = this.DeptwiseAppointmentReportData[i].DiagnosisList.map(e => e.ICD10Description).join(",");
+          }
+        }
         this.showDeptDetails = true;
       }
       else {

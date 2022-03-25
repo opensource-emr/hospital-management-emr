@@ -24,6 +24,7 @@ export class HomeMedication {
     public Frequency: number = null;
     public MedicationType: string = null;
     public HomeMedicationValidator: FormGroup = null;
+    public PatientVisitId:number=0;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.HomeMedicationValidator = _formBuilder.group({

@@ -1,13 +1,16 @@
 
 
-<div style="margin-top:20px;" class="row"> 
+<div  class="row"> 
   <!--Add Note Button-->
-  <!-- <div class="col-md-12" style="margin-bottom: 10px;">
-    <a feature="button" class="btn blue bordered" (click)="RouteToAddNotes()"><i class="fa fa-plus"></i>Add Notes</a>
-  </div> -->
-  <div class="col-md-12" style="margin-bottom: 10px;">
-    <a feature="button" class="btn blue bordered" (click)="RouteToAddOpdExamination()"><i class="fa fa-plus"></i>Add Examination</a>
-  </div>
+<div class="col-md-12" style="margin-bottom: 10px;">
+  <!-- <a feature="button" class="btn blue bordered" (click)="RouteToAddOpdExamination()">
+    <i class="fa fa-plus"></i>OPD Examination
+  </a> -->
+  <a feature="button" class="btn blue bordered" (click)="RouteToAddNotes()">
+    <i class="fa fa-plus"></i>Add Notes
+  </a>
+ 
+ </div>
   <div class="tabbable-custom">
     <div class="tab-content">
       <danphe-grid [grid-colDefaults]="ViewTemplateGridColumn"

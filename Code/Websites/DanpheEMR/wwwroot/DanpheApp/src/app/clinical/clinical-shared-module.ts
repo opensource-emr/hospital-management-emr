@@ -21,6 +21,8 @@ import { VitalsListComponent } from "./vitals/vitals-list.component";
 import { DoctorsNotesComponent } from "../doctors/notes/doctors-notes.component";
 import { AllergyListComponent } from "./others/allergy-list.component";
 import { HomeMedicationAddComponent } from "./medications/home-medication-add.component";
+import { PatientVisitNoteComponent } from "./patient-visit-notes/patient-visit-notes.component";
+import { PatientVisitNoteViewComponent } from "./patient-visit-notes/patient-visit-notes-view.component";
 
 @NgModule({
   providers: [],
@@ -53,7 +55,9 @@ import { HomeMedicationAddComponent } from "./medications/home-medication-add.co
     SelectOrderComponent,
     DoctorsNotesComponent,
     AllergyListComponent,
-    HomeMedicationAddComponent
+    HomeMedicationAddComponent,
+    PatientVisitNoteComponent,
+    PatientVisitNoteViewComponent,
   ],
   exports: [
     VitalsAddComponent,
@@ -68,7 +72,9 @@ import { HomeMedicationAddComponent } from "./medications/home-medication-add.co
     SelectOrderComponent,
     PastMedicalComponent,
     DoctorsNotesComponent,
-    HomeMedicationAddComponent
+    HomeMedicationAddComponent,
+    PatientVisitNoteComponent,
+    PatientVisitNoteViewComponent,
   ],
 })
 export class ClinicalSharedModule {}

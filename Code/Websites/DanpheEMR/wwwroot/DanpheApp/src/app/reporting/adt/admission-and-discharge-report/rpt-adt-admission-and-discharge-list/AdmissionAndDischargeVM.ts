@@ -15,6 +15,7 @@ export class AdmissionAndDischargeVM{
     public Age_Gender:string;
     public Address:string;
     public Diagnosis:string;
+    public DiagnosisList:any[];
 
 }
 export class WardModel{

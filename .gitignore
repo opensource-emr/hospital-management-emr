@@ -16,3 +16,6 @@ HAMS_Requirements/
 *.txt
 *.xlsx
 /Database/DanpheEMR_OS.bak
+
+/Code/Websites/DanpheEMR/Properties/PublishProfiles
+

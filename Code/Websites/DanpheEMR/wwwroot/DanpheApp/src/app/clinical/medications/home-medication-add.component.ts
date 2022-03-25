@@ -5,6 +5,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { HomeMedication } from "../shared/home-medication.model";
 import { HttpClient,HttpHeaders} from '@angular/common/http';
 import * as moment from 'moment/moment';
+import { VisitService } from "../../appointments/shared/visit.service";
 
 @Component({
     selector: "home-medication-add",
@@ -26,7 +27,7 @@ export class HomeMedicationAddComponent {
     @Output("callback-addupdate")
     public callbackAddUpdate: EventEmitter<Object> = new EventEmitter<Object>();
 
-    constructor(public patientService: PatientService,
+    constructor(public patientService: PatientService,public visitService:VisitService,
         public medicationBLService: MedicationBLService,
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
@@ -120,6 +121,7 @@ export class HomeMedicationAddComponent {
     //post new home-medication
     AddHomeMedication(): void {
         this.CurrentHomeMedication.PatientId = this.patientService.getGlobal().PatientId;
+        this.CurrentHomeMedication.PatientVisitId=this.visitService.getGlobal().PatientVisitId;
         this.loading = false;
         this.medicationBLService.PostHomeMedication(this.CurrentHomeMedication)
             .subscribe(
@@ -137,6 +139,7 @@ export class HomeMedicationAddComponent {
     }
 
     public Update() {
+        this.CurrentHomeMedication.PatientVisitId=this.visitService.getGlobal().PatientVisitId;
         this.medicationBLService.PutHomeMedication(this.CurrentHomeMedication)
             .subscribe(
                 res => {

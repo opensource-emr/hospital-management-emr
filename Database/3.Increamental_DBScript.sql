@@ -428,3 +428,394 @@ Values ( 'Patient','ShowBillDetailsOnHistoryPage','true','boolean', 'It will sho
 go
 
 -- end : DeepakS :11-March-2022 : core_parameters  insert script for show/hide billing information on patient-HistoryPage 
+
+
+
+--START: NageshBB: 13March2022: Inserted opd examinaiton permission and updated permissionid in routeconfig table
+if not exists(Select * from RBAC_Permission where  PermissionName = 'Clinical-notes-outpatExamination-view')
+Begin
+insert into RBAC_Permission (PermissionName,ApplicationId,CreatedBy,CreatedOn,IsActive)
+values('Clinical-notes-outpatExamination-view',(select top 1 ApplicationId from RBAC_Application where ApplicationCode='CLN'),1,GETDATE(),1)
+End
+Go
+
+Update RBAC_RouteConfig
+set PermissionId=(Select top 1 PermissionId from RBAC_Permission where  PermissionName = 'Clinical-notes-outpatExamination-view')
+where UrlFullPath='Doctors/PatientOverviewMain/NotesSummary/OPDExamination'
+Go
+--END: NageshBB: 13March2022: Inserted opd examinaiton permission and updated permissionid in routeconfig table
+
+--START: NageshBB: 14 march 2022: Hide 5 doctor module menu which don't have any feature and we are showing
+Update RBAC_RouteConfig 
+set IsActive=0
+where UrlFullPath in (
+'Doctors/PatientOverviewMain/PatientVisitHistory'
+,'Doctors/PatientOverviewMain/VisitSummary'
+,'Doctors/PatientOverviewMain/CurrentMedications'
+,'Doctors/PatientOverviewMain/RadiologyReports'
+,'Doctors/PatientOverviewMain/NotesSummary/OPDExamination'
+,'Doctors/PatientOverviewMain/ProblemsMain/PastMedical'
+,'Doctors/PatientOverviewMain/Clinical/Notes'
+,'Doctors/PatientOverviewMain/Clinical/DoctorsNotes')
+Go
+
+
+--END: NageshBB: 14 march 2022: Hide 5 doctor module menu which don't have any feature and we are showing
+
+--START: NageshBB: 14March2022: created table for patient visit notes save
+DROP TABLE if exists  [dbo].[CLN_PatientVisit_Notes]
+Go
+Create table [dbo].[CLN_PatientVisit_Notes]
+(
+         PatientVisitNoteId int identity(1,1)  constraint PK_CLN_PatientVisit_Notes primary key,
+         PatientId int not null ,
+         PatientVisitId int not null ,
+         ProviderId int not null,
+
+       
+        ChiefComplaint varchar(1000),
+        HistoryOfPresentingIllness varchar(1000),
+        ReviewOfSystems varchar(1000),
+        Diagnosis varchar(2000),
+
+        HEENT varchar(1000),
+        Chest varchar(1000),
+        CVS varchar(1000),
+        Abdomen varchar(1000),
+        Extremity varchar(1000),
+        Skin varchar(1000),
+        Neurological varchar(1000),
+
+        LinesProse varchar(500),
+        ProsDate Datetime ,
+        [Site] varchar(1000),
+        ProsRemarks varchar(1000),
+        [FreeText] varchar(2000),
+
+        FollowUp int ,
+        FollowUpUnit varchar(20),
+        Remarks varchar(400),
+
+        CreatedBy int,
+        CreatedOn Datetime ,
+        ModifiedBy int ,
+        ModifiedOn datetime,
+        IsActive bit,
+
+)
+Go
+
+--insert permission and route details for clinical patient visit note page 
+Insert into RBAC_Permission(PermissionName,ApplicationId,CreatedBy,CreatedOn,IsActive)
+values('clinical-patient-visit-note-view',(select top 1 applicationid from RBAC_Application where ApplicationCode='CLN'),1,GETDATE(),1)
+Go
+
+Insert into RBAC_RouteConfig(DisplayName,UrlFullPath,RouterLink,PermissionId,ParentRouteId,DefaultShow,DisplaySeq,IsActive)
+values('Visit Note','Doctors/PatientOverviewMain/Clinical/PatientVisitNote','PatientVisitNote',(select top 1 PermissionId from RBAC_Permission where PermissionName='clinical-patient-visit-note-view'),
+(select top 1 RouteId from RBAC_RouteConfig where UrlFullPath='Doctors/PatientOverviewMain/Clinical'),1,1,1)
+Go
+
+Alter table CLN_HomeMedications
+Add  PatientVisitId int
+Go
+--END: NageshBB: 14March2022: created table for patient visit notes save
+
+
+-- start: Menka : 14-March-2022: Created discharge-admission-button permission for discharge button in ADT module
+
+Insert into RBAC_Permission(PermissionName,ApplicationId,CreatedBy,CreatedOn,IsActive)
+values ('discharge-admission-button',(select top 1 ApplicationId from RBAC_Application where ApplicationName='ADT'),1,'2022-03-14',1)
+GO
+
+-- end: Menka : 14-March-2022: Created discharge-admission-button permission for discharge button in ADT module
+
+-- start: Menka : 22-March-2022: Altered stored procedure of Admission,DailyAppointment and DailyAppointmentByDepartment to get diagnosis data
+
+/****** Object:  StoredProcedure [dbo].[SP_Report_ADT_AdmissionAndDischargeReport]    Script Date: 21/03/2022 12:50:06 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/*
+-- =============================================
+Change History
+-----------------------------------------------------------------------------------------
+S.No.    UpdatedBy/Date                        Remarks
+-----------------------------------------------------------------------------------------
+1.      Dev Narayan/2021-09-25          Initial Draft
+2.      Dev Narayan/2021-09-29          Added Discharge date filter
+3.		Nagsh Bulbule/2022-03-08        Added diagnosis, bedcode, address, age_gender columns for show in report
+4.      Menka Chaugule/2022-03-22       Changed to get diagnosis data from CLN_PatientVisit_Notes table
+*/
+-- =============================================
+ALTER PROCEDURE [dbo].[SP_Report_ADT_AdmissionAndDischargeReport]
+   @FromDate Date=null,
+   @ToDate Date=null,
+   @WardId int = null,
+   @DepartmentId int = null,
+   @BedFeatureId int = null,
+   @AdmissionStatus varchar(40)= null,
+   @SearchText varchar(40) = null
+AS
+BEGIN
+SET 
+  @WardId = ISNULL(@WardId, 0);
+SET 
+  @DepartmentId = ISNULL(@DepartmentId, 0);
+SET 
+  @BedFeatureId = ISNULL(@BedFeatureId, 0);
+IF(@AdmissionStatus LIKE '%All%')
+BEGIN
+SET @AdmissionStatus = null;
+END
+
+Select 
+  (
+    Cast(
+      ROW_NUMBER() OVER (
+        ORDER BY 
+          newData.RowNum desc
+      ) AS int
+    )
+  ) AS SN, 
+  newData.PatientName, 
+  newData.PatientCode, 
+  newData.VisitCode, 
+  newData.AdmissionDate, 
+  newData.DepartmentName, 
+  newData.AdmittingDoctorName, 
+  newData.WardName, 
+  newData.BedFeature, 
+  newData.AdmissionStatus, 
+  newData.DischargeDate, 
+  newData.Number_of_Days,
+  newData.Address,
+  newData.Age_Gender,
+  newData.Diagnosis,
+  newData.BedCode,
+  newData.Age_Gender,
+  newData.Address,
+  newData.Diagnosis
+  
+FROM 
+  (
+    select 
+      ROW_NUMBER() OVER(
+        PARTITION BY adm.PatientAdmissionId 
+        ORDER BY 
+          adtPat.StartedOn DESC
+      ) AS RowNum, 
+      adm.PatientAdmissionId, 
+      adm.AdmissionDate, 
+      pat.PatientCode, 
+      visit.VisitCode, 
+      pat.FirstName + ' ' + ISNULL(pat.MiddleName + ' ', '') + pat.LastName AS 'PatientName', 
+      ISNULL(emp.Salutation + '. ', '') + emp.FirstName + ' ' + ISNULL(emp.MiddleName + ' ', '') + emp.LastName 'AdmittingDoctorName', 
+      bed.BedCode as 'BedCode', 
+      bedf.BedFeatureName as BedFeature, 
+      bedf.BedFeatureId, 
+      adtPat.StartedOn, 
+      dept.DepartmentName, 
+      dept.DepartmentId, 
+      ward.WardName, 
+      ward.WardID, 
+      adm.AdmissionStatus, 
+      adm.DischargeDate, 
+      case when adm.AdmissionStatus = 'admitted' then DATEDIFF(
+        DAY, 
+        adm.AdmissionDate, 
+        GETDATE()
+      ) else DATEDIFF(
+        DAY, adm.AdmissionDate, adm.DischargeDate
+      ) end AS 'Number_of_Days',
+	  pat.Age+'/'+pat.Gender as 'Age_Gender',
+	  pat.Address as 'Address',
+	  visitNote.Diagnosis as 'Diagnosis'
+    from 
+      ADT_PatientAdmission adm 
+      join ADT_TXN_PatientBedInfo adtPat on adm.PatientId = adtPat.PatientId 
+      join PAT_PatientVisits visit on adm.PatientVisitId = visit.PatientVisitId 
+      JOIN PAT_Patient pat ON pat.PatientId = visit.PatientId 
+      join ADT_MST_Ward ward on ward.WardID = adtPat.WardId 
+      JOIN ADT_Bed bed on bed.BedID = adtPat.BedId 
+      JOIN ADT_MAP_BedFeaturesMap bedm on bed.BedID = bedm.BedId 
+      JOIN ADT_MST_BedFeature bedf on bedm.BedFeatureId = bedf.BedFeatureId 
+      left join EMP_EMPLOYEE emp ON adm.AdmittingDoctorId = emp.EmployeeId 
+      left join MST_Department dept on dept.DepartmentId = adtPat.RequestingDeptId
+	  left join CLN_PatientVisit_Notes visitNote on adm.PatientVisitId = visitNote.PatientVisitId
+  ) newData 
+where 
+  newData.RowNum = 1 
+  and (CONVERT(date, newData.AdmissionDate) between @FromDate 
+  and @ToDate 
+  or CONVERT(date, newData.DischargeDate) between @FromDate 
+  and @ToDate )
+  and (
+    newData.WardID = Convert(
+      VARCHAR(40), 
+      @WardId
+    ) 
+    or Convert(
+      VARCHAR(40), 
+      @WardId
+    )= 0
+  ) 
+  and (
+    newData.DepartmentId = Convert(
+      VARCHAR(40), 
+      @DepartmentId
+    ) 
+    or Convert(
+      VARCHAR(40), 
+      @DepartmentId
+    )= 0
+  ) 
+  and (
+    newData.BedFeatureId = Convert(
+      VARCHAR(40), 
+      @BedFeatureId
+    ) 
+    or Convert(
+      VARCHAR(40), 
+      @BedFeatureId
+    )= 0
+  ) 
+  and (
+    newData.AdmissionStatus NOT LIKE '%cancel%'
+  )
+  and (
+    newData.AdmissionStatus LIKE '%' + @AdmissionStatus + '%' 
+    OR @AdmissionStatus is Null 
+  ) 
+  and
+   (newData.PatientName like '%' + ISNULL(@SearchText,'') +'%' 
+    or newData.VisitCode like '%' + ISNULL(@SearchText,'') + '%'
+	or newData.PatientCode like '%' + ISNULL(@SearchText,'') + '%')
+
+order by 
+  newData.AdmissionDate desc
+
+END
+GO
+
+/****** Object:  StoredProcedure [dbo].[SP_Report_Appointment_DailyAppointmentReport]    Script Date: 22/03/2022 03:55:23 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[SP_Report_Appointment_DailyAppointmentReport] 
+	@FromDate Date=null,
+	@ToDate Date=null,
+	@Doctor_Name varchar(100) = null,
+	@AppointmentType varchar(100) = null
+AS
+/*
+FileName: [SP_Report_Appointment_DailyAppointmentReport]
+CreatedBy/date: Umed/2017-06-08
+Description: to get Details such as Patient Name , Appointment type, Appointment Status, along with doctor name between the Given Dates
+Remarks:    
+Change History
+-------------------------------------------------------
+S.No.    UpdatedBy/Date                        Remarks
+-------------------------------------------------------
+5		Rusha/2019-18-06					Updated of script according to provider name and appointment type
+6       Shankar/2020-19-02                  Added middle name to the patients name
+7.      Sud/14Jun'20                        PatientName taking from ShortName field of Pat_Patient Table
+8.      Sud:21Sep'21                        Adding DepartmentName, DistrictName in Select Result.
+                                            Refactoring of where clause 
+9.      Menka:9March'22						Added column like Address and diagnosis	
+10.     Menka:22March'22                    Changed to get diagnosis data from CLN_PatientVisit_Notes table
+--------------------------------------------------------
+*/
+BEGIN
+    SELECT
+	CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, VisitTime) as 'Date',
+		pat.PatientCode,
+		pat.ShortName AS Patient_Name,
+        pat.PhoneNumber,pat.Age,pat.Gender,
+		dist.CountrySubDivisionName 'DistrictName',
+		ISNULL(dept.DepartmentName,'Not Assigned') AS DepartmentName,
+		vis.AppointmentType,vis.VisitType,
+		emp.FullName AS Doctor_Name,vis.ProviderId,
+		vis.VisitStatus,
+		pat.Address,
+		visitNote.Diagnosis AS Diagnosis,
+		dept.DepartmentId
+FROM PAT_PatientVisits AS vis
+	INNER JOIN PAT_Patient pat ON vis.PatientId = pat.PatientId
+	INNER JOIN MST_CountrySubDivision dist on pat.CountrySubDivisionId=dist.CountrySubDivisionId
+	left join MST_Department dept on vis.DepartmentId=dept.DepartmentId
+	left join EMP_Employee emp on emp.EmployeeId=vis.ProviderId
+	left join CLN_PatientVisit_Notes visitNote on vis.PatientVisitId = visitNote.PatientVisitId
+	WHERE CONVERT(date, vis.VisitDate) BETWEEN @FromDate  AND  @ToDate 
+	and vis.VisitType !='inpatient' --excluding inpatient visits (those can be seen from admission reports)
+	and ISNULL(emp.FullName,'') LIKE '%' + ISNULL(@Doctor_Name, '') + '%' and
+	  vis.AppointmentType LIKE '%' + ISNULL(@AppointmentType, '') + '%'
+    AND vis.BillingStatus NOT  IN('cancel','returned')--exclude cancelled and returned visits. 
+	ORDER BY CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, vis.VisitTime) DESC
+
+END
+GO
+
+/****** Object:  StoredProcedure [dbo].[SP_Report_Appointment_DailyAppointmentByDepartmentReport]    Script Date: 22/03/2022 04:04:01 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[SP_Report_Appointment_DailyAppointmentByDepartmentReport] 
+	@FromDate Date=null,
+	@ToDate Date=null,
+	@DepartmentId int = null
+AS
+/*
+FileName: [SP_Report_Appointment_DailyAppointmentByDepartmentReport]
+CreatedBy/date: Menka/2022-03-09
+Description: to get Details such as Patient Name , Appointment type, Appointment Status, along with doctor name between the Given Dates
+Remarks:    
+Change History
+-------------------------------------------------------
+S.No.    UpdatedBy/Date                        Remarks
+-------------------------------------------------------
+1		Menka/2022-03-09					Stored procedure created
+2		Menka/2022-03-22				    Changed to get diagnosis data from CLN_PatientVisit_Notes table
+--------------------------------------------------------
+*/
+BEGIN
+    SELECT
+	CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, VisitTime) as 'Date',
+		pat.PatientCode,
+		pat.ShortName AS Patient_Name,
+        pat.PhoneNumber,pat.Age,pat.Gender,
+		dist.CountrySubDivisionName 'DistrictName',
+		ISNULL(dept.DepartmentName,'Not Assigned') AS DepartmentName,
+		vis.AppointmentType,vis.VisitType,
+		emp.FullName AS Doctor_Name,vis.ProviderId,
+		vis.VisitStatus,
+		pat.Address,
+		visitNote.Diagnosis AS Diagnosis,
+		dept.DepartmentId
+FROM PAT_PatientVisits AS vis
+	INNER JOIN PAT_Patient pat ON vis.PatientId = pat.PatientId
+	INNER JOIN MST_CountrySubDivision dist on pat.CountrySubDivisionId=dist.CountrySubDivisionId
+	left join MST_Department dept on vis.DepartmentId=dept.DepartmentId
+	left join EMP_Employee emp on emp.EmployeeId=vis.ProviderId
+	left join CLN_PatientVisit_Notes visitNote on vis.PatientVisitId = visitNote.PatientVisitId
+	WHERE CONVERT(date, vis.VisitDate) BETWEEN @FromDate  AND  @ToDate 
+	and vis.VisitType !='inpatient' --excluding inpatient visits (those can be seen from admission reports)
+	and vis.DepartmentId = @DepartmentId
+    AND vis.BillingStatus NOT  IN('cancel','returned')--exclude cancelled and returned visits. 
+	ORDER BY CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, vis.VisitTime) DESC
+
+END
+GO
+-- end: Menka : 22-March-2022: Altered stored procedure of Admission,DailyAppointment and DailyAppointmentByDepartment to get diagnosis data
+
+-- start: Menka : 24-March-2022: Created core parameter in CORE_CFG_Parameters table to show/hide Ayurved vitals and altered nadi column's data type in CLN_PatientVitals table
+Insert Into CORE_CFG_Parameters (ParameterGroupName,ParameterName,ParameterValue,ValueDataType,Description,ParameterType)
+Values ( 'Clinical','ShowAyurvedVitals','true','boolean', 'This will show or hide ayurved vitals on Vitals page','custom')
+Go
+
+alter table CLN_PatientVitals
+alter column Nadi varchar(20) null
+Go
+-- end: Menka : 24-March-2022: Created core parameter in CORE_CFG_Parameters table to show/hide Ayurved vitals and altered nadi column's data type in CLN_PatientVitals table

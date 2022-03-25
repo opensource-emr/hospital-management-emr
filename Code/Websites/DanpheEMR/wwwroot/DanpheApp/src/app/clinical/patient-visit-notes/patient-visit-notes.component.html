@@ -1,0 +1,293 @@
+<style>
+    input.cstm-form-control {
+        width: 89%;
+    }
+
+    .cstm-form-group {
+        width: 100%;
+        display: table;
+    }
+
+    table tr td {
+        padding: 5px;
+    }
+
+    table {
+        background: #fff;
+    }
+    .hm-bg-white, .emr-bg-white {
+   
+    margin-bottom: 0px !important; 
+   
+    }
+</style>
+<div *ngIf="showPage">
+
+
+<div class="row">
+    <!--START: subjective notes, diagnosis -->
+    <div class="col-md-6">
+        <!--START: subjective notes-->
+        <div class="col-md-12">
+            <form class="form-horizontal hm-bg-white">
+                <div class="form-body hm-form">
+                    <div class="text-head-wrapper mt0 clearfix">
+                        <h3 class="text-head cstm-add-heading">Clinical Subjective Notes</h3>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Chief Complaint<b>:</b></label>
+
+                        <div class="col-md-8">
+                            <textarea [(ngModel)]="patientVisitNote.ChiefComplaint"
+                                [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2" cols="50"></textarea>
+                            <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('ChiefComplaint')" [hidden]="subjectiveNote.IsValidCheck('ChiefComplaint','maxLength')">Invalid length</span>-->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">History Of Presenting Illness<b>:</b></label>
+
+                        <div class="col-md-8">
+                            <textarea [(ngModel)]="patientVisitNote.HistoryOfPresentingIllness"
+                                [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2" cols="50"></textarea>
+                            <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('HistoryOfPresentingIllness')" [hidden]="subjectiveNote.IsValidCheck('HistoryOfPresentingIllness','maxLength')">Invalid length</span>-->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Review Of Systems<b>:</b></label>
+                        <div class="col-md-8">
+                            <textarea [(ngModel)]="patientVisitNote.ReviewOfSystems"
+                                [ngModelOptions]="{standalone: true}" maxlength="2000" rows="2" cols="50"></textarea>
+                            <!--<span class="error-msg" *ngIf="patientVisitNote.IsDirty('ReviewOfSystems')" [hidden]="subjectiveNote.IsValidCheck('ReviewOfSystems','maxLength')">Invalid length</span>-->
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <!--END: subjective notes -->
+
+        <!--START: diagnosis -->
+     
+            <div class="col-md-12" style="margin-top:10px !important;">
+                <form class="form-horizontal hm-bg-white">
+                    <div class="form-body hm-form">
+                        <div class="text-head-wrapper mt0 clearfix">
+                            <h3 class="text-head cstm-add-heading">Diagnosis</h3>
+                        </div>
+                  <div class="row form-group">
+                      <div class="row autocomplete-item" style="width: 80%; margin: 0px 0px 5px 0px;">
+                                <input danphe-auto-complete
+                                class="form-control"
+                                [(ngModel)]="icd10Selected"
+                                [source]="ICD10List"
+                                [list-formatter]="ICDListFormatter"
+                                placeholder="Select ICD10"
+                                display-property-name="ICD10Description"
+                                onClick="this.select();"
+                                match-formatted="true"
+                                [ngModelOptions]="{standalone: true}"
+                                [grid-sort]="'ICD10Description'"
+                                (valueChanged)="AssignSelectedICD()"
+                                max-num-list="20" />
+                              </div>
+                    <!-- <div class="col-md-10"  *ngIf="patientVisitNote.ICDList && patientVisitNote.ICDList.length>0">
+                      <div class="row margin-5-bt" *ngFor="let icddata of patientVisitNote.ICDList; let idx = index"> -->
+                        <div class="col-md-12" >
+                        <div class="row margin-5-bt" *ngFor="let icddata of patientVisitNote.ICDList; let idx = index">
+                        <div class="col-md-9">
+                            <div style="background-color: #f0f1f3;  padding: 5px;">
+                                {{icddata.ICD10Description}}
+                            </div>
+                        </div>
+                        <div class="col-md-3" >
+                         <button class="btn btn-danger" (click)="DeleteRow(idx)">
+                                <i class="fa fa-close"></i>
+                              </button>
+                        </div>
+                      </div>
+                      <!-- <div class="row margin-15-vr">
+                        <div class="col-md-4"><button class="btn btn-primary" (click)="AddNewICDRow()">Add ICD</button></div>
+                      </div> -->
+                    </div>
+                  </div>
+                  </div>
+                </form>
+             </div>
+       
+        <!--END: diagnosis -->
+    </div>
+    <!--END: subjective notes,  diagnosis -->
+
+    <!--START:  objective notes -->
+    <div class="col-md-6">
+        <div class="prob-entry hm-bg-white hm-form">
+            
+            <div class="text-head-wrapper mt0 clearfix">
+                <h3 class="text-head cstm-add-heading" style="margin-top: 12px !important;">Clinical Objective Notes</h3>
+            </div>
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">HEENT<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.HEENT" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Chest<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.Chest" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">CVS<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.CVS" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Abdomen<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.Abdomen" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Extremity<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.Extremity" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Skin<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.Skin" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Neurological<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="patientVisitNote.Neurological" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!--END:  objective notes -->
+</div>
+<div class="row hm-f-note">
+    <div class="col-md-12" style="margin:10px !important;">
+        <div class="form-group hm-bg-white">
+            <h3 class="text-head" style="text-align:center">
+                Lines & Invasive Procedure Note</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th><b>Date</b></th>
+                        <th><b>Lines/Prose</b></th>
+                        <th><b>Site</b></th>
+                        <th><b>Remarks</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input style="width:100%" type="date" [(ngModel)]="patientVisitNote.ProsDate"
+                                [ngModelOptions]="{standalone :true}" /></td>
+
+                        <td><input style="width:100%" type="text" [(ngModel)]="patientVisitNote.LinesProse" /></td>
+                        <td><input style="width:100%" type="text" [(ngModel)]="patientVisitNote.Site" /></td>
+                        <td><input style="width:100%" type="text" [(ngModel)]="patientVisitNote.ProsRemarks"
+                                placeholder="Remarks......." /></td>
+                    </tr>
+                    <tr rowspan="6">
+                        <td colspan="6"><textarea style="height: 100px;width:100%"
+                                [(ngModel)]="patientVisitNote.FreeText" placeholder="Free Text"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="tab-pane" id="instructions">
+    <div class="col-md-6">
+      <div class="hm-form">
+        <div class="text-head-wrapper clearfix">
+          <h3 class="text-head cstm-add-heading">Instructions</h3>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-4">Follow Up<b>:</b></label>
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-3">
+                  <input class="form-control" type="number" min="0" max="150"
+                         onFocus="this.value=0"
+                         [(ngModel)]="patientVisitNote.FollowUp"
+                        />
+                </div>
+                <div class="col-md-9">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="day" [(ngModel)]="patientVisitNote.FollowUpUnit" >
+                        <span></span>Days
+                      </label>
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="week" [(ngModel)]="patientVisitNote.FollowUpUnit" >
+                        <span></span>Weeks
+                      </label>
+                      <label class="mt-radio mt-radio-outline">
+                        <input name="FollowUpUnit" type="radio" value="month" [(ngModel)]="patientVisitNote.FollowUpUnit" >
+                        <span></span>Months
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-4">Remarks<b>:</b></label>
+            <div class="col-md-8">
+              <textarea class="form-control" [(ngModel)]="patientVisitNote.Remarks" maxlength="500" rows="3" ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <br />
+
+    </div>
+  </div>
+
+<div class="col-md-6">
+    <!-- <button  class="btn btn-primary" (click)="SavePatientVisitNote()"><span *ngIf="!update">Save</span>  </button> -->
+    <input style="width: 200px;  margin-right: 30px; " class="btn blue"
+    type="button" (click)="AddPatientVisitNote()" *ngIf="!update" value="Save" />
+  <input style="width: 200px;margin-right: 30px;" class="btn blue" type="button"
+    (click)="UpdatePatientVisitNote()" *ngIf="update" value="Update" />
+     <input style="width: 200px;margin-right: 30px;" class="btn blue" type="button"
+    (click)="PrintVisitNote()" *ngIf="update" value="View & Print" /> 
+</div>
+</div>
+
+

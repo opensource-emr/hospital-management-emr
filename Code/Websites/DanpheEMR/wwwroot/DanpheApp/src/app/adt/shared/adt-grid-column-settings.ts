@@ -179,6 +179,9 @@ export class ADTGridColumnSettings {
       tmplateInDropDown += `<li><a danphe-grid-action="cancel">&nbsp;Cancel Admission</a></li>`
     }
 
+    if (ADTGridColumnSettings.securityServ.HasPermission("discharge-admission-button")) {
+      tmplateInDropDown += `<li><a danphe-grid-action="discharge">&nbsp;Discharge</a></li>`
+   }
 
     if (tmplateInDropDown && tmplateInDropDown.trim().length) {
       tmplate = tmplate + `<div class="dropdown" style = "display:inline-block;">
