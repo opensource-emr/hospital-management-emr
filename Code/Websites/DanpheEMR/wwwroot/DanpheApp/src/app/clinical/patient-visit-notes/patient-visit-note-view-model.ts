@@ -7,4 +7,5 @@ export class PatientVisitNoteVM{
     public homeMedicationList:Array<any>;
     public diagnosisList:Array<any>;
     public bodyPainList:Array<any>;
+    public procedureList:Array<any>;
   }

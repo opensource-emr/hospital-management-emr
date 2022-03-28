@@ -20,6 +20,7 @@ export class ClinicalComponent {
     public secondaryNavItems: Array<any> = null;
     constructor(public securityService: SecurityService, public visitService: VisitService, public coreService: CoreService) {
         DanpheCache.GetData(MasterType.ICD, null);
+        DanpheCache.GetData(MasterType.ProcedureBillItemPrices,null);
         //get the chld routes of Clinical from valid routes available for this user.
         this.validRoutes = this.securityService.GetChildRoutes("Doctors/PatientOverviewMain/Clinical");
         if (this.visitService.globalVisit.VisitType == "outpatient") {

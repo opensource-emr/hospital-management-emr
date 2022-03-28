@@ -29,12 +29,12 @@ namespace DanpheEMR.Controllers
         DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
         private readonly string connString = null;
         private readonly string connStringAdmin = null;
-
-
+        private readonly string applicationVersionNum = null;
         public AccountController(IOptions<MyConfiguration> _config)
-        {
+        {           
             connString = _config.Value.Connectionstring;
             connStringAdmin = _config.Value.ConnectionStringAdmin;
+            applicationVersionNum = _config.Value.ApplicationVersionNum;
         }
 
         public IActionResult LicenseExpired()
@@ -48,6 +48,7 @@ namespace DanpheEMR.Controllers
         //IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Login(string returnUrl = null)
         {
+            setVersionNumber();
             DateTime centuryBegin = new DateTime(2001, 1, 1);
             DateTime currentDate = DateTime.Now;
             //Generate unique tick to make it a selector
@@ -179,6 +180,7 @@ namespace DanpheEMR.Controllers
         IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Login(LoginViewModel model, string returnUrl = null)
         {
+            setVersionNumber();
             if (ModelState.IsValid)
             {
 
@@ -259,6 +261,7 @@ namespace DanpheEMR.Controllers
         //IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Logout(string returnUrl = null)
         {
+            setVersionNumber();
             //HttpContext.Session.Set<RbacUser>("currentuser", null);   
             //Remove all sessin variable values
             SystemAdminDbContext adminDbContext = new SystemAdminDbContext(connStringAdmin);
@@ -517,6 +520,10 @@ namespace DanpheEMR.Controllers
         }
         #endregion
 
+        public void setVersionNumber() 
+        {
+            ViewData["applicationVersionNum"] = applicationVersionNum;
+        }
 
 
     }

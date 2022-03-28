@@ -193,7 +193,7 @@
     <!--END:  objective notes -->
 </div>
 <div class="row hm-f-note">
-    <div class="col-md-12" style="margin:10px !important;">
+    <div class="col-md-6" style="margin:10px !important;">
         <div class="form-group hm-bg-white">
             <h3 class="text-head" style="text-align:center">
                 Lines & Invasive Procedure Note</h3>
@@ -224,6 +224,55 @@
             </table>
         </div>
     </div>
+     <!--START: Procedure -->
+     
+     <div class="col-md-12" style="margin-top:10px !important;">
+        <form class="form-horizontal hm-bg-white">
+            <div class="form-body hm-form">
+                <div class="text-head-wrapper mt0 clearfix">
+                    <h3 class="text-head cstm-add-heading">Procedure(s)</h3>
+                </div>
+          <div class="row form-group">
+              <div class="row autocomplete-item" style="width: 80%; margin: 0px 0px 5px 0px;">
+                        <input danphe-auto-complete
+                        class="form-control"
+                        [(ngModel)]="procedureSelected"
+                        [source]="ProcedureSourceList"
+                        [list-formatter]="ProcedureListFormatter"
+                        placeholder="Select Procedure"
+                        display-property-name="ProcedureName"
+                        onClick="this.select();"
+                        match-formatted="true"
+                        [ngModelOptions]="{standalone: true}"
+                        [grid-sort]="'ProcedureName'"
+                        (valueChanged)="AssignSelectedProcedure()"
+                        max-num-list="20" />
+                      </div>
+            <div class="col-md-12" >
+                <div class="row margin-5-bt" *ngFor="let procData of ProcedureList; let idx = index">
+                <div class="col-md-7" *ngIf="procData?.IsActive">
+                    <div style="background-color: #f0f1f3;  padding: 5px;">
+                        {{procData.ItemName}} 
+                    </div>
+                </div>
+                <div class="col-md-3" *ngIf="procData?.IsActive">
+                    <div style="background-color: #f0f1f3;  padding: 5px;">
+                        {{procData.Status}}
+                    </div>
+                </div>
+                <div class="col-md-2" *ngIf="procData?.IsActive" >
+                 <button class="btn btn-danger" (click)="DeleteRowProcedure(idx)">
+                        <i class="fa fa-close"></i>
+                      </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </form>
+     </div>
+
+<!--END: procedure -->
 </div>
 <div class="tab-pane" id="instructions">
     <div class="col-md-6">
