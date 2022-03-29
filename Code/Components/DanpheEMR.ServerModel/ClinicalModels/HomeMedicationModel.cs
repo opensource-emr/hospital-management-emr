@@ -30,5 +30,9 @@ namespace DanpheEMR.ServerModel
         public DateTime? CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public virtual PatientModel Patient { get; set; }
+        public int Days { get; set; }
+        public int? FrequencyId { get; set; }
+        [NotMapped]
+        public string FrequencyType { get; set; }
     }
 }

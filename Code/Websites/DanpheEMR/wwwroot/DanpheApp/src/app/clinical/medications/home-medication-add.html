@@ -6,7 +6,7 @@
     <h3 class="cstm-add-heading">{{CurrentHomeMedication.HomeMedicationId ? 'Update' : 'Add'}} Home Medication</h3>
 
     <div class="form-group cstm-form-group">
-        <label class="control-label cstm-control-label col-md-12">Type<b>:</b> <b class="color-red"> *</b></label>
+        <label class="control-label cstm-control-label col-md-12">Type<b>:</b> <b *ngIf="enableMedicationValidation" class="color-red"> *</b></label>
         <div class="col-md-12">
           <div class="input-group">
             <div class="icheck-inline">
@@ -36,7 +36,7 @@
     </div>
 
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Name<b class="color-red">  *</b></label>
+      <label class="control-label cstm-control-label col-md-12">Name<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
       <div class="col-md-12">
         <input danphe-auto-complete
                class="form-control cstm-form-control"
@@ -56,7 +56,7 @@
       </div>
     </div>
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Dose<b class="color-red">  *</b></label>
+      <label class="control-label cstm-control-label col-md-12">Dose<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
       <div class="col-md-12">
         <input type="text" class="form-control cstm-form-control"
                formControlName="Dose" maxlength="100"
@@ -67,7 +67,7 @@
       </div>
     </div>
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Route<b class="color-red">  *</b></label>
+      <label class="control-label cstm-control-label col-md-12">Route<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
       <div class="col-md-12">
         <select class="form-control cstm-form-control" [(ngModel)]="CurrentHomeMedication.Route"
                 formControlName="Route">
@@ -81,18 +81,32 @@
       </div>
     </div>
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Frequency<b class="color-red">  *</b></label>
+      <label class="control-label cstm-control-label col-md-12">Frequency<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
       <div class="col-md-12">
-        <input type="number" class="form-control cstm-form-control"
-               formControlName="Frequency"
-               [(ngModel)]="CurrentHomeMedication.Frequency" />
+        <select class="form-control cstm-form-control" [(ngModel)]="selectedFrequency" placeholder="Frequency" 
+                title="Select Dosage Frequency" formControlName="Frequency">
+          <option *ngFor="let frq of medicationFrequency" value="{{frq.FrequencyId}}">
+                  {{frq.Type}}
+          </option>
+        </select>
         <span class="color-red font-sm" style="color:red"
               *ngIf="CurrentHomeMedication.IsDirty('Frequency')"
               [hidden]="CurrentHomeMedication.IsValidCheck('Frequency','required')">Enter Fequency(Num of times per day)</span>
       </div>
     </div>
     <div class="form-group cstm-form-group">
-      <label class="control-label cstm-control-label col-md-12">Last Taken<b class="color-red">  *</b></label>
+      <label class="control-label cstm-control-label col-md-12">Days<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
+      <div class="col-md-12">
+        <input type="number" class="form-control cstm-form-control"
+               formControlName="Days" min="0"
+               [(ngModel)]="CurrentHomeMedication.Days" />
+        <span class="color-red font-sm" style="color:red"
+              *ngIf="CurrentHomeMedication.IsDirty('Days')"
+              [hidden]="CurrentHomeMedication.IsValidCheck('Days','required')">Enter Days</span>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-12">Last Taken<b *ngIf="enableMedicationValidation" class="color-red">  *</b></label>
       <div class="col-md-12">
         <input type="date" class="form-control cstm-form-control"
                formControlName="LastTaken"

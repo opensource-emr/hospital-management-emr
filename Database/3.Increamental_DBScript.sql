@@ -820,6 +820,40 @@ alter column Nadi varchar(20) null
 Go
 -- end: Menka : 24-March-2022: Created core parameter in CORE_CFG_Parameters table to show/hide Ayurved vitals and altered nadi column's data type in CLN_PatientVitals table
 
+-- start: Menka : 25-March-2022: Changes for home medication
+Insert Into CORE_CFG_Parameters (ParameterGroupName,ParameterName,ParameterValue,ValueDataType,Description,ParameterType)
+Values ( 'Clinical','EnableMedicationValidation','true','boolean', 'This will enable or disable validation of medication fields on add medication page','custom')
+Go
+
+Alter table CLN_HomeMedications
+add FrequencyId int null, Days int null
+Go
+
+Insert Into CLN_MST_Frequency (Type)
+Values ('1-1-1-1')
+Go
+
+--insert everything into a temp table
+SELECT * 
+INTO #tmpMedicationTable
+FROM [dbo].[CLN_HomeMedications]
+Go
+--clear your table
+DELETE FROM [dbo].[CLN_HomeMedications]
+Go
+--reseed identity column value
+DBCC CHECKIDENT ('[dbo].[CLN_HomeMedications]', RESEED, 0);
+Go
+
+--insert back all the values with the updated ID column
+INSERT INTO [dbo].[CLN_HomeMedications] ( PatientId,LastTaken,Route,Dose,Comments,MedicationId,OtherMedication,CreatedBy,CreatedOn,ModifiedBy,Frequency,MedicationType,PatientVisitId,Days,FrequencyId)
+SELECT PatientId,LastTaken,Route,Dose,Comments,MedicationId,OtherMedication,CreatedBy,CreatedOn,ModifiedBy,Frequency,MedicationType,PatientVisitId,Days,FrequencyId FROM #tmpMedicationTable
+
+--drop the temp table
+DROP TABLE #tmpMedicationTable
+Go
+
+-- end: Menka : 25-March-2022: Changes for home medication
 --START: NageshBB: 25March2022: created table for patient visit procedure save
 
 DROP TABLE if exists  [dbo].[CLN_PatientVisitProcedure]
