@@ -20,6 +20,7 @@ export class DoctorsMainComponent {
     //private sessionSt: SessionStorageService,
     public msgBoxServ: MessageboxService) {
       DanpheCache.GetData(MasterType.ICD, null);
+      DanpheCache.GetData(MasterType.ProcedureBillItemPrices,null);
         //get the chld routes of doctors/PatientOverviewMain from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Doctors");
     this.GetMessageOfTheDay();

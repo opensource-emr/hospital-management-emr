@@ -819,3 +819,28 @@ alter table CLN_PatientVitals
 alter column Nadi varchar(20) null
 Go
 -- end: Menka : 24-March-2022: Created core parameter in CORE_CFG_Parameters table to show/hide Ayurved vitals and altered nadi column's data type in CLN_PatientVitals table
+
+--START: NageshBB: 25March2022: created table for patient visit procedure save
+
+DROP TABLE if exists  [dbo].[CLN_PatientVisitProcedure]
+Go
+Create table [dbo].[CLN_PatientVisitProcedure]
+(
+         PatientVisitProcedureId int identity(1,1)  constraint PK_CLN_PatientVisitProcedure primary key,
+         PatientId int not null ,
+         PatientVisitId int not null ,
+         ProviderId int not null,
+		 BillItemPriceId int,
+		 ItemName varchar(250),
+		 [Status] varchar(50),
+         Remarks varchar(400),
+
+        CreatedBy int,
+        CreatedOn Datetime ,
+        ModifiedBy int ,
+        ModifiedOn datetime,
+        IsActive bit
+)
+Go
+
+--END: NageshBB: 25March2022: created table for patient visit procedure save

@@ -138,6 +138,13 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = data;
                 }
+                else if (reqType == "procedure-billitemprices")
+                {
+                    List<BillItemPrice> data = (from itm in billingDbContext.BillItemPrice where itm.IsProc==true
+                                                         select itm).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = data;
+                }
 
             }
             catch (Exception ex)

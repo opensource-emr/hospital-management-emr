@@ -3,6 +3,7 @@ import {
     Validators,
     FormBuilder,
   } from '@angular/forms';
+import { PatientVisitProcedureModel } from './clinical-patient-visit-procedure.model';
 import { ICD10 } from './icd10.model';
   
   export class PatientVisitNoteModel {
@@ -31,7 +32,7 @@ import { ICD10 } from './icd10.model';
     public FreeText :string=null;
     
     public FollowUp :number=0;
-    public FollowUpUnit :string=null;
+    public FollowUpUnit :string='day';
     public Remarks :string=null;
   
     public CreatedBy :number=0;
@@ -40,8 +41,7 @@ import { ICD10 } from './icd10.model';
     public ModifiedOn : string = null;
     public IsActive :boolean=true;
     public ICDList: Array<ICD10> = [];
-   
-
+    
     public PatientVisitNoteValidator: FormGroup = null;
     constructor() {
   

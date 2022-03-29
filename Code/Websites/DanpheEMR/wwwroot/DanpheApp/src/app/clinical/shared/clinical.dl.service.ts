@@ -111,6 +111,10 @@ export class ClinicalDLService {
   public GetPatientVisitNote(patientVisitId: number, patientId: number) {
     return this.http.get<any>("/api/Clinical?patientVisitId=" + patientVisitId + "&patientId=" + patientId + "&reqType=patient-visit-note", this.options);
   }
+  //patient-visit-procedures 
+  public GetPatientVisitProcedures(patientVisitId: number, patientId: number) {
+    return this.http.get<any>("/api/Clinical?patientVisitId=" + patientVisitId + "&patientId=" + patientId + "&reqType=patient-visit-procedures", this.options);
+  }
   public GetPatientVisitNoteAllData( patientId: number,patientVisitId: number) {
     return this.http.get<any>("/api/Clinical?patientVisitId=" + patientVisitId + "&patientId=" + patientId + "&reqType=patient-visit-note-all-data", this.options);
   }
@@ -208,7 +212,11 @@ export class ClinicalDLService {
     let data = JSON.stringify(patientVisitNote);
     return this.http.post<any>("/api/Clinical?reqType=patient-visit-note", data, this.options);
   }
-
+  
+  public PostPatientVisitProcedures(patientVisitProcedures) {
+    let data = JSON.stringify(patientVisitProcedures);
+    return this.http.post<any>("/api/Clinical?reqType=patient-visit-procedures", data, this.options);
+  }
   public PutPatientVisitNote(patientVisitNote) {
     return this.http.put<any>("/api/Clinical?reqType=patient-visit-note", patientVisitNote, this.options);
 

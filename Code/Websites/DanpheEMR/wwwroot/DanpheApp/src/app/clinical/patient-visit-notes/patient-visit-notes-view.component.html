@@ -225,7 +225,21 @@
               </div>
             </div>
             <!-- diagnosis end -->
-            <!-- procedure note start -->
+              <!-- Procedures start -->
+              <div class="sub-main-cls" *ngIf="(patientVisitNote?.procedureList.length>0)">
+                <div class="p-relative">
+                  <b>Procedure(s)</b>
+                  <span class="value content-data">
+                    <ul>
+                      <li *ngFor="let proce of patientVisitNote.procedureList; let i=  index;">
+                        &nbsp; {{proce?.ItemName}} &nbsp; <br>
+                      </li>
+                    </ul>
+                  </span>
+                </div>
+              </div>
+              <!-- Procedures end -->
+            <!-- line & procedure note start -->
             <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote">
               <div class="p-relative">
                 <b>Line & Invasive Procedure Note</b>
@@ -250,7 +264,7 @@
                 </span>
               </div>
             </div>
-            <!-- procedure note end-->
+            <!-- line & procedure note end-->
             <!-- instructions start -->
             <div class="sub-main-cls" *ngIf="patientVisitNote?.patVisitNote?.PatientVisitNote.FollowUpUnit">
               <div class="p-relative">
@@ -286,149 +300,150 @@
                     <div class="cstm-portlet-body">
                       <div class="table-responsive">
                         <table class="table">
-                          <tbody>
+                          <tbody *ngFor="let vitals of patientVisitNote.vitalsList; let i=index;">
                             <tr>
                               <td>Recorded On</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td >
                                 <strong>
                                   : <date-lbl [value]="vitals.CreatedOn" [show-time]="true"></date-lbl>
                                 </strong>
                               </td>
                               <td>Taken On</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td >
                                 <strong>
                                   : <date-lbl [value]="vitals.VitalsTakenOn" [show-time]="true"></date-lbl>
                                 </strong>
                               </td>
                               <td>Height</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i=index;">
+                              <td  >
                                 <div *ngIf="vitals.HeightUnit!='inch'">
                                   : {{vitals.Height |HasValue: vitals.HeightUnit}}
                                 </div>
-                                <div *ngIf="vitals.HeightUnit=='inch'">
-                                  : {{vitals.Height}}
-                                </div>
+                               
                               </td>
                             </tr>
                             <tr>
                               <td>Weight</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i = index;">
+                              <td  >
                                 : {{vitals.Weight | HasValue: vitals.WeightUnit}}
                               </td>
                               <td>BMI</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.BMI}}
                               </td>
                               <td>Temperature</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList; let i=index;">
+                              <td  >
                                 : {{vitals.Temperature | HasValue: vitals.TemperatureUnit}}
                               </td>
                             </tr>
                             <tr>
                               <td>Pulse</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Pulse | HasValue:'/min'}}
                               </td>
                               <td>Blood Pressure</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}
                               </td>
                               <td>Respiratory Rate</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.RespiratoryRatePerMin | HasValue:'/min'}}
                               </td>
                             </tr>
                             <tr>
                               <td>SpO2</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.SpO2 | HasValue:'percent'}}
                               </td>
                               <td>O<sub>2</sub> Deliver Method</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.OxygenDeliveryMethod}}
                               </td>
                               <td>Body Pain Data</td>
-                              <td *ngFor="let painList of patientVisitNote.bodyPainList">
-                                : {{painList.BodyPart}}-{{painList.PainScale}}
+                              <td >
+                                :<span *ngFor="let painList of patientVisitNote.bodyPainList">
+                                  {{painList.BodyPart}}-{{painList.PainScale}},
+                                </span> 
+                               
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>Nadi</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Nadi}}
                               </td>
                               <td>Mala</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Mala}}
                               </td>
                               <td>Mutra</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Mutra}}
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>Jivha</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Jivha}}
                               </td>
                               <td>Shabda</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Shabda}}
                               </td>
                               <td>Sparsha</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Sparsha}}
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>Drik</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Drik}}
                               </td>
                               <td>Akriti</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Akriti}}
                               </td>
                               <td>Lung field</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.LungField}}
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>Heart Sound</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.HeartSounds}}
                               </td>
                               <td>PA_Tenderness</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.PA_Tenderness}}
                               </td>
                               <td>Organomegaly</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Organomegaly}}
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>CNS_Consiousness</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.CNS_Consiousness}}
                               </td>
                               <td>Power</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Power}}
                               </td>
                               <td>Reflexes</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Reflexes}}
                               </td>
                             </tr>
                             <tr *ngIf="showAyurvedVitals">
                               <td>Tone</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Tone}}
                               </td>
                               <td>Others</td>
-                              <td *ngFor="let vitals of patientVisitNote.vitalsList">
+                              <td  >
                                 : {{vitals.Others}}
                               </td>
                             </tr>
@@ -478,7 +493,7 @@
                                           <td>{{add.Dose}}</td>
                                           <td>{{add.Route}}</td>
                                           <td>{{add.LastTaken  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                                          <td>{{add.Frequency}}</td>
+                                          <td>{{add.FrequencyType}}</td>
                                           <td>{{add.Comments}}</td>
                                           
                                       </tr>

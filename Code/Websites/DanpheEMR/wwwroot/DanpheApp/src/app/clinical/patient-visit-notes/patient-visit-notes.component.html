@@ -74,8 +74,8 @@
                         <div class="text-head-wrapper mt0 clearfix">
                             <h3 class="text-head cstm-add-heading">Diagnosis</h3>
                         </div>
-                  <div class="row form-group">
-                      <div class="row autocomplete-item" style="width: 80%; margin: 0px 0px 5px 0px;">
+                  <div class="row form-group" >
+                      <div class="col-md-12 autocomplete-item" style="width: 80%; margin: 0px 0px 5px 0px;">
                                 <input danphe-auto-complete
                                 class="form-control"
                                 [(ngModel)]="icd10Selected"
@@ -192,11 +192,69 @@
     </div>
     <!--END:  objective notes -->
 </div>
-<div class="row hm-f-note">
-    <div class="col-md-12" style="margin:10px !important;">
-        <div class="form-group hm-bg-white">
-            <h3 class="text-head" style="text-align:center">
-                Lines & Invasive Procedure Note</h3>
+
+<!--START: line & Invasive notes, Procedures -->
+<div class="row">
+      <!--START: diagnosis -->
+      <div class="col-md-6">
+        <div class="col-md-12" >
+            <form class="form-horizontal hm-bg-white">
+                <div class="form-body hm-form">
+                    <div class="text-head-wrapper mt0 clearfix">
+                        <h3 class="text-head cstm-add-heading">Procedure(s)</h3>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12 autocomplete-item" style="width: 80%; margin: 0px 0px 5px 0px;">
+                                  <input danphe-auto-complete
+                                  class="form-control"
+                                  [(ngModel)]="procedureSelected"
+                                  [source]="ProcedureSourceList"
+                                  [list-formatter]="ProcedureListFormatter"
+                                  placeholder="Select Procedure"
+                                  display-property-name="ItemName"
+                                  onClick="this.select();"
+                                  match-formatted="true"
+                                  [ngModelOptions]="{standalone: true}"
+                                  [grid-sort]="'ItemName'"
+                                  (valueChanged)="AssignSelectedProcedure()"
+                                  max-num-list="20" />
+                                </div>
+                      <div class="col-md-12" >
+                          <div class="row margin-5-bt" *ngFor="let procData of ProcedureList; let idx = index">
+                          <div class="col-md-7" *ngIf="procData?.IsActive">
+                              <div style="background-color: #f0f1f3;  padding: 5px;">
+                                  {{procData.ItemName}} 
+                              </div>
+                          </div>
+                          <!-- <div class="col-md-3" *ngIf="procData?.IsActive">
+                              <div style="background-color: #f0f1f3;  padding: 5px;">
+                                  {{procData.Status}}
+                              </div>
+                          </div> -->
+                          <div class="col-md-2" *ngIf="procData?.IsActive" >
+                           <button class="btn btn-danger" (click)="DeleteRowProcedure(idx)">
+                                  <i class="fa fa-close"></i>
+                                </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+              </div>
+            </form>
+         </div>
+   
+    
+</div>
+<!--END: diagnosis -->
+
+       <!--START:  LINE INVASIVE NOTES  -->
+       <div class="col-md-6">
+        <div class="prob-entry hm-bg-white hm-form">
+            
+            <div class="text-head-wrapper mt0 clearfix">
+                <h3 class="text-head cstm-add-heading" style="margin-top: 12px !important;">Clinical Objective Notes</h3>
+            </div>
+           <div>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -222,9 +280,15 @@
                     </tr>
                 </tbody>
             </table>
+           </div>
+
         </div>
     </div>
+  <!--END:  LINE INVASIVE NOTES  -->
+    
 </div>
+<!--END: line & Invasive notes, Procedures -->
+
 <div class="tab-pane" id="instructions">
     <div class="col-md-6">
       <div class="hm-form">
@@ -281,11 +345,11 @@
 
 <div class="col-md-6">
     <!-- <button  class="btn btn-primary" (click)="SavePatientVisitNote()"><span *ngIf="!update">Save</span>  </button> -->
-    <input style="width: 200px;  margin-right: 30px; " class="btn blue"
+    <input style="width: 200px;  margin: 30px; " class="btn blue"
     type="button" (click)="AddPatientVisitNote()" *ngIf="!update" value="Save" />
-  <input style="width: 200px;margin-right: 30px;" class="btn blue" type="button"
+  <input style="width: 200px;margin: 30px;" class="btn blue" type="button"
     (click)="UpdatePatientVisitNote()" *ngIf="update" value="Update" />
-     <input style="width: 200px;margin-right: 30px;" class="btn blue" type="button"
+     <input style="width: 200px;margin: 30px;" class="btn blue" type="button"
     (click)="PrintVisitNote()" *ngIf="update" value="View & Print" /> 
 </div>
 </div>

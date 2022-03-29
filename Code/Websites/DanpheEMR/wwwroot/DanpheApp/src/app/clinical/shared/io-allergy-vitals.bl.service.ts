@@ -8,6 +8,7 @@ import { InputOutput } from './input-output.model';
 import * as _ from 'lodash';
 import * as moment from 'moment/moment';
 import { PatientVisitNoteModel } from './clinical-patient-visit-note.model';
+import { PatientVisitProcedureModel } from './clinical-patient-visit-procedure.model';
 @Injectable()
 export class IOAllergyVitalsBLService {
 
@@ -60,6 +61,11 @@ export class IOAllergyVitalsBLService {
     }
     public GetPatientVisitNoteAllData(patientId: number,patientVisitId: number, ) {
         return this.clinicalDLService.GetPatientVisitNoteAllData(patientId,patientVisitId)
+            .map(res => res);
+    }
+    
+    public GetPatientVisitProcedures(patientVisitId: number, patientId: number) {
+        return this.clinicalDLService.GetPatientVisitProcedures(patientVisitId, patientId)
             .map(res => res);
     }
     //allergy
@@ -150,8 +156,13 @@ export class IOAllergyVitalsBLService {
         return this.clinicalDLService.PostPatientVisitNote(temp)
             .map(res => res);
     }
-
-    //POSt: Patient visit note 
+    
+    //POSt: Patient visit procedures
+    public PostPatientVisitProcedures(patVisitProcedures){
+        return this.clinicalDLService.PostPatientVisitProcedures(patVisitProcedures)
+            .map(res => res);
+    }
+    //Put: Patient visit note 
     public PutPatientVisitNote(patVisitNote:PatientVisitNoteModel){
         var temp = _.omit(patVisitNote, ['PatientVisitNoteValidator']);
         return this.clinicalDLService.PutPatientVisitNote(temp)

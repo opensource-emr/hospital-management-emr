@@ -234,10 +234,10 @@
             font-size: 11px;
             font-weight: normal;
         }
-        .rem-me label input{
-            float: left;
-            margin-top: 1px;
-        }
+            .rem-me label input{
+                float: left;
+                margin-top: 1px;
+            }
     .form-group {
         margin-bottom: 0px !important;
     }
@@ -259,7 +259,7 @@
                 <div class="col-md-4">
                     <div class="left-img" style=" background-image: url('/themes/theme-default/images/login-left.jpg'); position: relative;">
                         <div class="">
-                            <h1>Danphe Emr</h1>    
+                            <h1>Danphe Emr</h1>
                             <p>A Complete <b style="color: #00ffa1; font-weight: 600 ">Healthcare Management Solution</b> for Hospitals, Clinics and Pharmacy.</p>
                             <ul class="feature">
                                 <li><span>&#9745;</span>EMR</li>
@@ -270,14 +270,14 @@
                                 <li><span>&#9745;</span>Patient Portal</li>
                             </ul>
                             @*<div style="margin-top: 20px;">
-            Our &nbsp;<a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a>&nbsp;
-        </div>*@
+                                    Our &nbsp;<a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a>&nbsp;
+                                </div>*@
                         </div>
                         <p class="text-center footer-btm-cprt">
                             <a class="text-right termscondition" href="#" original-title="terms and conditions">Terms & Condition</a><br />
                             &copy; Copyright 2022 @*<a href="http://www.danphehealth.com/" target="_blank" title="DanpheHealth Pvt. Ltd.">Danphe Health</a>*@ @*NextChanges: get website and company name from appsettings file*@
                             <a href="#" target="_blank" title="">Danphe EMR. All Rights Reserved.</a>
-             
+
                         </p>
                         @*<div style="position: absolute; left: 0; bottom: 30px; font-size: 12px;">
                                 <span>
@@ -395,15 +395,17 @@
                                                     </div>
                                                 </div>
                                             </div>
-
+                                            @{ 
+                                                string versionNumber = (string)ViewData["applicationVersionNum"];
+                                            }
                                             <div class="form-group">
-                                                    <div class="col-sm-12">
-                                                        <div class="text-center">
-                                                            <span class="txt-xs" style="font-weight: 600;line-height: 5;">Danphe EMR Version 1.0.1</span>@*NextChanges:get product name and version number from appsettings and show here*@
-                                                            
-                                                        </div>
+                                                <div class="col-sm-12">
+                                                    <div class="text-center">
+                                                        <span class="txt-xs" style="font-weight: 600;line-height: 5;">Danphe EMR Version @versionNumber </span>
+
                                                     </div>
                                                 </div>
+                                            </div>
 
                                         </div>
                                     }

@@ -205,6 +205,14 @@ namespace DanpheEMR.Controllers.Clinical
                     responseData.Results = (responseData.Status == "OK") ? patVisitNote : new PatientVisitNote();
                     responseData.ErrorMessage = (responseData.Status == "OK") ? null : "Don't have visit note";
                 }
+                else if (reqType == "patient-visit-procedures" && patientVisitId != 0 && patientId != 0)
+                {
+                    List<PatientVisitProcedure> patVisitProcedures = dbContext.PatientVisitProcedures
+                                                .Where(p => p.PatientId == patientId && p.PatientVisitId == patientVisitId).ToList();
+                    responseData.Status = (patVisitProcedures != null && patVisitProcedures.Count > 0) ? "OK" : "Failed";
+                    responseData.Results = (responseData.Status == "OK") ? patVisitProcedures : new List<PatientVisitProcedure>();
+                    responseData.ErrorMessage = (responseData.Status == "OK") ? null : "Don't have procedures";
+                }
                 else if (reqType == "patient-visit-note-all-data" && patientVisitId != 0 && patientId != 0)
                 {
                     var patVisitNote = (from visitNote in dbContext.PatientVisitNotes 
@@ -229,10 +237,12 @@ namespace DanpheEMR.Controllers.Clinical
                     if (patVisitNote != null)
                     {
                         //vitals
-                        var vitals = dbContext.Vitals
-                                                   .Where(p => p.PatientVisitId == patientVisitId).OrderByDescending(d => d.VitalsTakenOn).FirstOrDefault();
+                        var vitals = dbContext.Vitals.Where(p => p.PatientVisitId == patientVisitId).OrderByDescending(d => d.PatientVitalId).FirstOrDefault();
                         List<VitalsModel> vitalsList = new List<VitalsModel>();
-                        vitalsList.Add(vitals);
+                        if (vitals != null) {
+                            vitalsList.Add(vitals);
+                        }
+
                         //lab requisitions
                         List<LabRequisitionModel> labRequisitionList = dbContext.LabRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned" && a.BillingStatus != "cancel").ToList();
                         //imaging requisition
@@ -260,6 +270,9 @@ namespace DanpheEMR.Controllers.Clinical
                                                           .Where(a => a.ItemId == homeMed.MedicationId).FirstOrDefault().ItemName;
                             }
                         }
+                        //procedures against this visit
+                        List<PatientVisitProcedure> procedureList = dbContext.PatientVisitProcedures
+                                                   .Where(p => p.PatientId  == patientId  && p.PatientVisitId == patientVisitId && p.IsActive==true).ToList();
                         responseData.Status = "OK";
                         responseData.Results = new
                         {
@@ -268,8 +281,8 @@ namespace DanpheEMR.Controllers.Clinical
                            labRequisitionList,
                            imagingRequisitionList,
                            otherOrderList,
-                           homeMedicationList
-                            
+                           homeMedicationList,
+                           procedureList
                         };
                     }
                     else {
@@ -3199,6 +3212,7 @@ namespace DanpheEMR.Controllers.Clinical
                     }
                     else
                     {
+
                         patientVisitNote.CreatedBy = currentUser.EmployeeId;
                         patientVisitNote.CreatedOn = DateTime.Now;
                         dbContext.PatientVisitNotes.Add(patientVisitNote);
@@ -3207,6 +3221,45 @@ namespace DanpheEMR.Controllers.Clinical
                         responseData.Status = "OK";
                     }
 
+                }
+                
+                else if (reqType == "patient-visit-procedures")
+                {
+
+                    string str = this.ReadPostData();
+                    List<PatientVisitProcedure> patientVisitProcedures = JsonConvert.DeserializeObject<List<PatientVisitProcedure>>(str);
+                        foreach (PatientVisitProcedure proc in patientVisitProcedures)
+                        {
+                            if (proc.PatientVisitProcedureId > 0)
+                            {
+                                proc.ModifiedBy = currentUser.EmployeeId;
+                                proc.ModifiedOn = DateTime.Now;
+                                dbContext.PatientVisitProcedures.Attach(proc);
+                                dbContext.Entry(proc).State = EntityState.Modified;
+                                dbContext.Entry(proc).Property(u => u.CreatedBy).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.CreatedOn).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.ProviderId).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.PatientId).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.PatientVisitId).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.BillItemPriceId).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.ItemName).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.Status).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.Remarks).IsModified = false;
+                                dbContext.Entry(proc).Property(u => u.IsActive).IsModified = true;
+
+                            }
+                            else
+                            {
+                                proc.CreatedBy = currentUser.EmployeeId;
+                                proc.CreatedOn = DateTime.Now;
+                                dbContext.PatientVisitProcedures.Add(proc);
+
+                            }
+                        }
+                        dbContext.SaveChanges();
+                        responseData.Results = patientVisitProcedures;
+                        responseData.Status = "OK";
+                        
                 }
                 else
                 {
