@@ -78,7 +78,7 @@ Credits
 ### Sponsors
 All sponsors are here. Thanks all sponsors for your contributions.
 
-[imaark digital](https://www.imarkdigital.com/)
+[imark digital](https://www.imarkdigital.com/)
 
 
 Enterprise support.
