@@ -6,6 +6,8 @@ import { HomeMedication } from "../shared/home-medication.model";
 import { HttpClient,HttpHeaders} from '@angular/common/http';
 import * as moment from 'moment/moment';
 import { VisitService } from "../../appointments/shared/visit.service";
+import { CoreService } from "../../core/shared/core.service";
+import { DischargeSummaryBLService } from "../../discharge-summary/shared/discharge-summary.bl.service";
 
 @Component({
     selector: "home-medication-add",
@@ -23,6 +25,9 @@ export class HomeMedicationAddComponent {
     public medicineServerPath: string = "/api/Master?type=medicine&inputValue=:keywords";
     public loading: boolean = false;
     public showMedicationAddBox: boolean = false;
+    public enableMedicationValidation: boolean = false;
+    public medicationFrequency:any ;
+    public selectedFrequency :any;
 
     @Output("callback-addupdate")
     public callbackAddUpdate: EventEmitter<Object> = new EventEmitter<Object>();
@@ -31,9 +36,12 @@ export class HomeMedicationAddComponent {
         public medicationBLService: MedicationBLService,
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
-        public http: HttpClient) {
+        public http: HttpClient,
+        public coreService: CoreService,
+        public dischargeSummaryBLService: DischargeSummaryBLService) {
         this.LoadAllMedications();
-
+        this.enableMedicationValidation = this.EnableMedicationValidation();
+        this.GetMedicationFrequency();
     }
     public options =  {
         headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
@@ -53,10 +61,13 @@ export class HomeMedicationAddComponent {
                 var homeMedication = new HomeMedication();
                 homeMedication = Object.assign(homeMedication, this.CurrentHomeMedication);
                 this.CurrentHomeMedication = homeMedication;
+                this.selectedFrequency = this.CurrentHomeMedication.FrequencyId;
+                this.MedicationFieldsMandatory();
             }
             //add
             else {
                 this.Initialize();
+                this.MedicationFieldsMandatory();
             }
             this.showMedicationAddBox = true;
         }
@@ -69,6 +80,7 @@ export class HomeMedicationAddComponent {
         this.medicineSelected = null;
         this.CurrentHomeMedication.PatientId = this.patientService.getGlobal().PatientId;
         this.CurrentHomeMedication.LastTaken = moment().format("YYYY-MM-DD");
+        this.selectedFrequency = null;
     }
 
     //get the list of surgical history of the selected patient.
@@ -99,6 +111,10 @@ export class HomeMedicationAddComponent {
             if (this.medicineSelected) {
                 this.CurrentHomeMedication.MedicationId = this.medicineSelected.MedicineId;
                 this.CurrentHomeMedication.MedicationName = this.medicineSelected.MedicineName;
+            }
+            if(this.selectedFrequency){
+                this.CurrentHomeMedication.FrequencyId = this.selectedFrequency;
+                this.CurrentHomeMedication.FrequencyType = this.medicationFrequency.find(a => a.FrequencyId == this.selectedFrequency).Type;
             }
             //marking every fields as dirty and checking validity
             for (var i in this.CurrentHomeMedication.HomeMedicationValidator.controls) {
@@ -134,6 +150,7 @@ export class HomeMedicationAddComponent {
                     else {
                         this.msgBoxServ.showMessage("failed", ['Unable to add home medication.']);
                     }
+                    this.showMedicationAddBox=false;
                 });
 
     }
@@ -151,11 +168,13 @@ export class HomeMedicationAddComponent {
                     else {
                         this.msgBoxServ.showMessage("failed", ['Unable to update home medication.']);
                     }
+                    this.showMedicationAddBox=false;
                 });
     }
     CallBackAddUpdate(_homeMedication) {
         this.CurrentHomeMedication = new HomeMedication();
         this.medicineSelected = null;
+        this.selectedFrequency = null;       
         this.callbackAddUpdate.emit({ "homeMedication": _homeMedication });
     }
 
@@ -164,8 +183,50 @@ export class HomeMedicationAddComponent {
         return html;
     }
 
-    close(_homeMedication){
-        this.showMedicationAddBox = false
-        this.callbackAddUpdate.emit({ "medication": _homeMedication });
+    close(){
+        this.showMedicationAddBox = false;
     }
+
+    EnableMedicationValidation(){
+        var enable = this.coreService.Parameters.find(
+            (val) =>
+              val.ParameterName == "EnableMedicationValidation" &&
+              val.ParameterGroupName.toLowerCase() == "clinical"
+          );
+          if (enable) {
+            let val = enable.ParameterValue.toLowerCase();
+            if (val == "true") {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          } 
+    }
+
+    MedicationFieldsMandatory() {
+        if (!this.enableMedicationValidation) {
+          this.CurrentHomeMedication.UpdateValidator("off");
+        }
+        else{
+            this.CurrentHomeMedication.UpdateValidator("on");
+        }
+      }
+
+    GetMedicationFrequency() {
+        this.dischargeSummaryBLService.GetMedicationFrequency()
+          .subscribe(res => {
+            if (res.Status == 'OK') {
+              this.medicationFrequency = res.Results;
+            }
+            else {
+              this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+            }
+          },
+            err => {
+              this.msgBoxServ.showMessage("error", ['Failed to get medication frequencies. please check log for detail.']);
+              //this.logError(err.ErrorMessage);
+            });
+      }
 }

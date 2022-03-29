@@ -27,6 +27,7 @@
                                         <th>Route</th>
                                         <th>Last Taken</th>
                                         <th>Frequency</th>
+                                        <th>Days</th>
                                         <th>Comments</th>
                                         <th>Change</th>
                                     </tr>
@@ -38,7 +39,8 @@
                                         <td>{{add.Dose}}</td>
                                         <td>{{add.Route}}</td>
                                         <td>{{add.LastTaken  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                                        <td>{{add.Frequency}}</td>
+                                        <td>{{add.FrequencyType}}</td>
+                                        <td>{{add.Days}}</td>
                                         <td>{{add.Comments}}</td>
                                         <td>
                                             <a (click)="EditHomeMedication(add,i)" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>

@@ -111,6 +111,8 @@ namespace DanpheEMR.Controllers.Clinical
                     //assigning the MedicaitonName
                     PharmacyDbContext phrmDbContext = new PharmacyDbContext(connString);
                     List<PHRMItemMasterModel> medicationList = phrmDbContext.PHRMItemMaster.ToList();
+                    AdmissionDbContext admDbContext = new AdmissionDbContext(connString);
+                    List<MedicationFrequency> frequencyList = admDbContext.MedicationFrequencies.ToList();
 
                     foreach (var homeMed in homeMedicationList)
                     {
@@ -118,6 +120,10 @@ namespace DanpheEMR.Controllers.Clinical
                         {
                             homeMed.MedicationName = medicationList
                                                       .Where(a => a.ItemId == homeMed.MedicationId).FirstOrDefault().ItemName;
+                        }
+                        if (homeMed.FrequencyId != null)
+                        {
+                            homeMed.FrequencyType = frequencyList.Where(a => a.FrequencyId == homeMed.FrequencyId).FirstOrDefault().Type;
                         }
                     }
                     responseData.Results = homeMedicationList;
@@ -3379,6 +3385,13 @@ namespace DanpheEMR.Controllers.Clinical
                         {
                             clientHomeMedication.MedicationName = phrmDbContext.PHRMItemMaster
                                                                     .Where(a => a.ItemId == clientHomeMedication.MedicationId).FirstOrDefault().ItemName;
+                        }
+
+                        AdmissionDbContext admDbContext = new AdmissionDbContext(connString);
+                        if (clientHomeMedication.FrequencyId != null && clientHomeMedication.FrequencyId != 0)
+                        {
+                            clientHomeMedication.FrequencyType = admDbContext.MedicationFrequencies
+                                                                    .Where(a => a.FrequencyId == clientHomeMedication.FrequencyId).FirstOrDefault().Type;
                         }
 
                         responseData.Results = clientHomeMedication;

@@ -21,10 +21,13 @@ export class HomeMedication {
     public ModifiedBy: number = null;
     public CreatedOn: string = null;
     public ModifiedOn: string = null;
-    public Frequency: number = null;
+    public Frequency: number = 0;
     public MedicationType: string = null;
     public HomeMedicationValidator: FormGroup = null;
     public PatientVisitId:number=0;
+    public FrequencyId:number = null;
+    public FrequencyType: string = null;
+    public Days: number = 0;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.HomeMedicationValidator = _formBuilder.group({
@@ -34,7 +37,8 @@ export class HomeMedication {
             'LastTaken': ['', Validators.compose([Validators.required, this.dateValidator])],
             'Comments': ['', Validators.compose([Validators.maxLength(200)])],
             'Frequency': ['', Validators.compose([Validators.required])],
-            'MedicationType': ['', Validators.compose([Validators.required])]
+            'MedicationType': ['', Validators.compose([Validators.required])],
+            'Days': ['', Validators.compose([Validators.required])],
         });
     }
     dateValidator(control: FormControl): { [key: string]: boolean } {
@@ -61,5 +65,36 @@ export class HomeMedication {
             return this.HomeMedicationValidator.valid;
         else
             return !(this.HomeMedicationValidator.hasError(validator, fieldName));
+    }
+
+    public UpdateValidator(onOff: string){
+        if(onOff == "on"){
+            this.HomeMedicationValidator.controls['MedicationId'].validator = Validators.compose([Validators.required]);
+            this.HomeMedicationValidator.controls['Dose'].validator = Validators.compose([Validators.required]);
+            this.HomeMedicationValidator.controls['Route'].validator = Validators.compose([Validators.required]);
+            this.HomeMedicationValidator.controls['LastTaken'].validator = Validators.compose([Validators.required, this.dateValidator]);
+            this.HomeMedicationValidator.controls['Comments'].validator = Validators.compose([Validators.maxLength(200)]);
+            this.HomeMedicationValidator.controls['Frequency'].validator = Validators.compose([Validators.required]);
+            this.HomeMedicationValidator.controls['MedicationType'].validator = Validators.compose([Validators.required]);
+            this.HomeMedicationValidator.controls['Days'].validator = Validators.compose([Validators.required]);
+        }
+        else{
+            this.HomeMedicationValidator.controls['MedicationId'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['Dose'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['Route'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['LastTaken'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['Comments'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['Frequency'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['MedicationType'].validator = Validators.compose([]);
+            this.HomeMedicationValidator.controls['Days'].validator = Validators.compose([]);
+        }
+        this.HomeMedicationValidator.controls['MedicationId'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['Dose'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['Route'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['LastTaken'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['Comments'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['Frequency'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['MedicationType'].updateValueAndValidity();
+        this.HomeMedicationValidator.controls['Days'].updateValueAndValidity();
     }
 }
