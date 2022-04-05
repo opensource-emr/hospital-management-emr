@@ -11,6 +11,60 @@ body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
 body {font-size:16px;}
 .w3-half img{margin-bottom:-6px;margin-top:16px;opacity:0.8;cursor:pointer}
 .w3-half img:hover{opacity:1}
+.details{
+  margin-left: 50px;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+.w3-container div li{
+  margin-left: 30px;
+}
+.background{
+  background-image:url(assets/digital_healthcare_.5fb2bbbb399b7.avif);
+  height: 600px;
+  width: 100%;
+  filter: blur(2px);
+  /* -webkit-filter: blur(1px); */
+}
+.home-page{
+  width:600px;
+  margin-left:400px;
+  color: rgb(82, 81, 81);
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 20px;
+  animation-duration: 1s;
+  animation-fill-mode: both;
+}
+.testimonial-item
+{
+  color: #555555;
+    background: #f5f5f5;
+    border: 1px solid #e1e1e1;
+    padding: 30px;
+    text-align: center;
+}
+.mt_30{
+  margin-top: 30px;
+}
+.testimonial-photo {
+    width: 95px;
+    height: 95px;
+    margin: 0 auto;
+}
+.testimonial-photo img {
+    width: 100%;
+    height: auto;
+}
+.testimonial-name {
+    margin-top: 15px;
+}
+.testimonial-description {
+    width: 100%;
+}
 </style>
 </head>
 <body>
@@ -24,10 +78,10 @@ body {font-size:16px;}
   </div>
   <div class="w3-bar-block">
     <a href="#home" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
-    <a href="#about" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">About</a> 
-    <a href="#configuration" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Configuration</a>
+    <a href="#introduction" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Introduction</a> 
+    <a href="#setup" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Setup & Configuration</a>
     <a href="#team" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Team</a>
-    <a href="#portfolio" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Portfolio</a>  
+    <a href="#clients" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Clients</a>  
     <a href="#contact" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Contact</a>
   </div>
 </nav>
@@ -49,53 +103,122 @@ body {font-size:16px;}
     <!-- <h1 class="w3-jumbo"><b>Interior Design</b></h1>
     <h1 class="w3-xxxlarge w3-text-red"><b>About Us</b></h1> -->
     <!-- <hr style="width:50px;border:5px solid red" class="w3-round"> -->
-    <div class="w3-row-padding" style="background-image:url(assets/digital_healthcare_.5fb2bbbb399b7.avif); height: 600px;width: 100%;">
-      <div style="width:600px; margin-top:250px;margin-left:50px;">
-        <strong><h3>Hospital Management EMR</h3>
-        <p>Comprehensive, secure and innovative healthcare management solutions for hospitals, clinics, pharmacies, laboratories and radiology centers built by the domain experts.</p>
+    <div class="w3-row-padding background w3-animate-opacity" style="animation-duration: 2s;"></div>
+      <div class="home-page">
+        <strong><h2 class="w3-animate-right" style="animation-duration: 2s;">Hospital Management EMR</h2>
+        <hr style="width:100px;border:3px solid red" class="w3-round">
+        <p class="w3-animate-left" style="animation-duration: 2s;">Comprehensive, secure and innovative healthcare management solutions for hospitals, clinics, pharmacies, laboratories and radiology centers built by the domain experts.</p>
       </strong></div>
-    </div> 
+    
   </div>
 
-  <div class="w3-container" style="margin-top:30px" id="about">
+  <div class="w3-container" style="margin-top:30px" id="introduction">
     <!-- <h1 class="w3-jumbo"><b>Interior Design</b></h1> -->
-    <h1 class="w3-xxxlarge w3-text-red"><b>About Us</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Introduction</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
-  </div>
   
-  <!-- Photo grid (modal) -->
-  <div class="w3-row-padding">
-    <div class="w3-half">
-      <img src="/w3images/atrium.jpg" style="width:100%" onclick="onClick(this)" alt="Concrete meets bricks">
-      <img src="/w3images/atrium.jpg" style="width:100%" onclick="onClick(this)" alt="Light, white and tight scandinavian design">
-      <img src="/w3images/atrium.jpg" style="width:100%" onclick="onClick(this)" alt="White walls with designer chairs">
-    </div>
-
-    <div class="w3-half">
-      <img src="/w3images/atrium.jpg" style="width:100%" onclick="onClick(this)" alt="Windows for the atrium">
-      <img src="/w3images/bedroom.jpg" style="width:100%" onclick="onClick(this)" alt="Bedroom and office in one space">
-      <img src="/w3images/livingroom2.jpg" style="width:100%" onclick="onClick(this)" alt="Scandinavian design">
+    <!-- Photo grid (modal) -->
+    <div class="w3-row-padding">
+      <p>Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh).</p>
+      <div>
+        <h3>Modules in Danphe EMR</h3>
+        <p>It has around 40 modules and below are important ones listed.</p>
+        <div class="w3-half">
+          <ul>
+            <li>Registration/Patient</li>
+            <li>Appointment</li>
+            <li>Billing Module</li>
+            <li>Accounting Module</li>
+            <li>Inventory Management</li>
+            <li>Pharmacy Module</li>
+            <li>Laboratory Management</li>
+            <li>User Module</li>
+          </ul>
+        </div>
+        <div class="w3-half">
+          <ul>
+            <li>Admission Discharge and Transfer (ADT)</li>
+            <li>Nursing Module</li>
+            <li>Sub-store Module</li>
+            <li>Radiology Management</li>
+            <li>Medical Record</li>
+            <li>Emergency</li>
+            <li>Reporting and Dashboard</li>
+            <li>Doctors</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h3>Demo of Danphe EMR</h3>
+        <p>Click on below demo link and check out live application</p>
+          <a href="http://opensource-healthcare.com/" style="color: blue;">Danphe EMR Live Application</a>
+          <p>Use below credentials for login</p>
+          <div class="w3-light-grey" style="width: 400px;margin-left: 20px;text-align: center;">
+            <p>Username  : admin<br>
+              Password  : pass123</p>
+          </div>
+      </div>
     </div>
   </div>
-
   <!-- Modal for full size images on click-->
-  <div id="modal01" class="w3-modal w3-black" style="padding-top:0" onclick="this.style.display='none'">
+  <!-- <div id="modal01" class="w3-modal w3-black" style="padding-top:0" onclick="this.style.display='none'">
     <span class="w3-button w3-black w3-xxlarge w3-display-topright">×</span>
     <div class="w3-modal-content w3-animate-zoom w3-center w3-transparent w3-padding-64">
       <img id="img01" class="w3-image">
       <p id="caption"></p>
     </div>
-  </div>
+  </div> -->
 
   <!-- Services -->
-  <div class="w3-container" id="configuration" style="margin-top:75px">
+  <div class="w3-container" id="setup" style="margin-top:75px">
     <h1 class="w3-xxxlarge w3-text-red"><b>Configuration</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
-    <p>We are a interior design service that focus on what's best for your home and what's best for you!</p>
-    <p>Some text about our services - what we do and what we offer. We are lorem ipsum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor
-    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-    </p>
+    <div>
+      <h4>Prerequisites</h4>
+      <p>
+        <li>Visual Studio 2017/2019</li>
+        <li>VS code</li>
+        <li>MS SQL Server 2017 (14.0.202) or later</li>
+      </p>
+    </div>
+    <div>
+      <h4>Build Angular Project</h4>
+      <p>
+        <li>Go to "Code\Websites\DanpheEMR\wwwroot\DanpheApp" path and open DanpheApp folder in VS code</li>
+        <li>Open a new terminal and execute "npm install" command</li>
+        <li>Once the "npm install" done successfully than execute "ng build --watch" command</li>    
+      </p>
+    </div>
+    <div>
+      <h4>Database Creation</h4>
+      <p>
+        <li>Go to Database folder and execute "1. DanpheAdmin_CompleteDB.sql" file in sql server(This will create admin database)</li>
+        <li>Go to Database folder extract rar file "2.DanpheEMR_OS.rar"</li>
+        <li>Then restore database by using bak file in database folder and this is main database with name "DanpheEMR_OS"</li>
+        <li>After successful restore go to Database folder and execute increamental file "3.Increamental_DBScript.sql" on "DanpheEMR_OS" database</li>    
+      </p>
+    </div>
+    <div>
+      <h4>Build Project</h4>
+      <p>
+        <li>Go to "Code\Solutions" and open solution "DanpheEMR.sln" in visual studio</li>
+
+         <p class="details"> <span style="color: red;">*</span>Note: if DanpheEMR project not loaded in visual studio then please install .net core sdk version 3.1.301
+          or change sdk version number as per your machine sdk in global.json file
+          path=> Solution Items\global.json file
+        
+        <li>Update appsetting.json file for database name and credentials</li>
+        <p class="details">Go to DanpheEMR project (in visual studio) and open appsettings.json file</p>
+        <p class="details">Here we have 3 connection strings. Update every connection string with your machine database name (initial catalog) and data source name.</p>
+        <li>Build DanpheEMR (project server side)</li>
+        <p class="details">Go to visual studio and right click on solution name</p>
+        <p class="details">click on Rebuild solution</p>
+        
+        <li>Run project </li>
+        <!-- <p class="Details">(without debuging) Go to visual studio click on Debug menu => click on "Start without debuging" / ctrl+f5</p><br>
+        <p class="Details">(with debuging) Go to visual studio click on Debug Menu => click on "Start Debuging"</p>      -->
+      </p>
+    </div>
   </div>
   
   <!-- Designers -->
@@ -145,47 +268,43 @@ body {font-size:16px;}
   </div>
 
   <!-- Packages / Pricing Tables -->
-  <div class="w3-container" id="portfolio" style="margin-top:75px">
-    <h1 class="w3-xxxlarge w3-text-red"><b>Portfolio</b></h1>
+  <div class="w3-container" id="clients" style="margin-top:75px">
+    <h1 class="w3-xxxlarge w3-text-red"><b>Clients</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
     <!-- <p>Some text our prices. Lorem ipsum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure</p> -->
   </div>
 
   <div class="w3-row-padding">
     <div class="w3-half w3-margin-bottom">
-      <ul class="w3-ul w3-light-grey w3-center">
-        <li class="w3-dark-grey w3-xlarge w3-padding-32">Basic</li>
-        <li class="w3-padding-16">Floorplanning</li>
-        <li class="w3-padding-16">10 hours support</li>
-        <li class="w3-padding-16">Photography</li>
-        <li class="w3-padding-16">20% furniture discount</li>
-        <li class="w3-padding-16">Good deals</li>
-        <li class="w3-padding-16">
-          <h2>$ 199</h2>
-          <span class="w3-opacity">per room</span>
-        </li>
-        <li class="w3-light-grey w3-padding-24">
-          <button class="w3-button w3-white w3-padding-large w3-hover-black">Sign Up</button>
-        </li>
-      </ul>
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="./assets/danphe-logo.png" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>SGM Ayurvedic Hospital</h4>
+            <p>It is a ayurvedic hospital.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                This hospital plays a vital role to improve the Mental, Physical and Social health of society through Ayurveda.                            </p>
+        </div>
+      </div>
     </div>
         
     <div class="w3-half">
-      <ul class="w3-ul w3-light-grey w3-center">
-        <li class="w3-red w3-xlarge w3-padding-32">Pro</li>
-        <li class="w3-padding-16">Floorplanning</li>
-        <li class="w3-padding-16">50 hours support</li>
-        <li class="w3-padding-16">Photography</li>
-        <li class="w3-padding-16">50% furniture discount</li>
-        <li class="w3-padding-16">GREAT deals</li>
-        <li class="w3-padding-16">
-          <h2>$ 249</h2>
-          <span class="w3-opacity">per room</span>
-        </li>
-        <li class="w3-light-grey w3-padding-24">
-          <button class="w3-button w3-red w3-padding-large w3-hover-black">Sign Up</button>
-        </li>
-      </ul>
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-4.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Maya Metro Hospital</h4>
+            <p>It is a multi-specialty hospital.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                This hospital plays a vital role related to health issues and there solution in far west development region in Nepal , with great experience and expert doctors team.                            </p>
+        </div>
+      </div>
     </div>
   </div>
   
@@ -193,7 +312,8 @@ body {font-size:16px;}
   <div class="w3-container" id="contact" style="margin-top:75px">
     <h1 class="w3-xxxlarge w3-text-red"><b>Contact</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
-    <p>Do you want us to style your home? Fill out the form and fill me in with the details :) We love meeting new people!</p>
+    <p>Any issues do send mail at <a href="" style="color: blue;">shiv_koirala@yahoo.com</a></p>
+    <!-- <p>Do you want us to style your home? Fill out the form and fill me in with the details :) We love meeting new people!</p>
     <form action="/action_page.php" target="_blank">
       <div class="w3-section">
         <label>Name</label>
@@ -208,7 +328,7 @@ body {font-size:16px;}
         <input class="w3-input w3-border" type="text" name="Message" required>
       </div>
       <button type="submit" class="w3-button w3-block w3-padding-large w3-red w3-margin-bottom">Send Message</button>
-    </form>  
+    </form>   -->
   </div>
 
 <!-- End page content -->
