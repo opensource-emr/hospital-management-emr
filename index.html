@@ -6,6 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
 <style>
 body,h1,h2,h3,h4,h5 {font-family: "Poppins", sans-serif}
 body {font-size:16px;}
@@ -18,7 +22,7 @@ body {font-size:16px;}
 }
 .w3-container div li{
   margin-left: 30px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 .background{
   background-image:url(assets/digital_healthcare_.5fb2bbbb399b7.avif);
@@ -68,10 +72,51 @@ body {font-size:16px;}
 }
 .cfZKRM {
     padding: 0.2em 0.4em;
-    /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
     font-size: 85%;
     background-color: rgb(245, 244, 244);
     border-radius: 3px;
+}
+.carousel-inner img {
+    width: 100%;
+    height: 100%;
+}
+.slide{
+  margin-bottom: 30px;
+}
+.code{
+  background:black; color:white;padding:10px;
+  border: 2px solid ;
+  border-radius: 15px;
+  font-size:20px;
+}
+.note{
+background-color:#eef5f7;;
+padding:10px;
+}
+.alert.is-helpful {
+    border-left: 8px solid #1976D2;
+    background-color: #1976d20d;
+    margin-left: 30px;
+}
+pre.prettyprint {
+    position: relative;
+    display: flex;
+    min-height: 32px;
+    margin: 16px 24px;
+    white-space: pre-wrap;
+    align-items: center;
+    background: black;
+    color:white;
+    border: 2px solid ;
+    border-radius: 15px;
+    font-size:15px;
+}
+.avatar {
+  vertical-align: middle;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  text-align:center
 }
 </style>
 </head>
@@ -82,13 +127,13 @@ body {font-size:16px;}
   <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
   <div class="w3-container" style="background: white;">
     <img class="img-responsive" alt="" src="./assets/danphe-healthSVG.png" style="width:100%; height: 100px;">
-    <!-- <h3 class="w3-padding-64"><b>Company<br>Name</b></h3> -->
   </div><br>
   <div class="w3-bar-block">
     <a href="#home" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
     <a href="#introduction" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Introduction</a>
     <a href="#demo" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Demo</a>
     <a href="#setup" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Setup & Installation</a>
+    <a href="#sponsors" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Sponsors</a>
     <a href="#team" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Contributors</a>
     <a href="#clients" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Where we are live</a>  
     <a href="#contact" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Contact</a>
@@ -109,9 +154,6 @@ body {font-size:16px;}
 
   <!-- Header -->
   <div class="w3-container" style="margin-top:0px;" id="home" >
-    <!-- <h1 class="w3-jumbo"><b>Interior Design</b></h1>
-    <h1 class="w3-xxxlarge w3-text-red"><b>About Us</b></h1> -->
-    <!-- <hr style="width:50px;border:5px solid red" class="w3-round"> -->
     <div class="w3-row-padding background w3-animate-opacity" style="animation-duration: 2s;"></div>
       <div class="home-page">
         <strong><h2 class="w3-animate-right" style="animation-duration: 2s;">Hospital Management EMR</h2>
@@ -132,6 +174,32 @@ body {font-size:16px;}
     <!-- Photo grid (modal) -->
     <div class="w3-row-padding">
       <p>Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh).</p>
+      <div id="slides" class="carousel slide" data-ride="carousel">
+
+        <!-- Indicators -->
+        <ul class="carousel-indicators">
+          <li data-target="#slides" data-slide-to="0" class="active"></li>
+          <li data-target="#slides" data-slide-to="1"></li>
+        </ul>
+        
+        <!-- The slideshow -->
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="assets/Danphe-Login.jpg" alt="Login" width="1100" height="500">
+          </div>
+          <div class="carousel-item">
+            <img src="assets/Danphe-Dashboard.jpg" alt="Dashboard" width="1100" height="500">
+          </div>
+        </div>
+        
+        <!-- Left and right controls -->
+        <a class="carousel-control-prev" href="#slides" data-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#slides" data-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </a>
+      </div>
       <div>
         <h3>Modules in Danphe EMR</h3>
         <p>It has around 40 modules and below are important ones listed.</p>
@@ -179,14 +247,6 @@ body {font-size:16px;}
       </div>
     </div>
   </div>
-  <!-- Modal for full size images on click-->
-  <!-- <div id="modal01" class="w3-modal w3-black" style="padding-top:0" onclick="this.style.display='none'">
-    <span class="w3-button w3-black w3-xxlarge w3-display-topright">×</span>
-    <div class="w3-modal-content w3-animate-zoom w3-center w3-transparent w3-padding-64">
-      <img id="img01" class="w3-image">
-      <p id="caption"></p>
-    </div>
-  </div> -->
 
   <!-- Services -->
   <div class="w3-container" id="setup" style="margin-top:75px">
@@ -210,8 +270,22 @@ body {font-size:16px;}
       <h4>Build Angular Project</h4>
       <p>
         <li>Go to <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">Code\Websites\DanpheEMR\wwwroot\DanpheApp</code> path and open DanpheApp folder in VS code</li>
-        <li>Open a new terminal and execute <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">npm install</code> command</li>
-        <li>Once the npm install done successfully then execute <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">ng build --watch</code> command</li>    
+        <li>Open a new terminal and execute below command</li>
+        <div>
+          <pre class="lang-sh prettyprint">
+            <code class="animated fadeIn">
+              <span class="pln">npm install</span>
+            </code>
+          </pre>   
+        </div>
+        <li>Then execute below command</li>
+        <div>
+          <pre class="lang-sh prettyprint">
+            <code class="animated fadeIn">
+              <span class="pln">ng build --watch</span>
+            </code>
+          </pre>   
+        </div> 
       </p>
     </div>
     <div>
@@ -228,51 +302,64 @@ body {font-size:16px;}
       <p>
         <li>Go to <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">Code\Solutions</code> and open solution <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">DanpheEMR.sln</code> in visual studio</li>
 
-         <p class="details"><code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM"><span style="color: red;">*</span>Note: if DanpheEMR project not loaded in visual studio then please install .net core sdk version 3.1.301
+         <p class="details"><div class="alert is-helpful">Note: if DanpheEMR project not loaded in visual studio then please install .net core sdk version 3.1.301
           or change sdk version number as per your machine sdk in global.json file
-          path=> Solution Items\global.json file</code>
+          path=> Solution Items\global.json file</div>
         
         <li>Update appsetting.json file for database name and credentials</li>
         <p class="details">Go to DanpheEMR project (in visual studio) and open appsettings.json file</p>
-        <p class="details">Here we have 3 connection strings. Update every connection string with your machine database name (initial catalog) and data source name.</p>
+        <p class="details">Here we have 3 connection strings. One is for our main database, second is for admin database and Third is for pacs server database</p>
+        <p class="details">Update every connection string with your machine database name (initial catalog) and data source name.</p>
         <li>Build DanpheEMR (project server side)</li>
         <p class="details">Go to visual studio and right click on solution name</p>
         <p class="details">click on Rebuild solution</p>
         
         <li>Run project </li>
-        <!-- <p class="Details">(without debuging) Go to visual studio click on Debug menu => click on "Start without debuging" / ctrl+f5</p><br>
-        <p class="Details">(with debuging) Go to visual studio click on Debug Menu => click on "Start Debuging"</p>      -->
       </p>
     </div>
   </div>
   
+  <!-- Sponsors -->
+  <div class="w3-container" style="margin-top:30px" id="sponsors">
+    <!-- <h1 class="w3-jumbo"><b>Interior Design</b></h1> -->
+    <h1 class="w3-xxxlarge w3-text-red"><b>Sponsored By</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+    <div class="w3-row-padding">
+      <div>
+        <!-- <h3>Demo of Danphe EMR</h3> -->
+        <p>All sponsors are here. Thanks all sponsors for your contributions.</p>
+        <a href="https://www.imarkdigital.com/" target="_blank">
+          <img src="https://user-images.githubusercontent.com/48054642/161473176-51fcb05f-e87f-4229-8673-887bf5060fe0.png" />
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Designers -->
   <div class="w3-container" id="team" style="margin-top:75px">
     <h1 class="w3-xxxlarge w3-text-red"><b>Contributors</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
-    <p>The best team in the world.</p>
-    <p><b>Our designers are thoughtfully chosen</b>:</p>
-  </div>
-
-  <!-- The Team -->
-  <div class="w3-row-padding w3-grayscale">
-    <div class="w3-col m4 w3-margin-bottom">
-      <div class="w3-light-grey">
-        <img src="/w3images/team2.jpg" alt="" style="width:100%">
-        <div class="w3-container">
-          <h3>Shiv P Koirala</h3>
-          <p class="w3-opacity">CEO & Founder</p>
-        </div>
-      </div>
-    </div>
-    <div class="w3-col m4 w3-margin-bottom">
-      <div class="w3-light-grey">
-        <img src="/w3images/team1.jpg" alt="" style="width:100%">
-        <div class="w3-container">
-          <h3>Nagesh Bulbule</h3>
-          <p class="w3-opacity">Team Leader & Developer</p>
-        </div>
-      </div>
+    <p>We thanks all supporters,developers and people who contributed in this project</p>
+    <div class="w3-row-padding">
+      <table>
+        <tr>
+          <td>
+            <a href="https://github.com/shivkoirala" target="_blank">
+              <img src="https://avatars.githubusercontent.com/u/16671725?v=4" alt="Avatar" class="avatar">
+            </a>
+          </td>
+          <td>
+            <a href="https://github.com/NageshBB" target="_blank">
+              <img src="https://avatars.githubusercontent.com/u/25123432?v=4" alt="Avatar" class="avatar">
+            </a>
+          </td>
+          <td>
+            <a href="https://github.com/MenkaChaugule" target="_blank">
+              <img src="https://avatars.githubusercontent.com/u/66938208?v=4" alt="Avatar" class="avatar">
+            </a>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 
@@ -284,7 +371,7 @@ body {font-size:16px;}
   </div>
 
   <div class="w3-row-padding">
-    <div class="w3-half w3-margin-bottom">
+    <div class="w3-half">
       <div class="testimonial-item mt_30">
         <div class="testimonial-photo">
             <img src="./assets/danphe-logo.png" alt="">
@@ -314,6 +401,144 @@ body {font-size:16px;}
         </div>
       </div>
     </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-2.png" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Mark International Kidney Center (MIKC)</h4>
+            <p>MI Kidney Centre is focusing to spread Dialysis services in different District of Nepal, prioritizing in rural cities with frequent screening and awareness program of Kidney diseases.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>MI Kidney Centre will always focus on patient-oriented management,uplift its social responsibility, by not only treating kidney diseases with superior and advance healthcare services but also heading in preventive management.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-5.png" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>HAMS (Hospital for Advanced Medicine and Surgery</h4>
+            <p>Mission is to provide high quality and affordable health care,create an institute with safe and evidence based medicine.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                Hospital for Advanced Medicine &amp; Surgery (HAMS) is a multi-disciplinary tertiary care boutique hospital. With a faculty like no other supported by highly-experienced clinicians, technicians &amp; administrators, backed by state-of-the-art technology and dependable infrastructure.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-3.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Manmohan Memorial Medical College and Teaching Hospital</h4>
+            <p>Main goal is to promote the quality health services through equity in service delivery.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                Manamohan Memorial Teaching Hospital (MMTH) is establishedunder NEHCO. NEHCO is committed to invest its all efforts to ensure the quality health care service delivery and to provide the practical.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-7.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Kaligandaki Diagnostic Research Centre (KDRC)</h4>
+            <p>Diagnostics Center (CT scan and Ultra Sound).</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                The Kaligandaki Diagnosis and Research Center is highly committed to provide excellent medical imaging and perform intervention procedures with timely and accurate diagnosis with the least economic impact to its patients.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-8.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Matrika Eye center</h4>
+            <p>Luxury Eye Care.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                A private clinic established to introduce advanced equipment for comprehensive eye care &amp; management.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-10.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Buddhanilakantha Hospital</h4>
+            <p>It is a Polyclinic/Diagnostics Center.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                A doctors' team that believes in ensuring affordable and quality basic medical services . we work to prevent and reduce illness in an affordable set up.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+          <img src="https://danphehealth.com/public/uploads/testimonial-9.png" alt="">
+        </div>
+        <div class="testimonial-name">
+          <h4>Rhythm Hospital</h4>
+            <p>A private clinic established to introduce advanced  equipment for comprehensive eye care &amp; management.</p>
+        </div>
+        <div class="testimonial-description">
+          <p>Rhythm Neuropsychiatry hospital in  psychiatric  and psychological services( mental health services)dealing with emotional issues, strengthening personality,addiction services(drugs and alcohol) and allied neurological services under single umbrella with team of best psychiatrist and psychologists.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-11.png" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Charak Memorial Hospital</h4>
+            <p>The CHARAK MEMORIAL HOSPITAL's mission is to  address public expectation in health being a model world class hospital in Quality, Hygiene and Technology in pursuit of nothing less than excellence.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                CHARAK MEMORIAL Hospital's in the vicinity of Western Region is committed to innovation and the adoption of new appropriate and cost effective technologies for the promotion of health services of individuals and community.                            </p>
+        </div>
+      </div>
+    </div>
+    <div class="w3-half">
+      <div class="testimonial-item mt_30">
+        <div class="testimonial-photo">
+            <img src="https://danphehealth.com/public/uploads/testimonial-6.jpg" alt="">
+        </div>
+        <div class="testimonial-name">
+            <h4>Manakamana Hospital</h4>
+            <p>Multi specialty Center.</p>
+        </div>
+        <div class="testimonial-description">
+            <p>
+                Our hospital building is built to provide the most convenient space for patients. Our clinical specialists are competent in knowledge and experience. We have cool and calm environment with ample parking inside the hospital.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- <iframe src="https://www.google.com.qa/maps/d/embed?mid=1hTFROsrg5QfUHNFBZeCt-xyngy42ulM6&ehbc=2E312F" width="900" height="480">
+    </iframe> -->
   </div>
   
   <!-- Contact -->
@@ -321,22 +546,6 @@ body {font-size:16px;}
     <h1 class="w3-xxxlarge w3-text-red"><b>Contact</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
     <p>Any issues do send mail at <a href="" style="color: blue;">shiv_koirala@yahoo.com</a></p>
-    <!-- <p>Do you want us to style your home? Fill out the form and fill me in with the details :) We love meeting new people!</p>
-    <form action="/action_page.php" target="_blank">
-      <div class="w3-section">
-        <label>Name</label>
-        <input class="w3-input w3-border" type="text" name="Name" required>
-      </div>
-      <div class="w3-section">
-        <label>Email</label>
-        <input class="w3-input w3-border" type="text" name="Email" required>
-      </div>
-      <div class="w3-section">
-        <label>Message</label>
-        <input class="w3-input w3-border" type="text" name="Message" required>
-      </div>
-      <button type="submit" class="w3-button w3-block w3-padding-large w3-red w3-margin-bottom">Send Message</button>
-    </form>   -->
   </div>
 
 <!-- End page content -->
