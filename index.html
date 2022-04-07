@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>W3.CSS Template</title>
+<title>Hospital Management EMR</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -14,10 +14,11 @@ body {font-size:16px;}
 .details{
   margin-left: 50px;
   margin-top: 0px !important;
-  margin-bottom: 0px !important;
+  margin-bottom: 5px !important;
 }
 .w3-container div li{
   margin-left: 30px;
+  margin-bottom: 5px;
 }
 .background{
   background-image:url(assets/digital_healthcare_.5fb2bbbb399b7.avif);
@@ -65,23 +66,31 @@ body {font-size:16px;}
 .testimonial-description {
     width: 100%;
 }
+.cfZKRM {
+    padding: 0.2em 0.4em;
+    /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
+    font-size: 85%;
+    background-color: rgb(245, 244, 244);
+    border-radius: 3px;
+}
 </style>
 </head>
 <body>
 
 <!-- Sidebar/menu -->
-<nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;background-color:blue !important;" id="mySidebar"><br>
+<nav class="w3-sidebar w3-red w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:300px;font-weight:bold;background-color:#0773bc !important;" id="mySidebar"><br>
   <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
-  <div class="w3-container">
+  <div class="w3-container" style="background: white;">
     <img class="img-responsive" alt="" src="./assets/danphe-healthSVG.png" style="width:100%; height: 100px;">
     <!-- <h3 class="w3-padding-64"><b>Company<br>Name</b></h3> -->
-  </div>
+  </div><br>
   <div class="w3-bar-block">
     <a href="#home" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Home</a> 
-    <a href="#introduction" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Introduction</a> 
-    <a href="#setup" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Setup & Configuration</a>
-    <a href="#team" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Team</a>
-    <a href="#clients" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Clients</a>  
+    <a href="#introduction" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Introduction</a>
+    <a href="#demo" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Demo</a>
+    <a href="#setup" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Setup & Installation</a>
+    <a href="#team" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Contributors</a>
+    <a href="#clients" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Where we are live</a>  
     <a href="#contact" onclick="w3_close()" class="w3-bar-item w3-button w3-hover-white">Contact</a>
   </div>
 </nav>
@@ -107,7 +116,10 @@ body {font-size:16px;}
       <div class="home-page">
         <strong><h2 class="w3-animate-right" style="animation-duration: 2s;">Hospital Management EMR</h2>
         <hr style="width:100px;border:3px solid red" class="w3-round">
-        <p class="w3-animate-left" style="animation-duration: 2s;">Comprehensive, secure and innovative healthcare management solutions for hospitals, clinics, pharmacies, laboratories and radiology centers built by the domain experts.</p>
+        <p class="w3-animate-left" style="animation-duration: 2s;">Comprehensive, secure and innovative healthcare management solutions 
+          for hospitals, clinics, pharmacies, laboratories and radiology centers built by the domain experts.<br>
+          Effective management of information plays a significant role in delivery of health care services for health providers.
+        </p>
       </strong></div>
     
   </div>
@@ -148,10 +160,17 @@ body {font-size:16px;}
           </ul>
         </div>
       </div>
+    </div>
+  </div>
+  <div class="w3-container" style="margin-top:30px" id="demo">
+    <!-- <h1 class="w3-jumbo"><b>Interior Design</b></h1> -->
+    <h1 class="w3-xxxlarge w3-text-red"><b>Demo</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+    <div class="w3-row-padding">
       <div>
-        <h3>Demo of Danphe EMR</h3>
+        <!-- <h3>Demo of Danphe EMR</h3> -->
         <p>Click on below demo link and check out live application</p>
-          <a href="http://opensource-healthcare.com/" style="color: blue;">Danphe EMR Live Application</a>
+          <a href="https://opensource-healthcare.com/" target="_blank" style="color: blue;">Danphe EMR Live Application</a>
           <p>Use below credentials for login</p>
           <div class="w3-light-grey" style="width: 400px;margin-left: 20px;text-align: center;">
             <p>Username  : admin<br>
@@ -171,8 +190,14 @@ body {font-size:16px;}
 
   <!-- Services -->
   <div class="w3-container" id="setup" style="margin-top:75px">
-    <h1 class="w3-xxxlarge w3-text-red"><b>Configuration</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Setup & Installation</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
+    <div>
+      <li>This details for developers who wants to clone DanpheEMR, Use it and help us for improvements.</li>
+      <li>We have all details like software and tools requirements</li>
+      <li>Step by step guide for build and run project</li>
+      <li>Database creation and more..</li>
+    </div>
     <div>
       <h4>Prerequisites</h4>
       <p>
@@ -184,28 +209,28 @@ body {font-size:16px;}
     <div>
       <h4>Build Angular Project</h4>
       <p>
-        <li>Go to "Code\Websites\DanpheEMR\wwwroot\DanpheApp" path and open DanpheApp folder in VS code</li>
-        <li>Open a new terminal and execute "npm install" command</li>
-        <li>Once the "npm install" done successfully than execute "ng build --watch" command</li>    
+        <li>Go to <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">Code\Websites\DanpheEMR\wwwroot\DanpheApp</code> path and open DanpheApp folder in VS code</li>
+        <li>Open a new terminal and execute <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">npm install</code> command</li>
+        <li>Once the npm install done successfully then execute <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">ng build --watch</code> command</li>    
       </p>
     </div>
     <div>
       <h4>Database Creation</h4>
       <p>
-        <li>Go to Database folder and execute "1. DanpheAdmin_CompleteDB.sql" file in sql server(This will create admin database)</li>
-        <li>Go to Database folder extract rar file "2.DanpheEMR_OS.rar"</li>
-        <li>Then restore database by using bak file in database folder and this is main database with name "DanpheEMR_OS"</li>
-        <li>After successful restore go to Database folder and execute increamental file "3.Increamental_DBScript.sql" on "DanpheEMR_OS" database</li>    
+        <li>Go to Database folder and execute <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">1. DanpheAdmin_CompleteDB.sql</code> file in sql server(This will create admin database)</li>
+        <li>Go to Database folder extract rar file <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">2.DanpheEMR_OS.rar</code></li>
+        <li>Then restore database by using bak file in database folder and this is main database with name <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">DanpheEMR_OS</code></li>
+        <li>After successful restore go to Database folder and execute increamental file <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">3.Increamental_DBScript.sql</code> on <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">DanpheEMR_OS</code> database</li>    
       </p>
     </div>
     <div>
       <h4>Build Project</h4>
       <p>
-        <li>Go to "Code\Solutions" and open solution "DanpheEMR.sln" in visual studio</li>
+        <li>Go to <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">Code\Solutions</code> and open solution <code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM">DanpheEMR.sln</code> in visual studio</li>
 
-         <p class="details"> <span style="color: red;">*</span>Note: if DanpheEMR project not loaded in visual studio then please install .net core sdk version 3.1.301
+         <p class="details"><code class="inline-code__InlineCode-sc-6w7ni7-0 cfZKRM"><span style="color: red;">*</span>Note: if DanpheEMR project not loaded in visual studio then please install .net core sdk version 3.1.301
           or change sdk version number as per your machine sdk in global.json file
-          path=> Solution Items\global.json file
+          path=> Solution Items\global.json file</code>
         
         <li>Update appsetting.json file for database name and credentials</li>
         <p class="details">Go to DanpheEMR project (in visual studio) and open appsettings.json file</p>
@@ -223,13 +248,9 @@ body {font-size:16px;}
   
   <!-- Designers -->
   <div class="w3-container" id="team" style="margin-top:75px">
-    <h1 class="w3-xxxlarge w3-text-red"><b>Team</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Contributors</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
     <p>The best team in the world.</p>
-    <!-- <p>We are lorem ipsum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor
-    incididunt ut labore et quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-    </p> -->
     <p><b>Our designers are thoughtfully chosen</b>:</p>
   </div>
 
@@ -241,7 +262,6 @@ body {font-size:16px;}
         <div class="w3-container">
           <h3>Shiv P Koirala</h3>
           <p class="w3-opacity">CEO & Founder</p>
-          <!-- <p>Phasellus eget enim eu lectus faucibus vestibulum. Suspendisse sodales pellentesque elementum.</p> -->
         </div>
       </div>
     </div>
@@ -251,25 +271,14 @@ body {font-size:16px;}
         <div class="w3-container">
           <h3>Nagesh Bulbule</h3>
           <p class="w3-opacity">Team Leader & Developer</p>
-          <!-- <p>Phasellus eget enim eu lectus faucibus vestibulum. Suspendisse sodales pellentesque elementum.</p> -->
         </div>
       </div>
     </div>
-    <!-- <div class="w3-col m4 w3-margin-bottom">
-      <div class="w3-light-grey">
-        <img src="/w3images/team3.jpg" alt="Mike" style="width:100%">
-        <div class="w3-container">
-          <h3>Menka Chaugule</h3>
-          <p class="w3-opacity">Developer</p>
-          <!-- <p>Phasellus eget enim eu lectus faucibus vestibulum. Suspendisse sodales pellentesque elementum.</p> --
-        </div>
-      </div>
-    </div> -->
   </div>
 
   <!-- Packages / Pricing Tables -->
   <div class="w3-container" id="clients" style="margin-top:75px">
-    <h1 class="w3-xxxlarge w3-text-red"><b>Clients</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Where we are live</b></h1>
     <hr style="width:50px;border:5px solid red" class="w3-round">
     <!-- <p>Some text our prices. Lorem ipsum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure</p> -->
   </div>
@@ -301,8 +310,7 @@ body {font-size:16px;}
             <p>It is a multi-specialty hospital.</p>
         </div>
         <div class="testimonial-description">
-            <p>
-                This hospital plays a vital role related to health issues and there solution in far west development region in Nepal , with great experience and expert doctors team.                            </p>
+            <p>This hospital plays a vital role related to health issues and there solution in far west development region in Nepal , with great experience and expert doctors team.</p>
         </div>
       </div>
     </div>
@@ -335,7 +343,7 @@ body {font-size:16px;}
 </div>
 
 <!-- W3.CSS Container -->
-<div class="w3-light-grey w3-container w3-padding-32" style="margin-top:75px;padding-right:58px"><p class="w3-right">Powered by <a href="https://www.w3schools.com/w3css/default.asp" title="W3.CSS" target="_blank" class="w3-hover-opacity">w3.css</a></p></div>
+<div class="w3-light-grey w3-container w3-padding-32" style="margin-top:75px;padding-right:58px"><p class="w3-right">© Copyright 2022 <a href="https://opensource-healthcare.com/" title="Danphe" target="_blank" class="w3-hover-opacity">Danphe EMR.</a> All Rights Reserved.</p></div>
 
 <script>
 // Script to open and close sidebar
