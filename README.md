@@ -34,7 +34,7 @@ Demo of Danphe EMR
 
 Click on below demo link and check out live application
 
-<a href="http://opensource-healthcare.com/" target="_blank">
+<a href="https://opensource-healthcare.com/" target="_blank">
   Danphe EMR Live Application
 </a>
 
@@ -85,7 +85,7 @@ All sponsors are here. Thanks all sponsors for your contributions.
 ## Contributors
 Thanks all contributors. 
 
-<a href="https://github.com/opensource-emr/hospital-management-emr-1/graphs/contributors" target="_blank">
+<a href="https://github.com/opensource-emr/hospital-management-emr/graphs/contributors" target="_blank">
   <img src="https://contrib.rocks/image?repo=opensource-emr/hospital-management-emr" />
 </a> <br><br>
 
