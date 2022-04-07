@@ -48,12 +48,12 @@ Use below `credentials` for login
 Need help?
 ==============
 
-Please read our document, If you don't find answer in document. Please <a href="https://opensource-emr.github.io/hospital-management-emr/" target="_blank">Contact Us</a> 
+Please read our document, If you don't find answer in document. Please <a href="https://opensource-emr.github.io/hospital-management-emr/#contact" target="_blank">Contact Us</a> 
 
 
 Installation & Setup
 ======================
-Getting start with **DanpheEMR** Please visit <a href="https://opensource-emr.github.io/hospital-management-emr/" target="_blank">
+Getting start with **DanpheEMR** Please visit <a href="https://opensource-emr.github.io/hospital-management-emr//#setup" target="_blank">
     :point_right: Page
 </a>  and read it carefully. 
 Here you have details about requirements, configuration and setup.
@@ -68,7 +68,7 @@ Here you have details about requirements, configuration and setup.
 `and more..`
 
 
-<a href="https://opensource-emr.github.io/hospital-management-emr/" target="_blank">
+<a href="https://opensource-emr.github.io/hospital-management-emr/#setup" target="_blank">
     :point_right: docs
 </a>
 
