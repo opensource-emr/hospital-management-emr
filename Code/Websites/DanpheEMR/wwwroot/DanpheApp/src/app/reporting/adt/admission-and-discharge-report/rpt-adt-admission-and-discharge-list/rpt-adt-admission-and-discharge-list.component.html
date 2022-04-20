@@ -138,7 +138,9 @@
       > </danphe-grid>
 		</div>
 	</div>
-  <div *ngIf="showSummary" style="margin-bottom: 25px; width: 100%; float: left;"  id="summaryFooter">
+  <div class="row">
+    <div class="col-lg-6 col-sm-12">
+<div *ngIf="showSummary" style="margin-bottom: 25px; width: 100%; float: left;"  id="summaryFooter">
     <div *ngIf="TotalPatientData.length>0">
       <div class="row">
         <div class="col-md-12 col-xs-12">
@@ -167,4 +169,40 @@
       </div>
     </div>
   </div>
+    </div>
+    <div class="col-lg-6 col-sm-12">
+      <div *ngIf="showBedOccupancySummary" style="margin-bottom: 25px; width: 100%; float: left;"  id="summaryFooterBed">
+        <div *ngIf="bedOccupancySummary.length>0">
+          <div class="row">
+            <div class="col-md-12 col-xs-12">
+                <div style="padding-top:7px;">
+                  <h4 style="font-weight:bold;">
+                    Bed Occupancy Summary Report
+                  </h4>
+                  <div style=" margin: 0px auto">
+                    <table class="tbl-summ" border="1" style="width:100%;">
+                      <tr style="font-weight:bold !important;">
+                        <th>Department</th>
+                        <th>Previous Day Occupied Beds</th>
+                        <th>Admission</th>
+                        <th>Discharged</th>
+                        <th>Bed Occupancy</th>
+                      </tr>
+                      <tr *ngFor="let row of bedOccupancySummary">
+                        <td><b>{{row.DepartmentName}}</b></td>
+                        <td>{{row.PreviousDayOccupancy}}</td>
+                        <td>{{row.Admission}}</td>
+                        <td>{{row.Discharge}}</td>
+                        <td>{{row.BedOccupancy}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 </div>

@@ -32,3 +32,10 @@ export class BedFeatureModel{
     public BedFeatureId : number;
     public BedFeatureName : string;
 }
+export class BedOccupancySummaryModel{
+    public DepartmentName :string;
+    public PreviousDayOccupancy : number;
+    public Admission: number;
+    public Discharge: number;
+    public BedOccupancy:number;
+}
