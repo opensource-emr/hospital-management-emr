@@ -19,6 +19,7 @@ export class Visit {
   public DepartmentId: number = null;
   public DepartmentName: string = null;//sud:26June'19--Only to be used in Client Side.
 
+  public Diagnosis :string = ""; // added for diagnosis check
   public ProviderId: number = 0;
   public ProviderName: string = null;
   public Comments: string = null;

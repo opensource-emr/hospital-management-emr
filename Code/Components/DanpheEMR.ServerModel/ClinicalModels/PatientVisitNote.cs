@@ -14,7 +14,7 @@ namespace DanpheEMR.ServerModel
         public int PatientVisitNoteId { get; set; }
         public int PatientId { get; set; }
         public int PatientVisitId { get; set; }
-        public int ProviderId { get; set; }
+        public int? ProviderId { get; set; }
 
        
         public string ChiefComplaint { get; set; }
