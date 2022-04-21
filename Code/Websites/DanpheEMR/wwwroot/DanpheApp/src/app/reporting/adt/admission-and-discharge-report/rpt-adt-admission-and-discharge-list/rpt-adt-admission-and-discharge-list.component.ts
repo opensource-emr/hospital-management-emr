@@ -5,10 +5,11 @@ import { DLService } from '../../../../shared/dl.service';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import * as moment from 'moment';
-import { AdmissionAndDischargeVM, BedFeatureModel, DepartmentModel, WardModel } from './AdmissionAndDischargeVM';
+import { AdmissionAndDischargeVM, BedFeatureModel, BedOccupancySummaryModel, DepartmentModel, WardModel } from './AdmissionAndDischargeVM';
 import { Observable } from 'rxjs-compat';
 import { catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
+import { CommonFunctions } from '../../../../shared/common.functions';
 
 @Component({
   selector: 'app-rpt-adt-admission-and-discharge-list',
@@ -35,12 +36,13 @@ export class RPTADTAdmissionAndDischargeListComponent implements OnInit {
   public BedFeatureList: Array<BedFeatureModel> = new Array<BedFeatureModel>();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   public showSummary : boolean = false;
+  public showBedOccupancySummary:boolean=false;
   public summaryFormatted = {
     TotalAdmitted: 0,
     TotalDischarged: 0,
     TotalDays: 0
   }
-
+ public bedOccupancySummary:Array<BedOccupancySummaryModel>= new Array<BedOccupancySummaryModel>();
   constructor(public httpClient: HttpClient,
     public dlService: DLService,
     public msgBoxServ: MessageboxService,
@@ -108,7 +110,7 @@ getBedFeature(res){
   };
   
 
-  Load() {
+  Load()
      { 
       this.TotalPatientData = [];
       this.dlService
@@ -135,14 +137,13 @@ getBedFeature(res){
         );
     } 
     
-  }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
   }
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
       this.TotalPatientData = res.Results;
-
+      this.LoadBedSummary();
       for(var i =0; i< this.TotalPatientData.length; i++){
         if(this.TotalPatientData[i].Diagnosis && this.TotalPatientData[i].Diagnosis.trim().length > 0){
           this.TotalPatientData[i].DiagnosisList= JSON.parse(this.TotalPatientData[i].Diagnosis);
@@ -163,6 +164,58 @@ getBedFeature(res){
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }
   }
+  LoadBedSummary()
+    { 
+     
+     let preDay=moment(this.fromDate).subtract(1,"days").format("YYYY-MM-DD");
+     this.dlService.Read(
+         "/Reporting/AdmissionAndDischargeList?FromDate=" +
+         preDay + "&ToDate=" + preDay+"&WardId="+this.wardId+
+         "&DepartmentId="+ this.departmentId+ "&BedFeatureId="+this.bedFeatureId+
+         "&AdmissionStatus="+  this.admissionStatus+"&SearchText="+this.searchText
+       ).map((res) => res).subscribe(
+         (res) => this.SuccessBedSummary(res),
+         (res) => this.Error(res)
+       );
+   } 
+   
+ SuccessBedSummary(res) {
+  if (res.Status == "OK") {
+    let totalPatientDataPreDay= new Array<AdmissionAndDischargeVM>();
+    this.bedOccupancySummary= new Array<BedOccupancySummaryModel>();
+    totalPatientDataPreDay = (res.Results.length >0 )? res.Results:new Array<AdmissionAndDischargeVM>();
+    //get distinct departmentnames
+    let allDept = this.TotalPatientData.map(itm => {
+      return itm.DepartmentName;
+    });
+    let allDeptPreDay = totalPatientDataPreDay.map(itm => {
+      return itm.DepartmentName;
+    });
+    let allDeptNames=allDept.concat(allDeptPreDay);
+
+    let uniqueDept =  CommonFunctions.GetUniqueItemsFromArray(allDeptNames);
+    
+    for(var i =0; i< uniqueDept.length; i++){
+      if(uniqueDept){
+        let newObj= new BedOccupancySummaryModel();
+        newObj.DepartmentName=uniqueDept[i];
+        newObj.PreviousDayOccupancy=totalPatientDataPreDay.filter(s=>s.DepartmentName == uniqueDept[i]).length;
+        newObj.Admission=this.TotalPatientData.filter(s=>s.DepartmentName == uniqueDept[i] && s.AdmissionStatus=='admitted').length;;
+        newObj.Discharge=this.TotalPatientData.filter(s=>s.DepartmentName == uniqueDept[i] && s.AdmissionStatus=='discharged').length;;
+        newObj.BedOccupancy=(newObj.PreviousDayOccupancy+newObj.Admission) -newObj.Discharge;
+        this.bedOccupancySummary.push(newObj);
+     }
+    }
+    let lastRow=new BedOccupancySummaryModel();
+    lastRow=Object.assign(lastRow,CommonFunctions.getGrandTotalData(this.bedOccupancySummary)[0]);
+    lastRow.DepartmentName="Total";
+    this.bedOccupancySummary.push(lastRow);
+   
+    if(this.bedOccupancySummary.length>0){
+      this.showBedOccupancySummary = true;
+    }
+  } 
+}
 
   OnFromToDateChange($event) {
     this.fromDate = $event.fromDate;
