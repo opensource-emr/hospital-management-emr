@@ -451,6 +451,8 @@ export class VisitListComponent {
       this.showOpdSticker = true;
       this.visits.unshift($event.data);
       //returns fresh copy of the array, inorder to notify angular some change is made in the array.
+      this.visits[0].CountryId = newFolVisit.Patient.CountryId;
+      this.visits[0].CountrySubDivisionId = newFolVisit.Patient.CountrySubDivisionId;
       this.visits = this.visits.slice();
       this.changeDetector.detectChanges();
     }

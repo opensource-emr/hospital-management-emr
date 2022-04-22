@@ -608,13 +608,14 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region Daily Appointment Report
-        public DataTable DailyAppointmentReport(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentType)
+        public DataTable DailyAppointmentReport(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentType, string Diagnosis)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
                 new SqlParameter("@ToDate", ToDate),
                 new SqlParameter("@Doctor_Name", Doctor_Name),
-                new SqlParameter("@AppointmentType", AppointmentType)
+                new SqlParameter("@AppointmentType", AppointmentType),
+                new SqlParameter("@ICD10Description", Diagnosis)
             };
             DataTable dailyAppointmentRptData = DALFunctions.GetDataTableFromStoredProc("SP_Report_Appointment_DailyAppointmentReport", paramList, this);
             return dailyAppointmentRptData;

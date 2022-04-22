@@ -61,6 +61,8 @@ export class Visit {
   public IsLastClaimCodeUsed: boolean = false;//sud:1-Oct'21-- Needed to 
   public ShortName:string = null;
   public PatientCode:string = null;
+  public CountryId: number = 0;
+  public CountrySubDivisionId: number = 0;
   public IsDirty(fieldname): boolean {
     if (fieldname == undefined) {
       return this.VisitValidator.dirty;

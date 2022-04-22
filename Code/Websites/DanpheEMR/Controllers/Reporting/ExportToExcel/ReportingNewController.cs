@@ -1160,12 +1160,12 @@ namespace DanpheEMR.Controllers.ReportingNew
             }
         }
 
-        public FileContentResult ExportToExcelDailyAppointment(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentType)
+        public FileContentResult ExportToExcelDailyAppointment(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentType, string Diagnosis)
         {
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable dailyappointment = reportingDbContext.DailyAppointmentReport(FromDate, ToDate, Doctor_Name, AppointmentType);
+                DataTable dailyappointment = reportingDbContext.DailyAppointmentReport(FromDate, ToDate, Doctor_Name, AppointmentType, Diagnosis);
 
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
                 //creating list for adding the column 

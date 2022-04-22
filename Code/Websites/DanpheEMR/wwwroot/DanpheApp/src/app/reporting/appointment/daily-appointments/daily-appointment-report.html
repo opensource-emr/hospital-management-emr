@@ -19,9 +19,9 @@
         </div>
         <div class="col-md-12">
           <div class="row mt10">
-            <div class="col-md-5 col-xs-12">
+            <div class="col-md-3 col-xs-12">
               <div class="form-group">
-                <label class="control-label col-md-4">Doctor Name<b style="float:right;">:</b></label>
+                <label class="control-label col-md-5">Doctor Name<b style="float:right;">:</b></label>
                 <div class="col-md-6">
                   <input class="form-control" danphe-auto-complete [(ngModel)]="selProvider"
                     [ngModelOptions]="{standalone: true}" [list-formatter]="myListFormatter" [source]="doctorList"
@@ -30,18 +30,27 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-5 col-xs-12">
+            <div class="col-md-3 col-xs-12">
               <div class="form-group">
                 <label class="control-label col-md-5">Appointment Type<b style="float:right;">:</b></label>
                 <div class="col-md-6">
                   <select [(ngModel)]="currentdailyappointment.AppointmentType" [ngModelOptions]="{standalone: true}"
-                    style="width:200px;height:30px;">
+                    style="width:150px;height:30px;">
                     <option value="">All</option>
                     <option value="New" selected="selected">New</option>
                     <option value="Transfer">Transfer</option>
                     <option value="Referral">Referral</option>
                     <option value="followup">Followup</option>
                   </select>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="ICD10List" class="col-md-3 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-4">Diagnosis<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input danphe-auto-complete class="form-control" [(ngModel)]="icd10Selected" [source]="ICD10List" [list-formatter]="ICDListFormatter" placeholder="Enter Diagnosis" display-property-name="ICD10Description" value-property-name=null (focusout)="AssignSelectedICD()"
+                            onClick="this.select();" match-formatted="true" [grid-sort]="'ICD10Description'" max-num-list="20" [ngModelOptions]="{standalone: true}"/>
                 </div>
               </div>
             </div>

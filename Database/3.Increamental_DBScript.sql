@@ -878,3 +878,167 @@ Create table [dbo].[CLN_PatientVisitProcedure]
 Go
 
 --END: NageshBB: 25March2022: created table for patient visit procedure save
+
+--START: DeepakS: 22April2022: Created core parameter to enable/disable diagnosis in appointment page
+
+insert into core_cfg_parameters (ParameterGroupName,ParameterName,ParameterValue,ValueDataType,Description,ParameterType)
+Values  ('Common','ShowDiagnosisInputOnAppointmentPage', 'true' ,'boolean' , 'it will show and hide the Diagnosis' ,'custom' );
+Go
+
+--END: DeepakS: 22April2022: Created core parameter to enable/disable diagnosis in appointment page
+
+--START: Menka: 22April2022: Altered store procedures of SP_GetVisitListOfValidDays for adding CountrySubDivisionId and SP_Report_DailyAppointment for applying diagnosis filter
+
+/****** Object:  StoredProcedure [dbo].[SP_APPT_GetVisitListOfValidDays]    Script Date: 18/04/2022 06:18:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+	ALTER PROCEDURE [dbo].[SP_APPT_GetVisitListOfValidDays]
+	@SearchTxt VARCHAR(200) = '', 
+	@RowCounts INT = 200,
+	@DaysLimit INT = 7
+
+	AS 
+	/*
+	 FileName: [SP_APPT_GetVisitListOfValidDays] 
+	 Created: 21-Dec'21/Krishna
+	 Description: To Get the Patients visit list
+				-- Returns upto 200 patients
+				--Match fields: ShortName, PatientCode (HospitalNo), PhoneNumber
+	 Remarks:   
+	 -------------------------------------------------------------------------
+	 Change History
+	 -------------------------------------------------------------------------
+	 S.No.    Date/User              Change          Remarks
+	 -------------------------------------------------------------------------
+	 1.       21-Dec'21/Krishna                          inital draft 
+	 2.		  22-Apr'22/Menka							Added CountrySubDivisionId
+	 -------------------------------------------------------------------------
+	*/
+	DECLARE @Now DATE
+		SET @Now = GETDATE()
+	DECLARE @ValidDate DATE
+		SET @ValidDate = DATEADD(DAY, -@DaysLimit, @Now) --takes date @Dayslimit(eg: 7 days) days less than the current date.
+		
+	BEGIN 
+		IF(@SearchTxt = 'null') 
+	BEGIN 
+		SET @SearchTxt = null 
+	END 
+		SET @RowCounts = ISNULL(@RowCounts, 200) --default rowscount=200
+
+ 
+	SELECT TOP (@RowCounts) 
+	  visit.PatientVisitId, 
+	  visit.ParentVisitId, 
+	  dept.DepartmentId,
+	  dept.DepartmentName,
+	  visit.ProviderId, 
+	  visit.ProviderName, 
+	  visit.VisitDate, 
+	  visit.VisitTime, 
+	  visit.VisitType, 
+	  visit.AppointmentType, 
+	  pat.PatientId, 
+	  pat.PatientCode, 
+	  pat.FirstName, 
+	  pat.MiddleName, 
+	  pat.LastName, 
+	  pat.ShortName, 
+	  pat.PhoneNumber, 
+	  pat.DateOfBirth, 
+	  pat.Gender, 
+	  pat.CountryId,
+	  pat.PANNumber, 
+	  pat.MembershipTypeId, 
+	  pat.[Address], 
+	  pat.Email, 
+	  pat.LandLineNumber, 
+	  visit.QueueNo, 
+	  visit.BillingStatus AS BillStatus,
+	  pat.CountrySubDivisionId
+
+	FROM PAT_PatientVisits AS visit
+		INNER JOIN MST_Department AS dept ON visit.DepartmentId = dept.DepartmentId
+		INNER JOIN PAT_Patient AS pat ON visit.PatientId = pat.PatientId
+	WHERE 
+	  pat.IsActive = 1
+	  AND visit.IsActive=1
+	  AND CONVERT(DATE,visit.VisitDate) BETWEEN CONVERT(DATE,@ValidDate) AND CONVERT(DATE,@Now)
+	  AND LOWER(visit.VisitType) != 'inpatient'
+	  AND LOWER(visit.BillingStatus) != 'returned'
+	  AND (
+		pat.PatientCode LIKE '%' + ISNULL(@SearchTxt, '') + '%' 
+		OR pat.ShortName LIKE '%' + ISNULL(@SearchTxt, '') + '%' 
+		OR ISNULL(pat.PhoneNumber, '') LIKE '%' + ISNULL(@SearchTxt, '') + '%'
+	  ) 
+	  AND visit.Ins_HasInsurance IS NULL
+	ORDER BY 
+	  visit.PatientVisitId DESC --Show recent visit at top.. 
+	  END
+	  GO
+
+	  /****** Object:  StoredProcedure [dbo].[SP_Report_Appointment_DailyAppointmentReport]    Script Date: 19/04/2022 03:50:55 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[SP_Report_Appointment_DailyAppointmentReport] 
+	@FromDate Date=null,
+	@ToDate Date=null,
+	@Doctor_Name varchar(100) = null,
+	@AppointmentType varchar(100) = null,
+	@ICD10Description varchar(100) = null
+AS
+/*
+FileName: [SP_Report_Appointment_DailyAppointmentReport]
+CreatedBy/date: Umed/2017-06-08
+Description: to get Details such as Patient Name , Appointment type, Appointment Status, along with doctor name between the Given Dates
+Remarks:    
+Change History
+-------------------------------------------------------
+S.No.    UpdatedBy/Date                        Remarks
+-------------------------------------------------------
+5		Rusha/2019-18-06					Updated of script according to provider name and appointment type
+6       Shankar/2020-19-02                  Added middle name to the patients name
+7.      Sud/14Jun'20                        PatientName taking from ShortName field of Pat_Patient Table
+8.      Sud:21Sep'21                        Adding DepartmentName, DistrictName in Select Result.
+                                            Refactoring of where clause 
+9.      Menka:9March'22						Added column like Address and diagnosis	
+10.     Menka:22March'22                    Changed to get diagnosis data from CLN_PatientVisit_Notes table
+11.     Menka:22April'22                    Changed to get diagnosis filtered list
+--------------------------------------------------------
+*/
+BEGIN
+    SELECT
+	CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, VisitTime) as 'Date',
+		pat.PatientCode,
+		pat.ShortName AS Patient_Name,
+        pat.PhoneNumber,pat.Age,pat.Gender,
+		dist.CountrySubDivisionName 'DistrictName',
+		ISNULL(dept.DepartmentName,'Not Assigned') AS DepartmentName,
+		vis.AppointmentType,vis.VisitType,
+		emp.FullName AS Doctor_Name,vis.ProviderId,
+		vis.VisitStatus,
+		pat.Address,
+		visitNote.Diagnosis AS Diagnosis,
+		dept.DepartmentId
+FROM PAT_PatientVisits AS vis
+	INNER JOIN PAT_Patient pat ON vis.PatientId = pat.PatientId
+	INNER JOIN MST_CountrySubDivision dist on pat.CountrySubDivisionId=dist.CountrySubDivisionId
+	left join MST_Department dept on vis.DepartmentId=dept.DepartmentId
+	left join EMP_Employee emp on emp.EmployeeId=vis.ProviderId
+	left join CLN_PatientVisit_Notes visitNote on vis.PatientVisitId = visitNote.PatientVisitId
+	WHERE CONVERT(date, vis.VisitDate) BETWEEN @FromDate  AND  @ToDate 
+	and vis.VisitType !='inpatient' --excluding inpatient visits (those can be seen from admission reports)
+	and ISNULL(emp.FullName,'') LIKE '%' + ISNULL(@Doctor_Name, '') + '%' and
+	  vis.AppointmentType LIKE '%' + ISNULL(@AppointmentType, '') + '%' and
+	  ISNULL(visitNote.Diagnosis,'') LIKE '%' + ISNULL(@ICD10Description, '') + '%'
+    AND vis.BillingStatus NOT  IN('cancel','returned')--exclude cancelled and returned visits. 
+	ORDER BY CONVERT(datetime, CONVERT(date, vis.VisitDate)) + CONVERT(datetime, vis.VisitTime) DESC
+
+END
+GO
+
+--END: Menka: 22April2022: Altered store procedures of SP_GetVisitListOfValidDays for adding CountrySubDivisionId and SP_Report_DailyAppointment for applying diagnosis filter
