@@ -74,6 +74,23 @@ export class PatientVisitNoteViewComponent {
             this.patientVisitNote.bodyPainList= JSON.parse(this.patientVisitNote.vitalsList[i].BodyPart);
           }
         }
+        var frtypes = new Array<FrequencyModel>();
+        frtypes = [
+          {FrequencyId:1, Type:"0-0-1"},
+        {FrequencyId:2, Type:"0-1-0"},
+        {FrequencyId:3, Type:"1-0-0"},
+        {FrequencyId:4, Type:"0-1-1"},
+        {FrequencyId:5, Type:"1-0-1"},
+        {FrequencyId:6, Type:"1-1-0"},
+        {FrequencyId:7, Type:"1-1-1"},
+        {FrequencyId:8, Type:"1-1-1-1"} ];
+        for(var i=0;i<this.patientVisitNote.homeMedicationList.length; i++){
+          
+           let frq=frtypes.find(f=>f.FrequencyId==this.patientVisitNote.homeMedicationList[i].FrequencyId);
+           if(frq){
+            this.patientVisitNote.homeMedicationList[i].FrequencyType=frq.Type;
+           }
+        }
         
         console.log(res.Results);
         this.showView = true;
@@ -163,3 +180,8 @@ export class PatientVisitNoteViewComponent {
     ]);
   }
 }
+class FrequencyModel {
+  FrequencyId: number;
+  Type:string
+}
+

@@ -4,12 +4,6 @@
 
     <div class="med-prescrip" style="width: 600px; margin: 0 auto; padding: 15px;">
       <div class="med-prescrip-header">
-        <div class="flex-container" style="justify-content: center;">
-          <p class="bill-header-text" style="font-size:13px; font-weight: bold;"><strong>{{hospitalName}}</strong></p>
-          <p class="bill-header-text" style="font-size:12px; font-weight:500;">{{address}},</p>
-          <p class="bill-header-text" style="font-size:12px; font-weight:500;">Ph No: {{tel}}</p>
-          <!-- <p class="bill-header-text" style="font-size:11px; font-weight:500;"><strong>{{title}}</strong></p> -->
-        </div>
 
 
         <div class="hospital-info">
@@ -48,13 +42,17 @@
                     <th>Dose</th>
                     <th>Frequency</th>
                     <th>Route</th>
+                    <th>Days</th>
+                    <th>Details</th>
                 </tr>
                 <tr *ngFor="let med of medicine; let i=index;">
                     <td>{{i+1}}</td>
                     <td>{{med.MedicationName}}</td>
                     <td>{{med.Dose}}</td>
-                    <td>{{med.Frequency}}</td>
+                    <td>{{med.FrequencyType}}</td>
                     <td>{{med.Route}}</td>
+                    <td>{{med.Days}}</td>
+                    <td>{{med.Comments}}</td>
                 </tr>
 
             </table>
