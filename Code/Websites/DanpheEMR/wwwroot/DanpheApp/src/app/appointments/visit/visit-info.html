@@ -40,8 +40,46 @@
                 </div>
               </div>
 
-            </div>
-            <div class="col-md-6">
+              <!-- start diagnosis -->
+              
+             <div class="form-group" *ngIf="ShowDiagnosis">
+              <label class="control-label col-md-4">
+                Diagnosis
+               </label>            
+               <div class="col-md-8">
+                <input class="form-control" id="Diagnosis" danphe-auto-complete 
+                  [(ngModel)]="icd10Selected"
+                    [source]="ICD10List"
+                    [list-formatter]="ICDListFormatter"
+                   placeholder="Select ICD10"
+                   display-property-name="ICD10Description" 
+                   onClick="this.select();"
+                   match-formatted="true"
+                   [ngModelOptions]="{standalone: true}"
+                   [grid-sort]="'ICD10Description'"
+                  (valueChanged)="AssignSelectedICD()"
+                  max-num-list="20" 
+                   />
+                  </div>
+                </div>
+                <div class="col-md-12" >
+                  <div class="row margin-5-bt" *ngFor="let icddata of diagnosisICD10list; let Idx = index">
+                  <div class="col-md-9">
+                      <div style="background-color: #f0f1f3;  padding: 5px;">
+                          {{icddata.ICD10Description}}
+                      </div>
+                  </div>
+                  <div class="col-md-3" >
+                   <button class="btn btn-danger" (click)="DeleteRow(Idx)">
+                          <i class="fa fa-close"></i>
+                        </button>
+                  </div>
+                </div>
+              </div>
+             </div>
+             <!-- end Diagnosis -->
+    
+             <div class="col-md-6">
               <div class="form-group">
                 <label class="control-label col-md-4">Visit Date<sup class="color-red"> *</sup></label>
                 <div class="col-md-8">

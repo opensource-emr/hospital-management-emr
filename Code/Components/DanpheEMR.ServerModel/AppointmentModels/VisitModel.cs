@@ -18,6 +18,8 @@ namespace DanpheEMR.ServerModel
         public string QueueStatus { get; set; }
         public int? ProviderId { get; set; }
         public string ProviderName { get; set; }
+      [NotMapped]
+        public string Diagnosis { get; set; }      
         public string Comments { get; set; }
         public string ReferredByProvider { get; set; }
         public string VisitType { get; set; }

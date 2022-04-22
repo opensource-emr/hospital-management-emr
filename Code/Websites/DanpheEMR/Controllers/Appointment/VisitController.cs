@@ -1408,6 +1408,19 @@ namespace DanpheEMR.Controllers
                 visitDbContext.Visits.Add(currVisit);
                 //visitDbContext.SaveChanges();
                 GeneratePatientVisitCodeAndSave(visitDbContext,currVisit,connString);
+                if (currVisit.Diagnosis.Length > 0)
+                {
+                    ClinicalDbContext clinicalDbContext = new ClinicalDbContext(connString);
+                    PatientVisitNote patVisitNote = new PatientVisitNote();
+                    patVisitNote.PatientId = currVisit.PatientId;
+                    patVisitNote.PatientVisitId = currVisit.PatientVisitId;
+                    patVisitNote.ProviderId = currVisit.ProviderId;
+                    patVisitNote.Diagnosis = currVisit.Diagnosis;
+                    patVisitNote.CreatedBy = currentUserId;
+                        patVisitNote.CreatedOn = DateTime.Now;
+                        clinicalDbContext.PatientVisitNotes.Add(patVisitNote);
+                        clinicalDbContext.SaveChanges();   
+                }
                 //currVisit.VisitCode = VisitBL.UpdateVisitCode(currVisit.PatientVisitId, visitDbContext);
                 return currVisit;
 

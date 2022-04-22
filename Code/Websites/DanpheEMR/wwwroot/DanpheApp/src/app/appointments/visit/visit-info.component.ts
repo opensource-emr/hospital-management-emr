@@ -13,7 +13,7 @@
                                                      
  -------------------------------------------------------------------
  */
-import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from "@angular/core";
 import { Visit } from "../shared/visit.model";
 import { VisitBLService } from "../shared/visit.bl.service";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
@@ -29,6 +29,9 @@ import { Employee } from "../../employee/shared/employee.model";
 import { BillingTransaction } from "../../billing/shared/billing-transaction.model";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import * as moment from "moment";
+import { ICD10 } from "../../clinical/shared/icd10.model";
+import { DanpheCache } from "../../shared/danphe-cache-service-utility/cache-services";
+import { MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 
 @Component({
   selector: "visit-info",
@@ -54,16 +57,24 @@ export class VisitInfoComponent implements OnInit {
 
   public visitTimeDiff: number = null;
 
+  public diagnosisICD10list : Array<ICD10> =new Array<ICD10>();
 
+  public icd10Selected: ICD10 = new ICD10();
+  
+   public ShowDiagnosis : boolean =false;
   constructor(public visitBLService: VisitBLService,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService,
     public appointmentService: AppointmentService,
     public visitService: VisitService,
-    public settingsBlService: SettingsBLService) {
+    public settingsBlService: SettingsBLService,
+    public changeDetector : ChangeDetectorRef
+    ) {
+      
+      this.GetICDList();
     this.GetVisitDoctors();
     this.GetDepartments();
-
+    this.GetParameterForShowDiagnosis();
     this.LoadReferrerSettings();
 
     let paramValue = this.coreService.EnableDepartmentLevelAppointment();
@@ -199,17 +210,58 @@ export class VisitInfoComponent implements OnInit {
         }
       }
 
-
-
-      ////EMR-999: If doctor was set from Appointment page, then assign the price etc for him/her.-sud:25Oct'19
-      //if (this.selectedDoctor && this.selectedDoctor.ProviderId) {
-      //  this.AssignSelectedDoctor();
-      //}
-
     }
   }
 
 
+  GetParameterForShowDiagnosis() {
+    let AptDiagnosis = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ShowDiagnosisInputOnAppointmentPage");
+    if (AptDiagnosis) {
+        let paramValue = AptDiagnosis.ParameterValue;
+        if (paramValue && paramValue == "true") {
+            this.ShowDiagnosis = true;
+        }
+        else {
+            this.ShowDiagnosis = false;
+        }
+    }
+}
+
+  public GetICDList() {
+    this.ICD10List = DanpheCache.GetData(MasterType.ICD, null);
+
+  }
+
+  ICD10List: any = [];
+  
+  public ICDListFormatter(data: any): string {
+    let html;
+    if (!data.ValidForCoding) {
+      html = "<b>" + data["ICD10Code"] + "  " + data["ICD10Description"] + "</b>";
+    }
+    else {
+      html = data["ICD10Code"] + "  " + data["ICD10Description"];
+    }
+    return html;
+  }
+
+  
+  
+  public AssignSelectedICD() {
+    if (this.icd10Selected.ICD10Code != null) {
+      if (typeof (this.icd10Selected) == 'object' && this.icd10Selected.ICD10Description.length > 0) {
+        this.changeDetector.detectChanges();
+        this.diagnosisICD10list.push(this.icd10Selected);
+        this.UpdateDiagnosis();
+      }
+    }
+  }
+
+  public UpdateDiagnosis(){
+    this.visit.Diagnosis="";
+    this.visit.Diagnosis=(this.diagnosisICD10list.length >0)?
+    JSON.stringify(this.diagnosisICD10list):'';
+  }
 
   GetDepartments() {
     this.visitBLService.GetDepartment()
@@ -289,6 +341,10 @@ export class VisitInfoComponent implements OnInit {
     }
   }
 
+  public DeleteRow(Idx : number){
+  this.diagnosisICD10list.splice(Idx ,1);
+  this.UpdateDiagnosis();
+  }
   public AssignSelectedDepartment() {
     let department = null;
     //        this.emitDepartmentDetail.emit({ "selectedDepartment": null });

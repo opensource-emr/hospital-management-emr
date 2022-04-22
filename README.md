@@ -34,7 +34,9 @@ Demo of Danphe EMR
 
 Click on below demo link and check out live application
 
-[Danphe EMR Live Application](http://opensource-healthcare.com/ "Click here for Danphe EMR Live!")
+<a href="https://opensource-healthcare.com/" target="_blank">
+  Danphe EMR Live Application
+</a>
 
 Use below `credentials` for login
 
@@ -46,13 +48,15 @@ Use below `credentials` for login
 Need help?
 ==============
 
-Please read our document, If you don't find answer in document. Please , do send mail at shiv_koirala@yahoo.com 
+Please read our document, If you don't find answer in document. Please <a href="https://opensource-emr.github.io/hospital-management-emr/#contact" target="_blank">Contact Us</a> 
 
 
 Installation & Setup
 ======================
-Getting start with **DanpheEMR** Please visit [Page](https://opensource-emr.github.io/hospital-management-emr/ "Click here for more details!") and read it carefully. 
-Here you have 2 types of setup
+Getting start with **DanpheEMR** Please visit <a href="https://opensource-emr.github.io/hospital-management-emr//#setup" target="_blank">
+    :point_right: Page
+</a>  and read it carefully. 
+Here you have details about requirements, configuration and setup.
 
 
 #### Development Setup
@@ -63,29 +67,28 @@ Here you have 2 types of setup
 + Database creation 
 `and more..`
 
-#### End User Setup
 
-+ This is `without source code` version
-+ Here any person can easily install and use `DanpheEMR` with minimum computer knowledge
-+ This is for any individual, Hospital, clinic, pharmacy, anyone. 
-+ Please visit document and read all steps and you can use it without developer skills
-
-   [ :point_right: docs](https://opensource-emr.github.io/hospital-management-emr/ "Click here for document!")
+<a href="https://opensource-emr.github.io/hospital-management-emr/#setup" target="_blank">
+    :point_right: docs
+</a>
 
 Credits
 ========
 
-### Sponsors
+## Sponsors
 All sponsors are here. Thanks all sponsors for your contributions.
 
-[imaark digital](https://www.imarkdigital.com/)
+<a href="https://www.imarkdigital.com/" target="_blank">
+  <img src="https://user-images.githubusercontent.com/48054642/161473176-51fcb05f-e87f-4229-8673-887bf5060fe0.png" />
+</a>
 
+## Contributors
+Thanks all contributors. 
 
-Enterprise support.
-==============
+<a href="https://github.com/opensource-emr/hospital-management-emr/graphs/contributors" target="_blank">
+  <img src="https://contrib.rocks/image?repo=opensource-emr/hospital-management-emr" />
+</a> <br><br>
 
-Where are we live
-==============
 
 License
 ==============
