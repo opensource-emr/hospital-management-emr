@@ -34,7 +34,7 @@ Demo of Danphe EMR
 
 Click on below demo link and check out live application
 
-<a href="https://opensource-healthcare.com/" target="_blank">
+<a href="http://202.51.74.168:175/" target="_blank">
   Danphe EMR Live Application
 </a>
 
