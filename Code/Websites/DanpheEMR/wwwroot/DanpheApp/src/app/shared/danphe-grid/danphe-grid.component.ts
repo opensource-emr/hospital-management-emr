@@ -222,25 +222,39 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
         this.defaultDateRange = "last1month";
       }
     }
-
-
-
-    //this.PrintRowData = this.rowData && this.rowData.length ? this.rowData : null;
-
+    //Sud:6Apr'2023--When NepaliDateSettings is passed by Component, Time part is shown as T00:00:00
+    //To avoid that in Opensource/International, call below function (of English Date) to Show in Proper Format
     if (
       this.nepaliDateInGridColDetail &&
       this.nepaliDateInGridColDetail.ShowNepaliDateInGrid
     ) {
-      this.showNepaliDateOption = true;
       this.nepaliDateInGridColDetail.NepaliDateColumnList.forEach((col) => {
         let ind = this.columnDefs.findIndex(
           (cldf) => cldf.field == col.EnglishColumnName
         );
         this.columnDefs[ind].cellRenderer = col.ShowTime
-          ? this.GetNepaliDateAndTime
-          : this.GetNepaliDate;
+          ? this.GetNormalDateTimeData
+          : this.GetNormalDateData;
       });
-    }
+    }  
+
+
+    //this.PrintRowData = this.rowData && this.rowData.length ? this.rowData : null;
+
+    // if (
+    //   this.nepaliDateInGridColDetail &&
+    //   this.nepaliDateInGridColDetail.ShowNepaliDateInGrid
+    // ) {
+    //   this.showNepaliDateOption = true;
+    //   this.nepaliDateInGridColDetail.NepaliDateColumnList.forEach((col) => {
+    //     let ind = this.columnDefs.findIndex(
+    //       (cldf) => cldf.field == col.EnglishColumnName
+    //     );
+    //     this.columnDefs[ind].cellRenderer = col.ShowTime
+    //       ? this.GetNepaliDateAndTime
+    //       : this.GetNepaliDate;
+    //   });
+    // }
 
     this.setFocusOnGridSearch && this.SetFocusOnPatientSearch('quickFilterInput');
   }
