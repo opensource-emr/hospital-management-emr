@@ -1,5 +1,5 @@
 
-If you have any issues please sen us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
+If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
 
 Introduction
 ==============
@@ -49,7 +49,7 @@ Use below `credentials` for login
 
 Need help?
 ==============
-If you have any issues please sen us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
+If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
 
 Installation & Setup
 ======================
