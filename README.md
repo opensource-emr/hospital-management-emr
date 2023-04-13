@@ -1,4 +1,6 @@
 
+If you have any issues please sen us mail at shiv_koirala@yahoo.com 
+
 Introduction
 ==============
 Danphe EMR is a enterprise web-based application which covers all day to day aspects of Hospital management end to end. Its currently live 50 plus hospitals in Asia(India,Nepal and Bangladesh). 
@@ -30,7 +32,7 @@ It has around 40 modules and below are important ones listed.
 
 Demo of Danphe EMR
 ==============
-
+If you have any issues please sen us mail at shiv_koirala@yahoo.com 
 
 Click on below demo link and check out live application
 
