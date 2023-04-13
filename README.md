@@ -1,5 +1,5 @@
 
-If you have any issues please sen us mail at shiv_koirala@yahoo.com 
+If you have any issues please sen us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
 
 Introduction
 ==============
@@ -49,9 +49,7 @@ Use below `credentials` for login
 
 Need help?
 ==============
-
-Please read our document, If you don't find answer in document. Please <a href="https://opensource-emr.github.io/hospital-management-emr/#contact" target="_blank">Contact Us</a> 
-
+If you have any issues please sen us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
 
 Installation & Setup
 ======================
