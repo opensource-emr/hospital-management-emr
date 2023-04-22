@@ -1,5 +1,7 @@
 
-If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing.
+If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. If you wish to see demo <a href="http://202.51.74.168:175/" target="_blank">
+  Danphe EMR  Application
+</a> 
 
 Introduction
 ==============
