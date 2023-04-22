@@ -1,7 +1,8 @@
 
 If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. If you wish to see demo <a href="http://202.51.74.168:175/" target="_blank">
   Danphe EMR  Application
-</a> 
+</a> Username  : admin / Password  : pass123 <br>
+Also please do read down for more details of how to install and configure.
 
 Introduction
 ==============
