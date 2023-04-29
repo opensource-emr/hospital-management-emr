@@ -1,7 +1,6 @@
 
-If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. You can also   
-<a href="https://www.ehospitalmanagementsystem.com/" target="_new">
- Chat with use here.
+If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. You can also <a href="https://www.ehospitalmanagementsystem.com/" target="_new">
+ Chat with us here.
 </a> 
  <br><br> 
 
