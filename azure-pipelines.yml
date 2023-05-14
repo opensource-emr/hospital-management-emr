@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'Windows-2022'
 
 variables:
   solution: 'Code/Solutions/*.sln'
