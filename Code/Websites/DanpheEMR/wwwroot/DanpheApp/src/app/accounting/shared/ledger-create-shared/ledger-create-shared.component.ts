@@ -4,7 +4,6 @@ import { LedgerModel } from "../../settings/shared/ledger.model";
 import { AccountingBLService } from "../accounting.bl.service";
 import { CoreService } from "../../../core/shared/core.service";
 import { AccountingService } from "../../shared/accounting.service";
-import { parse } from "querystring";
 
 @Component({
   selector: "ledger-create-shared",

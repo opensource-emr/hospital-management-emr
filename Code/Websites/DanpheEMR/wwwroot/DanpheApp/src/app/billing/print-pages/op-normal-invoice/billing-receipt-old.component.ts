@@ -16,7 +16,6 @@ import { RouteFromService } from "../../../shared/routefrom.service";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import * as moment from 'moment/moment';
 import { ENUM_InvoiceType } from "../../../shared/shared-enums";
-import { parse } from "querystring";
 
 
 @Component({
