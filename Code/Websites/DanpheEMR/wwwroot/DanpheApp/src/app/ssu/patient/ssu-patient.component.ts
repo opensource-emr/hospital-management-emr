@@ -15,7 +15,6 @@ import { Membership } from "../../settings-new/shared/membership.model";
 import { SSU_BLService } from "../shared/ssu.bl.service";
 import { SsuPatientVM } from "../shared/ssu-patient.view-model";
 import { Patient } from "../../patients/shared/patient.model";
-import { parse } from "querystring";
 
 @Component({
   selector: "ssu-add-patient",
