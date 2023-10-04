@@ -1,0 +1,78 @@
+<div class="wrapper">
+  <div class="row margin-15-bt margin-5-tp">
+    <div class="col-md-4">
+      <div class="caption lb-caption"><h3><span><i class="fa fa-user"></i>Patients |</span>
+        <button *ngIf="showPatRegistration" class="btn-link" (click)="ShowOpPatAddPopUp()"><i class="fa fa-plus"></i>Add New Patient</button>
+      </h3></div>
+    </div>
+    <div class="col-md-5 col-md-offset-3">
+      <div class="pull-right">
+        <div class="padding-10-tp">
+          <label>Sort By:</label>
+          <label class="lab-radio-holder margin-15-lft" style="color:#4658e5">
+            <input type="radio" checked="checked" [(ngModel)]="patientType" (change)="OnPatientTypeChange()" name="patientType" value="All" style="width:15px;height:15px" />
+            ALL </label>
+          <label class="lab-radio-holder margin-15-lft" style="color:#4658e5">
+            <input type="radio" [(ngModel)]="patientType" (change)="OnPatientTypeChange()" name="patientType" value="OP" style="width:15px;height:15px" />
+            OUT-Patients </label>
+          <label class="lab-radio-holder margin-15-lft" style="color:#4658e5">
+            <input type="radio" [(ngModel)]="patientType" (change)="OnPatientTypeChange()" name="patientType" value="IP" style="width:15px;height:15px" />
+            IN-Patients </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="filteredPatients" (grid-actions)="PatientGridActions($event)"
+                 (result-data)="GetResults($event)"
+                 (serverSearchText)="serverSearchTxt($event)"
+                 [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+      <!-- [show-ServerSideSearch]="true"
+    [api-type]="patGirdDataApi" --> 
+    </div>
+  </div>
+  <div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom inv_modal" *ngIf="showPatientBillHistory">
+    <div class="portlet-body form"> 
+      <!--Model Box Body Start-->
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="form-body">
+            <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" (click)="CloseBillHistory()" title="Cancel">X</a>
+              <bill-history [showPatientBillHistory]="showPatientBillHistory"
+                        [patient]="selPatient"></bill-history>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Model Box Body End--> 
+    </div>
+  </div>
+  
+  <!-- <change-visit-type *ngIf="showChangeVisitTypePopup" [patientInfo]="patientService.globalPatient" (on-closed)="OnChangeVisitPopupClosed($event)">
+
+</change-visit-type> -->
+  
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInpatientMessage">
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+			<button class="btn btn-danger del-btn" (click)="showInpatientMessage=false">X</button>
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr">Inpatient Billing Information</h4>
+          </div>
+          <div class="modelbox-body text-center">
+            <h4><b style="color:#bd8111">Alert!</b></h4>
+            <p><b style="color:#bd8111;">Please use Inpatient billing for admitted patient.</b></p>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showInpatientMessage=false"> OK </button>
+            </div>
+          </div>          
+        </div>
+      </div>
+    </div>
+  </div>
+  <bill-op-patient-add *ngIf="showAddNewOpPopUp" (callBackAddClose)="GetBackFromOpPatAdd($event)"></bill-op-patient-add>
+</div>

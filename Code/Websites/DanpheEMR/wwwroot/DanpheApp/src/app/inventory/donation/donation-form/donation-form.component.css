@@ -1,0 +1,167 @@
+
+/* .form-control {
+    height: 25px !important;
+  }
+
+  .form-group {
+    padding: 5px !important;
+  } */
+
+th {
+  font-size: 13px !important;
+}
+
+.total-table td {
+  padding-bottom: 5px !important;
+}
+
+.inv_table thead tr th,
+.inv_table tbody tr td {
+  padding: 3px !important;
+}
+
+/*input {
+    border-radius: 8px !important;
+  }*/
+
+.fa-question {
+  /* top: 6px; */
+  border-top-right-radius: 3px !important;
+  border-bottom-right-radius: 3px !important;
+}
+
+input.ng-pristine {
+  border: 1px solid #ddd;
+  height: 30px;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.icon-info {
+  margin-left: 2px !important;
+  background-color: #2d68ea;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 13px;
+  color: #fff;
+}
+
+.dv-dup-bill-no {
+  background-color: yellow;
+  color: black;
+  cursor: default;
+}
+
+.msg-icn-warn {
+  color: #c1c112;
+  font-size: 17px;
+}
+
+.verification-card {
+  background-color: #e0e9f1;
+  padding: 15px;
+  display: inline-block;
+  border-radius: 5px !important;
+  text-align: left;
+  width: 100%;
+  margin-top: 25px;
+}
+
+.verification-check {
+  background: #fff;
+  color: #2185cc;
+  padding: 3px 15px;
+  margin-bottom: auto;
+  border-radius: 5px !important;
+  box-shadow: 0px 0px 10px #eee;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: 600;
+}
+
+.verification-check .custom-control-label {
+  margin-bottom: 0;
+  margin-left: 7px;
+  margin-top: 1px;
+  font-weight: 600;
+}
+
+.verification-form-control {
+  display: inline-block;
+  margin: 10px -15px;
+  width: 100%;
+}
+
+.verification-form-control .btn.btn-sm {
+  display: inline-flex;
+  height: 20px;
+  width: 20px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100% !important;
+  font-size: 12px !important;
+  padding: 10px !important;
+  margin: 4px 3px;
+}
+
+.verification-form-control .verifier {
+  padding: 7px 15px;
+  background: #4158d3;
+  border-radius: 20px !important;
+  color: #fff;
+  margin-left: 15px;
+  font-weight: 500;
+  margin-bottom: 0px;
+  font-size: 12px;
+}
+
+.verification-form-control .form-control {
+  border: none;
+  box-shadow: 0px 4px 10px #eee;
+  font-size: 13px;
+}
+
+.verification-form-control .verifier i {
+  margin-right: 5px;
+}
+
+.good-receipt-radio-btn label {
+  vertical-align: middle;
+}
+
+.good-receipt-radio-btn input[type="radio"] {
+  margin: 4px 5px 0 5px;
+}
+
+.disable-input-box {
+  cursor: not-allowed;
+  border: 1px solid #ddd;
+  background-color: #eef1f5;
+  opacity: 1;
+}
+
+.inv-itm-srchbox:focus {
+  box-shadow: 0 0 0 0.4rem lightblue !important;
+  border: 1px solid blue !important;
+}
+
+.invalid-input {
+  background-color: yellow;
+}
+
+#gr-itemName::after {
+  content: data-code;
+}
+.donationFooter{
+  display: flex;
+  flex-direction: row-reverse;
+}
+.lblForDonationTotalAmount{
+  align-self: center;
+  margin-right: 20px;
+}

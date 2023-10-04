@@ -1,0 +1,88 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption" style="float: left;">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Return On Investment Report</span>
+      </div>
+    </div>
+    <div class="">
+      <div class="col-md-6">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="row">
+          <button class="btn blue" type="button" (click)="GetReportData()" [disabled]="loading">
+            <span *ngIf="!loading">Show Report</span>
+            <span *ngIf="loading">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="ReturnOnInvestmentReportDataColumns" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-data]="ReturnOnInvestmentReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-date-range]="dateRange" [report-for]="'pharmacy'">
+    </danphe-grid>
+  </div>
+</div>
+<!-- Summary -->
+<div class=" col-sm-12 col-md-12" style="margin-bottom: 10px !important; display: flex;justify-content: center;">
+  <div class="table-responsive table-wrapper" id="print_summary">
+    <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+      <thead>
+        <tr>
+          <th colspan="2" style="text-align: center;">
+            <span style="font-size:large;"> Report Summary </span>
+
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container>
+          <tr>
+            <td style="font-weight:bold; color:blue">
+              <span> <b> Total Money Investment </b> </span>
+            </td>
+            <td>
+              <span style="font-size: 2rem;"> {{grandTotal.totalInvestedValue |Currency }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:blue">
+              <span> <b> Total Sales Value </b> </span>
+            </td>
+            <td>
+              <span style="font-size: 2rem;"> {{grandTotal.totalSalesValue | Currency }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:blue">
+              <span> <b> Total Profit </b> </span>
+            </td>
+            <td>
+              <span style="font-size: 2rem;"> {{grandTotal.profit }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:blue">
+              <span> <b> Total Profit% </b> </span>
+            </td>
+            <td>
+              <span style="font-size: 2rem;"> {{grandTotal.profitPer }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:blue">
+              <span> <b> Total ROI%. </b> </span>
+            </td>
+            <td>
+              <span style="font-size: 2rem;"> {{grandTotal.ROI }}</span>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

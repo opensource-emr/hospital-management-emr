@@ -1,0 +1,27 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showWardBillingWindow">
+        <div class="portlet-body form">
+          <div class="row"><div class="col-md-10 col-md-offset-1">
+            <div class="modelbox-div">
+				<div class="caption custom-caption">
+            <h3> <span>Radiology Ward Billing</span></h3>
+            <a class="btn btn-danger" (click)="showWardBillingWindow=false;" title="Cancel">X</a> 
+				</div>              
+              <div class="modelbox-body">
+                <rad-ward-billing *ngIf="showWardBillingWindow" [selectedPatient]="selectedPatient" (onPoupuClosed)="OnWardBillingClosed()"></rad-ward-billing>
+              </div>
+<!--
+              <div class="close-modelbox">
+                <button class="btn btn-danger" (click)="showWardBillingWindow=false;">X</button>
+              </div>
+-->
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <danphe-grid *ngIf="!showWardBillingWindow" [grid-colDefaults]="WardGridColumns" [grid-data]="inpatientList" (grid-actions)="LabGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>

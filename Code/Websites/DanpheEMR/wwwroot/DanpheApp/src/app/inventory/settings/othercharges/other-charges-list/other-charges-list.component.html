@@ -1,0 +1,14 @@
+<div>
+    <input type="button" class="btn btn-sm primary-btn m1" (click)="AddOtherCharges()" value="Add Other Charges" />
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="otherChargesGridColumns" [grid-data]="otherChargesList" (grid-actions)="OtherChargesGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<!-- ---Other Charges Form START--- -->
+<app-other-charges-form *ngIf="showAddPage" [showAddPage]="showAddPage" (submit-event)="AddToChargesList($event)" (close-add-page)="Close()"></app-other-charges-form>
+<!-- ---END: Other CHarges PopUp-- -->
+
+<app-other-charges-edit *ngIf="showEditPage" [showEditPage]="showEditPage" [ChargeId]="this.ChargeId" (update-event)="UpdateToChargesList($event)" (close-edit-page)="Close()"></app-other-charges-edit>

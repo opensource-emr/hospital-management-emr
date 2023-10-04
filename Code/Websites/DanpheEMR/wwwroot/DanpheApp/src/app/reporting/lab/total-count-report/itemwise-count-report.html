@@ -1,0 +1,72 @@
+<!-- <div class="row">
+  <div id="printPage" class="col-md-12">
+    <div class="itm-tbl-holder">
+      <div class="table-responsive">
+        <h3 *ngIf="!reportData || reportData.length == 0">
+          No Data Available for this Date Range
+        </h3>
+
+        <table
+          *ngIf="reportData.length > 0"
+          class="table table-striped item-tbl"
+        >
+          <thead>
+            <tr>
+              <th style="text-align: center;" colspan="4">
+                <h3 style="margin: 0;">
+                  <strong>Item Wise Count</strong><br />
+                  <span style="font-size: 12px; line-height: 2;">
+                    From: {{fromDate}}&nbsp; To: {{toDate}}
+                  </span>
+                </h3>
+              </th>
+            </tr>
+          </thead>
+          <thead>
+            <tr>
+              <th>S.N.</th>
+              <th>Category Name</th>
+              <th>Test Name</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of reportData; let i = index;">
+              <td>{{i+1}}</td>
+              <td>
+                {{data.TestCategoryName}}
+              </td>
+              <td>
+                {{data.LabTestName}}
+              </td>
+              <td>{{data.TotalCount}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="text-center">
+        <button
+          class="blue btn right non-printable"
+          type="button"
+          (click)="print()"
+        >
+          <i class="fa fa-print"></i> Print
+        </button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="row">
+  <div class="col-md-12">
+    <danphe-grid
+      [grid-colDefaults]="itemCountReportColumn"
+      [resizeColumnToFit]="true"
+      [grid-data]="reportData"
+      [grid-showExport]="showExcelExport"
+      [grid-exportOptions]="exportOptions"
+      [report-for]="'lab'"
+    >
+    </danphe-grid>
+  </div>
+</div>

@@ -1,0 +1,237 @@
+<div class="row">
+   <div class="col-md-12">
+      <a class="btn green btn-success" style="background-color:#337ab7;" name="name" (click)="AddSubLedgerPopup()">
+         <span class="glyphicon glyphicon-plus"></span>Create Sub Ledger
+      </a>
+   </div>
+</div>
+<div class="row">
+   <div class="col-md-12 col-xs-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="GridColumns" [grid-data]="gridData" (grid-actions)="GridActions($event)">
+      </danphe-grid>
+   </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showEditPage">
+   <div class="portlet-body form">
+      <div class="row">
+         <div class="col-md-6 col-md-offset-3">
+            <div class="modelbox-div clearfix">
+               <div class="caption lb-caption">
+                  <h3>
+                     <span>Update SubLedger</span>
+                  </h3>
+                  <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+               </div>
+               <div class="form-horizontal hm-form">
+                  <div class="form-body">
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Ledger<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                           <select disabled class="form-control" maxlength="30" type="text" [(ngModel)]="subLedger.LedgerId"
+                                   id="LedgerId" placeholder="select Ledger">
+                              <option *ngFor="let ledger of ledgerList" value={{ledger.LedgerId}}>
+                                 {{ledger.LedgerName}}
+                              </option>
+                           </select>
+                        </div>
+                     </div>
+                     <div class="form-group">
+                        <label class="control-label col-md-5">SubLedger Name<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                           <input class="form-control" maxlength="30" type="text" [(ngModel)]="subLedger.SubLedgerName"
+                                  id="subLedgerName" placeholder="SubLedgername" />
+                        </div>
+                     </div>
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Opening Balance<b>:</b></label>
+                        <div class="col-md-7">
+                           <input class="form-control" value="0" onclick="this.select();" type="number" [(ngModel)]="subLedger.OpeningBalance"
+                                  id="OpeningBalance" placeholder="OpeningBalance" />
+                        </div>
+                     </div>
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Opening BalanceType<b>:</b></label>
+                        <div class="col-md-7">
+                           <div class="col-md-6">
+                              <div class="icheck-inline">
+                                 <label class="mt-checkbox mt-checkbox-outline">
+                                    Dr
+                                    <input id="Dr" name="Dr" type="checkbox" (click)="DrCrChange($event)"
+                                           [(ngModel)]="subLedger.Dr" />
+                                    <span></span> </label>
+                              </div>
+                           </div>
+                           <div class="col-md-6">
+                              <div class="icheck-inline">
+                                 <label class="mt-checkbox mt-checkbox-outline">
+                                    Cr
+                                    <input id="Cr" name="Cr" type="checkbox" (click)="DrCrChange($event)"
+                                           [(ngModel)]="subLedger.Cr" />
+                                    <span></span> </label>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Description<b>:</b></label>
+                        <div class="col-md-7">
+                           <input class="form-control" maxlength="200" type="text" [(ngModel)]="subLedger.Description"
+                                  id="Description" placeholder="Description" />
+                        </div>
+                     </div>
+                     <div class="form-actions">
+                        <input type="button" class="btn btn-primary" (click)="UpdateSubLedger()" value="Update SubLedger" />
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+   <div class="portlet-body form">
+      <div class="row">
+         <div class="col-md-10 col-md-offset-1">
+            <div class="modelbox-div clearfix">
+               <div class="caption lb-caption">
+                  <h3>
+                     <span> Add SubLedger</span>
+                  </h3>
+                  <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+               </div>
+               <div class="row">
+                  <div class="col-md-5">
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Ledger Group<sup></sup><b>:</b></label>
+                        <div class="col-md-7">
+                           <input
+                                  class="form-control"
+                                  [(ngModel)]="selectedLedgerGroup"
+                                  [source]="ledgerGroup"
+                                  placeholder="Select LedgerGroup Name"
+                                  display-property-name="LedgerGroupName"
+                                  value-property-name="null"
+                                  (focusout)="FilterLedgerList()"
+                                  [list-formatter]="'LedgerGroupName'"
+                                  max-num-list="15"
+                                  onclick="this.select()"
+                                  id="Ledger_"
+                                  style="width: 100%;"
+                                  danphe-auto-complete />
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-md-1">
+
+                  </div>
+                  <div class="col-md-5">
+                     <div class="form-group">
+                        <label class="control-label col-md-5">Ledger<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                           <input
+                                  class="form-control"
+                                  [(ngModel)]="selectedLedger"
+                                  [source]="ledgerList"
+                                  placeholder="Ledger Name"
+                                  display-property-name="LedgerName"
+                                  value-property-name="null"
+                                  (focusout)="AssignSelectedLedger()"
+                                  [list-formatter]="'LedgerName'"
+                                  max-num-list="15"
+                                  onclick="this.select()"
+                                  id="Ledger_"
+                                  style="width: 100%;"
+                                  danphe-auto-complete />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <hr>
+               <div style="padding: 5px;min-height: 400px !important;">
+                  <table class="table table-striped table-hover inv_table table-bordered">
+                     <thead>
+                        <tr>
+                           <th></th>
+                           <th> SubLedgerName </th>
+                           <th> Opening Balance </th>
+                           <th> Opening Balance Type </th>
+                           <th> Desciption </th>
+                           <th></th>
+                           <th></th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let itm of newSubLedgerList; let i = index">
+                           <td><b>{{i+1}}</b></td>
+                           <td>
+                              <form [formGroup]="itm.subLedgerValidator">
+                                 <div>
+                                    <input [(ngModel)]="itm.SubLedgerName" class="form-control"
+                                           id="SubLedgerName{{i}}" (focusout)="CheckDuplicateSubLedgerName(i)"
+                                           placeholder="SubLedger Name" (keyup.enter)="FocuseToNextInput('OpeningBalnce',i)"
+                                           formControlName="SubLedgerName" />
+                                    <span class="color-red font-sm"
+                                          [hidden]="itm.IsValidCheck('SubLedgerName','required') || !(itm.IsDirty('SubLedgerName'))">SubLedger
+                                       Name is required</span>
+                                 </div>
+                              </form>
+                           </td>
+                           <td><input class="form-control" maxlength="200" type="number" title="OpeningBalance"
+                                     id="OpeningBalnce{{i}}"
+                                     [(ngModel)]="itm.OpeningBalance" [ngModelOptions]="{standalone: true}" id="OpeningBalance"
+                                     (keyup.enter)="CreateNewRow(i)"
+                                     placeholder="Opening Balance" />
+                           </td>
+                           <td>
+                              <div class="form-group">
+                                 <div class="col-md-7">
+                                    <div class="col-md-6">
+                                       <div class="icheck-inline">
+                                          <label class="mt-checkbox mt-checkbox-outline">
+                                             Dr
+                                             <input id="Dr{{i}}" name="Dr" type="checkbox" (click)="DrCrChangeNewSubLedger($event,i)"
+                                                    [(ngModel)]="itm.Dr" [ngModelOptions]="{standalone: true}" />
+                                             <span></span> </label>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                       <div class="icheck-inline">
+                                          <label class="mt-checkbox mt-checkbox-outline">
+                                             Cr
+                                             <input id="Cr{{i}}" name="Cr" type="checkbox" (click)="DrCrChangeNewSubLedger($event,i)"
+                                                    [(ngModel)]="itm.Cr" [ngModelOptions]="{standalone: true}" />
+                                             <span></span> </label>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </td>
+                           <td>
+                              <div class="form-group no-margin">
+                                 <input class="form-control" maxlength="200" type="text" title="Description"
+                                        [(ngModel)]="itm.Description" [ngModelOptions]="{standalone: true}" id="Description{{i}}"
+                                        placeholder="Description" />
+                              </div>
+                           </td>
+                           <td><a (click)="AddNewSubLedger()" title="Click to add Ledger."><i
+                                    class="fa fa-plus btn btn-success"></i></a></td>
+                           <td><a (click)="DeleteSubLedgerRow(i)" title="Alt+X,Alt+Delete,Click to remove this item"><i
+                                    class="btn btn-danger fa fa-times"></i></a></td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+               <div class="row" style="margin-bottom: 10px;">
+                  <div class="col-md-2" style="float:right">
+                     <button class="btn green btn-success" (click)="SaveSubLedger()">
+                        Save SubLedger
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>

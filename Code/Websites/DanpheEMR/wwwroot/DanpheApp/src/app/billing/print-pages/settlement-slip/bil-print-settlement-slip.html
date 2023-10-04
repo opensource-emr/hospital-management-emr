@@ -1,0 +1,316 @@
+<style>
+  @page {
+    size: A5 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-weight: normal;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    font-weight: normal !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 10px;
+    color: #000000;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 12px !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 10px !important;
+    margin: 0 0 0 0;
+    padding: 0;
+    font-weight: normal;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+  }
+</style>
+<div class="A4 landscape">
+  <div class="sheet" id="dv_settlement_printpage">
+    <div class="box-body invoice">
+      <!-- <table border="0" style="width: 700px; margin: 0 auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="70px" width="100px">
+          </td>
+          <td colspan="6" width="50%">
+            <h3 class="c_name" style="text-align: center;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+            <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Address}}</p>
+            <p class="c_paragraphs" style="text-align: center;">Ph No: {{headerDetail.Tel}}</p>
+
+          </td>
+          <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>{{headerDetail.CustomerRegLabel}}</strong> </p>
+          </td>
+        </tr>
+      </table> -->
+      <table border="0" style="width: 700px; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'image'">
+        <tr>
+          <td>
+            <img src="\themes\theme-default\images\billing-invoice-header-image.png" alt="" style="width: 100%;">
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 700px; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'custom'">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
+          </td>
+          <td colspan="4" width="50%">
+            <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.Address}}</p>
+            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">Ph No: {{headerDetail.Tel}}</p>
+          </td>
+          <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;">
+              <strong>{{headerDetail.CustomerRegLabel}}</strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 700px; margin: 0 auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0">
+        <tr>
+          <td colspan="10" style="text-align: center;">
+            <p><strong>Settlement Slip</strong></p>
+          </td>
+
+        </tr>
+        <tr style="border: 1px solid #ccc;">
+          <td colspan="10" style="padding: 6px !important;">
+            <table style="width: 100%; margin-bottom: 0;">
+              <tr>
+                <td colspan="5" style="text-align: left;" *ngIf="SettlementInfo.SettlementReceiptNo">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Receipt No:<strong>SR{{ SettlementInfo.SettlementReceiptNo }}</strong></p>
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Date :<strong>{{SettlementInfo.SettlementDate |
+                      DanpheDateTime:'format':'YYYY-MM-DD'}}</strong></p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Patient's Name: <strong>{{PatientInfo.PatientName}}</strong></p>
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Age/Sex : <strong>{{PatientInfo.DateOfBirth | DanpheDateTime:'age'
+                      }}/{{PatientInfo.Gender}}</strong></p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Hospital No:<strong>{{PatientInfo.HospitalNo}}</strong></p>
+
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Contact No. :<strong>{{PatientInfo.ContactNo}}</strong></p>
+                </td>
+
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left;" *ngIf="PatientInfo.CountryName === CountryNepal">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Address : <strong><span
+                            *ngIf="showMunicipality && PatientInfo.MunicipalityName">{{PatientInfo.MunicipalityName}}<span
+                              *ngIf="PatientInfo.WardNumber">-{{PatientInfo.WardNumber}}</span>,
+                      </span>{{PatientInfo.CountrySubDivisionName}}</strong></p>
+
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Method of Payment : <strong>{{SettlementInfo.PaymentMode}}</strong></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0" *ngIf="SalesInfo && SalesInfo.length">
+        <tr>
+          <th style="padding: 0 10px; width: 3%;">SN.</th>
+          <th colspan="4" style="padding: 0 10px; width: 40%">Particular(s)</th>
+          <th colspan="2" style="padding: 0 10px; width: 25%;">Receipt No.</th>
+          <th colspan="2" style="padding: 0 10px; width: 20%;">Receipt Date.</th>
+          <th style="padding: 0 10px;">Amount</th>
+        </tr>
+        <tr *ngFor="let txn of SalesInfo;let i=index;">
+          <td style="padding: 0 10px; width: 3%;">{{i+1}}</td>
+          <td colspan="4" style="padding: 0 10px; width: 40%">Sales</td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;">{{ txn.ReceiptNo }} </td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;">{{txn.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td style="padding: 0 10px;">{{txn.Amount | number: "1.4-4"}} </td>
+        </tr>
+        <tr *ngIf="SalesInfo && SalesInfo.length">
+          <td style="padding: 0 10px; width: 3%;"></td>
+          <td colspan="4" style="padding: 0 10px; width: 40%"></td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;"></td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;"><strong>Sales Total:</strong></td>
+          <td style="padding: 0 10px;">{{SalesTotal | number: "1.4-4"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0" *ngIf="SalesReturnInfo && SalesReturnInfo.length">
+        <tr>
+          <th style="padding: 5px !important; width: 3%;">SN.</th>
+          <th colspan="4" style="padding: 5px !important; width: 40%">Particular(s)</th>
+          <th colspan="2" style="padding: 5px !important; width: 25%;">Receipt No.</th>
+          <th colspan="2" style="padding: 5px !important; width: 20%;">Receipt Date.</th>
+          <th style="padding: 5px !important;">Amount</th>
+        </tr>
+        <tr *ngFor="let ret of SalesReturnInfo;let i=index;">
+          <td style="padding: 5px !important; width: 3%;">{{i+1}}</td>
+          <td colspan="4" style="padding: 5px !important; width: 40%">Sales Return</td>
+          <td colspan="2" style="padding: 5px !important; width: 25%;">{{ ret.ReceiptNo }} </td>
+          <td colspan="2" style="padding: 5px !important; width: 20%;">{{ret.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td style="padding: 5px !important;">{{ret.Amount | number: "1.4-4"}} </td>
+        </tr>
+        <tr *ngIf="SalesReturnInfo && SalesReturnInfo.length">
+          <td style="padding: 0 10px; width: 3%;"></td>
+          <td colspan="4" style="padding: 0 10px; width: 40%"></td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;"></td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;"><strong>Sales Return Total:</strong></td>
+          <td style="padding: 0 10px;">{{SalesReturnTotal | number: "1.4-4"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0" *ngIf="SalesInfo && SalesInfo.length">
+
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="6" style="padding: 10px; vertical-align: top; width: 40%;">
+            <!-- <p class="c_paragraphs"><strong>In Words : Nine hundred twenty five Only</strong></p> -->
+          </td>
+          <td colspan="6" style="padding: 10px; text-align: right; width: 50%;">
+            <p class="c_paragraphs" style="margin-bottom: 0;"><strong>Net Amount: </strong></p>
+            <p class="c_paragraphs" style="margin-bottom: 0;"><strong>Cash Discount: </strong></p>
+            <p class="c_paragraphs" style="margin-bottom: 0;"><strong>Payable Amount: </strong></p>
+            <p class="c_paragraphs" style="margin-bottom: 0;"><strong>Cash Paid: </strong></p>
+          </td>
+          <td style="padding: 10px; width: 10%;">
+            <p class="c_paragraphs" style="margin-bottom: 0;">{{ NetAmount | number: "1.4-4" }}</p>
+            <p class="c_paragraphs" style="margin-bottom: 0;">{{ CashDiscount | number: "1.4-4" }}</p>
+            <p class="c_paragraphs" style="margin-bottom: 0;">{{ PayableAmount | number: "1.4-4" }}</p>
+            <p class="c_paragraphs" style="margin-bottom: 0;" *ngIf="SettlementInfo.PaidAmount && SettlementInfo.PaidAmount>0">{{
+              SettlementInfo.PaidAmount | number: "1.4-4" }}
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0" *ngIf="DepositInfo && DepositInfo.length">
+        <tr>
+          <th style="padding: 0 10px; width: 3%;">SN.</th>
+          <th colspan="4" style="padding: 0 10px; width: 40%">Particular(s)</th>
+          <th colspan="2" style="padding: 0 10px; width: 25%;">Receipt No.</th>
+          <th colspan="2" style="padding: 0 10px; width: 20%;">Receipt Date.</th>
+          <th style="padding: 0 10px;">Amount</th>
+        </tr>
+        <tr *ngFor="let dep of DepositInfo;let i=index;">
+          <td style="padding: 0 10px; width: 3%;">{{i+1}}</td>
+          <td colspan="4" style="padding: 0 10px; width: 40%">{{ dep.TransactionType}}</td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;">{{ dep.ReceiptNo }} </td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;">{{dep.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td *ngIf="dep.TransactionType === 'Deposit Received'" style="padding: 0 10px;">{{dep.InAmount | number: "1.4-4"}} </td>
+          <td *ngIf="dep.TransactionType !== 'Deposit Received'" style="padding: 0 10px;">{{dep.OutAmount | number: "1.4-4"}} </td>
+        </tr>
+        <tr *ngIf="SalesReturnInfo && SalesReturnInfo.length">
+          <td style="padding: 0 10px; width: 3%;"></td>
+          <td colspan="4" style="padding: 0 10px; width: 40%"></td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;"></td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;"><strong>Sales Return Total:</strong></td>
+          <td style="padding: 0 10px;">{{SalesReturnTotal | number: "1.4-4"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0"
+             *ngIf="CashDiscountReturnInfo && CashDiscountReturnInfo.length">
+        <tr>
+          <th style="padding: 0 10px; width: 3%;">SN.</th>
+          <th colspan="4" style="padding: 0 10px; width: 40%">Particular(s)</th>
+          <th colspan="2" style="padding: 0 10px; width: 25%;">Receipt No.</th>
+          <th colspan="2" style="padding: 0 10px; width: 20%;">Receipt Date.</th>
+          <th style="padding: 0 10px;">Amount</th>
+        </tr>
+        <tr *ngFor="let row of CashDiscountReturnInfo;let i=index;">
+          <td style="padding: 0 10px; width: 3%;">{{i+1}}</td>
+          <td colspan="4" style="padding: 0 10px; width: 40%">Cash Discount Return</td>
+          <td colspan="2" style="padding: 0 10px; width: 25%;">{{ row.ReceiptNo }} </td>
+          <td colspan="2" style="padding: 0 10px; width: 20%;">{{row.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td style="padding: 0 10px;">{{row.Amount | number: "1.4-4"}} </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 700px; margin: 5px auto; padding-bottom: 10px;" cellspacing="0"
+             cellpadding="0">
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 10px 10px 0 10px;  vertical-align: top;">
+            <p class="c_paragraphs" *ngIf="SettlementInfo.CreditOrganizationName"> Credit Organization:
+              <strong>{{SettlementInfo.CreditOrganizationName}}</strong>
+            </p>
+            <p class="c_paragraphs"><strong>Processed By: </strong>{{SettlementInfo.BillingUser}}</p>
+          </td>
+          <td colspan="5" style="padding: 10px 10px 0 10px; vertical-align: top; text-align: right;">
+            <p class="c_paragraphs"><strong>Acknowlegde By: </strong></p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="5" style="padding: 0 10px; vertical-align: top;">
+            <p class="c_paragraphs"><strong>Time: </strong>{{SettlementInfo.SettlementDate | DanpheDateTime:'format':'HH:mm'}}</p>
+          </td>
+          <td colspan="5" style="padding: 0 10px; vertical-align: top; text-align: right;">
+            <p class="c_paragraphs"><strong>Signature: </strong></p>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+
+  </div>
+  <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+    <button class="btn green btn-success" value="" (click)="PrintFromSelectedPrinter()" id="btnPrintSettlementSlip">
+      <span>Print Receipt</span>&nbsp;&nbsp;
+      &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+    </button>
+  </div>
+  <select-printer [group-name]="'bill-receipt'" [storage-key]="'bill-settlement'"
+                  (on-printer-change)="OnPrinterChanged($event)">
+  </select-printer>
+</div>

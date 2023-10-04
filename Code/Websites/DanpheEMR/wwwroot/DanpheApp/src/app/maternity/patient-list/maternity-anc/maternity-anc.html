@@ -1,0 +1,207 @@
+<div class="row">
+  <!--anc-add-row-->
+  <div class="col-md-12">
+    <div class="full-width-flx">
+
+      <form class="hm-form" [formGroup]="addUpdateANCData.ANCValidator">
+        <div class="form-body">
+          <div class="row">
+            <div class="page-bar bill-p-info">
+              <div>
+                <span>
+                  <i class="fa fa-user"></i>&nbsp;Name : <b>{{patientDetail.ShortName}}</b>
+                </span>
+                <span>
+                  <i class="fa fa-h-sign"></i>&nbsp;Hospital # : <b> {{patientDetail.PatientCode}}</b>
+                </span>
+                <span>
+                  <i class="fa fa-male"></i>&nbsp;Age/Sex : {{patientDetail.Age}}/ {{patientDetail.Gender}}
+                </span>
+                <span>
+                  <i class="fa fa-h-sign"></i>&nbsp;Date of Birth : {{patientDetail.DateOfBirth |
+                  DanpheDateTime:'format':'YYYY-MM-DD'}}
+                </span>
+              </div>
+              <div>
+                <span>
+                  <i class="fa fa-h-sign"></i>&nbsp;Address : <b>{{patientDetail.Address}}</b>
+                </span>
+                <span *ngIf="patientDetail.PhoneNumber">
+                  <i class="fa fa-phone"></i>&nbsp;Contact No : <b>{{patientDetail.PhoneNumber}}</b>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="row margin-top-15">
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Date Time<b>:</b></label>
+                <div class="col-md-8">
+                  <danphe-date-picker [(ngModel)]="addUpdateANCData.ANCDateTime" [ngModelOptions]="{standalone: true}"
+                    [showTime]="true" [CalendarTypes]="'en,np'">
+                  </danphe-date-picker>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Select ANC Visit<sup class="color-red">
+                  *
+                </sup><b>:</b></label>
+                <div class="col-md-8">
+                  <select [(ngModel)]="addUpdateANCData.VisitNumber" class="form-control" name="" id=""
+                    formControlName="VisitNumber">
+                    <option [ngValue]="null">--select--</option>
+                    <option *ngFor="let visit of visitList" [ngValue]="visit.Id">{{visit.NumberInfo}}</option>
+                  </select>
+                  <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('VisitNumber')"
+                    [hidden]="addUpdateANCData.IsValidCheck('VisitNumber','required')"> ANC Visit is required.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="row">
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Condition of ANC<sup class="color-red">
+                  *
+                </sup><b style="float: right;">:</b></label>
+                <div class="col-md-8">
+                  <input [(ngModel)]="addUpdateANCData.ConditionOfANC" class="form-control"
+                    formControlName="ConditionOfANC" placeholder="Condition of ANC" type="text" />
+                  <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('ConditionOfANC')"
+                    [hidden]="addUpdateANCData.IsValidCheck('ConditionOfANC','required')"> Condition of ANC is
+                    required.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Pregnancy Period(in weeks)<sup class="color-red">
+                  *
+                </sup><b style="float: right;">:</b></label>
+                <div class="col-md-8">
+                  <input [(ngModel)]="addUpdateANCData.PregnancyPeriodInWeeks" class="form-control"
+                    formControlName="PregnancyPeriodInWeeks" placeholder="Pregnancy Period" type="number" />
+                  <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('PregnancyPeriodInWeeks')"
+                    [hidden]="addUpdateANCData.IsValidCheck('PregnancyPeriodInWeeks','required')"> Pregnancy Period is
+                    required.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Place Of ANC<sup class="color-red">
+                  *
+                </sup><b style="float: right;">:</b></label>
+                <div class="col-md-8">
+                  <input [(ngModel)]="addUpdateANCData.ANCPlace" class="form-control" formControlName="ANCPlace"
+                    placeholder="Place Of ANC" type="text" />
+                  <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('ANCPlace')"
+                    [hidden]="addUpdateANCData.IsValidCheck('ANCPlace','required')"> ANC Place is required.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group col-md-6">
+              <div class="row">
+                <label class="control-label col-md-4">Weight(in kg)<sup class="color-red">
+                  *
+                </sup><b style="float: right;">:</b></label>
+                <div class="col-md-8">
+                  <input [(ngModel)]="addUpdateANCData.Weight" class="form-control" formControlName="Weight"
+                    placeholder="Weight in Kgs" type="number" />
+                  <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('Weight')"
+                    [hidden]="addUpdateANCData.IsValidCheck('Weight','required')"> Weight is required.</span>
+                    <span class="color-red font-sm" *ngIf="addUpdateANCData.IsDirty('Weight')" [hidden]="addUpdateANCData.IsValidCheck('Weight','pattern')">Invalid Weight input.</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="form-group col-md-6 pull-right">
+              <div class="row">
+                <label class="control-label col-md-4"></label>
+                <div class="col-md-8 text-right">
+                  <button *ngIf="!addUpdateANCData.MaternityANCId" [disabled]="coreService.loading" (click)="AddANC()"
+                    style="width: 45%" type="button" class="btn primary-btn margin-7-hr">
+                    Add
+                  </button>
+                  <button *ngIf="addUpdateANCData.MaternityANCId" [disabled]="coreService.loading" (click)="AddANC()"
+                    style="width: 45%" type="button" class="btn primary-btn margin-7-hr">
+                    Update
+                  </button>
+                  <button [disabled]="coreService.loading" (click)="ResetAddANCForm()" style="width: 45%" type="button"
+                    class="btn grey btn-default margin-7-hr">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <hr />
+  </div>
+
+  <!--anc-list-->
+  <div class="col-md-12" *ngIf="!patientANCList || !patientANCList.length">
+    <p style="font-size: 18px; line-height: 3; text-align: center;">No ANC in List</p>
+  </div>
+
+  <div id="ancList" class="col-md-12" *ngIf="patientANCList && patientANCList.length > 0">
+    <div class="full-width-flx table-responsive">
+      <div class="text-center" style="line-height: 2">
+        ANC List of {{patientDetail.ShortName}}
+      </div>
+      <table class="table table-bordered tbl-small-text">
+        <thead>
+          <tr class="table-header-bg">
+            <th>DateTime</th>
+            <th>ANC Visit</th>
+            <th>Place of ANC</th>
+            <th>Pregnancy Period</th>
+            <th>Condition of ANC</th>
+            <th>Weight</th>
+            <th class="no-print">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let anc of patientANCList">
+            <td>{{anc.ANCDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+            <td>{{anc.VisitNumber}}</td>
+            <td>{{anc.ANCPlace}}</td>
+            <td>{{anc.PregnancyPeriodInWeeks}}</td>
+            <td>{{anc.ConditionOfANC}}</td>
+            <td>{{anc.Weight}}</td>
+            <td class="no-print">
+              <a class="grid-action no-print" (click)="EditANC(anc)">Edit</a>
+              <a class="grid-action no-print" (click)="RemoveANC(anc.MaternityANCId)">Remove</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-md-12">
+    <hr />
+    <div class="text-right margin-top-15 margin-bottom-15">
+      <button type="button" id="ancPrint" class="btn primary-btn margin-7-hr" (click)="PrintANC()"><i
+          class="fa fa-print"></i>Print</button>
+      <button type="button" id="register" class="btn grey btn-default margin-7-hr" (click)="Close()">Close</button>
+    </div>
+  </div>
+
+</div>

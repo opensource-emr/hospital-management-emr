@@ -1,0 +1,257 @@
+<style></style>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showTemplateAddPage">
+  <div class="portlet-body form">
+    <div class="col-md-12">
+      <div class="modelbox-div lab_modal_box">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr"> <strong>
+            <ng-container *ngIf="!update">Add Lab Report Template</ng-container>
+            <ng-container *ngIf="update">Update Lab Report Template</ng-container>
+            </strong> </h4>
+        </div>
+        <div class="modelbox-body">
+         
+            <form [formGroup]="rptTemplate.ReportTemplateValidator" class="form-horizontal hm-form mlr">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-4">Report Template Name<sup class="color-red">*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" maxlength="30"
+                               [(ngModel)]="rptTemplate.ReportTemplateName"
+                               formControlName="ReportTemplateName"
+                               required
+                               value=""
+                               type="text" id="ReportTemplateName" placeholder="Report Template Name" />
+                        <span class="color-red font-sm" [hidden]="rptTemplate.IsValidCheck('ReportTemplateName','required') || !(rptTemplate.IsDirty('ReportTemplateName'))">Enter Report Template Name</span> </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-4">Description<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" maxlength="30"
+                               [(ngModel)]="rptTemplate.Description"
+                               [ngModelOptions]="{standalone: true}"
+                               type="text" id="ReportDescription" placeholder="Report Description" />
+                      </div>
+                    </div>
+                  </div>                
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Report Template Short Name<sup class="color-red">*</sup><b>:</b></label>
+                      <div class="col-md-7">
+                        <input class="form-control" maxlength="30"
+                               [(ngModel)]="rptTemplate.ReportTemplateShortName"
+                               formControlName="ReportTemplateShortName"
+                               required
+                               value=""
+                               type="text" id="ReportTemplateShortName" placeholder="Report Template Short Name" />
+                        <span class="color-red font-sm" [hidden]="rptTemplate.IsValidCheck('ReportTemplateShortName','required') || !(rptTemplate.IsDirty('ReportTemplateShortName'))">Enter Report Template Name</span> </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Report Template Type<sup class="color-red">*</sup><b>:</b></label>
+                      <div class="col-md-7">
+                        <select class="form-control" [(ngModel)]="rptTemplate.TemplateType" [ngModelOptions]="{standalone: true}" (change)="DDLChange()" id="ReportTemplateType" placeholder="Report Template Type">
+                          <option value="normal">Normal</option>
+                          <option value="html">Word Editor</option>
+                          <option value="culture">Culture & Sensitivity</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>                  
+                  
+                </div>
+				  <div class="col-md-12">
+				  	<div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-2">Column Settings<b>:</b> </label>
+                      <div class="col-md-10">
+						  <div class="colsetting-name">
+                        <label class="mt-checkbox mt-checkbox-outline" for="selectall">
+                          <input id="selectall" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.SelectAll" width="100" type="checkbox" ng-checked="colSettings.SelectAll=true"
+                                 (change)="ColSettingsData()" [ngModelOptions]="{standalone: true}">
+                          <span></span>Select All</label>
+                        <!--
+                        <label for="selectall">
+                          <input id="selectall" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.SelectAll" width="100" type="checkbox" ng-checked="colSettings.SelectAll=true"
+                                 (change)="ColSettingsData()" [ngModelOptions]="{standalone: true}">
+                          Select All </label>
+--> 
+                      </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="name">
+                            <input id="name" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Name" width="100" type="checkbox" ng-checked="colSettings.Name=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Name </label>
+                          <!--
+                          <label for="name">
+                            <input id="name" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Name" width="100" type="checkbox" ng-checked="colSettings.Name=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Name </label>
+--> 
+                        </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="result">
+                            <input id="result" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Result" width="100" type="checkbox" ng-checked="colSettings.Result=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Result </label>
+                          <!--
+                          <label for="result">
+                            <input id="result" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Result" width="100" type="checkbox" ng-checked="colSettings.Result=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Result </label>
+--> 
+                        </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="range">
+                            <input id="range" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Range" width="100" type="checkbox" ng-checked="colSettings.Range=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Range </label>
+                          <!--
+                          <label for="range">
+                            <input id="range" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Range" width="100" type="checkbox" ng-checked="colSettings.Range=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Range </label>
+--> 
+                        </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="method">
+                            <input id="method" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Method" width="100" type="checkbox" ng-checked="colSettings.Method=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Method </label>
+                          <!--
+                          <label for="method">
+                            <input id="method" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Method" width="100" type="checkbox" ng-checked="colSettings.Method=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Method </label>
+--> 
+                        </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="unit">
+                            <input id="unit" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Unit" width="100" type="checkbox" ng-checked="colSettings.Unit=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Unit </label>
+                          <!--
+                          <label for="unit">
+                            <input id="unit" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Unit" width="100" type="checkbox" ng-checked="colSettings.Unit=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Unit </label>
+--> 
+                        </div>
+                        <div class="colsetting-name">
+                          <label class="mt-checkbox mt-checkbox-outline" for="remarks">
+                            <input id="remarks" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Remarks" width="100" type="checkbox" ng-checked="colSettings.Remarks=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            <span></span>Remarks </label>
+                          <!--
+                          <label for="remarks">
+                            <input id="remarks" class="zoomcheckbox pull-left" [(ngModel)]="colSettings.Remarks" width="100" type="checkbox" ng-checked="colSettings.Remarks=true"
+                                   (change)="checkAllTrueOrFalse()" [ngModelOptions]="{standalone: true}">
+                            Remarks </label>
+--> 
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+				  </div>
+				  <div class="col-md-6">
+				  	<div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-4">Header Text<b>:</b> </label>
+                      <div class="col-md-8">
+                        <input class="form-control" rows="4"
+                               [(ngModel)]="rptTemplate.HeaderText"
+                               [ngModelOptions]="{standalone: true}"
+                               type="text" id="headerDescription" placeholder="Header Description">
+                      </div>
+                    </div>
+                  </div>
+					  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-4">Footer Text<b>:</b> </label>
+                      <div class="col-md-8">
+                        <textarea class="form-control" rows="4"
+                                  [(ngModel)]="rptTemplate.FooterText"
+                                  [ngModelOptions]="{standalone: true}"
+                                  type="text" id="footerDescription" placeholder="Footer Description">
+                                            </textarea>
+                      </div>
+                    </div>
+                  </div>
+				  </div>
+				  <div class="col-md-6">
+				  	<div class="form-group">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="row">
+                          <label class="control-label col-md-8">Is Default <b>:</b> </label>
+                          <div class="col-md-4">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="isDefault" name="isDefault" type="checkbox"
+                                     [(ngModel)]="rptTemplate.IsDefault"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- <div class="col-md-6">
+                        <div class="row">
+                          <label class="control-label col-md-8">Is Active <b>:</b> </label>
+                          <div class="col-md-4">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="isActive" name="isActive" type="checkbox"
+                                     [(ngModel)]="rptTemplate.IsActive"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div> -->
+					
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <label class="control-label col-md-5">Display Sequence<b>:</b></label>
+                      <div class="col-md-7">
+                        <input type="number" [(ngModel)]="rptTemplate.DisplaySequence" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                  </div>
+				  </div>
+              </div>
+              <div class="form-group" *ngIf="rptTemplate.TemplateType == 'html'">                
+                  <danphe-ckeditor [readonly]="isReadOnly" (get-html-content)="onChangeEditorData($event)" [set-html-content]="rptTemplate.TemplateHTML"> 
+                  </danphe-ckeditor>               
+              </div>
+            </form>         
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button class="btn primary-btn margin-7-hr" *ngIf="!update" (click)="AddReportTemplate()">Add Template</button>
+            <button class="btn primary-btn margin-7-hr" *ngIf="update" (click)="UpdateReportTemplate()">Update</button>
+            <!-- <button class="btn btn-cancel btn-outline margin-7-hr" (click)="Close()">Cancel</button> -->
+          </div>
+        </div>
+        <div class="close-modelbox lb-close-btn">
+          <button class="btn btn-danger" (click)="Close()"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+﻿<div>
+    <input type="button" class="btn btn-primary" (click)="AddItem()" value="Create Item" />
+    <item-add [showAddPage]="showAddPage"
+                 [selectedItem]="selectedItem"
+                 (callback-add)="CallBackAdd($event)"></item-add>
+</div>
+<div  class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="itemGridColumns" [grid-data]="itemList"
+                      (grid-actions)="ItemGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

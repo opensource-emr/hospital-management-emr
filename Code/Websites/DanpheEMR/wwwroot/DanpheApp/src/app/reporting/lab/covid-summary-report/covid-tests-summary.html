@@ -1,0 +1,74 @@
+<div class="wrapper">
+    <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Covid
+      Test District Wise Cumulative Report</span> </div>
+    <div class="row">
+        <div class="col-md-10 col-xs-12">
+            <div class="col-md-6 col-xs-12">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group row">
+                    <label class="control-label col-md-4">District Name<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                        <!-- <input class="form-control" value="" [(ngModel)]="districtName" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter District Name" /> (valueChanged)="AssignSelectedDistrict()"-->
+                        <input id="ddlCountrySubdivision" class="form-control" danphe-auto-complete [ngModelOptions]="{standalone: true}" [(ngModel)]="countrySubDivision" placeholder="District" [list-formatter]="districtListFormatter" [source]="countrySubDivisions" onClick="this.select();"
+                            display-property-name="CountrySubDivisionName" value-property-name=null [min-chars]="1" max-num-list="10" match-formatted="true" (keyup.enter)="this.coreService.FocusInputById('btn_showReport')" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class=" col-md-2 col-xs-12">
+            <div class="form-group">
+                <button class="btn blue" type="button" id="btn_showReport" (click)="Load()"> <i class="fa fa-search"></i> Show Report
+        </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="showGrid">
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid *ngIf="showGrid" [grid-colDefaults]="covidCaseSummaryReportColumns" [grid-data]="covidCaseSummaryReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="'lab'" [grid-date-range]="dateRange" [grid-footer-content]="footer">
+            </danphe-grid>
+        </div>
+    </div>
+
+
+  <div class="row" id="summaryFooter" style="margin-bottom: 60px;">
+    <div class="col-lg-12 col-sm-12" *ngIf="covidCaseSummaryReportData && covidCaseSummaryReportData.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+          <div style="padding-top:7px;">
+            <h4 style="font-weight:bold;">
+              Summary 
+            </h4>
+            <div style=" margin: 0px auto">
+              <table class="tbl-summ" border="1" style="width:30%;">
+                <tr>
+                  <td>Total New Negative Case</td>
+                  <td> {{summaryFormatted.TotalNewNegativeCase}} </td>
+                </tr>
+                <tr>
+                  <td>Total New Positive Case</td>
+                  <td> {{summaryFormatted.TotalNewPositiveCase}} </td>
+                </tr>
+                <tr>
+                  <td>Total Follow-up Negative Case</td>
+                  <td> {{summaryFormatted.TotalFollowUpNegativeCase}} </td>
+                </tr>
+                <tr>
+                  <td>Total Follow-up Positive Case</td>
+                  <td> {{summaryFormatted.TotalFollowUpPositiveCase}} </td>
+                </tr>
+                <tr style="border: 2px solid;">
+                  <td style="font-weight: bold;">Total Case </td>
+                  <td style="font-weight: bold;"> {{summaryFormatted.TotalCase}} </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

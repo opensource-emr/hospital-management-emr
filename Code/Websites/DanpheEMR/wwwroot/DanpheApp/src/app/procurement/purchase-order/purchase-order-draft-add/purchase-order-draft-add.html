@@ -1,0 +1,431 @@
+<style>
+    /* .fa-question {
+    top: 10px;
+  } */
+
+    .verification-card {
+        background-color: #e7e7e7;
+        padding: 15px;
+        display: inline-block;
+        border-radius: 15px !important;
+        text-align: left;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .verification-check {
+        background: #fff;
+        color: #2185cc;
+        padding: 10px;
+        display: flex;
+        margin-bottom: auto;
+        border-radius: 5px !important;
+        box-shadow: 0px 0px 10px #eee
+    }
+
+    .verification-check .custom-control-label {
+        margin-bottom: 0;
+        margin-left: 7px;
+        margin-top: 1px;
+        font-weight: 500;
+    }
+
+    .verification-form-control {
+        display: inline-block;
+        margin: 10px -15px;
+        width: 100%;
+    }
+
+    .verification-form-control .btn.btn-sm {
+        display: inline-flex;
+        height: 20px;
+        width: 20px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 100% !important;
+        font-size: 12px !important;
+        padding: 10px !important;
+        margin: 4px 3px;
+    }
+
+    .verification-form-control .verifier {
+        padding: 7px 15px;
+        background: #4158d3;
+        border-radius: 20px !important;
+        color: #fff;
+        margin-left: 15px;
+        font-weight: 500;
+        margin-bottom: 0px;
+        font-size: 12px;
+    }
+
+    .verification-form-control .form-control {
+        border: none;
+        box-shadow: 0px 4px 10px #eee;
+        font-size: 13px;
+    }
+
+    .verification-form-control .verifier i {
+        margin-right: 5px
+    }
+
+    .terms-card {
+        background-color: #e7e7e7;
+        padding: 15px;
+        display: inline-block;
+        border-radius: 15px !important;
+        text-align: left;
+        width: 100%;
+    }
+
+    .po-form--head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .po-form--control {
+        display: flex;
+        align-items: center;
+    }
+
+    .po-form--control-with-validation {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .invalid-input {
+        background-color: yellow;
+    }
+</style>
+
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption lb-caption">
+                        <h3>
+                            <i class="fa fa-shopping-cart"></i>
+                            <span class="caption-subject">{{EditPO ?'Edit':'Add'}} Purchase Order Draft</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="ClosePurchaseOrderDraftAddEditPage()" title="Cancel"><i class="fa fa-times"></i></a>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row" style="margin-bottom: 10px;">
+                            <div class="col-md-12" style="margin-bottom: 10Px;" *ngIf="EditPO">PO Draft Number:{{currentPOD.DraftPurchaseOrderNo}}
+                            </div>
+                            <div class="col-md-12">
+                                <form [formGroup]="currentPOD.PurchaseOrderDraftValidator" class="form-horizontal hm-form">
+                                    <section class="po-form--head">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="po-form--control-with-validation">
+                                                    <div class="po-form--control">
+                                                        <label class="control-label">Vendor<b>:</b></label>
+                                                        <div class="div-relative" style="display:inline-block">
+                                                            <input id="VendorName" danphe-auto-complete [(ngModel)]="selectedVndr"
+                                                                   [source]="VendorList"
+                                                                   [list-formatter]="VendorListFormatter" placeholder="Vendor Name"
+                                                                   display-property-name="VendorName"
+                                                                   value-property-name="VendorId"
+                                                                   (ngModelChange)="GetVendorDetails()" (focusout)="GetVendorDetails()"
+                                                                   formControlName="VendorId"
+                                                                   onclick="this.select();"
+                                                                   style="width:400px" no-match-found-text="click ? to add new item"
+                                                                   (keyup.enter)="GoToNextInput('poItemName0')" />
+                                                            <a *ngIf="!currentPOD.VendorId" class="fa fa-question col-md-1"
+                                                               (click)="AddSupplierPopUp()"
+                                                               title="Unable to find Supplier? Click to add to Master"></a>
+                                                            <div style="color:red" *ngIf="currentPOD.IsDirty('VendorId')"
+                                                                 [hidden]="currentPOD.IsValidCheck('VendorId','required')">
+                                                                Vendor is required.
+                                                            </div>
+                                                            <div style="color:red"
+                                                                 *ngIf="currentPOD.IsDirty('VendorId') && currentPOD.IsValidCheck('VendorId','required')"
+                                                                 [hidden]="currentPOD.IsValidCheck('VendorId','notRegisteredVendor')">
+                                                                Vendor is not registered.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12" *ngIf="!!selectedVndr" style="margin-top: 10px;">
+                                                        <p>Vendor ContactNo: <b>{{selectedVndr.ContactNo ? selectedVndr.ContactNo :'--'}}</b></p>
+                                                        <p>Vendor Address: <b>{{selectedVndr.ContactAddress ? selectedVndr.ContactAddress : '--'}}</b>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12" style="margin-top: 30px;">
+                                                <div class="form-group" class="po-form--control col-md-2">
+                                                    <label class="control-label col-md-6">Reference No.<b>:</b></label>
+                                                    <textarea class="col-md-6 form-control" type="text" id="ReferenceNo" name="ReferenceNo"
+                                                              [(ngModel)]="currentPOD.ReferenceNo"
+                                                              [ngModelOptions]="{standalone: true}" (keyup.enter)="GoToNextInput('')" cols="15"
+                                                              rows="3"></textarea>
+                                                </div>
+                                                <div class="form-group po-form--control col-md-3">
+                                                    <label class="control-label col-md-3">Invoicing Address<b>:</b></label>
+                                                    <textarea class="col-md-9 form-control" type="text" id="InvolvingAddress" name="InvolvingAddress"
+                                                              [(ngModel)]="currentPOD.InvoicingAddress" [ngModelOptions]="{standalone: true}"
+                                                              (keyup.enter)="GoToNextInput('')"
+                                                              cols="15" rows="3"></textarea>
+                                                </div>
+                                                <div class="form-group po-form--control col-md-3">
+                                                    <label class="control-label col-md-4">Delivery Address<b>:</b></label>
+                                                    <textarea class="col-md-8 form-control" type="text" id="DeliveryAddress" name="DeliveryAddress"
+                                                              [(ngModel)]="currentPOD.DeliveryAddress" [ngModelOptions]="{standalone: true}"
+                                                              (keyup.enter)="GoToNextInput('')"
+                                                              cols="15" rows="3"></textarea>
+                                                </div>
+                                                <div class="form-group po-form--control col-md-2">
+                                                    <label class="control-label col-md-5">Contact Person<b>:</b></label>
+                                                    <textarea class="col-md-7 form-control" type="text" id="ContactPerson" name="ContactPerson"
+                                                              [(ngModel)]="currentPOD.ContactPersonName" [ngModelOptions]="{standalone: true}"
+                                                              (keyup.enter)="GoToNextInput('')"
+                                                              cols="15" rows="3"></textarea>
+                                                </div>
+                                                <div class="form-group po-form--control col-md-2">
+                                                    <label class="control-label col-md-4">Contact Email<b>:</b></label>
+                                                    <textarea class="col-md-8 form-control" type="text" id="ContactEmail" name="ContactEmail"
+                                                              [(ngModel)]="currentPOD.ContactPersonEmail" [ngModelOptions]="{standalone: true}"
+                                                              (keyup.enter)="GoToNextInput('')"
+                                                              cols="15" rows="3"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div>
+                                    <table class="table table-striped table-hover inv_table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th><b>ItemName</b></th>
+                                                <th *ngIf="showSpecification"><b>Specification</b></th>
+                                                <th><b>Item Code</b></th>
+                                                <th><b>Unit</b></th>
+                                                <th><b>Quantity</b></th>
+                                                <th><b>Rate</b></th>
+                                                <th><b>VAT %</b></th>
+                                                <th><b>TotalAmount </b></th>
+                                                <th><b>Remarks</b></th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let row of currentPOD.PurchaseOrderDraftItems; let i = index">
+                                                <tr [formGroup]="row.PurchaseOrderDraftItemValidator">
+                                                    <td>
+                                                        <select [(ngModel)]="row.ItemCategory" [ngModelOptions]="{standalone: true}"
+                                                                (ngModelChange)="OnItemCategoryChanged(i)">
+                                                            <option *ngFor="let poCategory of POCategories | keyvalue" [value]="poCategory.value">
+                                                                {{poCategory.value}}
+                                                            </option>
+                                                        </select>
+                                                    </td>
+                                                    <td [ngClass]="{'alert alert-warning':row.isItemDuplicate}">
+                                                        <div class="div-relative">
+                                                            <input danphe-auto-complete class="form-control " autocomplete="off" id="poItemName{{i}}"
+                                                                   [grid-sort]="'ItemName'" style="width: 300px;" [(ngModel)]="row.SelectedItem"
+                                                                   [source]="filteredItemList" match-formatted="true"
+                                                                   [list-formatter]="ItemListFormatter"
+                                                                   placeholder="Item Name" display-property-name="ItemName" formControlName="ItemId"
+                                                                   value-property-name=null
+                                                                   (focusout)="SelectItemFromSearchBox(row.SelectedItem,i)"
+                                                                   min-chars="1"
+                                                                   max-num-list="20"
+                                                                   onclick="this.select();"
+                                                                   (keyup.enter)="SelectItemFromSearchBox(row.SelectedItem,i);onPressedEnterKeyInItemField(i)"
+                                                                   no-match-found-text="click ? to add new item" />
+                                                            <div class="color-yellow font-sm" *ngIf="row.isItemDuplicate">
+                                                                <i class="fa fa-warning"></i>Alert: Duplicate Item
+                                                            </div>
+                                                            <a class="fa fa-question" (click)="AddItemPopUp(i)"
+                                                               title="Unable to find item ? Click to add to Master"></a>
+                                                            <div style="color:red" *ngIf="row.IsDirty('ItemId')"
+                                                                 [hidden]="row.IsValidCheck('ItemId','notRegisteredItem')"> Item is
+                                                                required</div>
+                                                            <div style="color:red" *ngIf="row.IsDirty('ItemId')"
+                                                                 [hidden]="row.IsValidCheck('ItemId','required')">
+                                                                Item is required
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td *ngIf="showSpecification">
+                                                        <input [(ngModel)]="row.ItemSpecification" [ngModelOptions]="{standalone: true}"
+                                                               class="form-control" min="0" disabled
+                                                               name="ItemSpecification" type="text">
+                                                    </td>
+                                                    <td>
+                                                        <input [(ngModel)]="row.Code" [ngModelOptions]="{standalone: true}" class="form-control"
+                                                               min="0" disabled name="code"
+                                                               type="text">
+                                                    </td>
+                                                    <td>
+                                                        <input [(ngModel)]="row.UOMName" [ngModelOptions]="{standalone: true}" class="form-control"
+                                                               min="0" disabled
+                                                               name="unit" type="text">
+                                                    </td>
+                                                    <td>
+                                                        <input id="ipqty{{i}}" (keyup.enter)="GoToNextInput('ipstdrate'+i)" [(ngModel)]="row.Quantity"
+                                                               class="form-control"
+                                                               min="0" (ngModelChange)="calculateAndUpdateAmounts()"
+                                                               name="quantity" type="number" onclick="this.select();" formControlName="Quantity"
+                                                               (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                                        <div style="color:red" *ngIf="row.IsDirty('Quantity')"
+                                                             [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','positivenum')">
+                                                            require positive quantity
+                                                        </div>
+                                                        <div style="color:red" *ngIf="row.IsDirty('Quantity')"
+                                                             [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is
+                                                            required</div>
+                                                    </td>
+                                                    <td style="width:120px;">
+                                                        <input id="ipstdrate{{i}}" (keyup.enter)="onPressedEnterKeyInRateField(i)"
+                                                               [(ngModel)]="row.ItemRate"
+                                                               style="width:75px;float: left;" class="form-control"
+                                                               name="price" type="number" onclick="this.select();" formControlName="ItemRate"
+                                                               (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                               (ngModelChange)="calculateAndUpdateAmounts()">
+                                                        <div style="color:red" *ngIf="row.IsDirty('Quantity')"
+                                                             [hidden]="row.IsValidCheck('ItemRate','required')"> Quantity is
+                                                            required</div>
+                                                        <div style="color:red" *ngIf="row.IsDirty('Quantity')"
+                                                             [hidden]="row.IsValidCheck('ItemRate','positivenum')">
+                                                            required positive number</div>
+                                                    </td>
+                                                    <td style="width:100px;">
+                                                        <input [(ngModel)]="row.VATPercentage" class="form-control" min="0"
+                                                               style="width:75px;float: left;"
+                                                               (keyup.enter)="(i == (currentPOD.PurchaseOrderDraftItems.length -1))? AddRowRequest():GoToNextInput('poItemName'+(i+1))"
+                                                               max="100" name="vatpercent" type="number" formControlName="VATPercentage"
+                                                               onclick="this.select();" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                               (ngModelChange)="calculateAndUpdateAmounts()">
+                                                        <div style="color:red" *ngIf="row.IsDirty('VATPercentage')"
+                                                             [hidden]="row.IsValidCheck('VATPercentage','required') && row.IsValidCheck('VATPercentage','positivenum')">
+                                                            required positive number
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div
+                                                             style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                                                            {{row.TotalAmount | number :'1.0-2'}}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <textarea name="Remarks" id="Remarsk{{i}}" class="form-control" cols="15" rows="1"
+                                                                  [(ngModel)]="row.Remarks"
+                                                                  [ngModelOptions]="{standalone: true}"></textarea>
+                                                    </td>
+                                                    <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                                                </tr>
+                                            </ng-container>
+                                            <tr>
+                                                <td>
+                                                    <button style="margin-top: 20px;" class="btn green btn-success margin-7-hr"
+                                                            (click)="AddRowRequest()">
+                                                        <i class="fa fa-plus blue"></i>
+                                                        Add New Row
+                                                    </button>
+
+                                                </td>
+                                                <td colspan="2" style="vertical-align: bottom;">
+                                                    <span *ngIf="currentPOD.PurchaseOrderDraftItems"
+                                                          style="font-weight: bold;color: blue;font-size: 14px;">
+                                                        Items Count: <span>{{getValidItemCount}}</span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-6" style="float: right;">
+                                            <div class="mt20 t-wrap">
+                                                <table class="inv_table">
+                                                    <tr>
+                                                        <td class="text-right"><b>SubTotal:</b></td>
+                                                        <td>
+                                                            <div class="form-group">
+                                                                <div
+                                                                     style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                                                                    {{currentPOD.SubTotal | number :'1.0-2'}}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><b>VAT:</b></td>
+                                                        <td>
+                                                            <div class="form-group">
+                                                                <div
+                                                                     style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                                                                    {{currentPOD.VATAmount | number :'1.0-2'}}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><b>Total Amount:</b></td>
+                                                        <td>
+                                                            <div class="form-group">
+                                                                <div
+                                                                     style=" background: #eef1f5;padding: 0.4rem 3.5rem; border: 1px #e0e3ea; border-radius: 6px !important;">
+                                                                    {{currentPOD.TotalAmount | number :'1.0-2'}}
+                                                                </div>
+
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><b>In Words :</b></td>
+                                                        <td class="text-capitalize" colspan="2">
+                                                            {{currentPOD.TotalAmount | number :'1.0-2' | NumberInWords}} Only.
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><b>Remarks:</b></td>
+                                                        <td>
+                                                            <div class="form-group">
+                                                                <input [(ngModel)]="currentPOD.Remarks" class="form-control" name="Remarks"
+                                                                       type="text">
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <div class="text-right mt-20 mb-40" style="margin-bottom:40px;">
+                                                    <input id="PurchaseOrderbtn" *ngIf="EditPO" type="button" class="btn btn-warning"
+                                                           [disabled]="loading" value="Update Purchase Order Draft"
+                                                           (click)="EditPurchaseOrderDraft()" />
+                                                    <input id="PurchaseOrderbtn" *ngIf="!EditPO" type="button"
+                                                           class="btn green btn-success margin-7-hr"
+                                                           (click)="AddPurchaseOrderDraft()" [disabled]="loading" value="Save As Draft" />
+                                                    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Discard Changes">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- <div class="col-md-12" *ngIf="showPurchaseOrderDraftListPage">
+    <purchase-order-draft-list (call-back-close)="ClosePurchaseOrderDraftListPage()"></purchase-order-draft-list>
+</div> -->
+
+
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp" (callback-add)="OnNewItemAdded($event)"></item-add>
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)">
+</vendor-add>

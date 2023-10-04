@@ -1,0 +1,59 @@
+﻿<div class="row">
+    <div class="form-body">
+        <div class="col-md-12">
+            <div class="caption custom-caption">
+                <i class="glyphicon glyphicon-asterisk"></i>
+                <span class="caption-subject">ABC/VED Stock Report</span>
+            </div>
+
+            <!-- <div class="col-md-8 col-xs-12">
+                <label class="control-label col-md-3">Select Item<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <input danphe-auto-complete class="form-control"
+                           [(ngModel)]="selectedItem"
+                           [source]="itemList"
+                           [list-formatter]="myItemListFormatter"
+                           placeholder="--Select Item--"
+                           display-property-name="ItemName"
+                           value-property-name=null
+                           onClick="this.select();"
+                           (valueChanged)="onChangeItem($event)"
+                           max-num-list="10"
+                           (focusout)="CheckProperSelectedItem()"
+                           min-chars="0"
+                           style="width:350px;" />
+                  </div>
+                </div>
+
+                <div class="col-md-2 col-xs-12">
+                    <div class="col-md-2 col-xs-12">
+                        <div class="form-group">
+                            <button class="btn blue" type="button" (click)="GetReportData()">
+                                <i class="fa fa-search"></i>
+                                Show Report
+                            </button>
+                        </div>
+                    </div>
+                </div> -->
+            <!-- </div> -->
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="PHRMABCVEDReportColumns"
+                     [grid-data]="PHRMABCVEDReportData"
+                     [grid-exportOptions]="gridExportOptions"
+                     [grid-showExportNew]="true"
+                     (grid-onExport)="OnGridExport($event)">
+        </danphe-grid>
+    </div>
+</div>
+

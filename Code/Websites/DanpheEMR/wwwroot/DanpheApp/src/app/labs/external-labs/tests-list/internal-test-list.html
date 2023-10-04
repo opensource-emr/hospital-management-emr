@@ -1,0 +1,32 @@
+<div class="wrapper">
+  <div class="tbl-container">
+    <button *ngIf="showVendorSelectButton" class="btn blue btnvendor" (click)="ShowVendorSelection()"> Choose External Vendor </button>
+    <input class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+    <div class="table-responsive">
+      <table class="table table-responsive table-bordered">
+        <thead>
+          <tr class="table-header-bg">
+            <th> Patient </th>
+            <th> TestName </th>
+            <th> Vendor </th>
+            <th> Select </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let lab of patLabInfoList | searchFilter: searchString | async; let i = index;">
+            <tr [ngClass]="lab.IsSelected ? 'highlightbg':'donthighlight'" (click)="SelectUnselectRow(lab)">
+              <td><label class="margin-0-vr">{{lab.PatientName}}</label></td>
+              <td><label class="margin-0-vr">{{lab.TestName}}</label></td>
+              <td><label class="margin-0-vr">{{lab.VendorName}}</label></td>
+              <td><input id="labitem{{i}}" type="checkbox" [(ngModel)]="lab.IsSelected" (ngModelChange)="CheckForRowSelection()"></td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div *ngIf="showVendorSelectPopup">
+    <lab-vendor-select *ngIf="showVendorSelectPopup" [reqIdList]="selectedReqList" 
+    (on-save)="OnVendorAssigned($event)" (on-close)="OnVevndorSelectPopupClosed($event)"> </lab-vendor-select>
+  </div>
+</div>

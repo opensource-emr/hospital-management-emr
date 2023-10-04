@@ -1,0 +1,131 @@
+<div class="wrapper">
+    <div class="row margin-bottom-15">
+        <div class="col-md-4 text-left">
+            <button class="btn green btn-success" (click)="ShowPatientRegistation()"><i class="fa fa-plus"></i>
+                New Vaccination Patient</button>
+        </div>
+        <!-- Sud:2-Oct'21--below functionality: Enrolling external patients is incomplete, until then hiding the searchbox. -->
+        <!-- <div class="col-md-offset-3 col-md-4 text-right">
+            <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="PatientObj"
+                [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)"
+                [path-to-data]="'Results'" placeholder="search to Enroll other Patients into Vaccination"
+                display-property-name="ShortName" value-property-name=null (ngModelChange)="PatientInfoChanged()"
+                onClick="this.select();" max-num-list="500" [min-chars]="3" match-formatted="true"
+                [grid-sort]="'ShortName'" style="width: 100% !important;" />
+        </div> -->
+        <div class="col-md-1 pull-right">
+            <div class="pull-right">
+              <div class="shortcut-key shortkey-right " title="Shortcut Keys">
+                <a href="javascript: void(0)"><img alt="keyboard shortcut"
+                    src="../../../themes/theme-default/images/Keyboard-icon.svg"></a>
+                <div class="keydropdown">
+                  <ul>
+                    <li><kbd>ALT</kbd> + <kbd>N</kbd> = <samp>New Vaccination Patient</samp></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="vaccinationPatientGridColumns" [grid-data]="vaccinationPatList"
+                (grid-actions)="VaccinationPatientGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings" >
+            </danphe-grid>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- patient registration starts -->
+<div *ngIf="showPatientRegistration" class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Vaccination Patient Register</span></h3>
+                        <a class="btn btn-danger" (click)="CloseAllPopUp()" title="Cancel">X</a>
+                    </div>
+
+                    <div class="col-md-12">
+                        <vaccination-patient-registration (vaccineRegEmitter)="CloseVaccinationRegister($event)"
+                            [patientId]="selPatIdForEdit">
+                        </vaccination-patient-registration>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- patient registration ends -->
+
+<!-- patient vaccination detail starts -->
+<div *ngIf="showPatientVaccinationDetail" class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3><span>Patient Vaccination Detail</span></h3>
+                        <a class="btn btn-danger" (click)="CloseAllPopUp()" title="Cancel">X</a>
+                    </div>
+
+                    <div class="col-md-12" style="padding-bottom: 15px;">
+                        <patient-vaccination-detail [patientId]="selPatIdForEdit" [patientDetail]="selectedPatDetail">
+                        </patient-vaccination-detail>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- patient vaccination detail ends -->
+
+<!-- vaccination sticker start -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showVaccSticker">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <a class="btn btn-danger" (click)="CloseAllPopUp()" title="Cancel">X</a>
+                    </div>
+                    <div class="col-md-12" style="padding-bottom: 15px;">
+                        <vaccination-sticker [selPatientVisitId]="selPatientVisitIdForSticker" [showVaccSticker]="showVaccSticker"
+                        (after-print-action)="AfterStickerPrinted($event)"></vaccination-sticker>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- vaccination sticker end -->
+
+
+
+
+<!-- Followup Popup Starts -->
+<div *ngIf="showFollowupAddPopup" class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Vaccination FOLLOWUP</span></h3>
+                        <a class="btn btn-danger" (click)="CloseAllPopUp()" title="Cancel">X</a>
+                    </div>
+
+                    <div class="col-md-12">
+                        <vacc-followup-visit-add (on-followup-add)="CloseFollowupPopup($event)"
+                            [parent-visit-id]="parentVisitIdForFwup">
+                        </vacc-followup-visit-add>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Followup Popup Ends -->

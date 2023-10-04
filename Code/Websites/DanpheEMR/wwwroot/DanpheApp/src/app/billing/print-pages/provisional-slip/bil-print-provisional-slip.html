@@ -1,0 +1,215 @@
+<style>
+  @page {
+    size: A5 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-size: 70%;
+    scale: 70%;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 10px;
+    color: #333333;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 10pt !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 8pt !important;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+  }
+</style>
+<!-- New Provisional Print Slip -->
+<div class="A5 portrait" *ngIf="isReceiptLoaded">
+  <div class="sheet" id="divProvisionalSlipPrintPage">
+    <div class="box-body invoice header">
+      <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'image'">
+        <tr>
+          <td>
+            <img src="\themes\theme-default\images\billing-invoice-header-image.png" alt="" style="width: 100%;">
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'custom'">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
+          </td>
+          <td colspan="4" width="50%">
+            <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.Address}}</p>
+            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">Ph No: {{headerDetail.Tel}}</p>
+          </td>
+          <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;">
+              <strong>{{headerDetail.CustomerRegLabel}}</strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 700px; margin: 0 auto;" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="10" style="text-align: center;">
+            <p style="margin: 0 0 5px 0;"><strong>Provisional Slip</strong></p>
+          </td>
+
+        </tr>
+        <tr style="border: 1px solid #ccc;">
+          <td colspan="10" style="padding: 6px !important">
+            <table style="width: 100%; margin-bottom: 0;">
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;">
+                    <strong>Hospital No:</strong> {{ProvisionalSlipDetails.PatientCode}}
+                  </p>
+                </td>
+
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Patient Name:</strong>{{ProvisionalSlipDetails.PatientName}}</p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Age/Sex :
+                    </strong>{{ProvisionalSlipDetails.Age}}/{{ProvisionalSlipDetails.Gender}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Address: </strong>{{ProvisionalSlipDetails.Address}} <span
+                          *ngIf="ProvisionalSlipDetails.Address && ProvisionalSlipDetails.CountrySubdivisionName">,</span>
+                    {{ProvisionalSlipDetails.CountrySubdivisionName}} </p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;" *ngIf="ProvisionalSlipDetails.PhoneNumber">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Contact: </strong>{{ProvisionalSlipDetails.PhoneNumber}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;" *ngIf="SchemeName">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Type: </strong>{{SchemeName}}</p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;" *ngIf="PolicyNo">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Policy/MemberNo: </strong>{{PolicyNo}}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+
+        </tr>
+        <tr>
+          <th style="padding: 10px 5px; width: 5%">SN.</th>
+          <th style="padding: 10px 5px; width: 15%">Receipt No</th>
+          <th style="padding: 10px 5px; width: 15%">Date</th>
+          <th colspan="4" style="padding: 10px 5px; width: 60%">Particular(s) </th>
+          <th style="padding: 10px 5px; width: 5%">Unit</th>
+          <th style="padding: 10px 5px; width: 5%">Price</th>
+          <th style="padding: 10px 5px; width: 5%">Amount</th>
+        </tr>
+        <tr *ngFor="let row of ProvisionalSlipDetails.ItemsList; let i=index">
+          <td style="padding: 5px 5px;  width: 5%">{{i+1}}</td>
+          <td style="padding: 5px 5px;  width: 5%">PR/{{ row.ProvisionalReceiptNo}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td colspan="4" style="padding: 5px 5px; width: 60%">{{row.ItemName}} <span *ngIf="row.AssignedToDrName!=null && ShowProviderName">
+              ({{row.AssignedToDrName}})</span></td>
+          <td style="padding: 5px 5px;  width: 5%">{{row.Quantity}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{row.Price | number : "1.2-2"}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{row.Quantity * row.Price | number : "1.2-2"}}</td>
+        </tr>
+
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="7" style="padding: 5px 5px; vertical-align: top;">
+            <p class="c_paragraphs"><strong>In Words : {{model.TotalAmount | NumberInWords}} <span
+                      *ngIf="ProvisionalSlipDetails.TotalAmount !=0">Only</span></strong></p>
+          </td>
+          <td colspan="3" style="padding: 5px 5px; text-align: right;">
+            <p class="c_paragraphs" style="margin: 0px;"><strong>SubTotal: </strong>{{model.SubTotal | number : "1.2-2"}} </p>
+            <p class="c_paragraphs"><strong>Discount: </strong>{{model.TotalDiscount | number : "1.2-2"}}
+            </p>
+            <p class="c_paragraphs" style="margin: 0px;" style="margin: 0px;" style="margin: 0px;"
+               *ngIf="ProvisionalSlipDetails.TaxAmount"><strong>{{taxLabel}}</strong>{{model.TaxAmount | number : "1.2-2"}}
+            </p>
+            <p class="c_paragraphs" style="margin: 0px;"><strong>Total Amount: </strong>{{model.TotalAmount | number : "1.2-2"}}
+            </p>
+            <p class="c_paragraphs" style="margin: 0px;" *ngIf="IsCoPaymentTransactions"><strong>CoPay: </strong>
+              {{model.CoPayAmount | number :"1.2-2"}}
+            </p>
+          </td>
+
+        </tr>
+
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 5px; vertical-align: top;">
+
+          </td>
+          <td colspan="5" style="padding: 5px 5px; vertical-align: top; text-align: right;">
+            <p class="c_paragraphs" style="margin: 0px;"><strong>User: </strong>{{ProvisionalSlipDetails.BillingUser}} </p>
+          </td>
+
+        </tr>
+        <tr *ngIf="provSlipFooterParam.ShowFooter">
+          <td colspan="10" style="padding: 5px 5px; vertical-align: top; text-align: center;">
+            <p class="c_paragraphs" style="margin: 0px;"><b>
+                {{provSlipFooterParam.EnglishText}} </b>
+
+            </p>
+          </td>
+
+
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+<div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+  <button class="btn green btn-success" value="" (click)="print()" id="btnPrintProvisionalSlip">
+    <span>Print</span>&nbsp;&nbsp;
+    &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+  </button>
+</div>
+<select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-provisional'"
+                (on-printer-change)="OnPrinterChanged($event)">
+</select-printer>
+<new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</new-print-page>

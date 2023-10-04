@@ -1,0 +1,40 @@
+<div class="col-md-12" *ngIf="patAndVisInfo">
+  <table class="table table-striped table-bordered table-hover">
+    <tr>
+      <td> Hospital No: <b> {{patAndVisInfo.PatientCode}} </b></td>
+      <td> Patient Name: <b> {{patAndVisInfo.PatientName}}</b></td>
+      <td> Age Sex: <b>{{patAndVisInfo.DateOfBirth | DanpheDateTime:'age'}}/{{patAndVisInfo.Gender | slice:0:1}}</b>
+      </td>
+      <td>
+        Vacc. Reg No: <b> {{patAndVisInfo.VaccinationRegNo}}</b>
+      </td>
+    </tr>
+    <tr>
+      <td>Mother Name:{{patAndVisInfo.MotherName}}</td>
+      <td> Department : <b> {{patAndVisInfo.DepartmentName}}</b></td>
+      <td> Last Visit Date: 
+        <b>
+          <date-lbl [value]="patAndVisInfo.VisitDate" [show-time]="false"></date-lbl>
+         
+        </b>
+         <br>
+          <span style="font-size: 14px; color: blue;">(Before {{daysPassed}} Days)</span>
+      </td>
+      <td> </td>
+    </tr>
+
+  </table>
+
+  <div class="col-md-12" style="padding-bottom: 20px;">
+    <div class="col-md-4">
+      Followup Date: <date-lbl [value]="todaysDate" [show-time]="true"></date-lbl>
+    </div>
+    <div class="col-md-4">
+      <button id="btnSaveFollowup" style="border-radius: 7px !important;border: 1px solid #3598dc;" type="button"
+        class="btn green btn-success" (click)="SaveFollowUp()" [disabled]="loading">
+        Save Followup
+      </button>
+    </div>
+
+  </div>
+</div>

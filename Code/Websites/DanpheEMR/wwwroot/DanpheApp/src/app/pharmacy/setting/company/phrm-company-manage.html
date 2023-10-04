@@ -1,0 +1,114 @@
+﻿<input type="button" class="btn btn-primary" (click)="AddCompany()" value="Add Company" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="companyGridColumns" [grid-data]="companyList"
+      (grid-actions)="CompanyGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showCompanyAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <!--Model Box Body Start-->
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3><span *ngIf="!update">Add Company</span> <span *ngIf="update">Update Company</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <form [formGroup]="CurrentCompany.CompanyValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Company Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="companyname" class="form-control" type="text" maxlength="50"
+                    [(ngModel)]="CurrentCompany.CompanyName" formControlName="CompanyName" value=""
+                    (keyup.enter)="setFocusById('contactno')" placeholder="Enter Company Name" />
+                  <span class="color-red font-sm"
+                    [hidden]="CurrentCompany.IsValidCheck('CompanyName','required') || !(CurrentCompany.IsDirty('CompanyName'))">Company
+                    name is required</span> <span class="color-red font-sm"
+                    *ngIf="CurrentCompany.IsDirty('CompanyName')"
+                    [hidden]="CurrentCompany.IsValidCheck('CompanyName','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-md-5">Contact Number<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="contactno" class="form-control" type="text" maxlength="10"
+                    [(ngModel)]="CurrentCompany.ContactNo" formControlName="ContactNo" value=""
+                    (keyup.enter)="setFocusById('description')" placeholder="Enter Contact number" />
+                    <span class="color-red font-sm" *ngIf="CurrentCompany.IsDirty('ContactNo')"
+                    [hidden]="CurrentCompany.IsValidCheck('ContactNo','pattern')"> Contact number must be of 10
+                    digits</span>
+                  
+                </div>
+              </div>
+              <!-- <div class="form-group">
+                <label class="control-label col-md-5">Contact Number<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="contactno" class="form-control" type="text" maxlength="10"
+                    [(ngModel)]="CurrentCompany.ContactNo" formControlName="ContactNo" value=""
+                    (keyup.enter)="setFocusById('description')" placeholder="Enter Contact number" />
+                  <span class="color-red font-sm"
+                    [hidden]="CurrentCompany.IsValidCheck('ContactNo','required') || !(CurrentCompany.IsDirty('ContactNo'))">Contact
+                    number is required</span> <span class="color-red font-sm"
+                    *ngIf="CurrentCompany.IsDirty('ContactNo')"
+                    [hidden]="CurrentCompany.IsValidCheck('ContactNo','pattern')"> Contact number must be of 10
+                    digits</span>
+                </div>
+              </div> -->
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="description" class="form-control" type="text" maxlength="100"
+                    [(ngModel)]="CurrentCompany.Description" [ngModelOptions]="{standalone: true}" value=""
+                    (keyup.enter)="setFocusById('address')" placeholder="Enter Description" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Contact Address<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="address" class="form-control" type="text" maxlength="100"
+                    [(ngModel)]="CurrentCompany.ContactAddress" [ngModelOptions]="{standalone: true}" value=""
+                    (keyup.enter)="setFocusById('email')" placeholder="Enter Contact Address" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Email<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="email" class="form-control" type="text" maxlength="100" [(ngModel)]="CurrentCompany.Email"
+                    formControlName="Email" value="" (keyup.enter)="!update?setFocusById('savecom'):setFocusById('updatecom')"
+                    placeholder="Enter Email" />
+                  <span class="color-red font-sm" *ngIf="CurrentCompany.IsDirty('Email')"
+                    [hidden]="CurrentCompany.IsValidCheck('Email','pattern')">Email ID is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">IsActive<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentCompany.IsActive"
+                          [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="all-buttons text-right">
+                <button type="button" id="savecom" class="btn green btn-success" *ngIf="!update"
+                  (click)="Add()">Save</button>
+                <button type="button" id="updatecom" class="btn green btn-success" *ngIf="update"
+                  (click)="Update()">Update</button>
+              </div>
+            </div>
+          </form>
+          <!--</form>-->
+          <!--Model Box Body End-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

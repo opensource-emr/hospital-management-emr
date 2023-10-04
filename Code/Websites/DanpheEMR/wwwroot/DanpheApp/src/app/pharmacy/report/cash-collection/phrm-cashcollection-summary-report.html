@@ -1,0 +1,43 @@
+﻿<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Cash Collection Summary Report</span> </div>
+      <div class="row">
+        <div class="col-md-6">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+        </div>
+        <!-- <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">                   
+                        <danphe-date-picker [(ngModel)]="phrmReports.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div> --> 
+        <!-- <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-8">                     
+                        <danphe-date-picker [(ngModel)]="phrmReports.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div> -->
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PHRMUserReportColumn"
+                     [grid-data]="PHRMUserReportData"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="pharmacy"> </danphe-grid>
+  </div>
+</div>

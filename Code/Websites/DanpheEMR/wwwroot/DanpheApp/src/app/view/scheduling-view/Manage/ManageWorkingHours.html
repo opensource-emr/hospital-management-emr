@@ -1,0 +1,183 @@
+﻿<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
+    <span class="caption-subject font-blue-sharp bold uppercase">Manage Working Hours</span>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="empWHGridColumns"
+                     [grid-data]="workingHoursList"
+                     (grid-actions)="WorkingHrsGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showEmpWHUpdatePage">
+    <div class="portlet-body form" style="background-color:white">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <div class="caption" style="color:blue; margin-top:10px;">
+                            <span *ngIf="update">Update Employee Working Hours</span>
+                        </div>
+                        <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        <hr />
+                    </div>
+                    <br />
+                    <div class="col-md-12">
+                        <div class="col-md-7" *ngIf="!update">
+                            <label class="control-label col-md-5">Select Employee<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                           <!-- @*-----replace option list with autocomplete-----*@-->
+                            <div class="col-md-7">
+                                <select class="form-control"
+                                        style="float:left"
+                                        [(ngModel)]="index"
+                                        (ngModelChange)="loadEmployee()">
+                                    <option *ngFor="let emp of empNoShiftList; let i = index" value={{i}}>{{emp.EmployeeName}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="left" style="margin-left:15px" *ngIf="currentEmpWH.EmployeeId">
+                                <p>Employee Name: <b>{{currentEmpWH.EmployeeName}}</b></p>
+                            </div>
+                            <div class="right" *ngIf="currentEmpWH.EmployeeId">
+                                <input type="button" class="btn btn-primary" (click)="ShowDefaultShifts()" value="Show Default Shifts" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-12" *ngIf="currentEmpWH.EmployeeId">
+                        <table style="margin-left:15px">
+                            <thead>
+                                <tr>
+                                    <th>Shift Name</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Total Hrs</th>
+                                    <th>IsActive</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of currentEmpWH.Shifts; let i=index">
+                                    <td>
+                                        <form [formGroup]="row.ShiftValidator" class="form-horizontal">
+                                            <input class="form-control" type="text" maxlength="50"
+                                                   [(ngModel)]="row.ShiftName"
+                                                   value=""
+                                                   formControlName="ShiftName"
+                                                   placeholder="Enter Shift Name" />
+                                            <span class="color-red font-sm" [hidden]="row.IsValidCheck('ShiftName','required') || !(row.IsDirty('ShiftName'))">Shift Name is required</span>
+                                            <span class="color-red font-sm" *ngIf="row.IsDirty('ShiftName')" [hidden]="row.IsValidCheck('ShiftName','maxlength')"> Length is not proper</span>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form [formGroup]="row.ShiftValidator" class="form-horizontal">
+                                            <input class="form-control" type="time"
+                                                   (focusout)="CalculationForTotalHrs(row,i)"
+                                                   [(ngModel)]="row.StartTime"
+                                                   formControlName="StartTime" />
+                                            <span class="color-red font-sm" [hidden]="row.IsValidCheck('StartTime','required') || !(row.IsDirty('StartTime'))">Start Time is required</span>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form [formGroup]="row.ShiftValidator" class="form-horizontal">
+                                            <input class="form-control" type="time"
+                                                   (focusout)="CalculationForTotalHrs(row,i)"
+                                                   [(ngModel)]="row.EndTime"
+                                                   formControlName="EndTime" />
+                                            <span class="color-red font-sm" [hidden]="row.IsValidCheck('EndTime','required') || !(row.IsDirty('EndTime'))">End Time is required</span>
+                                        </form>
+                                    </td>
+                                    <td><input class="form-control" type="text" disabled [(ngModel)]="row.TotalHrs" /></td>
+                                    <td style="text-align:center"><label class="mt-checkbox mt-checkbox-outline"><input name="IsActive" type="checkbox" value="IsActive" (change)="onIsActiveChange()" [(ngModel)]="row.IsActive"><span></span></label></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="col-md-12" style="padding:10px 15px">
+                            <table>
+                                <tr class="form-group">
+                                    <td>Total no of Shifts:</td>
+                                    <td><b>{{currentEmpWH.NoOfShifts}}</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Total Working Hours:&nbsp;</td>
+                                    <td><b>{{currentEmpWH.TotalWorkingHrs}}</b></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-12" style="padding-bottom: 18px;">
+                            <div class="form-actions">
+                                <input type="button" class="btn btn-primary" (click)="Save()" value="Save" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--@*PopUp for selecting one the default Shifts*@-->
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDefaultShiftsPopUp">
+    <div class="portlet-body form" style="background-color:white">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <div class="caption" style="color:blue; margin-top:10px;">
+                            <span>Default Shifts</span>
+                        </div>
+                        <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="ClosePopUp()" title="Cancel">X</a>
+                        <hr />
+                    </div>
+                    <div class="col-md-12" style="margin-right: 24px;">
+                        <div *ngIf="defaultShiftsList.length">
+                            <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th><b>Shift Name</b></th>
+                                        <th><b>Start Time</b></th>
+                                        <th><b>End Time</b></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let shift of defaultShiftsList; let i = index">
+                                        <td>
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input name="IsSelected" type="checkbox" [(ngModel)]="shift.IsSelected">
+                                                <span></span>
+                                            </label>
+                                        </td>
+                                        <td>{{shift.ShiftName}}</td>
+                                        <td>{{shift.StartTime}}</td>
+                                        <td>{{shift.EndTime}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12" style="padding-bottom: 18px;">
+                        <div class="form-actions">
+                            <input type="button" class="btn btn-primary" (click)="SelectDefShift()" value="Submit" />
+                            <button class="btn btn-primary right" (click)="AddNewShift()" title="If desired shift not found, click to add new Shift."><span class="glyphicon glyphicon-plus"> </span> Add New Shift</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<shift-add *ngIf="showAddShiftPopUp" [showAddShiftPage]="showAddShiftPopUp"
+          (callback-add)="OnNewShiftAdd($event)"></shift-add>

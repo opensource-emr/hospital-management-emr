@@ -1,0 +1,91 @@
+<div class="row clear" style="margin-bottom: 10px;" *ngIf="!isBillingReport && !isLabReport && !isSystemAdminReport && !isADTReport">
+  <div class="logo" style="width: 18%;padding: 0px 15px 0px 15px; float: left;">
+    <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+  </div>
+  <div style="width: 64%;float: left;padding-bottom:  0px;">
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.header1">{{headerDetail.header1}}</div>
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.header2">{{headerDetail.header2}}</div>
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.header3">{{headerDetail.header3}}</div>
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.header4">{{headerDetail.header4}}</div>
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.hospitalName">{{headerDetail.hospitalName}}</div>
+      <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.address">{{headerDetail.address}}</div>
+      <div style="font-size:13px;font-weight: 700;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </div>
+      <div style="font-size:13px;font-weight: 700;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</div>
+    </div>
+    <div style="font-size:14px; text-align: center;"><strong>{{unitname}}</strong></div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>
+
+<div class="row clear text-center" style="margin-bottom: 10px;" *ngIf="isBillingReport">
+  <div>
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
+      <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
+    </div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>
+
+<div class="row clear text-center" style="margin-bottom: 10px;" *ngIf="isLabReport">
+  <div>
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
+      <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
+    </div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>
+
+<div class="row clear text-center" style="margin-bottom: 10px;" *ngIf="isADTReport">
+  <div>
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">PAN No:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
+      <span style="font-size:13px;" *ngIf="showPhoneNo && headerDetail.tel">Phone No:{{headerDetail.tel}}</span><br />
+      <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
+    </div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>
+
+<div class="row clear text-center" style="margin-bottom: 10px;" *ngIf="isSystemAdminReport">
+  <div>
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">PAN No:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
+      <span style="font-size:13px;" *ngIf="showPhoneNo && headerDetail.tel">Phone No:{{headerDetail.tel}}</span><br />
+      <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
+    </div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>
+
+<div class="row clear text-center" style="margin-bottom: 10px;" *ngIf="isMRReport">
+  <div>
+    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
+      <span>For MR</span>
+
+    </div>
+  </div>
+  <div style="width: 18%;float: left;">
+  </div>
+</div>

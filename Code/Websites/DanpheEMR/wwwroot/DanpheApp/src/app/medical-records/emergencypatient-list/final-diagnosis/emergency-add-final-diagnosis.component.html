@@ -1,0 +1,116 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Add Final Diagnosis</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!-- [formGroup]="BirthDetail.BabyBirthDetailsValidator"                     -->
+          <!-- <form class="form-horizontal hm-form">
+                      
+                  </form> -->
+
+          <div class="form-body" style="padding-top: 0px;">
+            <div class="left-panel view">
+              <div>
+                <h1 class="panel-heading">
+                  <i class="fa fa-user"></i>{{selectedPatientDetails.PatientName}}
+                  ({{selectedPatientDetails.PatientCode}})
+                </h1>
+              </div>
+              <div style="border-style: groove;border: 1px solid #c8c9c8;padding: 0px 5px;">
+                <p class="patient-hdr-label"><b>Patient Visit Code</b>: &nbsp;{{selectedPatientDetails.VisitCode}}
+                </p>
+                <p class="patient-hdr-label"><b>Age</b>: &nbsp;
+                  {{selectedPatientDetails.Age}}/{{selectedPatientDetails.Gender}}</p>
+                <p class="patient-hdr-label"><b>Address</b>: &nbsp;{{selectedPatientDetails.Address}}</p>
+                <p class="patient-hdr-label"><b>Visit Date</b>: &nbsp;{{selectedPatientDetails.VisitDate |
+                  DanpheDateTime:'format':'YYYY-MM-DD' }} </p>
+                <p *ngIf="selectedPatientDetails.VisitType" class="patient-hdr-label"> <b>Visit
+                    Type</b>: &nbsp; {{selectedPatientDetails.VisitType}} </p>
+                <p class="patient-hdr-label"><b>Contact No</b>: &nbsp;{{selectedPatientDetails.PhoneNumber}}
+                <p class="patient-hdr-label"><b>Department</b>: &nbsp;{{selectedPatientDetails.DepartmentName}}
+                <p class="patient-hdr-label"><b>Doctor Name</b>: &nbsp;{{selectedPatientDetails.PerformerName}}
+                </p>
+              </div>
+            </div>
+            <div class="col-md-12">
+
+              <div class="form-group ">
+                <label class="control-label col-md-5">
+                  Select Disease Category<b style="float: right">:</b>
+                </label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="selectedReportingGroupId" (ngModelChange)="OnReportingGroupChange($event)">
+                    <option [value]="0">All</option>
+                    <option *ngFor="let rp of allIcdReportingGroupList; let i = index;" [value]="rp.EMER_ReportingGroupId">{{rp.EMER_ReportingGroupName}} </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-md-5">
+                  Select Diagnosis<b style="float: right">:</b>
+                </label>
+                <div class="col-md-7">
+                  <!-- <div class="form-group" style="padding:10px;"> -->
+                  <input danphe-auto-complete autocomplete="off" class="form-control" [(ngModel)]="diagnosis" [source]="icdDiagnosisFilteredList" [list-formatter]="DignosisFormatter" placeholder={{IcdVersionDisplayName}} display-property-name="EMER_DiseaseGroupName" value-property-name="ICDCode" (valueChanged)="MakeDiagnosisList()" min-chars="0" max-num-list="10" [ngModelOptions]="{standalone: true}" />
+                </div>
+              </div>
+            </div>
+            <!-- Start: Selected Diagnosis List  -->
+            <div class="form-group" *ngIf="selectedICDList.length>0">
+              <ol>
+                <li *ngFor="let data of selectedICDList; let i = index;">
+                  &nbsp; {{data.EMER_DiseaseGroupName}} &nbsp;
+                  <i class="fa fa-times" style="color: #000 !important" (click)="RemoveDiagnosis(i)"></i> <br>
+
+                </li>
+              </ol>
+
+            </div>
+            <!-- End: Selected Diagnosis List  -->
+
+            <!-- <div class="col-md-12">
+                          <div class="form-check form-group">
+                              <input type="checkbox" class="form-check-input" id="referredOutoutpatient" [(ngModel)]="isOutpatientRefered" type="checkbox" name="referredOutoutpatient" [value]="true" (change)="ReferedOutPatient()">
+                              <label class="form-check-label" for="referredOutoutpatient"> Referred Outpatient?</label>
+                          </div>
+                      </div> -->
+            <div class="row margin-8-tp">
+              <div class="col-md-12">
+                <div class="form-check form-group">
+                  <input type="checkbox" class="form-check-input" id="referredOutEmergencypatient" [(ngModel)]="isPatientReferred" type="checkbox" name="referredOutEmergencypatient" [value]="true" (change)="PatientReferredChange()">
+                  <label class="form-check-label" for="referredOutEmergencypatient"> Referred Patient?</label>
+                </div>
+              </div>
+              <div class="col-md-12 referredClass">
+                <div>
+                  <div class="margin-8-bt" *ngIf="isPatientReferred" style="width: 100%;">
+                    <label for="ReferredBy">Referred By: &nbsp;&nbsp;</label>
+                    <input type="text" [(ngModel)]="referredBy" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div>
+                  <div class="margin-8-bt" *ngIf="isPatientReferred" style="width: 100%;">
+                    <label for="ReferredBy">Referred To: &nbsp;&nbsp;</label>
+                    <input type="text" [(ngModel)]="referredTo" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="panel-footer" style="height: 50px;margin-top: 70px;">
+            <button (click)="Close()" class="cancel-cert btn-pd btn btn-sm btn-danger right" style="margin-right:3px;">Cancel</button>
+            <button style="margin-right:10px;" (click)="Submit()" class="add-cert btn-pd btn btn-sm btn-primary right" [disabled]="selectedICDList.length==0||loading">{{!isEditMode?'Submit':'Update'}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

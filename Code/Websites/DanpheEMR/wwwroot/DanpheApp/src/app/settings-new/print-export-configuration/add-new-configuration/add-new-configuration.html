@@ -1,0 +1,211 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+          <div class="modelbox-div ref_modal_div clearfix">
+            <div class="caption custom-caption no-margin">
+              <h3>
+                <span>
+                  <ng-container *ngIf="isAddNewConfiguration">Add New Configuration</ng-container>
+                  <ng-container *ngIf="!isAddNewConfiguration">Edit Configuration Details</ng-container>
+                </span>
+              </h3>
+              <a class="btn btn-danger" (click)="close()">X</a>
+            </div>
+            <form [formGroup]="configuration.ConfigurationValidator" class="form-horizontal hm-form">
+              <div class="form-body">
+                <div class="form-group">
+                  <label for="SettingName" class="control-label col-md-5">Setting Name<b><span style="color: red;">*</span>:</b></label>
+                  <div class="col-md-7">
+                    <input id="SettingName" class="form-control" type="text" placeholder="Setting Name"
+                      formControlName="SettingName" [(ngModel)]="configuration.SettingName"
+                      (keyup.enter)="SetFocusById('PageHeaderText')">
+                    <span class="color-red font-sm margin-15-lft"
+                      [hidden]="!(configuration.IsDirty('SettingName') && !configuration.IsValidCheck('SettingName','required'))">Setting Name is
+                      required</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                    <label for="PageHeaderText" class="control-label col-md-5">Page Header Text<b><span style="color: red;">*</span>:</b></label>
+                    <div class="col-md-7">
+                      <input id="PageHeaderText" class="form-control" type="text" placeholder="Page HeaderText"
+                        formControlName="PageHeaderText" [(ngModel)]="configuration.PageHeaderText"
+                        (keyup.enter)="SetFocusById('ReportDescription')">
+                      <span class="color-red font-sm margin-15-lft"
+                        [hidden]="!(configuration.IsDirty('PageHeaderText') && !configuration.IsValidCheck('PageHeaderText','required'))">Page Header Text is
+                        required</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ReportDescription" class="control-label col-md-5">Report Description Text<b>:</b></label>
+                    <div class="col-md-7">
+                      <textarea id="ReportDescription" class="form-control" type="text" placeholder="Report Description"
+                        [ngModelOptions]="{standalone: true}" [(ngModel)]="configuration.ReportDescription"
+                        (keyup.enter)="SetFocusById('ModuleName')"></textarea>
+                      <!-- <span class="color-red font-sm margin-15-lft"
+                        [hidden]="!(configuration.IsDirty('ReportDescription') && !configuration.IsValidCheck('ReportDescription','required'))">Report Description is
+                        required</span> -->
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ModuleName" class="control-label col-md-5">ModuleName<b><span style="color: red;">*</span>:</b></label>
+                    <div class="col-md-7">
+                      <input id="ModuleName" class="form-control" type="text" placeholder="ModuleName"
+                        formControlName="ModuleName" [(ngModel)]="configuration.ModuleName">
+                      <span class="color-red font-sm margin-15-lft"
+                        [hidden]="!(configuration.IsDirty('ModuleName') && !configuration.IsValidCheck('ModuleName','required'))">ModuleName is
+                        required</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowHeader" class="control-label col-md-5">Show Header</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowHeader" name="chkShowHeader" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowFooter" class="control-label col-md-5">Show Footer</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowFooter" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowFooter" name="chkShowFooter" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowUserName" class="control-label col-md-5">Show UserName</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowUserName" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowUserName" name="chkShowUserName" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowPrintExportDateTime" class="control-label col-md-5">Show PrintExport DateTime</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowPrintExportDateTime" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowPrintExportDateTime" name="chkShowPrintExportDateTime" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowNpDate" class="control-label col-md-5">Show Nepali Date</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowNpDate" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowNpDate" name="chkShowNpDate" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowEnDate" class="control-label col-md-5">Show English Date</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowEnDate" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowEnDate" name="chkShowEnDate" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowFilterDateRange" class="control-label col-md-5">Show FilterDateRange</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowFilterDateRange" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowFilterDateRange" name="chkShowFilterDateRange" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ShowOtherFilterVariables" class="control-label col-md-5">Show Other Filter Variables</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="ShowOtherFilterVariables" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.ShowOtherFilterVariables" name="chkShowOtherFilterVariables" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="IsActive" class="control-label col-md-5">Is Active</label>
+                    <div class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="IsActive" type="checkbox" [ngModelOptions]="{standalone: true}"
+                              [(ngModel)]="configuration.IsActive" name="chkIsActive" />
+                            <span></span>
+                            True
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </form>
+  
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <input type="button" id="add" *ngIf="isAddNewConfiguration" class="btn green btn-success margin-7-hr" (click)="AddConfiguration()"
+                  value="Add" />
+                <input type="button" id="add" *ngIf="!isAddNewConfiguration" class="btn green btn-success margin-7-hr"
+                  (click)="UpdateConfiguration()" value="Update" />
+                <!-- <button type="button" class="btn btn-danger btn-sm margin-7-hr" (click)="close()">Close</button> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

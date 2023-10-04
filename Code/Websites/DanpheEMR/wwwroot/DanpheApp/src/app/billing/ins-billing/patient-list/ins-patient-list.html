@@ -1,0 +1,54 @@
+<style>
+.search-with-label {
+	align-items: center;
+	justify-content: flex-end;
+}
+.bs-65 {
+	flex-basis: 65%;
+}
+.bs-30 {
+	flex-basis: 30%;
+}
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-6"> <a class="btn blue bordered btn-sm" style="font-size: 14px;" name="name" (click)="NewINSPatientRegistration()"> <span class="glyphicon glyphicon-plus"></span>New Insurance Patient </a> </div>
+    <div *ngIf="showSearchPatient" class="col-md-6"> 
+      <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+      <div class="search-with-label flex-container">
+        <div class="flex-item bs-30 text-right">
+          <label for="allPatWithOutIns">Edit Information Of</label>
+        </div>
+        &nbsp;&nbsp; 
+        <!--[source]="allPatientsForDDL"-->
+        <div class="flex-item bs-65">
+          <input danphe-auto-complete
+               class="form-control"
+               [(ngModel)]="selectedINSPatientToEdit"
+               [list-formatter]="patientListFormatter"
+               [source]="SearchPatientsByKey(this)"
+               placeholder="Existing Patient Name"
+               display-property-name="ShortName"
+               value-property-name=null
+               (valueChanged)="EditExistingPatientInfo()"
+               onClick="this.select();"
+               id="allPatWithOutIns"
+               min-chars="3"
+               max-num-list="20" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="patListGridCols" [grid-data]="insurancePatients" (grid-actions)="PatientGridActions($event)"> </danphe-grid>
+    </div>
+  </div>
+  <insurance-update-balance *ngIf="showBalanceUpdatePage"
+                          [insurance-detail]="currentPatInsDetails"
+                          (callback-update-balance)="CloseInsBalancePopup($event)"></insurance-update-balance>
+  <div *ngIf="showPatientPopup">
+    <ins-patient-registration *ngIf="showPatientPopup" [pat-to-edit]="selectedINSPatientToEdit"  [popup-action]="popupAction"
+                               (ins-pat-on-close)="InsPatientPopupOnClose($event)"></ins-patient-registration>
+  </div>
+</div>

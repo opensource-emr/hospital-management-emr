@@ -1,0 +1,92 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption custom-caption">
+      <i class="fa fa-archive"></i>
+      <span class="caption-subject">Issued Item List Report</span>
+    </div>
+  </div>
+  <div class="col-md-12" style="display: flex; justify-content: space-between;">
+    <div class="col-md-6">
+      <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="OnFromToDateChange($event)"> </fiscal-year-calendar>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group row">
+        <label class="control-label col-md-5">Substore Name<b style="float:right;">:</b></label>
+        <div class="col-md-6 autocomplete-item">
+          <input danphe-auto-complete class="form-control" (valueChanged)="onSubstoreChange($event)" placeholder="Select Substore Name" [(ngModel)]="selectedSubstore" [list-formatter]="SubstoreListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="Name" value-property-name=StoreId [source]="SubstoreList" [match-formatted]="true" onclick="this.select();" />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group row">
+        <label class="control-label col-md-4">Item Name <b style="float:right;">:</b></label>
+        <div class="col-md-6 autocomplete-item">
+          <input danphe-auto-complete class="form-control" (valueChanged)="onItemChange($event)" placeholder="Select ItemName" [(ngModel)]="selecteditem" [list-formatter]="ItemListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="ItemName" [source]="itemList" [match-formatted]="true" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12" style="display: flex; justify-content: space-between;">
+    <div class="col-md-3"></div>
+    <div class="col-md-3">
+      <div class="form-group row">
+        <label class="control-label col-md-5">SubCategory<b style="float:right;">:</b></label>
+        <div class="col-md-6 autocomplete-item">
+          <input danphe-auto-complete class="form-control" (valueChanged)="onSubCategoryChange($event)" placeholder="Select SubCategory" [(ngModel)]="selectedSubCategory" [list-formatter]="SubCategoryListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="SubCategoryName" value-property-name=SubCategoryId [source]="SubCategoryList" [match-formatted]="true" onclick="this.select()" />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="form-group row">
+        <label class="control-label col-md-5">Employee Name<b style="float:right;">:</b></label>
+        <div class="col-md-6 autocomplete-item">
+          <input danphe-auto-complete class="form-control" (valueChanged)="onEmployeeChange($event)" placeholder="Select Employee" [(ngModel)]="selectedEmployee" [list-formatter]="EmployeeListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="FullName" value-property-name=EmployeeId [source]="EmployeeList" [match-formatted]="true" onclick="this.select();" />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3" style="margin-top: 5px !important;">
+      <button class="btn blue" type="button" (click)="ShowIssuedItemList()" [disabled]="loading">
+        <i class="fa fa-search"></i>&nbsp;
+        <span *ngIf="!loading">Load</span>
+        <span *ngIf="loading">Loading...</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="IssuedItemListReportColumns" [grid-data]="IssuedItemListData" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="'inventory'" [report-title]="'Issued Item List Report'" [show-header]="true" [filter-parameters]="FilterParameters">
+    </danphe-grid>
+  </div>
+</div>
+
+<!-- START: Summary -->
+<div *ngIf="SummaryData.length" class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+  <div class="table-responsive table-wrapper" id="print_summary">
+    <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+      <thead>
+        <tr>
+          <th colspan="2" style="text-align: center;">
+            <span style="font-size:large;"> Summary </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>StoreName</td>
+          <td>{{SummaryData[0].SubStoreName}}</td>
+        </tr>
+        <tr>
+          <td>ItemName</td>
+          <td>{{SummaryData[0].ItemName}}</td>
+        </tr>
+        <tr>
+          <td>Quantity</td>
+          <td>{{SummaryQuantity}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <br>
+</div>
+<!-- END: Summary -->

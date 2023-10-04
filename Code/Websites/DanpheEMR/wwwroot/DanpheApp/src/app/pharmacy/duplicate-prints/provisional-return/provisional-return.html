@@ -1,0 +1,197 @@
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+
+    <div class="row">
+
+      <!-- <div class="col-md-5 col-xs-12 noPadding">
+        <div class="form-group">
+          <label class="control-label col-md-3">From Date<sup>*</sup><b>:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+            </danphe-date-picker>
+          </div>
+        </div>
+      </div> -->
+      <!-- <div class="col-md-5 col-xs-12 noPadding">
+        <div class="form-group">
+          <label class="control-label col-md-3">To Date<sup>*</sup><b>:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+            </danphe-date-picker>
+          </div>
+        </div>
+      </div> -->
+      <!-- <div class="col-md-2 col-xs-12 noPadding">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="GetAllProvisionalReturn()">
+            <i class="fa fa-search"></i>
+            Show Details
+          </button>
+        </div>
+      </div> -->
+
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="ProvisionalReturnListGrid" [grid-data]="provisionalBillFiltered"
+          [rangeType]="dateRange" [date-range-options]="'1W,1M,3M'" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+          (onDateChange)="onGridDateChange($event)" (grid-actions)="CreditBillGridActions($event)"
+          [show-CustomDate]="true">
+        </danphe-grid>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSaleItemsPopup">
+
+  <div class="portlet-body form" style="background-color:white">
+    <!--Model Box Body Start-->
+
+    <form class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+          </div>
+          <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue; margin-top:10px;">
+              </div>
+              <a style="float:right;  margin-top: -11px; margin-right: -31px;" class="btn btn-danger" (click)="Close()"
+                title="Cancel">X</a>
+            </div>
+            <br />
+            <div class="col-md-12" style="margin-right: 24px;">
+              <div id="printpage" style="text-align:center;">
+                <div class="receipt">
+                  <billing-header></billing-header>
+                  <hr>
+                  <div class="col-md-12">
+
+                    <div class="col-md-12" style="padding:0px;">
+                      <div class="left">
+                        <p class="no-margin" style="text-align:left;font-size:11px;">
+                          Hospital No: {{currentPatient.PatientCode}}
+                        </p>
+                      </div>
+                      <div class="right">
+                        <p class="no-margin" style="text-align:right;font-size:11px;">
+                          Last Transaction Date:
+                          {{TransactionDate | date}}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+
+                      <div class="left" style="width:69%" id="pat-name">
+                        <div class="no-margin"
+                          style="text-align: left;display: inline-block;float: left;font-size:11px;/*width: 31%;*/">
+                          Patient's Name:&nbsp;
+                        </div>
+                        <div style="display: inline-block;width: 69%;text-align: left;font-size:11px;">
+                          {{currentPatient.ShortName}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-12" style="padding:0px;">
+                      <div class="left" style="width: 69%;">
+                        <p class="no-margin" style="text-align:left;font-size:11px;">
+                          Address:
+                          {{currentPatient.Address}}, {{currentPatient.CountrySubDivisionName}}
+                        </p>
+                      </div>
+                      <div class="right" style="width:31%">
+                        <p class="no-margin" style="text-align:right;font-size:11px;">
+                          Age/Sex :
+                          {{currentPatient.DateOfBirth | DanpheDateTime:'age' }}/{{currentPatient.Gender}}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="col-md-12" style="padding:0px;">
+                      <div class="left" style="width:50%">
+                        <p class="no-margin" style="text-align:left;font-size:11px;">
+                          Contact No: {{currentPatient.PhoneNumber}}
+                        </p>
+                      </div>
+                      <div class="right" style="width:50%" *ngIf="currentPatient.PANNumber">
+                        <p class="no-margin" style="text-align:right;font-size:11px;">
+                          Purchaser's PAN: {{currentPatient.PANNumber}}
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <p style="text-align:center;font-weight:bold;text-decoration:underline;">Return Slip</p>
+                  </div>
+                  <div class="bill-patinfo" style="font-size: 14px;">
+
+                    <div class="clear"></div>
+
+                    <div class="clear footer"></div>
+                    <table class="bill-itms">
+                      <tr>
+                        <th width="30px" class="print-sn"> Sn.</th>
+                        <th width="80px"> Date</th>
+                        <th width="170px" class="print-par">Item Name</th>
+                        <th width="20px" class="text-right print-qty">Quantity</th>
+                        <th width="60px" class="text-right print-amt">Amount</th>
+                      </tr>
+
+                      <tr *ngFor="let row of currSaleItemsRetOnly; let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{row.CreatedOn | date}}</td>
+                        <td>{{row.ItemName}}</td>
+                        <td class="text-right print-qty">{{row.ReturnQty}}</td>
+                        <td class="text-right print-rate">{{row.TotalAmount | Currency}}</td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="width: 80px;"><strong>Total Amount:</strong></td>
+                        <td style="float: right;"><strong>{{total | Currency}}</strong></td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="width: 80px;"> <strong>Remarks:</strong></td>
+                        <td><strong>{{remarks}}</strong></td>
+                      </tr>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-retinvoice'"
+                (on-printer-change)="OnPrinterChanged($event)">
+              </select-printer>
+              <p style="text-align:center; z-index: 4; position: relative;">
+                <button class="btn blue" (click)="print()">
+                  Print
+                  <i class="glyphicon glyphicon-print"></i>
+                </button>
+              </p>
+            </div>
+          </div>
+          <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!--Model Box Body End-->
+  </div>
+</div>
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj" (print-sucess)="Close()">
+</app-print-page>

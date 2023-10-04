@@ -1,0 +1,126 @@
+<style>
+  .circularQueueDiv {
+    position: absolute;
+    left: 35%;
+    bottom: 100px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 35px;
+    text-align: center;
+    padding-top: 5px;
+  }
+
+  .opdstickercontainer {
+    padding: 10px;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row" *ngIf="showEchsSticker">
+    <div id="id_echs_sticker" *ngIf="EchsStickerDetails !=null"
+      style="width: 400px;border: 1px dotted black;font-size: 12px;">
+      <div id="id_echs_sticker_printpage" [ngClass]="'opdstkcontainer-' + hospitalCode" class="opdstickercontainer">
+        <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
+          <div>
+            <div> 
+              <span> Date: {{EchsStickerDetails.VisitDate}}&nbsp;({{localDateTime}}) - {{EchsStickerDetails.VisitTime}} </span>
+              <div>
+                <span style="display:inline-block;">
+                  Hosp. No. : <strong> {{EchsStickerDetails.PatientCode}} </strong>
+                </span>
+                <span style="float:right;padding-right: 5px;" *ngIf="EchsStickerDetails.IpNumber"> IpNumber : {{EchsStickerDetails.IpNumber}} </span>
+              </div>
+
+              <div>
+                <div style="display:inline-block;vertical-align: top;"> Name&nbsp;:&nbsp; </div>
+                <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                  <div style="display:inline-block;"> {{ EchsStickerDetails.Rank ? EchsStickerDetails.Rank.substring(0,3) + "." : "" }} {{EchsStickerDetails.PatientName}} &nbsp;&nbsp;&nbsp; </div>
+                  <div style="display:inline-block;font-style:italic;"> {{ageSex}} </div>
+                </div>
+                <!-- <span style="float:right;padding-right: 5px;"> Contact : {{EchsStickerDetails.PhoneNumber}} </span> -->
+              </div>
+              
+              <div>
+                <div *ngIf="EchsStickerDetails.CountryName === CountryNepal" style="width: 80%">
+                  Address: <span *ngIf = "showMunicipality && EchsStickerDetails.MunicipalityName">{{EchsStickerDetails.MunicipalityName}}<span *ngIf="EchsStickerDetails.WardNumber">-{{EchsStickerDetails.WardNumber}}</span>, </span>{{EchsStickerDetails.CountrySubDivisionName}}
+                </div>
+                <div style="width: 80%" *ngIf="EchsStickerDetails.CountryName !== CountryNepal">
+                  Address: <span *ngIf="EchsStickerDetails.Address">{{EchsStickerDetails.Address}}, </span>{{EchsStickerDetails.CountrySubDivisionName}}, {{EchsStickerDetails.CountryName}}
+                </div>
+
+                <!-- <div *ngIf="showDateOfBirth">
+                  <span>DOB: {{EchsStickerDetails.DateOfBrith | nepaliDate}}</span>
+                </div> -->
+              </div>
+              
+              <div>
+                <div style="text-transform:capitalize "> Department : <b>{{EchsStickerDetails.DepartmentName}}</b>
+                  <span style="float:right;padding-right: 5px;" *ngIf="EchsStickerDetails.RoomNo">Room No : {{EchsStickerDetails.RoomNo}}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <b style="text-transform:uppercase">
+                  Doc: {{EchsStickerDetails.DoctorName}}
+                </b>
+              </div>
+
+              <div>
+                <span style="display:inline-block;" *ngIf="EchsStickerDetails.Scheme"> Scheme : {{EchsStickerDetails.Scheme}} </span>
+
+                <span style="float:right;padding-right: 5px;"  *ngIf="EchsStickerDetails.Rank">
+                  Rank : {{EchsStickerDetails.Rank}}
+                </span>
+              </div>
+
+              <div>
+                <span style="display:inline-block;"> ECHS No. : {{EchsStickerDetails.PolicyNo}} </span>
+
+                <span style="float:right;padding-right: 5px;"  *ngIf="EchsStickerDetails.Rank">
+                  Claim Code : {{SelectedVisitDetails.ClaimCode}}
+                </span>
+              </div>
+
+              <div style="clear: both;"></div>
+              <hr style="border:0.5px solid black;margin:0px;" />
+            </div>
+
+            <div style="display: flex;width:100%;margin-top:2px; justify-content: space-between">
+              <div>
+                <span style="text-transform:uppercase;font-weight:bold;"> {{EchsStickerDetails.AppointmentType}} </span>
+              </div>
+              <div>
+                <span> User&nbsp;: {{EchsStickerDetails.User}} </span>
+              </div>
+              <div *ngIf="EnableShowTicketPrice && EchsStickerDetails.OpdTicketCharge>0" style="font-weight: bold;">
+                <span> Ticket Charge: {{coreService.currencyUnit}} {{EchsStickerDetails.OpdTicketCharge}}</span>
+              </div>
+            </div>
+
+            <!-- <div *ngIf="showQrCode" class="opd-qrcode" [ngClass]="'opdqrcode-' + hospitalCode">
+              <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+            </div> -->
+
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+        <button class="btn green btn-success" value="" (click)="print()" id="btnPrintOpdSticker" [disabled]="coreService.loading">
+          <span>Print</span>&nbsp;&nbsp;
+          &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+        </button>
+      </div>
+
+      <!-- <select-printer [group-name]="'reg-sticker'" [storage-key]="'opd-sticker'"
+        (on-printer-change)="OnPrinterChanged($event)">
+      </select-printer> -->
+
+    </div>
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

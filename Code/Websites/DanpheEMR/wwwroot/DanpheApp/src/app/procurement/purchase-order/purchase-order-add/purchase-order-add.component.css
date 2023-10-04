@@ -1,0 +1,22 @@
+.po-form--head {
+}
+.po-form--control {
+  justify-content: space-between;
+}
+.po-form--head .row {
+  margin: 0 -5px !important;
+}
+.po-form--head [class*="col-"] {
+  padding: 0 5px !important;
+}
+@media only screen and (max-width: 1440px) {
+  .hm-form input {
+    width: 100% !important;
+  }
+  .po-form--control {
+    display: block !important;
+  }
+  .itemformclass {
+    width: 230px !important;
+  }
+}

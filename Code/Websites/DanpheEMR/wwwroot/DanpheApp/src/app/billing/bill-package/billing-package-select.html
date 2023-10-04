@@ -1,0 +1,76 @@
+<style>
+  .item-holder-tbl {
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 25px;
+    margin-top: 10px;
+  }
+
+  /*
+.modelbox-div {
+	padding-bottom: 25px;
+}
+*/
+</style>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSelectPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <!--Model Box Body Start-->
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span><i class="fa fa-folder-open"></i>{{headerName}} Select Package</span> </h3>
+            <a class="btn btn-danger btn-round" (click)="Close()" title="Cancel" style="padding: 0 !important;
+    display: block;">X</a>
+          </div>
+          <div class="form-body">
+            <div>
+              <input type="text" class="form-control" size="35" placeholder="Search By {{headerName}} Package Name"
+                [(ngModel)]="filterBy" (input)="filterData()" />
+            </div>
+            <div *ngIf="billingPackageList.length">
+              <div class="table-responsive item-holder-tbl table-wrapper">
+                <table class="table doc-tbl table-striped inv_table padLess_table" style="background-color:initial;">
+                  <thead>
+                    <tr>
+                      <th sortable-header col="department"> <b>Package Name</b> </th>
+                      <th sortable-header col="itemnames"><b>Package Code</b></th>
+                      <th sortable-header col="itemnames"><b>Description</b></th>
+                      <th sortable-header col="quantity"><b>Price</b></th>
+                      <th sortable-header col="quantity"><b>Dis %</b></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let package of billingPackageList;let i = index">
+                      <td>
+                        <div class="input-group">
+                          <label class="mt-checkbox mt-checkbox-outline" style="font-size: 12px;">
+                            <input name="packages" type="radio" value="{{package.BillingPackageId}}"
+                              [(ngModel)]="package.IsSelected" (ngModelChange)="AssignPackage(package)">
+                            <span></span> {{package.BillingPackageName}} </label>
+                        </div>
+                      </td>
+                      <td> {{package.PackageCode}} </td>
+                      <td> {{package.Description}} </td>
+                      <td> {{package.TotalPrice}} </td>
+                      <td> {{package.DiscountPercent}} </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div *ngIf="billingPackageList.length==0" style="padding:15px; text-align: center;font-weight:bold">
+              <h3>No Data Found!!!</h3>
+            </div>
+          </div>
+          <!--Model Box Body End-->
+          <div class="panel-footer clearfix">
+            <button class="btn primary-btn pull-right" (click)="Submit()"> Submit </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

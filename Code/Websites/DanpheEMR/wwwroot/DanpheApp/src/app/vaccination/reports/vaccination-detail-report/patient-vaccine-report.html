@@ -1,0 +1,32 @@
+<div class="wrapper">
+
+    <div class="row">
+        <div class="col-lg-6 col-sm-6">
+            <div class="caption lb-caption">
+                <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+                <span class="caption-subject">Vaccination Details</span>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-2">
+            <select class="form-control" [(ngModel)]="gender" (change)="GenderChanged()">
+                <option value="All" selected>--All--</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Other</option>
+            </select>
+        </div>
+        <div class="col-lg-4 col-sm-4">
+            <vaccine-select (selected-vaccine-list)="VaccineOnSlected($event)"></vaccine-select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="vaccinationPatientReportGridColumns" [grid-data]="reportData"
+            [grid-exportOptions]="gridExportOptions"
+                [grid-showExport]="true" (onDateChange)="onDateChange($event)"
+                [date-settings-name]="'common-range-with-today'" [show-CustomDate]="true">
+            </danphe-grid>
+        </div>
+    </div>
+</div>

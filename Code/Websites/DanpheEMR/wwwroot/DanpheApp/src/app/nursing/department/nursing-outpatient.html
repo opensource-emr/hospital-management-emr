@@ -1,0 +1,331 @@
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #ffffff;
+    font-weight: normal;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 15px auto;
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li.active>a,
+  .danphe-tab-wrapper .nav-tabs>li.active>a:focus,
+  .danphe-tab-wrapper .nav-tabs>li.active>a:hover {
+    background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+    border: 1px solid #5c79bf;
+    border-bottom: none;
+    color: #fff;
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li>a {
+    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+    border: 1px solid #8c8c8e;
+    color: #696969;
+    font-style: normal;
+    font-size: 14px;
+    padding: 7px 25px;
+    margin: 0 -1px 0px 0;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    /*    border-left: none;*/
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li:first-child a {}
+
+  .danphe-tab-wrapper .nav-tabs {
+    border-bottom: 1px solid #49a0ca;
+    position: relative
+  }
+
+  .danphe-tab-wrapper .nav-tabs li {}
+
+  .danphe-tab-wrapper .nav-tabs:before {
+    content: "";
+    width: 100%;
+    height: 5px;
+    display: block;
+    position: absolute;
+    top: auto;
+    bottom: -5px;
+    left: 0;
+    background: #48c5ee;
+    border-bottom: 1px solid #49a0ca;
+    border-left: 1px solid #446ea0;
+  }
+
+  .danphe-tab-wrapper table {
+    /*		margin: 15px 0;*/
+    background-color: #ffffff;
+    border-radius: 4px !important;
+    overflow: hidden;
+  }
+
+  .danphe-tab-wrapper table thead tr th {
+    position: sticky;
+    top: 0;
+    left: 0;
+    background: #f1f1f1;
+    color: #333333;
+    border: none !important;
+    font-size: 12px;
+  }
+
+  .danphe-tab-wrapper .tab-pane {
+    padding: 15px 0;
+  }
+
+  #checkbox_outPatient_selectAllPatients {
+    transform: scale(1.5);
+    width: 10px;
+    height: 10px;
+    border: 1px solid #ccc !important;
+  }
+</style>
+<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li><a [ngClass]="{'a-tab-active':currentTab=='today'}" (click)="ToggleCurrentTab('today');">Today</a></li>
+    <li><a [ngClass]="{'a-tab-active':currentTab=='pastDays'}" (click)="ToggleCurrentTab('pastDays'); showAll();">Past
+        Days</a></li>
+  </ul>
+</div>
+<div class="form-body">
+  <!--<div class="row pt10">
+    <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <div class="row">
+          <label class="control-label col-md-3">From Date<sup> *</sup><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <div class="row">
+          <label class="control-label col-md-3">To Date <sup> *</sup><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-xs-12">
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="LoadVisitList('')"> <i class="fa fa-search"></i> Show Patient </button>
+      </div>
+    </div>
+  </div>-->
+
+
+
+  <div class="danphe-tab-wrapper">
+    <!--<ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#today" aria-controls="today" role="tab" data-toggle="tab">Today</a></li>
+      <li role="presentation" class=""><a href="#pastDays" aria-controls="pastDays" role="tab" data-toggle="tab">Past Days</a></li>
+    </ul>-->
+
+    <div>
+      <div *ngIf="(currentTab=='today')">
+        <div class="tab-content">
+          <!-- <div role="tabpanel" class="tab-pane" id="taken">
+            <danphe-grid [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdListOne"
+                         (grid-actions)="NurOPDListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+            </danphe-grid>
+          </div> -->
+
+          <div role="tabpanel" class="tab-pane active" id="pending" style="padding: 0;">
+            <div class="row" style="margin-bottom: 10px;">
+              <div class="col-md-6">
+                <input class="custom-table-search form-control" style="width:300px; margin: 0;"
+                       [(ngModel)]="searchString"
+                       (ngModelChange)="filterRows()"
+                       placeholder="Hospital No/Patient Name/DepartmentName">
+              </div>
+              <div class="col-md-6">
+                <div style="display:flex; justify-content: flex-end; gap: 0 15px; align-items: center;">
+                  <label style="width: 70px; display: inline-block;"
+                         for="department">Department:</label>
+                  <input class="form-control" danphe-auto-complete
+                         [(ngModel)]="selectedDepartment"
+                         (ngModelChange)="selectedDepartment"
+                         [list-formatter]="myDepartmentListFormatter"
+                         [source]="departmentList"
+                         [ngModelOptions]="{standalone: true}"
+                         placeholder="Department Name"
+                         display-property-name="DepartmentName"
+                         value-property-name="'DepartmentId'"
+                         onClick="this.select()"
+                         match-formatted="true"
+                         max-num-list="10"
+                         style="width: 210px; position: relative;" />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+
+              <div class="col-md-6" *ngIf="opdListZero && opdListZero.length >0">
+                <div class="button-row" style="display: flex; flex-wrap: nowrap; gap: 5px;">
+                  <button class="btn green btn-success form-control small-width" (click)="NursingCheckin()">Check In</button>
+                  <button class="btn green btn-success form-control small-width" (click)="ChangeDoctor()">Refer</button>
+                  <button class="btn green btn-success form-control small-width" (click)="ExchangeDoctorDepartment()">Exchange Doc/Dept</button>
+                  <button class="btn green btn-success form-control small-width" (click)="NursingCheckOut()">Conclude</button>
+                  <!-- <button class="btn green btn-success form-control small-width">Vitals</button>
+                    <button class="btn green btn-success form-control dynamic-width">Chief Complaint/Diagnosis</button>
+                    <button class="btn green btn-success form-control dynamic-width">Patient Overview</button>
+                    <button class="btn green btn-success form-control small-width">Conclude</button> -->
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <table class="table table-responsive dispatch-report-table">
+                  <thead class="table-header-bg">
+                    <tr>
+                      <th>
+                        <!-- <input type="checkbox" id="checkbox_outPatient_selectAllPatients" (change)="SelectFilteredList(row)"
+                               [(ngModel)]="row.IsSelected"> -->
+                      </th>
+                      <th scope="col" class="wd-130">SN</th>
+                      <th scope="col" class="wd-130">Time</th>
+                      <th scope="col" class="wd-130">Hospital No.</th>
+                      <th scope="col" class="wd-150">PatientName</th>
+                      <th scope="col" class="wd-50">Age/Sex</th>
+                      <th scope="col" class="wd-150">Phone</th>
+                      <th scope="col" class="wd-80">Department</th>
+                      <th scope="col" class="wd-80">Doctor</th>
+                      <th scope="col" class="wd-80">Scheme</th>
+                      <th scope="col" class="wd-80">Visit Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor=" let row of opdFilteredList; let i=index">
+                      <tr>
+                        <td>
+                          <input type="checkbox" id="checkbox_outPatient_selectAllPatients" (change)="SelectFilteredList(row)"
+                                 [(ngModel)]="row.IsSelected">
+                        </td>
+                        <td class="wd-80">{{i+1}}</td>
+                        <td class="wd-130">{{row.VisitTime | DanpheDateTime:'format-time':'hh:mm A'}}</td>
+                        <td class="wd-270">{{row.PatientCode}}</td>
+                        <td class="wd-80">{{row.ShortName}}</td>
+                        <td class="wd-80">{{row.Age}}/{{row.Gender[0]}}</td>
+                        <td class="wd-80">{{row.PhoneNumber}}</td>
+                        <td class="wd-80">{{row.DepartmentName}}</td>
+                        <td class="wd-80">{{row.PerformerName}}</td>
+                        <td class="wd-80">{{row.SchemeName}}</td>
+                        <td class="wd-80">{{row.VisitStatus}}</td>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div *ngIf="currentTab=='pastDays'">
+        <div class="row">
+          <div class="col-md-5">
+            <div class="active col-md-3" (click)="showAll()">
+              <label><input type="radio" name="optradio" checked style="margin-right:5px;" />ALL</label>
+            </div>
+            <div class=" col-md-4" (click)="showTriaged()">
+              <label><input type="radio" name="optradio" style="margin-right:5px;" />Triage Done</label>
+            </div>
+            <div class=" col-md-5" (click)="showNotTriaged()">
+              <label><input type="radio" name="optradio" style="margin-right:5px;" />Triage Pending</label>
+            </div>
+          </div>
+          <div class="col-md-7">
+
+          </div>
+
+        </div>
+
+
+        <div>
+          <danphe-grid *ngIf="showAllData" [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdListPastDays"
+                       (grid-actions)="NurOPDListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                       [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'"
+                       [show-CustomDate]="true"> </danphe-grid>
+          <danphe-grid *ngIf="showTriagedData" [grid-colDefaults]="nurOPDGridColumnSettings"
+                       [grid-data]="opdListOnePastDays" (grid-actions)="NurOPDListGridActions($event)"
+                       [NepaliDateInGridParams]="NepaliDateInGridSettings" [rangeType]="dateRange"
+                       (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true">
+          </danphe-grid>
+          <danphe-grid *ngIf="showNotTriagedData" [grid-colDefaults]="nurOPDGridColumnSettings"
+                       [grid-data]="opdListZeroPastDays" (grid-actions)="NurOPDListGridActions($event)"
+                       [NepaliDateInGridParams]="NepaliDateInGridSettings" [rangeType]="dateRange"
+                       (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true">
+          </danphe-grid>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div *ngIf="showDocumentsDetails">
+      <patient-upload-files [isShowUploadMode]="isShowUploadMode" [isShowListMode]="isShowListMode"
+                            [patientId]="patientId" (upload-callback)="CloseUplaodPopUp()"> </patient-upload-files>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showOpdTriage">
+  <div class="portlet-body form">
+    <div class="col-md-12">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h3 class="margin-0-vr text-warning text-center">
+            <strong *ngIf="globalPatient && globalPatient.ShortName">
+              OPD Triage of
+              {{globalPatient.ShortName}}
+            </strong>
+          </h3>
+        </div>
+        <div class="modelbox-body">
+          <div class="row">
+            <opd-triage [isEditMode]="triageEdit" [currentPatInfo]="patientInfo"
+                        (opdTriagedCallback)=OPDTriagedCallback($event)>
+            </opd-triage>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="ClosePopUp()">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<nursing-opd-checkin *ngIf="showNursingCheckin"
+                     [isCheckinForm]="isCheckinForm"
+                     [selected-visit]="selectedVisit"
+                     (nursing-opd-checkIn-callback)="NursingOpdActionsInCallback($event)">
+</nursing-opd-checkin>
+
+<nursing-opd-free-referral *ngIf="showChangeDoctor"
+                           [selected-visit]="selectedVisit"
+                           [is-ChangeDoctor-Form]="isChangeDoctorForm"
+                           (nursing-opd-refer-callback)="NursingOpdActionsInCallback($event)">
+</nursing-opd-free-referral>
+
+<exchange-doctor-department *ngIf="showExchangeDoctorPopUp"
+                            [selected-visit]="selectedVisit"
+                            [is-exchange-doctor-form]="isExchangeDoctorForm"
+                            (nursing-opd-exchange-callback)="NursingOpdActionsInCallback($event)">
+</exchange-doctor-department>
+
+<nursing-opd-chekout *ngIf="showNursingCheckout"
+                     [selected-visit]="selectedVisit"
+                     [is-NursingCheckout-Form]="isNursingCheckoutForm"
+                     (nursing-opd-refer-callback)="NursingOpdCheckoutActionsInCallback($event)">
+</nursing-opd-chekout>

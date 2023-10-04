@@ -1,0 +1,552 @@
+<style>
+  @page {
+    size: A4 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-size: 70%;
+    scale: 70%;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 12px;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 14px !important;
+    font-weight: bold;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 12px !important;
+    font-weight: normal !important;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+  }
+
+  table td {
+    font-weight: normal !important;
+  }
+</style>
+<div class="A4 portrait">
+  <div class="sheet" id="id_detailed_discharge_print">
+    <div class="box-body invoice header" style="padding: 20px; color: #333333;">
+      <!-- <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="../../../themes/theme-default/images/hospital-logo.PNG" alt="" width="100px">
+          </td>
+          <td colspan="4" width="50%">
+            <h3 class="c_name" style="text-align: center; font-weight: bold;">{{headerDetail.CustomerName}}</h3>
+            <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Address}}</p>
+          </td>
+          <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+          </td>
+        </tr>
+      </table> -->
+      <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'image'">
+        <tr>
+          <td>
+            <img src="\themes\theme-default\images\billing-invoice-header-image.png" alt="" style="width: 100%;">
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+             *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'custom'">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
+          </td>
+          <td colspan="4" width="50%">
+            <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.Address}}</p>
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="8" style="text-align: center;">
+            <p style="margin: 0 0 5px 0;" class="c_name">
+              <strong *ngIf="!IsDischarged">Estimation Discharge Bill Breakup</strong>
+              <strong *ngIf="IsDischarged">Discharge Bill Breakup</strong>
+            </p>
+          </td>
+
+        </tr>
+        <tr style="border: 1px solid #ccc;">
+          <td colspan="10" style="padding: 5px 5px;">
+            <table style="width: 100%; margin-bottom: 0;">
+              <tr>
+                <td colspan="5" style="text-align: left;">
+                  <p class="c_paragraphs" style="margin: 3px 0;">
+                    Hospital No:<strong>{{PatientDetail.HospitalNo}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;">
+                    Patient Name:<strong>{{PatientDetail.PatientName}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;">
+                    Age/Gender:<strong>{{CalculateCalculateAgeAndAddGender(PatientDetail.DateOfBirth)}}</strong>
+                  </p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="PatientDetail.Address">
+                    Address: <strong>{{PatientDetail.Address}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="PatientDetail.Address">
+                    CONTACT: <strong>{{PatientDetail.PhoneNumber}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;">
+                    Room Category: <strong>{{AdmissionInfo.RoomType}}</strong>
+                  </p>
+                  <p *ngIf="PatientDetail.PolicyNo" class="c_paragraphs" style="margin: 3px 0;">
+                    PolicyNo: <strong>{{ PatientDetail.PolicyNo }}</strong>
+                  </p>
+                </td>
+                <td colspan="5" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin: 3px 0;">IP No:<strong> {{PatientDetail.InpatientNo}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged">Invoice No:<strong> {{InvoiceInfo.InvoiceNumFormatted}}</strong>
+                  </p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged">
+                    Invoice Date:<strong> {{InvoiceInfo.TransactionDate | DanpheDateTime: 'format':'YYYY-MM-DD'}}</strong>
+                  </p>
+
+                  <p class="c_paragraphs" style="margin: 3px 0;">
+                    Admission Date:<strong> {{AdmissionInfo.AdmissionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="!IsDischarged">Discharge Date:<strong> C </strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged">
+                    Discharge Date:<strong> {{AdmissionInfo.DischargeDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                    </strong></p>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="PatientDetail.SchemeName">
+                    Type:<strong> {{ PatientDetail.SchemeName }} </strong>
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+
+        </tr>
+      </table>
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0" *ngIf="BedCharges && BedCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Bed Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Type</th>
+          <th style="padding: 5px 0px; width:  20%">Room Type</th>
+          <th style="padding: 5px 0px; width: 15%">No. of days</th>
+          <th style="padding: 5px 0px; width: 15%">Bed Charge</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of BedCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">BED CHARGES</td>
+          <td style="padding: 5px 0px; width: 20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2" }}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="4" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ bedChargesTotal.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ bedChargesTotal.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ bedChargesTotal.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0" *ngIf="DepositDetails && DepositDetails.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left;">Deposit Details</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px;">Transaction Type</th>
+          <th style="padding: 5px 0px;">Receipt No</th>
+          <th style="padding: 5px 0px;">Amount</th>
+        </tr>
+
+        <tr *ngFor="let dep of DepositDetails">
+          <td style="padding: 5px 0px;">{{dep.TransactionType}}</td>
+          <td style="padding: 5px 0px;">{{dep.ReceiptNo}}</td>
+          <td style="padding: 5px 0px;" *ngIf="dep.TransactionType !== 'Deposit'">-{{dep.OutAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px;" *ngIf="dep.TransactionType === 'Deposit'">{{dep.InAmount | number : "1.2-2"}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="2" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Total:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ depositTotals.TotalDeposit | number : "1.2-2" }}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+             *ngIf="ConsumableCharges && ConsumableCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Consumable Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width:10%;">ItemCode</th>
+          <th style="padding: 5px 0px; width: 15%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of ConsumableCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate | DanpheDateTime:'format':'YYYY-MM-DD' }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width:  20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2" }}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ consumableChargesTotals.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ consumableChargesTotals.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ consumableChargesTotals.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+             *ngIf="ProcedureCharges && ProcedureCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Procedure Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width:10%;">ItemCode</th>
+          <th style="padding: 5px 0px; width: 15%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of ProcedureCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate | DanpheDateTime:'format':'YYYY-MM-DD' }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width:  20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ procedureChargesTotal.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ procedureChargesTotal.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ procedureChargesTotal.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+             *ngIf="OperationCharges && OperationCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Operation Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width:10%;">ItemCode</th>
+          <th style="padding: 5px 0px; width: 15%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of OperationCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate | DanpheDateTime:'format':'YYYY-MM-DD' }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width:  20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2" }}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ operationChargesTotal.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ operationChargesTotal.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ operationChargesTotal.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0" *ngIf="OtherCharges && OtherCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Other Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width:10%;">ItemCode</th>
+          <th style="padding: 5px 0px; width: 15%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of OtherCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate | DanpheDateTime:'format':'YYYY-MM-DD' }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width:  20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ otherChargesTotal.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ otherChargesTotal.DiscountAmount | number : "1.2-2" }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ otherChargesTotal.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+      <div *ngIf="InvestigationChargesServiceDepartmentWise && InvestigationChargesServiceDepartmentWise.length > 0">
+        <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+               *ngFor="let invgc of InvestigationChargesServiceDepartmentWise">
+          <tr>
+            <td colspan="10" style="text-align: left; padding: 5px 0;">
+              <h3 class="c_name" style="text-align: left; ">Investigation Charges ({{invgc.ServiceDepartmentName}})</h3>
+            </td>
+          </tr>
+          <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+            <th style="padding: 5px 0px; width: 20%">Date</th>
+            <th style="padding: 5px 0px; width: 10%">ItemCode</th>
+            <th style="padding: 5px 0px; width: 15%">ItemName</th>
+            <th style="padding: 5px 0px; width: 15%">Quantity</th>
+            <th style="padding: 5px 0px; width: 10%">Rate</th>
+            <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+            <th style="padding: 5px 0px; width: 10%">Discount</th>
+            <th style="padding: 5px 0px; width: 10%">Total</th>
+          </tr>
+          <tr *ngFor="let itm of invgc.InvestigationCharges">
+            <td style="padding: 5px 0px; width: 10%">{{ itm.BillDate }}</td>
+            <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+            <td style="padding: 5px 0px; width: 20%">{{itm.ItemName}}</td>
+            <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+            <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+            <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+            <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+            <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2"}}</td>
+          </tr>
+          <tr style="border-top: 1px solid #ccc;">
+            <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+            </td>
+            <td style="padding: 5px 0px; width: 15%">{{ invgc.SubTotal | number : "1.2-2"}}</td>
+            <td style="padding: 5px 0px; width: 10%">{{ invgc.DiscountAmount | number : "1.2-2"}}</td>
+            <td style="padding: 5px 0px; width: 10%">{{ invgc.TotalAmount | number : "1.2-2"}}</td>
+          </tr>
+        </table>
+      </div>
+
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+             *ngIf="ServiceCharges && ServiceCharges.length > 0">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Service Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width:  10%">ItemCode</th>
+          <th style="padding: 5px 0px; width: 15%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of ServiceCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width:  20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.Price}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2" }}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{ serviceChargesTotals.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ serviceChargesTotals.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ serviceChargesTotals.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+      <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0"
+             *ngIf="MedicineCharges && MedicineCharges.length">
+        <tr>
+          <td colspan="10" style="text-align: left; padding: 5px 0;">
+            <h3 class="c_name" style="text-align: left; ">Pharmacy Charges</h3>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid;border-bottom: 1px solid #ccc;">
+          <th style="padding: 5px 0px; width: 20%">Date</th>
+          <th style="padding: 5px 0px; width: 10%">ItemCode</th>
+          <th style="padding: 5px 0px; width: 20%">ItemName</th>
+          <th style="padding: 5px 0px; width: 15%">Batch/Expiry</th>
+          <th style="padding: 5px 0px; width: 5%">Quantity</th>
+          <th style="padding: 5px 0px; width: 10%">Rate</th>
+          <th style="padding: 5px 0px; width: 10%">Sub Total</th>
+          <th style="padding: 5px 0px; width: 10%">Discount</th>
+          <th style="padding: 5px 0px; width: 10%">Total</th>
+        </tr>
+        <tr *ngFor="let itm of MedicineCharges; let i = index;">
+          <td style="padding: 5px 0px; width: 20%">{{ itm.BillDate }}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.ItemCode }}</td>
+          <td style="padding: 5px 0px; width: 20%">{{itm.ItemName}}</td>
+          <td style="padding: 5px 0px; width: 15%">{{itm.BatchAndExpiry}}</td>
+          <td style="padding: 5px 0px; width: 5%">{{itm.Quantity}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SalePrice}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{itm.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{ itm.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="6" style="padding: 5px 0px; width:  55%; text-align: right;"><strong>Subtotal:</strong>
+          </td>
+          <td style="padding: 5px 0px; width: 15%">{{medicineChargesTotals.SubTotal | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{medicineChargesTotals.DiscountAmount | number : "1.2-2"}}</td>
+          <td style="padding: 5px 0px; width: 10%">{{medicineChargesTotals.TotalAmount | number : "1.2-2"}}</td>
+        </tr>
+      </table>
+
+      <!--Summary Start-->
+      <table border="0" style="width: 100%; margin: 0 auto; border-top: 1px solid #ccc;" cellspacing="0" cellpadding="0"
+             class="discharge-bill-amount-summary">
+        <tr>
+          <td colspan="6" style="padding: 5px 0;">
+            <p style="font-weight: bold; margin-bottom: 0px;"><span>In Words: </span>
+              <span>{{grandTotals.TotalAmount | NumberInWords | uppercase }}
+                <span *ngIf="grandTotals.TotalAmount !=0">ONLY</span></span>
+            </p>
+            <p style="font-weight: bold; margin-bottom: 0px;" *ngIf="OtherCurrencyDetail && OtherCurrencyDetail.CurrencyCode"><span>In Words: </span>
+              <span>{{OtherCurrencyDetail.ConvertedAmount | NumberInWords | uppercase }}
+                <span *ngIf="OtherCurrencyDetail.ConvertedAmount !=0">ONLY</span></span>
+            </p>
+          </td>
+          <td colspan="3" style="padding: 5px 0;">
+            <p style="font-weight: bold; margin-bottom: 0px; text-align:right;"><span class="">SubTotal:</span>
+              {{grandTotals.SubTotal | number: "1.2-2"}}</p>
+            <p style="font-weight: bold; margin-bottom: 0px; text-align:right;"><span class="">Discount:</span>
+              {{grandTotals.DiscountAmount | number: "1.2-2"}}</p>
+            <p style="font-weight: bold; margin-bottom: 0px; text-align:right;"><span class="">Grand
+                Total:</span>
+              {{grandTotals.TotalAmount | number: "1.2-2"}}</p>
+            <p style="font-weight: bold; margin-bottom: 0px; text-align:right;" *ngIf="OtherCurrencyDetail && OtherCurrencyDetail.CurrencyCode">
+              <span>Grand Total({{OtherCurrencyDetail.CurrencyCode}}):</span>
+              {{OtherCurrencyDetail.ConvertedAmount | number: "1.2-2"}}
+            </p>
+            <p *ngIf="depositTotals.TotalDeposit" style="font-weight: bold; margin-bottom: 0px; text-align:right;">
+              <span class="">Deposit:</span>
+              <span>
+                {{ depositTotals.TotalDeposit | number: "1.2-2"}}</span>
+
+            </p>
+
+
+            <p *ngIf="grandTotals.TotalAmount > depositTotals.DepositAdded" style="font-weight: bold; margin-bottom: 0px; text-align:right;">
+              <span class="">To Be Paid:</span>
+              {{grandTotals.TotalAmount - depositTotals.DepositAdded | number:"1.2-2"}}
+            </p>
+
+            <p *ngIf="grandTotals.TotalAmount < depositTotals.DepositAdded" style="font-weight: bold; margin-bottom: 0px; text-align:right;">
+              <span class="">To be Returned:</span>
+              {{depositTotals.DepositAdded - grandTotals.TotalAmount | number:"1.2-2"}}
+            </p>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;" *ngIf="AdmissionInfo.AdmittingDoctor != null && ShowProviderName">
+          <td colspan="4" style="padding: 5px !important; vertical-align: top;">
+            <p class="c_paragraphs" style="margin: 0px"><strong>Consulting Doctor: </strong>{{AdmissionInfo.AdmittingDoctor}}</p>
+          </td>
+        </tr>
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="4" style="padding-top: 5px;">
+            <p style="font-weight: bold; margin-bottom: 0px;">
+              <span class="">
+                User:
+              </span>
+              <span>{{currentUserName}}</span>
+            </p>
+          </td>
+          <td colspan="5" style="padding-top: 5px;">
+            <p style="font-weight: bold; margin-bottom: 0px; text-align: right;">
+              <span style="margin-right: 10px;"><span class="" *ngIf="currDate">Print Date: </span><span>{{currDate}}</span></span>
+              <span><span class="" *ngIf="currTime">Printed On: </span><span>{{currTime}}</span></span>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <!--Summary End-->
+    </div>
+  </div>
+
+  <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+    <button type="button" class="btn green btn-success" (click)="print()"> Print </button>
+  </div>
+
+  <new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+  </new-print-page>
+</div>

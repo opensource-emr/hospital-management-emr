@@ -1,0 +1,434 @@
+<style>
+  .verification-card {
+    background-color: #e7e7e7;
+    padding: 15px;
+    display: inline-block;
+    border-radius: 15px !important;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .verification-check {
+    background: #fff;
+    color: #2185cc;
+    padding: 10px;
+    display: flex;
+    margin-bottom: auto;
+    border-radius: 5px !important;
+    box-shadow: 0px 0px 10px #eee
+  }
+
+  .verification-check .custom-control-label {
+    margin-bottom: 0;
+    margin-left: 7px;
+    margin-top: 1px;
+    font-weight: 500;
+  }
+
+  .verification-form-control {
+    display: inline-block;
+    margin: 10px -15px;
+    width: 100%;
+  }
+
+  .verification-form-control .btn.btn-sm {
+    display: inline-flex;
+    height: 20px;
+    width: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100% !important;
+    font-size: 12px !important;
+    padding: 10px !important;
+    margin: 4px 3px;
+  }
+
+  .verification-form-control .verifier {
+    padding: 7px 15px;
+    background: #4158d3;
+    border-radius: 20px !important;
+    color: #fff;
+    margin-left: 15px;
+    font-weight: 500;
+    margin-bottom: 0px;
+    font-size: 0.7rem;
+  }
+
+  .verification-form-control .form-control {
+    border: none;
+    box-shadow: 0px 4px 10px #eee;
+    font-size: 13px;
+  }
+
+  .verification-form-control .verifier i {
+    margin-right: 5px
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-3">
+      <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition"
+             *ngIf="!showAddRequisitionPage && ItemListForReq.length!=0" />
+    </div>
+    <div class="col-md-12" *ngIf="!showAddRequisitionPage">
+      <danphe-grid [grid-colDefaults]="PHRMWardRequisitionGridColumns" [grid-data]="RequisitionGridDataFiltered"
+                   (grid-actions)="PHRMWardRequestListGridAction($event)"> </danphe-grid>
+    </div>
+  </div>
+
+  <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddRequisitionPage">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="modelbox-div clearfix">
+            <div class="caption lb-caption">
+              <h3>
+                <i class="fa fa-medkit"></i>
+                <span class="caption-subject">Add Requisition</span>
+              </h3>
+              <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+            </div>
+            <div class="panel-default no-border">
+              <div class="panel-body">
+                <div class="col-md-12">
+                  <div>
+                    <danphe-date-picker [(ngModel)]="requisition.RequisitionDate" ngDefaultControl [CalendarTypes]="'np,en'"
+                                        [ngModelOptions]="{standalone:true}">
+                    </danphe-date-picker>
+                  </div>
+                  <table class="table table-responsive table-striped table-hover inv_table table-bordered">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th sortable-header col="itemnames"><b>ItemName</b></th>
+                        <th sortable-header col="uom"><b>Unit</b></th>
+                        <th sortable-header><b>Available Qty in Store</b></th>
+                        <th sortable-header col="quantity"><b>Requesting Quantity</b></th>
+                        <th sortable-header><b>Remark</b></th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of requisition.RequisitionItems; let i = index">
+                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                        <td>
+                          <form [formGroup]="row.RequisitionItemValidator">
+                            <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem"
+                                   [source]="ItemListForReq" [list-formatter]="itemListFormatter" placeholder="Item Name"
+                                   display-property-name="ItemName" value-property-name=null onclick="this.select();"
+                                   (ngModelChange)="OnItemSelected(row.SelectedItem,i)" min-chars="1" max-num-list="10" [grid-sort]="'ItemName'"
+                                   match-formatted="true" formControlName="ItemId" (keyup.enter)="OnPressedEnterKeyInItemField(i)" />
+                            <div style="color: red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required
+                            </div>
+                          </form>
+                        </td>
+                        <td style="vertical-align: middle"><b>{{row.SelectedItem?.UOMName}}</b></td>
+                        <td style="vertical-align: middle"><b>{{row.SelectedItem?.AvailableQuantity}}</b></td>
+                        <td>
+                          <form [formGroup]="row.RequisitionItemValidator">
+                            <input [(ngModel)]="row.Quantity" id="req_qty{{i}}" onwheel="this.blur()" min="1" onClick="this.select();"
+                                   onfocus="this.select();" formControlName="Quantity" class="form-control " name="quantity" type="number"
+                                   value="{{1}}" (keyup.enter)="setFocusById('remark' + i)">
+                            <div style="color: red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is
+                              required</div>
+                          </form>
+                        </td>
+                        <td><input [(ngModel)]="row.Remark" id="remark{{i}}" class="form-control " name="quantity" type="text"
+                                 (keyup.enter)="onPressedEnterKeyInRemarkField(i)"></td>
+                        <td><a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success"></i></a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="col-md-6 text-center">
+                    <div>
+                      <div class="verification-card" *ngIf="IsVerificationActivated">
+                        <div>
+                          <div class="custom-control  custom-checkbox verification-check">
+                            <input type="checkbox" class="custom-control-input" id="defaultUnchecked"
+                                   [(ngModel)]="requisition.IsVerificationEnabled"
+                                   (ngModelChange)="ShowVerifiers()">
+                            <label title="Check If Verification Needed" class="custom-control-label" for="defaultUnchecked">Need
+                              Verification</label>
+                          </div>
+                          <div class="verification-form-control">
+                            <div class="left t-wrap col-md-12" *ngFor="let verifier of requisition.VerifierList; let i = index;let c= count;">
+                              <div class="row">
+                                <div class="col-md-5">
+                                  <button title="Delete this Verifier" class="btn btn-sm btn-danger" (click)="DeleteVerifier(i)"
+                                          [disabled]="CheckIfDeleteVerifierAllowed()"><i class="glyphicon glyphicon-minus"></i>
+                                  </button>
+                                  <label class="verifier" for="inputIconEx{{i}}">
+                                    <i class="fa fa-user"></i>{{GetSignatotyName(i)}}
+                                  </label>
+                                </div>
+                                <div class="col-md-6">
+                                  <input danphe-auto-complete class="form-control " autocomplete="off" [source]="VerifierList"
+                                         [(ngModel)]="verifier" [list-formatter]="VerifierListFormatter" placeholder="Select Verifier"
+                                         display-property-name="Name" max-num-list="10" (valueChanged)="AssignVerifier($event,i)" />
+                                </div>
+                                <div class="col-md-1">
+                                  <button title="Add Verifier" class="btn btn-sm btn-primary" (click)="AddVerifier()"
+                                          [disabled]="CheckIfAddVerifierAllowed()"><i class="glyphicon glyphicon-plus"></i></button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-actions text-right">
+                    <input type="button" class="btn btn-success" [disabled]="loading" value="Request" (click)="AddRequisition()" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showRequisitionDetails">
+    <div class="portlet-body form" style="background-color:white">
+      <!--Model Box Body Start-->
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+          </div>
+          <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12 noPrint">
+              <div class="caption" style="color:blue; margin-top:10px;">
+              </div>
+              <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <div id="printpage" class="row printStyle print-border">
+              <div style="text-align:center;">
+                <div class="row" style="margin-bottom: 10px;">
+                  <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+                  </div>
+                  <div style="width: 64%;float: left;padding-bottom:  0px;">
+                    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                      <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                      <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
+                    </div>
+                  </div>
+                  <div style="float: left;">
+                    <div class="qr-code" style="margin-left:20px; top:35px;">
+                      <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                    </div>
+                  </div>
+                  <div style="clear:left"></div>
+                </div>
+                <div class="clear"></div>
+                <div class="left" style="text-align:left;">
+                  <p>Requisition No:<b> {{requisitionToView.RequisitionNo}}</b></p>
+                  <p>Requisiting Store:<b> {{requisitionToView.RequestedStoreName}}</b></p>
+                </div>
+                <div class="right" style="text-align:right;">
+                  <p><strong>Requisition Date:</strong>{{requisitionToView.RequisitionDate | date:"yyy-MM-dd"}}&nbsp;
+
+                  </p>
+                </div>
+                <div class="clear"></div>
+                <p class="text-center btm-pad border-up-down"><b> REQUISITION DETAILS PRINT</b></p>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+                <div>
+                  <table class="table table-striped table-hover req_table" style="background-color:initial;margin-top:1rem;width: 100%;">
+                    <thead>
+                      <tr style="font-weight: bold;text-align:center">
+                        <td></td>
+                        <td>Medicine Name</td>
+                        <td>Quantity</td>
+                        <td>Dispatched Qty.</td>
+                        <td>Pending Qty.</td>
+                        <td>Status</td>
+                        <td>Remarks</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="text-align:center" *ngFor="let row of requisitionToView.RequisitionItems">
+                        <td>
+                          <input *ngIf="row.RequestedItemStatus=='active' || row.RequestedItemStatus=='pending'" class="noPrint"
+                                 title="Cancel this item." type="checkbox" [(ngModel)]="row.IsSelected" style="zoom:1.2"
+                                 (change)="ShowCancelButtonOnCkboxChange()" />
+                        </td>
+                        <td>{{row.ItemName}}(<i style="color: blue;">{{row.GenericName}}</i>)</td>
+                        <td>{{row.RequestedQuantity}}</td>
+                        <td>{{row.RequestedQuantity-row.PendingQuantity}}</td>
+                        <td>{{row.PendingQuantity}}</td>
+                        <td><b>{{row.RequestedItemStatus}}</b>
+                          <span *ngIf="row.RequestedItemStatus == 'cancelled'" id="CancellationToolTip" class="tooltip noPrint">
+                            <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                            </span>
+                            <p class="tooltiptext ttptextdown noPrint">
+                              Cancelled&nbsp;By:&nbsp;{{row.CancelledBy}}<br />
+                              Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}<br />
+                              <em>Remarks:&nbsp;{{row.CancelRemarks}}</em>
+                            </p>
+                          </span>
+                        </td>
+                        <td><b>{{row.Remarks}}</b></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <hr />
+                <div class="col-md-12 noPrint" style="margin:10px 0" *ngIf="showCancelButton == true">
+                  <label for="cancelRemarks" class="col-md-2">Remarks <sup class="color-red">*</sup> <span class="right">:</span></label>
+                  <textarea class="col-md-10" [(ngModel)]="cancelRemarks" name="cancelRemarks" rows="3"></textarea>
+                </div>
+                <div class="col-md-12">
+                  <div style="text-align: left" class="col-md-4">Requested By:&nbsp;<b>{{requisitionToView.RequestedBy}}</b></div>
+                  <div *ngIf="requisitionToView.ReceivedBy!=null" style="text-align: left" class="col-md-4">Received
+                    By:&nbsp;<b>{{requisitionToView.ReceivedBy}}</b></div>
+                  <div style="text-align: left" class="col-md-4" *ngIf="requisitionToView.DispatchedBy">Dispatched
+                    By:&nbsp;<b>{{requisitionToView.DispatchedBy}}</b></div>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="col-md-12 col-xs-12 ">
+              <button id="printButton" (click)="print()" class="btn btn-default">Print
+                <i class="glyphicon glyphicon-print"></i>
+              </button><span> </span><span> </span>
+              &nbsp;
+
+              <button (click)="CancelSelectedItems()" class="btn btn-danger" *ngIf="showCancelButton">
+                Cancel Item(s)
+                <i class="glyphicon glyphicon-floppy-remove"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDispatchedItemReceivePage">
+    <div class="portlet-body form" style="background-color:white">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+          </div>
+          <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12 noPrint">
+              <div class="caption" style="color:blue; margin-top:10px;">
+              </div>
+              <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <div class="col-md-12">
+              <div id="printpage" class="row printStyle print-border">
+                <div>
+                  <div class="media receiveContainer" style="display: flex;justify-content: space-between;"
+                       *ngIf="PHRMSubStoreRequisitionDispatchToReceive.Requisition">
+                    <p class="media-body small border-bottom border-gray">
+                      <strong>Requisition No:</strong>
+                      {{PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionNo}}
+                    </p>
+                    <p class="media-body small border-bottom border-gray">
+                      <strong>Requisition Date:</strong>
+                      {{PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
+
+                    </p>
+                    <p class="media-body small border-bottom border-gray">
+                      <strong>Requisition Status:</strong>
+                      {{PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionStatus}}
+                    </p>
+                  </div>
+                  <div *ngIf="!!PHRMSubStoreRequisitionDispatchToReceive.Dispatch">
+                    <div class="media text-muted receiveContainer" *ngFor="let dispatch of PHRMSubStoreRequisitionDispatchToReceive.Dispatch">
+                      <div style="display: flex; justify-content: space-between;">
+                        <div class="small">
+                          <strong>Dispatch Id:</strong>
+                          {{dispatch.DispatchId}}
+                        </div>
+                        <div class="small">
+                          <strong>Received By:</strong>
+                          <div *ngIf="!!dispatch.ReceivedBy; else elseBlockOne">{{dispatch.ReceivedBy}}</div>
+                          <ng-template #elseBlockOne>Not Received</ng-template>
+                        </div>
+                        <div class="small">
+                          <strong>Received On:</strong>
+                          <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
+                            {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
+
+                          </div>
+                          <ng-template #elseBlockTwo>Not Received</ng-template>
+                        </div>
+                      </div>
+                      <div>
+                        <div>
+                          <table class="table table-striped table-condensed">
+                            <thead>
+                              <tr>
+                                <th>Medicine Name</th>
+                                <th>Requested Qty</th>
+                                <th>Pending Qty</th>
+                                <th>Batch No</th>
+                                <th>Rack No</th>
+                                <th>Expiry Date</th>
+                                <th>Dispatched Qty</th>
+                                <th>Item Remarks</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let dispatchedItem of dispatch.DispatchItems">
+                                <td>{{dispatchedItem.ItemName}}(<i style="color: blue;">{{dispatchedItem.GenericName}}</i>)</td>
+                                <td>{{dispatchedItem.RequestedQuantity}}</td>
+                                <td>{{dispatchedItem.PendingQuantity}}</td>
+                                <td>{{dispatchedItem.BatchNo}}</td>
+                                <td>{{dispatchedItem.RackNo}}</td>
+                                <td>{{dispatchedItem.ExpiryDate | date : "yyyy-MM-dd"}}</td>
+                                <td><b>{{dispatchedItem.DispatchedQuantity}}</b></td>
+                                <td>{{dispatchedItem.ItemRemarks}}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div class="media-body small border-bottom border-gray">
+                        <div>
+                          <strong class="col-md-2">Dispatched Remarks:</strong>
+                          <span class="media-body" style="text-align: left;">{{dispatch.DispatchedRemarks}}</span>
+                        </div><br />
+                        <div>
+                          <strong class="col-md-2">Receiving Remarks :</strong>
+                          <span *ngIf="!!dispatch.ReceivedBy; else elseBlockThree">{{dispatch.ReceivedRemarks}}</span>
+                          <ng-template #elseBlockThree>
+                            <textarea class="col-md-7 noPrint" id="remarks" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3"
+                                      (keyup.enter)="setFocusById('btn_Add')"></textarea>
+                          </ng-template>
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <button class="btn green btn-success noPrint" id="btn_Add" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour"
+                                [disabled]="loading == true"
+                                (click)="ReceivedDispatchedItem(dispatch.DispatchId,dispatch.ReceivedRemarks)">Receive</button>
+                        <ng-template #elseBlockFour>
+                          <div class="receiveStamp"> Received </div>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page>

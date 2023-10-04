@@ -1,0 +1,17 @@
+<div>
+  <div *ngIf="!showPatientContext">
+    <div class="caption lb-caption">
+      <h3><span><i class="fa fa-user"></i>Admitted Patient List</span></h3>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="ipPatientGridColumns" [grid-data]="allInpatList"
+          (grid-actions)="IpBillingGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        </danphe-grid>
+      </div>
+    </div>
+  </div>
+  <insurance-pat-ip-bill-summary *ngIf="showPatientContext" [patientId]="selPatId" [ipVisitId]="selVisitId"
+    (on-summary-closed)="OnSummaryWindowClosed($event)"></insurance-pat-ip-bill-summary>
+
+</div>

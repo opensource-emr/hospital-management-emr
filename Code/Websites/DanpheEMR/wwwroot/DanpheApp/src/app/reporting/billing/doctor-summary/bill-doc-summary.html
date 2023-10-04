@@ -1,0 +1,89 @@
+﻿<div class="wrapper">
+  <div class="row">
+    <div class="col-md-10" *ngIf="showBillDocSummary">
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelDocSummary('doctor-summary')"> <i class="fa fa-file-excel-o"></i> Excel </button>
+    </div>
+    <div class="col-md-12" *ngIf="showBillDocSummary" style="border: 0.5px solid;padding-top: 10px;">
+      <div class="col-md-12" style="padding:0px"> 
+        <span class="col-md-3 left" style="padding:0px">From Date: <date-lbl [value]="FromDate"></date-lbl><br />
+        To Date: <date-lbl [value]="ToDate"></date-lbl><br /></span> 
+      </div>
+      <!-- <div id = "doctor-summary"> -->
+        <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px"> <b>Doctor Summary Report</b> </span> <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span> 
+        <div id = "doctor-summary">
+        <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+        <thead>
+          <tr>
+            <td style="text-align:center"><b>Sr No.</b></td>
+            <td><b>DoctorName</b></td>
+            <td style="text-align:center"><b>NetAmt(Referral) </b></td>
+            <td style="text-align:center"><b>NetAmt(Prescriber)</b></td>
+            <td style="text-align:center"><b>NetAmt(Performer)</b></td>
+            <!-- <td style="text-align:center"><b>Net Sales</b></td> -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of reportData;let i=index">
+            <td style="text-align:center">{{i+1}}</td>
+            <td><a style="font-weight:bold" (click)="loadDocDepts(row)">{{row.Doctor}}</a></td>
+            <td style="text-align:right">{{row.NetAmount_Referrer}}</td>
+            <td style="text-align:right">{{row.NetAmount_Prescriber}}</td>
+            <td style="text-align:right">{{row.NetAmount_Performer}}</td>
+            <!-- <td style="text-align:right">{{row.NetTotal}}</td> -->
+          </tr>
+          <!-- <tr>
+            <td></td>
+            <td style="text-align: right;">
+              <b>Total:</b>
+            </td>
+            <td style="text-align: right;">{{ summary.tot_ReferrerAmount }}</td>
+            <td style="text-align: right;">{{ summary.tot_PrescriberAmount }}</td>
+            <td style="text-align: right;">{{ summary.tot_PerformerAmount }}</td>
+          </tr> -->
+        </tbody>
+      </table>
+    
+      <!-- <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+        <tr>
+          <th>Gross Total:</th>
+          <td>{{summary.tot_SubTotal}}</td>
+          <th>Discount Amount:</th>
+          <td>{{summary.tot_Discount}}</td>
+          <th>Net Return Amount:</th>
+          <td>{{summary.tot_Refund}}</td>
+          <th>Net Sales:</th>
+          <td>{{summary.tot_NetTotal}}</td>
+        </tr>
+        <tr> 
+
+          <th>Deposit Received:</th>
+          <td>{{summary.tot_DepositReceived}}</td>
+          <th>Deposit Refund:</th>
+          <td>{{summary.tot_DepositRefund}}</td>
+          <th>Cash Collection:</th>
+          <td>{{summary.tot_CashCollection}}</td>
+        </tr>
+        <tr>
+          <th>Provisional Amount:</th>
+          <td>{{summary.tot_Provisional}}</td>
+          <th>Cancel Amount:</th>
+          <td>{{summary.tot_Cancel}}</td>
+          <th>Credit Amount:</th>
+          <td>{{summary.tot_Credit}}</td>
+          <th>Collection From Receivables:</th>
+          <td>{{summary.tot_CreditReceived}}</td>
+        </tr>
+      </table> -->
+    </div>
+  </div>
+    <div class="col-md-12">
+      <rpt-bill-doc-dept-summary *ngIf="showBillDocsDeptSummary"
+                               [showDocDeptSummary]="showBillDocsDeptSummary"
+                               [fromDate]="FromDate"
+                               [toDate]="ToDate"
+                               [DoctorId]="selDoctorId"
+                               [showBackButton]=true
+                               (callbackdocs)="CallBackDocs()"> </rpt-bill-doc-dept-summary>
+    </div>
+  </div>
+</div>

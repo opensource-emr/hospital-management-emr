@@ -1,0 +1,333 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showMedicalClaimFormPrintPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>Medical Claim Form</span> </h3>
+            <a class="btn btn-danger" (click)="CloseMedicalClaimFormPopUp()" title="Cancel">X</a>
+          </div>
+
+          <div id="id_medical_claim_form" style="margin-top:5px;">
+
+            <div style="margin-inline: 10px; margin-bottom: 40px;">
+              <div style=" width:auto; height: 80px; margin-top: 10px; margin-bottom: 0px; display:flex; justify-content: space-around;">
+                <img src="\themes\theme-default\images\customer-headers\national-insurance.jpg" style="max-width: 100%; max-height: 100%;" />
+              </div>
+              <div style="text-align: center; font-size: 18px; font-weight: bold; font-family: Helvetica, sans-serif">
+                <span>{{insuranceCompanyName}}</span>
+              </div>
+              <div style="text-align: center;  font-size: 13px;">
+                <span>{{insuranceCompanyAddress}}&nbsp;&nbsp;Tel No.&nbsp;{{insuranceCompanyTelephoneNumber}}&nbsp;&nbsp;Fax
+                  No.&nbsp;{{insuranceCompanyFaxNumber}}</span>
+              </div>
+
+              <div
+                   style="font-weight: bold; text-decoration: underline; font-size: 25px; margin-bottom:20px; margin-top:10px; font-family: Calibri; text-align:center">
+                <span>{{headerTitle}}</span>
+              </div>
+
+              <div style="font-size:12px;">
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>Claim No.</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; border-bottom: 1px dotted; padding-top:12px;">
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>Policy No.</span>
+                    <span>:</span>
+                  </div>
+                  <div
+                       style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{patientObj.MedicareMemberNo}}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>Name of Insured</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:25%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{patientObj.ShortName}}</span>
+                  </div>
+                  <div style="width:20%; display: flex; padding-left:10px;">
+                    <div style="width:45%"><span>Age/Sex&nbsp;:&nbsp;</span></div>
+                    <div
+                         style="width:55%; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                      <span>{{patientObj.Age}}/{{patientObj.Gender}}</span>
+                    </div>
+                  </div>
+                  <div style="width:30%; display: flex;">
+                    <div style="width:30%"><span>Relation&nbsp;:&nbsp;</span></div>
+                    <div
+                         style="width:70%; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                      <span>{{patientObj.Relation}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>Name of Employee</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{patientObj.MedicareEmployeeName}}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>Designation</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{patientObj.Designation}}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between;">
+                    <span>Ticket No./Clock No.</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{patientObj.PatientCode}}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>1. Nature of Illness</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; border-bottom: 1px dotted;">
+                    <span>As per attached xerox.</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>2. Date of Illness/Accident</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans'; border-bottom: 1px dotted;">
+                    <span>{{dateOfIllness}}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span>3. Time & Place of Accident</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; border-bottom: 1px dotted; padding-top:12px;">
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:fit-content; display: flex;">
+                    <span>4. Prescribed by Hospital Medical Officer/Hospital/Panel Doctor&nbsp;:</span>
+                  </div>
+                  <div style="width:max-content; margin-left:10px;">
+                    <span>&nbsp;&nbsp;&nbsp;Yes&nbsp;&nbsp;&nbsp;✓&nbsp;&nbsp;&nbsp;No</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:100%;">
+                    <span>5. Details of Expenses&nbsp;</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Hospital Charge</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                    <div style="width:50%; border-bottom: 1px solid black;"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Medicines</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                    <div style="width:50%; border-bottom: 1px solid black;"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Laboratory Charges</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                    <div style="width:50%; border-bottom: 1px solid black;"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">X-Ray Charges</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                    <div style="width:50%; border-bottom: 1px solid black;"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Doctor's Fees</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                  </div>
+                </div>
+
+                <div style="width:100%">
+                  <div style="margin-left:5%; width:58%; border-top: 1px solid black;"></div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style=" padding-left:5%; width:25%; display: flex; justify-content: space-between;">
+                    <div style="width:100%; padding-left:10px; display:flex; justify-content: space-between; border-bottom: 1px solid black;">
+                      <span>Total</span>
+                      <span>:</span>
+                    </div>
+                  </div>
+                  <div style="width:75%; display:flex; margin-left:10px;">
+                    <span>{{coreService.currencyUnit}}&nbsp;</span>
+                    <div style="width:46.5%; border-bottom: 1px solid black;font-size: 12px; font-weight: 900; font-family: 'Open Sans';">
+                      <span>{{totalAmount}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="width:63%; display:flex; justify-content:space-between;">
+                  <div style="padding-left:20px; display:flex; justify-content:space-between;">
+                    <span>Total No. of Bills & Prescription attached</span>
+                  </div>
+                  <div><span>:</span></div>
+                  <div style="width:40%; margin-left:10px; border-bottom: 1px dotted;">
+                  </div>
+                </div>
+
+                <div style="display:flex; padding-top:20px;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Signature of Claimant</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px;">
+                    <div style="padding-top:12px; width:50%; border-bottom: 1px dotted;"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex;">
+                  <div style="width:25%; display: flex; justify-content:space-between">
+                    <span style="margin-left:20px;">Date</span>
+                    <span>:</span>
+                  </div>
+                  <div style="width:75%; margin-left:10px; font-size: 12px; font-weight: 900; font-family: 'Open Sans';">
+                    <span>{{dateToday}}</span>
+                  </div>
+                </div>
+
+                <div style="border-top:1px solid black; border-bottom:1px solid black; padding-bottom:45px;">
+                  <div style="margin-top:10px;">
+                    <div style="width:100%;">
+                      <span style="margin-left:20px;">1. Verified all the documents and Recommendation for payment of medical claim.</span>
+                    </div>
+                    <div style="display: flex; justify-content:space-between; margin-top:40px;">
+                      <div style="width:30%; margin-left:10px; text-align:center">
+                        <span style="margin-left:20px; border-top:1px solid black">Signature of Doctor</span>
+                      </div>
+                      <div style="width:30%; margin-left:10px; text-align:center">
+                        <span style=" border-top:1px solid black">Signature of H.R. Executive</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="text-align:center; padding-top:5px;">
+                  <span>For Office User Only</span>
+                </div>
+
+                <div style="margin-left:20px; margin-right:20px; margin-top:10px;">
+                  <table style="width:100%; border: 0.5px solid black; margin-bottom:15px;">
+                    <tr>
+                      <td
+                          style="width:33.33%; padding-left: 10px; padding-right: 10px; border-right: 0.5px solid black; border-bottom: 0.5px solid black;">
+                        <span style=" font-size:12px;">Claim Scrutiny</span>
+                      </td>
+                      <td
+                          style="width:33.33%; padding-left: 10px; padding-right: 10px; border-right: 0.5px solid black; border-bottom: 0.5px solid black;">
+                        <div style="font-size: 12px; padding-top:10px; padding-bottom:10px;"><span>Checked and Forwarded for Approval of Nrs.</span>
+                        </div>
+                      </td>
+                      <td style="width:33.33%; font-size:12px; padding-left: 10px; padding-right: 10px; border-bottom: 0.5px solid black;">
+                        <span>Approved for Nrs.</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td rowspan="2" style="border-right: 0.5px solid black;"></td>
+                      <td style="padding-left: 10px; padding-right: 10px; border-right: 0.5px solid black; border-bottom: 0.5px solid black;">
+                        <div style="margin-top:30px; margin-bottom:10px; font-size:12px;">
+                          <span>Deduction on account of 12.5% Copayment:</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="border-right: 0.5px solid black;">
+                        <div style="text-align:center; font-size:12px; padding-top:10px; padding-bottom:15px;">
+                          <span style="margin-bottom:10px;">Signature</span>
+                        </div>
+                      </td>
+                      <td style="text-align:center; border-top: 0.5px solid black; padding-top:10px; padding-bottom:15px;">
+                        <span style="margin-bottom:10px; font-size:12px;">Competent Authority</span>
+                      </td>
+                    </tr>
+                  </table>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <hr>
+
+          <div style="text-align:center;z-index: 4;position: relative; margin-bottom: 25px; margin-top: 15px;">
+            <button class="btn green btn-success" value="" [disabled]="loading" (click)="Print()" id="btnPrintReciptEchsMrpDrugCertificate">
+              <span>Print</span>&nbsp;&nbsp;
+              &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

@@ -1,0 +1,65 @@
+<div>
+    <input type="button" class="btn btn-primary" (click)="AddNewFiscalYear()" value="Create New Fiscal Year" disabled/>
+    <fiscalyear-add [showAddPage]="showAddPage"
+                [selectedFiscalYear]="selectedFiscalYear"
+                (callback-add)="CallBackAdd($event)"></fiscalyear-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="fiscalYearGridColumns" [grid-data]="fiscalYearList"
+                     (grid-actions)="FiscalYearGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showpopup">
+    <div class="portlet-body form" style="background-color:white">
+        <div class="form-body">
+            <div class="col-md-5" style="margin-left: 30%;margin-top: 5%;">
+              
+                <div class="modelbox-div">
+                    <a style="float:right;  margin-top:-35px;margin-right:-35px" class="btn btn-danger hidden-print"
+                    (click)="closepopup()" title="Cancel">X</a>
+                    <div>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="width: 25%;"> <label> Fiscal Year Name : </label> </td>
+                                <td> : <b> {{ selectedFiscalYear.FiscalYearName }} </b></td>
+                                
+                            </tr>
+                            <tr>
+                                <td style="width: 25%;"> <label> Start Date </label></td>
+                                <td> : <b>  AD {{ selectedFiscalYear.StartDate }} </b></td>
+                                <td> : <b>  BS {{ selectedFiscalYear.nStartDate }} </b></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 25%;"> <label> End Date </label> </td>
+                                <td> : <b>  AD {{ selectedFiscalYear.EndDate }} </b></td>
+                                <td> : <b>  BS {{ selectedFiscalYear.nEndDate }} </b></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 25%;"> <label> Closed Status </label> </td>
+                                <td> : 
+                                    <span *ngIf="selectedFiscalYear.IsClosed == true"> <b> Closed  </b> </span>
+                                    <span *ngIf="selectedFiscalYear.IsClosed != true"> <b> Open  </b> </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                            <label> Remark : </label>
+                            <textarea style="width: 100%;" type="text" [(ngModel)]="Remark" placeholder="Remark"> </textarea>
+                            <div *ngIf="showerror"> <span style="color: red;">  Enter Remark </span> </div>
+                    </div>
+                    <div class="row" style="text-align: right;"> 
+                        <div>
+                            <br>
+                            <input type="button" [disabled]="disablebtn" class="btn btn-primary"
+                                (click)="ReopenFiscalYear()" value="Save" />
+                            <input type="button" class="btn btn-primary" (click)="closepopup()" value="Cancel" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="page-bar fixed-top-bar">
+  <ul class="nav nav-tabs" *ngIf="rackRoutes != undefined">
+    <li *ngFor="let route of rackPrimaryNavItems">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="!route.IsSecondaryNavInDropdown">
+        {{route.DisplayName}}
+        <i class="{{route.Css}}"></i>
+      </a>
+    </li>
+  </ul>
+</div>
+<div class="wrapper">
+  <router-outlet></router-outlet>
+</div>

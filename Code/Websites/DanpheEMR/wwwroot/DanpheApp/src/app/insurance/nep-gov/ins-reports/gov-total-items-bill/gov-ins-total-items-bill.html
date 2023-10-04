@@ -1,0 +1,143 @@
+
+  <div class="">
+    <form class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject">Total items bill Report (Govt-Insurance)</span>
+          </div>
+          <div class="col-md-7 col-xs-12"> 
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+          <!-- <div class="col-md-4 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-4">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-8">
+        <div class="row">
+          <danphe-date-picker [(ngModel)]="CurrentTotalItem.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+          <span class="color-red font-sm" *ngIf="CurrentTotalItem.IsDirty('fromDate')" [hidden]="CurrentTotalItem.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+          <span class="color-red font-sm" *ngIf="CurrentTotalItem.IsDirty('fromDate')" [hidden]="CurrentTotalItem.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-8">
+        <div class="row">
+          <danphe-date-picker [(ngModel)]="CurrentTotalItem.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+          <span class="color-red font-sm" *ngIf="CurrentTotalItem.IsDirty('toDate')" [hidden]="CurrentTotalItem.IsValidCheck('toDate','required')"> To Date is required</span><br />
+          <span class="color-red font-sm" *ngIf="CurrentTotalItem.IsDirty('toDate')" [hidden]="CurrentTotalItem.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+      </div>
+    </div>
+  </div> -->
+          <div class="col-md-4 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Bill Status<b style="float:right;">:</b></label>
+              <div class="col-md-7">
+                <select class="bs-select form-control" [(ngModel)]="CurrentTotalItem.billstatus"
+                        [ngModelOptions]="{standalone: true}">
+                  <option value="">All</option>
+                  <option value="paid">Paid</option>
+                  <option value="unpaid">Un-paid</option>
+                  <option value="cancel">Cancel</option>
+                  <option value="return">Return</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Service Department <b style="float:right;">:</b></label>
+              <div class="col-md-7">
+                <input class="form-control" danphe-auto-complete
+                     [(ngModel)]="servicedepartment"
+                     [ngModelOptions]="{standalone: true}"
+                     [list-formatter]="myListFormatter"
+                     [source]="serDeptList"
+                     placeholder="Enter Service Department Name"
+                     display-property-name="ServiceDepartmentName"
+                     value-property-name=null
+                     max-num-list="10"
+                     (focusout)="departmentChanged()" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Item Name<b style="float:right;">:</b></label>
+              <div class="col-md-7">
+                <input class="form-control" value="" [(ngModel)]="CurrentTotalItem.itemname"
+                     [ngModelOptions]="{standalone: true}" placeholder="Enter Item Name" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="TotalItemsBillReporttData.length>0">
+      <danphe-grid [grid-colDefaults]="TotalItemsBillReportColumns"
+                 [grid-data]="TotalItemsBillReporttData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+  <br />
+  <br />
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="TotalItemsBillReporttData.length>0">
+      <div class="col-md-12 col-xs-12">
+        <div class="table-responsive" style="width:100%;">
+          <div class="caption lb-caption"> <h3><i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Calulation Summary</span></h3> </div>
+          <table class="table table-striped table-hover table-responsive">
+            <tr style="width:100px;">
+              <th>Quantity:</th>
+              <td>{{summary.tot_Quantity}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>Sub Total:</th>
+              <td>{{summary.tot_SubTotal}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>Total Amount:</th>
+              <td>{{summary.tot_TotalAmount}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+            <tr style="width:100px;">
+              <th>Discount:</th>
+              <td>{{summary.tot_Discount}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>Paid Amount:</th>
+              <td>{{summary.tot_PaidAmt}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>UnPaid Amount:</th>
+              <td>{{summary.tot_UnPaidAmt}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+            <tr style="width:100px;">
+              <th>Cancel Amount:</th>
+              <td>{{summary.tot_CancelAmt}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>Return Amount:</th>
+              <td>{{summary.tot_ReturnAmt}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>Provisional Amount:</th>
+              <td>{{summary.tot_ProvisionalAmt}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+

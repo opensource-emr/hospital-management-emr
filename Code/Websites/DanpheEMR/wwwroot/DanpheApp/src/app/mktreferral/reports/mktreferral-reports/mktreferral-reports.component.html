@@ -1,0 +1,62 @@
+<style>
+    .form-horizontal .form-group {
+        margin-bottom: 0;
+    }
+</style>
+<div class="row" style="margin:auto">
+    <form [formGroup]="mktReferralDetailReportValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="caption custom-caption no-margin">
+                    <i class="glyphicon glyphicon-asterisk"></i>
+                    <span class="caption-subject">Marketing Referral Detail Report</span>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-md-6">
+                        <from-to-date-select (on-change)="OnDateRangeChange($event)">
+                        </from-to-date-select>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Referring Party<b style="float:right;">:</b></label>
+                            <div class="col-md-8 doctor-select-opt">
+
+                                <input danphe-auto-complete
+                                       formControlName="ReferringPartyId"
+                                       [(ngModel)]="RefPartyObj"
+                                       [source]="referringPartyList"
+                                       placeholder="Select Referring Party"
+                                       display-property-name="ReferringPartyName" value-property-name="ReferringPartyName"
+                                       [list-formatter]="ReferringPartiesListFormatter"
+                                       (onSelect)="onReferringPartySelect($event)"
+                                       max-num-list="15" [grid-sort]="'ReferringPartyName'"
+                                       [min-chars]=""
+                                       [match-property-csv]="'ReferringPartyName,ReferringOrganizationName,VehicleNumber,GroupName'"
+                                       [match-formatted]="true"
+                                       onClick="this.select();"
+                                       style="height: 30px; width: 90% !important;" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-xs-12">
+                        <div class="form-group">
+                            <button class="btn green btn-success" type="button" (click)="Load()">
+                                <i class="fa fa-search"></i>
+                                Show Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+<div class="row" style="margin:auto">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="marketingReferralreportListGridColumns"
+                     [grid-data]="marketingReferralReportList" [grid-exportOptions]="gridExportOptions"
+                     [grid-showExport]="true" [show-print-button]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings"></danphe-grid>
+    </div>
+
+</div>

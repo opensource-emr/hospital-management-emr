@@ -1,0 +1,57 @@
+<div class="wrapper">
+  <div class="counter-wrap-wrap" style="margin-top:10px">
+
+    <!-- Modal starts here -->
+    <div class="popup-static portlet box portlet-fullscreen custom_modal"
+         *ngIf="(!currentBillingCounter || !currentBillingCounter.CounterId) && showChangeBillingCounterPopup && !isCounterActivated">
+      <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="row">
+          <div class="col-md-10 col-md-offset-1">
+            <div class="modelbox-div clearfix">
+              <div class="caption custom-caption no-margin">
+                <h3> <span>Select Counter</span> </h3>
+                <a class="btn btn-danger" (click)="CloseChangeBillingCounterPopup()" title="Cancel">X</a>
+              </div>
+              <div style="margin:15px;">
+                <div class="row">
+                  <div class="col-md-2" *ngFor="let counter of counterList">
+                    <div class="counter" (click)="SetGlobalBillingCounter(counter.CounterId);ActivateCounter(counter)">
+                      <div class="counter-item"> <img src="../../../themes/theme-default/images/counter1.svg" />
+                        <h5>{{counter.CounterName}} <span>Click to Activate</span></h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--Model Box Body End-->
+      </div>
+    </div>
+    <!-- Modal ends here -->
+
+    <div class="row">
+      <div *ngIf="isCounterActivated" style="margin-top:30px" class="col-lg-12 col-sm-12 col-xs-12">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="no-data-div" style="font-size: 12px; font-weight:600;"> <strong><i
+                   class="fa fa-info-circle" style="font-size: 14px;"></i>&nbsp;&nbsp;Activated Counter
+                Information!!</strong>
+              Counter <b style="color:#0abb87 ;font-size:15px">&nbsp;&nbsp;{{currentCounterName}}</b>
+              Already Activated.
+
+              <br />
+              <label style="float: right;clear: both;margin-top: -5px;">
+                <span>Do you want to Change the counter?</span>
+                <button class="btn btn-sm btn-danger" style="margin-left: 7px;"
+                        (click)="DeactivateCounter()">Deactivate Counter </button>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

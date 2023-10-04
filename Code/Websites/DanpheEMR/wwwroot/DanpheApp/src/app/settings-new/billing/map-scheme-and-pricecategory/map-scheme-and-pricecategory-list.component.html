@@ -1,0 +1,22 @@
+<button
+        class="btn blue bordered" (click)="AddSchemeVsPriceCategorySettings()">
+  <i class="fa fa-plus"></i>
+  &nbsp;Add New SchemeVsPriceCategory Item
+</button>
+
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="mapSchemePriceCategoryColumns"
+                 [grid-data]="SchemePriceCategoryList"
+                 (grid-actions)="ReportingItemGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+
+<add-scheme-pricecategory-items
+                                *ngIf="showAddSchemePricePriceCategoryItemPopUp"
+                                [showAddSchemePricePriceCategoryItemPopUp]="showAddSchemePricePriceCategoryItemPopUp"
+                                (on-AddSchemePricePriceCategoryItemPopUp-close)="CallBackAdd($event)"
+                                [update]="update"
+                                [selectedSchemePriceCategory]="selectedSchemePriceCategory">
+</add-scheme-pricecategory-items>

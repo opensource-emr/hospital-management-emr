@@ -1,0 +1,12 @@
+<a feature="button" class="btn blue bordered" (click)="AddWardSubstoreMap()"><i class="fa fa-plus"></i>Add Ward SubStore Map</a>
+<ward-substore-map-manage-add *ngIf="showAddPopup" (callback-add)="CallBackAdd($event)"
+                              [wardStoreMapDataList]="substoreWardMapList"></ward-substore-map-manage-add>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="substoreWardMapGridColumns" [grid-data]="substoreWardMapList" (grid-actions)="StoreWardGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+<ward-substore-map-manage-edit *ngIf="showUpdatePopup" [mapped-detail]="mappedDetail" (callback-add)="CallBackAdd($event)">
+</ward-substore-map-manage-edit>

@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+  <danphe-grid [grid-colDefaults]="depreciationGridColumns" [grid-data]="allFixedAssetList"
+    (grid-actions)="AssetDepreciationGridAction($event)" [grid-showExport]="true"
+    [grid-exportOptions]="GetGridExportOptions()">
+    <!-- 
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings" -->
+  </danphe-grid>
+</div>
+</div>
+
+<div *ngIf="showEditAsset">
+  <asset-depreciation [selectedAsset]="selectedAsset" (edit-callback)="DepreciationCallBack($event)">
+  </asset-depreciation>
+</div>
+<div *ngIf="showAssetScrap">
+  <asset-scrap [selectedAsset]="selectedAsset" (callback)="ScrapCallBack($event)">
+  </asset-scrap>
+</div>

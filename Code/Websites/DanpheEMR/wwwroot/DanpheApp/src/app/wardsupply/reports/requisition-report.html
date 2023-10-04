@@ -1,0 +1,39 @@
+<div class="wrapper">
+  <div class="form-body">
+    <div class="caption lb-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Requisition/Dispatch Report</span> </div>
+    <div class="row">
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-3">From Date<sup>*</sup><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="wardReports.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-3">To Date<sup>*</sup><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="wardReports.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="WardRequisitionColumn"
+                     [grid-data]="WardRequisitionData"
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+    </div>
+  </div>
+</div>

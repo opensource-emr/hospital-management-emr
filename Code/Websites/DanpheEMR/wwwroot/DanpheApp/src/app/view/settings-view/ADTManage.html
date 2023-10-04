@@ -1,0 +1,17 @@
+﻿
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li> <a [ngClass]="{'a-tab-active': showWardList==true}" (click)="updateView(0)">Manage Ward</a></li>
+        <li> <a [ngClass]="{'a-tab-active': showBedFeatureList==true}" (click)="updateView(1)">Manage Bed Feature</a></li>
+        <li> <a [ngClass]="{'a-tab-active': showBedList==true}" (click)="updateView(2)">Manage Bed</a></li>
+        <li> <a [ngClass]="{'a-tab-active': showAutoItemList==true}" (click)="updateView(3)">Manage Auto Add Billing Items</a></li>
+     </ul>
+</div>
+
+    <div class="col-md-12">
+        <ward-list *ngIf="showWardList"></ward-list>
+        <bed-feature-list *ngIf="showBedFeatureList"></bed-feature-list>
+        <bed-list *ngIf="showBedList"></bed-list>
+        <autoBillingItem-list *ngIf="showAutoItemList"></autoBillingItem-list>
+    </div>
+

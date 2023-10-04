@@ -1,0 +1,532 @@
+<style>
+  /* Add a hover effect (blue shadow) */
+  img:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+  }
+
+  .pat-detail {
+    padding: 15px;
+    margin-bottom: 15px;
+    background-image: url('../../../themes/theme-default/images/healthcard-frontside.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px !important;
+  }
+
+  .pat-detailforshowformat_card {
+    padding: 15px;
+    margin-bottom: 15px;
+    background-image: url('../../../themes/theme-default/images/healthcard-frontside_format.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px !important;
+  }
+
+  .card-backside {
+    padding: 15px;
+    margin-bottom: 15px;
+    background-image: url('../../../themes/theme-default/images/healthcard-backside.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px !important;
+  }
+
+  .card-header, .pat-detail, .data-contnt {
+    width: 100%;
+    float: left;
+  }
+  .card-header, .pat-detailforshowformat_card, .data-contnt {
+    width: 100%;
+    float: left;
+  }
+
+  .card-header {
+    height: 71px;
+  }
+
+  .data-contnt span {
+    line-height: 24px;
+    font-size: 14px;
+  }
+
+    .data-contnt span.parm-val {
+      color: #000;
+      font-weight: bold;
+    }
+
+    .data-contnt span.parm-nam {
+      color: #fff;
+      /*Added in new Version*/
+      font-family: -webkit-body;
+    }
+
+      .data-contnt span.parm-nam b {
+        float: right;
+      }
+
+  .ech-data {
+  }
+
+  .qr-code {
+    float: right;
+    margin-right: -15px;
+    size: 160;
+  }
+
+  .hams-detail h3, .daphe-detail h3 {
+    font-weight: 700;
+    margin: 0px 0px 3px;
+    font-size: 16px;
+    color: #fff;
+  }
+
+  .hams-detail p, .daphe-detail p {
+    margin: 0px;
+    font-size: 13px;
+    color: #fff;
+    line-height: 14px;
+  }
+
+  .daphe-detail p, .daphe-detail h3 {
+    float: right;
+  }
+
+  #frontSide {
+    /*display: none;*/
+  }
+
+  #idPrint {
+    /*display: none;*/
+  }
+
+  .logo-card-backside.mmh {
+    margin-top: -21px;
+  }
+
+
+  .front-hosp-name {
+    font-size: 24px;
+  }
+
+    .front-hosp-name .mmh {
+      font-size: 22px !important;
+    }
+
+
+
+  /*Added by Anish 30 Nov stop print frontside with background*/
+  /*Added new css*/
+  .card-background {
+    border-radius: 10px !important;
+    padding: 15px;
+  }
+
+  .parm-val {
+    padding-left: 5px;
+  }
+
+  .allwith-bg {
+    font-size: 40px;
+    line-height: 30px;
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .sngl-row {
+    padding: 14px 0px;
+  }
+
+  .idprint-format {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .parm-nam {
+    visibility: hidden;
+  }
+
+  .all-patdata-holder {
+    padding-top: 7px;
+  }
+
+  .hidden-visib {
+    visibility: hidden;
+  }
+  /*Added new css ends*/
+
+
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showCard">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="form-body">
+      <div class="col-md-12 col-md-offset-2">
+        <div class=" col-md-10 col-sm-12 col-xs-12 modelbox-div">
+          <div class="pat-card">
+            <div class="caption" style="color:blue;">
+              <h5 style="text-align: center;text-decoration: underline;font-weight: bold;">Patient Health Card</h5>
+              <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+            </div>
+          </div>
+
+          <div style="width: 100%;float: left;">
+            <div class="col-md-6">
+              <p class="text-center bold">Card Front Side</p>
+
+              <div class="pat-detailforshowformat_card">
+
+                <div class="card-header">
+
+                </div>
+                <div class="data-contnt">
+                  <div class="row">
+                    <div class="col-md-4 col-sm-4">
+                      <div class="person-image  margin-15-tp" style="width: 100%; padding-left: 15px; padding-top: 7px;height: 117px;">
+                        <img *ngIf="profilePic" class="img-responsive" [src]="'data:image/jpeg;base64,'+profilePic" style="filter:brightness(150%);" />
+                      </div>
+                      <div class="qr-code" style="margin-top: 15px;width: 100%; margin: 0 auto;text-align: center;">
+                        <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="55" [backgroundAlpha]="0"></qr-code>
+                      </div>
+                    </div>
+                    <div class="col-md-8 col-sm-8">
+                      <div class="all-patdata-holder">
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">Patient No.<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.PatientCode}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">Name<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.ShortName}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">Gender<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.Gender}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">DOB/Age<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">BloodGroup<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.BloodGroup}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam" style="font-size: 14px;">Emergency No<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.PhoneNumber}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data">
+                          <div class="col-md-5"><span class="parm-nam">Issue Date<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+            <div class="col-md-6">
+              <p class="text-center bold">Card Back Side</p>
+              <div class="card-backside" style="width: 100%; float: left;">
+                <div class="card-header">
+
+                </div>
+                <div class="data-contnt">
+                  <div class="row">
+                    <div class="col-md-4 col-sm-4">
+                      <div class="person-image  margin-15-tp" style="width: 100%; padding-left: 15px; padding-top: 7px;height: 117px;">
+
+                      </div>
+                      <div class="qr-code" style="margin-top: 15px;width: 100%; margin: 0 auto;text-align: center;">
+                        <div style="width: 60px; height: 60px;"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-8 col-sm-8">
+                      <div class="all-patdata-holder">
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">Patient No.<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.PatientCode}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">Name<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.ShortName}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">Gender<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.Gender}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">DOB/Age<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">BloodGroup<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.BloodGroup}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam" style="font-size: 14px;">Emergency No<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.PhoneNumber}}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row ech-data hidden-visib">
+                          <div class="col-md-5"><span class="parm-nam">Issue Date<b>:</b></span></div>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <span class="parm-val">{{selectedPat.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-12" *ngIf="showAdditionalInfo && patHealthCardStatus">
+            <p style="text-decoration: underline;font-weight: bold;color: #034ea2;">
+              Card Information:
+            </p>
+            <p>
+              Bill Status:
+              <b style="text-transform: uppercase;" [ngStyle]="{'color':patHealthCardStatus.BillStatus === 'paid' ? 'green' : 'red' }">
+                {{patHealthCardStatus.BillStatus}}
+              </b>
+              <br />
+              <span *ngIf="patHealthCardStatus.BillStatus=='paid'">Paid Date: <b>{{patHealthCardStatus.PaidDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b><br /></span>
+              <span *ngIf="patHealthCardStatus.BillStatus=='unpaid'">Billing Date: <b>{{patHealthCardStatus.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b><br /></span>
+              Is Card Printed: <b>{{patHealthCardStatus.IsPrinted?'Yes':'No'}}</b><br />
+              <span *ngIf="patHealthCardStatus.IsPrinted">Card Printed On:  <b>{{patHealthCardStatus.PrintedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</b></span>
+            </p>
+          </div>
+          <div style="width:100%;float:left;text-align:center;  margin-bottom: 25px;">
+            <!--<a class="btn btn-primary" style="padding-left: 30px; padding-right: 30px;" (click)="print()">Print</a>-->
+            <!-- Used to print the whole frontside with background, also uncomment div with id="cardFrontside"
+                    and comment div with id="frontSide" -->
+            <a class="btn btn-primary" style="padding-left: 30px; padding-right: 30px;" (click)="printWholeFrontSide()">Print</a>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+
+    <!--Below section: id="frontSide" is only for Capturing Health Card section.
+    We now don't need Labels from left side but only the data from Right Side.
+    Left side elements are kept as Placeholders only so applied style= "visibility: hidden;"
+    Below div is shifted 9999px so that it won't come on front page at the beginning.
+    We're taking innerHTML while printing, so it won't create any problems as such.
+    If any modification is needed in this, Pls refer: Anish or Sud-->
+    <!--<div id="frontSide" class="idprint-format" style="background: #fff; float: left;width: 1050px;height: 660px;position: absolute; left: -9999px;">
+                <div style="background: #fff !important;">
+
+                    <div class="data-contnt" style="width: 100%; float: left;">
+                        <div style="width: 745px;  float:left; margin-top: 60px;">
+                            <div class="card-header" style="width: 100%; float: left; height: 100px;">
+
+                            </div>
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">Patient No.<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px; margin-bottom:2px;">
+                                    <span class="parm-val" style="font-size: 42px; line-height: 30px;">{{selectedPat.PatientCode}}</span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">Name<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px; ">
+                                    <span class="parm-val" style="font-size: 42px;  line-height: 30px;">{{selectedPat.ShortName}}</span>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">Gender<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px; ">
+                                    <span class="parm-val" style="font-size: 42px; line-height: 30px;">{{selectedPat.Gender}}</span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">DOB/Age<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px;">
+                                    <span class="parm-val" style="font-size: 42px; line-height: 30px;">{{selectedPat.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib" style="font-size: 14px;">Emergency No<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px;">
+                                    <span class="parm-val" style="font-size: 42px;">{{selectedPat.PhoneNumber}}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">BloodGroup<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px;">
+                                    <span class="parm-val" style="font-size: 42px;">
+                                        {{selectedPat.BloodGroup}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div style="width: 320px;float:left;visibility: hidden;"><span class="parm-nam hd-visib">Issue Date<b>:</b></span></div>
+                                <div style="width: 425px;float:right;min-height:63px;">
+                                    <span class="parm-val" style="font-size: 42px;">{{selectedPat.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div style="width: 275px; height: auto;float:right;padding-left: 40px;">
+                            <div class="card-header" style="width: 100%; float: left; height: 67px;">
+
+                            </div>
+                            <div class="person-image" style="margin-bottom: 40px;width: 210px; height: 210px; float: left;">
+                                <img *ngIf="profilePic" style="width: 250px;height: 250px;margin-top: -15px; margin-left: 2px;filter:brightness(150%);" [src]="'data:image/jpeg;base64,'+profilePic" />
+                            </div>
+                            <div class="qr-code" style="margin-top: 0px;float: left;">
+                                <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="240" [backgroundAlpha]="0"></qr-code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </div>-->
+    <!--Newer version with all the things along with background printed from our side-->
+    <div id="cardFrontside">
+      <div id="frontSide" class="idprint-format card-background dsp-leftfloat-blk">
+
+        <img src="../../../themes/theme-default/images/healthcard-frontside.jpg" alt="Card frontside background Image" style="width: 100%; height: fit-content;position: absolute; left: 0; top: 0; z-index: 1;" />
+
+
+
+        <div class="hams-hc-head-top">
+
+        </div>
+
+        <div style="width: 100%; display: table;position: relative; z-index: 7;">
+          <div style="width: 100%; display: table;">
+            <div class="all-hc-info-holder">
+              <div class="hc-imgnqr-holder">
+                <div class="person-image">
+                  <img *ngIf="profilePic" style="max-width: 80%;height: auto;filter:brightness(150%);" [src]="'data:image/jpeg;base64,'+profilePic" />
+                </div>
+                <div class="qr-code" >
+                  <qr-code style="height: 160px; width:160px;" *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="160" [backgroundAlpha]="0"></qr-code>
+                </div>
+              </div>
+              <div class="hc-main-text-holder">
+                <div>
+                  <span class="parm-val allwith-bg" style="font-size: 35px" ><span style="visibility: hidden;">B</span>{{selectedPat.ShortName}}</span>
+                </div>
+                <div>
+                  <span class="parm-val allwith-bg" style="font-size: 35px"><span style="visibility: hidden;">B</span>{{selectedPat.PatientCode}}</span>
+                </div>
+                <div>
+                  <span class="parm-val allwith-bg"><span style="visibility: hidden;">B</span>{{selectedPat.Gender}}</span>
+                </div>
+                <div>
+                  <span class="parm-val allwith-bg" style=" line-height: 46px; font-size: 32px;"><span style="visibility: hidden;">B</span>{{selectedPat.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                </div>
+                <div>
+                  <span class="parm-val allwith-bg" style="line-height: 39px; font-size: 32px;"><span style="visibility: hidden; ">B</span>{{selectedPat.BloodGroup}}
+                  </span>
+                </div>
+                <div>
+                  <span style="line-height: 51px; font-size: 32px;" class="parm-val allwith-bg"><span style="visibility: hidden;">B</span>{{selectedPat.PhoneNumber}}</span>
+                </div>
+                <div>
+                  <span style="line-height: 48px; font-size: 32px;" class="parm-val allwith-bg"><span style="visibility: hidden;">B</span>{{selectedPat.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--We're placing captured health-card image (using canvas) into below div.
+    IMPORTANT: DON'T TOUCH BELOW DIV  (id="idPrint")-->
+    <div id="idPrint">
+
+    </div>
+
+  </div>
+
+
+</div>
+
+

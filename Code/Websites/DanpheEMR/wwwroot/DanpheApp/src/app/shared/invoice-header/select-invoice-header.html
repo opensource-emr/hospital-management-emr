@@ -1,0 +1,49 @@
+
+  <div class="text-right">
+    <!--  -->
+    <div *ngIf="allInvoiceHeaderList && allInvoiceHeaderList.length>0" class="form-group div-relative">
+      <strong>Select Invoice Header: &nbsp;&nbsp;</strong>
+      <select [(ngModel)]="selectedInvoiceHeader" (change)="OnHeaderChange()" style=" width:47.8%!important;">
+        <option *ngFor="let header of allInvoiceHeaderList" [ngValue]="header">
+          {{header.HospitalName}}
+        </option>
+      </select>
+      <button class="fa fa-eye" (click)="showHeaderPreview=true"
+         title="Preview Invoice Header"
+         [attr.disabled]="!(allInvoiceHeaderList.length>0) ? true:null"></button>
+    </div>
+  </div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showHeaderPreview">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Invoice Header Preview</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form">
+            <!--Start: Model Body-->
+            <div class="form-body" *ngIf="selectedInvoiceHeader" style="padding:0px!important;">
+              <div class="row">
+                <!--Start: Header Details -->
+                <show-invoice-header
+                                     [SelectedHeaderId]="selectedHeaderId"
+                                     [Module]="module">
+
+                </show-invoice-header>
+                <!--End: Header Details -->
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+            <div class="form-group panel-footer text-right">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

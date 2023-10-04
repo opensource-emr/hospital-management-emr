@@ -1,0 +1,135 @@
+
+    <form class="form-horizontal">
+        <div class="form-body">
+            <div class="caption lb-caption" style="padding: 5px; margin: 5px;">
+                <i class="fa fa-bar-chart"></i>
+                <span class="caption-subject">
+                    SubStore Dispatch and Consumption Report
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12" >
+                <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+            </div>
+            <div class="col-md-4" *ngIf="showStoreList">
+                <danphe-multiselect [ddl-data]="storeList" [placeholder-text]="'---Select Store---'"
+                [pre-selected]="preSelectedStores" [value-property-name]="'StoreId'"
+                (selected-items-list)="onChange($event)" [display-property-name]="'Name'" [single-selection]="false">
+              </danphe-multiselect>
+              </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-sm-12" *ngIf="filteredReportData.length>0">
+                <danphe-grid [grid-colDefaults]="SubstoreDispConReportColumns" [grid-data]="filteredReportData" (grid-actions) = "SubStoreDispConGridAction($event)"
+                [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"[report-header]="reportHeaderHtml">
+                </danphe-grid>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;" *ngIf="filteredReportData.length > 0">
+            <div class="table-responsive table-wrapper" id="print_summary">
+              <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+                <thead>
+                  <tr>
+                    <th colspan="2" style="text-align: center;"> 
+                     <span style="font-size:large;">  Summary </span>
+                      <br>
+                      <span style="font-size: large;"> Selected Stores :  </span>  [{{storeNames}}]
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Total Dispatch Value </b> </span>
+                      </td>
+                      <td>
+                        <span>  {{totalDispatchValue}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Total Consumption Value </b> </span>
+                      </td>
+                      <td>
+                        <span>{{totalConsumptionValue}} </span>
+                      </td>
+                    </tr>
+      
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <br>
+          </div>
+    </form>
+
+    <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="DetailsView">
+        <div class="portlet-body form">
+          <div class="row">
+               <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <a class="btn btn-danger del-btn" (click)="ClosePopup()">X</a>
+                        <div class="form-body">
+                            <div style="text-align: center;">
+                                <label style="font-size: x-large;"> <b>Item Details </b> </label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table>
+                                        <tr>
+                                          <td> <b> Item Name : </b> </td>
+                                          <td> {{itemDetails.ItemName}} </td>
+                                        </tr>
+                                        <tr>
+                                          <td> <b> Item Code :</b> </td>
+                                          <td> {{itemDetails.ItemCode}} </td>
+                                        </tr>
+                                        <tr>
+                                          <td> <b> Item Type :</b></td>
+                                          <td> {{itemDetails.ItemType}} </td>
+                                        </tr>
+                                      </table>
+                                </div>
+                            </div>
+                            <hr style="border:1px solid grey;margin-top: 0px;margin-bottom: 5px;" />
+                      
+                            <danphe-grid [grid-colDefaults]="ItemLevelDetailsColumn" [grid-data]="ItemLevelData"  [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-header]="reportHeaderHtml" [NepaliDateInGridParams]="NepaliDateInGridSettings"></danphe-grid >
+
+                            <div class="row col-md-4">
+                                <table class="table table-striped table-borderd table-hover">
+                                    <tbody>
+                                      <tr>
+                                        <th sortable-header=""><b>Total Consumption Quantity</b></th>
+                                        <th sortable-header="">{{conQty}}</th>
+                                      </tr>
+                                      <tr>
+                                        <th sortable-header=""><b>Total Consumption Value</b></th>
+                                        <th sortable-header="">{{coreService.currencyUnit}} {{itemConsumedValue | number: '1.0-2'}}</th>
+                                      </tr>
+                                      <tr >
+                                        <th sortable-header=""><b >Total Dispatch Quantity</b></th>
+                                        <th sortable-header="">{{disQty}}</th>
+                                      </tr>
+                                      <tr>
+                                        <th sortable-header=""><b>Total Dispatch Value</b></th>
+                                        <th sortable-header="">{{coreService.currencyUnit}} {{itemDispatchValue | number: '1.0-2'}}</th>
+                                      </tr>
+                                    </tbody>
+                                  </table>      
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

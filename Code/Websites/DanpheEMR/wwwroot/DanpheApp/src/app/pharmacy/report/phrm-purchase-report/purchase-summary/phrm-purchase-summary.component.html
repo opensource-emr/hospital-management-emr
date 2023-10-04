@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Purchase Summary Report</span> </div>
+      <div class="row">
+        <div class="col-md-8">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+        </div>
+        <div class="col-md-4 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="LoadReport()"[disabled]="loading">
+              <span *ngIf="!loading"> Show Report</span>
+              <span *ngIf="loading"> Loading...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="purchaseStatementGrid" [grid-data]="purchaseStatementResult" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-date-range]="dateRange" [report-for]="pharmacy"> </danphe-grid>
+    </div>
+  </div>

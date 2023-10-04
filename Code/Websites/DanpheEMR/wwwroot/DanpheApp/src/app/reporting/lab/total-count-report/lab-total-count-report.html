@@ -1,0 +1,73 @@
+<div class="col-md-12">
+  <div class="row">
+    <form [formGroup]="reportDate.ReportDateValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject">Category/Test Count</span>
+          </div>
+
+          <div class="row">            
+            <div class="col-md-6">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)">
+              </from-to-date-select>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="row">
+                <div style="display: flex; justify-content: flex-end ;">
+                  <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio"
+                             value="category"
+                             [(ngModel)]="reportDate.reportType"
+                             [ngModelOptions]="{standalone: true}" />
+                      <span></span>Category Wise
+                    </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio"
+                             value="item"
+                             [(ngModel)]="reportDate.reportType"
+                             [ngModelOptions]="{standalone: true}" />
+                      <span></span>Test Wise
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row" style="margin-top: 10px;">
+    <div class="col-md-10 col-xs-12">
+      <div class="form-group">
+        <lab-status-filter [statusAbove]="statusAbove" [data]="orderStatus"></lab-status-filter>
+      </div>
+    </div>
+    <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue"
+                  type="button"
+                  (click)="Load()">
+            <i class="fa fa-search"></i> Show Report
+          </button>
+        </div>
+     </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <lab-item-count-report *ngIf="showReportItemWise"
+                             [fromDate]="reportDate.fromDate"
+                             [toDate]="reportDate.toDate"
+                             [categoryId]="selectedCategoryId"
+                             [orderStatus]="orderStatus.statusList"></lab-item-count-report>
+      <lab-categorywise-item-count-report *ngIf="showReportCategoryWise"
+                                          [fromDate]="reportDate.fromDate"
+                                          [toDate]="reportDate.toDate"
+                                          [orderStatus]="orderStatus.statusList"></lab-categorywise-item-count-report>
+    </div>
+  </div>
+</div>

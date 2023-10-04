@@ -1,0 +1,83 @@
+<style>
+    #image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .slidecontainer {
+        width: 100%;
+    }
+</style>
+<!--<div>
+    Patient Photo: <button class="btn blue" (click)="OpenUploadBox()">Click for Image</button> <br />
+    <h3>Uploaded Photo</h3>
+
+    <img [src]="patient.FileBase64String" />
+
+</div>-->
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showUploadBox" style="background-color:darkgrey;border:solid;padding:20px">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="margin-left: 5%; margin-right: 5%; margin-top: 1%;">
+            <div class="row">
+              <div class="col-md-12">
+                <div style="padding-bottom:10px;padding:20px">
+                  <button *ngIf="useCamera" class="btn blue" (click)="OpenCamera()">
+                    <i class="fa fa-camera">&nbsp; Open Camera</i>
+                  </button>
+
+                  <label class="btn blue" for="fileFromLocalDisk" style="margin-left:10px;">
+                    <i class="fa fa-file"> &nbsp; Choose from Files</i>
+                  </label>
+                  <button type="button" class="btn btn-danger" style="float:right;" (click)="CloseBox()">
+                    <i class="fa fa-close"></i>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+                <div class="col-md-12">                       
+
+                        <div class="col-md-12">                            
+                            <input style="display: none;" id="fileFromLocalDisk" #fileInput type="file" (change)="fileChangeEvent($event)" />
+                            <!--<div *ngIf="showFileInput"></div>--> 
+
+                            <div class="col-md-5" style="text-align:center;align-content:center">
+                              <div *ngIf="showWebcam">
+                                <webcam [width]="320" [height]="240" [trigger]="triggerObservable" (imageCapture)="handleImage($event)" *ngIf="showWebcam"></webcam>
+                                <br />
+                                <button *ngIf="useCamera" class="btn btn-info" (click)="triggerSnapshot()">Take A Snapshot</button>
+                              </div>                               
+                            </div>
+                            <div class="col-md-1">
+
+                            </div>
+                            <div class="col-md-6">
+                                <div *ngIf="showCropPanel" style="background-color:antiquewhite; height:300px; align-content:center; text-align:center; padding:10px; margin:5px">
+
+                                    <image-cropper [class]="img-responsive"
+                                                   [imageBase64]="imgToPass"
+                                                   [maintainAspectRatio]="maintainAspectRatio"
+                                                   format="png"
+                                                   [imageQuality]="100"
+                                                   (imageCropped)="imageCropped($event)"
+                                                   (imageLoaded)="imageLoaded()"
+                                                   (loadImageFailed)="loadImageFailed()">
+                                    </image-cropper>
+                                    <br>
+                                    <button class="btn btn-info" (click)="CropSelImage()">Crop</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12" style="padding-bottom: 10px;padding-left:50px;margin-top: 20px;">
+                            <button class="btn btn-success" *ngIf="showDone" (click)="PostCroppedImg()">Done</button>
+                        </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

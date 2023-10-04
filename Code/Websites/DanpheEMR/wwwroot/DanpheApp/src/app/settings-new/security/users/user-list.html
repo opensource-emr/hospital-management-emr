@@ -1,0 +1,32 @@
+   
+ <!--[selectedItem]="selectedItem"
+              (callback-add)="CallBackAdd($event)-->
+<user-add *ngIf="showAddPage"
+          [userList]="userList"
+           (callback-add)="CallBackAdd($event)"></user-add>
+
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+      <a class="btn blue bordered " name="name" (click)="AddUser()">
+        <span class="fa fa-plus"></span>&nbsp;Add User
+      </a>
+        
+        <danphe-grid [grid-colDefaults]="userGridColumns" [grid-data]="userList" (grid-actions)="UserGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+
+<reset-password *ngIf="showResetPassPage"
+                [selected-ResetPass-Item]="selectedResetPassItem"
+                (callback-add)="CallBackAdd($event)">
+</reset-password>
+
+<div *ngIf="showManageRole" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <input type="button" class="btn btn-primary" (click)="HideRoleManage()" value="Back" />
+        <user-role-map *ngIf="showManageRole"
+                     [selectedUser]="selectedItem"
+                     (callback-manageRole)="HideRoleManage($event)"></user-role-map>
+    </div>
+</div>

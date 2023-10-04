@@ -1,0 +1,158 @@
+﻿<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+
+    .control-label {
+        margin: 11px 0 0 0;
+    }
+
+    .control-label b {
+        font-weight: 600;
+    }
+
+    .row {
+        margin: 0 -5px;
+    }
+
+    div[class*="col-"] {
+        padding: 0 5px;
+    }
+
+    @media only screen and (max-width: 1080px) {
+        .label-frm-to {
+            margin-left: 5px;
+        }
+    }
+</style>
+<div>
+    <div class="caption custom-caption top-report-section">
+        <h3> <i class="fa fa-book"></i>
+            <span class="caption-subject" style="margin-right: 10px;">Cash Flow Report</span>
+        </h3>
+
+        <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;margin: 5px;">
+            <input name="isledgerlevel" type="checkbox" value="Ledger Level" [(ngModel)]="IsLedgerLevel">
+            <span></span> Ledger Level
+        </label>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+            <div class="col-md-7 col-xs-12" style="margin-right: -45px;">
+                <div class="form-group">
+                    <label class="control-label mt10">Select Fiscal Year<b class="color-red">
+                            *</b><b style="float:right;">:</b></label>
+
+                    <div>
+                        <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)">
+                        </fiscal-year-calendar>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label"><b>To Date </b><b class="color-red"> *</b><b style="float:right;">:</b></label>
+                    <div>
+                        <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div> -->
+
+            <div class="col-md-1 col-xs-12" style="margin-top: 33px;">
+                <div class="form-group">
+                    <button class="btn green btn-success" type="button" (click)="LoadData()" [disabled]="btndisabled">
+                        <i class="fa fa-refresh"></i>
+                        Load
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <customer-header style="display:none;padding:0px" id="headerForPrint"
+                         [header-title]="'Cash Flow Report'">
+        </customer-header>
+    </div>
+    <div class="row">
+        <div class="row" *ngIf="showResult" id="printpage">
+            <div class="col-md-10">
+                <div class="table-responsive" *ngIf="InflowData.length>0">
+                    <table class="table table-bordered table-hover" style="background-color:initial;margin-top:10px">
+                        <thead>
+                            <tr style="background-color: #599be0;color: white;">
+                                <th colspan="4" style="text-align:center;font-size:16px"><b>INFLOW</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let row of InflowData">
+                                <td *ngIf="row.Style == 'BoldCategory'" colspan="3"><b>{{row.Name}}</b></td>
+                                <td *ngIf="row.Style == 'BoldCategory' && row.Amount>0"><b>{{row.Amount | ParseAmount | Currency:'4'}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0">&nbsp;</td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"><b>{{row.Name}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"><b>{{row.Amount | ParseAmount | Currency:'4'}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"></td>
+                                <td *ngIf="row.Style == 'LedgerLevel' && IsLedgerLevel==true && row.Amount>0">&nbsp;</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0">{{row.Name}}</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0">
+                                    {{row.Amount | ParseAmount | Currency:'4'}}</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4 *ngIf="!InflowData.length">No Inflow Record Found!</h4>
+            </div>
+            <div class="col-md-10">
+                <div class="table-responsive" *ngIf="OutflowData.length>0">
+                    <table class="table table-bordered table-hover" style="background-color:initial;margin-top:10px">
+                        <thead>
+                            <tr style="background-color: #599be0;color: white;">
+                                <th colspan="4" style="text-align:center;font-size:16px"><b>OUTFLOW</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let row of OutflowData">
+                                <td *ngIf="row.Style == 'BoldCategory'" colspan="3"><b>{{row.Name}}</b></td>
+                                <td *ngIf="row.Style == 'BoldCategory' && row.Amount>0"><b>{{row.Amount | ParseAmount | Currency:'4'}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0">&nbsp;</td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"><b>{{row.Name}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"><b>{{row.Amount | ParseAmount | Currency:'4'}}</b></td>
+                                <td *ngIf="row.Style == 'LedgerGroup' && row.Amount>0"></td>
+                                <td *ngIf="row.Style == 'LedgerLevel' && IsLedgerLevel==true && row.Amount>0">&nbsp;</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0">{{row.Name}}</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0">
+                                    {{row.Amount| ParseAmount |Currency:'4'}}</td>
+                                <td *ngIf="row.Style == 'LedgerLevel'  && IsLedgerLevel==true && row.Amount>0"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4 *ngIf="OutflowData.length == 0">No Revenue Record Found!</h4>
+            </div>
+            <div class="col-md-10">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;">
+                        <tbody>
+                            <tr *ngFor="let row of cashflowData">
+                                <td *ngIf="row.Style == 'BoldCategory'  && row.Amount>0" colspan="3"><b>{{row.Name}}</b></td>
+                                <td *ngIf="row.Style == 'BoldCategory' && row.Amount>0"><b>{{row.Amount| ParseAmount |Currency:'4' }}</b></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4 *ngIf="cashflowData.length == 0">No Revenue Record Found!</h4>
+            </div>
+
+        </div>
+        <div class="col-md-12" style="padding-bottom: 18px;" *ngIf="showResult">
+            <div class="form-actions">
+                <button class="btn green btn-success hidden-print" (click)="Print('printpage')" value="Print" title="print page">Print<i
+                       class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                <button *ngIf="showExportbtn" class="btn green btn-succcess hidden-print" (click)="ExportToExcel('printpage')" value=""
+                        title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+            </div>
+        </div>
+    </div>
+    <app-print-page *ngIf="showPrint" [print-data-header]="printDetaiils"></app-print-page>

@@ -1,0 +1,27 @@
+.page-bar {
+  box-shadow: none;
+  margin-bottom: 15px;
+}
+.page-bar > div {
+  /* background-color: #fefefe !important; */
+  display: flex;
+  width: 100%;
+  gap: 15px;
+}
+.bill-p-info span {
+  width: 100%;
+}
+.bill-p-info span,
+.bill-p-info span b {
+  display: block;
+  margin: 0;
+}
+.custom-caption {
+  margin-bottom: 0 !important;
+}
+.no-gutters {
+  margin: 0 -5px !important;
+}
+.no-gutters [class*="col-"] {
+  padding: 0 5px !important;
+}

@@ -1,0 +1,133 @@
+<style>
+	.p-category .span2 {
+		min-width: 20.5%;
+	}
+
+	.padder-v {
+		border: 1px solid #ddd;
+		margin: 10px 10px 0px 0px;
+		background-color: #fff;
+		padding-top: 15px;
+		padding-bottom: 15px;
+	}
+
+	.b-r {
+		border-right: 1px solid #cfcfcf;
+	}
+
+	.b-light {
+		border-color: #e4e4e4;
+	}
+
+	.b-light i.text-white {
+		color: #fff;
+	}
+
+	.rpt-link-container {
+		width: 200px;
+		height: 70px;
+		background-color: white;
+	}
+
+	.rpt-link-container:hover {
+		background-color: skyblue;
+		cursor: pointer;
+	}
+
+	.counter {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+	}
+
+	.counter>.counter-item {
+		background-color: #ffffff;
+		width: 100%;
+		margin: 10px auto;
+		text-align: center;
+		line-height: 75px;
+		color: #5867dd;
+		font-family: 'Quicksand', 'Open Sans', sans-serif;
+		font-size: 14px;
+		font-weight: 600;
+		border-radius: 6px !important;
+		box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.02);
+		border: 1px solid #d3d8ff;
+		cursor: pointer;
+		transition: 0.3s linear;
+		display: flex;
+		padding: 5px;
+	}
+
+	.counter>.counter-item h5 {
+		font-weight: 700;
+		font-family: 'Quicksand', 'Open Sans', sans-serif;
+		font-size: 13px;
+		text-transform: uppercase;
+		margin-left: 10px;
+		text-align: left;
+	}
+
+	.counter>.counter-item img {
+		height: 45px;
+		width: 40px;
+		display: block;
+	}
+
+	.counter>.counter-item h5 span {
+		display: block;
+		font-size: 12px;
+		font-family: 'Quicksand', 'Open Sans', sans-serif;
+		margin: 7px auto;
+		font-weight: 600;
+		color: #888;
+		text-transform: capitalize;
+		margin-bottom: auto;
+	}
+
+	.counter>.counter-item:hover {
+		box-shadow: 0px 0px 30px #ebf7ff;
+	}
+</style>
+<div class="wrapper">
+	<div class="counter-wrap-wrap">
+		<div class="row" style="margin-top:10px">
+			<div class="col-md-12">
+				<div class="caption custom-caption">
+					<h3><img src="../../../themes/theme-default/images/counter1.svg" /> <span
+							class="caption-subject">Select Counter</span></h3>
+				</div>
+			</div>
+		</div>
+		<div class="row" *ngIf="disable">
+			<div class="col-md-2" *ngFor="let counter of counterlist">
+				<div class="counter" (click)="ActivateCounter(counter)">
+					<div class="counter-item"> <img src="../../../themes/theme-default/images/counter1.svg" />
+						<h5>{{counter.CounterName}} <span>Click to Activate</span></h5>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div *ngIf="!disable" style="margin-top:30px" class="col-lg-12 col-sm-12 col-xs-12">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="no-data-div" style="font-size: 12px; font-weight:600;"> <strong><i
+									class="fa fa-info-circle" style="font-size: 14px;"></i>&nbsp;&nbsp;Activated Counter
+								Information!!</strong>
+							Counter <b style="color:#0abb87 ;font-size:15px">&nbsp;&nbsp;{{currentCounterName}}</b>
+							Already Activated.
+
+							<br />
+							<label style="float: right;clear: both;margin-top: -5px;">
+								<span>Do you want to Change the counter?</span>
+								<button class="btn btn-sm btn-danger" style="margin-left: 7px;"
+									(click)="DeactivateCounter()">Deactivate Counter </button>
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

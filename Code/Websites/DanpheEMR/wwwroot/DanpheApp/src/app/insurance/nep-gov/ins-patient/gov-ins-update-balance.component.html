@@ -1,0 +1,65 @@
+<style>
+  /*this page is used pop up in BillingTransaciton*/
+  /*below css is to maintain the size of text box in both full page and pop up box*/
+  .form-group {
+    max-width: 600px;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <div style="width: 40%; margin:50px auto;">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4><strong>Update Insurance Balance</strong></h4>
+        </div>
+        <button class="btn btn-danger history-del-btn" (click)="ClosePopup()">X</button>
+        <div class="modelbox-body">
+          <div class="row">
+            <div class="form-horizontal form-body">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label style="font-size: 15px;" class="control-label col-md-6">New Insurance Amount<b style="color: red;">*</b><b style="float:right;">:</b></label>
+                 
+                  <div class="col-md-6">
+                    <input class="form-control" id="insuranceBalance" onClick="this.select();" (keyup.enter)="setFocusById('remark')"  placeholder="Amount" name="amount" [(ngModel)]="updatedBalance"
+                      type="number" value="" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                    <!-- <p id="Ins_UpdatedBalanceInWords">
+                      {{updatedBalance | NumberInWords}}
+                    </p> -->
+                  
+                  </div>
+                  <span class="control-label col-md-6" style="font-weight:lighter;">( In words: {{updatedBalance | NumberInWords}} only ) </span>
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 15px;" class="control-label col-md-6">Remark<b style="color: red;">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-6">                         
+                      <textarea class="form-control" maxlength="200" id="remark" cols="40" rows="5" 
+                      (keyup.enter)="setFocusById('btnUpdateBalance')"  placeholder="remark" name="remark" 
+                      [(ngModel)]="insuraceDetail.Remark"></textarea>             
+                  </div>
+                </div>
+                <div class="form-group">
+                  <h3 class="col-md-6" style="color:blue">Your Insurance Balance</h3>
+                  <h3><b class="col-md-6" style="color:red">{{coreService.currencyUnit}} {{insuraceDetail.Ins_InsuranceBalance}}</b>
+                  </h3>
+                  <!--{{currencyUnit}}-->
+                  <!-- <p class="col-md-6" id="Ins_YourInsuranceBalanceInWords">
+                    {{insuraceDetail.Ins_InsuranceBalance | NumberInWords}}
+                  </p> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" id="btnUpdateBalance"  [disabled]="loading" class="btn green btn-success margin-7-hr" (click)="SubmitUpdateInsuranceBalance()">
+              Update Insurance Balance
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="ClosePopup()"> Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

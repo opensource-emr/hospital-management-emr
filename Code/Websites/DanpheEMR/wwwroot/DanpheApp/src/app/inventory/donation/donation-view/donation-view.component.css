@@ -1,0 +1,44 @@
+/* #printpage table tr td,
+#printpage table th {
+  border-color: #000
+}
+
+.header-div {
+  display: flex;
+  justify-content: space-between;
+} */
+
+
+.header-div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+div.inv_modal * {
+  font-weight: 400;
+}
+
+.modelbox-div {
+  padding: 18px;
+}
+
+.bold,
+.bold>div,
+.bold>div>u {
+  font-weight: 700;
+}
+
+table>thead>tr>th {
+  font-weight: 700;
+}
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+tr.donation-item-header :first-child,
+tr.donation-item-row :first-child {
+  width: 4rem;
+}

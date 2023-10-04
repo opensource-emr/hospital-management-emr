@@ -1,0 +1,228 @@
+<style>
+  @page {
+    size: A5 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0 !important;
+    font-size: 10px;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 12px !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 10px !important;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+    padding: 0 !important;
+    font-weight: normal !important;
+  }
+</style>
+
+<div>
+  <div>
+    <div id="provisional-invoice-print" class="invoice-receipt">
+      <div class="box-body invoice header">
+        <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+          <tr>
+            <td colspan="3" width="25%">
+              <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;"
+                   src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+            </td>
+            <td colspan="6" width="50%" style="color: #000 !important;">
+              <h3 class="c_name" style="text-align: center;"><strong>{{headerDetail.hospitalName}}</strong></h3>
+              <p class="c_paragraphs" style="text-align: center;">{{headerDetail.address}}</p>
+              <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.tel}}</p>
+              <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.DDA}}</p>
+            </td>
+            <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+              <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
+                  : {{headerDetail.PANno}}</strong> </p>
+            </td>
+          </tr>
+        </table>
+        <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+          <tr>
+            <td colspan="12" style="text-align: center; color: #000 !important;">
+              <p><strong>PHARMACY UNITS</strong></p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="12" style="text-align: center; color: #000 !important;">
+              <p><strong>Provisional Return</strong></p>
+            </td>
+          </tr>
+          <tr style="border: 1px solid #ccc; color:black!important;">
+            <td colspan="12" style="padding: 5px;">
+              <table style="width: 100%; margin-bottom: 0;">
+                <tr>
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong>Receipt No : </strong>{{ProvisionalInvoiceReturn.CancellationReceiptNo}}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong>Hospital No : </strong>{{ProvisionalInvoiceReturn.PatientInfo.PatientCode}}</p>
+                  </td>
+                  <td colspan="6" style="text-align: right;">
+                    <p class="c_paragraphs"><strong>Return Date:</strong> {{ProvisionalInvoiceReturn.ReturnDate |
+                      DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong>Patient's Name: </strong>{{ProvisionalInvoiceReturn.PatientInfo.ShortName}}</p>
+                  </td>
+                </tr>
+                <tr *ngIf="ProvisionalInvoiceReturn.PatientInfo">
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong>Address: </strong><span
+                            *ngIf="ProvisionalInvoiceReturn.PatientInfo.Address!==null">{{ProvisionalInvoiceReturn.PatientInfo.Address}},</span>
+                      {{ProvisionalInvoiceReturn.PatientInfo.CountrySubDivisionName}} </p>
+                  </td>
+                  <td colspan="6" style="text-align: right;">
+                    <p class="c_paragraphs"><strong> Age/Sex :</strong>{{ProvisionalInvoiceReturn.PatientInfo.DateOfBirth | DanpheDateTime:'age'
+                      }}/{{ProvisionalInvoiceReturn.PatientInfo.Gender}}</p>
+                  </td>
+                </tr>
+                <tr *ngIf="ProvisionalInvoiceReturn.ProviderName && ProvisionalInvoiceReturn.ProviderNMCNumber">
+                  <td colspan="6" style="text-align: left;">
+                    <p *ngIf="ProvisionalInvoiceReturn.ProviderName" class="c_paragraphs"><strong>Provider's Name:
+                      </strong>{{ProvisionalInvoiceReturn.ProviderName}}
+                    </p>
+                  </td>
+                  <td colspan="6" style="text-align: right;" *ngIf="ProvisionalInvoiceReturn.ProviderNMCNumber">
+                    <p class="c_paragraphs"><strong>NMCNumber:</strong>{{ProvisionalInvoiceReturn.ProviderNMCNumber}}</p>
+                  </td>
+                </tr>
+                <tr *ngIf="ProvisionalInvoiceReturn.ClaimCode || ProvisionalInvoiceReturn.PolicyNo">
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong> ClaimCode:</strong> {{ProvisionalInvoiceReturn.ClaimCode}}</p>
+                  </td>
+                  <td colspan="6" style="text-align: right;">
+                    <p class="c_paragraphs"><strong>PolicyNo: </strong>{{ProvisionalInvoiceReturn.PolicyNo}} </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="6" style="text-align: left;">
+                    <p class="c_paragraphs"><strong>Contact No: </strong>{{ProvisionalInvoiceReturn.PatientInfo.PhoneNumber}}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr style="color:black!important;">
+            <th style="padding: 10px 10px 5px 10px;">SN.</th>
+            <th colspan="4" style="padding: 10px 10px 5px 10px;">Particular(s)</th>
+            <th style="padding: 10px 10px 5px 10px;">Qty</th>
+            <th colspan="2" style="padding: 10px 10px 5px 10px;">Expiry</th>
+            <th style="padding: 10px 10px 5px 10px;">Batch</th>
+            <th style="padding: 10px 10px 5px 10px;">Rack No.</th>
+            <th style="padding: 10px 10px 5px 10px;">Rate</th>
+            <th style="padding: 10px 10px 5px 10px;">Amount</th>
+          </tr>
+          <tr *ngFor="let row of ProvisionalInvoiceReturn.ProvisionalInvoiceItems; let i=index" style="color:black!important;">
+            <td style="padding: 0px 10px; ">{{i+1}}</td>
+            <td colspan="4" style="padding: 0px 10px;">{{row.ItemDisplayName}} </td>
+            <td style="padding: 0px 10px; ">{{row.Quantity}}</td>
+            <td colspan="2" style="padding: 0px 10px; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+            <td style="padding: 0px 10px; ">{{row.BatchNo}}</td>
+            <td style="padding: 0px 10px; ">{{row.RackNo}}</td>
+            <td style="padding: 0px 10px; ">{{row.SalePrice | number: "1.2-4"}} </td>
+            <td style="padding: 0px 10px; ">{{row.SubTotal | number: "1.2-4"}}</td>
+          </tr>
+          <tr style="border-top: 1px solid #ccc; color:black!important;">
+            <td colspan="8" style="padding: 5px; vertical-align: top;">
+              <p class="c_paragraphs"><strong>In Words :{{ProvisionalInvoiceReturn.TotalAmount | NumberInWords}} <span
+                        *ngIf="ProvisionalInvoiceReturn.TotalAmount !=0">Only</span></strong></p>
+            </td>
+            <td colspan="3" style="padding: 5px; text-align: right;">
+              <p class="c_paragraphs"><strong>SubTotal: </strong></p>
+              <p *ngIf="ProvisionalInvoiceReturn.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable" class="c_paragraphs">
+                <strong>Discount:</strong></p>
+              <p *ngIf="ProvisionalInvoiceReturn.VATAmount && IsItemLevelVATApplicable" class="c_paragraphs"><strong>VAT:</strong></p>
+              <p *ngIf="ProvisionalInvoiceReturn.CoPaymentCashAmount" class="c_paragraphs"><strong>CoPay Cash Amount: </strong></p>
+              <p *ngIf="ProvisionalInvoiceReturn.CoPaymentCreditAmount" class="c_paragraphs"><strong>CoPay Credit Amount: </strong></p>
+              <p class="c_paragraphs"><strong>Total Amount: </strong></p>
+            </td>
+            <td style="padding: 10px 0px 10px 10px;;">
+              <p class="c_paragraphs">{{ProvisionalInvoiceReturn.SubTotal | number: "1.2-4"}}</p>
+              <p class="c_paragraphs" *ngIf="ProvisionalInvoiceReturn.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable">
+                {{ProvisionalInvoiceReturn.DiscountAmount |number: "1.2-4"}}</p>
+              <p class="c_paragraphs" *ngIf="ProvisionalInvoiceReturn.VATAmount && IsItemLevelVATApplicable">{{ProvisionalInvoiceReturn.VATAmount |
+                number: "1.2-4"}}
+              <p *ngIf="ProvisionalInvoiceReturn.CoPaymentCashAmount" class="c_paragraphs">{{ProvisionalInvoiceReturn.CoPaymentCashAmount | number:
+                "1.2-4"}}</p>
+              <p *ngIf="ProvisionalInvoiceReturn.CoPaymentCreditAmount" class="c_paragraphs">{{ProvisionalInvoiceReturn.CoPaymentCreditAmount |
+                number: "1.2-4"}}</p>
+              <p class="c_paragraphs">{{coreService.currencyUnit}}{{ProvisionalInvoiceReturn.TotalAmount | number: "1.2-4"}}</p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" style="padding: 0 10px; vertical-align: top;" style="color:black!important;">
+              <p class="c_paragraphs"><strong>User: </strong>{{ProvisionalInvoiceReturn.UserName}}</p>
+            </td>
+            <td colspan="6" style="padding: 0 10px; vertical-align: top; text-align: right;" style="color:black!important;">
+              <p class="c_paragraphs" style="text-align: right;"><strong>Time: </strong>{{ProvisionalInvoiceReturn.ReturnDate |
+                DanpheDateTime:'format':'HH:mm'}}</p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="12" style="padding: 5px; text-align: center;" style="color:black!important;">
+              <p class="c_paragraphs" *ngIf="showEnglish">{{englishText}}</p>
+              <p class="c_paragraphs" *ngIf="showNepali">{{nepaliText}}</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-invoice'" (on-printer-change)="OnPrinterChanged($event)">
+    </select-printer>
+    <div style="text-align: center; margin-bottom: 15px;">
+      <button class="btn blue" id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="Print('provisional-invoice-print')">
+        Print Receipt
+        <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+  </div>
+  <new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj" (print-sucess)="CallBackBillPrint($event)">
+  </new-print-page>
+</div>

@@ -1,0 +1,227 @@
+<style>
+    table th {
+        position: sticky;
+        top: 0;
+        background-color: rgb(165, 172, 172);
+    }
+
+    table tbody tr,
+    table thead {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+
+    }
+
+    table tbody {
+        /* max-height: 450px; */
+        display: block;
+        /* overflow-y: scroll; */
+    }
+
+    .test-list tr td {
+        font-size: 11px;
+        overflow: hidden;
+        padding: 3px !important;
+        vertical-align: middle;
+    }
+
+    tr.bg-red-covid-positive td:not(:last-child) {
+        background: #e7505a !important;
+        color: #fff;
+    }
+</style>
+<div class="wrapper">
+    <div class="row">
+        <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)"
+                [date-settings-name]="'common-range-with-today'">
+            </from-to-date-select>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <button class="btn green btn-success" type="button" (click)="GetAllSMSApplicableTest()">
+                    <i class="fa fa-search"></i> Show Data
+                </button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button *ngIf="showSendToAll" class="btn green btn-success" type="button" (click)="SendToAll()">
+                <i class="fa fa-search"></i> Send To All
+            </button>
+        </div>
+        <div class="col-md-3">
+            <div class="lb-search-filter text-center">
+                <div class="search-title">Filter SMS: </div>
+                <div class="input-group">
+                    <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="radio" [(ngModel)]="itmIsActiveValue" name="name"
+                                (change)="OnTestFiltersChanged()" value="Sent" style="width:15px;height:15px" />
+                            <span></span>Sent </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="radio" [(ngModel)]="itmIsActiveValue" name="name"
+                                (change)="OnTestFiltersChanged()" value="NotSent" style="width:15px;height:15px" />
+                            <span></span>Not Sent</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <input class="searchtbx" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+        </div>
+        <div class="col-md-3"></div>
+        <div class="col-md-4">
+            <div class="lb-search-filter text-center">
+                <div class="search-title">Filter Findings: </div>
+                <div class="input-group">
+                    <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="radio" [(ngModel)]="itmResultValue" name="findings"
+                                (change)="OnTestFiltersChanged()" value="positive" style="width:15px;height:15px" />
+                            <span></span>Positive </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="radio" [(ngModel)]="itmResultValue" name="findings"
+                                (change)="OnTestFiltersChanged()" value="negative" style="width:15px;height:15px" />
+                            <span></span>Negative</label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="radio" [(ngModel)]="itmResultValue" name="findings"
+                                (change)="OnTestFiltersChanged()" value="all" style="width:15px;height:15px" />
+                            <span></span>All</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="data-test-list">
+        <div class="col-lg-12 col-sm-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped test-list" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <!-- <th colspan="1">
+                                  <label class="mt-checkbox mt-checkbox-outline">
+                                      <input autocomplete="off" type="checkbox" [(ngModel)]="SelectAll"
+                                          (change)="SelectAllData()" />
+                                      <span></span>
+                                  </label>
+                              </th> -->
+                            <th colspan="2">Hospital No.</th>
+                            <th colspan="3">Patient Name</th>
+                            <th colspan="2">Age/Sex</th>
+                            <th colspan="2">Phone Number</th>
+                            <th colspan="2">TestName</th>
+                            <th colspan="3">Sample Coll. On</th>
+                            <th colspan="2">Result</th>
+                            <th colspan="2" title="Shows if Lab Report uploaded or not ?">Uploaded ?</th>
+                            <th colspan="4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container
+                            *ngFor="let test of filteredLabReqList | searchFilter:searchString | async | paginate: {id: 'listing_pagination', itemsPerPage: 10, currentPage: page } ; let i=index; ">
+                            <tr
+                                [ngClass]="test.Result && test.Result.toLowerCase() == 'positive' ? 'bg-red-covid-positive' : ''">
+                                <!-- <td colspan="1">
+                                      <label class="mt-checkbox mt-checkbox-outline">
+                                          <input autocomplete="off" type="checkbox" [(ngModel)]="test.IsSelected"
+                                              (change)="TestSelected(test)" />
+                                          <span></span>
+                                      </label>
+                                  </td> -->
+                                <td colspan="2">{{test.PatientCode}}</td>
+                                <td colspan="3">{{test.PatientName}}</td>
+                                <td colspan="2">{{test.DateOfBirth | DanpheDateTime:'age'}}/{{test.Gender}}</td>
+                                <td colspan="2">{{test.PhoneNumber}}</td>
+                                <td colspan="2">{{test.LabTestName}}</td>
+                                <td colspan="3">{{test.SampleCollectedOnDateTime | DanpheDateTime:'format':'YYYY-MM-DD
+                                    hh:mm A'}}</td>
+                                <td colspan="2">{{test.Result}}</td>
+                                <td colspan="2">{{test.IsFileUploaded ? 'Yes' : 'No'}}</td>
+                                <td colspan="4">
+                                    <button class="btn green btn-success btn-sm" (click)="sendSingleSMS(test)">
+                                        Send Sms
+                                    </button>
+                                    <button class="btn green btn-success btn-sm" (click)="sendPdf(test)">
+                                        <ng-container *ngIf="sendPsfAndSmsOnSingleClick">Pdf & Sms</ng-container>
+                                        <ng-container *ngIf="!sendPsfAndSmsOnSingleClick">Upload Pdf</ng-container>
+                                    </button>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="col-md-12">
+            <pagination-controls id="listing_pagination" (pageChange)="page = $event"
+                style="display: flex; float:right;">
+            </pagination-controls>
+        </div>
+    </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showMessageToSend">
+    <div class="portlet-body form">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="modelbox-div">
+                <div class="modelbox-header text-center">
+                    <h4 class="margin-0-vr text-danger"><strong>SMS Message</strong></h4>
+                </div>
+                <div class="modelbox-body">
+                    <p *ngIf="smsDataToSend">Message that will be send to {{smsDataToSend.PhoneNumber}} is: </p>
+                    <p *ngIf="smsDataToSend" style="font-weight: 700;">{{smsDataToSend.Message}}</p>
+                </div>
+                <div class="modelbox-footer">
+                    <div class="all-buttons text-right">
+                        <button type="button" class="btn btn-primary btn-sm margin-7-hr" id="btnSendSms"
+                            (click)="SendSMS()">
+                            Send Message
+                        </button>
+                        <button type="button" id="btnSendCancel" class="btn btn-cancel btn-sm margin-7-hr"
+                            (click)="CancelMessageSend()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <div class="close-modelbox">
+                    <button class="btn btn-danger" (click)="CancelMessageSend()">
+                        X
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReport">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption clearfix">
+                        <button class="btn green btn-success pull-right" (click)="exportToPdf()" [disabled]="loading"
+                            *ngIf="loadedForExport && !sendPsfAndSmsOnSingleClick">Export
+                        </button>
+                        <button class="btn green btn-success pull-right" (click)="exportToPdf()" [disabled]="loading"
+                            *ngIf="loadedForExport && sendPsfAndSmsOnSingleClick">Export with SMS
+                        </button>
+                        <button class="btn btn-danger pull-right" [disabled]="loading" (click)="Close()">X</button>
+                    </div>
+                    <div class="modelbox-body">
+                        <danphe-lab-results *ngIf="showReport" [showReport]="showReport" [hidePrintButton]="true"
+                            [requisitionIdList]="requisitionIdList" [printReportFromGrid]="false"
+                            (callbackAddUpdate)="CallBackBackToGrid($event)">
+                        </danphe-lab-results>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

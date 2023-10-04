@@ -1,0 +1,38 @@
+<!-- START LABEL STATS -->
+<div class="row">
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <div class="dashboard-stat dashboard-stat-v2 blue">
+      <div class="visual"> <i class="fa fa-flask"></i> </div>
+		<div class="details clearfix">
+        <div class="board-title clearfix">
+          <div> <p>Total Emergency Patients Registered Today </p></div>
+          <div class="count" data-counter="counterup">{{stats.TotalRegisteredPatients}}</div>
+        </div>  
+      </div>      
+    </div>
+  </div>
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <div class="dashboard-stat dashboard-stat-v2 red">
+      <div class="visual"> <i class="fa fa-calendar"></i> </div>
+		<div class="details clearfix">
+      <div class="board-title clearfix">
+        <div> <p>Total Patients Triaged Today</p> <span>Mild : {{stats.MildPatients}} </span> <span>Moderate : {{stats.ModeratePatients}}</span> <span>Critical : {{stats.CriticalPatients}}</span> </div>
+        <div class="count">{{stats.TotalTriagedPatients}}</div>
+      </div>     
+    </div>      
+    </div>
+  </div>
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <div class="dashboard-stat dashboard-stat-v2 green">
+      <div class="visual"> <i class="fa fa-tasks"></i> </div>
+		<div class="details clearfix">
+      <div class="board-title clearfix">
+        <div> <p>Total Patients Finalized Today</p> <span>LAMA : {{stats.LAMAPatients}} </span> <span>Admitted : {{stats.AdmittedPatients}} </span> <span>Transferred : {{stats.TransferredPatients}} </span> </div>
+        <div class="count">{{stats.TotalFinalizedPatients}}</div>
+      </div>
+      <div class="left clearfix"> <span>Discharged : {{stats.DischargedPatients}} </span> <span>Death : {{stats.DeathPatients}}</span> </div>
+    </div>      
+    </div>
+  </div>
+</div>
+<div class="clearfix"></div>

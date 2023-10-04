@@ -1,0 +1,50 @@
+@media print {
+  @page {
+    font-size: 70%;
+  }
+  header,
+  footer,
+  nav,
+  aside,
+  form {
+    display: none;
+  }
+
+  body {
+    font-size: 9pt;
+    /* color: #000; */
+    margin: 0;
+    padding: 0;
+    font-size: 70%;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .c_paragraphs {
+    font-size: 7pt !important;
+    margin: 0 0 0 0 !important;
+    padding: 0;
+  }
+
+  .c_name {
+    font-size: 9pt !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  table {
+    margin-bottom: 20px;
+    width: 100% !important;
+  }
+
+  table td,
+  table th {
+    padding: 5px 5px!important;
+    /* display: block; */
+    /* border: 1px solid #000; */
+    vertical-align: top !important;    
+    /* padding: 0 !important; */
+    font-size: 7pt !important;
+  }
+}
+
+

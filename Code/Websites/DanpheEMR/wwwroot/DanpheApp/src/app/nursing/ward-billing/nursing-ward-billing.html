@@ -1,0 +1,126 @@
+<style>
+  table tr th,
+  table tr td {
+    padding: 5px;
+  }
+</style>
+
+<div class="col-md-12">
+  <ng-container *ngIf="isPopUp">
+    <div class="row" [ngClass]="isPopUp ? 'mar-btm-25':'npp'">
+      <div class="col-md-12">
+        <nursing-ip-request *ngIf="currPatVisitContext && isPopUp && allBillItems && allBillItems.length > 0" [counterId]="nursingCounterId"
+                            [past-tests]="provisionalItemsDetails" [visitType]="currPatVisitContext.VisitType"
+                            [billingType]="currPatVisitContext.VisitType == 'emergency' ? 'outpatient':currPatVisitContext.VisitType"
+                            [patientId]="currentPatient.PatientId" [visitId]="currentVisit.PatientVisitId" (emit-billItemReq)="OnNewIpRequestClosed()"
+                            [past-tests]="provisionalItemsDetails"
+                            [requestingDepartment]="currPatVisitContext.RequestingDepartmentId"></nursing-ip-request>
+      </div>
+    </div>
+    <hr />
+  </ng-container>
+
+  <div *ngIf="!isPopUp" class="caption" style="color: #2c8e1a; width: 100%; display: table;">
+    <h4 style="display: inline-block;text-align: left;margin: 0;line-height: 32px;">
+      <b>Orders List for {{currentPatient.ShortName}}</b>
+    </h4>
+    <a class="btn blue" style="display: inline-block; text-align: right; float: right;" (click)="AddNewIpRequest()">
+      New
+      Ward Request
+    </a>
+    <!--<a class="btn blue" style="display: inline-block; float: right; margin-right: 5px;" (click)="showsummary()">Summary Details</a>-->
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover" style="width: 100%; margin-top: 15px;">
+      <thead *ngIf="currPatVisitContext">
+        <tr style="background: #006687; color: #fff;">
+          <ng-container *ngIf="!isPopUp">
+            <td colspan="2">Ward: {{currPatVisitContext.Current_WardBed}}</td>
+            <td colspan="2">
+              Bed:
+              {{currPatVisitContext.BedFeatureName}}/{{currPatVisitContext.BedCode}}
+            </td>
+            <td colspan="3">
+              Admitting Docor: {{currPatVisitContext.PerformerName}}
+            </td>
+            <td colspan="2" *ngIf="currPatVisitContext.AdmissionDate">
+              Admitted On: <date-lbl [value]="currPatVisitContext.AdmissionDate" [show-time]="true"></date-lbl>
+            </td>
+          </ng-container>
+          <ng-container *ngIf="isPopUp">
+            <td style="text-align: center;">
+              Orders of {{currentPatient.ShortName}}
+            </td>
+          </ng-container>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+
+<!-- <div *ngIf="isPopUp" class="col-md-6 col-md-offset-3">
+  <b>Order List of {{currentPatient.ShortName}}</b>
+</div> -->
+
+<div class="col-md-12">
+  <danphe-grid [grid-colDefaults]="nursingWardBillingColumns" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+               [grid-data]="provisionalItemsDetails" (grid-actions)="NursingWardBillingGridActions($event)" [show-print-button]="false"
+               [supressPagination]="true" [resizeColumnToFit]="true">
+  </danphe-grid>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
+  <div class="portlet-body form">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-danger text-center">
+            <strong>Write Cancel Remarks</strong>
+          </h4>
+        </div>
+        <div class="modelbox-body">
+          <div>
+            Cancel Remarks:&nbsp;
+            <textarea [(ngModel)]="cancelRemarks" class="form-control" name="cancelremarks"></textarea>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
+              Proceed
+            </button>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="showConfirmationBox=false">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showNewIpRequestPopup && currPatVisitContext && !isPopUp">
+  <div class="portlet-body form">
+    <div class="col-md-10 col-md-offset-1">
+      <div class="modelbox-div row">
+        <div class="modelbox-header">Add Ward Request</div>
+        <div class="modelbox-body">
+          <nursing-ip-request *ngIf="!isPopUp" [counterId]="nursingCounterId"
+                              [past-tests]="provisionalItemsDetails" [visitType]="currPatVisitContext.VisitType"
+                              [billingType]="currPatVisitContext.VisitType == 'emergency' ? 'outpatient':currPatVisitContext.VisitType"
+                              [patientId]="currentPatient.PatientId" [visitId]="currentVisit.PatientVisitId"
+                              (emit-billItemReq)="OnNewIpRequestClosed()"></nursing-ip-request>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseOrderView()">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,301 @@
+<style>
+  .centered-caption {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="modelbox-div ref_modal_div clearfix" style="margin: 10px;">
+          <div class="caption custom-caption no-margin centered-caption">
+            <h3>Marketing Referral Entry</h3>
+            <a class="close-btn btn-danger" (click)="Close()" style="
+            margin-top: 12px;
+            margin-right: 12px">X</a>
+          </div>
+          <!-- Patient details-->
+          <div id="mkt-referral-form" class="form-horizontal hm-form">
+            <div class="patient-details-form col-md-12" style="
+            padding: 0px!important;
+            margin-top: 15px;
+            margin-bottom: 15px;">
+
+
+              <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="control-label lbl-text">
+                    Patient Name
+                  </label>
+                  <label style="float:right;">
+                    <b>:</b>
+                  </label>
+                </div>
+                <div class="col-md-6">
+
+                  <span style="font-size: 12px;">
+                    {{selectedRowData.ShortName}} ({{selectedRowData.Age}})
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="control-label lbl-text">
+                    Invoice No
+                  </label>
+                  <label style="float:right;">
+                    <b>:</b>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <span style="font-size: 12px;">
+                    {{selectedRowData.InvoiceNoFormatted}}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="control-label lbl-text">
+                    Net Amount
+                  </label>
+                  <label style="float:right;">
+                    <b>:</b>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <span style="font-size: 12px;">
+                    {{selectedRowData.NetAmount}}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="control-label lbl-text">
+                    Hospital No
+                  </label>
+                  <label style="float:right;">
+                    <b>:</b>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <span style="font-size: 12px;">
+                    {{selectedRowData.PatientCode}}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="control-label lbl-text">
+                    Invoice Date
+                  </label>
+                  <label style="float:right;">
+                    <b>:</b>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <span style="font-size: 12px;">
+                    {{selectedRowData.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD '}} ({{selectedRowData.CreatedOn |
+                    nepaliDate:'format':'YYYY-MM-DD '}}BS)
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <hr>
+          <!-- Bill Details-->
+          <div class="Bill-details col-md-4">
+            <div style="border: 1px solid black; padding: 10px; margin-bottom: 5px;">
+
+              <label><b>Bill Details:</b></label>
+              <table class="table_data"
+                     style="padding: 2px; width:93%; margin-left:20px; margin-bottom: 20px; color: #474646; font-size:smaller;"
+                     border="1">
+                <tr style="text-align: center;">
+                  <th style="width:4%; text-align: center;"> S.N.</th>
+                  <th style="width:30%;text-align: center;"> Item Name</th>
+                  <th style="width:12%;text-align: center;"> Net. Qty</th>
+                  <th style="width:12%;text-align: center;"> Net Amt.</th>
+                </tr>
+                <tbody class="previous_scheme_data">
+                  <tr *ngFor=" let billdtl of billDetails; let i=index;">
+                    <td style="text-align: center;">{{i+1}}.</td>
+                    <td style="text-align: center;">{{billdtl.ItemName }}</td>
+                    <td style="text-align: center;">{{billdtl.NetQuantity}}</td>
+                    <td style="text-align: center;">{{billdtl.NetTotalAmount | number:'1.2-4'}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Referral Entry-->
+          <div class="Referral-Entry col-md-8">
+            <label><b> Referral Entry</b></label>
+            <div style="border: 1px solid black; padding: 10px; margin-bottom: 5px;">
+              <div class="row input">
+                <form [formGroup]="ReferralEntryValidator">
+                  <div class="col-md-2">
+                    <div class="col-md-12">
+                      <label class="control-label lbl-text">
+                        Ref. Scheme<sup class="color-red">*</sup>
+                      </label>
+                    </div>
+                    <div class="col-md-12">
+                      <select [(ngModel)]="selectedReferralScheme"
+                              formControlName="ReferralSchemeId"
+                              (change)="onReferralSchemeSelected($event)" class="form-control referring-party-input"
+                              style="width: 100%;">
+                        <option [ngValue]="null" disabled>Select Referral Scheme</option>
+                        <option *ngFor="let scheme of referralSchemeList" [ngValue]="scheme">{{ scheme.ReferralSchemeName }}</option>
+                      </select>
+                      <span *ngIf="ReferralEntryValidator.dirty && ReferralEntryValidator.invalid ">
+                        <span class="color-red font-sm"
+                              *ngIf="ReferralEntryValidator.controls['ReferralSchemeId'].hasError('required')">Referral Scheme is Required</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <div class="col-md-12">
+                      <label class="control-label lbl-text">
+                        Referring Party <sup class="color-red">
+                          *</sup>
+                      </label>
+                    </div>
+                    <div class="col-md-12">
+                      <input danphe-auto-complete
+                             formControlName="ReferringPartyId"
+                             [(ngModel)]="selectedReferringParty"
+                             [source]="referringPartyList"
+                             placeholder="Enter Name, VehicleNo, etc (min 3 characters)"
+                             display-property-name="ReferringPartyName" value-property-name="ReferringPartyName"
+                             [list-formatter]="ReferringPartiesListFormatter"
+                             (ngModelChange)="onReferringPartySelected($event)" max-num-list="15" [grid-sort]="'ReferringPartyName'" [min-chars]="3"
+                             [match-property-csv]="'ReferringPartyName,ReferringOrganizationName,VehicleNumber,GroupName'"
+                             [match-formatted]="true"
+                             onClick="this.select();"
+                             class="form-control referring-party-input"
+                             style="height: 30px; width: 90% !important;" />
+                      <span *ngIf="ReferralEntryValidator.dirty && ReferralEntryValidator.invalid ">
+                        <span class="color-red font-sm"
+                              *ngIf="ReferralEntryValidator.controls['ReferringPartyId'].hasError('required')">Referring Party Name is Required</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="col-md-12">
+                      <label class="control-label lbl-text">
+                        Remarks
+                      </label>
+                    </div>
+                    <div class="col-md-12">
+                      <textarea [ngModelOptions]="{standalone: true}" class="form-control referring-party-input" [(ngModel)]="selectedRemarks"
+                                style="width: 100%;"></textarea>
+                    </div>
+                  </div>
+                </form>
+                <div class="col-md-3" style="margin-top: 16px;">
+                  <div class="col-md-6">
+                    <button class="btn green btn-success" (click)="loading=true;SaveNewReferral()" value="Add">
+                      Save<i style="margin-left:10px;"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-6">
+                    <button class="btn btn-warning" (click)="Clear()" value="Clear">
+                      Clear<i style="margin-right:10px;"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <br>
+              <div class="row details">
+                <div class="col-md-3">
+                  <label class="control-label lbl-text">
+                    Group:
+                  </label>
+                  <span style="font-size: 12px;">
+                    {{selectedReferringPartyObj.GroupName}}
+                  </span>
+                </div>
+                <div class="col-md-3">
+                  <label class="control-label lbl-text">
+                    Vehicle No:
+                  </label>
+                  <span style="font-size: 12px;">
+                    {{selectedReferringPartyObj.VehicleNumber}}
+                  </span>
+                </div>
+                <div class="col-md-3" *ngIf="ShowPercentageAndAmount.ShowPercentage">
+                  <label class="control-label lbl-text">
+                    Ref. % :
+                  </label>
+                  <span style="font-size: 12px;" *ngIf="selectedReferralScheme.ReferralPercentage">
+                    {{selectedReferralScheme.ReferralPercentage}}%
+                  </span>
+                </div>
+                <div class="col-md-3" *ngIf="ShowPercentageAndAmount.ShowCommissionAmount">
+                  <label class="control-label lbl-text">
+                    Amount:
+                  </label>
+                  <span style="font-size: 12px;" *ngIf="this.Amount">
+                    {{this.Amount | number:'1.2-4'}}
+                  </span>
+                </div>
+                <div class="col-md-3">
+                  <label class="control-label lbl-text">
+                    Organization:
+                  </label>
+                  <span style="font-size: 12px;">
+                    {{selectedReferringPartyObj.ReferringOrganizationName}} </span>
+                </div>
+                <div class="col-md-3">
+                  <label class="control-label lbl-text">
+                    Area:
+                  </label>
+                  <span style="font-size: 12px;">
+                    {{selectedReferringPartyObj.AreaCode}} </span>
+                </div>
+              </div>
+              <br>
+              <!--Already Entered -->
+              <div class="row Bill-details">
+                <label style="margin-left:15px;"><b>Already Entered:</b></label>
+                <table class="table_data"
+                       style="padding: 2px; width:93%; margin-left:20px; margin-bottom: 20px; color: #474646; font-size:smaller;"
+                       border="1">
+                  <tr style="text-align: center;">
+                    <th style="width:4%; text-align: center;"> </th>
+                    <th style="width:18%;text-align: center;"> Scheme</th>
+                    <th style="width:24%;text-align: center;"> Referring Party</th>
+                    <th style="width:12%;text-align: center;"> Org. / Area Code</th>
+                    <th style="width:12%;text-align: center;"> Vehicle No</th>
+                    <th style="width:12%;text-align: center;"> Ref %</th>
+                    <th style="width:12%;text-align: center;"> Amount</th>
+                    <th style="width:12%;text-align: center;"> Remarks</th>
+                  </tr>
+                  <tbody class="previous_scheme_data">
+                    <tr *ngFor=" let aed of alreadyAddedCommission; let i=index;">
+                      <td style="text-align: center;">
+                        <a class="close-btn btn-danger" (click)="confirmDelete(aed.ReferralCommissionId)" style="width: 30px;">X</a>
+                      </td>
+                      <td style="text-align: center;">{{aed.ReferralSchemeName}}</td>
+                      <td style="text-align: center;">{{aed.ReferringPartyName}}</td>
+                      <td style="text-align: center;">{{aed.ReferringOrganizationName}}/{{aed.AreaCode}}</td>
+                      <td style="text-align: center;">{{aed.VehicleNumber}}</td>
+                      <td style="text-align: center;">{{aed.Percentage}}</td>
+                      <td style="text-align: center;">{{aed.InvoiceTotalAmount}}</td>
+                      <td style="text-align: center;">{{aed.Remarks}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

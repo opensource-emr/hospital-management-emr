@@ -1,0 +1,41 @@
+<div class="wrapper">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <b><span
+                        class="caption-subject">Credit Settlement Report</span></b> </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+        </div>
+        <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+                <button class="btn green btn-success" type="button" (click)="LoadReport();this.loading=true;"
+                    [disabled]="loading">
+                    <i class="fa fa-search"></i> Show Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf = "creditSettlementReportData.length > 0">
+            <danphe-grid [grid-colDefaults]="creditSettlementReportColumns" [grid-data]="creditSettlementReportData"
+                [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-date-range]="dateRange"
+                [report-for]="'billing'"
+                (grid-actions) = "CreditSettlementReportGridActions($event)">
+            </danphe-grid>
+        </div>
+    </div>
+</div>
+
+<div *ngIf = "showCreditSettlementDetails">
+    <credit-settlement-rpt-view-details 
+    [showCreditSettlementDetail]="showCreditSettlementDetails"
+    (SettlementViewDetailCallBack)="SettlementViewDetailCallBack($event)"
+    [SettlementDetail] = "SettlementDetail"
+    [FromDate] = "fromDate" [ToDate] = "toDate" 
+    >
+    </credit-settlement-rpt-view-details>
+</div>

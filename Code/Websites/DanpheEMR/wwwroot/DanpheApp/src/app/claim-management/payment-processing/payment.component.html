@@ -1,0 +1,179 @@
+<div style="padding: 5px;">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <span class="caption-subject" style="color:rgb(97, 97, 209);" *ngIf="paymentPendingClaimList.length > 0">Insurance Claim Payment
+        Processing</span>
+    </div>
+  </div>
+  <danphe-grid *ngIf="paymentPendingClaimList.length > 0" [grid-colDefaults]="paymentPendingClaimListGridColumns"
+               [grid-data]="paymentPendingClaimList"
+               (grid-actions)="PendingClaimGridActions($event)">
+  </danphe-grid>
+  <new-claim-payment *ngIf="showNewPaymentEntryPopUp" [Claim]="selectedClaim" (CloseNewPaymentPopUp)="CallBackNewPayment()">
+
+  </new-claim-payment>
+
+  <ins-claim-preview *ngIf="showClaimPreviewPage"
+                     [show-claim-preview-page]="showClaimPreviewPage"
+                     [claim-submission-id]="ClaimSubmissionId"
+                     (hide-claim-preview-page)="CloseClaimPreviewPage($event)">
+  </ins-claim-preview>
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showApproveRejectClaimAmountPopUp">
+    <div class="portlet-body form">
+      <div class="form-body">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+            <div class="col-md-12">
+              <h4 style="text-align:center">
+                <b>
+                  <a style="float:right; border-radius: 50% !important;
+                                    margin-top: -50px; margin-right: -50px;" class="btn btn-danger  hidden-print"
+                     (click)="CloseApproveRejectClaimAmountPopUp()" title="Cancel">X</a>
+                </b>
+              </h4>
+            </div>
+            <div class="col-md-12">
+              <h4 class="margin-0-vr" style="color:rgb(97, 97, 209)">
+                <u> Update Approved/Rejected Amount </u>
+              </h4>
+            </div>
+            <div class="col-md-12" style="padding:5px;margin-top: 15px;">
+              <div class="col-md-12">
+                <div class="col-md-12" style="background-color: #e7ecf1;border:1px solid;">
+                  <div class="col-md-6">
+                    <div class="row">
+                      <div class="col-md-5">
+                        <label> Patient Name </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.PatientName }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                      <div class="col-md-5">
+                        <label> Claim Code </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.ClaimCode }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-5">
+                        <label> Age/Sex </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.AgeSex }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="row">
+                      <div class="col-md-5">
+                        <label> Hospital No. </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.HospitalNo }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                      <div class="col-md-5">
+                        <label> Member No. </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.MemberNumber}}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                      <div class="col-md-5">
+                        <label> Claim Submitted By/On </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.ClaimSubmittedBy }} / {{ selectedClaim.ClaimSubmittedOn | date:'yyyy-MM-dd' }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12" style="margin-top: 15px;margin-bottom: 15px; border: 1px solid;padding: 10px;">
+                  <div class="col-md-6">
+                    <div class="row">
+                      <div class="col-md-5">
+                        <label> Total Claimed Amount </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <label>
+                          {{ selectedClaim.ClaimedAmount }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                      <div class="col-md-5">
+                        <label> Approved Amount </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <input type="number" onwheel="this.blur();" onclick="this.select()" class="form-control"
+                               [(ngModel)]="selectedClaim.ApprovedAmount" (ngModelChange)="UpdateRejectedAmount()" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="row" style="margin-top: 35px;">
+                      <div class="col-md-5">
+                        <label> Rejected Amount </label>
+                        <span style="float:right">:</span>
+                      </div>
+                      <div class="col-md-7">
+                        <input type="number" onwheel="this.blur();" onclick="this.select()" class="form-control"
+                               [(ngModel)]="selectedClaim.RejectedAmount" />
+                      </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                      <div class="col-md-5"></div>
+                      <div class="col-md-7">
+                        <input DanpheConfirmationDialog
+                               id="btnUpdateAmount"
+                               type="submit"
+                               [title]="confirmationTitle"
+                               [message]="confirmationMessage"
+                               (confirm)="HandleConfirm()"
+                               (cancel)="HandleCancel()"
+                               style="float:right;margin-left: 15px; font-weight: bold;margin-right: 10px;"
+                               class="btn green btn-success"
+                               value="Save" [disabled]="loading" />
+                        <button class="btn orange btn-success" style="float:right" (click)="CloseApproveRejectClaimAmountPopUp()"> Discard </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1 hidden-xs hidden-sm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <view-payment *ngIf="showViewPaymentEntryPopUp" [Claim]="selectedClaim" (CloseViewPaymentPopUp)="CallBackViewPayment()"></view-payment>
+
+</div>

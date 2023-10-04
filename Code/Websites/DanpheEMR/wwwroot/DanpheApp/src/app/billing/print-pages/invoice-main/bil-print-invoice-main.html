@@ -1,0 +1,25 @@
+<div *ngIf="isInvoiceFound">
+    <bil-print-invoice-default *ngIf="invoiceType =='op-normal' || invoiceType=='ip-partial'" [invoice]="invoiceInfoObj"
+                               [redirect-path-after-print]="redirectUrlPath" [focus-print-btn]="focusPrintBtn"
+                               (dpemmiter)="DuplicatePrintCallBack($event)" [from-duplicate-prints]="isFromDuplicatePrints"
+                               [from-ADT-prints]="isPrintFromADT" [from-visit-prints]="isPrintFromVisit">
+    </bil-print-invoice-default>
+
+    <bil-print-invoice-discharge *ngIf="invoiceType =='ip-discharge' && !showDischargeStatement" [invoice]="invoiceInfoObj"
+                                 [redirect-path-after-print]="redirectUrlPath" [focus-print-btn]="focusPrintBtn"
+                                 [duplicate-prints]="isFromDuplicatePrints" (dischargeemmiter)="DuplicatePrintCallBack($event)">
+    </bil-print-invoice-discharge>
+
+    <div *ngIf="invoiceType =='ip-discharge' && showDischargeStatement">
+        <div class="col-md-8" *ngIf="DischargePrintSettings.ShowDischargeStatementPrint == true">
+            <bil-print-discharge-statement [invoice]="invoiceInfoObj"
+                                           [redirect-path-after-print]="redirectUrlPath" [focus-print-btn]="focusPrintBtn"
+                                           [duplicate-prints]="isFromDuplicatePrints">
+            </bil-print-discharge-statement>
+        </div>
+        <div class="col-md-4" style="padding: 0px;" *ngIf="DischargePrintSettings.ShowDischargeSlipPrint == true">
+            <discharge-slip [patient-visit-id]="PatientVisitId"></discharge-slip>
+        </div>
+    </div>
+
+</div>

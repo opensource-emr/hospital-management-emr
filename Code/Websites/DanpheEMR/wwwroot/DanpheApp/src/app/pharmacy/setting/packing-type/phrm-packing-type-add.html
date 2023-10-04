@@ -1,0 +1,61 @@
+<input type="button"  class="btn btn-primary" (click)="AddPackingType()" value="Add PackingType" />
+<div class="row">
+  
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPackingTypeAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="!update">Add PackingType</span> <span *ngIf="update">Update PackingType</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> </div>
+          
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentPackingType.PackingTypeValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Packing Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="packing" class="form-control" type="text" maxlength="50"
+                                               [(ngModel)]="CurrentPackingType.PackingName"
+                                               value=""(keyup.enter)= "setFocusById('pckqty')"
+                                               formControlName="PackingName"
+                                               placeholder="Enter a Packing Name" />
+                  <span class="color-red font-sm" [hidden]="CurrentPackingType.IsValidCheck('PackingName','required') || !(CurrentPackingType.IsDirty('PackingName'))">Packing Name is required</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Packing Quantity<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="pckqty" class="form-control" type="text" maxlength="50" (keyup.enter)="!update?setFocusById('save'):setFocusById('update')"
+                                               [(ngModel)]="CurrentPackingType.PackingQuantity" [ngModelOptions]="{standalone: true}"
+                                               value=""
+                                               
+                                               placeholder="Enter a Quantity" /> </div>
+                </div>
+              <!-- <div class="form-group">
+                <label class="control-label col-md-5">IsActive<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="IsActive"
+                                                           [(ngModel)]="CurrentPackingType.IsActive" [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div> -->
+              <div  class="all-buttons text-right">
+                <button type="button" id = "save" class="btn green btn-success" *ngIf="!update" (click)="Add()">Save</button> 
+                <button type="button" id ="update"  class="btn green btn-success" *ngIf="update" (click)="Update()">Update</button>
+              </div>
+            </div>
+          </form>
+          <!--</form>--> 
+          <!--Model Box Body End--> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

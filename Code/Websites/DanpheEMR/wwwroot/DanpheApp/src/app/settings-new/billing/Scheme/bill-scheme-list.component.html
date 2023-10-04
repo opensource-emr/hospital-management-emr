@@ -1,0 +1,35 @@
+<style>
+    .btn:hover {
+        background-color: #33A64C !important;
+        color: #fff;
+        border-color: #33A64C;
+    }
+</style>
+
+<div class="margin-20-tp">
+    <a class="btn blue bordered" feature="button" (click)="ShowAddNewPage()"><i class="fa fa-plus"></i> New Scheme</a>
+
+    <div class="row">
+        <div class="col-md-12 col-xs-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="billSchemeListGridColumns" [grid-data]="billSchemeList"
+                         (grid-actions)="BillSchemeListGridActions($event)"
+
+                         [paginationPageSize]="true">
+            </danphe-grid>
+        </div>
+    </div>
+
+    <div style="margin-top:50px;" *ngIf="ShowSchemeAddUpdatePage">
+        <bill-scheme [show-Scheme-Add-Update-Page]="ShowSchemeAddUpdatePage" [bill-scheme-to-edit]="billSchemeToEdit" [component-mode]="componentMode"
+                     (callback-add)="getDataFromAdd($event)">
+
+        </bill-scheme>
+
+    </div>
+    <div>
+        <bill-service-item-scheme-setting *ngIf="ShowSchemeItemSettingsPage" [selected-scheme]="SelectedScheme"
+                                          (callback-close)="CloseItemSettingsPage()">
+
+        </bill-service-item-scheme-setting>
+    </div>
+</div>

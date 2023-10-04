@@ -1,0 +1,164 @@
+<style>
+    .caption {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .caption span {
+        text-align: center;
+    }
+
+    textarea {
+        width: 100%;
+        max-width: 500px;
+    }
+</style>
+
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddNewPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-7 col-md-offset-3">
+                <div class="modelbox-div ref_modal_div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3>
+                            <span>
+                                <span *ngIf="!update">Add New Price Category</span>
+                                <span *ngIf="update">Edit Price Category</span>
+                            </span>
+
+                        </h3>
+                        <a class="btn btn-danger" (click)="close()">X</a>
+                    </div>
+                    <form [formGroup]="priceCategory.PriceValidator" class="form-horizontal hm-form">
+                        <div class="form-body col-md-12 hm-form">
+                            <div class="row">
+                                <div class="form-group col-md-12">
+                                    <label for="Name" class="control-label col-md-3">Price Category
+                                        Name<sup>*</sup><b>:</b></label>
+                                    <div class="col-md-3">
+                                        <input class="form-control" maxlength="100" type="text"
+                                            id="id_priceCategory_PriceCategoryName"
+                                            [(ngModel)]="priceCategory.PriceCategoryName"
+                                            formControlName="PriceCategoryName"
+                                            [attr.disabled]="update==true ? '' : null" placeholder="Price Category Name"
+                                            (keyup.enter)="SetFocusById('PriceCategoryCode')" />
+                                        <span class="color-red font-sm" *ngIf="!update"
+                                            [hidden]="!(priceCategory.IsDirty('PriceCategoryName')) || priceCategory.IsValidCheck('PriceCategoryName','required')">Price
+                                            Category Name is Required</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="PriceCategoryCode " class="control-label col-md-3">Price Category
+                                            Code:</label>
+                                        <div class="col-md-3">
+                                            <input type="text" id="id_priceCategory_PriceCategoryCode"
+                                                (keyup.enter)="SetFocusById('DefaultPayment')" class="form-control"
+                                                placeholder="Price Category Code" [ngModelOptions]="{standalone: true}"
+                                                [(ngModel)]="priceCategory.PriceCategoryCode">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class=" container form-group col-md-12">
+                                    <div class=" container form-group col-md-7">
+                                        <div class="form-group col-md-12">
+                                            <label for="ShowInRegistration" class="control-label col-md-8">Is Applicable
+                                                in
+                                                Registration ?</label>
+                                            <div class="col-md-4">
+                                                <div class="input-group">
+                                                    <div class="icheck-inline">
+                                                        <label class="mt-checkbox mt-checkbox-outline">
+                                                            <input id="id_priceCategory_applicable_in_registration"
+                                                                type="checkbox"
+                                                                (keyup.enter)="SetFocusById('ShowInAdmission')"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                name="ReistrationIsActive"
+                                                                [(ngModel)]="priceCategory.ShowInRegistration" />
+                                                            <span></span>
+                                                            True
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group col-md-12">
+
+                                            <label for="ShowInAdmission" class="control-label col-md-8">Is Applicable in
+                                                Admission ?</label>
+                                            <div class="col-md-4">
+                                                <div class="input-group">
+                                                    <div class="icheck-inline">
+                                                        <label class="mt-checkbox mt-checkbox-outline">
+                                                            <input id="id_priceCategory_applicable_in_admission"
+                                                                type="checkbox"
+                                                                (keyup.enter)="SetFocusById('IsDefault')"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                name="AdmissionIsActive"
+                                                                [(ngModel)]="priceCategory.ShowInAdmission" />
+                                                            <span></span>
+                                                            True
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-12">
+
+                                            <label for="IsDefault" class="control-label col-md-8">Is Default ?</label>
+                                            <div class="col-md-4">
+                                                <div class="input-group">
+                                                    <div class="icheck-inline">
+                                                        <label class="mt-checkbox mt-checkbox-outline">
+                                                            <input id="id_priceCategory_is_default" type="checkbox"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                name="chkIsDefault"
+                                                                [(ngModel)]="priceCategory.IsDefault" />
+                                                            <span></span>
+                                                            True
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="form-group col-md-5">
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label for="Description " class="control-label col-md-5">Description :
+                                                </label>
+                                                <div class="col-md-7">
+                                                    <textarea id="id_priceCategory_Description" row="6" col="50"
+                                                        style="resize: none"
+                                                        (keyup.enter)="SetFocusById('DefaultPayment')"
+                                                        class="form-control" placeholder="Description"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        [(ngModel)]="priceCategory.Description"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+ 
+
+                            </div>
+                            </div>  
+                    </form>
+                    <div class="modelbox-footer">
+                        <div class="all-buttons text-right">
+                            <input type="button" id="add" class="btn green btn-success margin-7-hr"
+                                (click)="AddPriceCategory()" value="Save" *ngIf="!update" />
+                            <input type="button" id="add" class="btn green btn-success margin-7-hr"
+                                (click)="UpdatePriceCategory()" value="Update" *ngIf="update" />
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

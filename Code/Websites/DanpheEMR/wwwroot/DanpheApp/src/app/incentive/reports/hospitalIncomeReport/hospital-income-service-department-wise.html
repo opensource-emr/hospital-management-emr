@@ -1,0 +1,48 @@
+<div class="col-md-2" style="float: right;" *ngIf="hospitalIncomeReport && hospitalIncomeReport.length">
+    <button class="primary-btn btn right non-printable" type="button" (click)="ExportToExcel('id_service_dept_wise_hospital_income')">
+        <i class="fa fa-file-excel-o"></i>
+        Excel
+      </button>
+  </div>
+<div class="col-md-12">
+    <div class="table-responsive" id="id_service_dept_wise_hospital_income">
+      <div><span>ServiceDepartment: <b>{{ ServiceDepartmentName }}</b></span></div>
+        <table class="table-striped table-hover table-bordered custom_table padLess_table" style="width: 100%; margin-top: 15px;">
+            <thead>
+              <tr>
+                <td style="text-align:center"><b>S.N.</b></td>
+                <td><b>Incentive Receiver</b></td>
+                <td style="text-align:center"><b>Incentive Type</b></td>
+                <td style="text-align:center"><b>Receipt Formatted</b></td>
+                <td style="text-align:center"><b>Patient</b></td>
+                <td style="text-align:center"><b>Hospital No</b></td>
+                <td style="text-align:center"><b>Item Name</b></td>
+                <td style="text-align:center"><b>Sub Total</b></td>
+                <td style="text-align:center"><b>Discount Amount</b></td>
+                <td style="text-align:center"><b>Total Bill Amount</b></td>
+                <td style="text-align:center"><b>Incentive Amount</b></td>
+                <td style="text-align:center"><b>TDS Amount</b></td>
+                <td style="text-align:center"><b>Net Payable</b></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of hospitalIncomeReport;let i=index">
+                <td style="text-align:center">{{i+1}}</td>
+                <td style="text-align:right">{{row.IncentiveReceiverName}}</td>
+                <td style="text-align:right">{{row.IncomeType}}</td>
+                <td style="text-align:right">{{row.InvoiceNoFormatted}}</td>
+                <td style="text-align:right">{{row.PatientName}}</td>
+                <td style="text-align:right">{{row.HospitalNum}}</td>
+                <td style="text-align:right">{{row.ItemName}}</td>
+                <td style="text-align:right">{{row.SubTotal | ParseAmount}}</td>
+                <td style="text-align:right">{{row.DiscountAmount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.TotalAmount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.IncentiveAmount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.TDSAmount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.NetPayableAmt | ParseAmount}}</td>
+              </tr>
+              
+            </tbody>
+          </table>
+    </div>
+</div>

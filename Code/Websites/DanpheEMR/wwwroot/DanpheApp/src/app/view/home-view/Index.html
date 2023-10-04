@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DanpheHealth</title>
+    <base href="">
+    <meta charset="utf-8" />
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="~/themes/theme-default/g-static/fonts-googleapi.css" rel="stylesheet" />
+
+   <!-- @*<link href="../assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />*@-->
+
+    <link href="~/assets-dph/external/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/jqvmap/jqvmap.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/css/components.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/css/plugins.min.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/layout.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/layouts/css/darkblue.min.css" rel="stylesheet" />
+    <!--<link href="~/assets-dph/external/layouts/css/custom.min.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/custom.css" rel="stylesheet" />-->
+    <link href="~/themes/theme-default/DanpheStyle.css" rel="stylesheet" />
+  <link href="~/themes/theme-default/danphe-new-style.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/grid-style.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/lightbox.css" rel="stylesheet" />
+  <link href="../../../themes/theme-default/grid-style.css" rel="stylesheet"/>
+  <link href="~/themes/theme-default/fonts.css" rel="stylesheet" />
+  <link href="~/themes/theme-default/Danphe_ui_style.css" rel="stylesheet" />
+
+    <!--@*<link href="../assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!--@*<link href="../assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!--@*<link href="../assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <!--@*<link href="../assets/global/plugins/bootstrap-daterangepicker/daterangepicker.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!--@*<link href="../assets/global/plugins/morris/morris.css" rel="stylesheet" type="text/css" />*@-->
+    <!--@*<link href="../assets/global/plugins/fullcalendar/fullcalendar.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!--@*<link href="../assets/global/plugins/jqvmap/jqvmap/jqvmap.css" rel="stylesheet" type="text/css" />*@-->
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <!--@*<link href="../assets/global/css/components.min.css" rel="stylesheet" id="style_components" type="text/css" />
+        <link href="../assets/global/css/plugins.min.css" rel="stylesheet" type="text/css" />*@-->
+
+    <!-- END THEME GLOBAL STYLES -->
+    <!-- BEGIN THEME LAYOUT STYLES -->
+    <!--@*<link href="../assets/layouts/layout/css/themes/darkblue.min.css" rel="stylesheet" type="text/css" id="style_color" />
+        <link href="../assets/layouts/layout/css/custom.min.css" rel="stylesheet" type="text/css" />*@-->
+    <!-- END THEME LAYOUT STYLES -->
+    <!--@*<link rel="shortcut icon" href="favicon.ico" />*@-->
+
+    <!--@*Sudarshan:26June2017--changed layout.css -- update the source and use .min of it -- this should always come after layout.css in sequence*@-->
+    <!--@*<link href="../assets/layouts/layout/css/custom.css" rel="stylesheet" type="text/css" />*@-->
+    <!-- END THEME LAYOUT STYLES -->
+    <!--@*<link rel="shortcut icon" href="favicon.ico" />*@-->
+    <!--@*<link rel="stylesheet" href="~/node_modules/angular2-lightbox/lightbox.css">*@-->
+
+    <!-- 1. Load libraries -->
+    <!-- Polyfill(s) for older browsers -->
+    <script src="~/node_modules/core-js/client/shim.min.js"></script>
+    <script src="~/node_modules/zone.js/dist/zone.js"></script>
+    <script src="~/node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="~/node_modules/systemjs/dist/system.src.js"></script>
+
+
+    <!-- 2. Configure SystemJS    -->
+    <script src="~/systemjs.config.js"></script>
+    <script>
+        System.config({
+            "defaultJSExtensions": true
+        });
+
+        System.import('startup').catch(function (err) { console.error(err); });
+    </script>
+
+
+
+
+</head>
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-container-bg-solid">
+   
+     <!-- BEGIN CORE PLUGINS -->
+     <script src="~/assets-dph/external/global/jquery.min.js"></script>
+     <script src="~/assets-dph/external/global/plugins/bootstrap/js/bootstrap.min.js"></script>
+     <script src="~/assets-dph/external/global/js.cookie.min.js"></script>
+     <script src="~/assets-dph/external/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+     <script src="~/assets-dph/external/amcharts/amcharts.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/serial.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/pie.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/radar.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/themes/light.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/themes/patterns.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/themes/chalk.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/ammap/ammap.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/amstock.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/amcharts/ammap/maps/nepalLow.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/global/app.min.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/layouts/layout.min.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/layouts/quick-sidebar.min.js" type="text/javascript"></script>
+     <script src="~/assets-dph/external/layouts/quick-nav.min.js" type="text/javascript"></script>
+     <script src="~/assets-dph/scripts/unicode/pramukhime.js" type="text/javascript"></script>
+     <script src="~/assets-dph/scripts/unicode/pramukhindic.js" type="text/javascript"></script>
+     <script src="~/assets-dph/scripts/unicode/pramukhindic-i18n.js" type="text/javascript"></script>
+     <script src="../themes/theme-default/assets/ckeditor/ckeditor.js" type="text/javascript"></script>
+ 
+     <!--@*<script src="../assets/global/plugins/jquery.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/js.cookie.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>*@
+     @*<script src="~/assets-dph/external/global/bootstrap-switch.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>*@-->
+     <!-- END CORE PLUGINS -->
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+     <!--@*<script src="../assets/global/plugins/moment.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/bootstrap-daterangepicker/daterangepicker.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/morris/morris.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/morris/raphael-min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/counterup/jquery.waypoints.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/counterup/jquery.counterup.min.js" type="text/javascript"></script>*@-->
+ 
+     <!--@*Section:1--Am Charts and AM-Maps*@-->
+ 
+     <!--@*
+         <script src="../assets/global/plugins/amcharts/amcharts/amcharts.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/serial.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/pie.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/radar.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/themes/light.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/themes/patterns.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amcharts/themes/chalk.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/ammap/ammap.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/amcharts/amstockcharts/amstock.js" type="text/javascript"></script>
+         <script src="~/assets/global/plugins/amcharts/ammap/maps/js/nepalLow.js"></script>
+     *@-->
+ 
+     <!--@*<script src="../assets/global/plugins/amcharts/ammap/maps/js/worldLow.js" type="text/javascript"></script>*@-->
+ 
+     <!--@*<script src="../assets/global/plugins/fullcalendar/fullcalendar.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/horizontal-timeline/horizontal-timeline.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/flot/jquery.flot.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/flot/jquery.flot.resize.min.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/flot/jquery.flot.categories.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/jquery-easypiechart/jquery.easypiechart.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/jquery.sparkline.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/jqvmap/jqvmap/jquery.vmap.js" type="text/javascript"></script>*@
+     @*<script src="../assets/global/plugins/jqvmap/jqvmap/maps/jquery.vmap.russia.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jqvmap/jqvmap/maps/jquery.vmap.world.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jqvmap/jqvmap/maps/jquery.vmap.europe.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jqvmap/jqvmap/maps/jquery.vmap.germany.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jqvmap/jqvmap/maps/jquery.vmap.usa.js" type="text/javascript"></script>
+         <script src="../assets/global/plugins/jqvmap/jqvmap/data/jquery.vmap.sampledata.js" type="text/javascript"></script>*@-->
+ 
+     <!-- END PAGE LEVEL PLUGINS -->
+     <!-- BEGIN THEME GLOBAL SCRIPTS -->
+     <!--@*<script src="../assets/global/scripts/app.min.js" type="text/javascript"></script>*@-->
+ 
+ 
+     <!-- END THEME GLOBAL SCRIPTS -->
+     <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <!-- @*<script src="../assets/pages/scripts/dashboard.min.js" type="text/javascript"></script>*@-->
+     <!-- END PAGE LEVEL SCRIPTS -->
+     <!-- BEGIN THEME LAYOUT SCRIPTS -->
+     <!--@*<script src="../assets/layouts/layout/scripts/layout.min.js" type="text/javascript"></script>*@
+ 
+     @*<script src="../assets/layouts/layout/scripts/demo.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/layouts/global/scripts/quick-sidebar.min.js" type="text/javascript"></script>*@
+     @*<script src="../assets/layouts/global/scripts/quick-nav.min.js" type="text/javascript"></script>*@-->
+     <!-- END THEME LAYOUT SCRIPTS -->
+     <!--BEGIN ckEditor js scripts-->
+     <!--@*<script src="https://cdn.ckeditor.com/4.5.11/full/ckeditor.js"></script>*@-->
+     <!--END ckEditor js Scripts-->
+
+     
+
+    <my-app>
+        <h4 style="position:absolute;top:41%;left:30%;">
+            <b><span style="color:sandybrown ;">Please wait, DanpheHealth application is loading.............</span></b>
+            <img src="~/themes/theme-default/images/loading.gif" alt="Page Loading" height="100" width="100">
+        </h4>
+    </my-app>
+
+
+
+</body>
+
+</html>

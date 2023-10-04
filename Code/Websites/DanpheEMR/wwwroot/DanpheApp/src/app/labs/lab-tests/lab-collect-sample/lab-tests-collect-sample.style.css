@@ -1,0 +1,81 @@
+.animate-message {
+  font-weight: bold;
+  float: right;
+  font-size: 13px !important;
+  color: blue;
+}
+
+.cpt-top-row {
+  margin-bottom: 15px;
+  padding-top: 10px;
+}
+
+.pat-info-head tr {
+  background: #006687;
+  color: #fff;
+}
+
+.sample-main-head > tr {
+  background-color: whitesmoke
+}
+
+.cstm-code-input {
+  width: 100px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tooltip {
+  padding: 0px 5px;
+  color: #006687;
+}
+
+.horizontal-space {
+  margin: 0 6px;
+}
+
+.datepicker-holder {
+  display: inline-block;
+  text-align: center;
+}
+
+.manage-width {
+  width: 70px;
+}
+
+.dark-danger {
+  color: #bd8111;
+}
+
+.smpl-num {
+  width: 160px;
+}
+
+.maintain-min-ht {
+  min-height: inherit;
+}
+
+.alltest-table {
+  max-height: 250px;
+}
+
+.green {
+  color: green;
+}
+
+.cstm-ellipsis {
+  width: 280px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sampleletter {
+  width: 45px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}

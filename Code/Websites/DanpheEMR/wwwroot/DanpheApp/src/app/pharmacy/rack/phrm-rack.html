@@ -1,0 +1,23 @@
+﻿<phrm-rack-add *ngIf="showAddPage " [showAddPage]="showAddPage" [selected-rack]="rack" [selectedStore]="selectedStore" [store-list]="StoreList" [parent-rack-list]="ParentRackList" (callback-add)="pushToList($event)"></phrm-rack-add>
+
+<phrm-rack-drug-list [rack-name]="rackName" [drug-list]="drugList" [showDrugListPage]="showDrugListPage"></phrm-rack-drug-list>
+
+<div class="row">
+    <div class="col-md-4">
+        <input type="button" class="btn btn-primary" (click)="AddRack()" value="Add Rack" />
+    </div>
+    <div class="col-md-8">
+        <div class="right">
+            <label class="control-label ">Store:</label>
+            <select [(ngModel)]="selectedStore" style="width:250px;height:30px;margin-bottom:7px;" (change)="FilterRackBasedOnLocation()" >
+                <!-- <option [ngValue]="null" selected>All</option> -->
+                <option [ngValue]="null" selected>All</option>
+                <option *ngFor="let store of StoreList" [ngValue]="store">{{store.StoreName}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="rackGridColumns" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions" [grid-data]="rackListFiltered" (grid-actions)="RackGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

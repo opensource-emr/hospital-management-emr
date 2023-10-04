@@ -1,0 +1,65 @@
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="admissionInfo && showpatientInfoPopUp">
+  <div class="portlet-body form">
+    <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+      <div style="margin:20px;">
+        <table class="table table-striped text-center">
+          <tr>
+            <td><b>{{admissionInfo.PatientName}}</b></td>
+            <td> Inpatient: <b>{{admissionInfo.VisitCode}}</b></td>
+          </tr>
+          <tr>
+            <td>Hospital No: {{admissionInfo.PatientCode}}</td>
+            <td> Age/Sex :{{admissionInfo.DateOfBirth | DanpheDateTime:'age'}} / {{admissionInfo.Gender}} </td>
+          </tr>
+          <tr>
+            <td>Ward Name: {{admissionInfo.WardName}}</td>
+            <td>Bed Code: {{admissionInfo.BedCode}}</td>
+          </tr>
+        </table>
+        <div class="text-center"> <strong style="text-align:center;color:red">This will Cancel Admission and you won't be able to revert it.</strong><br />
+          <strong style="text-align:center;color:red">Are you sure to cancel this admission for this patient?</strong><br />
+        </div>
+        <hr />
+        <table class="table table-striped" style="width:50%">
+          <tr style="font-weight:bold;" *ngIf="admissionInfo.DepositBalance">
+            <td style="font-size:14px;">To Be Refund :</td>
+            <td style="font-size:15px;background-color: #c8c3df !important;"><b>{{coreService.currencyUnit}} {{admissionInfo.DepositBalance}}</b></td>
+          </tr>
+        </table>
+        <table class="table">
+          <tr>
+            <td>Admission Date:</td>
+            <td>{{admissionInfo.AdmissionDate}}</td>
+          </tr>
+          <tr>
+            <td>Cancelled On:</td>
+            <td><danphe-date-picker [(ngModel)]="admissionCancel.CancelledOn" ngDefaultControl [CalendarTypes]="calType"> </danphe-date-picker></td>
+          </tr>
+        </table>
+        <div> Remarks <b style="color:red">*</b>:
+          <textarea class="form-control" maxlength="100" [(ngModel)]="admissionCancel.CancelledRemark" placeholder="Remarks"></textarea>
+        </div>
+        <hr />
+        <div class="text-center">
+          <button type="button" class="btn btn-danger btn-sm" style="margin-top:5px;" [disabled]="loading" (click)="CancelAdmissionAlertPopUp()"> Cancel Admission </button>
+          <button type="button" class="btn btn-cancel btn-sm" style="margin-top:5px;" [disabled]="loading" (click)="ClosePopUp()"> Close </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom" *ngIf="showReceipt && showReceiptPopUp">
+  <div class="portlet-body form" style="background-color:white"> 
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-12 col-md-offset-3">
+        <div class="col-md-6 col-sm-6 col-xs-6 modelbox-div" style="margin-right: 24px;"> <a style="float:right;" class="btn btn-danger" (click)="CloseAlertPopUp()" title="Cancel">X</a>
+          <bil-print-deposit-slip [deposit]="returnDepositInfo"
+                                     [showReceipt]="showReceipt"></bil-print-deposit-slip>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End--> 
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<div class="form-body">
+  <div id="SocialHistory">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-9 col-xs-12">
+          <div class="portlet cstm-portlet portlet-with-collapse">
+            <div class="portlet-title cstm-pt-title">
+              <div class="cstm-portlet-caption">
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <span class="caption-subject font-blue-sharp bold uppercase">Referral Source List</span>
+              </div>
+              <div class="cstm-action">
+                <a class="cstm-add" (click)="showReferralSourceBox()">
+                  <i class="fa fa-plus-circle"></i> Add New
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-condensed flip-content">
+              <thead class="flip-content">
+                <tr>
+                  <th>Newspaper</th>
+                  <th>Doctor</th>
+                  <th>Radio</th>
+                  <th>Web Page</th>
+                  <th>Friends & Family</th>
+                  <th>TV</th>
+                  <th>Staff</th>
+                  <th>Magazine</th>
+                  <th>Unknown</th>
+                  <th>Others</th>
+                  <th>Edit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let add of referralSourcelist ;let i=index">
+                  <td><span *ngIf="add.Newspaper">&#x2713;</span></td>
+                  <td *ngIf="add.Doctor">&#x2713;</td>
+                  <td *ngIf="!add.Doctor"> </td>
+                  <td *ngIf="add.Radio">&#x2713;</td>
+                  <td *ngIf="!add.Radio"> </td>
+                  <td *ngIf="add.WebPage">&#x2713;</td>
+                  <td *ngIf="!add.WebPage"> </td>
+                  <td *ngIf="add.FriendAndFamily">&#x2713;</td>
+                  <td *ngIf="!add.FriendAndFamily"> </td>
+                  <td *ngIf="add.TV">&#x2713;</td>
+                  <td *ngIf="!add.TV"> </td>
+                  <td *ngIf="add.Staff">&#x2713;</td>
+                  <td *ngIf="!add.Staff"> </td>
+                  <td *ngIf="add.Magazine">&#x2713;</td>
+                  <td *ngIf="!add.Magazine"> </td>
+                  <td *ngIf="add.Unknown">&#x2713;</td>
+                  <td *ngIf="!add.Unknown"> </td>
+                  <td>{{add.Others}}</td>
+                  <td>
+                    <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-xs-12">
+          <referral-source-add [showReferralAddBox]="showReferralAddBox"
+                              [selected-referralsource]="SelectedReferralSource"
+                              (callback-referralsourceupdate)="CallBackAddReferralSource($event)">
+          </referral-source-add>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

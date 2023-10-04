@@ -1,0 +1,33 @@
+<div class="wrapper">
+  <div> 
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12 ">
+        <div class="caption lb-caption">
+          <h3><span> <i class="fa fa-barcode"></i>Scan Patient Card for Billing</span> </h3>
+        </div>
+        <danphe-qr-reader *ngIf="qrService.show" [department]="'billing'" (on-success)="OnQrReadSuccess($event)"> </danphe-qr-reader>
+        <div *ngIf="showBillingPanel">
+          <div class="page-bar-secondary">
+            <button class="btn green" (click)="NewBillingRequest()">New Billing Request</button>
+            <button class="btn green margin-15-lft" (click)="NewDeposit()">Add Deposit</button>
+            <button class="btn green margin-15-lft" (click)="Appointment()">New Visit (Check-In)</button>
+            <div class="show-bill-btn">
+              <label for="chkLoadBillHistory" class="text-primary mt-checkbox mt-checkbox-outline">
+                <input type="checkbox" [(ngModel)]="loadBillHistory" id="chkLoadBillHistory" />
+                <span></span>Show Bill History</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div *ngIf="loadBillHistory" class="page-bar">
+                <bill-history [showPatientBillHistory]="showBillingPanel"
+                            [patient]="selPatient"></bill-history>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

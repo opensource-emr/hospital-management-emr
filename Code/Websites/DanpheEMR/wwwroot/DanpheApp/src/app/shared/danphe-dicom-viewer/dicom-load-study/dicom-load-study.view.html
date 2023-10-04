@@ -1,0 +1,92 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDicomPopUp">
+  <div class="portlet-body form " style="background-color:white">
+    <div class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-2 hidden-xs hidden-sm">
+          </div>
+          <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="height:auto !important; padding: 0px!important;">
+
+            <div style="height: 100%; width:100%; padding: 0px; margin-top:-10px;margin-bottom: -4px" *ngIf="showDicomViewerPage">
+
+              <div style="height: 100%; width:100%; background-color: black">
+                <div style="display: flex; margin-left: 120px; align-items: center;">
+                  <h4 style="color: whitesmoke; margin-left: -100px;border-right: 1px dotted; text-size-adjust: 10px">
+
+                    <a style="color: whitesmoke;">Danphe Dicom Viewer</a>
+
+                  </h4>
+
+                  <h4>
+
+                    <a (click)="showStudyList()" style="color: cadetblue; margin-left: 5px">StudyList</a>
+                  </h4>
+
+                </div>
+
+                <a style="float:right;margin-top: -40px" class="btn btn-danger" (click)="CloseDicomViewer()" title="Cancel">X</a>
+                <dicom-viewer [showDicomViewerPage]="showDicomViewerPage"
+                              [enableViewerTools]="true"
+                              [maxImagesToLoad]="500"
+                              style="height:100%; width:100%; padding: 0px"></dicom-viewer>
+              </div>
+            </div>
+
+            <div style="background-color: black; height: 100%; width: 100%; margin-top: -15px;margin-bottom: -4px" *ngIf="showStudyListPage">
+
+              <div>
+                <h4>
+                  <a style="color:white;margin-left: 15px; margin-top: 10px">Danphe Dicom Viewer</a>
+
+                </h4>
+                <a style="float:right;margin-top: -30px" class="btn btn-danger" (click)="CloseDicomViewer()" title="Cancel">X</a>
+              </div>
+
+              <div style="margin-top:25px;">
+                <h4>
+                  <a style="color: cadetblue; margin-left: 15px;">StudyList</a>
+                </h4>
+              </div>
+              <div class='main'>
+                <!-- Tab content -->
+                <div id="tabContent" class="tab-content">
+                  <!-- Study list -->
+                  <div id="studyList" class="tab-pane active">
+                    <div class="col-md-12" style="background-color:black; height:610px">
+                      <table class="table" style="width:100%;color:cadetblue">
+                        <thead>
+                          <tr>
+                            <td>StudyId</td>
+                            <td>Patient Name</td>
+                            <td>Patient ID</td>
+                            <td>Study Date</td>
+                            <td>Study Description</td>
+                            <!-- <td>Study InstanceID</td> -->
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          <tr *ngFor="let img of dicomDataObjs; let i=index;">
+                            <td (click)="ShowDicomViewer(i)">{{img.StudyId}}</td>
+                            <td (click)="ShowDicomViewer(i)">{{img.PatientName}}</td>
+                            <td (click)="ShowDicomViewer(i)">{{img.PatientId}}</td>
+                            <td (click)="ShowDicomViewer(i)">{{img.StudyDate}}</td>
+                            <td (click)="ShowDicomViewer(i)">{{img.StudyDescription}}</td>
+                            <!-- <td (click)="ShowDicomViewer(i)">{{img.StudyInstanceUID}}</td> -->
+
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

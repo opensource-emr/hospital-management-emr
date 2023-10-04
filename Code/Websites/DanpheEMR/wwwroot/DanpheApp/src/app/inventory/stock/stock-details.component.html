@@ -1,0 +1,11 @@
+﻿<div style="padding:2px 0px">
+    <button class="btn btn-primary" (click)="routetoStockList()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
+    <button [rbac-permission]="{'name':'inventory-stock-manage-button','action':'hidden'}" class="btn btn-primary" (click)="routetoStockManage()"><i class="fa fa-edit"></i>&nbsp;&nbsp;&nbsp;Manage Stock</button>
+</div>
+<h4>ItemName : <b style="color:blue;text-transform:capitalize">{{this.itemName}}</b></h4>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="stockdetailGridColumns" [grid-data]="stockdetailsList" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        </danphe-grid>
+    </div>
+</div>

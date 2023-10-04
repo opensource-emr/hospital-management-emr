@@ -1,0 +1,38 @@
+
+<ckeditor [config]="editorConfig"
+          [readonly]="isReadOnly"
+          [(ngModel)]="ckeditorContent"
+          (ngModelChange)="onEditorChange(ckeditorContent)"
+          (contentDom)="onContentDom($event)">
+</ckeditor>
+
+
+<!--Revised Usage of CK-Editor: To fix Bug (Last Character Not coming when Editing a report) -- sud:14Jan'19-
+Changes Made: Removed (editorChange) function of CK-Editor and used ngModelChange instead-->
+<!--<ckeditor [config]="editorConfig"
+          (editorChange)="onEditorChange(ckeditorContent)"
+          [readonly]="isReadOnly"
+          [(ngModel)]="ckeditorContent">
+</ckeditor>-->
+
+<!--Below is the sample usage from official npm link:
+https://www.npmjs.com/package/ng2-ckeditor
+    -->
+
+<!--<ckeditor [(ngModel)]="ckeditorContent"
+          [config]="{uiColor: '#99000'}"
+          [readonly]="false"
+          (change)="onChange($event)"
+          (editorChange)="onEditorChange($event)" 
+    (ready)="onReady($event)"
+    (focus)="onFocus($event)"
+    (blur)="onBlur($event)"
+    (contentDom)="onContentDom($event)"
+    (fileUploadRequest)="onFileUploadRequest($event)"
+    (fileUploadResponse)="onFileUploadResponse($event)"
+    (paste)="onPaste($event)"
+    (drop)="onDrop($event)"
+    debounce="500">
+  </ckeditor>-->
+
+<!--  -->

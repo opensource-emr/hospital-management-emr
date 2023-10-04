@@ -1,0 +1,499 @@
+<!-- <style>
+ .voucher-popup {
+    height: initial !important;
+    top: 10% !important;
+    width: 60% !important;
+  } 
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+	padding: 2px !important;
+}
+</style> -->
+<!-- <div class="row" style="margin-bottom:10px;display:none;">
+  <table class="col-md-12">
+    <tr style="background-color: #bde4e8 !important;">
+      <td><b style="color:green;">Shortcut keys</b></td>
+      <td colspan="4">
+        <b>Add Row(ledger)</b> <i style="margin-right:15px;">Alt+A,</i>
+        <b>Create New Ledger</b> <i style="margin-right:15px;">Alt+C,</i>
+        <b>Save</b><i style="margin-right:15px;">Alt+S, Enter,</i>
+        <b>Select Voucher</b><i style="margin-right:15px;">Alt+V and Press Space,</i>
+        <b>Delete</b><i style="margin-right:15px;">Alt+X, Alt+Delete</i>
+      </td>
+    </tr>
+  </table>
+</div>
+<div class="ap-v-header">
+  <div class="row">
+    <div class="col-md-2">
+      <div [rbac-permission]="{'name':'accounting-transaction-backdate-voucherentry-btn','actionOnInvalid':'hidden'}"
+           class="ac-check-wrapper">
+        <label for="chkBackDateEntry" class="mt-checkbox mt-checkbox-outline">
+          <input name="isBackDateEntry" type="checkbox" [disabled]="voucherVerificationRequired" value="Back Date Entry" [(ngModel)]="IsBackDateEntry"
+                 (change)="ChkBackDateEntryOnChange()"
+                 id="chkBackDateEntry" style="zoom:1.4">
+          <span></span>Back Date Entry </label>
+      </div>
+    </div>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-3">
+          <div><b>Voucher Type:</b></div>
+          <select [(ngModel)]="selVoucherTypeId" id="voucher" [disabled]="voucherVerificationRequired" autofocus (change)="onVoucherTypeChange()">
+            <option *ngFor="let v of voucherTypeList" value="{{v.VoucherId}}">{{v.VoucherName}}</option>
+          </select>
+        </div> -->
+<!-- <div class="col-md-3">
+          <div> <b>Cost Center:</b> </div>
+          <form [formGroup]="transaction.TransactionValidator">
+            <select [(ngModel)]="selectedCostCenter.CostCenterId" id="id_select_costCenterId_voucherEntry" formControlName="CostCenter"
+                    (ngModelChange)="CostCenterChange()">
+              <option value="-1">--Not Applicable--</option>
+              <option *ngFor="let costCenter of costCenterList" value="{{costCenter.CostCenterId}}"> {{costCenter.CostCenterName}} </option>
+            </select>
+
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('CostCenter')"
+                 [hidden]="transaction.IsValidCheck('CostCenter','required')">Please select Cost Center.</div>
+          </form>
+        </div> -->
+<!-- current edited  voucher number -->
+
+<!-- for provisional voucher number -->
+<!-- <div class="col-md-3">
+          <div><b>Voucher Number:</b></div>
+          <div class="relative">
+            <input disabled type=text [(ngModel)]="TempVoucherNumber" [ngModelOptions]="{standalone: true}" />
+            <i title="This Voucher number is not final. It may change during SAVE." color=#006687
+               class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="ac-check-wrapper">
+            <div><b>Voucher Date:</b> {{TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}(BS) <br />
+              {{TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} (AD)</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div [rbac-permission]="{'name':'accounting-transaction-backdate-voucherentry-btn','actionOnInvalid':'hidden'}"
+               class="ac-check-wrapper">
+            <label for="chkCopyVoucher" class="mt-checkbox mt-checkbox-outline">
+              <input name="isCopyVoucher" type="checkbox" [disabled]="voucherVerificationRequired" value="Copy Voucher" [(ngModel)]="isCopyVoucher"
+                     id="chkCopyVoucher">
+              <span></span>Copy From Old Voucher </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-6" *ngIf="IsBackDateEntry">
+  <div class="row mb10">
+    <label class="col-md-3">Voucher Date:<b class="color-red"></b></label>
+    <div class="col-md-8"> -->
+<!-- <danphe-date-picker [(ngModel)]="TransactionDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+      </danphe-date-picker> -->
+<!-- <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+    </div>
+  </div>
+</div>
+<div class="form-body" *ngIf="showPayeeName == true || showChequeNumber==true ">
+  <div class="col-md-12">
+    <form [formGroup]="transaction.TransactionValidator">
+      <div class="col-md-6 col-xs-12" *ngIf="showPayeeName">
+        <div class="form-group">
+          <label class="control-label col-md-3" style="font-size: 15px;top: 2px;"><b>Payee Name:</b></label>
+          <div class="col-md-6">
+            <input id="PayeeName" class="form-control" type="text" value="" placeholder="Payee Name"
+                   formControlName="PayeeName" [(ngModel)]="transaction.PayeeName" />
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('PayeeName')"
+                 [hidden]="transaction.IsValidCheck('PayeeName','required')">Please Enter Payee Name.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xs-12" *ngIf="showChequeNumber">
+        <div class="form-group">
+          <label class="control-label col-md-3" style="font-size: 15px;top: 2px;"><b>Cheque No:</b></label>
+          <div class="col-md-6">
+            <input id="ChequeNo" class="form-control" type="text" value="" placeholder="Cheque No"
+                   [(ngModel)]="transaction.ChequeNumber" formControlName="ChequeNumber" />
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('ChequeNumber')"
+                 [hidden]="transaction.IsValidCheck('ChequeNumber','required')">Please Enter Cheque Number.</div>
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('ChequeNumber')"
+                 [hidden]="transaction.IsValidCheck('ChequeNumber','pattern')">Please Enter Valid Number.</div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="row" [ngStyle]="{'margin-top' : IsBackDateEntry?  '70px' :'10px'}" style="margin-left: 5px; border:rgb(226, 235, 253) solid 1px;">
+  <div *ngIf="isCopyVoucher" class="col-md-10" style="margin-top:13px;">
+    <div>
+      <div class="col-md-7">
+        <div class="col-md-4">
+          <label> Choose Fiscal Year : </label>
+        </div>
+        <div class="col-md-8">
+          <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" (fiscalYearDate)="GetFiscalYearIdForCopyVoucher($event)">
+          </fiscal-year-calendar>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="col-md-6">
+          <label> Voucher Number : </label>
+        </div>
+        <div class="col-md-6">
+          <input type="text" [(ngModel)]="CopyVoucherNumber" placeholder="Enter Voucher Number"
+                 [ngModelOptions]="{standalone: true}"
+                 (focusout)="getCopyVoucher()" (keydown.enter)="getCopyVoucher()" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+<div *ngIf="selectedVoucherCode == voucherCodeEnum.PaymentVoucher ||selectedVoucherCode == voucherCodeEnum.ReceiptVoucher"
+     style="margin-bottom: 10px;">
+  <div class="row">
+    <div class="col-md-2">
+      <label *ngIf="selectedVoucherCode == voucherCodeEnum.PaymentVoucher" style="font-weight: bold;">Payment From: </label>
+      <label *ngIf="selectedVoucherCode == voucherCodeEnum.ReceiptVoucher" style="font-weight: bold;">Receive From: </label>
+    </div>
+    <div class="col-md-1">
+      <input name="paymentMode" [(ngModel)]="paymentMode" checked type="radio" [disabled]="voucherVerificationRequired" value="Cash" id="pay_cash"
+             (change)="filterPaymentOrReceiptLedger()">
+      <label for="pay_cash" style="margin-left: 5px;">Cash</label>
+    </div>
+    <div class="col-md-1">
+      <input name="paymentMode" [(ngModel)]="paymentMode" type="radio" [disabled]="voucherVerificationRequired" value="Bank" id="pay_bank"
+             (change)="filterPaymentOrReceiptLedger()">
+      <label for="pay_bank" style="margin-left: 5px;">Bank</label>
+    </div>
+  </div>
+  <div class="row" style="margin:10px 10px">
+    <table class="table table-striped table-hover inv_table table-bordered tbPadding">
+      <thead>
+        <tr>
+          <th style="width:10%" *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+          <th style="width:20%"> Ledger (Main)</th>
+          <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+          <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
+          <th style="width:10%"> Cost Center </th>
+          <th style="width:10%" *ngIf="paymentMode == paymentModeList.Bank"> Cheque Number </th>
+          <th style="width:10%" *ngIf="paymentMode == paymentModeList.Bank"> Cheque Date </th>
+          <th style="width:15%">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger>
+            <input danphe-auto-complete [(ngModel)]="additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedgerCode"
+                   [source]="paymentORreciptLedgerList"
+                   (keydown.enter)="ChangeFocus('extra_Ledger_for_PMTV_and_Receipt')"
+                   placeholder="Code" display-property-name="Code" [disabled]="voucherVerificationRequired"
+                   value-property-name=null [grid-sort]="'Code'" min-chars="1" (valueChanged)="AssignExtraLedgerCode();"
+                   [list-formatter]="LedgerCodeFormatter" max-num-list="10" onclick="this.select()" id="extra_Ledger_Code_for_PMTV_and_Receipt"
+                   style="width:100%;" match-formatted="true" />
+          </td>
+          <td>
+            <input danphe-auto-complete [source]="paymentORreciptLedgerList" class="form-control"
+                   [(ngModel)]="additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger"
+                   placeholder="Select Ledger" display-property-name="LedgerName" [disabled]="voucherVerificationRequired" value-property-name=null
+                   match-formatted="true" min-char="1" [grid-sort]="'Code'"
+                   [list-formatter]="LedgerListFormatter" max-num-list="15" (valueChanged)="AssignExtraLedger()"
+                   id="extra_Ledger_for_PMTV_and_Receipt"
+                   onclick="this.select()" />
+          </td>
+
+          <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+            <input danphe-auto-complete [(ngModel)]="additionalPartyDetailForPaymentOrReceiptVoucher.selectedSubLedgerCode"
+                   [source]="paymentORreciptSubLedgerList"
+                   placeholder="Sub-Code" display-property-name="SubLedgerCode" [disabled]="voucherVerificationRequired"
+                   min-chars="1" [list-formatter]="'SubLedgerCode'" max-num-list="10" onclick="this.select()"
+                   id="extra_SubLedger_Code_for_PMTV_and_Receipt" (valueChanged)="AssignExtraSubLedger(true)"
+                   (keydown.enter)="ChangeFocus('extra_SubLedger_for_PMTV_and_Receipt');"
+                   style="width:100%;" match-formatted="true" />
+          </td>
+          <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+            <input danphe-auto-complete [source]="paymentORreciptSubLedgerList" class="form-control"
+                   [(ngModel)]="additionalPartyDetailForPaymentOrReceiptVoucher.selectedSubLedger"
+                   placeholder="Select Sub-Ledger" display-property-name="SubLedgerName" [disabled]="voucherVerificationRequired"
+                   [list-formatter]="SubLedgerListFormatter" max-num-list="15" id="extra_SubLedger_for_PMTV_and_Receipt"
+                   (keydown.enter)="ChangeFocus('id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry');"
+                   (valueChanged)="AssignExtraSubLedger(false)"
+                   onclick="this.select()" />
+          </td>
+          <td>
+            <select [(ngModel)]="extraTransactionItemForPaymentOrReceiptVoucher.CostCenterId"
+                    (keydown.enter)="ChangeFocus(paymentMode == paymentModeList.Bank ?'input_voucherEntry_chequeNumber' : 'extra_Narration_for_PMTV_and_Receipt')"
+                    id="id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry">
+              <option *ngFor="let costCenter of costCenterList" value="{{costCenter.CostCenterId}}"> {{costCenter.CostCenterName}} </option>
+            </select>
+          </td>
+          <td *ngIf="paymentMode == paymentModeList.Bank">
+            <input type="text" id="input_voucherEntry_chequeNumber" [disabled]="voucherVerificationRequired"
+                   class="form-control" (keydown.enter)="ChangeFocus('extra_Narration_for_PMTV_and_Receipt')"
+                   [(ngModel)]="transaction.ChequeNumber">
+          </td>
+          <td *ngIf="paymentMode == paymentModeList.Bank">
+            <danphe-date-picker style="float: right;" [(ngModel)]="transaction.ChequeDate" [disabled]="voucherVerificationRequired"
+                                [CalendarTypes]="calType"
+                                [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+          </td>
+          <td>
+            <textarea [(ngModel)]="extraTransactionItemForPaymentOrReceiptVoucher.Description" id="extra_Narration_for_PMTV_and_Receipt"
+                      style="width:100%; margin: 5px auto;"
+                      (keydown.enter)="ChangeFocus(subLedgerAndCostCenterSetting.EnableSubLedger ? 'SubLedger_Code_1' : 'Code_1')">
+            </textarea>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<table class="table table-striped table-hover inv_table table-bordered tbPadding">
+  <thead>
+    <tr>
+      <th style="width:1%"></th>
+      <th style="width:1%">Dr/Cr</th>
+      <th style="width:10%" *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+      <th style="width:20%"> Ledger (Main)</th>
+      <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+      <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
+      <th style="width:5%"> Dr Amount </th>
+      <th style="width:5%"> Cr Amount </th>
+      <th style="width:10%"> Cost Center </th>
+      <th style="width:15%">Description</th>
+      <th style="width:1%"></th>
+      <th style="width:1%"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let itm of transaction.TransactionItems; let i = index">
+      <td><b>{{i+1}}</b></td>
+      <td class="form-group">
+        <form [formGroup]="itm.TransactionItemValidator" style="width:80px;">
+          <input danphe-auto-complete [(ngModel)]="selDrCrArray[i]" [source]="DrCrList" formControlName="DrCr"
+                 placeholder="Dr/Cr" display-property-name="DrCr" value-property-name="DrCr" match-formatted="true"
+                 (valueChanged)="onDrCrChange(i)" [list-formatter]="DrCrListFormatter" max-num-list="2"
+                 onclick="this.select()" id="DrCr_{{i+1}}"
+                 (keydown.enter)="ChangeFocusFromDrCr(i)"
+                 style="width:60px" />
+          <div class="color-red font-sm" *ngIf="itm.IsDirty('DrCr')" [hidden]="itm.IsValidCheck('DrCr','required')">
+            Please select Transaciton Type. </div>
+        </form>
+      </td> -->
+<!-- <td *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger> -->
+<!-- <span [hidden]="!(selLedgerArr && selLedgerArr[i] && selLedgerArr[i].LedgerId)"
+          style="float: left !important;margin-right: 5px;">{{itm.Code}}</span> -->
+<!-- <input danphe-auto-complete [(ngModel)]="selectedLedgerCode[i]" [source]="allLedgerList" (keydown.enter)="ChangeFocus('Ledger_'+(i+1))"
+               placeholder="Code" display-property-name="Code" [disabled]="voucherVerificationRequired"
+               value-property-name=null [grid-sort]="'Code'" (valueChanged)="AssignSelectedCode(i)" min-chars="1"
+               [list-formatter]="LedgerCodeFormatter" max-num-list="10" onclick="this.select()" id="Code_{{i+1}}"
+               style="width:100%;" match-formatted="true" />
+      </td>
+      <td>
+        <div class="div-relative">
+          <form [formGroup]="itm.TransactionItemValidator">
+            <input danphe-auto-complete [(ngModel)]="selLedgerArr[i]" [source]="allLedgerList" [disabled]="voucherVerificationRequired"
+                   placeholder="Ledger Name" formControlName="LedgerId" display-property-name="LedgerName" (keydown.enter)="ChangeFocus('narration')"
+                   [grid-sort]="'LedgerName'" (focusout)="AssignSelectedLedger(i)" min-chars="1"
+                   [list-formatter]="LedgerListFormatter" max-num-list="15" onclick="this.select()" id="Ledger_{{i+1}}"
+                   style="width:100%;font-size: 14px;" match-formatted="true" />
+
+            <div class="color-red font-sm" *ngIf="itm.IsDirty('LedgerId')"
+                 [hidden]="itm.IsValidCheck('LedgerId','required')"> Please select Ledger.</div>
+          </form>
+          <a *ngIf="(selLedgerArr[i] && selLedgerArr[i].LedgerId == 0)"
+             class="fa fa-question"
+             (click)="CreateNewLedgerOnClick(i)" title="Click to Create New Ledger"></a>
+        </div>
+      </td> -->
+<!-- <td></td> -->
+<!-- <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+        <input danphe-auto-complete [(ngModel)]="selSubLedgerCode[i]" [source]="subLedgerMaster" (keydown.enter)="ChangeFocus('SubLedger_'+(i+1))"
+               placeholder="Sub-Code" display-property-name="SubLedgerCode" [disabled]="voucherVerificationRequired"
+               (focusout)="AssignSelectedSubLedgerCode(i)" min-chars="1"
+               [list-formatter]="'SubLedgerCode'" max-num-list="10" onclick="this.select()" id="SubLedger_Code_{{i+1}}"
+               style="width:100%;" match-formatted="true" />
+      </td>
+      <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+        <div class="div-relative">
+          <form [formGroup]="itm.TransactionItemValidator">
+            <input danphe-auto-complete [(ngModel)]="selectedSubLedger[i]" [source]="subLedgerMaster"
+                   [disabled]="voucherVerificationRequired"
+                   placeholder="Sub Ledger" formControlName="SubLedgerId" display-property-name="SubLedgerName"
+                   (keydown.enter)="ChangeFocus('narration')"
+                   [grid-sort]="'SubLedgerName'" (focusout)="AssignSubLedger(i)" min-chars="1"
+                   [list-formatter]="SubLedgerListFormatter" max-num-list="15" onclick="this.select()" id="SubLedger_{{i+1}}"
+                   style="width:100%;font-size: 14px;" match-formatted="true" />
+            <div class="color-red font-sm" *ngIf="itm.IsDirty('SubLedgerId')"
+                 [hidden]="itm.IsValidCheck('SubLedgerId','required')"> Please select sub-Ledger.</div>
+          </form>
+        </div>
+      </td>
+      <td>
+        <form [formGroup]="itm.TransactionItemValidator" *ngIf=itm.DrCr>
+          <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
+                 (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                 (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
+          <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+               [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+        </form>
+      </td>
+      <td>
+        <form [formGroup]="itm.TransactionItemValidator" *ngIf=!itm.DrCr>
+          <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
+                 (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                 (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
+          <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+               [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+        </form>
+      </td>
+      <td>
+        <form [formGroup]="itm.TransactionItemValidator">
+          <select [(ngModel)]="itm.CostCenterId" id="CostCenter_{{ i+1 }}" (keydown.enter)="ChangeFocus('Description_'+(i+1))"
+                  formControlName="CostCenter">
+            <option *ngFor="let costCenter of costCenterList" value={{costCenter.CostCenterId}}> {{costCenter.CostCenterName}} </option>
+          </select>
+          <div class="color-red font-sm" *ngIf="itm.IsDirty('CostCenter')"
+               [hidden]="itm.IsValidCheck('CostCenter','required')">Invalid Cost Center.
+          </div>
+        </form>
+      </td>
+      <td>
+        <textarea [(ngModel)]="itm.Description" id="narration" style="width:100%; margin: 5px auto;"
+                  id="Description_{{i+1}}" (keydown.enter)="CheckAndAddNewTxnLedger($event,i)">
+        </textarea>
+      </td>
+      <td><a *ngIf="!voucherVerificationRequired" (click)="AddNewTxnLedger()"><i class="fa fa-plus btn btn-success"></i></a></td>
+      <td><a *ngIf="!voucherVerificationRequired" (click)="DeleteTxnLedgerRow(i)" title="Alt+X,Alt+Delete,Click to remove this item"> <i
+             class="btn btn-danger fa fa-times"></i> </a></td>
+    </tr>
+
+  </tbody>
+</table> -->
+<!-- <div class="clearfix">
+  <div class="sum_data pull-left">
+    <h4>Narration:</h4>
+    <form [formGroup]="transaction.TransactionValidator">
+      <textarea class="col-md-12" [(ngModel)]="transaction.Remarks" id="narration"
+                (keydown.enter)="ChangeFocus(voucherVerificationRequired ? 'btn_Verify_Voucher' : 'btn_Voucher_Save')"
+                formControlName="Remarks"></textarea>
+      <div class="color-red font-sm" *ngIf="transaction.IsDirty('Remarks')" min="0"
+           [hidden]="transaction.IsValidCheck('Remarks','maxLength')"> Max length for Remarks is 100 characters </div>
+    </form>
+  </div>
+  <div class="sum_table pull-right">
+    <ul>
+      <li *ngIf="selectedVoucherCode != voucherCodeEnum.PaymentVoucher && selectedVoucherCode != voucherCodeEnum.ReceiptVoucher"
+          style="font-weight:bold;color:green;"><b>Total Debit:</b>{{totalDebit | Currency:'4'}}</li>
+      <li *ngIf="selectedVoucherCode != voucherCodeEnum.PaymentVoucher && selectedVoucherCode != voucherCodeEnum.ReceiptVoucher"
+          style="font-weight:bold;color:red;"><b>Total Credit:</b>{{totalCredit | Currency:'4'}}</li>
+      <li *ngIf="selectedVoucherCode == voucherCodeEnum.PaymentVoucher || selectedVoucherCode == voucherCodeEnum.ReceiptVoucher"
+          style="font-weight:bold;color:green;"><b>Total Amt.:</b>{{totalAmount | Currency:'4'}}</li>
+      <li><b>In Words :</b>{{totalAmount | NumberInWords | CapitalFirstLetter}} Only</li>
+    </ul>
+  </div>
+</div> -->
+<!-- <div class="btn-wrapper"> -->
+<!--<button class="btn blue" (click)="AddNewTxnLedger()" title="Alt+A"><u>A</u>dd Ledger</button>-->
+<!-- <button *ngIf="!voucherVerificationRequired" [disabled]="HideSavebtn" id="btn_Voucher_Save" class="btn green btn-success"
+          (click)="SaveVoucherToDb()"
+          title="Alt+S, Enter"><u>S</u>ave</button> -->
+<!-- <button class="btn btn-danger" [routerLink]="['../TransferToACC']"> -->
+<!-- <button *ngIf="voucherVerificationRequired" [disabled]="HideSavebtn" id="btn_Verify_Voucher" class="btn green btn-success"
+          (click)="VerifyVoucher()">Verify Voucher</button>
+  <button class="btn btn-danger" (click)="Cancel()"> <u>C</u>ancel </button>
+</div> -->
+<!---------------------Print/View Pop Up form starts ------------------------>
+<!-- <transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYId" [showEditVoucherBtn]="false" (callback-copy)="CallBackCopyVoucher()">
+</transaction-view>
+
+<ledger-add-reusable *ngIf="showAddNewLedgerPage" (callback-add)="CallBackAddNewLedger($event)"></ledger-add-reusable> -->
+
+<!-- <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSubLedgerAddPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3 class="add-charges-lebel"> <span>Add Sub Ledgers for ({{transaction.TransactionItems[selectedItemIndex].LedgerName}}) (Amount:
+                {{transaction.TransactionItems[selectedItemIndex].Amount}})</span> </h3>
+            <a class="btn btn-danger" (click)="CloseSubLedgerAddPopUp()" title="Cancel"><em class="fa fa-times"></em></a>
+          </div>
+          <div class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-12">
+                  <table aria-describedby="other-charge-table" class="table table-bordered inv_table">
+                    <thead>
+                      <tr>
+                        <th><strong>Sub Ledger Name<sup style="color:red">*</sup></strong></th>
+                        <th><strong>Amount<sup style="color:red">*</sup></strong></th>
+                        <th><strong>Description</strong></th>
+                        <th></th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let row of subLedgers ; let i=index">
+                        <tr>
+                          <td>
+                            <input danphe-auto-complete
+                                   [(ngModel)]="selectedSubLedger[i]" class="form-control"
+                                   id="subLedgerName{{i}}" [source]="LedgerwiseSubLedgerMaster"
+                                   [list-formatter]="SubLedgerListFormatter" placeholder="SubLedger Name" display-property-name="SubLedgerName"
+                                   min-chars="0" max-num-list="10"
+                                   (focusout)="onSubLedgerChange(i)" onclick="this.select();"
+                                   (keyup.enter)="setFocusById(transaction.TransactionItems[selectedItemIndex].DrCr ? 'DrAmount':'CrAmount',i)" />
+                          </td>
+                          <td *ngIf="transaction.TransactionItems[selectedItemIndex].DrCr">
+                            <input type="number" [(ngModel)]="row.DrAmount" id="DrAmount{{i}}" class="form-control"
+                                   onclick="this.select();" onwheel="this.blur()"
+                                   (ngModelChange)="CalculateRemaingingAmount()"
+                                   (keyup.enter)="AddSubLedgerItem()">
+                          </td>
+                          <td *ngIf="!transaction.TransactionItems[selectedItemIndex].DrCr">
+                            <input type="number" [(ngModel)]="row.CrAmount" id="CrAmount{{i}}" class="form-control"
+                                   onclick="this.select();" onwheel="this.blur()"
+                                   (ngModelChange)="CalculateRemaingingAmount()"
+                                   (keyup.enter)="AddSubLedgerItem()">
+                          </td>
+                          <td>
+                            <input type="text" [(ngModel)]="row.Description" class="form-control">
+                          </td>
+                          <td>
+                            <button type="button" class="btn btn-primary add-btn btn-rounded" (click)="AddSubLedgerItem()">
+                              <em class="fa fa-plus"></em>
+                            </button>
+                          </td>
+                          <td>
+                            <button type="button" class="btn btn-danger delete-btn btn-rounded" (click)="DeleteSubLedgerItem(i)">
+                              <em class="fa fa-times"></em>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <div class="row">
+                <div class="col-md-6">
+                  <label>Remainging Amount: {{ remainingAmount }}</label>
+                </div>
+                <div class="text-right" style="margin: 1rem;">
+                  <button type="submit" id="btn-add-subLedger" class="btn green btn-success" (click)="SaveSubLedgerItem()">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->

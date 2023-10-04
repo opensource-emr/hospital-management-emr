@@ -1,0 +1,34 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Opening Stock Valuation Report</span> </div>
+      <div class="row">
+        <div class="col-md-6">
+          <label class="col-md-4" for="TillDate">Opening On Date:</label>
+
+          <div class="col-md-8">
+            <danphe-date-picker id="TillDate" ngDefaultControl [CalendarTypes]="'np,en'" [(ngModel)]="tillDate" (ngModelChange)="OnDateChange()">
+            </danphe-date-picker>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <input danphe-auto-complete class="form-control" (valueChanged)="onStoreChange()" placeholder="Select StoreName" [(ngModel)]="selectedStore" [list-formatter]="StoreListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="StoreName" value-property-name="StoreId" [source]="storeList" [match-formatted]="true" [grid-sort]="'StoreName'" onclick="this.select()" />
+        </div>
+        <div class="col-md-1 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="LoadReport()" [disabled]="loading">
+              <span *ngIf="!loading">Show Report</span>
+              <span *ngIf="loading">Loading...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="InvOpeningStockReportColumns" [grid-data]="InvOpeningStockReportResult" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-date-range]="dateRange" [report-for]="'inventory'" [show-header]="true" [filter-parameters]="FilterParameters"> </danphe-grid>
+  </div>
+</div>

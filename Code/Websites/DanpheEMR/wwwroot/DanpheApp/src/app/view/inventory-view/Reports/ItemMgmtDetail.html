@@ -1,0 +1,12 @@
+﻿<div class="caption custom-caption">
+    <i class="fa fa-calendar"></i>
+    <span class="caption-subject">Item Management Detail</span>
+</div>
+<br />
+
+<div class="" *ngIf="ItmMgmtDetailData.length>0">
+    <danphe-grid [grid-colDefaults]="ItmMgmtDetailColumns"
+                 [grid-data]="ItmMgmtDetailData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+    </danphe-grid>
+    </div>

@@ -1,0 +1,85 @@
+<div id="id_admission_slip" style="margin:10px;">
+  <div style="padding: 20px; border: 1px solid black; margin-top: 10px">
+    <div style="margin-bottom: 25px;">
+      <billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header>
+    </div>
+    <div style="Font-weight:bold; text-decoration: underline; margin-top: 20px; margin-bottom: 20px; text-align: center;">
+      <span>Patient Admission Slip</span>
+    </div>
+    <div>
+      <div style="width:100%; display:flex;">
+        <span>Patient&nbsp;:&nbsp;</span>
+        <div style="font-weight: bold; display:flex;">
+          <span>{{admissionSlipDetails.PatientName}}</span>
+        </div>
+        <span style="margin-left: 10px;">{{admissionSlipDetails.AgeGender}}</span>
+      </div>
+
+      <div style="width:100%; display:flex; margin-top: 10px;">
+        <span>Hospital No&nbsp;:&nbsp;</span>
+        <div style="font-weight: bold; display:flex;">
+          <span>{{admissionSlipDetails.HospitalNumber}}</span>
+        </div>
+      </div>
+
+      <div style="width:100%; display:flex; margin-top: 10px">
+        <div style="width:50%; display:flex;">
+          <span>IP Number&nbsp;:&nbsp;</span>
+          <div style="font-weight: bold; display:flex;">
+            <span>{{admissionSlipDetails.IpNumber}}</span>
+          </div>
+        </div>
+        <div style="width:50%; display:flex; justify-content: flex-end;">
+          <span>Ward/Bed&nbsp;:&nbsp;</span>
+          <div style="display:flex; text-align: right; font-weight: bold;">
+            <span>{{admissionSlipDetails.WardNameBedNumber}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:100%; display:flex; margin-top: 10px">
+        <div style="width:50%; display:flex;">
+          <span>Department&nbsp;:&nbsp;</span>
+          <div style="font-weight: bold; display:flex;">
+            <span>{{admissionSlipDetails.DepartmentName}}</span>
+          </div>
+        </div>
+        <div style="width:50%; display:flex; justify-content: flex-end;" *ngIf="admissionSlipDetails.DoctorName">
+          <span>Doctor&nbsp;:&nbsp;</span>
+          <div style="font-weight: bold; display:flex; text-align: right;">
+            <span>{{admissionSlipDetails.DoctorName}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:100%; display:flex; margin-top: 10px">
+        <div style="width:50%; display:flex;">
+          <span>Admitted On&nbsp;:&nbsp;</span>
+          <div style="font-weight: bold; display:flex;">
+            <span>{{admissionSlipDetails.AdmittedOn | DanpheDateTime:'format':dateTimeFormat}}</span>
+          </div>
+        </div>
+        <div style="width:50%; display:flex; justify-content: flex-end;">
+          <span>User&nbsp;:&nbsp;</span>
+          <div style="font-weight: bold; display:flex; text-align: right;">
+            <span>{{currentUser.UserName}}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<hr>
+
+<div style="text-align:center;z-index: 4;position: relative; margin-bottom: 25px; margin-top: 15px;">
+  <button class="btn green btn-success" value="" [disabled]="loading" (click)="PrintAdmissionSlip()" id="btnPrintAdmissionSlip">
+    <span>Print</span>&nbsp;&nbsp;
+    &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+  </button>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

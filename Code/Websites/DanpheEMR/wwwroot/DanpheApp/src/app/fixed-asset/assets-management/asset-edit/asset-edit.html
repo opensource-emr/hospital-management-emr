@@ -1,0 +1,234 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAssetForm">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3>Assets Management </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form" [formGroup]="selAssetForEdit.FAEditAssetValidators">
+
+            <!--Start: Model Body-->
+            <div class="form-body clearfix">
+              <div class="row">
+                <!--Start: Header Details -->
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Item Code <b> : </b></label>
+                        <div class="col-md-5">
+                          {{selAssetForEdit.ItemCode}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Bar Code Number <b>:</b></label>
+                        <div class="col-md-5">
+                          {{selAssetForEdit.BarCodeNumber}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Item Name <b>:</b></label>
+                        <div class="col-md-5">
+                          {{selAssetForEdit.ItemName}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Vendor Name <b>:</b></label>
+                        <div class="col-md-5">
+                          {{selAssetForEdit.VendorName}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Entered By <b>:</b></label>
+                        <div class="col-md-5">
+                          {{selAssetForEdit.CreatedByName}}
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Serial No.<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.SerialNo" formControlName="SerialNo"
+                            class="col-md-12" placeholder="Enter Serial No..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('SerialNo','required') || !(selAssetForEdit.IsEditAssetDirty('SerialNo'))">Serial
+                            No is required !</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Model No.<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.ModelNo" formControlName="ModelNo"
+                            class="col-md-12" placeholder="Enter Model No..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('ModelNo','required') || !(selAssetForEdit.IsEditAssetDirty('ModelNo'))">Model
+                            No is required !</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Asset Code<b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.AssetCode"
+                            [ngModelOptions]="{standalone: true}" class="col-md-12" placeholder="Enter Asset Code..." />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Warranty Expiry Date
+                          <sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <danphe-date-picker [CalendarTypes]="'np,en'" formControlName="WarrantyExpiryDate"
+                            [(ngModel)]="selAssetForEdit.WarrantyExpiryDate" [allow-future-date]="true"
+                            style="width:100px;"></danphe-date-picker>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-12"
+                      style="margin-bottom:15px!important;margin-top:30px!important;margin-left:60px!important;">
+                      <label style="padding-left:0px!important; font-size:medium!important;font-weight:700!important;">
+                        <strong>Asset Location Details</strong></label>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1"> Location
+                          (City/Branch)<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input danphe-auto-complete class="form-control" [(ngModel)]="selectedAssetLocation"
+                            [source]="fixedassetlocations" placeholder="Location Name" max-num-list="10"
+                            formControlName="AssetsLocation" display-property-name="LocationName"
+                            value-property-name="LocationName" [list-formatter]="myListFormatter" />
+                          <span style="color:red"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('AssetsLocation','required') || !(selAssetForEdit.IsEditAssetDirty('AssetsLocation'))">
+                            Location Name is required</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1"> Building Block
+                          Number<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.BuildingBlockNumber"
+                            formControlName="BuildingBlockNumber" class="col-md-12"
+                            placeholder="Enter BuildingBlockNumber..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('BuildingBlockNumber','required') || !(selAssetForEdit.IsEditAssetDirty('BuildingBlockNumber'))">Building
+                            Block Number is required !</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1">Building Floor<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.Floors" formControlName="Floors"
+                            class="col-md-12" placeholder="Enter Floors..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('Floors','required') || !(selAssetForEdit.IsEditAssetDirty('Floors'))">Building
+                            Floor is required !</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1"> Room Number<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <input type="text" [(ngModel)]="selAssetForEdit.RoomNumber" formControlName="RoomNumber"
+                            class="col-md-12" placeholder="Enter RoomNumber..." />
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('RoomNumber','required') || !(selAssetForEdit.IsEditAssetDirty('RoomNumber'))">Room
+                            Number is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <label class="control-label col-md-5 col-md-offset-1"> Room Position<sup>*</sup><b>:</b></label>
+                        <div class="col-md-5">
+                          <textarea type="text" [(ngModel)]="selAssetForEdit.RoomPosition"
+                            formControlName="RoomPosition" class="col-md-12" rows="3"
+                            placeholder="Enter RoomPosition..."> </textarea>
+
+                          <span Class="color-red font-sm"
+                            [hidden]="selAssetForEdit.IsEditAssetValidCheck('RoomPosition','required') || !(selAssetForEdit.IsEditAssetDirty('RoomPosition'))">
+                            Room Position is required !</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <div class="row">
+                          <label class="control-label col-md-5 col-md-offset-1"> Substore <sup>*</sup><b>:</b></label>
+                          <div class="col-md-5">
+                            <input danphe-auto-complete class="form-control" [(ngModel)]="selectedSubstore"
+                              [source]="substoreList" (focusout)="SelectStoreFromSearchBox()"
+                              placeholder="Select Substore" max-num-list="10" formControlName="StoreId"
+                              display-property-name="Name" value-property-name="StoreId"
+                              [list-formatter]="StoreListFormatter" />
+                            <span style="color:red"
+                              [hidden]="selAssetForEdit.IsEditAssetValidCheck('StoreId','required') || !(selAssetForEdit.IsEditAssetDirty('StoreId'))">
+                              Store is required</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="row">
+                          <label class="control-label col-md-5 col-md-offset-1"> Asset Holder <b>:</b></label>
+                          <div class="col-md-5">
+                            <input danphe-auto-complete class="form-control" [(ngModel)]="selectedAssetHolder"
+                              [source]="employeeList" (focusout)="SelectEmployeeFromSearchBox()"
+                              placeholder="Select Asset Holder Name" max-num-list="10" formControlName="AssetHolderId"
+                              display-property-name="FullName" value-property-name="EmployeeId"
+                              [list-formatter]="EmployeeListFormatter" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                  </div>
+                </div>
+                <!--End: Header Details -->
+
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+            <div class="form-group panel-footer text-right no-margin">
+              <button type="button" class="btn btn-success" (click)="Save()" [disabled]="loading">
+                Update
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

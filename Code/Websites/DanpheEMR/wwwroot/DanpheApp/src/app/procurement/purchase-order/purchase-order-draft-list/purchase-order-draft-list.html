@@ -1,0 +1,109 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption lb-caption">
+                        <h3>
+                            <span class="caption-subject">Purchase Order Draft List</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="ClosePurchaseOrderDraftListPage()" title="Cancel"><i class="fa fa-times"></i></a>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-3">
+                                            <div class="pull-Right">
+                                                <a (click)="CreateNewDraft()" style="text-decoration: underline;">
+                                                    <i class="fa fa-plus"></i> Start New Draft
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <div class="filtr-listing m1" style="padding-top: 5px;">
+                                    <input id="discarded_draft" type="checkbox" style="width:15px;height:15px" [(ngModel)]="isPODraftDiscarded"
+                                           (change)="LoadPODraftListByStatus()" />&nbsp;
+                                    <label for="discarded_draft">Discarded Draft</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <danphe-grid [grid-colDefaults]="purchaseOrdersDraftGridColumns"
+                                     [grid-data]="purchaseOrderDraftList"
+                                     (grid-actions)="PurchaseOrderDraftGridAction($event)"
+                                     [show-CustomDate]="false"
+                                     [grid-exportOptions]="getGridExportOptions()"
+                                     [grid-showExport]="true"></danphe-grid>
+                    </div>
+
+
+                    <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="purchaseorderDraft.IsModificationAllowed">
+                        <div class="portlet-body form">
+                            <div class="row">
+                                <div class="col-md-8 col-md-offset-2">
+                                    <div class="modelbox-div clearfix">
+                                        <div class="caption lb-caption">
+                                            <h3>
+                                                <span class="caption-subject">Discard PO Draft</span>
+                                            </h3>
+                                            <a class="btn btn-danger" (click)="CloseDiscardPopUP()" title="Cancel"><i class="fa fa-times"></i></a>
+                                        </div>
+                                        <div class="col-md-12" style="margin-bottom: 10px;">
+                                            <span>Vendor</span>:&nbsp;{{purchaseorderDraft.VendorName}}
+                                        </div>
+                                        <div class="col-md-12" style="margin-bottom: 10px;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <span>Draft Created By</span>:&nbsp; {{purchaseorderDraft.DraftCreatedBy}}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <span>Draft Created On</span> :&nbsp; {{purchaseorderDraft.CreatedOn}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12" style="margin-bottom: 10px;">
+                                            <div class="row">
+                                                <label class="col-md-2">Discard Remarks <sup style="color: red">*</sup>:</label>
+                                                <div class="col-md-6">
+                                                    <textarea type="text" class="form-control" name="cancelRemarks"
+                                                              [(ngModel)]="purchaseorderDraft.DiscardRemarks"
+                                                              rows="5"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal"
+                                                    [disabled]="purchaseorderDraft.DiscardRemarks === ''"
+                                                    (click)="WithdrawPODraft(purchaseorderDraft.DraftPurchaseOrderId)">
+                                                Discard Draft
+                                            </button>
+                                            <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal"
+                                                    (click)="CloseDiscardPopUP()">
+                                                Cancel
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <purchase-order-draft-add *ngIf="showPurchaseOrderDraftAddEditPage"
+                                              (call-back-close)="ClosePurchaseOrderDraftAddEditPage()"></purchase-order-draft-add>
+
+                    <purchase-order-draft-view *ngIf="showPurchaseOrderDraftViewPage"
+                                               (call-back-close)="ClosePurchaseOrderDraftViewPage()"></purchase-order-draft-view>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,118 @@
+
+<base href="/Patient/">
+<!--All commented part by Nagesh for inject routes from local-->
+
+<div class="sub-navtab">
+
+    <ul class="nav nav-tabs" *ngIf="validRoutes !=undefined">
+        <li *ngFor="let route of validRoutes">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+
+        </li>
+        <li>
+            <a routerLink="ProfilePic" [routerLinkActive]="'a-tab-active'" title="Profile Picture">
+                <i class="fa fa-camera"></i>
+            </a>
+        </li>
+
+        <li style="float:right;">
+            <input class="btn green btn-success" id="regPatientSubmitBtn" type="button" (click)="Add()" *ngIf="patientService.globalPatient.PatientId == 0" [disabled]="loading" value="Register Patient" />
+
+        </li>
+        <li style="float:right;">
+            <input class="btn green btn-success" id="editPatientRecordSubmitBtn" type="button" (click)="Update()" *ngIf="patientService.globalPatient.PatientId != 0" [disabled]="loading" value="Update Patient Information" />
+        </li>
+    </ul>
+</div>
+<router-outlet></router-outlet>
+
+<patient-duplicate-warning-box *ngIf="showExstingPatientListPage"
+                               [matchedPatResult]="matchedPatResult"
+                               [currentPatInfo]="Patient"
+                               [btnActionName]="'View Patient Details'"
+                               (emit-close-action)="emitCloseAction($event)">
+
+</patient-duplicate-warning-box>
+
+<!--Model Box Starting Here-->
+<!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="showExstingPatientList">
+    <div class="portlet-body form">
+
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <b>
+                            <u style="color:#bd8111">Alert !!!! we have found existing Patient(s) with similar information.</u>
+                            <a style="float:right;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        </b>
+                        <hr />
+                    </div>
+                    <br />
+
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr style="background-color:lightgray">
+                                        <th>Name</th>
+                                        <th>Hospital No</th>
+                                        <th>Gender</th>
+                                        <th>Phone Number</th>
+                                        <th>Birth Date</th>
+                                        <th>Address</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let patient of matchedPatientList;let i = index">
+                                        <td><span *ngIf="!patient['NameExists']">{{patient.FirstName}}&nbsp;{{patient.MiddleName}}&nbsp;{{patient.LastName}}</span>
+                                          <mark *ngIf="patient['NameExists']">{{patient.FirstName}}&nbsp;{{patient.MiddleName}}&nbsp;{{patient.LastName}}</mark>
+                                      </td>
+                                        <td> {{patient.PatientCode}}</td>
+                                        <td> {{patient.Gender}}</td>
+                                        <td> <span *ngIf="!patient['NumberExists']">{{patient.PhoneNumber}}</span>
+                                          <mark *ngIf="patient['NumberExists']">{{patient.PhoneNumber}}</mark>
+                                        </td>
+                                        <td> {{patient.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                        <td> {{patient.Address}}</td>
+                                        <td style="text-align:right;">
+                                            <button type="button" class="btn blue btn-sm" style="margin-left:10px;" name="patientselect"
+                                                    (click)="loading=false;EditPatientDetails(patient.PatientId)">
+                                                <i class="fa fa-check-square-o"></i>&nbsp;&nbsp;View Patient Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12" style="padding-bottom: 18px;" *ngIf="patientService.globalPatient.PatientId == 0">
+                        <b>IF YOU'RE SURE THAT THIS IS NEW PATIENT, CLICK &nbsp; &nbsp;&nbsp; &nbsp;<span class="glyphicon glyphicon-hand-right" style="font-size:25px;vertical-align: middle;"></span> </b> &nbsp; &nbsp;
+                        <button type="button" class="btn btn-primary btn-sm" [disabled]="loading" (click)="loading=true;ProceedAnyway()">
+                            <i class="glyphicon glyphicon-plus"> </i>&nbsp;&nbsp;Register as New Patient
+                        </button>
+                    </div>
+                    <div class="col-md-12" style="padding-bottom: 18px;" *ngIf="patientService.globalPatient.PatientId != 0">
+                        <b>IF YOU'RE SURE THAT TO UPDATE WITH THESE INFO, CLICK &nbsp; &nbsp;&nbsp; &nbsp;<span class="glyphicon glyphicon-hand-right" style="font-size:25px;vertical-align: middle;"></span> </b> &nbsp; &nbsp;
+                        <button type="button" class="btn btn-primary btn-sm" [disabled]="loading"  (click)="loading=true;UpdateAnyway()">
+                            <i class="glyphicon glyphicon-plus"> </i>&nbsp;&nbsp;Update with These Information
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+
+
+
+
+
+
+

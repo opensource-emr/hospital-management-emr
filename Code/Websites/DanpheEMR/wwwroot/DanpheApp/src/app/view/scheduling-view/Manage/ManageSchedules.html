@@ -1,0 +1,79 @@
+﻿<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
+    <span class="caption-subject font-blue-sharp bold uppercase">Manage Schedules</span>
+</div>
+<br />
+<div class="row" style="padding-bottom:10px">
+    <div class="col-md-6">
+        <label class="control-label col-md-4 left" style="padding-top: 7px;">
+            Select Employee(s)
+            <b style="float:right;">:</b>
+        </label>
+        <div class="col-md-8">
+            <danphe-multiselect [ddl-data]="EmployeeList"
+                                [placeholder-text]="'Select Employee(s)'"
+                                [value-property-name]="'EmployeeId'"
+                                (selected-items-list)="onChange($event)"
+                                [display-property-name]="'EmployeeName'"
+                                [single-selection]="false">
+            </danphe-multiselect>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button class="blue btn" (click)="reqType='week';loadCurrentWeek()">
+            <i class="fa fa-refresh "></i>&nbsp;Reload
+        </button>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="col-md-5" *ngIf="showSelectedEmp">
+        <div class="btn-group right">
+            <button class="blue btn" (click)="loadPreviousWeek()" [disabled]="prevDisable"><i class="fa fa-backward"></i>&nbsp;Previous</button>
+            <button class="blue btn" (click)="loadCurrentWeek()">Current</button>
+            <button class="blue btn" (click)="loadNextWeek()" [disabled]="nextDisable">Next&nbsp;<i class="fa fa-forward"></i></button>          
+        </div>
+    </div>
+    <div class="col-md-1" *ngIf="showSelectedEmp">
+        <span *ngIf="reqType=='week'"><b>Week no: {{loadedWeek}}</b></span>
+        <span *ngIf="reqType=='month'"><b>{{monthName}}</b></span>
+    </div>
+    <div class="col-md-2" *ngIf="showSelectedEmp">
+        <div class="btn-group">
+            <input type="button" class="blue btn" value="Week" (click)="reqType='week';loadCurrentWeek()" />
+            <input type="button" class="blue btn" value="Month" (click)="reqType='month';month()" />
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="showSelectedEmp">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                <thead>
+                    <tr>
+                        <th><b>Department Name</b></th>
+                        <th><b>Employee Name</b></th>
+                        <td *ngFor="let data of dates" style="width:100px">{{data.date}}<br />({{data.shortDay}})</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of empSchedules">
+                        <td>{{row.DepartmentName}}</td>
+                        <td>{{row.EmployeeName}}</td>
+                        <td *ngFor="let days of row.EmployeeSchedules">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="IsActive" type="checkbox" [(ngModel)]="days.IsWorkingDay" [checked]="days.IsWorkingDay">
+                                <span></span>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-12" style="text-align:center">
+        <input type="button" class="btn btn-success" value="Save" (click)="saveEmpSchedules()" [disabled]="loading" />
+        <span></span>
+        <input type="button" class="btn btn-danger" value="Cancel" (click)="Cancel()">
+    </div>
+</div>

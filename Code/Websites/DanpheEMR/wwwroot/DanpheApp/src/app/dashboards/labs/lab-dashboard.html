@@ -1,0 +1,305 @@
+<div class="app-wrap">
+  <div class="card-section">
+    <div class="filter-wrap">
+      <from-to-date-select (on-change)="OnCardFromToDateChange($event)" [emit-always]="false">
+      </from-to-date-select>
+    </div>
+    <div class="row">
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\patient-wran.svg" alt="">
+              </div>
+              <div class="card-title" *ngIf="overallDengueDetails">
+                <h4>Dengue Overall Stats</h4>
+                <div class="count-wrap">
+                  <div class="card-count">
+                    Total : <strong> {{overallDengueDetails.TotalCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Positive : <strong>{{overallDengueDetails.PositiveCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Negative : <strong>{{overallDengueDetails.NegativeCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Pending : <strong>{{overallDengueDetails.ResultNotFinalizedCount}}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0">
+            <div class="card-left" *ngIf="todaysDengueDetails">
+              <div class="card-count">
+                Dengue Today’s Stats
+              </div>
+              <div class="count-wrap">
+                <div class="card-count">
+                  Total : <strong>{{todaysDengueDetails.TotalCount}}</strong>
+                </div>
+                <div class="card-count">
+                  Positive : <strong>{{todaysDengueDetails.PositiveCount}}</strong>
+                </div>
+                <div class="card-count">
+                  Negative : <strong>{{todaysDengueDetails.NegativeCount}}</strong>
+                </div>
+                <div class="card-count">
+                  Pending : <strong>{{todaysDengueDetails.ResultNotFinalizedCount}}</strong>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\covid.svg" alt="Covid">
+              </div>
+              <div class="card-title">
+                <h4>Covid Overall Stats</h4>
+                <div class="count-wrap">
+                  <div class="card-count">
+                    Total : <strong> {{covidDetails.TotalTest | number}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Positive : <strong>{{covidDetails.TotalPositive | number}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Negative : <strong>{{covidDetails.TotalNegative | number}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Pending : <strong>{{covidDetails.TotalPendingTests | number}}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0">
+            <div class="card-left">
+              <div class="card-count">
+                Covid Today’s Stats
+              </div>
+              <div class="count-wrap">
+                <div class="card-count">
+                  Total : <strong>{{covidDetails.TotalTestToday | number}}</strong>
+                </div>
+                <div class="card-count">
+                  Positive : <strong>{{covidDetails.TotalPositiveToday | number}}</strong>
+                </div>
+                <div class="card-count">
+                  Negative : <strong>{{covidDetails.TotalNegativeToday | number}}</strong>
+                </div>
+                <div class="card-count">
+                  Pending : <strong>{{covidDetails.PendingTestsToday | number}}</strong>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-indigo">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\doctor.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Test Requests Today</h4>
+                <div class="count-wrap">
+                  <div class="card-count">
+                    Total : <strong>{{testReqDetailsToday.TotalCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Positive : <strong>{{testReqDetailsToday.PositiveCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Negative : <strong>{{testReqDetailsToday.NegativeCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Pending : <strong>{{testReqDetailsToday.PendingCount}}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0">
+            <div class="card-left">
+              <div class="count-wrap">
+                <div class="card-count">
+                  New : <strong>{{testReqDetailsToday.TotalCountForNewPatient}}</strong>
+                </div>
+                <div class="card-count">
+                  Result Pending : <strong>{{testReqDetailsToday.PendingCountForNewPatient}}</strong>
+                </div>
+                <div class="card-count">
+                  Completed : <strong>{{testReqDetailsToday.CompleteCountForNewPatient}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0 d-flex align-items-center justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Cancelled : <strong>{{testReqDetailsToday.CancelledCountForNewPatient}}</strong>
+              </div>
+
+
+
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Returned : <strong>{{testReqDetailsToday.ReturnCountForNewPatient}}</strong>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-info">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\appointment.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Test Requests Till Date</h4>
+                <div class="count-wrap">
+                  <div class="card-count">
+                    Total : <strong>{{testReqDetailsTillNow.TotalCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Positive : <strong>{{testReqDetailsTillNow.PositiveCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Negative : <strong>{{testReqDetailsTillNow.NegativeCount}}</strong>
+                  </div>
+                  <div class="card-count">
+                    Pending : <strong>{{testReqDetailsTillNow.PendingCount}}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0">
+            <div class="card-left">
+              <div class="count-wrap">
+                <div class="card-count">
+                  New : <strong>{{testReqDetailsTillNow.TotalCountForNewPatient}}</strong>
+                </div>
+                <div class="card-count">
+                  Result Pending : <strong>{{testReqDetailsTillNow.PendingCountForNewPatient}}</strong>
+                </div>
+                <div class="card-count">
+                  Completed : <strong>{{testReqDetailsTillNow.CompleteCountForNewPatient}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer py-0 d-flex align-items-center justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Cancelled : <strong>{{testReqDetailsTillNow.CancelledCountForNewPatient}}</strong>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Returned : <strong>{{testReqDetailsTillNow.ReturnCountForNewPatient}}</strong>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-container lab-container">
+    <div class="row">
+      <div class="col-lg-6 col-md-7 col-sm-12">
+        <div class="card">
+          <div class="chart-title">
+            <div class="d-block">
+              <h4>Trending Lab Tests (Top 10)</h4>
+            </div>
+          </div>
+          <canvas id="trendingLabTests" height="250">{{ trendingLabTests }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-5 col-sm-12">
+        <div class="card">
+          <div class="chart-title">
+            <div class="d-block">
+              <h4>Abnormal Test Result</h4>
+            </div>
+            <div class="select-form d-flex align-items-center">
+              <label for="">Test Name : </label>
+              <div ngbDropdown class="d-inline-block">
+                <!-- <button type="button" class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>
+                  Select Test
+                </button>
+                <div ngbDropdownMenu aria-labelledby="navbarDropdown3" class="dropdown-menu">
+                  <div class="form-group">
+                    <input type="text" class="form-control">
+                    <span class="search-icon">
+                      <img src="\assets\pages\img\dashboard\bx-search-alt.svg" alt="">
+                    </span>
+                  </div>
+                  <a ngbDropdownItem href="#">Test1</a>
+                  <a ngbDropdownItem href="#">Test2</a>
+                  <a ngbDropdownItem href="#">Test3</a>
+                </div> -->
+                <input danphe-auto-complete class="form-control" [(ngModel)]="selectedTest" value="" [source]="allLabTests" [list-formatter]="LabTestNameListFormatter" placeholder="--Select Test Name--" display-property-name="LabTestName" value-property-name=null onClick="this.select();" (ngModelChange)="AssignSelectedTest()" min-chars="1" [grid-sort]="'LabTestName'" match-formatted="true">
+
+              </div>
+            </div>
+          </div>
+          <canvas id="abnormalTestResult" height="250">{{ abnormalTestResult }}</canvas>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-block">
+            <h4>Rank Wise Test Count</h4>
+          </div>
+          <canvas id="rankwisetestcount" height="300">{{ rankwisetestcount }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-block">
+            <h4>Test Completed Today</h4>
+          </div>
+          <canvas id="testCompleteToday" height="300">{{ testCompleteToday }}</canvas>
+          <div class="chart-content">
+            <h3>{{totalTestCompletedToday}}</h3>
+            <p>Total Test</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title">
+            <div class="d-block">
+              <h4>Membership Wise Test Count</h4>
+            </div>
+          </div>
+          <canvas id="memberwisecount" height="300">{{ memberwisecount }}</canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

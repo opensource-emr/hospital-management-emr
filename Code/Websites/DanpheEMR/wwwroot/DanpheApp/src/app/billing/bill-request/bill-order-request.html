@@ -1,0 +1,10 @@
+﻿
+<div class="wrapper"><div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="pendingOrdersGridColumns"
+                     [grid-data]="requestList" 
+                     (grid-actions)="DocOrderGridActions($event)"> </danphe-grid>
+  </div>
+</div></div>
+<!--@*moved billing display to grid. Remarks: in dynamic button name Pay 'DepartmentName' Request department name is missing for now.*@--> 
+

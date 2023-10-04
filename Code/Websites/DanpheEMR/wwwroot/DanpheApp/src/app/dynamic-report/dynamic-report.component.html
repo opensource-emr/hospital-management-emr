@@ -1,0 +1,21 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="form-body body-color">
+      <div class="caption custom-caption" style="margin-bottom:10px ;"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Dynamic Report</span> </div>
+      <div class="col-md-12">
+        <a class="btn btn-success" href="#queryContainer" data-toggle="collapse">Write SQL Query Here</a>
+        <div id="queryContainer" class="collapse demo-container">
+          <textarea rows="10" class="form-control" type="text" [(ngModel)]="Query"></textarea>
+          <div class="text-right btn-container">
+            <button class="btn btn-primary" type="button" (click)="LoadReport()">Load Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="ReportColumns" [grid-data]="ReportData" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions"> </danphe-grid>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+<a feature="button" class="btn blue bordered" (click)="AddSubdivision()"><i class="fa fa-plus"></i>Add Sub Division</a>
+
+<subdivision-add [showAddPage]="showAddPage"
+             [selectedSubdivision]="subDivisionSelected"
+             (callback-Add)="CallBackAdd($event)" [update]="update"></subdivision-add>
+
+
+<div *ngIf="showSubDivisionList" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="subDivisionGridColumns" [grid-data]="subDivisionList" (grid-actions)="SubdivisionGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>

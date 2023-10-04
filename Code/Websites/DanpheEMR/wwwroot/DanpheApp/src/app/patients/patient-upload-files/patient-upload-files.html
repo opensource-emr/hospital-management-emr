@@ -1,0 +1,152 @@
+<style>
+img {
+	border: 1px solid #ddd; /* Gray border */
+	border-radius: 4px; /* Rounded border */
+	padding: 10px; /* Some padding */
+	width: 150px; /* Set a small width */
+	cursor: pointer;
+}
+/* Add a hover effect (blue shadow) */
+img:hover {
+	box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+	transform: scale(1.0);
+	-moz-transform: scale(1.0);
+	-webkit-transform: scale(1.0);
+}
+</style>
+<div class="col-md-12" *ngIf="isShowListMode">
+  <div class="row">
+    <button class="btn btn-primary" *ngIf="isShowUploadMode" (click)="AttachFiles()">Upload Files <i class="fa fa-upload" aria-hidden="true"></i></button>
+    <div class="page-bar" style="border-bottom: none;">
+      <ul class="page-breadcrumb">
+        <li *ngFor="let docitm of documentTypeList"> <a [routerLinkActive]="'link3-active'" (click)="chaneFileType(docitm)">{{docitm}}</a> </li>
+      </ul>
+    </div>
+  </div>
+  <div  class="table-responsive bg-white p-15">
+    <table class="table doc-tbl">
+      <thead>
+        <tr>
+          <th></th>
+          <!--<th>Patient Name</th>-->
+          <th>Document Type</th>
+          <!--<th>FileName</th>--> 
+          <!--<th>Type</th>-->
+          <th>Upload Date</th>
+          <th>Uploaded By</th>
+          <th>Remarks</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tr *ngFor="let doc of selectedDocuments; let i = index">
+        <td>{{i+1}}</td>
+        <!--<td>{{doc.ShortName}}</td>-->
+        <td>{{doc.FileType}}</td>
+        <!--<td>{{doc.FileName}}</td>--> 
+        <!--<td>{{doc.FileExtention}}</td>-->
+        <td>{{doc.UploadedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+        <td>{{doc.UploadedBy}}</td>
+        <td>{{doc.Description}}</td>
+        <td><button class="button button1" (click)="openImage(doc.PatientFileId)">View</button></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Upload Files</span> </h3>
+            <a class="btn btn-danger" (click)="closeUpload()" title="Cancel">X</a> </div>
+          <form [formGroup]="selectedReport.PatientFilesValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-6"> Patient Name :&nbsp;&nbsp; <span> {{selectedPatient.ShortName}} </span> </div>
+                <div class="col-md-6"> Hospital No: &nbsp;<span> {{selectedPatient.PatientCode}} </span>&nbsp;&nbsp;&nbsp;
+                  Phone No: &nbsp; <span> {{selectedPatient.PhoneNumber}} </span> </div>
+              </div>
+              <div class="row" style="margin-bottom: 10px;">
+                <div class="col-md-6"> <span *ngIf="selectedPatient.DateOfBirth"> DOB : {{selectedPatient.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}} </span>&nbsp;&nbsp;&nbsp; </div>
+                <div class="col-md-6"> <span *ngIf="selectedPatient.Age">Age.: {{selectedPatient.Age}} </span>&nbsp;&nbsp;&nbsp; <span> Gender : {{selectedPatient.Gender}} </span>&nbsp;&nbsp;&nbsp; </div>
+              </div>
+              <hr />
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Department<b class="color-red">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <select class="form-control" [(ngModel)]="selectedReport.FileType" formControlName="FileType">
+                      <option value="Admin">Admin</option>
+                      <option value="Pathology">Pathology</option>
+                      <option value="Radiology">Radiology</option>
+                      <option value="Clinical">Clinical</option>
+                      <option value="Insurance">Insurance</option>
+                      <option value="Photo">Photo</option>
+                    </select>
+                    <span class="color-red font-sm" [hidden]="selectedReport.IsValidCheck('FileType','required') || !(selectedReport.IsDirty('FileType'))">FileType is required</span> </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Title<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input class="form-control" [(ngModel)]="selectedReport.Title" [ngModelOptions]="{standalone: true}" type="text" id="title" value="" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input class="form-control" #fileInput type="file" 
+                                               accept="image/x-png,image/gif,image/jpeg,image/jpg,image/*,.*txt,.*doc,.*docx,.*zip,.*xls,.*xlsx,.*ppt,.*pptx,.*csv,.*pdf,"  value="" multiple />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Remark(s)<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <textarea class="form-control" [(ngModel)]="selectedReport.Description" [ngModelOptions]="{standalone: true}" type="text" id="title" value=""></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <div class="col-md-3">
+                    <input type="button" class="btn btn-primary" (click)="SubmitFiles()" value="Submit" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Image Display PopUP BOX-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showImage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span> {{popupImageData.FileName}} Reports</span> </h3>
+            <a class="btn btn-danger" (click)="closeImg()" title="Cancel">X</a> 
+			</div>
+          <div class="form-horizontal">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-12"> <img [src]="'data:image/jpeg;base64,'+popupImageData.FileBinaryData" style="width:1000px;" alt=""/> </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

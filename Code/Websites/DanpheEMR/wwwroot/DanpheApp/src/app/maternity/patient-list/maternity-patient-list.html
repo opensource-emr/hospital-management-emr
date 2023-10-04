@@ -1,0 +1,439 @@
+<style>
+  .flm {
+    display: inline-block;
+    vertical-align: top;
+    font-size: 80% !important;
+    color: black;
+  }
+
+  .bs-55 {
+    flex-basis: 55%;
+  }
+
+  .bs-atuo {
+    flex-basis: auto;
+    padding-right: 15px;
+    line-height: 2;
+  }
+</style>
+<div class="wrapper">
+
+  <div *ngIf="showPatientAddPopup" class="popup-static portlet box portlet-fullscreen custom_modal">
+
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="col-md-12">
+              <maternity-patient-add [pat-to-add]="selectedPatientForEdit"
+                (callBackAddClose)="CallBackFromMaternityAdd($event)"></maternity-patient-add>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row no-gutters">
+    <div class="col-md-6">
+      <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+      <div class="search-with-label flex-container">
+        <div class="flex-item bs-atuo text-left">
+          <label for="maternityPats">Edit Information Of</label>
+        </div>
+        &nbsp;&nbsp;
+        <!--[source]="allPatientsForDDL"-->
+        <div class="flex-item bs-55">
+          <input danphe-auto-complete class="form-control" [(ngModel)]="selectedPatientForEdit"
+            [list-formatter]="patientListFormatter" [source]="SearchPatientForEdit(this)"
+            placeholder="Existing Patient Name" display-property-name="ShortName" value-property-name=null
+            (valueChanged)="EditExistingPatientInfo()" onClick="this.select();" id="maternityPats" min-chars="3"
+            max-num-list="20" />
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="input-group pull-right">
+        <div class="icheck-inline">
+          <label class="mt-checkbox mt-checkbox-outline">
+            <input name="salutation" type="checkbox" value="Mr." [(ngModel)]="getConcludedPat"
+              (ngModelChange)="GetMaternityPatient()">
+            <span></span>View all Maternity Patient
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" id="maternityPatGridHolder">
+      <danphe-grid [grid-colDefaults]="maternityPatientGridColumns" [grid-data]="allMaternityPatient"
+        (onDateChange)="onDateChange($event)" [show-CustomDate]="true"
+        (grid-actions)="MaternityPatientGridActions($event)" [date-settings-name]="'common-range-with-today'">
+      </danphe-grid>
+    </div>
+  </div>
+
+  <div *ngIf="showHideButtonObj.view_active_patient && matPatToUpdate"
+    class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="col-md-12">
+              <maternity-patient-add [pat-to-update]="matPatToUpdate" (callBackAddClose)="CallBackForClose($event)"></maternity-patient-add>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="caption custom-caption">
+              <h3> <span>Update details of {{selectedPatient.ShortName}}</span></h3>
+              <a class="btn btn-danger" (click)="showHideButtonObj.view_active_patient=false" title="Cancel">X</a>
+            </div>
+            <form class="form-horizontal clearfix" [formGroup]="matPatToUpdate.MaternityPatientValidator">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="patHusbandName" class="control-label col-md-4">Husband's Name<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patHusbandName" class="form-control" [(ngModel)]="matPatToUpdate.HusbandName"
+                      required value="{{matPatToUpdate.HusbandName | CapitalFirstLetter}}" placeholder="Husband's Name"
+                      (keyup.enter)="setFocusById('patHeight')" formControlName="HusbandName">
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('HusbandName')"
+                      [hidden]="matPatToUpdate.IsValidCheck('HusbandName','required')"> Husband's Name is
+                      required.</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patHeight" class="control-label col-md-4">Patient Height(in cm)<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patHeight" class="form-control" [(ngModel)]="matPatToUpdate.Height" required
+                      value="{{matPatToUpdate.Height}}" placeholder="Height in cm"
+                      (keyup.enter)="setFocusById('patWeight')" formControlName="Height">
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('Height')"
+                      [hidden]="matPatToUpdate.IsValidCheck('Height','required')"> Height is required.</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patWeight" class="control-label col-md-4">Patient Weight(in kg)<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patWeight" class="form-control" [(ngModel)]="matPatToUpdate.Weight" required
+                      value="{{matPatToUpdate.Weight}}" placeholder="Weight in kgs"
+                      (keyup.enter)="setFocusById('patFLM')" formControlName="Weight">
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('Weight')"
+                      [hidden]="matPatToUpdate.IsValidCheck('Weight','required')"> Weight is required.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="patFLM" class="control-label col-md-5">1<sup class="flm">st</sup> day of Last
+                    Menstruation<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <danphe-date-picker *ngIf="showHideButtonObj.view_active_patient && matPatToUpdate"
+                      [(ngModel)]="matPatToUpdate.LastMenstrualPeriod" [CalendarTypes]="'en,np'" ngDefaultControl
+                      [ngModelOptions]="{standalone: true}">
+                    </danphe-date-picker>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patEDD" class="control-label col-md-5">Expected Date of Delivery<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <danphe-date-picker [(ngModel)]="matPatToUpdate.ExpectedDeliveryDate" [CalendarTypes]="'en,np'"
+                      *ngIf="showHideButtonObj.view_active_patient && matPatToUpdate" ngDefaultControl
+                      [allow-future-date]="true" [ngModelOptions]="{standalone: true}">
+                    </danphe-date-picker>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="patObsHistory" class="control-label col-md-5">OBS history<b
+                      style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <input type="text" id="patObsHistory" class="form-control" [(ngModel)]="matPatToUpdate.OBSHistory"
+                      required value="{{matPatToUpdate.OBSHistory}}" placeholder="OBSHistory"
+                      (keyup.enter)="setFocusById('register')" [ngModelOptions]="{standalone: true}">
+                     <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('OBSHistory')"
+                      [hidden]="matPatToUpdate.IsValidCheck('OBSHistory','required')"> OBS History is required.</span>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <button type="button" id="register" class="btn green btn-success margin-7-hr"
+                  (click)="UpdateMaternityPatient();showHideButtonObj.view_active_patient=false">
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+  </div>
+
+  <div *ngIf="showHideButtonObj.view_concluded_patient && matPatToUpdate"
+    class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="caption custom-caption">
+              <h3><span>Details of {{selectedPatient.ShortName}}</span></h3>
+              <a class="btn btn-danger" (click)="showHideButtonObj.view_concluded_patient=false" title="Cancel">X</a>
+            </div>
+            <form class="form-horizontal clearfix" [formGroup]="matPatToUpdate.MaternityPatientValidator">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="patHusbandName" class="control-label col-md-4">Husband's Name<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patHusbandName" class="form-control" [(ngModel)]="matPatToUpdate.HusbandName"
+                      required value="{{matPatToUpdate.HusbandName | CapitalFirstLetter}}" placeholder="Husband's Name"
+                      (keyup.enter)="setFocusById('patHeight')" formControlName="HusbandName" disabled>
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('HusbandName')"
+                      [hidden]="matPatToUpdate.IsValidCheck('HusbandName','required')"> Husband's Name is
+                      required.</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patHeight" class="control-label col-md-4">Patient Height(in cm)<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patHeight" class="form-control" [(ngModel)]="matPatToUpdate.Height" required
+                      value="{{matPatToUpdate.Height}}" placeholder="Height in cm"
+                      (keyup.enter)="setFocusById('patWeight')" formControlName="Height" disabled>
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('Height')"
+                      [hidden]="matPatToUpdate.IsValidCheck('Height','required')"> Height is required.</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patWeight" class="control-label col-md-4">Patient Weight(in kg)<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-8">
+                    <input type="text" id="patWeight" class="form-control" [(ngModel)]="matPatToUpdate.Weight" required
+                      value="{{matPatToUpdate.Weight}}" placeholder="Weight in kgs"
+                      (keyup.enter)="setFocusById('patFLM')" formControlName="Weight" disabled>
+                    <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('Weight')"
+                      [hidden]="matPatToUpdate.IsValidCheck('Weight','required')"> Weight is required.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="patFLM" class="control-label col-md-5">1<sup class="flm">st</sup> day of Last
+                    Menstruation<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <danphe-date-picker *ngIf="showHideButtonObj.view_concluded_patient && matPatToUpdate"
+                      [(ngModel)]="matPatToUpdate.LastMenstrualPeriod" [CalendarTypes]="'en,np'" ngDefaultControl
+                      [ngModelOptions]="{standalone: true}">
+                    </danphe-date-picker>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="patEDD" class="control-label col-md-5">Expected Date of Delivery<b class="color-red">
+                      *
+                    </b><b style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <danphe-date-picker [(ngModel)]="matPatToUpdate.ExpectedDeliveryDate" [CalendarTypes]="'en,np'"
+                      *ngIf="showHideButtonObj.view_concluded_patient && matPatToUpdate" ngDefaultControl
+                      [allow-future-date]="true" [ngModelOptions]="{standalone: true}">
+                    </danphe-date-picker>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="patObsHistory" class="control-label col-md-5">OBS history<b
+                      style="float:right;">:</b></label>
+
+                  <div class="col-md-7">
+                    <input type="text" id="patObsHistory" class="form-control" [(ngModel)]="matPatToUpdate.OBSHistory"
+                      required value="{{matPatToUpdate.OBSHistory}}" placeholder="OBSHistory"
+                      (keyup.enter)="setFocusById('register')" [ngModelOptions]="{standalone: true}" disabled>
+                    <!-- <span class="color-red font-sm" *ngIf="matPatToUpdate.IsDirty('OBSHistory')"
+                    [hidden]="matPatToUpdate.IsValidCheck('OBSHistory','required')"> OBS History is required.</span> -->
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <button type="button" id="register" class="btn green btn-success margin-7-hr"
+                  (click)="UpdateMaternityPatient();showHideButtonObj.view_concluded_patient=false" disabled>
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="showHideButtonObj.anc" class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Maternity ANC</span></h3>
+            <a class="btn btn-danger" (click)="showHideButtonObj.anc=false" title="Cancel">X</a>
+          </div>
+
+          <div class="col-md-12">
+            <maternity-anc *ngIf="showHideButtonObj.anc" [maternalPatientId]="selectedPatient.MaternityPatientId"
+              [patientDetail]="selectedPatient" (callBackANCClose)="CallBackForClose($event)"></maternity-anc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- maternity register starts -->
+<div *ngIf="showHideButtonObj.maternity_register" class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Maternity Register</span></h3>
+            <a class="btn btn-danger" (click)="showHideButtonObj.maternity_register=false" title="Cancel">X</a>
+          </div>
+
+          <div class="col-md-12">
+            <maternity-register *ngIf="showHideButtonObj.maternity_register" [selected-pat]="selectedPatient"
+              (callBackMatRegisterClose)="CallBackForClose($event)"></maternity-register>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- maternity patient ends -->
+
+<div *ngIf="showHideButtonObj.remove" class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Alert !!</span></h3>
+            <a class="btn btn-danger" (click)="showHideButtonObj.remove=false" title="Cancel">X</a>
+          </div>
+
+          <div class="modelbox-body">
+            Are you sure, you want to remove {{selectedPatient.ShortName}} ?
+          </div>
+
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" id="register" class="btn green btn-success margin-7-hr" (click)="RemovePatient()">
+                Remove
+              </button>
+              <button type="button" id="register" class="btn grey btn-default margin-7-hr"
+                (click)="showHideButtonObj.remove=false">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showHideButtonObj.conclude" class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Conclude Alert !!</span></h3>
+            <a class="btn btn-danger" (click)="showHideButtonObj.conclude=false" title="Cancel">X</a>
+          </div>
+
+          <div class="modelbox-body">
+            Are you sure, you want to conclude this visit for {{selectedPatient.ShortName}} ?
+          </div>
+
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" id="register" class="btn green btn-success margin-7-hr" (click)="ConcludePatient()">
+                Conclude
+              </button>
+              <button type="button" id="register" class="btn grey btn-default margin-7-hr"
+                (click)="showHideButtonObj.conclude=false">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showHideButtonObj.upload_files" class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Upload Files</span></h3>
+            <a class="btn btn-danger" (click)="showHideButtonObj.upload_files=false" title="Cancel">X</a>
+          </div>
+
+          <div class="col-md-12">
+            <maternity-file-upload *ngIf="showHideButtonObj.upload_files"
+              [maternalPatientId]="selectedPatient.MaternityPatientId" [patientDetail]="selectedPatient"
+              (callBackFileUploadClose)="CallBackForClose($event)">
+            </maternity-file-upload>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

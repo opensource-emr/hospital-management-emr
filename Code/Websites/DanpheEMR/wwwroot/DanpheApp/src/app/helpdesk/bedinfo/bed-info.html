@@ -1,0 +1,269 @@
+﻿<style>
+  /* .tbl_hover > tbody > tr:hover {
+    background-color: #7cd37e;
+} */
+
+  .bed {
+    width: 10rem;
+    padding: 5px;
+    transition: 0.5s ease-in-out;
+    /* cursor: pointer;      removed because bed image is not clickable */
+  }
+
+  .bed:hover {
+    transform: translate(5px, -5px);
+  }
+
+  .bed:active,
+  .bed::selection {
+    padding: 8px;
+    transform: scale(10rem, 10rem)
+  }
+
+  #box {
+    display: none;
+    margin-top: 5px;
+  }
+
+  .box img {
+    padding: 1px;
+    border: 1px solid black;
+    border-radius: 2rem;
+    background-color: white;
+  }
+
+  .pagination {
+    display: -ms-flexbox;
+    display: flex;
+    padding-left: 0px;
+    list-style: none;
+    border-radius: .25rem;
+  }
+
+  .page-link {
+    position: relative;
+    left: 15px;
+    display: block;
+    padding: .75rem 3rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+  }
+
+  .page-link:hover {
+    z-index: 2;
+    color: #0056b3;
+    text-decoration: none;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+  }
+
+  .page-link:focus {
+    z-index: 2;
+    outline: 0;
+    box-shadow: 0px 0px 0px 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  .bedviewcontainer {
+    float: left;
+    width: 98%;
+    position: relative;
+    left: 15px;
+    top: 25px;
+    border: 1px solid #e7ecf1 !important;
+  }
+
+  .inbedviewcontainer {
+    margin: 4.5rem;
+    float: left;
+
+  }
+
+  .bed-container {
+    height: 17rem;
+    width: 15rem;
+    float: left;
+    text-align: center;
+    margin-right: 10px;
+  }
+</style>
+<div class="row">
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <a class="dashboard-stat dashboard-stat-v2 blue">
+      <div class="visual">
+        <i class="fa fa-bed"></i>
+      </div>
+      <div class="details clearfix">
+        <div class="board-title clearfix">
+          <div>
+            <p>Total No. of Beds</p>
+          </div>
+          <div class="count" data-counter="counterup">{{stats.Total}}</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+  <!--	4/21/2020-->
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <a class="dashboard-stat dashboard-stat-v2 green-haze">
+      <div class="visual">
+        <i class="fa fa-bed"></i>
+      </div>
+      <div class="details clearfix">
+        <div class="board-title clearfix">
+          <div>
+            <p>Available No. of Beds</p>
+          </div>
+          <div class="count" data-counter="counterup" data-value="12,5">{{stats.Available}}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+    <a class="dashboard-stat dashboard-stat-v2 red">
+      <div class="visual">
+        <i class="fa fa-bed"></i>
+      </div>
+      <div class="details clearfix">
+        <div class="board-title clearfix">
+          <div>
+            <p>Occupied No. of Beds</p>
+          </div>
+          <div class="count" data-counter="counterup" data-value="12,5">{{stats.Occupied}}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+<div class="clearfix"></div>
+<!-- <div class="col-lg-12 col-sm-12">
+  <danphe-grid [grid-colDefaults]="bedinfoGridColumns" [grid-data]="bedinfo">
+  </danphe-grid>
+</div> -->
+
+<div class="row">
+  <div class="col-lg-9 col-md-9">
+    <div class="portlet light bordered">
+      <div class="portlet-title">
+        <div class="caption">
+          <span class="caption-subject bold uppercase font-green-haze">Bed Occupancy Status </span>
+          <span class="caption-helper"></span>
+        </div>
+        <div class="tools">
+          <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+          <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+          <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div style="text-align: right;">
+          <button class="btn blue hidden-print" type="button" (click)="Print()" value="Print" title="print page"
+            style="padding-top: 2px;padding-bottom: 2px;padding-right: 10px;padding-left: 10px;">
+            <i class="fa fa-print"></i> Print
+          </button>
+          <button class="btn blue hidden-print" type="button" (click)="ExportToExcel('bedFeature')" value=""
+            title="export to excel"
+            style="padding-top: 2px;padding-bottom: 2px;padding-right: 10px;padding-left: 10px;">
+            <i class="fa fa-file-excel-o"></i> Export
+          </button>
+        </div>
+
+        <div id="dvPrint_WardWiseList">
+          <div class="table-responsive">
+            <table class="table table-bordered tbl_hover table-condensed" id="bedFeature">
+              <thead>
+                <tr style="background-color: #599be0; color: white;">
+                  <th>Ward Name</th>
+                  <th>Occupied</th>
+                  <th>Vacant</th>
+                  <th>Reserved</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row1 of wardOccupancyList; let i=index">
+                  <td><a [routerLink]="" (click)="ShowWardBedsPreview(row1.WardId)"
+                      style="font-size: 15px;">{{row1.WardName}}</a></td>
+                  <td>{{row1.Occupied}}</td>
+                  <td>{{row1.Vacant}}</td>
+                  <td>{{row1.Reserved}}</td>
+                  <td>{{row1.Total}}</td>
+                </tr>
+                <tr *ngFor="let tot of tot_wardOccupancy; let i=index">
+                  <td><b>Total</b></td>
+                  <td><b>{{tot.Occupied}}</b></td>
+                  <td><b>{{tot.Vacant}}</b></td>
+                  <td><b>{{tot.Reserved}}</b></td>
+                  <td><b>{{tot.Total}}</b></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetail">
+  <div class="portlet-body form">
+    <div class="col-md-12">
+      <div class="modelbox-div">
+        <div class="modelbox-body">
+          <div class="row">
+
+            <h3>Bed Occupancy of: <b style="color:blue;text-decoration: underline;">{{selectedWard.WardName}}</b> </h3>
+            <div class="bedviewcontainer">
+              <div class="inbedviewcontainer" *ngIf="occupiedBeds.length">
+                <h3>Occupied</h3>
+                <div class="bed-container" *ngFor="let bed of occupiedBeds">
+                  <img id="{{bed.BedCode}}" class="bed" title="{{bed.BedCode}}"
+                    src="/themes/theme-default/images/bed_occupied.png">
+                  <div>{{bed.BedCode}}</div>
+                  <!-- <h5 title="Admitted on: {{bed.AdmissionDate | nepaliDate}}">{{bed.PatientName}}</h5> -->
+                  <div class="tooltip">
+                    <span style="cursor: pointer;font-weight: bold;color: darkblue;">{{bed.PatientName}}</span>
+                    <p class="tooltiptext ttptextdown no-print" style="width: 200px !important;text-align: left;">
+                      Patient: {{bed.PatientName}} <br />
+                      Ip Number: {{bed.VisitCode}}<br />
+                      Admitted On: {{bed.AdmissionDate | nepaliDate}}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="inbedviewcontainer" *ngIf="reservedBeds.length">
+                <h3>Reserved</h3>
+                <div class="bed-container" *ngFor="let bed of reservedBeds">
+                  <img id="{{bed.BedCode}}" class="bed" title="{{bed.BedCode}}"
+                    src="/themes/theme-default/images/bed_vacant.png">
+                  <h5>{{bed.BedCode}}</h5>
+                </div>
+              </div>
+              <div class="inbedviewcontainer" *ngIf="vacantBeds.length">
+                <h3>Vacant</h3>
+                <div class="bed-container" *ngFor="let bed of vacantBeds">
+                  <img id="{{bed.BedCode}}" class="bed" title="{{bed.BedCode}}"
+                    src="/themes/theme-default/images/bed_vacant.png">
+                  <h5>{{bed.BedCode}}</h5>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <a class="btn btn-danger" (click)="ClosePopUp()">
+            X
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

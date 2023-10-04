@@ -1,0 +1,13 @@
+<!-- Here Goes hospital wise template -->
+<default-discharge-summary-view-template [ShowDoctorsSignatureImage]="ShowDoctorsSignatureImage" [IsFinalSubmited]="IsFinalSubmited" (EditModeFromDefaultView)='AllowEditFromView($event)' [viewData]="dischargeSummaryViewModel" *ngIf="showSummaryView && IsDefaultTemplate">
+
+</default-discharge-summary-view-template>
+
+<sch-discharge-summary-view-template [ShowDoctorsSignatureImage]="ShowDoctorsSignatureImage" [IsFinalSubmited]="IsFinalSubmited" (EditModeFromSCHView)='AllowEditFromView($event)' [viewData]="dischargeSummaryViewModel" *ngIf="showSummaryView && IsSCHTemplate">
+
+</sch-discharge-summary-view-template>
+<fishtail-discharge-summary-view-templete [ShowDoctorsSignatureImage]="ShowDoctorsSignatureImage" [IsFinalSubmited]="IsFinalSubmited" (EditModeFromFishtailView)='AllowEditFromView($event)' [viewData]="dischargeSummaryViewModel" *ngIf="showSummaryView && IsFishTailtemplate">
+
+</fishtail-discharge-summary-view-templete>
+<cmh-discharge-summary-view-template [ShowDoctorsSignatureImage]="ShowDoctorsSignatureImage" [IsFinalSubmited]="IsFinalSubmited" (EditModeFromCMHView)='AllowEditFromView($event)' [viewData]="dischargeSummaryViewModel" *ngIf="showSummaryView && IsCharakMemorialHospitaltemplate">
+</cmh-discharge-summary-view-template>

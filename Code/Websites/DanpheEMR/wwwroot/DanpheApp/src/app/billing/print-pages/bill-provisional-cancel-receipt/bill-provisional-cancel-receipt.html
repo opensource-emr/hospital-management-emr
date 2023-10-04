@@ -1,0 +1,211 @@
+<style>
+  @page {
+    size: A5 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-size: 70%;
+    scale: 70%;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 10px;
+    color: #333333;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 10pt !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 8pt !important;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+  }
+</style>
+<!-- New Provisional Cancel Receipt -->
+<div class="A5 portrait" *ngIf="isReceiptLoaded">
+  <div class="sheet" id="id_provisional_cancel_receipt">
+    <div class="box-body invoice header">
+      <table border="0" style="width: 700px; margin: 0 auto;" cellspacing="0" cellpadding="0" *ngIf="InvoiceDisplaySettings.ShowHeader">
+        <tr>
+          <td colspan="2" width="25%">
+            <img src="../../../themes/theme-default/images/hospital-logo.PNG" alt="" width="100px">
+          </td>
+          <td colspan="4" width="50%">
+            <h3 class="c_name" style="text-align: center; font-weight: bold;">{{headerDetail.CustomerName}}</h3>
+            <p class="c_paragraphs" style="text-align: center; margin: 0px;">
+              {{headerDetail.Address}}</p>
+            <p class="c_paragraphs" style="text-align: center; margin: 0px;">Ph No: {{headerDetail.Tel}}</p>
+
+          </td>
+          <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+            <p class="c_paragraphs" style="text-align: right; margin-top: 10px;"><strong>{{headerDetail.CustomerRegLabel}}</strong> </p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="10" style="padding: 0 !important;">
+            <div *ngIf="!InvoiceDisplaySettings.ShowHeader" [ngClass]="'flex-container provisional-bill-header-gap-' + hospitalCode">
+            </div>
+          </td>
+        </tr>
+      </table>
+      <table border="0" style="width: 700px; margin: 0 auto;" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="10" style="text-align: center;">
+            <p style="margin: 0 0 5px 0;"><strong>Provisional Cancel Receipt</strong></p>
+          </td>
+
+        </tr>
+        <tr style="border: 1px solid #ccc;">
+          <td colspan="10" style="padding: 6px !important">
+            <table style="width: 100%; margin-bottom: 0;">
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;">
+                    <strong>Hospital No:</strong> {{ProvisionalDetails.PatientCode}}
+                  </p>
+                </td>
+
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Patient Name:</strong>{{ProvisionalDetails.PatientName}}
+                  </p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Age/Sex :
+                    </strong>{{ProvisionalDetails.Age}}/{{ProvisionalDetails.Gender}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Address: </strong>{{ProvisionalDetails.Address}} <span
+                          *ngIf="ProvisionalDetails.Address && ProvisionalDetails.CountrySubdivisionName">,</span>
+                    {{ProvisionalDetails.CountrySubdivisionName}} </p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;" *ngIf="ProvisionalDetails.PhoneNumber">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Contact: </strong>{{ProvisionalDetails.PhoneNumber}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="text-align: left; padding: 0 !important;" *ngIf="ProvisionalDetails.SchemeName">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Type: </strong>{{ProvisionalDetails.SchemeName}}</p>
+                </td>
+                <td colspan="5" style="text-align: right; padding: 0 !important;" *ngIf="PolicyNo">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Policy/MemberNo: </strong>{{PolicyNo}}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+
+        </tr>
+        <tr>
+          <th style="padding: 10px 5px; width: 5%">SN.</th>
+          <th style="padding: 10px 5px; width: 15%">Receipt No</th>
+          <th style="padding: 10px 5px; width: 15%">Ref. Receipt No</th>
+          <th style="padding: 10px 5px; width: 15%">Date</th>
+          <th colspan="4" style="padding: 10px 5px; width: 60%">Particular(s) </th>
+          <th style="padding: 10px 5px; width: 5%">Unit</th>
+          <th style="padding: 10px 5px; width: 5%">Price</th>
+          <th style="padding: 10px 5px; width: 5%">Amount</th>
+        </tr>
+        <!-- <tr *ngFor="let row of ProvisionalDetails; let i=index"> -->
+        <tr>
+          <td style="padding: 5px 5px;  width: 5%">{{1}}</td>
+          <td style="padding: 5px 5px;  width: 5%">PRC/{{ ProvisionalDetails.CancellationReceiptNo}}</td>
+          <td style="padding: 5px 5px;  width: 5%">PR/{{ ProvisionalDetails.ReferenceProvisionalReceiptNo}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{ProvisionalDetails.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+          <td colspan="4" style="padding: 5px 5px; width: 60%">{{ProvisionalDetails.ItemName}} <span
+                  *ngIf="ProvisionalDetails.AssignedToDrName!=null && ShowProviderName">
+              ({{ProvisionalDetails.AssignedToDrName}})</span></td>
+          <td style="padding: 5px 5px;  width: 5%">{{ProvisionalDetails.CancelledQty}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{ProvisionalDetails.Price | number : "1.2-2"}}</td>
+          <td style="padding: 5px 5px;  width: 5%">{{ProvisionalDetails.CancelledQty * ProvisionalDetails.Price | number : "1.2-2"}}</td>
+        </tr>
+
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="7" style="padding: 5px 5px; vertical-align: top;">
+            <p class="c_paragraphs"><strong>In Words : {{ProvisionalDetails.CancelledTotalAmount | NumberInWords}} <span
+                      *ngIf="ProvisionalDetails.CancelledTotalAmount !=0">Only</span></strong></p>
+          </td>
+          <td colspan="4" style="padding: 5px 5px; text-align: right;">
+            <p class="c_paragraphs" style="margin: 0px;"><strong>SubTotal: </strong>{{ProvisionalDetails.CancelledSubtotal | number :
+              "1.2-2"}} </p>
+            <p class="c_paragraphs"><strong>Discount: </strong>{{ProvisionalDetails.CancelledDiscountAmount | number : "1.2-2"}}
+            </p>
+
+            <p class="c_paragraphs" style="margin: 0px;"><strong>Total Amount: </strong>{{ProvisionalDetails.CancelledTotalAmount | number
+              : "1.2-2"}}
+            </p>
+
+          </td>
+
+        </tr>
+
+        <tr style="border-top: 1px solid #ccc;">
+          <td colspan="5" style="padding: 5px 5px; vertical-align: top;">
+
+          </td>
+          <td colspan="5" style="padding: 5px 5px; vertical-align: top; text-align: right;">
+            <p class="c_paragraphs" style="margin: 0px;"><strong>User: </strong>{{ProvisionalDetails.User}} </p>
+          </td>
+
+        </tr>
+        <tr *ngIf="billCancellationReceiptFooter.ShowFooter">
+          <td colspan="10" style="padding: 5px 5px; vertical-align: top; text-align: center;">
+            <p class="c_paragraphs" style="margin: 0px;"><b>
+                {{billCancellationReceiptFooter.EnglishText}} </b> <br *ngIf="billCancellationReceiptFooter.VerticalAlign" />
+
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+<div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+  <button class="btn green btn-success" value="" (click)="print()" id="btnPrintProvisionalCancelReceipt">
+    <span>Print</span>&nbsp;&nbsp;
+    &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+  </button>
+</div>
+
+<new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</new-print-page>

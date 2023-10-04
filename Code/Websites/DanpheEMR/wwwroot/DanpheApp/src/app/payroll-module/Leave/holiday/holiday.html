@@ -1,0 +1,85 @@
+
+<button class="btn btn-primary" (click)="showAddHolidayPage()">
+    <i class="fa fa-plus-square" style="font-size:16px; margin-right:4px;"></i>New Holiday
+</button>
+<danphe-grid 
+        [grid-colDefaults]="payrollHolidayGridColoumns" 
+        [grid-data]="holidayList"
+        (grid-actions)="gridAction($event)">
+</danphe-grid>
+
+<div *ngIf="showAddHoliday">
+    <div class="popup-static portlet box portlet-fullscreen">
+        <div class="portlet-body form" style="background-color:white">
+            <form [formGroup]="holidayDetails.holidayValidator" class="form-horizontal">
+                <div class="form-body">
+                    <div class="col-md-12">
+                        <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                        </div>
+                      
+                        <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                            <div style="padding:10px">
+                                <i style="margin-top:13px; " class="btn btn-danger pull-right" (click)="Close()"
+                                    title="Cancel">X</i>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <span>{{ !holidayDetails.HolidayId ? 'Add holiday' : 'Update ' + holidayDetails.Title + ' Details'}}  </span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-5">Holiday Name<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                            <div class="col-md-7">                                      
+                                                <input class="form-control" maxlength="30"
+                                                       [(ngModel)]="holidayDetails.Title"
+                                                       formControlName="holidayTitle"
+                                                       type="text" id="Title" value="" placeholder="Holiday Name" />
+                                                <span style="color:red" *ngIf="holidayDetails.IsDirty('holidayTitle')" [hidden]="holidayDetails.IsValidCheck('holidayTitle','required')"> Holiday Name is required.</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="control-label col-md-5">Holiday Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                            <div class="col-md-7">           
+                                                <input [(ngModel)]="holidayDetails.Date"  formControlName="holidayDate" class="form-control" name="holidayDate" type="date" />
+                                                <span class="color-red font-sm" [hidden]="holidayDetails.IsValidCheck('holidayDate','required') || !(holidayDetails.IsDirty('holidayDate'))">Holiday date is required</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-5">Description<b style="float:right;">:</b></label>
+                                            <div class="col-md-7">
+                                                <textarea class="form-control" [(ngModel)]="holidayDetails.Description" [ngModelOptions]="{standalone: true}"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-5">Is Active<b style="float:right;">:</b></label>
+                                            <div class="col-md-7">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="holidayDetails.IsActive" [ngModelOptions]="{standalone: true}">
+                                                    <span></span>
+                                                </label>                                                   
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <input type="button" class="btn btn-primary" style="float: right;margin-right: 10px;" *ngIf="!holidayDetails.HolidayId " (click)="AddNewHoliday()" value="Save" />
+                                            <input type="button" class="btn btn-primary" style="float: right;margin-right: 10px;" *ngIf="holidayDetails.HolidayId " (click)="UpdateHoliday()" value="Update" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+</div>
+
+<div>
+
+    
+</div>

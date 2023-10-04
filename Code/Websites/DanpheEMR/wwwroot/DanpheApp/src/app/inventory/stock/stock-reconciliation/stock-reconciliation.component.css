@@ -1,0 +1,14 @@
+.stockmanage span.fa {
+  color: #bebebe;
+  font-size: 20rem;
+  line-height: inherit;
+}
+
+.stockmanage span.fa:hover {
+  color: #939393;
+}
+
+.manage-step {
+  font-size: 2.5rem;
+  font-weight: 100;
+}

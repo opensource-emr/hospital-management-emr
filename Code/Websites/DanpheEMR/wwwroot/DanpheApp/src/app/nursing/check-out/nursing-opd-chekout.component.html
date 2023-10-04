@@ -1,0 +1,184 @@
+<style>
+  .page-bar {
+    box-shadow: none;
+    margin-bottom: 15px;
+  }
+
+  .page-bar>div {
+    /* background-color: #fefefe !important; */
+    display: flex;
+    width: 100%;
+    gap: 15px;
+  }
+
+  .bill-p-info span {
+    width: 100%;
+  }
+
+  .bill-p-info span,
+  .bill-p-info span b {
+    display: block;
+    margin: 0;
+  }
+
+  .custom-caption {
+    margin-bottom: 0 !important;
+  }
+
+  .no-gutters {
+    margin: 0 -7px !important;
+  }
+
+  .no-gutters [class*="col-"] {
+    padding: 0 7px !important;
+  }
+
+  .d-flex {
+    display: flex;
+    align-items: center;
+  }
+
+  .form-group input,
+  .control-label {
+    margin: 0 !important;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showNursingCheckout">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class=" modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Check Out</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="page-bar bill-p-info popup-pagebar mt10">
+                <div>
+                  <span>Hospital No : <b>{{selectedVisit.PatientCode}} </b></span>
+                  <span>Patient Name : <b>{{selectedVisit.ShortName}}</b></span>
+                  <span>Age/Sex : {{selectedVisit.Age}}/ {{selectedVisit.Gender[0]}} </span>
+                  <span>Address : <b>{{selectedVisit.Address}}</b></span>
+                  <span>Contact No : <b>{{selectedVisit.PhoneNumber}}</b></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 0 15px;" class="row no-gutters">
+            <div class="form-group col-md-5" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <div class="col-md-5">
+                  <label class="control-label">Registration Date/Time<b>:</b></label>
+                </div>
+                <div class="col-md-7">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control text-center" type="date" [(ngModel)]="visitDate" id="date" />
+                    </div>
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control text-center" type="time" [(ngModel)]="selectedVisit.VisitTime" id="time" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-4" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <label class="control-label col-md-5"> Registered Department<b>&nbsp;:</b></label>
+                <div class="col-md-7">
+                  <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.DepartmentName" id="department"
+                         style="margin-top: 5px; width: 100%;" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-3" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <label class="control-label col-md-5"> Assigned Doctor <b>&nbsp;:</b></label>
+                <div class="col-md-7">
+                  <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.PerformerName" style="width:100%; margin-top: 5px;" />
+                </div>
+              </div>
+            </div>
+
+
+            <!-- <div class="form-group col-md-10 text-left" style="margin-left:20px">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="control-label" style="margin-top: 10px;">Registration Date/Time<b>&nbsp;:</b></label>
+                </div>
+                <div class="col-md-5">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <input disabled="disabled" class="form-control text-center" type="date" [(ngModel)]="visitDate" id="date" />
+                    </div>
+                    <div class="col-md-5">
+                      <input disabled="disabled" class="form-control text-center" type="time" [(ngModel)]="selectedVisit.VisitTime" id="time" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+            <!-- <div class="form-group col-md-12 text-left" style="margin-left:5px;">
+              <label class="control-label col-md-2" style="margin-top: 10px;"> Registered Department<b>&nbsp;:</b></label>
+              <div class="col-md-4" style="margin-left: 5px;">
+                <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.DepartmentName" id="department"
+                       style="width:250px; margin-top: 5px;" />
+              </div>
+              <label class="control-label col-md-2" style="margin-top: 10px;"> Assigned Doctor <b>&nbsp;:</b></label>
+              <div class="col-md-3" style=" margin-left: 5px;">
+                <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.PerformerName" style="width:250px; margin-top: 5px;" />
+              </div>
+            </div> -->
+
+          </div>
+          <div class="row">
+            <div class="col-md-6" style="margin-top: 20px;">
+              <nursing-add-diagnosis [patient-id]="selectedVisit.PatientId" [patient-visit-id]="selectedVisit.PatientVisitId"></nursing-add-diagnosis>
+            </div>
+            <div class="col-md-6" style="margin-top: 30px;">
+              <div class="row d-flex">
+                <label class="control-label col-md-3"> Follow Up days<b>&nbsp;:</b></label>
+                <div class="col-md-8" style="margin-left: 5px;">
+                  <input type="text" style="width:100%; margin-top: 5px;"
+                         name="followUpDays"
+                         onclick="this.select()"
+                         [(ngModel)]="followUpDays" />
+                </div>
+              </div>
+              <div class="row d-flex">
+                <label class="control-label col-md-3"> Concluded Note<b>&nbsp;:</b></label>
+                <div class="col-md-8" style="margin-left: 5px;">
+                  <input
+                         type="text"
+                         style="width:100%; margin-top: 5px;"
+                         name="concludedNote"
+                         [(ngModel)]="concludedNote" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row clearfix">
+              </div>
+            </div>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <input type="button" id="discard" (click)="Discard()" class="btn orange btn-success margin-7-hr"
+                       value="Discard" />
+                <input type="button" id="add" (click)="addReferDetails()" class="btn green btn-success margin-7-hr"
+                       value="Save" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

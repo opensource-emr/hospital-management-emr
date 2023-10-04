@@ -1,0 +1,85 @@
+<style>
+    .icheck-inline > label{
+        margin-right: 15px;
+        margin-left:0;
+    }
+
+    .icheck-inline label {
+        color: #fff;
+    }
+</style>
+
+<div class="row">
+
+    <div class="col-md-12">
+
+        <div class="form-body">
+            <div id="allergySection">
+                    <div class="row">
+
+                        <div class="col-md-8 col-xs-12">
+
+                            <div class="portlet cstm-portlet portlet-with-collapse">
+                                <div class="portlet-title cstm-pt-title">
+                                    <div class="cstm-portlet-caption">
+                                        Allergy List
+                                    </div>
+                                    <div class="cstm-action">
+                                        <a class="cstm-add" (click)="ShowAddAllergyBox()">
+                                            <i class="fa fa-plus-circle"></i> Add New
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="cstm-portlet-body">
+                                    <div class="table-responsive">
+                                        <table class="table doc-tbl flip-content" style="margin-bottom: 0px;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Recorded On</th>
+                                                    <th>Allergen</th>
+                                                    <th>Severity</th>
+                                                    <th>Reaction</th>
+                                                    <th>Verified</th>
+                                                    <th>Comments</th>
+                                                    <th>Edit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let alrg of allergieLists;let i=index">
+                                                    <td>{{alrg.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+                                                    <td>{{alrg.AllergenAdvRecName}}</td>
+                                                    <td>{{alrg.Severity}}</td>
+                                                    <td>{{alrg.Reaction}}</td>
+                                                    <td>{{alrg.Verified}}</td>
+                                                    <td>{{alrg.Comments}}</td>
+                                                    <td>
+                                                        <a (click)="Edit(alrg,i)" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                                    </td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-4">
+                            <allergy-add [showAllergyAddBox]="showAllergyAddBox"
+                                         [selected-allergy]="selectedAllergy"
+                                         (callback-addupdate)="CallBackAddUpdate($event)"></allergy-add>
+                        </div>
+
+
+                    </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+

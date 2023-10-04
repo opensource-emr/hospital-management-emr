@@ -1,0 +1,513 @@
+
+<style>
+.bill-action {
+	position: fixed;
+	right: 0%;
+	top: 120px;
+	width: 20%;
+	padding: 10px;
+	background-color: #b1c2d6;
+	border-radius: 10px 0px 0px 10px !important;
+}
+
+/*
+  .table > tbody > tr > td {
+    padding: 0px !important;
+  }
+
+  .table > tbody > tr > th {
+    padding: 5px 0px !important;
+  }
+*/
+</style>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="creditBillGridColumns" [grid-data]="provisionalBillsSummary" (grid-actions)="CreditBillGridActions($event)" [hidden]="!showAllPatient"> </danphe-grid>
+  </div>
+</div>
+<div [hidden]="showAllPatient">
+  <div>
+    <button class="btn btn-primary" (click)="BackToGrid()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
+  </div>
+  <div class="mt15">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover inv_table">
+        <thead>
+          <tr>
+            <th style="width: 140px;">Request Date</th>
+            <th>Item Name</th>
+            <th>Batch</th>
+            <th>Expiry Date</th>
+            <th>Dispatch Qty</th>
+            <th>Return Qty</th>
+            <th>Qty.</th>
+            <th *ngIf="IsitemlevlDis">Discount %</th>
+            <th *ngIf="IsitemlevlDis">DiscountAmount</th>
+            <th>Amount</th>
+            <th class="text-center"> <label class="mt-checkbox mt-checkbox-outline">
+                <input type="checkbox" [(ngModel)]="selectAllItems" class="zoomcheckbox" ng-checked="selectAllItems"   (change)="SelectAllChkOnChange()" title="Select All"
+                   [ngModelOptions]="{standalone: true}" />
+                <span></span> </label>
+            </th>
+            <th>Ward Name</th>
+            <th>User Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of allCreditItems;let i = index">
+            <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+            <td>{{row.ItemName}}</td>
+            <td>{{row.BatchNo}}</td>
+            <td>{{row.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+            <td><input [(ngModel)]="row.DispatchQty"
+                   [ngModelOptions]="{standalone: true}" style="width:80px ; "
+                   min="0" class="form-control" type="text" value="" disabled></td>
+            <td><input class="form-control"
+                   [(ngModel)]="row.ReturnQty"
+                   [disabled]="!row.IsSelected"
+                   [ngModelOptions]="{standalone: true}"
+                   onClick="this.select();"
+                   (ngModelChange)="ValueChanged(i)"
+                   style="width:80px ; " min="0" type="number">
+              <span class="error-msg" *ngIf="row.DispatchQty<row.ReturnQty">Return Qty Should be less than Dispatch Qty</span></td>
+            <td><input [(ngModel)]="row.Quantity"
+                   [ngModelOptions]="{standalone: true}" style="width:80px ; " (ngModelChange)="ValueChanged(i)"
+                   min="0" class="form-control" type="text" value="" disabled></td>
+            <td *ngIf="IsitemlevlDis">{{row.DiscountPercentage}}</td>
+            <td *ngIf="IsitemlevlDis">{{row.TotalDisAmt}}</td>
+            <td>{{row.TotalAmount}}</td>
+            <td class="text-center"><label class="mt-checkbox mt-checkbox-outline">
+                <input class="zoomcheckbox" [(ngModel)]="row.IsSelected" name="IsSelected" type="checkbox"  ng-checked="row.IsSelected"
+                   (change)="SelectItemChkOnChange(row,i)" [ngModelOptions]="{standalone: true}" title="select item">
+                <span></span> </label></td>
+            <td>{{row.WardName}}</td>
+            <td>{{row.WardUser}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div *ngIf="showActionPanel">
+  <div class="mt20 mb20 t-wrap">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="invoice-history">
+          <div class="history-title"> <b>Invoice History</b> </div>
+          <table>
+            <!-- @*<tr>
+              <td>Credit <b class="colon">:</b></td>
+              <td>0</td>
+          </tr>*@ -->
+            <tr>
+              <td>Provisional Amount <b class="colon">:</b></td>
+              <td style="text-decoration:underline;">{{patBillHistory.ProvisionalAmt}}</td>
+            </tr>
+            <tr>
+              <td>Total Due<b class="colon">:</b></td>
+              <td>{{patBillHistory.TotalDue}}</td>
+            </tr>
+            <tr>
+              <td>Deposit Balance <b class="colon">:</b></td>
+              <td>{{patBillHistory.DepositBalance}}</td>
+            </tr>
+            <tr>
+              <td>Balance Amount <b class="colon">:</b></td>
+              <td style="font-weight: bold;color: blue;font-size: 17px;"> {{patBillHistory.BalanceAmount}} </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <table class="accountinfo">
+          <tr>
+            <td>Discount Amount: </td>
+            <td><div class="form-group">
+                <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.DiscountAmount" (focusout)="AllCalculation(0,currSale.DiscountAmount)" id="discountamount" name="discountamount" type="number" [disabled]="IsitemlevlDis">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Discount Percentage:</td>
+            <td><div class="form-group">
+                <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.DiscountPer" (focusout)="AllCalculation(currSale.DiscountPer,0)" id="discountpercent" name="discountpercent" type="number" [disabled]="IsitemlevlDis">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Tender:</td>
+            <td><div class="form-group">
+                <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.Tender" (focusout)="ChangeTenderAmount()" id="tender" name="tender" type="number">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Change:</td>
+            <td><div class="form-group">
+                <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.Change" (focusout)="AllCalculation()" id="change" name="change" type="number">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Remarks:<sup *ngIf="currSale.PaymentMode=='credit'">*</sup></td>
+            <td><div class="form-group">
+                <textarea [(ngModel)]="currSale.Remark" [ngModelOptions]="{standalone: true}" class="form-control" name="Remarks"></textarea>
+              </div></td>
+          </tr>
+          <tr>
+            <td>Payment Mode:</td>
+            <td><div class="form-group">
+                <select class="form-control" [(ngModel)]="currSale.PaymentMode" [ngModelOptions]="{standalone: true}" [disabled]="this.deductDeposit==true">
+                  <option value="cash">Cash</option>
+                  <option value="credit" style="font-weight:bold">CREDIT</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="card">Smart Card</option>
+                </select>
+              </div></td>
+          </tr>
+          <tr>
+            <td>Deduct from Deposit:</td>
+            <td><div class="form-group">
+                <input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit" [disabled]="patBillHistory.DepositBalance <= 0" style="width:18px;height:18px;" (change)="DepositDeductCheckBoxChanged()">
+              </div></td>
+          </tr>
+          <tr>
+            <td colspan="2"><div *ngIf="deductDeposit" style="border: 1px solid;border-radius: 5px !important;padding:4px 10px;"> <span>Deposit Deduction: {{depositDeductAmount}}</span><br />
+                <span> New Deposit Balance: </span> <span style="width:150px"><b style="color:blue"> {{newdepositBalance}}</b></span><br />
+              </div></td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-4">
+        <table class="accountinfo">
+          <tr>
+            <td>Sub Total:</td>
+            <td><div class="form-group">
+                <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.SubTotal" disabled id="subtotal" name="subtotal" type="number">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Total Amount:</td>
+            <td><div class="form-group">
+                <input [(ngModel)]="currSale.TotalAmount" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="TotalAmount" type="number">
+              </div></td>
+          </tr>
+          <tr>
+            <td>Adjustment:</td>
+            <td><div class="form-group">
+                <input [(ngModel)]="currSale.Adjustment" [ngModelOptions]="{standalone: true}" class="form-control" name="Adjustment" type="number" disabled>
+              </div></td>
+          </tr>
+          <tr>
+            <td>Paid Amount: <i class="glyphicon glyphicon-hand-right blink" style="color:red;font-size:10px;"></i></td>
+            <td><div class="form-group">
+                <input [(ngModel)]="currSale.PaidAmount" [ngModelOptions]="{standalone: true}" class="form-control blink" name="PaidAmount" type="number" disabled>
+              </div></td>
+          </tr>
+          <tr class="dot">
+            <td colspan="2" class="text-capitalize">In Words : <b>{{currSale.PaidAmount | NumberInWords}} </b>Only. <br />
+              <br /></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div> 
+    <!--
+    <div class="col-md-3">
+      <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;">
+        <div style="border-bottom: 1px solid green;">
+          Invoice History
+        </div>
+        <table>
+           @*<tr>
+              <td>Credit <b class="colon">:</b></td>
+              <td>0</td>
+          </tr>*@ 
+          <tr>
+            <td>Provisional Amount <b class="colon">:</b></td>
+            <td style="text-decoration:underline;">{{patBillHistory.ProvisionalAmt}}</td>
+          </tr>
+          <tr>
+            <td>Total Due<b class="colon">:</b></td>
+            <td>{{patBillHistory.TotalDue}}</td>
+          </tr>
+          <tr>
+            <td>Deposit Balance <b class="colon">:</b> </td>
+            <td>{{patBillHistory.DepositBalance}}</td>
+          </tr>
+          <tr>
+            <td>Balance Amount <b class="colon">:</b></td>
+            <td style="font-weight: bold;color: blue;font-size: 17px;">
+              {{patBillHistory.BalanceAmount}}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <table class=" col-sm-4 ">
+      <tr>
+        <td class="col-sm-offset-6 col-sm-3"></td>
+        <td> Discount Amount: </td>
+        <td>
+          <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.DiscountAmount" (focusout)="AllCalculation(0,currSale.DiscountAmount)" id="discountamount" name="discountamount" type="number">
+        </td>
+      </tr>
+      <tr>
+        <td class="col-sm-offset-6 col-sm-3"></td>
+        <td> Discount Percentage: </td>
+        <td>
+          <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.DiscountPer" (focusout)="AllCalculation(currSale.DiscountPer,0)" id="discountpercent" name="discountpercent" type="number">
+        </td>
+      </tr>
+      <tr>
+        <td class="col-sm-offset-6 col-sm-3"></td>
+        <td> Tender </td>
+        <td>
+          <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.Tender" (focusout)="ChangeTenderAmount()" id="tender" name="tender" type="number">
+        </td>
+      </tr>
+      <tr>
+        <td class="col-sm-offset-6 col-sm-3"></td>
+        <td> Change </td>
+        <td>
+          <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.Change" (focusout)="AllCalculation()" id="change" name="change" type="number">
+        </td>
+      </tr>
+
+    </table>
+    <table class=" col-sm-5 ">
+      <tr>
+        <td class="col-sm-offset-6 col-sm-3"></td>
+        <td>Sub Total: </td>
+        <td>
+          <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="currSale.SubTotal" disabled id="subtotal" name="subtotal" type="number">
+        </td>
+      </tr>
+
+      <tr class="form-group">
+        <td class="col-sm-offset-8 col-sm-2"></td>
+        <td>Total Amount: </td>
+        <td>
+          <input [(ngModel)]="currSale.TotalAmount" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="TotalAmount" type="number">
+        </td>
+      </tr>
+      <tr class="form-group">
+        <td class="col-sm-offset-8 col-sm-2"></td>
+        <td> Adjustment: </td>
+        <td>
+          <input [(ngModel)]="currSale.Adjustment" [ngModelOptions]="{standalone: true}" class="form-control" name="Adjustment" type="number" disabled>
+        </td>
+      </tr>
+      <tr class="form-group">
+        <td class="col-sm-offset-8 col-sm-2"></td>
+        <td> Paid Amount: <i class="glyphicon glyphicon-hand-right blink" style="color:red;font-size:10px;"></i> </td>
+        <td>
+          <input [(ngModel)]="currSale.PaidAmount" [ngModelOptions]="{standalone: true}" class="form-control blink" name="PaidAmount" type="number" disabled>
+        </td>
+      </tr>
+      <tr class="dot">
+        <td colspan="3" class="text-capitalize">In Words : <b>{{currSale.PaidAmount | NumberInWords}} </b>Only. <br /><br /></td>
+      </tr>
+    </table>
+--> 
+  </div>
+  <div *ngIf="!isSubStoreCall" >
+    <div class="row" style="padding-top:5px;">
+      <div class="col-md-6"> </div>
+      
+      <!--
+      <div class="col-md-6">
+
+        <div class="col-md-4">
+          <div>
+            Deduct from Deposit: <input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit" [disabled]="patBillHistory.DepositBalance <= 0" style="width:18px;height:18px;" (change)="DepositDeductCheckBoxChanged()">
+          </div>
+          <div *ngIf="deductDeposit" style="border: 1px solid;border-radius: 5px !important;padding-left: 14px;padding-bottom: 5px;">
+            <span>Deposit Deduction: {{depositDeductAmount}}</span><br />
+            <span>
+              New Deposit Balance:
+            </span>
+            <span style="width:150px"><b style="color:blue"> {{newdepositBalance}}</b></span><br />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="col-md-5">Payment Mode<b style="float:right;">:</b></label>
+          <div class="col-md-7">
+            <select class="form-control" style="width:100px" [(ngModel)]="currSale.PaymentMode" [ngModelOptions]="{standalone: true}" [disabled]="this.deductDeposit==true">
+              <option value="cash">Cash</option>
+              <option value="credit" style="font-weight:bold">CREDIT</option>
+              <option value="cheque">Cheque</option>
+              <option value="card">Smart Card</option>
+            </select>
+          </div>
+        </div>
+      </div>
+--> 
+      <br />
+      <br />
+      <div class="col-md-4"> </div>
+      <div class="col-md-2"> </div>
+      <div class="col-md-6" style="padding-top:5px;">
+        <input type="button" class="btn btn-success" value="Update" (click)="update()" [disabled]="loading">
+        <span></span>
+        <input type="button" class="btn btn-success" value="Print Invoice" (click)="PrintReceipt()" [disabled]="loading" />
+        <span></span>
+        <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Cancel All items">
+        <span></span> </div>
+    </div>
+    
+    <!--
+    <div>
+
+      <strong style="line-height:3;">Remarks:</strong><br />
+      <textarea style="width:20%;" [(ngModel)]="currSale.Remark" [ngModelOptions]="{standalone: true}" class="form-control" name="Remarks"></textarea>
+    </div>
+--> 
+    
+  </div>
+</div>
+<div *ngIf="showPatBillHistory && patBillHistory.IsLoaded" class="bill-action" style="top:340px;background-color:#FFF;">
+  <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;" *ngIf="patBillHistory.IsLoaded">
+    <div style="padding-left: 51px;margin-bottom: 5px;border-bottom: 1px solid green;"> Billing History </div>
+    <table>
+      <tr>
+        <td>Credit <b class="colon">:</b></td>
+        <td>{{patBillHistory.CreditAmount}}</td>
+      </tr>
+      <tr>
+        <td>Provisional Amount <b class="colon">:</b></td>
+        <td style="text-decoration:underline;">{{patBillHistory.ProvisionalAmt}}</td>
+      </tr>
+      <tr>
+        <td>Total Due<b class="colon">:</b></td>
+        <td>{{patBillHistory.TotalDue}}</td>
+      </tr>
+      <tr>
+        <td>Deposit Balance <b class="colon">:</b></td>
+        <td>{{patBillHistory.DepositBalance}}</td>
+      </tr>
+      <tr>
+        <td>Balance Amount <b class="colon">:</b></td>
+        <td style="font-weight: bold;color: blue;font-size: 17px;"><span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}} </span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row" *ngIf="showCancelSummaryPanel" style="margin-top: 20px;">
+  <div class="col-md-12">
+    <p style="font-weight: bold;color: #1a1a98;"> Cancelled items summary </p>
+    <div class="table-responsive" style="width: 70%;">
+      <table class="table table-striped table-hover">
+        <tr>
+          <th> Item Name </th>
+          <th> Quantity </th>
+          <th> Amount </th>
+          <th> Cancelled On </th>
+        </tr>
+        <tr *ngFor="let row of cancelledItems">
+          <td> {{row.ItemName}} </td>
+          <td> {{row.Quantity}} </td>
+          <td> {{row.TotalAmount}} </td>
+          <td> {{row.CancelledOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}} </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSaleItemsPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2"><!--Model Box Body Start-->
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="!update"></span> <span *ngIf="update"></span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-close"></i></a> </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="col-md-12">
+                <div id="printpage" style="text-align:center;" class="pv_print">
+                  <div class="receipt">
+                    <billing-header></billing-header>
+                    <div class="col-md-12">
+                      <div class="col-md-12" style="padding:0px;">
+                        <div class="left">
+                          <p class="no-margin" style="text-align:left;font-size:11px;"> Hospital No: {{currentPatient.PatientCode}} </p>
+                        </div>
+                        <div class="right">
+                          <p class="no-margin" style="text-align:right;font-size:11px;">Transaction Date: {{today | date}}</p>
+                        </div>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+                        <div class="left" style="width:69%" id="pat-name">
+                          <div class="no-margin" style="text-align: left;display: inline-block;font-size:11px;/*width: 31%;*/">Patient's Name:&nbsp;</div>
+                          <div style="display: inline-block;width: 69%;text-align: left;font-size:11px;"> {{currentPatient.ShortName}} </div>
+                        </div>
+                      </div>
+                      <div class="col-md-12" style="padding:0px;">
+                        <div class="left" style="width: 69%;">
+                          <p class="no-margin" style="text-align:left;font-size:11px;">Address: {{currentPatient.Address}}, {{currentPatient.CountrySubDivisionName}} </p>
+                        </div>
+                        <div class="right" style="width:31%">
+                          <p class="no-margin" style="text-align:right;font-size:11px;"> Age/Sex : {{currentPatient.DateOfBirth | DanpheDateTime:'age'  }}/{{currentPatient.Gender}}</p>
+                        </div>
+                      </div>
+                      <div class="col-md-12" style="padding:0px;">
+                        <div class="left" style="width:50%">
+                          <p class="no-margin" style="text-align:left;font-size:11px;"> Contact No: {{currentPatient.PhoneNumber}} </p>
+                        </div>
+                        <div class="right" style="width:50%" *ngIf="currentPatient.PANNumber">
+                          <p class="no-margin" style="text-align:right;font-size:11px;"> Purchaser's PAN: {{currentPatient.PANNumber}} </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <p style="text-align:center;font-weight:bold;text-decoration:underline;">Return Slip</p>
+                    </div>
+                    <div class="bill-patinfo" style="font-size: 14px;">
+                      <div class="clear"></div>
+                      <div class="clear footer"></div>
+                      <table class="bill-itms">
+                        <tr>
+                          <td width="30px" class="print-sn"> Sn.</td>
+                          <td width="170px" class="print-par">Item Name</td>
+                          <td width="20px" class="text-right print-qty">Quantity</td>
+                          <td width="20px" class="text-right print-qty">Discount Amount</td>
+                          <td width="60px" class="text-right print-amt">Amount</td>
+                        </tr>
+                        <tr *ngFor="let row of currSaleItemsRetOnly; let i=index">
+                          <td>{{i+1}}</td>
+                          <td>{{row.ItemName}}</td>
+                          <td class="text-right print-qty">{{row.ReturnQty}}</td>
+                          <td class="text-right print-rate">{{row.TotalDisAmt | number: "1.2-2"}}</td>
+                          <td class="text-right print-rate">{{row.TotalAmount | number: "1.2-2"}}</td>
+                        </tr>
+                        <tr> 
+                          <!--                        <td></td>-->
+                          <td colspan="3" class="text-right"><strong>Total Amount:</strong></td>
+                          <!--                        <td></td>-->
+                          <td class="text-right"><strong>{{total | number: "1.2-2"}}</strong></td>
+                        </tr>
+                        <tr> 
+                          <!--                        <td></td>-->
+                          <td colspan="3" class="text-right"><strong>Remarks:</strong></td>
+                          <!--                        <td></td>-->
+                          <td class="text-right"><strong>{{currSale.Remark}}</strong></td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <p style="text-align:center; z-index: 4; position: relative; margin: 15px 0;">
+                  <button class="btn blue" (click)="print()"> Print <i class="glyphicon glyphicon-print"></i> </button>
+                </p>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <!--Model Box Body End--> 
+      </div>
+    </div>
+  </div>
+</div>

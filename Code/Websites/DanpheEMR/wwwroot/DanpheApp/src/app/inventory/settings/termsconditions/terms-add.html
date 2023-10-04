@@ -1,0 +1,66 @@
+﻿<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showTermPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <!-- <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+            </div> -->
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3>
+                            <span>{{CurrentTermsModel.TermsId ? 'Update' : 'Add'}} Terms & Conditions</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <form [formGroup]="CurrentTermsModel.TermsValidators" class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">ShortName<sup class="color-red">*</sup><b>:</b></label>
+                                <div class="col-md-9">
+                                    <input id="shortname" class="form-control" (keyup.enter)="setFocusById('txt')" maxlength="200" type="text" [(ngModel)]="CurrentTermsModel.ShortName" [ngModelOptions]="{standalone: true}" placeholder="Short Name" />
+                                    <!--<span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('ShortName','required') || !(CurrentTermsModel.IsDirty('ShortName'))">Shortname is required</span>-->
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">Text<sup class="color-red">*</sup><b>:</b></label>
+                                <div class="col-md-9">
+                                    <danphe-ckeditor id="txt" [readonly]="false" (get-html-content)="onChangeEditorData($event)" (keyup.enter)="setFocusById('type')" [set-html-content]="CurrentTermsModel.Text"></danphe-ckeditor>
+                                    <span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('Text','required') || !(CurrentTermsModel.IsDirty('Text'))">Text is required</span>
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">Type<sup class="color-red">*</sup><b>:</b></label>
+                                <div class="col-md-9">
+                                    <input id="type" class="form-control" maxlength="200" type="text" [(ngModel)]="CurrentTermsModel.Type" (keyup.enter)="!update?setFocusById('save'):setFocusById('update')" [ngModelOptions]="{standalone: true}" placeholder="Type" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">Is Active <b>:</b> </label>
+                                <div class="col-md-9">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="IsActive" type="checkbox" [(ngModel)]="CurrentTermsModel.IsActive" [ngModelOptions]="{standalone: true}" />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="form-actions">
+                            <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddTerms()" value="Add Terms" [disabled]="loading" />
+                            <input type="button" class="btn primary-btn" *ngIf="update" (click)="UpdateTerms()" value="Update Terms" [disabled]="loading" />
+                        </div> -->
+                        </div>
+                        <div class="panel-footer">
+                            <button type="button" id="save" class="btn green btn-success" *ngIf="!update" (click)="AddTerms()" [disabled]="loading">Save</button>
+                            <button type="button" id="update" class="btn green btn-success" *ngIf="update" (click)="UpdateTerms()" [disabled]="loading">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

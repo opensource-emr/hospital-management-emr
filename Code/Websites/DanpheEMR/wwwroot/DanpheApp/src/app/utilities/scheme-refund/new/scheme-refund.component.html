@@ -1,0 +1,234 @@
+<style>
+  .Scheme_Refund_Entry {
+    border: #000 10px !important;
+  }
+
+  .previous_scheme_data td {
+    text-align: left;
+    margin-left: 10px;
+    padding-left: 5px;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div ref_modal_div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3>
+              Scheme Refund Entry
+
+            </h3>
+            <a class="close-btn btn-danger" (click)="Close()">X</a>
+          </div>
+          <div id="scheme-refund-form" class="form-horizontal hm-form">
+            <div class="Scheme_Refund_Entry" style="margin:15px; ">
+              <div>
+
+                <div class="form-group col-md-12">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <label class="control-label">
+                        Select Patient
+                        <b class="color-red"> *</b>
+                      </label>
+                      <label style="float:right;">
+                        <b>:</b>
+                      </label>
+                    </div>
+                    <div class="col-md-7">
+                      <input danphe-auto-complete id="id_patient_number"
+                             class="form-control searchtbx w-100" [(ngModel)]="selectedPatient"
+                             (ngModelChange)="AssignSelectedPatient()"
+                             [list-formatter]="PatientListFormatter"
+                             (keyup.enter)="GoToNextInput('inpatientnumber')"
+                             [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+                             placeholder="search by HospitalNo/Patient Name"
+                             display-property-name="ShortName" value-property-name=null
+                             onClick="this.select();" max-num-list="10" [min-chars]="3"
+                             match-formatted="true" (focusout)="AssignSelectedPatient()"
+                             [grid-sort]="'ShortName'" [ngModelOptions]="{standalone: true}" autofocus="true" />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12" *ngIf="showIsPatientSelected" style="
+                                padding: 0px!important;
+                                margin-top: 15px;
+                                margin-bottom: 15px;
+                                border: 1px solid #ccc;">
+                  <div class="col-md-6">
+                    <label class="control-label lbl-text">Hospital Number:
+                    </label>
+                    <label>
+                      {{selectedPatient.PatientCode}}
+                    </label>
+                  </div>
+                  <div class="col-md-6"><label class="control-label lbl-text">Name:</label>
+                    <label>
+                      {{selectedPatient?.ShortName}}
+                    </label>
+                  </div>
+                  <div class="col-md-6"><label class="control-label lbl-text">Age/Sex:</label>
+                    <label>
+                      {{selectedPatient.Age}} / {{selectedPatient.Gender}}
+                    </label>
+                  </div>
+                  <div class="col-md-6"><label class="control-label lbl-text">Contact Number:</label>
+                    <label>
+                      {{selectedPatient.PhoneNumber}}
+                    </label>
+                  </div>
+                  <div class="col-md-6"><label class="control-label lbl-text">Address:</label>
+                    <label>
+                      {{selectedPatient.CountryName}}<span *ngIf="selectedPatient.CountrySubDivisionName">,</span>
+                      {{selectedPatient.CountrySubDivisionName}}<span *ngIf="selectedPatient.Address">,</span>
+                      {{selectedPatient.Address}}
+                    </label>
+                  </div>
+                </div>
+                <div class=" form-group col-md-12">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <label class="control-label">
+                        Enter Inpatient No (If Applicable)
+                      </label>
+                      <label style="float:right;">
+                        <b>:</b>
+                      </label>
+                    </div>
+                    <div class="col-md-7">
+                      <input
+                             id="inpatientnumber" name="inpatientnumber" (keyup.enter)="GoToNextInput('refundscheme')"
+                             type="text" [(ngModel)]="schemeRefundObject.InpatientNumber"
+                             class="form-control">
+                    </div>
+                  </div>
+                </div>
+                <div class=" form-group col-md-12">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <label class="control-label">
+                        Select Refund Scheme
+                        <b class="color-red"> *</b>
+                      </label>
+                      <label style="float:right;">
+                        <b>:</b>
+                      </label>
+                    </div>
+                    <div class="col-md-7">
+                      <input danphe-auto-complete id="refundscheme" name="refundscheme" class="form-control"
+                             [(ngModel)]="selectedSchme"
+                             [list-formatter]="'SchemeName'" [source]="billingSchmes"
+                             (keyup.enter)="GoToNextInput('refundamount')"
+                             placeholder="-----Select Scheme------" (focusout)="AssignSelectedSchme()"
+                             display-property-name="SchemeName" value-property-name=null
+                             onclick="this.select()" max-num-list="10" />
+                    </div>
+                  </div>
+                </div>
+                <div class="row" style="margin-top: 15px;">
+                  <div class=" form-group col-md-12">
+                    <div class="col-md-5">
+                      <label class="control-label">
+                        Amount
+                        <b class="color-red"> *</b>
+                      </label>
+                      <label style="float:right;">
+                        <b>:</b>
+                      </label>
+                    </div>
+                    <div class="col-md-7">
+                      <input id="refundamount" name="refundamount" type="number" min="0"
+                             [(ngModel)]="schemeRefundObject.RefundAmount"
+                             onClick="this.select()"
+                             (keyup.enter)="GoToNextInput('remarks')"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                             class="form-control">
+                    </div>
+                  </div>
+                  <div class=" form-group col-md-12">
+                    <div class="col-md-3">
+                      <label class="control-label">
+                        In Words:
+                      </label>
+                    </div>
+                    <div class="col-md-9">
+                      <label>
+                        {{schemeRefundObject.RefundAmount | NumberInWords}}
+                      </label>
+                    </div>
+                  </div>
+                  <div class=" form-group col-md-12">
+                    <div class="col-md-5">
+                      <label class="control-label">
+                        Remarks
+                      </label>
+                      <label style="float:right;">
+                        <b>:</b>
+                      </label>
+                    </div>
+                    <div class="col-md-7">
+                      <textarea id="remarks"
+                                name="remarks"
+                                class="form-control"
+                                (keyup.enter)="GoToNextInput('savebutton')"
+                                [(ngModel)]="schemeRefundObject.Remarks"></textarea>
+                    </div>
+                  </div>
+                  <div class=" form-group col-md-12">
+                    <div class="col-md-5">
+                    </div>
+                    <div class="col-md-7">
+                      <button id="savebutton" class="btn green btn-success"
+                              [disabled]="loading"
+                              (click)="GotoProcessConfirmation()">
+                        <i class="fa fa-save"></i>
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Table for previous scheme refund-->
+            <div *ngIf="showIsPatientSelected">
+              <label style="margin-left:20px ;font-weight: 600;">
+                <b>
+                  Previous Scheme Refunds
+                </b>
+              </label>
+              <table class="table_data"
+                     style="padding: 2px; width:93%; margin-left:20px; margin-bottom: 20px; color: #474646; font-weight: 600;"
+                     border="1">
+
+
+                <tr style="text-align: center;">
+                  <th style="width:4%; text-align: center;"> S.N.</th>
+                  <th style="width:10%; text-align: center;"> Refund Date</th>
+                  <th style="width:34%;text-align: center;"> Scheme</th>
+                  <th style="width:8%;text-align: center;"> Amount</th>
+                  <th style="width:10%;text-align: center;"> User</th>
+                  <th style="width:34;text-align: center;"> Remarks</th>
+                </tr>
+                <tbody class="previous_scheme_data">
+                  <tr *ngFor=" let sch of PreviousSchemeRefundDetail; let i=index;">
+                    <td style="text-align: center;">{{i+1}}.</td>
+                    <td>{{sch.RefundedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                    <td>{{sch.SchemeName}}</td>
+                    <td>{{sch.RefundAmount}}</td>
+                    <td>{{sch.FullName}}</td>
+                    <td>{{sch.Remarks}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <process-confirmation *ngIf="requiresProcessConfirmation" [process-display-name]="ProcessToConfirmDisplayName"
+                        [required-permission-name]="RequiredPermissionNameToConfirmProcess"
+                        (confirmation-process-callback)="ConfirmationProcessCallback($event)"></process-confirmation>

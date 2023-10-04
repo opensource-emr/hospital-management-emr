@@ -1,0 +1,160 @@
+<style>
+  li.horizontal-bar:hover>a {
+    background: none;
+  }
+
+  li.bil-hr-bar:hover ul.dropdown-menu li a {
+    background: none;
+    color: #6f6f6f !important;
+  }
+
+  .dropdown.bil-hr-bar.open a.dropdown-toggle {
+    background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
+    border-radius: 4px !important;
+  }
+
+  .dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+    color: #6f6f6f;
+  }
+
+  .hr-ddlCstm {
+    border-bottom: 1px solid #c5cbc5;
+  }
+
+  .bil-hr-dropdown li a:hover {
+    font-weight: 700;
+  }
+
+  .p-category .span2 {
+    min-width: 20.5%;
+  }
+
+  .padder-v {
+    border: 1px solid #ddd;
+    margin: 10px 10px 0px 0px;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .b-r {
+    border-right: 1px solid #cfcfcf;
+  }
+
+  .b-light {
+    border-color: #e4e4e4;
+  }
+
+  .b-light i.text-white {
+    color: #fff;
+  }
+
+  .rpt-link-container {
+    width: 230px;
+    height: 70px;
+    background-color: white;
+  }
+
+  .rpt-link-container:hover {
+    background-color: skyblue;
+    cursor: pointer;
+  }
+
+  .bed-container {
+    height: 12rem;
+    width: 13rem;
+    float: left;
+    text-align: center;
+  }
+
+  .modal-content {
+    line-height: 2;
+    text-align: center;
+    color: #eceaea;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    left: 82%;
+    top: 90%;
+    border-radius: 4px !important;
+    z-index: 99;
+  }
+</style>
+
+<base href="/">
+<div class="wrapper">
+<div class="row" *ngIf="showSubStoreList">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <i class="glyphicon glyphicon-asterisk"></i>
+      <span class="caption-subject">Select your Substore</span>
+    </div>
+  </div>
+  <div class="col-md-12" *ngIf="subStoreList != undefined">
+    <div class="row">
+    <div class="col-md-3" *ngFor="let subStore of subStoreList" rbac-permission="{{subStore.PermissionInfo}}">
+      <a class="report_list" (click)="setGlobalSubStore(subStore.StoreId)">
+        <div class="span2 padder-v b-r b-light rpt-link-container">
+          <span class="fa-stack fa-2x report_icon">
+            <i class="fa fa-shopping-cart fa-stack-1x text-white"></i>
+          </span>
+          <span class="report-name">
+            <i>{{subStore.Name}}</i>
+            <i>Substore</i>
+          </span>
+        </div>
+      </a>
+    </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="page-bar fixed-top-bar" *ngIf="!showSubStoreList">
+  <div *ngIf="showInfo" class="modal-content col-md-2 col-xs-2 col-lg-2">
+    <div class="fa fa-caret-up"
+      style="float: right;font-size: 25px;left: 6px;bottom: 11px;color: #313131;position: relative;"></div>
+    <i (click)="CloseInfo()" class="fa fa-close"
+      style="cursor:pointer;float: right;font-size: 15px;font-weight: lighter;left: 18px;top: 3px;position: relative;"></i>
+    <h6>You are currently in {{selectedStore.Name}} sub store. To change, you can always click here.</h6>
+  </div>
+  <span style="padding:10px" class="right">
+    <label class="label label-primary">
+      Active Store : <b>{{selectedStore.Name}}</b>
+    </label>
+    <i (mouseenter)="ShowInfo()" (click)="UnsetGlobalSubStore()"
+      style="cursor:pointer;margin-left: 5px;font-size: 20px;position: relative;top: 2px;left:5px;"
+      class="fa fa-sign-out"></i>
+  </span>
+  <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
+    <!--Start: Primary Menu Items -->
+    <li *ngFor="let route of primaryNavItems">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'"
+        *ngIf="route.IsSecondaryNavInDropdown!=1">
+        {{route.DisplayName}}
+        <i class="{{route.Css}}"></i>
+      </a>
+    </li>
+   
+    <!--End: Primary Menu Items -->
+    <!--Start: Secondary Menu Items-->
+    <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar"
+      style="display:inline-block;">
+      <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        More...
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu bil-hr-dropdown">
+        <li class="hr-ddlCstm" *ngFor="let route of secondaryNavItems">
+          <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">
+            {{route.DisplayName}}
+            <i class="{{route.Css}}"></i>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--End: Secondary Menu Items-->
+
+  </ul>
+</div>
+<div *ngIf="!showSubStoreList">
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,174 @@
+﻿<style>
+.paid {
+	background-color: darkseagreen;
+	color: white;
+}
+.paid:hover {
+	background-color: mediumseagreen;
+	color: white;
+}
+.unpaid {
+	background-color: lightsalmon;
+	color: white;
+}
+.unpaid:hover {
+	background-color: orange;
+	color: white;
+}
+.returned {
+	background-color: steelblue;
+	color: white;
+}
+.returned:hover {
+	background-color: slategray;
+	color: white;
+}
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+	padding: 0px !important;
+}
+</style>
+<div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom" *ngIf="showDischargeBillBreakup">
+  <div class="portlet-body form" style="background-color:white"> 
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-2"></div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;"> <a style="float:right;" class="btn btn-danger" (click)="CloseDischargeBill()" title="Cancel">X</a>
+        <div id="printpage">
+          <div class="col-md-12">
+            <div class="caption custom-caption">
+              <div style="text-decoration: underline;color: green;margin-top: 15px; text-align:center;">
+                <h4><b>{{hospitalName}}</b></h4>
+                <h6>{{address}}</h6>
+                <h6>{{tel}}</h6>
+                <h4><b>{{'Inpatient Discharge Bill'}}</b></h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12" style="margin-right: 24px;border-top: 1px solid;border-bottom: 1px solid;">
+            <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+              <tr>
+                <th style="padding:0px; ">Hospital No </th>
+                <td style="padding:0px;">{{patient.PatientCode}}</td>
+                <th style="padding:0px;">IP No</th>
+                <td style="padding:0px;">{{patient.IPNumber}}</td>
+                <th style="padding:0px;">Invoice Date</th>
+                <td style="padding:0px;">{{patient.InvoiceDateTime | DanpheDateTime:'format':'YYYY.MM.DD'}}</td>
+              </tr>
+              <tr>
+                <th style="padding:0px;">Name</th>
+                <td style="padding:0px;">{{patient.PatName}}</td>
+                <th style="padding:0px;">Age/Gender</th>
+                <td style="padding:0px;">{{patient.Age}} /{{patient.Gender}}</td>
+                <th style="padding:0px;">Invoice Time</th>
+                <td style="padding:0px;">{{patient.InvoiceDateTime | DanpheDateTime:'format':'HH:mm'}}</td>
+              </tr>
+              <tr>
+                <th style="padding:0px;">Address</th>
+                <td style="padding:0px;">{{patient.Address}}</td>
+                <th style="padding:0px;">Admitted Doctor</th>
+                <td style="padding:0px;">{{patient.AdmittedDoctor}}</td>
+                <th style="padding:0px;">Admission Date</th>
+                <td style="padding:0px;">{{patient.AdmissionDate | DanpheDateTime:'format':'YYYY.MM.DD HH:mm'}}</td>
+              </tr>
+              <tr>
+                <th style="padding:0px;">Ward</th>
+                <td style="padding:0px;">{{patient.Ward}}</td>
+                <th style="padding:0px;">Bed No</th>
+                <td style="padding:0px;">{{patient.BedNo}}</td>
+                <th style="padding:0px;">Discharge Date</th>
+                <td style="padding:0px;">{{patient.DischargeDate | DanpheDateTime:'format':'YYYY.MM.DD HH:mm'}}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-12" *ngFor="let rpt of dischargeBillBreakupRPT.reportData">
+            <h4> {{rpt.departmentName}} </h4>
+            <table class="table table-striped table-hover  table-bordered" style="background-color:initial;margin-top:10px">
+              <thead style="background-color:whitesmoke">
+                <tr>
+                  <th>Bill Date</th>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Amount</th>
+                  <th>Discount</th>
+                  <!--<th>Sub Total</th>-->
+                  <th>VAT</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tr *ngFor="let itm of rpt.itemList">
+                <td>{{itm.billDate | DanpheDateTime:'format':'YYYY.MM.DD HH:mm'}}</td>
+                <td>{{itm.description}}</td>
+                <td>{{itm.qty}}</td>
+                <td>{{itm.amount}}</td>
+                <td>{{itm.discount}}</td>
+                <!--<td>{{itm.subTotal}}</td>-->
+                <td>{{itm.vat}}</td>
+                <td>{{itm.total}}</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><b>Sub Total</b></td>
+                <td><b>{{rpt.calculationpart.qty}}</b></td>
+                <td><b>{{rpt.calculationpart.amount}}</b></td>
+                <td><b>{{rpt.calculationpart.discount}}</b></td>
+                <!--<td><b>{{rpt.calculationpart.subTotal}}</b></td>-->
+                <td><b>{{rpt.calculationpart.vat}}</b></td>
+                <td><b>{{rpt.calculationpart.total}}</b></td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-12">
+            <div class="col-md-8 col-xs-1"> </div>
+            <div class="col-md-4 col-xs-10">
+              <table class="table table-striped table-hover  table-bordered" style="background-color:initial;margin-top:10px">
+                <tr>
+                  <td><b>AMOUNT</b></td>
+                  <td>{{dischargeBillBreakupRPT.amount}}</td>
+                </tr>
+                <tr>
+                  <td><b>DISCOUNT</b></td>
+                  <td>{{dischargeBillBreakupRPT.discount}}</td>
+                </tr>
+                <!--<tr>
+                                    <td><b>SUB TOTAL</b></td>
+                                    <td>{{dischargeBillBreakupRPT.subTotal}}</td>
+                                </tr>-->
+                <tr>
+                  <td><b>TAXABLE</b></td>
+                  <td>{{dischargeBillBreakupRPT.taxable}}</td>
+                </tr>
+                <tr>
+                  <td><b>VAT</b></td>
+                  <td>{{dischargeBillBreakupRPT.vat}}</td>
+                </tr>
+                <!--<tr>
+                                    <td><b>NON TAXABLE</b></td>
+                                    <td>{{dischargeBillBreakupRPT.nonTaxable}}</td>
+                                </tr>-->
+                <tr>
+                  <td><b>TOTAL</b></td>
+                  <td>{{dischargeBillBreakupRPT.total}}</td>
+                </tr>
+                <!--<tr>
+                                    <td><b>DEPOSIT</b></td>
+                                    <td>{{dischargeBillBreakupRPT.deposit}}</td>
+                                </tr>--> 
+                <!--<tr>
+                                    <td><b>TOTAL PAYMENT</b></td>
+                                    <td>{{dischargeBillBreakupRPT.totalPayment}}</td>
+                                </tr>-->
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" style="padding-bottom: 18px;">
+          <div class="form-actions">
+            <input type="button" class="btn btn-primary hidden-print" (click)="Print()" value="Print" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2"></div>
+  </div>
+  <!--Model Box Body End--> 
+</div>

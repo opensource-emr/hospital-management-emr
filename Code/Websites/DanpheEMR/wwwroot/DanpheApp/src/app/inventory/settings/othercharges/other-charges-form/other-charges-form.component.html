@@ -1,0 +1,89 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="otherChargesForm && (showAddPage || showEditMode)">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption lb-caption">
+                        <h3 class="add-charges-lebel"> <span><span *ngIf="!showEditMode">Add</span><span *ngIf="showEditMode">Update</span> Other Charges</span> </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel"><em class="fa fa-times"></em></a>
+                    </div>
+                    <form [formGroup]="otherChargesForm" (ngSubmit)="submit(otherChargesForm.value)">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="col-md-6 col-xs-12">
+                                    <div class="form-group row clearfix">
+                                        <label for="ChargeName" class="col-sm-3 col-form-label">Charge Name<sup>*</sup><span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <input type="text" formControlName="ChargeName" id="ChargeName" placeholder="Type Charge Name" class="form-control">
+                                            <div *ngIf="ChargeName.invalid && (ChargeName.dirty || ChargeName.touched)" class="alert alert-danger">
+                                                <div *ngIf="ChargeName.errors.required">
+                                                    Name is required.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row clearfix">
+                                        <label for="chkVatApplicable" class="col-sm-3 col-form-label">Is VAT Applicable<span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="chkVatApplicable" type="checkbox" formControlName="IsVATApplicable" />
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row clearfix" *ngIf="otherChargesForm.get('IsVATApplicable').value == true">
+                                        <label for="VAT" class="col-sm-3 col-form-label">VAT (in %)<span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <input class="form-control" min="0" type="number" id="VAT" formControlName="VATPercentage" placeholder="VAT" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xs-12">
+                                    <div class="form-group row clearfix">
+                                        <label for="Description" class="col-sm-3 col-form-label">Description<span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <input type="text" formControlName="Description" id="Description" placeholder="Type Description" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row clearfix">
+                                        <label for="isActive" class="col-sm-3 col-form-label">Is Active<span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="isActive" type="checkbox" formControlName="IsActive" />
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row clearfix">
+                                        <label for="isDefault" class="col-sm-3 col-form-label">Is Default<span class="float-right">:</span></label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="isDefault" type="checkbox" formControlName="IsDefault" />
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 text-right" style="margin-bottom: 5px;">
+                            <button type="submit" id="btn-add" class="btn btn-success" [disabled]="loading">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

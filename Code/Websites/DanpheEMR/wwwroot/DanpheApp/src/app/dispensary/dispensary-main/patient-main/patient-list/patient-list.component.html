@@ -1,0 +1,13 @@
+<app-patient-deposit-add [showDepositAdd]="ShowDepositAdd" [deposit-data]="selectedPatientData" (callback-add)="DepositAdd()">
+</app-patient-deposit-add>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <!-- <div>   -- Hid this button since its already available on sale page ---
+            <a class="btn blue bordered mb10" name="name" value=""  (click)="RegisterNewPatient()"><span class="fa fa-plus"> </span> New Outdoor Patient</a>
+        </div> -->
+        <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patients" (grid-actions)="PatientGridActions($event)"
+        (serverSearchText)="serverSearchTxt($event)"
+        [customServerSearch]="enableServerSideSearch">
+        </danphe-grid>
+    </div>
+</div>

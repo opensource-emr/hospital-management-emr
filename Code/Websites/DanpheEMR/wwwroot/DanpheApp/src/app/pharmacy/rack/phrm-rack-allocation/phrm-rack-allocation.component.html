@@ -1,0 +1,37 @@
+<div *ngIf="!loadingScreen" class="col-lg-12 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+  <div class="form-group form-inline">
+    Search By Item Name:
+    <input class="form-control ml-2" type="text" name="searchTerm" [(ngModel)]="searchTerm" (input)="search($event.target.value)" />
+  </div>
+  <div class="table-responsive table-wrapper" id="print_summary">
+    <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+      <thead style="background-color: cornflowerblue;">
+        <td style="font-size:large; text-align:center">Item Name</td>
+        <td style="font-size:large; text-align:center" *ngFor="let store of StoreList; index as i">
+          {{store.StoreName}}
+        </td>
+        <td style="font-size:large;">Action</td>
+      </thead>
+      <tbody>
+        <tr *ngFor="let StoreRackAllocationDetail of StoreRackAllocationDetails | ItemListFilter: searchTerm  | slice:pageIndex*pageSize:(pageIndex+1)*pageSize;index as i">
+          <td><b>{{StoreRackAllocationDetail.ItemName}}</b></td>
+          <td style=" text-align:center" *ngFor="let rackData of StoreRackAllocationDetail.StoreRackAllocationDatas; index as j">
+            <input danphe-auto-complete class="form-control" id="rack" [(ngModel)]="rackData.selectedRack" [source]="rackData.StoreWiseFilterRackList" placeholder="--Select Rack--" [list-formatter]="RackListFormatter" display-property-name="RackNo" value-property-name="null" (valueChanged)="OnRackChange(rackData.selectedRack,StoreRackAllocationDetail.ItemId,rackData.previouslySelectedRack,i,j)" [grid-sort]="'RackNo'" [match-formatted]="true" max-num-list="10" [min-chars]="1" onClick="this.select();" />
+          </td>
+          <td><button type="button" class="btn btn-success" [disabled]="loading" (click)="Save(i)">Save</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="text-center" style="margin-top: 20px;">
+      <pagination [itemCount]="collectionSize" [(pageIndex)]="pageIndex" [pageSize]="pageSize"></pagination>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="loadingScreen">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="danphe-loading-image" style="display: block;padding-left: 49%;padding-top: 15%;" id='danpheLoading'>
+      <img style="margin-top: 60px;width: 120px; height: 120px;" src="../../../../../themes/theme-default/images/loading-child.gif" alt="" />
+      <p style="font-size: 24px;color: #fff;"><b>Loading...Please Wait</b></p>
+    </div>
+  </div>
+</div>

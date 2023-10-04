@@ -1,0 +1,201 @@
+<style>
+.bill-action {
+	position: fixed;
+	right: 0%;
+	top: 120px;
+	width: 20%;
+	padding: 10px;
+	background-color: #b1c2d6;
+	border-radius: 10px 0px 0px 10px !important;
+}
+.table > tbody > tr > td {
+	padding: 0px !important;
+}
+.table > tbody > tr > th {
+	padding: 5px 0px !important;
+}
+.edit-icon {
+	font-weight: bold;
+	font-size: 18px;
+	color: green;
+	cursor: pointer;
+}
+.edit-icon:hover {
+	color: blue;
+	font-size: 15px;
+}
+.colon {
+	float: right;
+	margin: 0 4px 0 4px;
+}
+.table-hover > tbody > tr:hover, .table-hover > tbody > tr:hover > td {
+	background: #c8cdd8 !important;
+	cursor: pointer;
+}
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="creditBillGridColumns" [grid-data]="InsuranceProvisionalBillsSummary" (grid-actions)="CreditBillGridActions($event)" [hidden]="!showAllPatient"> </danphe-grid>
+    </div>
+  </div>
+  <div class="row" [hidden]="showAllPatient">
+    <div class="col-md-12">
+      <button class="btn btn-primary" style="margin-right:10px;" (click)="BackToGrid()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
+      <button class="btn btn-primary" (click)="UpdateItems()">Edit Items</button>
+      &nbsp;&nbsp;
+      <button class="btn btn-sm blue" (click)="AddInsuranceItems()"><i class="fa fa-plus"></i> Add Insurance Items</button>
+    </div>
+    <div class="col-md-12" style="padding-bottom:10px;">
+      <div class="col-md-4" style="padding-left:0px;padding-right:0px;text-align:right;"> Search from already added items: </div>
+      <div class="col-md-4">
+        <input danphe-auto-complete class="form-control cstm-form-control"
+             [(ngModel)]="selItem"
+             [source]="uniqueItemNames"
+             placeholder="Enter ItemName"
+             display-property-name="ItemName"
+             value-property-name="ItemName"
+             style="width:190px"
+             match-formatted="true"
+             (valueChanged)="ItemValueChanged()"
+             (focusout)="ItemValueChanged()"
+             [list-formatter]="SearchItemsListFormatter"
+             max-num-list="10"
+             onClick="this.select();" />
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="col-md-9" style="padding-left: 0px;">
+        <table class="table-striped table-hover" border="1" style="width: 100%;">
+          <tr>
+            <th style="width: 50px;">SNo.</th>
+            <th style="width: 100px;">Date</th>
+            <th style="width: 180px;">Department</th>
+            <th style="width: 200px;">Item Name</th>
+            <th style="padding-right: 5px !important;">Qty.</th>
+            <th style="padding-right: 5px !important;">Price.</th>
+            <th style="padding-right: 5px !important;">Subtot.</th>
+            <th style="padding-right: 5px !important;">Disc.</th>
+            <th style="padding-right: 5px !important;">Amt.</th>
+            <th style="padding-right: 5px !important;">User</th>
+            <th></th>
+          </tr>
+          <!--   @*Changed from receiptDetails to filteredPendingItems undo it if doesn't work*@-->
+          <tr *ngFor="let row of filteredPendingItems;let i = index"> 
+            <!--<tr *ngFor="let row of filteredPendingItems;let i = index" (dblclick)="EditItemBtnOnClick(i,row)">-->
+            <td>{{i+1}}</td>
+            <td style="font-size: 12px;font-weight: bold;">{{row.RequisitionDate | DanpheDateTime:'format':'YY/MM/DD HH:mm'}}</td>
+            <td>{{row.ServiceDepartment.ServiceDepartmentName}}</td>
+            <td><div>{{row.ItemName}}</div>
+              <div *ngIf="row.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{row.ProviderName}}) </span> </div></td>
+            <td>{{row.Quantity}}</td>
+            <td>{{row.Price}}</td>
+            <td>{{row.SubTotal}}</td>
+            <td>{{row.DiscountAmount}}</td>
+            <td style="padding: 0px 7px;font-weight:bold;">{{row.TotalAmount}}</td>
+            <td title="Department:{{row.RequestingUserDept}}">{{row.RequestingUserName}}</td>
+            <td style="width: 5%;text-align: center;"><div class="tooltip" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span> <i class="fa fa-pencil edit-icon" (click)="EditItemBtnOnClick(i,row)"></i> </span>
+                <p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to edit this item</p>
+              </div></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="bill-action" *ngIf="showActionPanel">
+    <div>
+      <table>
+        <tr>
+          <td>Subtotal :</td>
+          <td><strong>{{billingService.currencyUnit}} {{selItemsSubTotal}}</strong></td>
+        </tr>
+        <tr>
+          <td>Disc. Amount :</td>
+          <td><strong>{{billingService.currencyUnit}} {{selItemsTotalDiscAmount}}</strong></td>
+        </tr>
+        <tr>
+          <td>Total Amount :</td>
+          <td><strong>{{billingService.currencyUnit}} {{selItemsTotAmount}}</strong></td>
+        </tr>
+      </table>
+      
+      <!--start: sud: 21Jul'19--For Insurance Transaction Date-->
+      <div *ngIf="allowInsTxnDate" style="margin-bottom: 15px;border-top: 1px solid;padding-top: 10px;"> <span> Insurance Date:</span> <span style="font-weight:bold;"> {{insTxnDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </span> <br />
+        <a (click)="ShowCalendar()">Change ?</a> </div>
+      <!--end: sud: 21Jul'19--For Insurance Transaction Date-->
+      
+      <input type="button" class="btn btn-primary" (click)="GenerateInsuranceInvoice()" [disabled]="loading" value="Print Insurance Invoice" />
+      <br />
+      <br />
+      <input type="button" class="btn btn-danger" (click)="GenerateInsuranceProvisionalInvoice()" [disabled]="loading" value="Print Provisional Slip" />
+    </div>
+  </div>
+  <div *ngIf="showPatBillHistory && patBillHistory.IsLoaded" class="bill-action" style="top:380px;background-color:#FFF;">
+    <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;" *ngIf="patBillHistory.IsLoaded">
+      <div style="padding-left: 51px;margin-bottom: 5px;border-bottom: 1px solid green;"> Insurance Billing History </div>
+      <table>
+        <!--<tr><td>Insurance Credit/Unclaimed Amount<b class="colon">:</b></td><td>{{patBillHistory.CreditAmount}}</td></tr>-->
+        <tr>
+          <td>Insurance Provisional <b class="colon">: </b></td>
+          <td style="text-decoration:underline;"> {{patBillHistory.ProvisionalAmt}}</td>
+        </tr>
+        <tr>
+          <td>Insurance Balance <b class="colon">: </b></td>
+          <td> {{patBillHistory.DepositBalance}}</td>
+        </tr>
+        <tr>
+          <td>Remaining Balance <b class="colon">: </b></td>
+          <td> {{patBillHistory.DepositBalance - patBillHistory.ProvisionalAmt}}</td>
+        </tr>
+        <!--<tr>
+        <td>Balance Amount <b class="colon">:</b></td>
+        <td style="font-weight: bold;color: blue;font-size: 17px;">
+          <span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}">
+            {{patBillHistory.BalanceAmount}}
+          </span>
+        </td>
+      </tr>-->
+      </table>
+    </div>
+  </div>
+  <edit-bill-item *ngIf="showEditItemsPopup"
+                [itemToEdit]="selItemForEdit"
+                (on-closed)="CloseItemEditWindow($event)"
+                [EmpList]="UsersList"
+                [DoctorsList]="doctorsList"> </edit-bill-item>
+  <update-items *ngIf="showUpdateItemsPopup"
+              [patientDetails]="patientDetails"
+              [filtered-items]="updatedItems"
+              (close-popup)="CloseUpdatePricePopup($event)"> </update-items>
+  <div *ngIf="showInsuranceAddItemPopUp">
+    <insurance-bill-item-request *ngIf="showInsuranceAddItemPopUp" [patientId]="patientId"
+                               [patientInfo]="patientDetails" [patInsuranceBillHistory]="patBillHistory" (emit-billItemReq)="CloseNewItemAdd($event)"></insurance-bill-item-request>
+  </div>
+  
+  <!--start: Sud: 19Jul'19 -- To change Ins Transaction Date---->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showCalendar">
+    <div class="portlet-body form">
+      <div class="col-md-5 col-md-offset-4">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr"><strong>Change Insurance Date</strong></h4>
+          </div>
+          <div class="modelbox-body">
+            <div class="datepicker-holder">
+              <danphe-date-picker [(ngModel)]="insTxnCalendarDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="ChangeTxnDate()"> Change </button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseDateChangeCalendar()"> Cancel </button>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="CloseDateChangeCalendar()">X</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--end: Sud: 19Jul'19 -- To change Ins Transaction Date----> </div>

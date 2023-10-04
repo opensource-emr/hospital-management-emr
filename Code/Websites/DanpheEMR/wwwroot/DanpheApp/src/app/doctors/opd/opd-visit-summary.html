@@ -1,0 +1,252 @@
+<div class="popup-static portlet box portlet-fullscreen doc-popup" *ngIf="showSummaryPage"> 
+  <div class="portlet-body form" style="background-color:white">
+    <form class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div id="printpage" class="modelbox-div">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue;">
+                <h3>
+                  <i class="fa fa-align-left"></i>Visit Summary
+                </h3>
+              </div>
+              <div class="btn-group hidden-print" data-html2canvas-ignore="true">
+                <button class="btn btn-primary dropdown-toggle" type="button" [disabled]="loading" data-toggle="dropdown" aria-expanded="false">
+                  <i class="fa fa-share-square"></i> Actions
+                  <i class="fa fa-angle-down"></i>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li>
+                    <a (click)="PdfDownload()">
+                      <i class="fa fa-file-pdf-o" style="color:red;"></i> Download PDF
+                    </a>
+                  </li>
+                  <li>
+                    <!-- <a href="javascript:window.print();">
+            <i class="glyphicon glyphicon-print"></i>&nbsp;&nbsp;Print
+        </a> -->
+                    <a (click)="Print()">
+                      <i class="glyphicon glyphicon-print"></i>&nbsp;&nbsp;Print
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <a style="float:right;" class="btn btn-danger hidden-print" (click)="Close()" title="Cancel">X</a>
+            </div>
+            <div class="row">
+            <div class="col-md-12">
+              <!-- Tabs with icons on Card -->
+              <div class="card card-nav-tabs">
+                <div class="card-header card-header-primary">
+                  <!-- colors: "header-primary", "header-info", "header-success", "header-warning", "header-danger" -->
+                  <div class="nav-tabs-navigation">
+                    <div class="nav-tabs-wrapper">
+                      <ul class="nav nav-tabs" data-tabs="tabs">
+                        <li class="nav-item">
+                          <a class="nav-link active" href="#problem" data-toggle="tab">
+                            <i class="fa fa-file"></i>
+                            Active Problems
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#vitals" data-toggle="tab">
+                            <i class="fa fa-angle-left"></i>
+                            Last Vitals
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#imaging" data-toggle="tab">
+                            <i class="fa fa-image"></i>
+                            Imaging
+                          </a>
+
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#allergy" data-toggle="tab">
+                            <i class="fa fa-bug"></i>
+                            Allergies
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#medication" data-toggle="tab">
+                            <i class="fa fa-angle-medkit"></i>
+                            Medications
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#labs" data-toggle="tab">
+                            <i class="fa fa-hospital"></i>
+                            Labs
+                          </a>
+
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div><div class="card-body ">
+                  <div class="tab-content text-center">
+                    <div class="tab-pane active" id="problem">
+                      <p class="no-data-div"  *ngIf="currentPatient.Problems[0] == undefined">no records found for active problems</p>
+                      <table class="table table-responsive doc-tbl">
+                       
+                        <tr *ngIf="currentPatient.Problems[0] != undefined">
+                          <th>Problem</th>
+                          <th>Onset Date</th>
+
+                        </tr>
+                        <tr *ngFor="let res of currentPatient.Problems">
+                          <td><b>{{res.ICD10Description}}</b></td>
+                          <td><b>{{res.OnSetDate | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+
+                        </tr>
+                      </table>
+                    </div>
+                    <div class="tab-pane" id="vitals">
+                      <p class="no-data-div" *ngIf="currentPatient.Vitals[0] == undefined">no records found for vitals</p>
+                      <table class="table table-striped table-hover">
+                        
+                        <tbody *ngIf="currentPatient.Vitals[0] != undefined">
+                          <tr>
+                            <td><b>Recorded On</b></td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.CreatedOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Temperature</td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.Temperature | HasValue: vital.TemperatureUnit}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Pulse</td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.Pulse | HasValue:'/min'}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Blood Pressure</td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.BPSystolic | HasValue:'/'}}{{vital.BPDiastolic}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Respiratory Rate</td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.RespiratoryRatePerMin | HasValue:'/min'}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>SpO2</td>
+                            <td *ngFor="let vital of currentPatient.Vitals;">
+                              {{vital.SpO2 | HasValue:'/'}}{{vital.FiO2}}
+                            </td>
+                          </tr>
+                        </tbody>
+
+                      </table>
+                    </div>
+                    <div class="tab-pane" id="imaging">
+                      <p class="no-data-div" *ngIf="currentPatient.ImagingItemRequisitions[0] == undefined">no records found for imaging</p>
+                      <table class="table table-striped table-hover">
+                        
+                        <tr *ngIf="currentPatient.ImagingItemRequisitions[0] != undefined">
+                          <th>Type</th>
+                          <th>Item</th>
+                          <th>Date</th>
+                          <th>Status</th>
+                        </tr>
+                        <tr *ngFor="let req of currentPatient.ImagingItemRequisitions">
+                          <td><b>{{req.ImagingTypeName}}</b></td>
+                          <td>{{req.ImagingItemName}}</td>
+                          <td>{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                          <td>
+                            <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="req.OrderStatus=='final'" (click)="ViewImagingReport(req.ImagingRequisitionId)">View</a>
+                            <span *ngIf="req.OrderStatus!='final'">{{req.OrderStatus}}</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    <div class="tab-pane" id="allergy">
+                      <p class="no-data-div"  *ngIf="currentPatient.Allergies[0] == undefined">no records found for allergy</p>
+                      <table class="table table-striped table-hover">
+                        
+                        <tbody *ngIf="currentPatient.Allergies[0] != undefined">
+                          <tr>
+                            <td style="font-weight:bold;text-decoration:underline;">Medication</td>
+                          </tr>
+                          <tr *ngFor="let alrg of currentPatient.MedAllergy" class="table-bordered">
+                            <td>* {{alrg.AllergenAdvRecName}}-</td>
+                            <td>{{alrg.Reaction}}</td>
+                          </tr>
+                          <tr *ngFor="let alrg of currentPatient.AdvReaction" class="table-bordered">
+                            <td>* {{alrg.AllergenAdvRecName}}-</td>
+                            <td>{{alrg.Reaction}}</td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight:bold;text-decoration:underline;">Non-medication</td>
+                          </tr>
+                          <tr *ngFor="let alrg of currentPatient.OtherAllergy" class="table-bordered">
+                            <td>* {{alrg.Others}}-</td>
+                            <td>{{alrg.Reaction}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="tab-pane" id="medication">
+                      <p class="no-data-div" *ngIf="currentPatient.MedicationPrescriptions[0] == undefined">no records found for medication</p>
+                      <table class="table table-striped table-hover">
+                       
+                        <tr *ngFor="let med of currentPatient.MedicationPrescriptions">
+                          <td><b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day</td>
+                          <td>&nbsp;&nbsp;&nbsp;&nbsp;Start Date- <b> {{med.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+                        </tr>
+                      </table>
+                    </div>
+                    <div class="tab-pane" id="labs">
+                      <p class="no-data-div" *ngIf="currentPatient.LabRequisitions[0] == undefined">no records found for labs</p>
+                      <table class="table table-striped table-hover">
+                        
+                        <tr *ngIf="currentPatient.LabRequisitions[0] != undefined">
+                          <th style="width: 60%;">Test</th>
+                          <th style="width: 25%;">Date</th>
+                          <th style="width: 15%;">Result</th>
+                        </tr>
+                        <tbody>
+                          <tr *ngFor="let res of currentPatient.LabRequisitions ">
+                            <td>{{res.LabTestName}}</td>
+                            <td>{{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                            <td>
+                              <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="res.OrderStatus=='final'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                              <span *ngIf="res.OrderStatus!='final'">{{res.OrderStatus}}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End Tabs with icons on Card -->
+
+            </div>
+
+ </div>           
+          </div>
+
+
+
+
+          
+
+
+
+
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+</div>

@@ -1,0 +1,32 @@
+<div class="row" *ngIf="ShowOtherCurrencyCalculation && Currencies && Currencies.length > 0">
+  <div class="col"
+       style="display: flex; flex-direction: row; justify-content: space-evenly; align-items: center;">
+    <div class="col">
+      <label for="">Currency</label>
+      <select name="" id="id_select_otherCurrency_dropDown" (change)="CurrencyChangedEvent($event)" style="width: 90px;">
+        <option value="">--select Currency--</option>
+        <option *ngFor="let cur of Currencies" value="{{cur.CurrencyCode}}">{{cur.CurrencyCode}}</option>
+      </select>
+    </div>
+    <div class="col">
+      <label for="">Exch. Rate</label>
+      <input type="number" name="exchangeRate" id="id_exchangeRate" placeholder="Exchange Rate"
+             [(ngModel)]="ExchangeRate"
+             (focusout)="ConvertTotalAmountByCurrency()"
+             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+             [ngClass]="{'border-red': InvalidNumber}"
+             onClick="this.select();" style="width: 90px;">
+
+    </div>
+    <div class="col" style="width: 160px;text-align: center;">
+      <label style="width: 200px;">Amount</label>
+      <span> <strong>{{ConvertedAmount}}</strong></span>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="ShowOtherCurrencyCalculation && Currencies && Currencies.length > 0" style="margin: 10px 0 10px 0;">
+  <span class="text-capitalize" style="font-weight: bold; border: none;color: #0773bc;">
+    (In Words({{selectedCurrency.CurrencyCode}}) :
+    <b>{{ConvertedAmount | NumberInWords}}</b>Only.)
+  </span>
+</div>

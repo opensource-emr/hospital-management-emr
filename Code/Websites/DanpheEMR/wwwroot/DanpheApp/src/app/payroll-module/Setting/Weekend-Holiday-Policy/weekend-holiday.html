@@ -1,0 +1,79 @@
+
+<div class="col-md-12">
+  <div class="col-md-4" style="padding-top: 5px;text-align:right">
+    <label class="control-label">
+      Select Year
+      <b style="float:right;">:</b>
+    </label>&nbsp;
+    <select [(ngModel)]="selectedYear" (ngModelChange)="OnYearChange()"  style="width: 150px; height: 30px;">
+      <option *ngFor="let yy of years" value="{{yy}}">
+        {{yy}}
+      </option>
+    </select>
+  </div>
+  <div class="col-md-5" style="padding-left: 250px;">
+    <button class="btn btn-primary" (click)="Edit()" *ngIf="update">
+      Configure Weekend Policy
+    </button> &nbsp;
+    <button class="btn btn-primary" (click)="UpdatePolicy()" *ngIf="IsCheckPolicy">
+      Update
+    </button> &nbsp;
+    <button class="btn btn-primary" (click)="Back()" *ngIf="IsCheckPolicy">
+      Back
+    </button>
+  </div><br>
+
+</div>
+<div class="col-md-12" style="padding-top: 20px;" *ngIf="IsCheckPolicy">
+    <div class="col-md-1"></div>
+  <div class="col-lg-8 col-sm-12">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-condensed" border="1" id="exportTable" style="background-color:initial;margin-top:10px">
+        <tr style="background-color: #599be0; color: white;">
+          <th style="width: 200px;"> Day</th>
+          <th style="width: 200px;">Every</th>
+          <th style="width: 200px;">Week 1</th>
+          <th style="width: 200px;">Week 2</th>
+          <th style="width: 200px;">Week 3</th>
+          <th style="width: 200px;">Week 4</th>
+        </tr>
+        <tr *ngFor="let days of WeekDays, let i = index">
+          <td>{{days.Day}}</td>
+          <td>
+            <input id="Every" class="zoomcheckbox" type="checkbox" value="Every" [(ngModel)]="days.every" ng-checked="days.every=true" (change)="ToggleItemSelection(i)" />
+          </td>
+          <td>
+            <input id="first" class="zoomcheckbox" type="checkbox" value="first" [(ngModel)]="days.first" ng-checked="days.first=true" (change)="ToggleSelectDay(i)" />
+          </td>
+          <td>
+            <input id="second" class="zoomcheckbox" type="checkbox" value="second" [(ngModel)]="days.second" ng-checked="days.second" (change)="ToggleSelectDay(i)" />
+          </td>
+          <td>
+            <input id="third" class="zoomcheckbox" type="checkbox" value="third" [(ngModel)]="days.third" ng-checked="days.third" (change)="ToggleSelectDay(i)" />
+          </td>
+          <td>
+            <input id="fourth" class="zoomcheckbox" type="checkbox" value="fourth" [(ngModel)]="days.fourth" ng-checked="days.fourth" (change)="ToggleSelectDay(i)" />
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12" style="padding-left: 100px;padding-top: 20px;" *ngIf="ShowPolicy">
+  <div class="col-lg-10 col-sm-12">
+    <div class="table-responsive">
+            <div class="col-md-10" style="text-align: center;padding-bottom: 10px;"> <span style="padding-top: 20px;font-size: larger;"><b>Weekend Holiday Policy for year {{selectedYear}}</b> </span></div>
+      <table class="table table-bordered table-hover table-condensed" border="1" id="exportTable" style="background-color:initial;margin-top:10px;padding-top: 10px;">
+ <tr style="background-color: #599be0; color: white;text-align: center">
+          <th style="width: 200px;text-align: center;"> Day</th>
+          <th style="width: 200px;padding-left: 20px;">Description</th>
+        </tr>
+        <tr *ngFor="let policy of weekendHolidays">
+          <td style="text-align: center;"><b>{{policy.DayName}}</b></td>
+          <td style="padding-left: 20px;"> {{policy.Description}}  </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

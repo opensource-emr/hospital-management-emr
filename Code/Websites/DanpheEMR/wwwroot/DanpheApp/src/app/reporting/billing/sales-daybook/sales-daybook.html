@@ -1,0 +1,197 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="currentsalesdaybook.SalesDaybookValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Sales Daybook Report</span> </div>
+          <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentsalesdaybook.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentsalesdaybook.IsDirty('fromDate')" [hidden]="currentsalesdaybook.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentsalesdaybook.IsDirty('fromDate')" [hidden]="currentsalesdaybook.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentsalesdaybook.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentsalesdaybook.IsDirty('toDate')" [hidden]="currentsalesdaybook.IsValidCheck('toDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentsalesdaybook.IsDirty('toDate')" [hidden]="currentsalesdaybook.IsValidCheck('toDate','wrongDate')"> Enter Valid Date</span>
+              </div>
+            </div>
+          </div>-->
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="SalesDaybookData.length>0">
+      <danphe-grid [grid-colDefaults]="SalesDaybookColumns"
+                   [grid-data]="SalesDaybookData"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" 
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                   [report-for]="'billing'"
+                   [grid-footer-content]="footerContent"
+                   [grid-date-range]="dateRange"
+                   > </danphe-grid>
+    </div>
+  </div>
+  <br />
+  <br />
+  <!-- <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="SalesDaybookData.length>0">
+      <div class="col-md-12 col-xs-12">
+        <div class="table-responsive" style="width:100%;" id="dailySalesSummary">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Calulation Summary</span> </div>
+          <table class="table table-striped table-hover table-responsive">
+            <tr style="width:100px;">
+              <th> Sales:</th>
+              <td>{{tot_Sales}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> Discount Amount:</th>
+              <td>{{tot_DiscountAmount}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> Return Amount:</th>
+              <td>{{tot_ReturnAmount}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> Gross sales:</th>
+              <td>{{tot_GrossSales}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+              <th>{{coreService.taxLabel}}:</th>
+              <td>{{tot_Tax}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> CreditSales Total:</th>
+              <td>{{tot_CreditSalesTotal}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> CreditCancel:</th>
+              <td>{{tot_CreditCancel}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> NetSales Amount:</th>
+              <td>{{tot_NetSales}}</td>
+            </tr>
+            <tr>
+              <th> AdvanceReceived:</th>
+              <td>{{tot_AdvanceReceived}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th> AdvanceSettlement:</th>
+              <td>{{tot_AdvanceSettlement}}</td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <th>CashCollection:</th>
+              <td>{{tot_CashCollection}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>-->
+  <div class="col-md-5" style="margin-top:10px;margin-bottom: 10px;">
+    <div *ngIf="SalesDaybookData.length>0">
+      <h4 style="font-weight:bold">Net Cash Collection &nbsp;&nbsp; 
+        <span class="blinkAmount">
+          ({{tot_NetCashCollection | ParseAmount }})
+        </span>
+      </h4>
+      <table border="1" style="width: 80%;">
+        <tr>
+          <td>A</td>
+          <td>Cash Sales </td>
+          <td>{{tot_CashSales | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td>Credit Sales </td>
+          <td>{{tot_CreditSales | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">C</td>
+          <td>Gross Sale (A+B) </td>
+          <td>{{tot_GrossSales | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td>Cash Discount </td>
+          <td>{{tot_CashDiscount | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>E</td>
+          <td>Credit Discount</td>
+          <td>{{tot_CreditDiscount | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">F</td>
+          <td>Total Discount (D+E)</td>
+          <td>{{tot_TotalDiscount | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>G</td>
+          <td>Return Cash Sales </td>
+          <td>{{tot_ReturnCashSales | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>H</td>
+          <td>Return Credit Sales </td>
+          <td>{{tot_ReturnCreditSales | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">I</td>
+          <td>Total Sales Return (G+H) </td>
+          <td>{{tot_TotalSalesReturn | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>J</td>
+          <td>Return Cash Discount</td>
+          <td>{{tot_ReturnCashDiscount | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>K</td>
+          <td>Return Credit Discount </td>
+          <td>{{tot_ReturnCreditDiscount | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">L</td>
+          <td>Total Return Discount (J+K) </td>
+          <td>{{tot_TotalReturnDiscount | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">M</td>
+          <td>Net Sales</td>
+          <td>{{tot_NetSales | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>N</td>
+          <td>Deposit Received</td>
+          <td>{{tot_DepositReceived | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>O</td>
+          <td>Deposit Deducted</td>
+          <td>{{tot_DepositDeducted | ParseAmount }}</td>
+        </tr>
+        <tr>
+          <td>P</td>
+          <td>Deposit Refund</td>
+          <td>{{tot_DepositRefund | ParseAmount }}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">Q</td>
+          <td>Net Cash Collection </td>
+          <td>{{tot_NetCashCollection | ParseAmount }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

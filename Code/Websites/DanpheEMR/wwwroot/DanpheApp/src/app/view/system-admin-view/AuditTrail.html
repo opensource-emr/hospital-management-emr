@@ -1,0 +1,104 @@
+
+
+<div class="row">
+
+    <form [formGroup]="CurrentAudit.AuditTrailValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="caption custom-caption">
+                    <i class="glyphicon glyphicon-asterisk"></i>
+                    <span class="caption-subject" style="text-transform: uppercase;">Audit Trail Details</span>
+                </div>
+                <div class="col-md-6 col-xs-12" style="margin-bottom:5px">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" style="padding:0px;">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-9">
+
+                            <danphe-date-picker [(ngModel)]="CurrentAudit.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="FromDate">
+                            </danphe-date-picker>
+
+
+                            <span class="color-red font-sm" *ngIf="CurrentAudit.IsDirty('FromDate')" [hidden]="CurrentAudit.IsValid('FromDate','required')"> From Date is required</span><br />
+                            <span class="color-red font-sm" *ngIf="CurrentAudit.IsDirty('FromDate')" [hidden]="CurrentAudit.IsValid('FromDate','wrongDate')"> Enter Valid Date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xs-12" style="margin-bottom:5px">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" style="padding:0px;">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-9">
+
+                            <danphe-date-picker [(ngModel)]="CurrentAudit.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="ToDate" >
+                            </danphe-date-picker>
+                            <span class="color-red font-sm" *ngIf="CurrentAudit.IsDirty('ToDate')" [hidden]="CurrentAudit.IsValid('ToDate','required')"> To Date is required</span><br />
+                            <span class="color-red font-sm" *ngIf="CurrentAudit.IsDirty('ToDate')" [hidden]="CurrentAudit.IsValid('ToDate','wrongDate')"> Can't select future date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" style="padding:5px">
+                    <div class="col-md-4 col-xs-12">
+                        <label style="display:inline-block;">UserName:</label>
+                        <div class=" autocomplete-item" style="display:inline-block;">
+
+                            <input danphe-auto-complete class="form-control "
+                                   [(ngModel)]="auditUserName"
+                                   [source]="userNameList"
+                                   [list-formatter]="userNameFormatter"
+                                   placeholder="--select UserName--"
+                                   display-property-name="UserName"
+                                   value-property-name=null
+                                   min-chars="0"
+                                   max-num-list="100"
+                                   onClick="this.select();"
+                                   match-formatted="true"
+                                   [grid-sort]="'UserName'"
+                                   [ngModelOptions]="{standalone: true}"
+                                    (valueChanged)="onChangeUserName($event)"
+                                   style="width:250px "/>
+                        </div>
+                    </div>
+                  
+                    <div class="col-md-4 col-xs-12">
+                        <label style="display:inline-block;">TableName:</label>
+                        <div class=" autocomplete-item" style="display:inline-block;">
+
+                            <input danphe-auto-complete class="form-control "
+                                   [(ngModel)]="auditTableName"
+                                   [source]="tableNameList"
+                                   [list-formatter]="tableNameFormatter"
+                                   placeholder="--select TableName--"
+                                   display-property-name="Table_Name"
+                                   value-property-name=null
+                                   min-chars="0"
+                                   max-num-list="200"
+                                   onClick="this.select();"
+                                   match-formatted="true"
+                                   [grid-sort]="'Table_Name'"
+                                   (valueChanged)="onChangeTableName($event)"
+                                   [ngModelOptions]="{standalone: true}"
+                                   style="width:250px "  />
+                        </div>
+                    </div>
+                  
+                    <div class="col-md-4 col-xs-12">
+                        <div class="form-group pull-right">
+                            <button class="btn blue" type="button" (click)="ShowAuditTrailDetails()" [disabled]="!(CurrentAudit.IsValid())">
+                                <i class="fa fa-search"></i>
+                                Show Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        <danphe-grid [grid-colDefaults]="auditTrailGridColumns" [grid-data]="auditTrailData"
+                     [grid-exportOptions]="gridExportOptions"
+                     [grid-showExport]="true">
+        </danphe-grid>
+
+    </div>
+</div>

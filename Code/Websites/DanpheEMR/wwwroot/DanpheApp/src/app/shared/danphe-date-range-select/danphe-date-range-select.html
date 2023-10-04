@@ -1,0 +1,68 @@
+﻿<style>
+    .icon-favourite {
+        color: blue;
+        zoom: 1.2;
+        cursor: pointer;
+    }
+
+    .icon-favourite:hover {
+        color: green;
+        zoom: 1.5;
+    }
+</style>
+
+<div class="row" style="background-color: #d6d6d6;padding: 3px;">
+    <div class="col-md-4 col-xs-12">
+        <div style="display: inline-block;">
+            <select class="form-control" [(ngModel)]="rangeType" (change)="RangeTypeOnChange()" style="width:auto;">
+                <option *ngIf="dateRangeOptions.week1" value="last1Week">Last 1 Week</option>
+                <option *ngIf="dateRangeOptions.month1" value="None">Last 1 Month</option>
+                <option *ngIf="dateRangeOptions.month3" value="last3Months">Last 3 Months</option>
+                <option *ngIf="dateRangeOptions.month6" value="last6Months">Last 6 Month</option>
+                <option value="custom">Custom Date</option>
+            </select>
+        </div>
+
+        <div style="display: inline-block;">
+            <i *ngIf="isFavourite" class="fa fa-star icon-favourite" (click)="RemoveFavourite()"
+                title="Remove from Favourite"></i>
+            <i *ngIf="!isFavourite" class="fa fa-star-o icon-favourite" (click)="AddToFavourite()"
+                title="Add to Favourite"></i>
+        </div>
+    </div>
+    <div *ngIf="showLabel" class="col-md-8 col-xs-12" style="padding-top: 5px !important;">
+        <label class="control-label col-md-6">
+            <b>From : <date-lbl [value]="fromDate"> </date-lbl></b>
+            
+        </label>
+        <label class="control-label col-md-6">
+            <b>To : <date-lbl [value]="toDate"> </date-lbl></b>
+        </label>
+    </div>
+</div>
+
+<div class="row" *ngIf="showSelector">
+    <div class="col-md-10">
+        <from-to-date-select (on-change)="OnFromToChange($event)" [enable-favourite]="false" [from-date]="fromDate" [to-date]="toDate">
+        </from-to-date-select>
+       
+    
+
+    </div>
+    <div class="col-md-2 no-padding no-margin">
+        <input style="font-weight:bold;float: right;margin-top: 6px;" type="button" class="blue btn" value="Load"
+            (click)="ChangeCustomDate()" />
+    </div>
+    <!-- <div class="col-md-5">
+        <label>From<b>:</b></label>
+        <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+        </danphe-date-picker>
+    </div>
+    <div class="col-md-5">
+        <label>To<b>:</b></label>
+        <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+        </danphe-date-picker>
+    </div> -->
+
+
+</div>

@@ -1,0 +1,241 @@
+<style>
+    .mapped span {
+        border: 1px solid green !important;
+    }
+
+    .mapped>span:after {
+        border: solid green !important;
+        border-width: 0 2px 2px 0 !important;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .mapped-outline>input:checked~span,
+    .mapped>span:hover {
+        border: 1px solid green !important;
+    }
+
+    .not-mapped span {
+        border: 1px solid red !important;
+    }
+
+    .not-mapped>span:after {
+        border: solid red !important;
+        border-width: 0 2px 2px 0 !important;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .not-mapped-outline>input:checked~span,
+    .not-mapped>span:hover {
+        border: 1px solid red !important;
+    }
+
+    .padLess_table th,
+    .padLess_table td {
+        padding: 1px 5px !important;
+    }
+
+    /*  */
+</style>
+
+<div class="col-md-12">
+    <!-- style="padding-top: 5px;" -->
+    <form [formGroup]="CurrentLedger.LedgerValidator" class="hm-form">
+        <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+            <label class="control-label no-padding col-md-4">Primary Group<sup>*</sup><b>:</b></label>
+            <div class="col-md-6">
+                <select class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentLedger.PrimaryGroup" id="PrimaryGroup"
+                        (change)="PrimaryGroupChanged()" placeholder="PrimaryGroup" formControlName="PrimaryGroup">
+                    <option *ngFor="let pg of primaryGroupList" [disabled]="true" value={{pg.PrimaryGroupName}}>
+                        {{pg.PrimaryGroupName}}</option>
+                </select>
+                <span class="color-red font-sm"
+                      [hidden]="CurrentLedger.IsValidCheck('PrimaryGroup','required') || !(CurrentLedger.IsDirty('PrimaryGroup'))">primary
+                    group is required</span> <span class="color-red font-sm" *ngIf="CurrentLedger.IsDirty('PrimaryGroup')"
+                      [hidden]="CurrentLedger.IsValidCheck('PrimaryGroup','maxlength')"> Length is not proper</span>
+            </div>
+        </div>
+        <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+            <label class="control-label no-padding  col-md-4">Chart of Accounts <sup>*</sup><b>:</b></label>
+            <div class="col-md-7">
+
+                <select class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentLedger.COA" id="COA" (change)="COAChanged()"
+                        placeholder="LedgerGroupName" formControlName="COA">
+                    <option *ngFor="let pg of coaList" [disabled]="true" value={{pg.ChartOfAccountName}}>{{pg.ChartOfAccountName}}
+                    </option>
+                </select>
+
+                <span class="color-red font-sm" [hidden]="CurrentLedger.IsValidCheck('COA','required') || !(CurrentLedger.IsDirty('COA'))">COA
+                    is
+                    required</span> <span class="color-red font-sm" *ngIf="CurrentLedger.IsDirty('COA')"
+                      [hidden]="CurrentLedger.IsValidCheck('COA','maxlength')"> Length is not proper</span>
+            </div>
+        </div>
+        <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+            <label class="control-label no-padding col-md-4">Ledger Group <sup>*</sup><b>:</b> </label>
+
+            <div class="col-md-8">
+                <input danphe-auto-complete class="col-md-11" [(ngModel)]="CurrentLedger.LedgerGroupName" [source]="ledgergroupList"
+                       placeholder="Ledger GroupName" display-property-name="LedgerGroupName" value-property-name="LedgerGroupName"
+                       (valueChanged)="AssignSelectedLedgerGroup()"
+                       [list-formatter]="LedgerGroupListFormatter" max-num-list="10" onclick="this.select()" disabled
+                       style="width:250px; background-color: azure;height:35px;" formControlName="LedgerGroupName" />
+                <span class="color-red font-sm"
+                      [hidden]="CurrentLedger.IsValidCheck('LedgerGroupName','required') || !(CurrentLedger.IsDirty('LedgerGroupName'))">Leadger
+                    Group Name is required</span><br />
+                <span class="color-red" *ngIf="CurrentLedger.checkSelectedLedger==true">Please select Proper
+                    Ledger
+                    group</span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- START: Billing Items Ledger -->
+<div class="col-md-12">
+    <div class="icheck-inline" style="padding-top: 5px;">
+        <div class="col-md-3">
+            <input type="text" class="search-textbox" [(ngModel)]="ledgerSearchKey" placeholder="type here to search Billings Ledger"
+                   (ngModelChange)="filterSelectedLedger(ledgerSearchKey)" onclick="this.select()" />
+        </div>
+        <div class="col-md-2">
+            <label class="mt-checkbox mt-checkbox-outline">
+                <input name="showBillingsLedger" type="radio" checked="checked" (change)="ToggleBillingLedger('all')">
+                <span> </span> <b> All &nbsp; ({{totalLedger}}) </b> </label>
+        </div>
+        <div class="col-md-5">
+            <label class="mt-checkbox mt-checkbox-outline mapped mapped-outline" style="color: green;">
+                <input name="showBillingsLedger" type="radio" (change)="ToggleBillingLedger('true')">
+                <span> </span> <b>Ledger with A/c Head &nbsp; ({{mappedLedger}}) </b> </label>
+            <label class="mt-checkbox mt-checkbox-outline not-mapped not-mapped-outline" style="color: red; margin-left: 0px !important;">
+                <input name="showBillingsLedger" type="radio" (change)="ToggleBillingLedger('false')">
+                <span> </span> <b>Ledger without A/c Head ({{notmappedLedger}})</b> </label>
+        </div>
+        <div class="col-md-2">
+            <label> <span> </span> <b style="color: #7cb3ea;">Selected Ledgers : {{selectedLedgerCount}} </b> </label>
+        </div>
+    </div>
+
+    <div class="col-md-12 " style="margin-bottom: 15px;">
+        <div class="table-responsive tbl-trns-itm-holder table-wrapper" style="height: 400px;">
+            <table class="table table-striped table-hover custom_table padLess_table" style="width: 150vw !important; ">
+                <!-- <cdk-virtual-scroll-viewport   style="height: 400px;" [itemSize]="10" > -->
+                <thead style="text-align: center;">
+                    <tr>
+                        <th> <label class="mt-checkbox mt-checkbox-outline" style="margin: 10px !important;">
+                                <input id="isActive" type="checkbox" [(ngModel)]="isSelectAll" [ngModelOptions]="{standalone: true}"
+                                       (ngModelChange)="SelectAllChkOnChange()" />
+                                <span></span> </label>
+                        </th>
+                        <th style="width: 10%;"> Service Department Name</th>
+                        <th style="width: 10%;"> Item Name</th>
+                        <th> Code </th>
+                        <th style="width: 20%;"> Main Ledger </th>
+                        <th *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger" style="width: 20%;"> Sub-Ledger</th>
+                        <th style="width: 15%;"> Description </th>
+                        <th style="width: 10%;"> Opening Balance </th>
+                        <th style="width: 10%;"> Opening Balance Type </th>
+                        <th> Active </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let led of billingsledgers;  let i = index">
+                        <td style="text-align: center;">
+                            <label [ngClass]="{'mapped': led.IsMapped==true, 'mapped-outline': led.IsMapped==true, 'not-mapped': led.IsMapped==false, 'not-mapped-outline': led.IsMapped==false}"
+                                   class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" type="checkbox" [(ngModel)]="led.IsSelected" [ngModelOptions]="{standalone: true}"
+                                       (ngModelChange)="SingleCkboxChange(i)" />
+                                <span></span>
+                            </label>
+                        </td>
+                        <td><label class="mt-checkbox mt-checkbox-outline checkbox-nolabel">
+                                {{led.ServiceDepartmentName }}</label></td>
+                        <td><label class="mt-checkbox mt-checkbox-outline checkbox-nolabel"> {{led.ItemName }}</label></td>
+                        <td><label class="mt-checkbox mt-checkbox-outline checkbox-nolabel"> {{led.Code }}</label></td>
+                        <td>
+                            <form [formGroup]="led.LedgerValidator">
+                                <input danphe-auto-complete class="form-control" [(ngModel)]="led.LedgerName" [source]="ledgerListAutoComplete"
+                                       placeholder="Ledger Name" display-property-name="LedgerName" value-property-name=null
+                                       [grid-sort]="'LedgerName'" formControlName="LedgerName"
+                                       (focusout)="AssignSelectedBillingLedger(i)"
+                                       [list-formatter]="LedgerListFormatter" max-num-list="15" onclick="this.select()" id="Ledger_{{i+1}}"
+                                       match-formatted="true" style="width: 100%;" [ngStyle]="{'color':led.IsMapped==true ? 'green' : 'green' }"
+                                       [disabled]="!led.IsSelected" />
+                                <div class="color-red font-sm" *ngIf="led.IsDirty('LedgerName')"
+                                     [hidden]="led.IsValidCheck('LedgerName','required')"> Please select Ledger.</div>
+                            </form>
+
+                        </td>
+                        <td *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger">
+                            <input danphe-auto-complete class="form-control"
+                                   [(ngModel)]="selectedSubLedger[i]"
+                                   [source]="subLedgerListForBillingItems"
+                                   placeholder="SubLedger Name" display-property-name="SubLedgerName" value-property-name=null
+                                   [grid-sort]="'SubLedgerName'"
+                                   (focusout)="AssignSelectedSubLedger(i)"
+                                   [list-formatter]="SubLedgerListFormatter" max-num-list="15" onclick="this.select()" id="Ledger_{{i+1}}"
+                                   match-formatted="true" style="width: 100%;"
+                                   [disabled]="!led.IsSelected" />
+                        </td>
+                        <td>
+                            <input [(ngModel)]="led.Description" [ngModelOptions]="{standalone: true}" class="form-control" name="Description"
+                                   [disabled]="!led.IsSelected" type="text" maxlength="200">
+                        </td>
+                        <td>
+                            <input [(ngModel)]="led.OpeningBalance" [ngModelOptions]="{standalone: true}" class="form-control" name="OpeningBalance"
+                                   [disabled]="!led.IsSelected" type="number" maxlength="20">
+                        </td>
+                        <td>
+                            <form [formGroup]="led.LedgerValidator">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input id="Dr" name="Dr" type="checkbox" (click)="ChangeOpeningBalType($event, i)"
+                                           [(ngModel)]="led.Dr" [ngModelOptions]="{standalone: true}" [disabled]="!led.IsSelected" />
+                                    <span></span>Dr</label>
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input id="Cr" name="Cr" type="checkbox" (click)="ChangeOpeningBalType($event, i)"
+                                           [(ngModel)]="led.Cr" [ngModelOptions]="{standalone: true}" [disabled]="!led.IsSelected" />
+                                    <span></span>Cr </label>
+                            </form>
+                        </td>
+                        <td><label class="mt-checkbox mt-checkbox-outline">
+                                <input id="IsActive" name="IsActive" type="checkbox" (click)="ChangeOpeningBalType($event, i)"
+                                       [(ngModel)]="led.IsActive" [ngModelOptions]="{standalone: true}" [disabled]="!led.IsSelected" />
+                                <span></span>Active </label></td>
+                        <!-- <td><input [(ngModel)]="led.TDSPercent" [ngModelOptions]="{standalone: true}" class="form-control"
+                name="TDSPercent" [disabled]="!led.IsSelected" type="number" max="20">
+            </td>
+            <td><input [(ngModel)]="led.PANNo" [ngModelOptions]="{standalone: true}" class="form-control" name="PANNo"
+                [disabled]="!led.IsSelected" type="text" maxlength="20"></td>
+            <td><input [(ngModel)]="led.Address" [ngModelOptions]="{standalone: true}" class="form-control"
+                name="Address" [disabled]="!led.IsSelected" type="text" maxlength="200"></td>
+            <td><input [(ngModel)]="led.MobileNo" [ngModelOptions]="{standalone: true}" class="form-control"
+                name="MobileNo" [disabled]="!led.IsSelected" type="number" max="20"></td>
+            <td><input [(ngModel)]="led.LandlineNo" [ngModelOptions]="{standalone: true}" class="form-control"
+                name="LandlineNo" [disabled]="!led.IsSelected" type="number" max="20">
+            </td> -->
+                    </tr>
+                </tbody>
+                <!-- </cdk-virtual-scroll-viewport>   -->
+            </table>
+        </div>
+
+    </div>
+</div>
+<!-- END: Billing Items Ledger -->
+
+<div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+<div class="col-md-12" style="padding-bottom: 10px;">
+    <button type="button" class="btn primary-btn" style="float:right; margin-right: 20px !important;" (click)="AddLedger();" [disabled]="loading">
+        <i class="fa fa-save"></i>
+        Save Ledgers
+    </button>
+</div>

@@ -1,0 +1,106 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="full-width-flx">
+            <form class="form-horizontal hm-form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="page-bar bill-p-info mt10">
+                                <div>
+                                    <span>
+                    <i class="fa fa-user"></i>&nbsp;Name : <b>{{patientDetail.ShortName}}</b>
+                  </span>
+                                    <span>
+                    <i class="fa fa-h-sign"></i>&nbsp;Hospital # : <b> {{patientDetail.PatientCode}}</b>
+                  </span>
+                                    <span>
+                    <i class="fa fa-male"></i>&nbsp;Age/Sex : {{patientDetail.Age}}/ {{patientDetail.Gender}}
+                  </span>
+                                    <span>
+                    <i class="fa fa-h-sign"></i>&nbsp;Date of Birth : {{patientDetail.DateOfBirth |
+                    DanpheDateTime:'format':'YYYY-MM-DD'}}
+                  </span>
+                                </div>
+                                <div>
+                                    <span>
+                    <i class="fa fa-h-sign"></i>&nbsp;Address : <b>{{patientDetail.Address}}</b>
+                  </span>
+                                    <span *ngIf="patientDetail.PhoneNumber">
+                    <i class="fa fa-phone"></i>&nbsp;Contact No : <b>{{patientDetail.PhoneNumber}}</b>
+                  </span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="col-md-12 col-xs-12 col-sm-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-3">Display Name<b style="float:right;">:</b></label>
+                            <div class="col-md-6">
+                                <input class="form-control" [(ngModel)]="selectedReport.DisplayName" [ngModelOptions]="{standalone: true}" type="text" id="DisplayName" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-3">Upload Images<b class="color-red">*</b><b
+                  style="float:right;">:</b></label>
+                            <div class="col-md-6">
+                                <input class="form-control" #fileInput type="file" value="" multiple />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 col-xs-12 col-sm-12">
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <input type="button" class="btn btn-primary" (click)="SubmitFiles()" value="Submit" [disabled]="loading" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+                </div>
+            </form>
+        </div>
+        <hr />
+    </div>
+
+    <div class="col-md-12" *ngIf="!uploadedDocumentslist || !uploadedDocumentslist.length">
+        <!-- <p style="font-size: 18px; line-height: 3; text-align: center;">Files not found</p> -->
+    </div>
+
+    <div id="fileList" class="col-md-12" *ngIf="uploadedDocumentslist && uploadedDocumentslist.length > 0">
+        <div class="full-width-flx table-responsive">
+            <div class="text-center" style="line-height: 2">
+                Files of {{patientDetail.ShortName}}
+            </div>
+            <table class="table table-bordered tbl-small-text">
+                <thead>
+                    <tr class="table-header-bg">
+                        <th>S.N.</th>
+                        <th>Display Name</th>
+                        <th>File Name</th>
+                        <th>File Type</th>
+                        <th class="no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let file of uploadedDocumentslist; let i = index">
+                        <tr>
+                            <td>{{i+1}}</td>
+                            <td>{{file.DisplayName}}</td>
+                            <td>{{file.FileName}}</td>
+                            <td>{{file.FileType}}</td>
+                            <td class="no-print">
+                                <a class="grid-action no-print btn-danger" (click)="RemoveFile(file.FileId)">Remove</a>
+                                <a class="grid-action no-print" (click)="download(file.FileId)">Download</a>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

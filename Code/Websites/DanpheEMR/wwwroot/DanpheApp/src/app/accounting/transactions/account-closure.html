@@ -1,0 +1,95 @@
+<div class="row">  
+    <div class="col-md-5" style="border: 1px solid grey; margin-left: 10px; padding: 10px;">
+        <div style="background: #eeeae3; padding: 5px;">
+            <label style="color: red; font-size: large;"> <b> Fiscal year details </b></label>
+        </div>
+        <div class="row">
+            <br>
+            <div class="col-md-4">
+                <label> <b> Fiscal Year Name : </b> </label>
+            </div>
+            <div class="col-md-4">
+                <select [(ngModel)]="fiscalYearId" (ngModelChange)="onFiscalYearChange()">
+                    <option *ngFor="let fs of FiscalYearList" value="{{fs.FiscalYearId}}"> {{ fs.FiscalYearName}}</option>
+                </select>
+            </div>
+           
+        </div>
+        <div class="row">
+            <br>
+            <div class="col-md-4">
+                <label><b> Starting Date : </b> </label>
+            </div>
+            <div class="col-md-4">
+                <b> AD </b> {{activeFiscalYear.StartDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+            </div>
+            <div class="col-md-4">
+                <b> BS </b> {{ activeFiscalYear.nStartDate}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <label> <b> End Date : </b></label>
+            </div>
+            <div class="col-md-4">
+                <b> AD </b> {{ activeFiscalYear.EndDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+            </div>
+            <div class="col-md-4">
+                <b> BS </b> {{ activeFiscalYear.nEndDate }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <label> <b> Account Closed Status : </b></label>
+            </div>
+            <div class="col-md-4">
+                <label *ngIf="activeFiscalYear.IsClosed == true "> Closed </label>
+                <label *ngIf="activeFiscalYear.IsClosed !== true "> Not Closed </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12" [rbac-permission]="{'name':'accounting-closure-btn','actionOnInvalid':'hidden'}">
+                <br>
+                <input type="button" class="btn btn-primary" [disabled]="disablebtn" (click)="openPopup()"
+                    value="Close Account" style="float: right;" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" style="border: 1px solid grey; margin-left: 10px; padding: 10px;">
+        <fiscal-yearlog-shared [loadDetail]="loadDetail" ></fiscal-yearlog-shared>       
+    </div>
+    
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showpopup">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-4" style="margin-left: 35%;margin-top: 15%;">
+                <div class="modelbox-div">
+                    <div style="text-align: center;">
+                        <b style="color: red;"> Are you sure to close account for fiscal year
+                            {{ activeFiscalYear.FiscalYearName }} ? </b>
+
+                    </div>
+                    <div>
+                        <br>
+                        <label> <b style="color: red;"> Note : </b> Account closing will forward ledger closing balance
+                            as opening balance for next fiscal year </label>
+                    </div>
+                    <div class="row" style="text-align: center;">
+                        <div>
+                            <br>
+                            <input type="button" [disabled]="disablebtn" class="btn btn-primary"
+                                (click)="postAccountClosure()" value="Yes" />
+                            <input type="button" class="btn btn-primary" (click)="close()" value="No" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    </div>
+</div>

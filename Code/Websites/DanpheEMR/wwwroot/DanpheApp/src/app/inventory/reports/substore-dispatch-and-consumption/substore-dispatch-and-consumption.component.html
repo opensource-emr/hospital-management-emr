@@ -1,0 +1,52 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption custom-caption no-margin"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Substore Dispatch And Consumption Report</span> </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div class="col-md-12">
+      <div style="background-color: #dde3e9;">
+        <div class="col-md-12">
+          <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="OnDateRangeChange($event)"> </fiscal-year-calendar>
+        </div>
+        <table class="table billing-table" style="background-color:initial;margin-bottom:0px;">
+          <tbody>
+            <tr>
+              <td>SubStore:</td>
+              <td style="width: 250px;">
+                <select [(ngModel)]="StoreId" class="form-control" (ngModelChange)="OnStoreChange()">
+                  <option [ngValue]="null" selected>All Store</option>
+                  <option *ngFor="let store of subStoreList" [ngValue]="store.StoreId">{{store.Name}}</option>
+                </select>
+              </td>
+              <td class="text-right">SubCategory:</td>
+              <td style="width: 250px;">
+                <select [(ngModel)]="SubCategoryId" class="form-control">
+                  <option [ngValue]="null" selected>All SubCategory</option>
+                  <option *ngFor="let SubCategory of SubCategoryList" [ngValue]="SubCategory.SubCategoryId">{{SubCategory.SubCategoryName}}</option>
+                </select>
+              </td>
+              <td class="text-right">Item:</td>
+              <td style="width: 250px;">
+                <select [(ngModel)]="ItemId" class="form-control">
+                  <option [ngValue]="null" selected>All Item</option>
+                  <option *ngFor="let item of ItemList" [ngValue]="item.ItemId">{{item.ItemName}}</option>
+                </select>
+              </td>
+              <td class="text-right">
+                <button class="btn btn-primary btn-add-new-row" (click)="GetReportData()">Show Report
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <danphe-grid [grid-colDefaults]="SubstoreDispatchAndConsumptionReportColumn" [grid-data]="DispatchAndConsumptionData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (onDateChange)="OnDateRangeChange($event)" [report-title]="'Substore Dispatch And Consumption Report'" [report-for]="'inventory'" [show-header]="true" [filter-parameters]="FilterParameters">
+        </danphe-grid>
+      </div>
+    </div>
+  </div>
+</div>

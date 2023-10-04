@@ -1,0 +1,16 @@
+<div class="row" style="margin:auto">
+    <div style="margin-left: 20px ; margin-right: 20px;">
+        <danphe-grid [grid-colDefaults]="invoiceListGridColumns" [grid-data]="referralInvoiceList"
+                     (grid-actions)="GridActions($event)" (onDateChange)="onDateChange($event)"
+                     [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [show-print-button]=" false">
+        </danphe-grid>
+    </div>
+    <div *ngIf="ShowAddPage">
+        <mktreferral-transaction-Add
+                                     [show-add-page]="ShowAddPage"
+                                     [selectedRowData]="SelectedRowData" (callback-close)="CloseAddPage($event)">
+
+        </mktreferral-transaction-Add>
+    </div>
+</div>

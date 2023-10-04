@@ -1,0 +1,114 @@
+<div class="wrapper" *ngIf="showCreditSettlementDetail">
+    <div class="popup-static portlet box portlet-fullscreen popup-fixed inv_modal">
+        <div class="portlet-body form">
+            <div class="col-md-12">
+                <div class="modelbox-div">
+                    <div class="caption lb-caption">
+                        <h3 style="text-align: center;"><span>Credit Settlement Details</span></h3>
+                        <button class="btn btn-danger" (click)="CloseSettlementDetails()">X</button>
+                    </div>
+                    <div class="modelbox-body p2">
+                        <table class="table table-responsive" style="background-color: lightblue;">
+                            <tr>
+                                <td>
+                                    Patient Name: {{ PatientInfo.PatientName}}
+                                </td>
+                                <td>
+                                    Hospital No: {{ PatientInfo.HospitalNo}}
+                                </td>
+                                <td>
+                                    Age/Sex: {{ Age }}/{{PatientInfo.Gender}}
+                                </td>
+                            </tr>
+                            <tr *ngIf = "fromDate && toDate">
+                                <td>
+                                    <!-- From Date: {{fromDate}} -->
+                                    From Date: <date-lbl *ngIf = "fromDate" [value]="fromDate" [show-time]="false"></date-lbl>
+                                </td>
+                                <td>
+                                    <!-- To Date: {{toDate}} -->
+                                    To Date: <date-lbl *ngIf = "toDate" [value]="toDate" [show-time]="false"></date-lbl>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="text-align: left;">
+                            <span style="font-size: medium;"><b>Collections From Receivable</b></span>
+                        </div>
+                        <table *ngIf = "Settlements && Settlements.length" class="table doc-tbl table-bordered" style="background-color: #e7ecf1;">
+                            <thead>
+                                <th>SN</th>
+                                <th>Settlement Receipt No</th>
+                                <th>Settlement Date</th>
+                                <th>Invoice No</th>
+                                <th>Invoice Date</th>
+                                <th>Sales Amount</th>
+                                <th>Sales Return Amount</th>
+                                <th>Receivable</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of Settlements; let j=index;">
+                                    <td>{{j+1}}</td>
+                                    <td>{{row.SettlementReceiptNo}}</td>
+                                    <td><date-lbl [value]="row.SettlementDate" [show-time]="false"></date-lbl></td>
+                                    <td>{{row.InvoiceCode}}{{row.InvoiceNo}}</td>
+                                    <td><date-lbl [value]="row.InvoiceDate" [show-time]="false"></date-lbl></td>
+                                    <td>{{row.SalesAmount}}</td>
+                                    <td>{{row.ReturnTotalAmount}}</td>
+                                    <td>{{row.Receivable}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row" *ngIf = "Settlements && Settlements.length">
+                        <div class="col-md-12">
+                            <div class="col-md-9"></div>
+                            <div class="col-md-3" style="background-color:#ADD8E6; font-size: small;">
+                                <span>Collection From Receivable: {{ TotalReceivable }}</span><br>
+                                <span>Cash Discount Given:{{ CashDiscount }}</span><br>
+                                <span>Net Receivable:{{ NetReceivable }}</span><br>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div style="text-align: left;">
+                            <span *ngIf = "ReturnedSettlements && ReturnedSettlements.length" style="font-size: medium;"><b>Cash Discounts Received</b></span>
+                        </div>
+                        <table *ngIf = "ReturnedSettlements && ReturnedSettlements.length" class="table doc-tbl table-bordered" style="background-color: #e7ecf1;">
+                            <thead>
+                                <th>SN</th>
+                                <th>Settlement Receipt No</th>
+                                <th>Settlement Date</th>
+                                <th>Credit Note No</th>
+                                <th>Return Amount</th>
+                                <th>Return Cash Discount</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of ReturnedSettlements; let i=index;">
+                                    <td>{{i+1}}</td>
+                                    <td>{{row.SettlementReceiptNo}}</td>
+                                    <td><date-lbl [value]="row.SettlementDate" [show-time]="false"></date-lbl></td>
+                                    <td>{{row.CreditNoteNumber}}</td>
+                                    <td>{{row.ReturnTotalAmount}}</td>
+                                    <td>{{row.DiscountReturnAmount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row" *ngIf = "ReturnedSettlements && ReturnedSettlements.length">
+                        <div class="col-md-12">
+                            <div class="col-md-9"></div>
+                            <div class="col-md-3" style="padding: 5PX; background-color:#ADD8E6; font-size: small;">
+                                <span >Total Return: {{ TotalReturn }}</span><br>
+                                <span>Discount Received:{{ DiscountReceived }}</span><br>
+                                <span>Net Return Amount:{{ NetReturnAmount }}</span><br>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    </div>
+                    <div class="modelbox-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

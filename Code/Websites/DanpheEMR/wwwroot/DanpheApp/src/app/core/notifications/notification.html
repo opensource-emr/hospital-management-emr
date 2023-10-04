@@ -1,0 +1,165 @@
+
+<style>
+    .notification-bg-unread {
+        /*background-color: #eaedf2 !important;*/
+        /*color: red;*/
+        font-weight: bold !important;
+        background: #d1e6ef;
+    }
+
+    @keyframes example {
+        from {
+            background-color: white;
+            color: #f18872;
+        }
+
+        to {
+            background-color: #f18872;
+            color: white;
+        }
+    }
+
+
+    /* The element to apply the animation to */
+    .blink {
+        background-color: #36c6d3;
+        animation-name: example;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+    }
+
+
+    .ddl-new {
+        min-width: 400px;
+        max-width: 400px !important;
+        width: 400px !important;
+        z-index: 9995
+    }
+
+    .notific-time {
+        background-color: #f1f1f1;
+    }
+
+    .notific-chkbx {
+        width: 20px;
+        height: 20px;
+        vertical-align: bottom;
+    }
+
+    .notific-redirect {
+    }
+
+        .notific-redirect:hover {
+            text-decoration: underline;
+        }
+</style>
+<!--<img src="../../../themes/theme-default/images/indicator1.gif"/>-->
+<ul class="nav navbar-nav pull-right">
+    <li class="dropdown dropdown-extended dropdown-notification active-notification" id="header_notification_bar" (click)="NotificationOpen()">
+        <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+            <i class="icon-bell" style="color: #fdefef;font-size: 20px;"></i>
+            <span *ngIf="unReadNotfCount>0" class="badge badge-default"  [ngClass]="{'blink': dropdownOpened==false?true : false}">{{unReadNotfCount}} </span>
+        </a>
+        <ul class="dropdown-menu ddl-new">
+            <li *ngIf="showNoteActionsPane">
+                <button class="btn blue btn-xs" (click)="MarkAsReadButtonClick()">
+                    <i class="fa fa-check-square-o" style="color:#4e4141;"></i>
+                    Mark as read
+                </button>
+                <button class="btn blue btn-xs" (click)="ArchiveMessages()">
+                    <i class="fa fa-archive" style="color:#4e4141;"></i>
+                    Archive
+                </button>
+            </li>
+
+            <li class="external" *ngIf="unReadNotfCount>0">
+                <h3>
+                    <span class="bold">{{unReadNotfCount}} pending</span> notifications
+                </h3>
+                <!--<a href="page_user_profile_1.html">view all</a>-->
+            </li>
+            <li>
+                <ul class="dropdown-menu-list scroller" style="height: 250px;overflow-y: scroll;" data-handle-color="#637283">
+                    <li *ngFor="let curtnote of currtNotification">
+                        <a [ngClass]="{'notification-bg-unread': curtnote.IsRead==false?true:false}" style="color: #131313;">
+                            <!--<input style="float:left;" group="notChkboxGrp" type="checkbox" (change)="" />-->
+
+                            <input type="checkbox" [(ngModel)]="curtnote.IsSelected" class="notific-chkbx" name="notChkboxGrp" (change)="NotificationCheckBoxChanged(curtnote)" />
+
+                            <i>
+                                <span class="time notific-time">{{curtnote.CreatedOn | DanpheDateTime:'timename'}}</span>
+                                <span class="details">
+                                    <span class="label label-sm label-icon label-success">
+                                        <i class="icon-bell"></i>
+                                    </span>
+                                    <span class="notific-redirect" (click)="NotificationOnClick(curtnote)"> <i style="font-style:italic;"> {{curtnote.Notification_Title}}</i> : {{curtnote.Notification_Details}}</span>
+                                </span>
+                            </i>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+
+
+<!--<li class="dropdown dropdown-extended dropdown-notification" id="header_notification_bar">
+    <span style="background-color:#006687;margin-left: 50px;">
+        <div class="notification-icon" *ngIf="currtNotification !=null">
+
+            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" aria-expanded="true">
+                <i class="icon-bell"></i>
+                <span *ngIf="unReadNotfCount>0" class="badge badge-default">{{unReadNotfCount}} </span>
+            </a>
+            <ul class="dropdown-menu" style="margin-left:-220px;">
+                <li>
+                    <ul class="dropdown-menu-list scroller" style="height: 250px;" data-handle-color="#637283">
+                        <li *ngFor="let curtnote of currtNotification">
+                            <a [ngClass]="{'notification-bg-unread': curtnote.IsRead==false?true:false}" (click)="UpdateNotification(curtnote)">
+                                <span class="time">{{curtnote.CreatedOn}}</span>
+                                <span class="details">
+                                    <span class="label label-sm label-icon label-success">
+                                        <i class="icon-bell"></i>
+                                    </span>{{curtnote.Notification_Details}}
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+    </span>
+
+
+</li>-->
+<!--<li class="dropdown dropdown-extended dropdown-notification" id="header_notification_bar">-->
+<!--<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+    <i class="icon-bell"></i>
+    <span class="badge badge-default"> {{unReadNotfCount}} </span>
+</a>
+<ul class="dropdown-menu">
+
+    <li>
+        <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 250px;">
+            <ul class="dropdown-menu-list scroller" style="height: 250px; overflow: hidden; width: auto;" data-handle-color="#637283" data-initialized="1">
+                <li *ngFor="let curtnote of currtNotification">
+                    <a [ngClass]="{'notification-bg-unread': curtnote.IsRead==false?true:false}" (click)="UpdateNotification(curtnote)">
+                        <span class="time">{{curtnote.CreatedOn}}</span>
+                        <span class="details">
+                            <span class="label label-sm label-icon label-success">
+                                <i class="icon-bell"></i>
+                            </span>{{curtnote.Notification_Details}}
+                        </span>
+                    </a>
+                </li>
+
+            </ul>
+            <div class="slimScrollBar" style="background: rgb(99, 114, 131); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px;"></div><div class="slimScrollRail" style="width: 7px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; background: rgb(234, 234, 234); opacity: 0.2; z-index: 90; right: 1px;">
+            </div>
+        </div>
+    </li>
+</ul>-->
+<!--</li>-->

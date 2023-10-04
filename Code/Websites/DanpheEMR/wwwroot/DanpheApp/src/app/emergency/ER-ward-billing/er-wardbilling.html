@@ -1,0 +1,166 @@
+<style>
+</style>
+<div style="width: 100%;position: relative;padding: 0px 0px 25px 0px;background: #fff;">
+
+  <div>
+
+    <div class="row">
+
+      <div class="col-md-12">
+        <div>
+          <a class="btn blue bordered btn-sm cstm-pat-registration-hdr">
+            <span style="display: inline-block; margin-left: 5px;">All Orders of {{selectedPatient.FullName}}</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <div>
+          <div class="col-md-12">
+            <ul class="nav nav-tabs">
+              <li class="active"><a data-toggle="tab" href="#allorders">Lab/Imaging Orders</a></li>
+              <li><a data-toggle="tab" href="#drugorders" (click)="showPharmacyOrder()">Pharmacy Orders</a></li>
+            </ul>
+          </div>
+
+          <div class="tab-content">
+            <div id="allorders" class="tab-pane fade in active">
+              <!--<div class="col-md-12">
+      <button *ngIf="!showAddNewItem" (click)="showAddNewItem=true;showOrderRequest=true;" class="btn btn-primary btn-sm margin-7-lft margin-15-bt"> Add New Item</button>
+      <button *ngIf="showAddNewItem" (click)="showAddNewItem=false;showOrderRequest=false;" class="btn btn-cancel btn-sm margin-7-lft margin-15-bt"> Show Item List</button>
+    </div>-->
+              <div class="col-md-12">
+                <div class="table-responsive">
+                  <table class="table table-bordered" style="color: #000;">
+                    <tbody>
+                      <tr>
+                        <td><strong>Hospital Number</strong> &nbsp;{{selectedPatient.PatientCode}}</td>
+                        <td><strong>Age/Sex</strong>&nbsp;{{selectedPatient.Age}}/{{selectedPatient.Gender}}</td>
+                        <td><strong>Visit Date/Time</strong>&nbsp;{{selectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                        <td *ngIf="selectedPatient && selectedPatient.Case"><strong>Case</strong>&nbsp;{{selectedPatient.Case}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div style="width: 100%;display: table;">
+                <div class="col-md-12">
+                  <ward-billitem-request *ngIf="showOrderRequest" [counterId]="emergencyCounterId" [billItems]="allBillItems"
+                                         [patientId]="selectedPatient.PatientId" [visitId]="selectedPatient.PatientVisitId"
+                                         [visitType]="'emergency'" [billingType]="'outpatient'" [showPriceCategory]="false"
+                                         [past-tests]="provisionalItemsDetails"
+                                         (emit-billItemReq)="OrderRequested()"></ward-billitem-request>
+                </div>
+              </div>
+              <hr />
+
+              <div style="display: block;width: 100%; height: 25px;"></div>
+
+              <div class="col-md-12">
+
+
+                <div *ngIf="provisionalItemsDetails && provisionalItemsDetails.length > 0" class="table-responsive">
+                  <danphe-grid [grid-colDefaults]="ERPatientWardBillGridCol" [grid-data]="provisionalItemsDetails"
+                               [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ERWardItemListAction($event)">
+                  </danphe-grid>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div id="drugorders" class="tab-pane fade">
+              <div class="col-md-12">
+                <button *ngIf="!showAddNewDrug" (click)="showAddNewDrug=true;showDrugRequest=true;" class="btn btn-primary btn-sm margin-7-lft margin-15-bt"> Add New Medicine</button>
+                <button *ngIf="showAddNewDrug" (click)="showAddNewDrug=false;showDrugRequest=false;" class="btn btn-cancel btn-sm margin-7-lft margin-15-bt"> Show Medicine List</button>
+              </div>
+              <div class="col-md-12">
+                <div class="table-responsive">
+                  <table class="table table-bordered" style="color: #000;">
+                    <tbody>
+                      <tr>
+                        <td><strong>Hospital Number</strong> &nbsp;{{selectedPatient.PatientCode}}</td>
+                        <td><strong>Age/Sex</strong>&nbsp;{{selectedPatient.Age}}/{{selectedPatient.Gender}}</td>
+                        <td><strong>Visit Date/Time</strong>&nbsp;{{selectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                        <td *ngIf="selectedPatient && selectedPatient.Case"><strong>Case</strong>&nbsp;{{selectedPatient.Case}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div *ngIf="!showAddNewDrug">
+                  <div *ngIf="PHRMOrdersList && PHRMOrdersList.length > 0" class="table-responsive">
+                    <table class="table table-striped table-hover" style="width: 100%;margin-top: 15px;">
+                      <thead>
+                        <tr style="background-color:lightgray">
+                          <th style="width: 120px;">Requested On</th>
+                          <th style="width: 380px;">Item Name</th>
+                          <th style="width: 180px;">Status</th>
+                          <th style="padding-right: 5px !important;">Qty.</th>
+                        </tr>
+                      </thead>
+
+                      <tr *ngFor="let row of PHRMOrdersList;let i = index">
+                        <td style="font-size: 12px;font-weight: bold;">{{row.RequestedOn | DanpheDateTime:'format':'YY/MM/DD'}}</td>
+                        <td>{{row.ItemName}}</td>
+                        <td>{{row.Status}}</td>
+                        <td>{{row.Quantity}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+
+              <div *ngIf="showAddNewDrug" style="width: 100%;display: table;">
+                <div class="col-md-12">
+                  <drugs-request *ngIf="showDrugRequest" [patient]="currentPat" [visit]="currentVisit" [moduleName]="'emergency'" (successCallBack)="AddSuccessFullDataEntered($event)"></drugs-request>
+                </div>
+              </div>
+            </div>
+          </div>         
+
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+  <a *ngIf="isPopUp" (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+</div>
+
+
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
+  <div class="portlet-body form">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-danger text-center">
+            <strong>Write Cancel Remarks</strong>
+          </h4>
+        </div>
+        <div class="modelbox-body">
+          <div>
+            Cancel Remarks:&nbsp;
+            <textarea [(ngModel)]="cancelRemarks" class="form-control" name="cancelremarks"></textarea>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr"
+                    (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
+              Proceed
+            </button>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="showConfirmationBox=false">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

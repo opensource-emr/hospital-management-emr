@@ -1,0 +1,18 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div> <a class="btn blue bordered primary-btn btn-sm m1" name="name" (click)="AddNewVendor()"> <i class="fa fa-plus"></i>Add New External Vendor
+        </a>
+      </div>
+      <div>
+        <danphe-grid [grid-colDefaults]="vendorGridCols" [grid-data]="allLabs"
+                     (grid-actions)="VendorListGridAction($event)"> </danphe-grid>
+      </div>
+    </div>
+    <div *ngIf="showAddUpdatePage">
+      <lab-vendor-add *ngIf="showAddUpdatePage" [action-name]="actionName" [selectedVendor]="selectedVendor"
+                      (on-save)="OnVendorAddUpdateCallBack($event)" [defaultVendor]="defaultVendor" (on-close)="OnVendorAddPopupClosed()">
+      </lab-vendor-add>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+﻿
+<input type="button" class="btn primary-btn m1" (click)="AddCompany()" value="Add Company"   />
+
+<company-add [showAddPage]="showAddPage" [selected-company]="company" (callback-add)="pushToList($event)"></company-add>
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="companyGridColumns" [grid-data]="companyList" (grid-actions)="CompanyGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

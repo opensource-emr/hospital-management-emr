@@ -1,0 +1,245 @@
+<style>
+  .form-group {}
+
+  .my-flex {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .my-flex .input-container {
+    flex-grow: 1;
+  }
+
+  .my-flex a {
+    margin-left: 10px;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="caption custom-caption">
+          <h3><span>Edit Core CFG Parameter</span></h3>
+          <!--			 <button class="btn btn-danger" (click)="Close()">X</button>-->
+          <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+        </div>
+
+        <div class="modelbox-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p class="margin-0-vr">Name: &nbsp;<b>{{currentParameter.ParameterName}}</b></p>
+            </div>
+            <div class="col-md-6">
+              <p class="margin-0-vr">Group Name: &nbsp;<b>{{currentParameter.ParameterGroupName}}</b></p>
+            </div>
+          </div>
+          <div class="row margin-8-tp margin-5-bt">
+            <div class="col-md-12">
+              <p class="margin-0-vr">Parameter Description: &nbsp;<b>{{currentParameter.Description}}</b></p>
+            </div>
+          </div>
+          <hr />
+          <div class="row ">
+
+            <div
+              *ngIf="(currentParameter.ValueDataType != 'array') && (currentParameter.ValueDataType != 'arrayobj') && (currentParameter.ValueDataType != 'jsonobj')"
+              class="col-md-12">
+              <div *ngFor="let obj of currentParameter.MappedObject; let i= index;">
+                <div class="form-group">
+                  <div class="margin-15-tp">
+                    <label class="control-label col-md-5">{{obj.KeyName}}<b style="float:right;">:</b></label>
+
+
+                    <div *ngIf="obj.ValueType == 'boolean'" class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{obj.KeyName}}" type="radio" value="true" [(ngModel)]="obj.Value">
+                            <span></span>True
+                          </label>
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{obj.KeyName}}" type="radio" value="false" [(ngModel)]="obj.Value">
+                            <span></span>False
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="obj.ValueType == 'number'" class="col-md-7">
+                      <input class="form-control" [(ngModel)]="obj.Value" type="number" value="" /><br />
+                    </div>
+
+                    <div *ngIf="obj.ValueType == 'string' || obj.ValueType == 'object'" class="col-md-7">
+                      <input class="form-control" [(ngModel)]="obj.Value" type="text" value="" /><br />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div *ngIf="currentParameter.ValueDataType == 'array'" class="col-md-12">
+              <div class="margin-15-tp" *ngFor="let arr of currentParameter.MappedArray; let i=index">
+                <div class="row">
+                  <div class="col-md-1 ln-middle">
+                    {{i+1}}
+                  </div>
+                  <div class="col-md-11">
+                    <div *ngFor="let mappedObj of arr; let j=index">
+                      <div class="row margin-15-bt">
+                        <div *ngIf="mappedObj.KeyName" class="col-md-4 ln-middle">
+                          {{mappedObj.KeyName}}
+                        </div>
+                        <div class="col-md-1">:</div>
+                        <div class="col-md-4">
+                          <input *ngIf="mappedObj.ValueType == 'string' || mappedObj.ActualValueType == 'json'"
+                            class="form-control" type="text" [(ngModel)]="mappedObj.Value" />
+                          <input *ngIf="mappedObj.ValueType == 'number'" class="form-control" type="number"
+                            [(ngModel)]="mappedObj.Value" />
+                          <ng-container *ngIf="mappedObj.ValueType == 'boolean'">
+                            <div>
+                              <div class="input-group">
+                                <div class="icheck-inline">
+                                  <label class="mt-checkbox mt-checkbox-outline">
+                                    <input name="{{mappedObj.KeyName}}{{i}}{{j}}" type="radio" value="true"
+                                      [(ngModel)]="mappedObj.Value">
+                                    <span></span>True
+                                  </label>
+                                  <label class="mt-checkbox mt-checkbox-outline">
+                                    <input name="{{mappedObj.KeyName}}{{i}}{{j}}" type="radio" value="false"
+                                      [(ngModel)]="mappedObj.Value">
+                                    <span></span>False
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="currentParameter.ValueDataType == 'value-lookup'" class="col-md-12">
+              <div class="margin-15-tp" *ngFor="let arr of currentParameter.MappedArray; let i=index">
+                <div class="row">
+                  <div class="col-md-1 ln-middle">
+                    {{i+1}}
+                  </div>
+                  <div class="col-md-11">
+                    <div *ngFor="let mappedObj of arr; let j=index">
+                      <div class="row margin-15-bt">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" value="{{mappedObj.Value}}" [(ngModel)]="currentParameter.ParameterValue">
+                          <span></span>{{mappedObj.Value}}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="(currentParameter.ValueDataType == 'arrayobj')" class="col-md-12">
+              <div *ngFor="let obj of currentParameter.MappedObject; let i= index;">
+                <div class="form-group">
+                  <div class="margin-15-tp">
+                    <label class="control-label col-md-5">{{obj.KeyName}}<b style="float:right;">:</b></label>
+
+                    <div *ngIf="obj.ValueType == 'boolean'" class="col-md-7">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{obj.KeyName}}" type="radio" value="true" [(ngModel)]="obj.Value">
+                            <span></span>True
+                          </label>
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{obj.KeyName}}" type="radio" value="false" [(ngModel)]="obj.Value">
+                            <span></span>False
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="obj.ValueType == 'number'" class="col-md-7">
+                      <input class="form-control" [(ngModel)]="obj.Value" type="number" value="" /><br />
+                    </div>
+
+                    <div id="el" *ngIf="obj.ValueType == 'string' || obj.ValueType == 'object'"
+                      class="form-group col-md-7 my-flex">
+                      <div class="input-container">
+                        <input class="form-control" [(ngModel)]="obj.Value" type="text" value="" />
+                      </div>
+                      <a (click)="AddNewRow(obj, i)" class="btn primary-btn"><i
+                          class="glyphicon glyphicon-plus"></i></a>
+                      <a (click)="DeleteRow(obj,i)" class="btn btn-danger"><i class="fa fa-times"></i></a>
+
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+            <div *ngIf="(currentParameter.ValueDataType == 'jsonobj')" class="col-md-12">
+              <div *ngFor="let obj of currentParameter.MappedObject; let i= index;">
+                <div class="form-group">
+                  <div class="margin-15-tp">
+                    <label class="control-label col-md-5">{{obj.OuterKeyName}}<b style="float:right;">:</b></label>
+                    <label class="control-label col-md-3">{{obj.KeyName}}<b style="float:right;">:</b></label>
+                    <div *ngIf="obj.ValueType == 'boolean'" class="col-md-4">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{i}}" type="radio" value="true" [(ngModel)]="obj.Value">
+                            <span></span>True
+                          </label>
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input name="{{i}}" type="radio" value="false" [(ngModel)]="obj.Value">
+                            <span></span>False
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="obj.ValueType == 'number'" class="col-md-7">
+                      <input class="form-control" [(ngModel)]="obj.Value" type="number" value="" /><br />
+                    </div>
+
+                    <div id="el" *ngIf="obj.ValueType == 'string' || obj.ValueType == 'object'"
+                      class="form-group col-md-4 my-flex">
+                      <div class="input-container">
+                        <input class="form-control" [(ngModel)]="obj.Value" type="text" value="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn green btn-success btn-sm margin-7-hr" (click)="Update()">
+              Update
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="Close()">
+              Close
+            </button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+  </div>
+</div>

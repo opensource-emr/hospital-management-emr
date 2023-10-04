@@ -1,0 +1,16 @@
+<div class="col-md-12" *ngIf="showDischargeSummaryAdd" style="margin-top:50px !important;">
+  <discharge-summary-add [selectedDischarge]="selectedPatient"
+                         [showDischargeSummary]="showDischargeSummaryAdd"
+                         [fromClinical]="false"
+                         (CallBackFromAdd)='CallBackFromAddEdit($event)'>
+
+  </discharge-summary-add>
+</div>
+
+<div class="col-md-12" *ngIf="showDischargeSummaryView" style="margin-top:50px !important;">
+  <discharge-summary-view [selectedADT]="selectedPatient"
+  (EditRecordEvent)='CallbackFromViewPage($event)' [showSummaryView]="showDischargeSummaryView">
+
+  </discharge-summary-view>
+</div>
+

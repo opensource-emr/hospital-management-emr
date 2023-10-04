@@ -1,0 +1,19 @@
+
+<div>
+  <input type="button" class="btn primary-btn m1" (click)="showAddInvoiceHeader()" value="Add New Invoice Header" />
+
+  <add-invoice-header [showAddPage]="showAddPage" *ngIf="showAddPage"
+                      [Module]="module"
+                      [selectedInvoiceHeader]="selectedInvoiceHeader"
+                      (call-back)="CallBackAdd($event)">
+
+  </add-invoice-header>
+
+</div>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="InvoiceHeaderGridColumns" [grid-data]="allInvoiceHeaderList" (grid-actions)="InvoiceHeaderGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+

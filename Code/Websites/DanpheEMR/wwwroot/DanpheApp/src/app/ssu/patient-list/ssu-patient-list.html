@@ -1,0 +1,70 @@
+<style>
+  .search-with-label {
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .bs-65 {
+    flex-basis: 65%;
+  }
+
+  .bs-30 {
+    flex-basis: 30%;
+  }
+</style>
+<div class="row">
+  <div class="col-md-6"> <a class="btn green btn-success btn-sm" style="font-size: 14px;" name="name"
+      (click)="ShowNewPatientPopup()" style="padding-left:10px;"> <span class="glyphicon glyphicon-plus"></span>
+      Register New SSU Patient</a> </div>
+  <div class="col-md-6">
+    <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+    <div class="search-with-label flex-container">
+      <div class="flex-item bs-30 text-right">
+        <label for="allPatWithOutIns">Edit Information Of</label>
+      </div>
+      &nbsp;&nbsp;
+      <!--[source]="allPatientsForDDL"-->
+      <div class="flex-item bs-65">
+        <input danphe-auto-complete class="form-control" [(ngModel)]="selectedExistingPatToEdit"
+          [list-formatter]="patientListFormatter" [source]="SearchPatientsByKey(this)"
+          placeholder="Existing Patient Name" display-property-name="ShortName" value-property-name=null
+          (valueChanged)="EditExistingPatientInfo()" onClick="this.select();" id="allPatWithOutIns" min-chars="3"
+          max-num-list="20" />
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-12">
+  <div class="input-group pull-right padding-15-tp">
+    <div class="icheck-inline">
+      List by Patient Status: &nbsp;
+      <label class="mt-radio mt-radio-outline">
+        <input type="radio" (change)="LoadPatientsListByStatus()" checked name="RequisitionStatusFilter"
+          [(ngModel)]="ssuPatientStatusFilter" value="all" style="width:15px;height:15px" />
+        <span></span>All
+      </label>
+      <label class="mt-radio mt-radio-outline">
+        <input type="radio" (change)="LoadPatientsListByStatus()" name="RequisitionStatusFilter"
+          [(ngModel)]="ssuPatientStatusFilter" value="active" style="width:15px;height:15px" />
+        <span></span>Active
+      </label>
+
+      <label class="mt-radio mt-radio-outline">
+        <input type="radio" (change)="LoadPatientsListByStatus()" name="RequisitionStatusFilter"
+          [(ngModel)]="ssuPatientStatusFilter" value="inactive" style="width:15px;height:15px" />
+        <span></span>Inactive
+      </label>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patientsGridDataFiltered"
+      (grid-actions)="PatientGridActions($event)" (serverSearchText)="serverSearchTxt($event)"
+      [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+  </div>
+</div>
+<ssu-add-patient *ngIf="showAddPatientBox" (ssu-pat-callback)="SsuCallBack($event)" [EditSSUPatMode]="EditSSUPatMode"
+  [patient-to-edit]="PatToEdit">
+
+</ssu-add-patient>

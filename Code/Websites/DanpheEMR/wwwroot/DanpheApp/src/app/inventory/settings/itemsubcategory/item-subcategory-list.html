@@ -1,0 +1,14 @@
+<div>
+    <input type="button" class="btn primary-btn m1" (click)="AddItemSubCategory()" value="Add Sub Category" />
+    <itemsubcategory-add [showAddPage]="showAddPage"
+                   [selectedItemSubCategory]="selectedItemSubCategory"
+                   (callback-add)="CallBackAdd($event)"></itemsubcategory-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="itemSubCategoryGridColumns" [grid-data]="itemSubCategoryList" (grid-actions)="ItemSubCategoryGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

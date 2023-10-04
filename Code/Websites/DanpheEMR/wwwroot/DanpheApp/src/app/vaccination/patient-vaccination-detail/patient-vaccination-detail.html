@@ -1,0 +1,207 @@
+<div class="row margin-bottom-15">
+    <div class="col-md-12">
+        <div class="full-width-flx">
+
+            <form class="hm-form" [formGroup]="patientVaccineDetail.PatVaccineDetailValidator">
+                <div class="form-body">
+                    <div class="row" *ngIf="patientDetail">
+                        <div class="page-bar bill-p-info">
+                            <div>
+                                <span>
+                                    <i class="fa fa-user"></i>&nbsp;Name : <b>{{patientDetail.PatientName}}</b>
+                                </span>
+                                <span>
+                                    <i class="fa fa-h-sign"></i>&nbsp;Hospital # : <b>{{patientDetail.PatientCode}}</b>
+                                </span>
+                                <span>
+                                    <i class="fa fa-male"></i>&nbsp;Age/Sex :
+                                    {{patientDetail.Age}}/{{patientDetail.Gender}}
+                                </span>
+                                <span>
+                                    <i class="fa fa-h-sign"></i>&nbsp;Date of Birth : {{patientDetail.DateOfBirth |
+                                    DanpheDateTime:'format':'YYYY-MM-DD'}}
+                                </span>
+                                <span>
+                                    <i class="fa fa-h-sign"></i>&nbsp;Address : <b>{{patientDetail.Address}}</b>
+                                </span>
+                                <span *ngIf="patientDetail.PhoneNumber">
+                                    <i class="fa fa-phone"></i>&nbsp;Contact No : <b>{{patientDetail.PhoneNumber}}</b>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row margin-top-15">
+                        <div class="col-md-7 col-md-offset-5">
+                            <div class="row" *ngIf="!isVaccRegNumAutoIncreaseEnabled">
+                                <div class="col-md-12" style="text-align: right;">
+                                    <div style="display: inline-block;margin-right: 15px;">
+                                        <b>Fiscal Year: </b>
+                                        <select [(ngModel)]="selectedFiscalYear" [ngModelOptions]="{standalone: true}"
+                                            (change)="GetLatestRegistrationNumber()">
+                                            <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">
+                                                {{fisc.FiscalYearFormatted}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div style="display: inline-block;margin-right: 15px;">
+                                        <label style="display: inline-block;">Vaccine Reg. No: &nbsp;</label>
+                                        <input [(ngModel)]="vaccRegNumber" class="form-control" min="0"
+                                            (focusout)="vaccRegNumberChanged()"
+                                            style="display: inline-block;width: 110px;"
+                                            [ngModelOptions]="{standalone: true}" type="number" />
+                                    </div>
+                                    <div style="display: inline-block;">
+                                        <button type="button" id="register"
+                                            [disabled]="loading || !vaccRegNumber || (vaccRegNumber < 0)"
+                                            class="btn green btn-success margin-7-hr"
+                                            (click)="loading=true;UpdateVaccineRegNumberForPatient()">
+                                            Update
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12" style="text-align: right;">
+
+                            <div *ngIf="duplicateRegNumberData && (duplicateRegNumberData.PatientId != patientId)">
+                                <span class="error-msg">
+                                    This vaccination Reg. No. is Already used</span>
+                            </div>
+
+                            <div>
+                                <span *ngIf="latestVaccRegNumForSelectedFiscYear"
+                                    style="font-size: 10px; line-height: 3;">Latest
+                                    Vaccination Registration number for selected fiscal
+                                    year is
+                                    {{latestVaccRegNumForSelectedFiscYear}}</span>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="row margin-top-15">
+                        <div class="form-group col-md-4">
+                            <div class="row">
+                                <label class="control-label col-md-12">Vaccine Date</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <danphe-date-picker [(ngModel)]="patientVaccineDetail.VaccineDate"
+                                        [ngModelOptions]="{standalone: true}" [showTime]="true"
+                                        [CalendarTypes]="'en,np'">
+                                    </danphe-date-picker>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-2">
+                            <div class="row">
+                                <label class="control-label col-md-12">Vaccine Name</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <select id="vaccine" class="form-control" formControlName="VaccineId"
+                                        [(ngModel)]="patientVaccineDetail.VaccineId" (change)="VaccineChanged()">
+                                        <option value="0">--Vaccine--</option>
+                                        <option *ngFor="let vacc of vaccineList" value="{{vacc.VaccineId}}">
+                                            {{vacc.VaccineName}}
+                                        </option>
+                                    </select>
+                                    <span class="error-msg" *ngIf="patientVaccineDetail.IsDirty('VaccineId')"
+                                        [hidden]="patientVaccineDetail.IsValidCheck('VaccineId','min')"> Vaccine is
+                                        required</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <div class="row">
+                                <label class="control-label col-md-12">Vaccine Dose</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <select id="vaccineDose" class="form-control" formControlName="DoseNumber"
+                                        [(ngModel)]="patientVaccineDetail.DoseNumber">
+                                        <option value="0">--Dose--</option>
+                                        <option *ngFor="let dose of doseListOfVaccine" value="{{dose.Id}}">
+                                            {{dose.NumberInfo}}
+                                        </option>
+                                    </select>
+                                    <span class="error-msg" *ngIf="patientVaccineDetail.IsDirty('DoseNumber')"
+                                        [hidden]="patientVaccineDetail.IsValidCheck('DoseNumber','min')"> Dose is
+                                        required</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <div class="row">
+                                <label class="control-label col-md-12">Remarks</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <input [(ngModel)]="patientVaccineDetail.Remarks" class="form-control"
+                                        [ngModelOptions]="{standalone: true}" placeholder="Remarks" type="text" />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row margin-top-15">
+                        <div class="col-md-12">
+                            <div class="all-buttons text-right margin-bottom-15">
+                                <button *ngIf="!patientVaccineDetail.PatientVaccineId" type="button" id="register"
+                                    [disabled]="loading" class="btn green btn-success margin-7-hr"
+                                    (click)="loading=true;AddVaccineForPatient()">
+                                    Add
+                                </button>
+                                <button *ngIf="patientVaccineDetail.PatientVaccineId > 0" type="button" id="reset"
+                                    [disabled]="loading" class="btn grey btn-success margin-7-hr"
+                                    (click)="loading=true;Reset()">
+                                    Cancel
+                                </button>
+                                <button *ngIf="patientVaccineDetail.PatientVaccineId > 0" type="button" id="register"
+                                    [disabled]="loading" class="btn green btn-success margin-7-hr"
+                                    (click)="loading=true;AddVaccineForPatient()">
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+
+<div class="row margin-top-15 margin-bottom-15" *ngIf="vaccinesListOfPat && vaccinesListOfPat.length">
+    <div class="col-md-12">
+        <p style="background-color: #006687;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 14px;
+    color: #f3f3f3;">Vaccines list taken by {{patientDetail.ShortName}}</p>
+    </div>
+    <div class="col-md-12">
+        <danphe-grid [grid-colDefaults]="patientVaccListGridColumns" [grid-data]="vaccinesListOfPat"
+            [supressPagination]="true" [resizeColumnToFit]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+            (grid-actions)="PatVaccinationListGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+<div class="row margin-top-15 margin-bottom-15" *ngIf="!vaccinesListOfPat || (vaccinesListOfPat.length==0)" style="min-height: 80px;display: flex;
+    align-items: center;background-color: #f8f7f7;">
+    <div class="col-md-12 text-center" style="font-weight: 600;">
+        <h5>No Vaccines Record</h5>
+    </div>
+</div>

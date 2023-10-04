@@ -1,0 +1,210 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Department</span> <span *ngIf="update">Update Department</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form [formGroup]="CurrentDepartment.DepartmentValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4">Department Code<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="id_department_code" class="form-control" maxlength="30" [(ngModel)]="CurrentDepartment.DepartmentCode"
+                         formControlName="DepartmentCode" (ngModelChange)="CapitalizeDeptCode()" type="text" value="" placeholder="Department Code"
+                         (keyup.enter)="setFocusById('id_department_name')" (keyup.escape)="Close()" />
+                  <br />
+                  <span style="color:red"
+                        [hidden]="CurrentDepartment.IsValidCheck('DepartmentCode','pattern') || !(CurrentDepartment.IsDirty('DepartmentCode'))">Department
+                    Code Is Capital Alphabets Letters Only </span>
+                  <span class="color-red font-sm"
+                        [hidden]="CurrentDepartment.IsValidCheck('DepartmentCode','required') || !(CurrentDepartment.IsDirty('DepartmentName'))">Department
+                    Code is required</span>
+                  <span style="color:red" *ngIf="CurrentDepartment.IsDirty('DepartmentCode')"
+                        [hidden]="CurrentDepartment.IsValidCheck('DepartmentCode','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Department Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="id_department_name" class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentDepartment.DepartmentName"
+                         formControlName="DepartmentName" placeholder="Department Name" (keyup.enter)="setFocusById('id_department_head')" />
+                  <span class="color-red font-sm"
+                        [hidden]="CurrentDepartment.IsValidCheck('DepartmentName','required') || !(CurrentDepartment.IsDirty('DepartmentName'))">Department
+                    Name is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentDepartment.IsDirty('DepartmentName')"
+                        [hidden]="CurrentDepartment.IsValidCheck('DepartmentName','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Parent Department Name<b>:</b></label>
+                <div class="col-md-7">
+                  <select id="id_parent_department" class="form-control" [(ngModel)]="CurrentDepartment.ParentDepartmentId"
+                          [ngModelOptions]="{standalone: true}">
+                    <option [ngValue]="null">--select--</option>
+                    <option *ngFor="let dept of deptList" value="{{dept.DepartmentId}}"> {{dept.DepartmentName}}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Department Description<b>:</b></label>
+                <div class="col-md-7">
+                  <textarea id="id_department_description" class="form-control" [(ngModel)]="CurrentDepartment.Description"
+                            [ngModelOptions]="{standalone: true}"
+                            type="text" value="" placeholder="Department Description"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Department Notice Text<b>:</b></label>
+                <div class="col-md-7">
+                  <textarea id="id_department_notice" class="form-control" [(ngModel)]="CurrentDepartment.NoticeText"
+                            [ngModelOptions]="{standalone: true}"
+                            type="text" value="" placeholder="Department Notice"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Department Head<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="id_department_head" class="form-control" [(ngModel)]="CurrentDepartment.DepartmentHead"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" value="" placeholder="Department Head" (keyup.enter)="setFocusById('id_room_number')" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Room Number<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="id_room_number" class="form-control" [(ngModel)]="CurrentDepartment.RoomNumber" [ngModelOptions]="{standalone: true}"
+                         type="text" value="" placeholder="Room Number" (keyup.enter)="setFocusById('id_select_department_isActive')" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <select id="id_select_department_isActive" class="form-control" [(ngModel)]="CurrentDepartment.IsActive"
+                            [ngModelOptions]="{standalone: true}"
+                            (change)="setFocusById('id_select_department_isAppointmentApplicable');">
+                      <option [ngValue]="null">--select--</option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Appointment Applicable<b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <select id="id_select_department_isAppointmentApplicable" class="form-control"
+                            [(ngModel)]="CurrentDepartment.IsAppointmentApplicable"
+                            [ngModelOptions]="{standalone: true}" (change)="OnAppointmentApplicableChange(); setFocusById('AddDepartment');"
+                            [disabled]="disableBtn">
+                      <option [ngValue]="null">--select--</option>
+                      <option [ngValue]="true">Yes</option>
+                      <option [ngValue]="false">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" *ngIf="onApptApplicable">
+                <label class="control-label col-md-4"> Allow Zero Price <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <select id="id_select_department_isZeroPriceAllowed" name="IsZeroPriceAllowed" class="form-control"
+                            [(ngModel)]="CurrentDepartment.IsZeroPriceAllowed"
+                            [ngModelOptions]="{standalone: true}">
+                      <option [ngValue]="null" selected>--select--</option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 row" *ngIf="onApptApplicable">
+                <table class="table table-responsive">
+                  <thead>
+                    <tr>
+                      <td class="col-md-3">Service Name</td>
+                      <td class="col-md-3">Service Item Name</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <tr>
+                      <td class="col-md-2">
+                        <label for="id_checkbox_opd_new_patient_service" class="mt-checkbox mt-checkbox-outline">
+                          <input type="checkbox" id="id_checkbox_opd_new_patient_service"
+                                 [(ngModel)]="OpdNewService.IsServiceEnabled" [checked]="OpdNewService.IsMandatory"
+                                 (click)="opdNewServiceSelectChange()" [ngModelOptions]="{standalone: true}" [disabled]="OpdNewService.IsMandatory" />
+                          <span></span>OPD (New Patient)</label>
+                        <b *ngIf="OpdNewService.IsServiceEnabled" class="color-red">*</b>
+                      </td>
+                      <td class="col-md-3"><input class="form-control" danphe-auto-complete [disabled]="!OpdNewService.IsServiceEnabled"
+                               [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedOpdNewServiceItem"
+                               onClick="this.select();" (focusout)="NewPatientServiceItemChanged(selectedOpdNewServiceItem)"
+                               [list-formatter]="myItemListFormatter" [source]="opdServiceItems" placeholder="enter text"
+                               display-property-name="ServiceItemName" value-property-name=null max-num-list="10" />
+                        <span class="color-red font-sm" [hidden]="!OpdNewService.IsServiceEnabled || OpdNewService.IsItemNameValid">
+                          Item Name required </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        <label for="id_checkbox_opd_followup_patient_service" class="mt-checkbox mt-checkbox-outline">
+                          <input type="checkbox" id="id_checkbox_opd_followup_patient_service"
+                                 [(ngModel)]="OpdFollowupService.IsServiceEnabled"
+                                 (click)="opdFollowupServiceSelectChange()" [ngModelOptions]="{standalone: true}" />
+                          <span></span>OPD (Followup Patient)</label>
+                        <b *ngIf="OpdFollowupService.IsServiceEnabled" class="color-red">*</b>
+                      </td>
+                      <td class="col-md-3"><input class="form-control" danphe-auto-complete [disabled]="!OpdFollowupService.IsServiceEnabled"
+                               [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedOpdFollowupServiceItem"
+                               onClick="this.select();" (focusout)="FollowupServiceItemChanged(selectedOpdFollowupServiceItem)"
+                               [list-formatter]="myItemListFormatter" [source]="opdServiceItems" placeholder="enter text"
+                               display-property-name="ServiceItemName" value-property-name=null max-num-list="10" />
+                        <span class="color-red font-sm" [hidden]="!OpdFollowupService.IsServiceEnabled || OpdFollowupService.IsItemNameValid">
+                          Item Name required </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        <label for="id_checkbox_opd_old_patient_service" class="mt-checkbox mt-checkbox-outline">
+                          <input type="checkbox" id="id_checkbox_opd_old_patient_service"
+                                 [(ngModel)]="OpdOldService.IsServiceEnabled"
+                                 (click)="opdOldServiceSelectChange()" [ngModelOptions]="{standalone: true}" />
+                          <span></span>OPD (Old Patient)</label>
+                        <b *ngIf="OpdOldService.IsServiceEnabled" class="color-red">*</b>
+                      </td>
+                      <td class="col-md-3"><input class="form-control" danphe-auto-complete [disabled]="!OpdOldService.IsServiceEnabled"
+                               [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedOpdOldServiceItem"
+                               onClick="this.select();" (focusout)="OldPatientServiceItemChanged(selectedOpdOldServiceItem)"
+                               [list-formatter]="myItemListFormatter" [source]="opdServiceItems" placeholder="enter text"
+                               display-property-name="ServiceItemName" value-property-name=null max-num-list="10" />
+                        <span class="color-red font-sm" [hidden]="!OpdOldService.IsServiceEnabled || OpdOldService.IsItemNameValid">
+                          Item Name required </span>
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+            <div class="panel-footer">
+              <input id="AddDepartment" type="button"
+
+                     class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddDepartment()"
+                     value="Add Department" />
+              <input id="UpdateDepartment" type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

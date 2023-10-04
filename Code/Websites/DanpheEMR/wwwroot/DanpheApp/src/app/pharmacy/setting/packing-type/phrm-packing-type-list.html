@@ -1,0 +1,12 @@
+<div>
+    <!-- <input type="button" *ngIf="!update" class="btn btn-primary" (click)="AddPackingType()" value="Add PackingType" /> -->
+    <packingtype-add [showAddPage]="showPackingTypeAddPage" [selectedPacking]="selectedPacking"
+        (callback-add)="CallBackAdd($event)"></packingtype-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="packingtypeGridColumns" [grid-data]="packingtypeList"
+            (grid-actions)="PackingTypeGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

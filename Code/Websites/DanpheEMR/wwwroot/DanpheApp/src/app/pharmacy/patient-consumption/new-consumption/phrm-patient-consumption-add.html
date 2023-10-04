@@ -1,0 +1,450 @@
+<style>
+  .bg-orange {
+    background-color: orange;
+  }
+</style>
+<div class="col-md-12" style="margin-bottom: 20px;">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-4" *ngIf="!PatientId">
+          <div class="row d-flex">
+            <label for="id_input_search_patient" class="col-md-4">Search Patient: <sup class="color-red">*</sup></label>
+            <div class="col-md-8">
+              <div class="danphe-auto-complete-wrapper" style="position: relative;">
+                <input type="text" id="id_input_search_patient" danphe-auto-complete
+                       [(ngModel)]="searchPatient"
+                       [source]="AllPatientSearchAsync.bind(this)"
+                       [path-to-data]="'Results'"
+                       [list-formatter]="patientListFormatter"
+                       display-property-name="ShortName"
+                       (valueChanged)="onClickPatient($event)"
+                       max-num-list="20"
+                       min-chars="{{PatientSearchMinCharacterCount}}"
+                       onClick="this.select();"
+                       match-formatted="true" [grid-sort]="'ShortName'"
+                       [ngModelOptions]="{standalone: true}"
+                       placeholder="Search Patient (Minimum 5 Character)"
+                       style="width: 100%"
+                       (keyup.enter)="coreService.FocusInputById('id_input_selectReferral')">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row d-flex">
+            <label for="id_input_selectReferral" class="col-md-3">Prescriber:<sup *ngIf="IsPrescriberMandatory"
+                   class="color-red">*</sup></label>
+            <div class="col-md-9">
+              <div class="d-flex justify-space-between align-items-center">
+                <div class="danphe-auto-complete-wrapper" style="position: relative; width: 100%;">
+                  <input *ngIf="ReferrerList" type="text"
+                         id="id_input_selectReferral" danphe-auto-complete
+                         [ngModelOptions]="{standalone: true}" [(ngModel)]="SelectedPrescriber" [source]="ReferrerList"
+                         [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+                         display-property-name="FullName" value-property-name="'PrescriberId'" match-formatted="true"
+                         onClick="this.select();" max-num-list="10" min-chars="1" style="width: 100%"
+                         (valueChanged)="OnPrescriberChanged()" (keyup.enter)="coreService.FocusInputById('item-box')" />
+                </div>
+                <div style="display: inline-block; margin-left: 10px;" *ngIf="IsPrescriberMandatory && ShowNMCNoAddButton">
+                  <button type="button" id="btn-add-nmc" class="btn green btn-success" (click)="OpenAddNMCPopup()">
+                    NMC No.</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" *ngIf="PatientId">
+          <div class="row">
+            <label for="id_input_selectReferral" class="col-md-4">Store:</label>
+            <div class="col-md-8">
+              <div class="danphe-auto-complete-wrapper" style="position: relative;">
+                <input *ngIf="WardSubStoreMapList" type="text"
+                       id="id_input_selectReferral" danphe-auto-complete
+                       [ngModelOptions]="{standalone: true}" [(ngModel)]="SelectedStore" [source]="WardSubStoreMapList"
+                       [list-formatter]="StoreListFormatter" placeholder="Select Store"
+                       display-property-name="StoreName" value-property-name="'StoreId'" match-formatted="true"
+                       onClick="this.select();" max-num-list="10" min-chars="1" style="width: 100%"
+                       (valueChanged)="OnStoreChanged()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12" style="margin-bottom: 20px;">
+  <div class="patient_info" style="background-color: #f1f1f1;">
+    <div class="row" style=" padding: 10px;">
+      <div class="col-sm-2">
+        <div>
+          <label>Hospital No:<span [innerHTML]="currentPatient.PatientCode"></span></label>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <label>Patient Name:<span [innerHTML]="currentPatient.ShortName"></span></label>
+      </div>
+
+      <div class="col-sm-2">
+        <label>Age/Sex:<span *ngIf="currentPatient.Age" [innerHTML]="currentPatient.Age"></span><span
+                *ngIf="currentPatient.Gender">/</span> <span
+                [innerHTML]="currentPatient.Gender"></span></label>
+      </div>
+      <div class="col-sm-3">
+        <label>Contact No:<span [innerHTML]="currentPatient.PhoneNumber"></span></label>
+      </div>
+      <div class="col-sm-2">
+        <label>Visit Type:<span [innerHTML]="currentPatient.VisitType"></span></label>
+      </div>
+      <div class="col-sm-10" *ngIf="SchemePriceCategoryObj && SchemePriceCategoryObj.SchemeId && SchemePriceCategoryObj.PriceCategoryId">
+        <scheme-pricecategory-select (on-change)="OnSchemePriceCategoryChanged($event)"
+                                     [selected-scheme-priceCategory]="SchemePriceCategoryObj"
+                                     [service-billing-context]="serviceBillingContext"
+                                     [module-name]="'Pharmacy'" [disable-selection]="true">
+        </scheme-pricecategory-select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12" style="margin-bottom: 20px;">
+  <div class="row">
+    <div class="col-md-9">
+      <table class="table table-striped table-hover inv_table table-bordered">
+        <thead>
+          <tr>
+            <th>GenericName</th>
+            <th><b>Drug/Medicine Name</b></th>
+            <th><b>Expiry</b></th>
+            <th><b>Batch</b></th>
+            <th><b>AvlQty</b></th>
+            <th><b>C. Qty</b></th>
+            <th><b>SalePrice</b></th>
+            <th><b>SubTotal</b></th>
+            <th><b>Disc %</b></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <form [formGroup]="patientConsumptionItem.PatientConsumptionValidator">
+                <input type="text" id="genric-box" danphe-auto-complete class="form-control" placeholder="Generic Name"
+                       display-property-name="GenericName" value-property-name=null
+                       [(ngModel)]="patientConsumptionGenericName" [source]="FilteredGenericList"
+                       onClick="this.select();" match-formatted="true"
+                       (keyup.enter)="coreService.FocusInputById('Item')"
+                       (valueChanged)="onChangeGenericName()"
+                       [list-formatter]="phrmItemGenericFormatter" formControlName="GenericName"
+                       min-chars="1" style="width: 200px" />
+                <span class="color-red font-sm" *ngIf="patientConsumptionItem.IsDirty('GenericName')"
+                      [hidden]="patientConsumptionItem.IsValidCheck('GenericName','required')">Generic
+                  Name is
+                  required</span>
+              </form>
+            </td>
+            <td>
+              <form [formGroup]="patientConsumptionItem.PatientConsumptionValidator">
+                <input danphe-auto-complete class="form-control" [(ngModel)]="SelectedItem"
+                       formControlName="ItemName"
+                       [source]="FilteredItems" [list-formatter]="phrmItemListFormatter"
+                       placeholder="--Select Medicine--" display-property-name="ItemName" value-property-name=null
+                       onClick="this.select();"
+                       (valueChanged)="onChangeItem()" max-num-list="100"
+                       [min-chars]="1" style="width:200px;" id="item-box" [grid-sort]="'ItemName'"
+                       match-formatted="true"
+                       (keyup.enter)="SelectedItem? coreService.FocusInputById('Quantity'): coreService.FocusInputById('remarks')"
+                       autocomplete="off" />
+                <span class="color-red font-sm" *ngIf="patientConsumptionItem.IsDirty('ItemName')"
+                      [hidden]="patientConsumptionItem.IsValidCheck('ItemName','required')">Item is
+                  required <br></span>
+                <span class="color-red font-sm" *ngIf=" patientConsumptionItem.IsDirty('ItemName')"
+                      [hidden]=" patientConsumptionItem.IsValidCheck('ItemName','invalidItem')">Invalid
+                  Item</span>
+              </form>
+            </td>
+            <td>
+              <label style="width: 80px">{{patientConsumptionItem.ExpiryDate | date}}</label>
+            </td>
+            <td>
+              <label style="width: 80px">{{patientConsumptionItem.BatchNo}}</label>
+            </td>
+            <td>
+              <label style="width: 50px">{{patientConsumptionItem.AvailableQuantity}}</label>
+            </td>
+            <td>
+              <form [formGroup]="patientConsumptionItem.PatientConsumptionValidator">
+                <input type="number" class="form-control"
+                       [(ngModel)]="patientConsumptionItem.Quantity"
+                       (ngModelChange)="OnQuantityChange()"
+                       placeholder="Consume Qty"
+                       formControlName="Quantity" id="Quantity"
+                       (keyup.enter)="coreService.FocusInputById('btn-add')"
+                       onClick="this.select();"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                       style="width: 70px" />
+                <span class="color-red font-sm" *ngIf="patientConsumptionItem.IsDirty('Quantity')"
+                      [hidden]="patientConsumptionItem.IsValidCheck('Quantity','invalidNumber')">
+                  Not Valid quantity<br></span>
+                <span class="color-red font-sm" *ngIf="patientConsumptionItem.IsDirty('Quantity')"
+                      [hidden]="patientConsumptionItem.IsValidCheck('Quantity','wrongDecimalValue')">Required
+                  Whole Number</span>
+              </form>
+            </td>
+            <td>
+              <label style="width: 50px">{{patientConsumptionItem.SalePrice}}</label>
+            </td>
+            <td>
+              <label style="width: 60px">{{patientConsumptionItem.SubTotal}}</label>
+            </td>
+            <td>
+              <label style="width: 50px">{{SchemePriceCategory.DiscountPercent}}</label>
+            </td>
+            <td>
+              <button type="button" class="btn green btn-success " id="btn-add"
+                      (keyup.enter)="coreService.FocusInputById('item-box')"
+                      (click)="Add()"><i class="fa fa-plus"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="row table-wrap">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th>#</th>
+              <th><b>GenericName</b></th>
+              <th><b>Drug/Medicine Name</b></th>
+              <th><b>Expiry</b></th>
+              <th><b>Batch</b></th>
+              <th><b>Consumption Qty.</b></th>
+              <th><b>S.Price</b></th>
+              <th><b>SubTotal</b></th>
+              <th><b>Dis Amt</b></th>
+              <th><b>Total</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of patientConsumptionItems; let i = index" [ngClass]="{'bg-orange': row.IsNarcotic}">
+              <td>
+                <a class="btn btn-danger" (click)="DeleteRow(i)" title="Click to remove this item">
+                  <i class="fa fa-times"></i></a>
+              </td>
+              <td>{{i + 1}}</td>
+              <td class="autocomplete-item">
+                <span>{{row.GenericName}}</span>
+              </td>
+              <td>
+                <span>{{row.ItemName}}</span>
+              </td>
+              <td><span>{{row.ExpiryDate | date}}</span>
+              </td>
+              <td><span>{{row.BatchNo}}</span>
+              </td>
+              <td>
+                <span>{{row.Quantity}}</span>
+              </td>
+              <td><span>{{row.SalePrice}}</span>
+
+              </td>
+              <td><span>{{row.SubTotal}}</span></td>
+              <td><span>{{row.DiscountAmount}}</span></td>
+              <td><span>{{row.TotalAmount}}</span></td>
+            </tr>
+
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="colrow">
+        <div class="col">
+          <label>SubTotal Amount : </label>
+        </div>
+        <div class="col">
+          <input type="number" [(ngModel)]="patientConsumption.SubTotal" disabled class="form-control">
+        </div>
+      </div>
+      <div class="colrow">
+        <div class="col">
+          <label>Discount Amount : </label>
+        </div>
+        <div class="col">
+          <input type="number" [(ngModel)]="patientConsumption.DiscountAmount" disabled class="form-control">
+        </div>
+      </div>
+      <div class="colrow">
+        <div class="col">
+          <label>Total Amount : </label>
+        </div>
+        <div class="col">
+          <input type="number" [(ngModel)]="patientConsumption.TotalAmount" disabled class="form-control">
+        </div>
+      </div>
+      <div class="colrow">
+        <div class="col">
+          <label style="color: #2d68ea; font-weight: bold;">In Words : <span>{{patientConsumption.TotalAmount
+              |NumberInWords}}</span></label>
+        </div>
+
+      </div>
+      <div class="colrow">
+        <div class="col">
+          <label>Remarks : </label>
+        </div>
+        <div class="col">
+          <textarea maxlength="100" rows="5"
+                    placeholder="Remarks" [(ngModel)]="patientConsumptionItem.Remarks"
+                    [ngModelOptions]="{standalone: true}" id="remarks"
+                    (keyup.enter)="coreService.FocusInputById('btn-save')"
+                    class="form-control">
+                    </textarea>
+        </div>
+      </div>
+      <div class="colrow">
+        <div class="col text-right">
+          <input DanpheConfirmationDialog
+                 type="submit"
+                 [title]="confirmationTitle"
+                 [message]="confirmationMessage"
+                 (confirm)="handleConfirm()"
+                 (cancel)="handleCancel()"
+                 id="btn-save"
+                 class="btn green btn-success"
+                 [disabled]="loading"
+                 value="Save Consumption">
+        </div>
+        <div class="col text-right">
+          <button type="button" class="btn btn-danger hidden-print" value="" id="btn_discard" (click)="DiscardConsumption()">Discard
+            Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-12" *ngIf="patSummary.IsLoaded">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="invoice-history" [hidden]="IsCurrentDispensaryInsurace == true">
+        <div class="history-title"> <b>Invoice History</b> </div>
+        <table>
+          <tr>
+            <td>Deposit Balance <b class="colon">:</b></td>
+            <td>{{patSummary.DepositBalance}}</td>
+          </tr>
+          <tr>
+            <td>Credit <b class="colon">:</b></td>
+            <td style="text-decoration:underline;">{{patSummary.CreditAmount}}</td>
+          </tr>
+          <tr>
+            <td>Provisional Amount <b class="colon">:</b></td>
+            <td style="text-decoration:underline;">{{patSummary.ProvisionalAmt}}</td>
+          </tr>
+          <tr>
+            <td>Total Due<b class="colon">:</b></td>
+            <td>{{patSummary.TotalDue}}</td>
+          </tr>
+          <tr>
+            <td>Balance Amount <b class="colon">:</b></td>
+            <td style="font-weight: bold;color: red;font-size: 17px;"> {{patSummary.BalanceAmount}} </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="invoice-history" [hidden]="IsCurrentDispensaryInsurace == true">
+        <div class="history-title"> <b>Credit Limits and Balances</b> </div>
+        <table>
+          <tr>
+            <td>General Credit Limit<b class="colon">:</b></td>
+            <td>{{patSummary.GeneralCreditLimit}}</td>
+          </tr>
+          <tr>
+            <td>IP Credit Limit<b class="colon">:</b></td>
+            <td>{{patSummary.IpCreditLimit}}</td>
+          </tr>
+          <tr>
+            <td>OP Credit Limit<b class="colon">:</b></td>
+            <td>{{patSummary.OpCreditLimit}}</td>
+          </tr>
+          <tr>
+            <td>IP Balance<b class="colon">:</b></td>
+            <td>{{patSummary.IpBalance}}</td>
+          </tr>
+          <tr>
+            <td>OP Balance<b class="colon">:</b></td>
+            <td>{{patSummary.OpBalance}}</td>
+          </tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" (click)="ClosePrintPage()" title="Cancel"><i class="fa fa-close"></i></a>
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="row printStyle print-border">
+                <div *ngIf="showPrintPage" style="text-align:center;">
+                  <phrm-consumption-receipt [patient-consumption-id]="PatientConsumptionId"></phrm-consumption-receipt>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="NMCNoAddPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption no-margin">
+            <h3>
+              <span>Add Medical Certificate Number</span>
+            </h3>
+            <a class="btn btn-danger" (click)="CloseAddNMCPopup()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Doctor Name<b>:</b></label>
+                <div class="col-md-7">
+                  {{SelectedPrescriber.FullName}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">NMC No<span style="color:red;">*</span><b>:</b></label>
+                <div class="col-md-7">
+                  <input type="number" [(ngModel)]="MedicalCertificateNo" name="MedicalCertificateNo"
+                         id="MedicalCertificateNo">
+                </div>
+              </div>
+            </div>
+            <div class="form-actions no-gutters">
+              <div class="col-md-12" style="text-align:right">
+                <button style="margin-right: 10px;" type="button" class="btn green btn-success"
+                        (click)="SaveNMCNo()">Save</button>
+              </div>
+            </div>
+
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

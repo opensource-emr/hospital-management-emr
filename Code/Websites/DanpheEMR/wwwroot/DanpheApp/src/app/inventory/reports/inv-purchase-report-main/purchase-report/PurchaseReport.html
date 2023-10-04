@@ -1,0 +1,12 @@
+﻿<div class="caption lb-caption">
+    <i class="fa fa-money"></i>
+    <span class="caption-subject">Purchase Report</span>
+</div>
+<br />
+
+<div class="col-lg-12 col-sm-12" *ngIf="PurRepData.length>0">
+    <danphe-grid [grid-colDefaults]="PurRepColumns"
+                 [grid-data]="PurRepData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+    </danphe-grid>
+</div>

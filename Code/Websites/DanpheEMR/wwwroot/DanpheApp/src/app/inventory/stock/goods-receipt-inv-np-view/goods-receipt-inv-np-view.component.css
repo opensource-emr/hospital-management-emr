@@ -1,0 +1,19 @@
+div.inv_modal * {
+    font-weight: 400;
+}
+
+.modelbox-div {
+    padding: 18px;
+}
+
+.bold, .bold>div, .bold>div>u {
+    font-weight: 700;
+}
+
+table>thead>tr>th {
+    font-weight: 700;
+}
+.center {
+    margin-left: auto;
+    margin-right: auto;
+  }

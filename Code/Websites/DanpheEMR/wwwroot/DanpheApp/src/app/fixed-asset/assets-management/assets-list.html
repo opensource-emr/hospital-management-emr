@@ -1,0 +1,101 @@
+<style>
+  danphe-bar-code svg {
+    width: 350px !important;
+  }
+</style>
+
+<div class="selectedAssetForEdit row">
+  <!--<div class="col-md-4">
+    <a class="btn primary-btn btn-sm m1"><i class="fa fa-plus"></i> &nbsp;&nbsp;&nbsp;Add</a>
+  </div>-->
+  <div class="col-md-3">
+    <strong>Selected : &nbsp;&nbsp;</strong>
+    <select [(ngModel)]="selectedAssetListStatus" (change)="OnAssetStatusChange()" style="width:30%!important;">
+      <option value="all" selected>All Assets</option>
+      <option value="damaged">Damaged Asset</option>
+      <option value="warrantyExpired">Warranty Expired Asset</option>
+      <!-- <option value="Donation">Donation</option> -->
+    </select>
+  </div>
+  <div class="col-md-5" style="display: flex; justify-content: space-evenly;">
+    <div style="display: flex;flex-flow: row-reverse;align-items: baseline;">
+      <label for="showColdStorageItemCheckBox" style="margin-right: 20px;"> Show only cold storage item </label>
+      <input type="checkbox" id="showColdStorageItemCheckBox" style="zoom:1.23;scale: 1.23;margin-right: 6px;"
+        [(ngModel)]="showOnlyColdStorageItems" (change)="OnAssetStatusChange()">
+    </div>
+    <div style="display: flex;flex-flow: row-reverse;align-items: baseline;">
+      <label for="showMaintainedByMeCheckBox" style="margin-right: 20px;"> Show assets maintained by me</label>
+      <input type="checkbox" id="showMaintainedByMeCheckBox" style="zoom:1.23;scale: 1.23;margin-right: 6px;"
+        [(ngModel)]="showOnlyAssetsMaintainedByUser" (change)="OnAssetStatusChange()">
+    </div>
+  </div>
+  <div class="col-md-4 text-right">
+    <strong>Substore : &nbsp;&nbsp;</strong>
+    <select [(ngModel)]="selectedSubstore" (change)="OnAssetStatusChange()" style="width:40%!important;">
+      <option [ngValue]="null" selected>All Store</option>
+      <option *ngFor="let store of substoreList" [ngValue]="store.StoreId">{{store.Name}}</option>
+    </select>
+  </div>
+</div>
+
+<div class="selectedAssetForEdit row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="assetsmanagementGridColumns" [grid-data]="fixedAssetsList"
+      (grid-actions)="GoodsReceiptGridAction($event)" [grid-exportOptions]="GetGridExportOptions()"
+      [grid-showExport]="true">
+    </danphe-grid>
+    <!-- [NepaliDateInGridParams]="NepaliDateInGridSettings" -->
+  </div>
+</div>
+<div *ngIf="showNotifyDamage">
+  <notify-damage [selectedAsset]="selectedAsset" (notify-damage-callback)="NotifyDamageCallBack($event)">
+
+  </notify-damage>
+</div>
+
+<div>
+  <asset-edit *ngIf="EditAsset" [selectedAssetForEdit]="selectedAssetForEdit"
+    (edit-callback)="AssetEditCallBack($event)">
+  </asset-edit>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="PrintView">
+  <div class="portlet-body form">
+    <div class="row clearfix">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Print Barcode Window</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body row  clearfix">
+              <div class="col-md-12">
+                <div class="row clearfix">
+                  <div id="printpage" class="text-center bar-code-wrapper">
+                    <p>{{selectedAsset.ItemName}}</p>
+                    <danphe-bar-code [barcode-number]="selectedAsset.BarCodeNumber">
+                    </danphe-bar-code>
+                    <p style="font-weight: 700;font-size: x-large;">
+                      {{selectedAsset.AssetCode}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer text-right">
+              <button type="button" class="btn btn-success" (click)="Print()">
+                Print</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Insurance Popup Model -->
+<div *ngIf="showInsuranceDetails">
+  <asset-insurance [selectedAsset]="selectedAsset" (callback)="InsuranceCallBack($event)">
+  </asset-insurance>
+
+
+</div>

@@ -1,0 +1,124 @@
+﻿<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+    <div class="portlet-body form">
+		<div class="row">
+			<div class="col-md-4 col-md-offset-4">
+				<div class="modelbox-div clearfix">
+				<div class="caption lb-caption">
+					<h3>
+						<span *ngIf="!update">Create Voucher</span>
+						<span *ngIf="update">Update Voucher</span>
+
+					</h3>
+					<a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+				</div>
+                     <form [formGroup]="CurrentVoucher.VoucherValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+				<div class="form-group">
+                                    <label class="control-label col-md-5">Voucher Name<sup>*</sup><b>:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentVoucher.VoucherName"
+                                               formControlName="VoucherName"
+                                               id="VoucherName"
+                                               placeholder="VoucherName" />
+
+                                        <span class="color-red font-sm" [hidden]="CurrentVoucher.IsValidCheck('VoucherName','required') || !(CurrentVoucher.IsDirty('VoucherName'))">VoucherName is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentVoucher.IsDirty('VoucherName')" [hidden]="CurrentVoucher.IsValidCheck('VoucherName','maxlength')"> Length is not proper</span>
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Voucher Code<sup>*</sup><b>:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentVoucher.VoucherCode"
+                                               formControlName="VoucherCode"
+                                               id="VoucherCode"
+                                               placeholder="VoucherCode" />
+                                        <span class="color-red font-sm" [hidden]="CurrentVoucher.IsValidCheck('VoucherCode','required') || !(CurrentVoucher.IsDirty('VoucherCode'))">Voucher Code is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentVoucher.IsDirty('VoucherCode')" [hidden]="CurrentVoucher.IsValidCheck('VoucherCode','maxlength')"> Length is not proper</span>
+                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Description<sup>*</sup><b>:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentVoucher.Description"
+                                               formControlName="Description"
+                                               id="Description"
+                                               placeholder="Description" />
+
+                                        <span class="color-red font-sm" [hidden]="CurrentVoucher.IsValidCheck('Description','required') || !(CurrentVoucher.IsDirty('Description'))">Voucher Description is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentVoucher.IsDirty('Description')" [hidden]="CurrentVoucher.IsValidCheck('Description','maxlength')"> Length is not proper</span>
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                                    <div class="col-md-7">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="isActive"
+
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentVoucher.IsActive"
+                                                           [ngModelOptions]="{standalone: true}" />
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Is Copy Description<b>:</b> </label>
+                                    <div class="col-md-7">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="isActive"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentVoucher.ISCopyDescription"
+                                                           [ngModelOptions]="{standalone: true}" />
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddVoucher()" value="Add Voucher" />
+                                    <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+
+                                </div>
+                
+            </div>
+        </form>       
+				</div>
+			</div>
+		</div>
+        
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

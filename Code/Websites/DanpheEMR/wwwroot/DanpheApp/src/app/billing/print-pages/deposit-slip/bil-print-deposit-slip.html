@@ -1,0 +1,222 @@
+<!-- Set Page: A5, A4, A3 -->
+<!-- Set Landscape or Portrait -->
+<style>
+  @page {
+    size: A5 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 10px;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+  }
+
+  .c_name {
+    font-size: 12px !important;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 10px !important;
+    margin: 0 0 0 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+  }
+</style>
+<section class="sheet" id="printDepositReceiptPage">
+  <div class="box-body invoice header" style="color: #000; font-weight: 600;">
+    <!-- <table style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="3" width="25%">
+          <img src="\themes\theme-default\images\office-logo-new.png" alt="Danphe Logo" height="70px" width="180px">
+        </td>
+        <td colspan="6" width="50%">
+          <h3 class="c_name" style="text-align: center;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+          <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Address}}</p>
+          <p class="c_paragraphs" style="text-align: center;">Ph No: {{headerDetail.Tel}}</p>
+        </td>
+        <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+          <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>{{headerDetail.CustomerRegLabel}}</strong> </p>
+        </td>
+      </tr>
+    </table> -->
+    <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+           *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'image'">
+      <tr>
+        <td>
+          <img src="\themes\theme-default\images\billing-invoice-header-image.png" alt="" style="width: 100%;">
+        </td>
+      </tr>
+    </table>
+    <table border="0" style="width: 100%; margin: 0 auto 5px auto; vertical-align: top !important" cellspacing="0" cellpadding="0"
+           *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'custom'">
+      <tr>
+        <td colspan="2" width="25%">
+          <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
+        </td>
+        <td colspan="4" width="50%">
+          <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.Address}}</p>
+          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">Ph No: {{headerDetail.Tel}}</p>
+        </td>
+        <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+          <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;">
+            <strong>{{headerDetail.CustomerRegLabel}}</strong>
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="12" style="text-align: center;">
+          <p><strong>Deposit Receipt</strong></p>
+        </td>
+      </tr>
+      <tr style="border: 1px solid #ccc;">
+        <td colspan="12" style="padding: 6px !important;">
+          <table style="width: 100%; margin-bottom: 0; line-height: 1.2;">
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Receipt No:<strong>{{deposit.FiscalYear}} {{'DP'}}-{{
+                    deposit.ReceiptNo}}</strong></p>
+              </td>
+              <td colspan="6" style="text-align: right;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Date: <strong>{{deposit.CreatedOn |
+                    DanpheDateTime:'format':'YYYY-MM-DD'}}
+                   </strong></p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Hospital No : <strong>{{deposit.PatientCode}}</strong></p>
+              </td>
+              <td colspan="6" style="text-align: right;" *ngIf="deposit.Address">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Address : <strong>{{deposit.Address}}</strong></p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Patient's Name: <strong>{{deposit.PatientName}}</strong></p>
+              </td>
+              <td colspan="6" style="text-align: right;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Payment Mode: <strong>{{deposit.PaymentMode}}</strong></p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs" style="margin-bottom: 1px;">Contact No: <strong>{{deposit.PhoneNumber}}</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr style="border: none;" *ngIf="deposit.TransactionType == 'depositdeduct'">
+        <td colspan="12" style="text-align: center; padding: 10px;">
+          <p class="c_name">Deposit Deducted Amount: <strong>{{coreService.currencyUnit}} {{deposit.OutAmount | number : "1.2-2"}}</strong></p>
+        </td>
+      </tr>
+
+      <tr style="border: none;" *ngIf="deposit.TransactionType == 'Deposit'">
+        <td colspan="12" style="text-align: center; padding: 10px;">
+        </td>
+      </tr>
+      <tr style="border: none;" *ngIf="deposit.TransactionType == 'ReturnDeposit'">
+        <td colspan="12" style="text-align: center; padding: 10px;">
+          <p class="c_name">Refund Amount: <strong>{{coreService.currencyUnit}} {{deposit.OutAmount | number : "1.2-2" }}</strong></p>
+        </td>
+      </tr>
+      <tr *ngIf="deposit.TransactionType === 'Deposit'">
+        <td colspan="12" style="text-align: center; padding: 0 10px 0 10px;">
+          <p class="c_paragraphs">Deposit of <strong> {{coreService.currencyUnit}} {{deposit.InAmount | number : "1.2-2"}} </strong>received
+            <strong *ngIf="deposit.CareOf">from {{deposit.CareOf}}</strong> for <strong>{{deposit.PatientName}}</strong>.
+          </p>
+        </td>
+      </tr>
+      <tr *ngIf="deposit.TransactionType === 'ReturnDeposit'">
+        <td colspan="12" style="text-align: center; padding: 0 10px 0 10px;">
+          <p class="c_paragraphs">Refund of <strong> {{coreService.currencyUnit}} {{deposit.OutAmount | number : "1.2-2"}} </strong>to
+            <strong>{{deposit.CareOf}}</strong> for <strong>{{deposit.PatientName}}</strong>.
+          </p>
+        </td>
+      </tr>
+      <tr *ngIf="deposit.TransactionType === 'Deposit'">
+        <td colspan="12" style="text-align: center; padding: 0 10px 10px 10px;">
+          <p class="c_paragraphs">In Words : <strong>{{deposit.InAmount | NumberInWords}} /- </strong>Only</p>
+        </td>
+      </tr>
+      <tr *ngIf="deposit.TransactionType === 'ReturnDeposit'">
+        <td colspan="12" style="text-align: center; padding: 0 10px 10px 10px;">
+          <p class="c_paragraphs">In Words : <strong>{{deposit.OutAmount | NumberInWords}} /- </strong>Only</p>
+        </td>
+      </tr>
+      <tr *ngIf="deposit.TransactionType === 'depositdeduct'">
+        <td colspan="12" style="text-align: center; padding: 0 10px 10px 10px;">
+          <p class="c_paragraphs">In Words : <strong>{{deposit.OutAmount | NumberInWords}} /- </strong>Only</p>
+        </td>
+      </tr>
+      <tr style="border-top: 1px solid #ccc;">
+        <td colspan="12" style="padding: 10px 10px 0 10px; vertical-align: top;">
+          <p class="c_paragraphs"><strong>Deposit Balance : </strong> {{deposit.DepositBalance | number : "1.2-2"}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="12" style="padding: 0 10px 10px 10px; vertical-align: top;">
+          <p class="c_paragraphs"><strong>Remarks: </strong>{{deposit.Remarks}} </p>
+        </td>
+      </tr>
+      <tr style="border-top: 1px solid #ccc;">
+        <td colspan="12" style="padding: 10px; text-align: left;">
+          <p class="c_paragraphs"><span *ngIf="deposit.TransactionType === 'Deposit'">Received By</span> <span
+                  *ngIf="deposit.TransactionType === 'ReturnDeposit'">Refunded by</span> {{deposit.BillingUser}} on {{DateTimeNow}}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<p style="text-align:center;" class="m1">
+  <button class="btn green btn-success" id="btn_PrintReceipt" (click)="print()">Print Receipt
+    <i class="glyphicon glyphicon-print"></i>
+  </button>
+</p>
+
+<select-printer [group-name]="'bill-receipt'" [storage-key]="'billing-deposit-slip'"
+                (on-printer-change)="OnPrinterChanged($event)">
+</select-printer>
+
+
+<new-print-page *ngIf="openBrowserPrintWindow" [print-data]="printDetaiils" (print-sucess)="callBackBillPrint()">
+</new-print-page>

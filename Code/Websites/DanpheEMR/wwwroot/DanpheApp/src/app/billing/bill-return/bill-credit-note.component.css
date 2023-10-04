@@ -1,0 +1,31 @@
+.patientinfoWarp {
+  background-color: #ddf7ff;
+}
+.patientinfoWarp tbody td {
+  color: #022a3e;
+  font-size: 0.85em;
+}
+.wrapper .ret-summary {
+  padding: 10px;
+  background-color: #f1f1f1 !important;
+  border-radius: 10px !important;
+}
+.search-section {
+}
+.search-section .search-wrap,
+.search-section .search-wrap .search-list {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0 15px;
+  margin: 0;
+}
+.search-section .search-wrap .search-list {
+  gap: 0 10px;
+}
+.search-section .search-wrap .search-list .form-control {
+  width: 150px !important;
+}
+.search-section .search-wrap .search-list .btn i {
+  margin-right: 5px;
+}

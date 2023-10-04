@@ -1,0 +1,62 @@
+<input type="button" class="btn btn-primary" (click)="AddCategory()" value="Add Sales Category" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="salesDetailsGridColumns" [grid-data]="salescategory" (grid-actions)="SalesDetailsGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showCategoryAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3><span >Add Sales Category</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> </div>
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentCategory.SalesCategoryValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Category<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" type="text"
+                            [(ngModel)]="CurrentCategory.Name"
+                           value=""
+                         [ngModelOptions]="{standalone: true}"
+                           placeholder="Enter Category" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Batch Applicable<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsBatchApplicable" type="checkbox" value="IsBatchApplicable" [(ngModel)]="CurrentCategory.IsBatchApplicable" [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Expiry Applicable <b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsExpiryApplicable" type="checkbox" value="IsExpiryApplicable" [(ngModel)]="CurrentCategory.IsExpiryApplicable" [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary" (click)="PostSalesCategoryDetails()" value="Add" />
+              </div>
+            </div>
+          </form>
+          <!--form end--> 
+          <!--Model Box Body End--></div>
+      </div>
+    </div>
+  </div>
+</div>

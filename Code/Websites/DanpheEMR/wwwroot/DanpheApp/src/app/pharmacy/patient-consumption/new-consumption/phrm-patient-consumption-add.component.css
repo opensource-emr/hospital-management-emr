@@ -1,0 +1,21 @@
+.d-flex,
+.colrow {
+  display: flex;
+  align-items: center;
+}
+.colrow {
+  justify-content: space-between;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+.colrow label {
+}
+.colrow label span {
+  font-weight: bold;
+}
+.colrow .col {
+  width: 100%;
+}
+#btn-add-nmc {
+  padding: 5px 10px;
+}

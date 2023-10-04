@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="patientConsumptionFinalizeGridColumns" [grid-data]="patientConsumptions"
+                     (grid-actions)="FinalizeConsumptionGridActions($event)"></danphe-grid>
+    </div>
+    <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowFinalizePrintPage">
+        <div class="portlet-body form">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3" style="margin-top: 50px;">
+                    <div class="modelbox-div clearfix">
+                        <a class="btn btn-danger del-btn" (click)="ClosePrintPage()">X</a>
+                        <div *ngIf="ShowFinalizePrintPage">
+                            <phrm-consumption-receipt [patient-consumption-id]="PatientConsumption.PatientConsumptionId"></phrm-consumption-receipt>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

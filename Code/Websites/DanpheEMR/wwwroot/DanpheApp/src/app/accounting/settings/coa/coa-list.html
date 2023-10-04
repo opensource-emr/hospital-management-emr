@@ -1,0 +1,85 @@
+<div>
+  <a class="btn blue bordered" style="background-color:#337ab7;" name="name" (click)="AddCOAPopup()">
+    <span class="glyphicon glyphicon-plus"></span>Create COA
+  </a>
+</div>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="coaGridColumns" [grid-data]="coaList" (grid-actions)="COAGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3>
+              <span *ngIf="!update"> Add chart of account</span>
+              <span *ngIf="update">Update chart of account</span>
+
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+
+          <form [formGroup]="coaObj.COAValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Primary Group<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <select class="form-control" maxlength="30" type="text" [(ngModel)]="coaObj.PrimaryGroupId"
+                    id="PrimaryGroup" (change)="PrimaryGroupChanged()" placeholder="PrimaryGroup"
+                    formControlName="primaryGroup">
+                    <option *ngFor="let pg of primaryGroupList" value={{pg.PrimaryGroupId}}>
+                      {{pg.PrimaryGroupName}}</option>
+                  </select>
+                  <span class="color-red font-sm"
+                    [hidden]="coaObj.IsValidCheck('primaryGroup','required') || !(coaObj.IsDirty('primaryGroup'))">COA
+                    name is required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">COA Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="30" type="text" [(ngModel)]="coaObj.ChartOfAccountName"
+                    formControlName="COAName" id="COAName" placeholder="COAName" />
+                  <span class="color-red font-sm"
+                    [hidden]="coaObj.IsValidCheck('COAName','required') || !(coaObj.IsDirty('COAName'))">COA
+                    name is required</span>
+
+                </div>
+              </div>
+              <!-- <div class="form-group">
+                <label class="control-label col-md-5">COA Code<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="30" type="text" [(ngModel)]="coaObj.COACode"
+                  [ngModelOptions]="{standalone: true}" id="COACode" placeholder="COACode" />
+                </div>
+              </div> -->
+             
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="200" type="text" [(ngModel)]="coaObj.Description"
+                    [ngModelOptions]="{standalone: true}" id="Description" placeholder="Description" />
+
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="saveCOA()" value="Add COA" />
+                <input type="button" class="btn btn-primary" *ngIf="update" (click)="UpdateCOA()" value="Update COA" />
+
+              </div>
+
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,414 @@
+<style>
+    @page {
+        size: A4 landscape;
+        margin-top: 8px;
+        margin-bottom: 10px;
+        margin-left: 20px;
+        font-size: 70%;
+        scale: 70%;
+        color: #333333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+        color: #333333 !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    table td,
+    table th {
+        padding: 0;
+        font-size: 12px;
+        color: #333333 !important;
+    }
+
+    .column {
+        float: left;
+        padding: 5px;
+    }
+
+    .box-body {
+        padding: 0px 10px 0 10px;
+        color: #333333 !important;
+    }
+
+    .c_name {
+        font-size: 14px !important;
+        margin-bottom: 0;
+        margin-top: 0;
+        color: #333333 !important;
+    }
+
+    .c_paragraphs {
+        font-size: 12px !important;
+        margin: 0 0 0 0;
+        padding: 0;
+        color: #333333 !important;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        border: none !important;
+        color: #333333 !important;
+    }
+
+    table td,
+    table th {
+        text-align: left;
+        vertical-align: top !important;
+        color: #333333 !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+</style>
+<div>
+    <div class="row">
+        <div class="col-md-3">
+            <button class="btn btn-primary" (click)="DirectDispatch()"
+                    rbac-permission='{"name":"btn-phrm-mainstore-direct-dispatch","actionOnInvalid":"remove"}'>
+                Direct&nbsp;Dispatch&nbsp;
+                <i class="fa fa-mail-reply-all fa-flip-horizontal"></i>
+            </button>
+        </div>
+
+        <div class="col-md-9" style="display: flex; flex-direction: row-reverse;">
+            <div class="input-group">
+                <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                        <input checked="checked" (change)="FilterRequisitionList('all')" name="name" style="width:15px;height:15px" type="radio"
+                               class="ng-untouched ng-pristine ng-valid">
+                        <span></span>ALL
+                    </label>
+                    <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                        <input name="name" (change)="FilterRequisitionList('complete')" style="width:15px;height:15px" type="radio"
+                               class="ng-untouched ng-pristine ng-valid">
+                        <span></span>Completed
+                    </label>
+                    <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                        <input name="name" (change)="FilterRequisitionList('pending')" style="width:15px;height:15px" type="radio"
+                               class="ng-untouched ng-pristine ng-valid">
+                        <span></span>Pending
+                    </label>
+                </div>
+            </div>
+        </div>
+        <!-- @*-----All Item Requisition List-----*@-->
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="requisitionGridColumns" [grid-data]="filterRequisitionList" [rangeType]="dateRange"
+                         [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInRequisitionGridSettings" (onDateChange)="onDateChange($event)"
+                         (grid-actions)="DeptGridAction($event)">
+            </danphe-grid>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDispatchList">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12 noPrint">
+                        <div class="caption" style="color:blue; margin-top:10px;">
+                        </div>
+                        <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        <hr />
+                    </div>
+                    <danphe-grid [grid-colDefaults]="DispatchListGridColumns" [grid-data]="dispatchList"
+                                 (grid-actions)="DispatchDetailsGridAction($event)" [NepaliDateInGridParams]="NepaliDateInDispatchListGridSettings"
+                                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+                    </danphe-grid>
+                    <hr />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Inner View-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetailsbyDispatchId">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+
+        <div class="col-md-12" style="display: flex; justify-content: center;">
+            <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                <div><a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel"><span class="fa fa-times">
+                        </span></a></div>
+                <!-- Nepali Dispatch Receipt -->
+                <app-dispatch-np-view *ngIf="showNepaliReceipt else EnglishReceiptView" [dispatch-id]="DispatchId"
+                                      [module-type]="'pharmacy-dispensary'" (call-back-close)="Close()">
+                </app-dispatch-np-view>
+                <!-- English Dispatch Receipt -->
+                <ng-template #EnglishReceiptView>
+                    <div id="printpage" class="row printStyle print-border">
+                        <div class="A5 auto">
+                            <section class="sheet" id="content-print">
+                                <div class="box-body invoice header">
+                                    <table border="0" style="margin: 0 auto;" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td colspan="3" width="25%">
+                                                <img class="img-responsive" style="max-height: 50px"
+                                                     src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                                            </td>
+                                            <td colspan="4" width="50%">
+                                                <h3 class="c_name" style="text-align: center;"><strong>{{ headerDetail.hospitalName }}</strong></h3>
+                                                <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.address }}</p>
+                                                <p class="c_paragraphs" style="text-align: center;">Ph No: {{ headerDetail.tel }}</p>
+                                            </td>
+                                            <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+                                                <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>PAN No.
+                                                        : {{ headerDetail.PANno }} </strong> </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table border="0" style="margin: 0 auto;" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td colspan="12" style="text-align: center; padding: 0 10px;">
+                                                <p style="margin: 0 0 5px 0;"><strong>Issue Note</strong></p>
+                                            </td>
+
+                                        </tr>
+                                        <tr style="border: 1px solid #ccc;">
+                                            <td colspan="12" style="padding: 5px 5px !important;">
+                                                <table style="width: 100%; margin-bottom: 0;">
+                                                    <tr>
+                                                        <td colspan="6" style="text-align: left;">
+                                                            <p class="c_paragraphs">Dispatch Id : <strong>
+                                                                    {{innerDispatchdetails.DispatchId}}</strong></p>
+                                                        </td>
+                                                        <td colspan="6" style="text-align: right;">
+                                                            <p class="c_paragraphs">Dispatch Date :<strong> {{innerDispatchdetails.DispatchedDate |
+                                                                    date:"yyyy-MM-dd"}} &nbsp;
+                                                                    <i *ngIf="innerDispatchdetails.DispatchedDate">({{innerDispatchdetails.DispatchedDate
+                                                                        |
+                                                                        nepaliDate:'format':'YYYY-MM-DD'}} BS )</i></strong>
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="6" style="text-align: left;">
+                                                            <p class="c_paragraphs">Requisition No :
+                                                                <strong>{{innerDispatchdetails.RequisitionNo}}</strong>
+                                                            </p>
+                                                        </td>
+                                                        <td colspan="6" style="text-align: right;">
+                                                            <p class="c_paragraphs">Requisition Date :<strong>{{requisitionDate |
+                                                                    date:"yyyy-MM-dd"}}</strong>
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="6" style="text-align: left;">
+                                                            <p class="c_paragraphs">From :<strong>{{innerDispatchdetails.SourceStore}}</strong></p>
+                                                            <p class="c_paragraphs">To :<strong>{{innerDispatchdetails.TargetStore}}</strong></p>
+                                                        </td>
+                                                        <td colspan="6" style="text-align: right;">
+
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td colspan="12"
+                                                style="padding: 10px 5px !important; border-bottom: 1px solid #ccc; font-weight: bold; text-align: center;">
+                                                <p style="margin: 0 0 5px 0;"><strong>Dispatch Details Print</strong></p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="padding: 5px 5px !important; width: 2%;">SN.</th>
+                                            <th colspan="2" style="padding: 5px 5px !important;">Item Name</th>
+                                            <th style="padding: 5px 5px !important;">From Rack</th>
+                                            <th style="padding: 5px 5px !important;">To Rack</th>
+                                            <th style="padding: 5px 5px !important;">Item Code</th>
+                                            <th style="padding: 5px 5px !important;">UOM</th>
+                                            <th style="padding: 5px 5px !important;">Batch No</th>
+                                            <th style="padding: 5px 5px !important;">Expiry Date</th>
+                                            <th style="padding: 5px 5px !important;">Dispatched Qty.</th>
+                                            <th style="padding: 5px 5px !important;">Rate</th>
+                                            <th style="padding: 5px 5px !important;">Amount</th>
+
+                                        </tr>
+                                        <tr style="text-align:center" *ngFor="let row of dispatchListbyId ; let i= index ">
+                                            <td style="padding: 5px 5px !important; width: 2%;">{{ i+ 1 }}</td>
+                                            <td colspan="2" style="padding: 5px 5px !important;">{{row.ItemName}}(<i
+                                                   style="color: blue;">{{row.GenericName}}</i>) </td>
+                                            <td style="padding: 5px 5px !important; ">{{row.FromRack1}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.ToRackNo1}}</td>
+                                            <td style="padding: 5px 5px !important;">{{row.ItemCode}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.UOMName}}</td>
+                                            <td style="padding: 5px 5px !important;">{{row.BatchNo}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.ExpiryDate | date}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.DispatchedQuantity}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.CostPrice}}</td>
+                                            <td style="padding: 5px 5px !important; ">{{row.CostPrice * row.DispatchedQuantity }}</td>
+                                        </tr>
+
+                                        <tr style="border-top: 1px solid #ccc;">
+                                            <td colspan="2" style="padding: 20px 10px; vertical-align: top;">
+
+                                            </td>
+                                            <td colspan="4" style="padding: 20px 10px; vertical-align: top;">
+
+                                            </td>
+                                            <td colspan="2" style="padding: 20px 10px; vertical-align: top;">
+
+                                            </td>
+                                            <td colspan="2" style="padding: 20px 10px; vertical-align: top;">
+
+                                            </td>
+                                            <td colspan="2" style="padding: 20px 10px; vertical-align: top;">
+
+                                            </td>
+
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid #ccc;">
+                                            <td colspan="4" style="padding: 5px 10px 10px 10px !important; vertical-align: top;">
+                                                <p class="c_paragraphs">Requested By:&nbsp;
+                                                    <b>{{innerDispatchdetails.CreatedByName}}</b>
+                                                </p>
+                                            </td>
+                                            <td colspan="4" style="padding: 5px 10px 10px 10px !important; vertical-align: top; text-align: center;">
+                                                <p class="c_paragraphs">Received By:&nbsp;
+                                                    <b>{{innerDispatchdetails.ReceivedBy}}</b>
+                                                </p>
+                                            </td>
+                                            <td colspan="4" style="padding: 5px 10px 10px 10px !important; vertical-align: top; text-align: right;">
+                                                <p class="c_paragraphs">Dispatched By:&nbsp;
+                                                    <b>{{innerDispatchdetails.DispatchedByName}}</b>
+                                                </p>
+                                            </td>
+
+                                        </tr>
+
+
+                                    </table>
+                                </div>
+
+                            </section>
+                        </div>
+                        <!-- <div style="text-align:center;">
+                            <div class="col-md-12">
+                                <div class="row" style="margin-bottom: 10px;">
+                                    <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+                                        <img class="img-responsive" style="max-height:70px;"
+                                             src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+                                    </div>
+                                    <div style="width: 64%;float: left;padding-bottom:  0px;">
+                                        <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                                            <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                                            <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                                            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                                                headerDetail.tel}}</span><br />
+                                            <span style="font-size:15px;"><strong> Issue Note </strong></span><br />
+                                        </div>
+                                    </div>
+                                    <div style="float: left;">
+                                        <div class="qr-code" style="position: absolute; right: 12px; top: 9px;">
+                                            <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+                                        </div>
+                                    </div>
+                                   
+                                    <div style="clear:left"></div>
+                                </div>
+                                <div class="clear"></div>
+                                <div class="left" style="text-align:left;">
+                                    <p>Dispatch Id :<b> {{innerDispatchdetails.DispatchId}}</b></p>
+                                    <p>Requisition No:<b> {{innerDispatchdetails.RequisitionNo}}</b></p>
+                                    <p>From :<b> {{innerDispatchdetails.SourceStore}}</b></p>
+                                    <p>To :<b> {{innerDispatchdetails.TargetStore}}</b></p>
+                                </div>
+                                <div class="right" style="text-align:right;">
+                                    <p *ngIf="requisitionId > 0">Dispatch Date:<b> {{innerDispatchdetails.CreatedOn | date}}</b>&nbsp;
+                                        <i *ngIf="innerDispatchdetails.CreatedOn">({{innerDispatchdetails.CreatedOn |
+                                            nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                    </p>
+                                    <p *ngIf="!requisitionId">Dispatch Date:<b> {{currentDate | date}}</b>&nbsp;
+                                        <i *ngIf="currentDate">({{currentDate |
+                                            nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                    </p>
+                                    <p>Requisition Date:<b> {{requisitionDate | date}}</b>&nbsp;
+                                        <i *ngIf="requisitionDate">({{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                    </p>
+                                </div>
+                                <div class="clear"></div>
+                                <p class="text-center btm-pad border-up-down"><b>DISPATCH DETAILS PRINT</b></p>
+                                <div class="clear"></div>
+                                <div class="clear footer"></div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;width:100%">
+                                        <thead>
+                                            <tr style="font-weight: bold;text-align:center">
+                                                <td>S.N</td>
+                                                <td>Item Name</td>
+                                                <td>From Rack </td>
+                                                <td>To Rack </td>
+                                                <td>Item Code</td>
+                                                <td>UOM</td>
+                                                <td>Batch No</td>
+                                                <td>Expiry Date</td>
+                                                <td>Dispatched Qty.</td>
+                                                <td>Rate</td>
+                                                <td>Amount</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr style="text-align:center" *ngFor="let row of dispatchListbyId ; let i= index ">
+                                                <td><b>{{ i+ 1 }}</b></td>
+                                                <td>{{row.ItemName}}(<i style="color: blue;">{{row.GenericName}}</i>)</td>
+                                                <td>{{row.FromRack1}}</td>
+                                                <td>{{row.ToRackNo1}}</td>
+                                                <td>{{row.ItemCode}}</td>
+                                                <td>{{row.UOMName}}</td>
+                                                <td>{{row.BatchNo}}</td>
+                                                <td>{{row.ExpiryDate | date}}</td>
+                                                <td>{{row.DispatchedQuantity}}</td>
+                                                <td>{{row.CostPrice}}</td>
+                                                <td>{{row.CostPrice * row.DispatchedQuantity }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr />
+                                <div class="col-md-12">
+                                    <div style="text-align: left" class="col-md-4">Requested By:&nbsp;
+                                        <b>{{innerDispatchdetails.CreatedByName}}</b>
+                                    </div>
+                                    <div *ngIf="receivedby!=null" style="text-align: left" class="col-md-4">Received By:&nbsp;
+                                        <b>{{innerDispatchdetails.ReceivedBy}}</b>
+                                    </div>
+                                    <div style="text-align: left" class="col-md-4">Dispatched By:&nbsp;
+                                        <b>{{innerDispatchdetails.DispatchedByName}}</b>
+                                    </div>
+                                </div>
+                                <div style="float:right">
+                                    &nbsp; &nbsp;
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </ng-template>
+                <div class="row center-style" *ngIf="!showNepaliReceipt">
+                    <div class="col-md-12 col-xs-12 ">
+                        <a (click)="print()" class="btn btn-default" style="">
+                            Print
+                            <i class="glyphicon glyphicon-print"></i>
+                        </a><span> </span><span> </span>
+                    </div>
+                </div>
+                <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+</div>

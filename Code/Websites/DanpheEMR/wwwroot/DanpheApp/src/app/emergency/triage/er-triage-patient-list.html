@@ -1,0 +1,211 @@
+<style>
+  .divTab {
+    font-weight: bold;
+    border: 1px solid;
+  }
+  .blackText{
+    background-color: #0773bc !important;
+    border-color: #0773bc !important;
+    font-weight: normal;
+    color: black;
+  }
+</style>
+
+
+<div *ngIf="showOrderPopUp" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+  <div class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <er-ward-billing (sendBackERPatientOrderData)="ReturnFromOrderAndLamaAction($event)" [isPopUp]="true" [selectedPatient]="selectedTriagedPatientForOrder"></er-ward-billing>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showAdmitPopUp" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+  <div class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <div class="cstm-pat-registration er-pat-registration">
+        <div class="row">
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="form-group">
+                <div class="col-md-12">
+                  <div class="row">
+                    <a class="btn blue bordered btn-sm cstm-pat-registration-hdr" name="Anonymous Patient">
+                      <span style="display: inline-block; margin-left: 5px;">Reserve Bed for {{selectedPatient.FullName}}</span>
+                    </a>
+                  </div>
+                </div>               
+
+                <div class="col-md-12">
+                  <admission-reserve *ngIf="showAdmitPopUp" [requestingDepartmentName]="currentDepartmentName" [actionName]="'emergency'"                                     
+                   [patientVisitId]="selectedPatient.PatientVisitId" [patientId]="selectedPatient.PatientId"
+                                     (closePopUp)="ReturnFromPatBedReservation($event)"></admission-reserve>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a (click)="CloseAllERPatientPopUp()" class="cstm-popup-closecross-btn"><i class="fa fa-2x fa-close"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showlamaPopUp" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+  <div class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <er-patient-lama (sendBackERPatientLamaData)="ReturnFromOrderAndLamaAction($event)"
+                       [currentPatientToLeave]="selectedPatient" [action]="action"></er-patient-lama>
+    </div>
+  </div>
+</div>
+
+<!--put this if want to close pop up if clicked outside (click)="ParentOfPopUpClicked($event)"-->
+<div *ngIf="showERPatRegistration" class="cstm-popup-holder" style="padding: 55px;">
+  <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                               [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showAssignDoctor" class="cstm-popup-holder" style="padding: 55px;">
+  <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <assign-doctor (sendBackERPatientData)="ReturnFromAssignDoctor($event)" [allDoctorList]="doctorsList"
+                     [currentPatientToAssign]="selectedERPatientToEdit"></assign-doctor>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showAddVitals" class="cstm-popup-holder" style="padding: 55px;">
+  <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+    <div style="width: 100%; height: auto;">
+      <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId"  (callback-add)="ReturnFromAllERPatientActions($event)"></vitals-add>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="triaged-patient-tablelist table-responsive">
+  <div class="row">
+    <div class="col-md-4">
+      <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+    </div>
+    <div class="col-md-4 col-md-offset-4">
+      <patient-cases (selected-cases-list)="PatientCasesOnChange($event)"></patient-cases>
+  </div>
+  </div>
+  
+
+  <table class="table  vert-scrollable tbl-er-triage-list">
+    <thead class="table-header-bg">
+      <tr>
+        <th scope="col" class="wd-60">S.N.</th>
+        <th scope="col" class="wd-100">
+          Triage Status
+        </th>
+        <th scope="col" class="wd-100">
+          Hospital No.
+        </th>
+        <th scope="col" class="wd-230">
+          Patient Name
+        </th>
+        <th scope="col" class="wd-60">
+          Age/Sex
+        </th>
+        <th scope="col" class="wd-100">
+          Phone No.
+        </th>
+        <th scope="col" class="wd-110">
+          Visit Date
+        </th>
+        <th scope="col">
+          Actions
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let pat of filteredData | searchFilter: searchString | async; let i = index;">
+        <tr>
+          <td class="wd-60">
+            {{i+1}}
+          </td>
+          <td class="wd-100">
+            {{pat.TriageCode}}<a (click)="UndoTriage(pat)" title="undo triage" class="td-action"><i class="fa fa-undo action-td-icon"></i></a>
+          </td>
+          <td class="wd-100">
+            {{pat.PatientCode}}
+          </td>
+          <td class="wd-230">
+            <p title="pat.FullName">{{pat.FullName}}</p> <a (click)="EditPatInfo(pat)" title="edit this patient" class="td-action"><i class="fa fa-pencil action-td-icon"></i></a>
+          </td>
+          <td class="wd-60">
+            {{pat.AgeSex}}
+          </td>
+          <td class="wd-100">
+            {{pat.ContactNo}}
+          </td>
+          <td class="wd-110">
+            {{pat.VisitDateTime  | DanpheDateTime:'format':'YYYY-MM-DD'}}
+          </td>
+          <td class="action-btns">
+
+            <a class="grid-action" (click)="GoToPatientOverview(pat)"><i class="fa fa-tv" style="padding: 3px;" title="overview"></i></a>
+            <a class="grid-action" (click)="AddVitals(pat)">Add Vitals</a>
+            <a class="grid-action" (click)="OrderForERPat(pat)">Order</a>
+            <a class="grid-action" (click)="AssignDoctor(pat)">Assign Doctor</a>            
+
+            <div class="dropdown" style="display:inline-block;">
+              <button class="dropdown-toggle grid-btnCstm ER-grid-btnCstm" type="button" data-toggle="dropdown">
+                Outcome...
+                <span class="caret"> </span>
+              </button>
+              <ul class="dropdown-menu grid-ddlCstm er-grid-ddlCstm">
+                <li><a (click)="AdmitERPatient(pat)" class="blackText">Admit</a></li>
+                <li><a (click)="TransferERPatient(pat)" class="blackText">Transfer</a></li>
+                <li><a (click)="DischargeERPatient(pat)" class="blackText">Discharge</a></li>
+                <li><a (click)="LeaveERPatOnMedicalAdvice(pat)" class="blackText">LAMA</a></li>
+                <li><a (click)="DeathCaseOfERPatient(pat)" class="blackText">Death</a></li>
+                <li><a (click)="DischargeERPatientOnRequest(pat)" class="blackText">DOR</a></li>
+                <li><a (click)="UploadConsent(pat)" class="blackText">Upload Consent</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+
+  <!--<danphe-grid [grid-colDefaults]="TriagedERPatientGridCol" [grid-data]="TriagedERPatients" (grid-actions)="EditAction($event)">
+  </danphe-grid>-->
+  <div *ngIf="showUploadConsent.upload_files" class="popup-static portlet box portlet-fullscreen custom_modal"> 
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="modelbox-div clearfix">
+            <div class="caption custom-caption">
+              <h3> <span>Upload Files</span></h3>
+              <a class="btn btn-danger" (click)="showUploadConsent.upload_files=false" title="Cancel">X</a>
+            </div>
+  
+            <div class="col-md-12">
+              <upload-consent *ngIf="showUploadConsent.upload_files"
+              [ERPatientId]="selectedPatient.ERPatientId"
+                [patientDetail]="selectedPatient"
+                (callBackFileUploadClose)="CallBackForClose($event)">
+              </upload-consent>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+</div>
+
+

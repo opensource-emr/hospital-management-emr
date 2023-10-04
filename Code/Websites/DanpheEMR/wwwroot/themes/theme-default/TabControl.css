@@ -1,0 +1,264 @@
+﻿/** {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}*/
+
+h1 {
+    margin: 1em 0;
+    text-align: center;
+}
+
+
+.tabs {
+    position: relative;
+    background: transparent;
+}
+
+    .tabs [index] {
+        display: inline-block;
+        border: none !important;
+        padding: 5px 10px;
+        /*border-radius: 2px 2px 0 0;*/
+        /*border-radius: .5em .5em .5em .5em;*/
+        color: white !important;
+        cursor: pointer;
+        font-size: 1em;
+        height: 2.5em;
+        line-height: 2.5em;
+        text-align: center;
+        box-shadow: 2px 2px 2px 2px #847070;
+        background-color: #7AA1C8;
+        /*border-color: #ff6c60;*/
+        width: 150px;
+        padding: 0px !important;
+    }
+
+
+.tab-contents {
+    border: none !important;
+    border-radius: 2px;
+    min-height: 3em;
+}
+
+
+#container {
+    margin-top: -7px;
+    width: 100%; /* Ancho del contenedor */
+}
+
+    #container input {
+        height: 2.5em;
+        visibility: hidden;
+    }
+
+    #container label {
+        /*background: #f9f9f9;*/ /* Fondo de las pestañas */
+        border-radius: 1em 1em 1em 1em;
+        color: #211469; /* Color del texto de las pestañas */
+        cursor: pointer;
+        display: block;
+        float: left;
+        font-size: 1em; /* Tamaño del texto de las pestañas */
+        height: 2.5em;
+        line-height: 2.5em;
+        margin-right: .25em;
+        padding: 0 1.5em;
+        text-align: center;
+        font-weight: bold;
+        /*added for testing sudarshan*/
+        box-shadow: 0 4px #d1595a;
+        background-color: #ff6c60;
+        /*border-color: #ff6c60;*/
+    }
+
+    #container input:hover + label {
+        background: #ddd; /* Fondo de las pestañas al pasar el cursor por encima */
+        color: #666; /* Color del texto de las pestañas al pasar el cursor por encima */
+    }
+
+    #container input:checked + label {
+        background: #f1f1f1; /* Fondo de las pestañas al presionar */
+        color: #444; /* Color de las pestañas al presionar */
+        position: relative;
+        z-index: 6;
+        /*
+	-webkit-transition: .1s;
+	-moz-transition: .1s;
+	-o-transition: .1s;
+	-ms-transition: .1s;
+	*/
+    }
+
+#content {
+    /*border: 2px solid blue;*/
+    border-radius: 3em 3em;
+    min-height: 30em; /* Alto del contenido */
+    position: relative;
+    width: 100%;
+    z-index: 5;
+}
+
+    #content div {
+        opacity: 0;
+        padding: 1.5em;
+        position: absolute;
+        z-index: -100;
+        /*
+	transition: all linear 0.1s;
+	*/
+    }
+
+#content-0 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-0 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-0 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-1 p {
+    clear: both;
+    margin-bottom: 1em;
+}
+
+    #content-1 p.left img {
+        float: left;
+        margin-right: 1em;
+    }
+
+    #content-1 p.last {
+        margin-bottom: 0;
+    }
+
+#content-2 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-2 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-2 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-3 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-3 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-3 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-4 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-4 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-4 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-5 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-5 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-5 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-6 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-6 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-6 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+#content-7 p {
+    float: left;
+    width: 48.5%;
+}
+
+    #content-7 p.column-right {
+        margin-left: 3%;
+    }
+
+    #content-7 p img {
+        display: block;
+        margin: 0 auto 1em auto;
+    }
+
+
+#content-8 p,
+#content-8 ul {
+    margin-bottom: 1em;
+}
+
+#content-8 ul {
+    margin-left: 2em;
+}
+
+#container input#tab-0:checked ~ #content #content-0,
+#container input#tab-1:checked ~ #content #content-1,
+#container input#tab-2:checked ~ #content #content-2,
+#container input#tab-3:checked ~ #content #content-3,
+#container input#tab-4:checked ~ #content #content-4,
+#container input#tab-5:checked ~ #content #content-5,
+#container input#tab-6:checked ~ #content #content-6,
+#container input#tab-7:checked ~ #content #content-7,
+#container input#tab-8:checked ~ #content #content-8 {
+    opacity: 1;
+    z-index: 100;
+}
+
+input.visible {
+    visibility: visible !important;
+}
+
+/*Hari (04-03-2017)-added CSS for tabcontrol screen*/
+.tabs [index].selected {
+    color: #532c7b !important;
+    cursor: pointer;
+    height: 2.5em;
+    line-height: 2.5em;
+    box-shadow: 0 4px #7AA1C8;
+    background-color: #C0D5F0;
+    border-top-color: #C0D5F0;
+    width: 150px;
+    font-weight: bold;
+}

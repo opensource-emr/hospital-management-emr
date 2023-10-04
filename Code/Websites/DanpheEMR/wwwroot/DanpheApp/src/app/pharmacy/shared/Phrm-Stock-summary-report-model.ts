@@ -1,0 +1,44 @@
+export class PHRMStockSummaryReportModel {
+    StoreId: number;
+    StoreName: string;
+    ItemId: number;
+    GenericName: string;
+    ItemName: string;
+    ItemCode: string;
+    UOMName: string;
+    BatchNo: string;
+    ExpiryDate: string;
+    CostPrice: number; 
+    SalePrice: number;
+    OpeningQty: number;
+    OpeningValue: number;
+    PurchaseQty: number;
+    PurchaseValue: number;
+    PurchaseReturnQty: number;
+    PurchaseReturnValue: number;
+    SalesQty: number;
+    SalesValue: number;
+    SaleReturnQty: number;
+    SaleReturnValue: number;
+    ProvisionalQty: number;
+    ProvisionalValue: number;
+    WriteOffQty: number;
+    WriteOffValue: number;
+    ConsumptionQty: number;
+    ConsumptionValue: number;
+    StockManageInQty: number;
+    StockManageInValue: number;
+    StockManageOutQty: number;
+    StockManageOutValue: number;
+    TransferInQty: number;
+    TransferInValue: number;
+    TransferOutQty: number;
+    TransferOutValue: number;
+    ClosingQty: number;
+    ClosingValue: number;
+    OpeningQty_WithProvisional: number;
+    OpeningValue_WithProvisional: number;
+    ClosingValue_WithProvisional: number;
+    ClosingQty_WithProvisional: number;
+
+}

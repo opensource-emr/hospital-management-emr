@@ -1,0 +1,19 @@
+export class PharmacyPendingBillItemsViewModel {
+    InvoiceItemId: number = 0;
+    ItemId: number = 0;
+    ItemName: string = '';
+    BatchNo: string = '';
+    ExpiryDate: string = '';
+    Quantity: number = 0;
+    SalePrice: number = 0;
+    Price: number = 0;
+    SubTotal: number = 0;
+    TotalAmount: number = 0;
+    TotalDisAmt: number = 0;
+    CreatedOn: string = '';
+    User: string = '';
+    StoreId: number = 0;
+    CounterId: number = 0;
+    PrescriberId: number = 0;
+    PriceCategoryId: number = 0;
+}

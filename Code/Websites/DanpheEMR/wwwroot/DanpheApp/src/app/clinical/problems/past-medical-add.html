@@ -1,0 +1,126 @@
+<style>
+    .cstm-add-heading {
+        font-size: 20px;
+    }
+
+    .active-prb {
+        padding: 0px;
+    }
+
+    . {
+        margin-bottom: 0px;
+    }
+
+    .addbtn {
+        margin-left: 4.3%;
+        top: 5px;
+    }
+</style>
+
+<form *ngIf="addPastProblemBox" [formGroup]="CurrentPastProblem.PastMedicalValidator">
+    <div class="prob-entry hm-form">
+        <h3 class="cstm-add-heading">Add Past Problem</h3>
+        <div class="active-prb">
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-md-5">Search Problem<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                        <div class="autocomplete-item" *ngIf="ICD10List && ICD10List.length>0">
+                            <input danphe-auto-complete class="form-control" [(ngModel)]="icd10Selected" [source]="ICD10List" formControlName="ICD10Code" [list-formatter]="ICDListFormatter" placeholder="{{IcdVersionDisplayName}}" display-property-name="ICD10Description" value-property-name=null (valueChanged)="AssignSelectedICD()" onClick="this.select();" match-formatted="true" [grid-sort]="'ICD10Description'" max-num-list="20" />
+                            <span class="color-red font-sm" *ngIf="CurrentPastProblem.IsDirty('ICD10Code')" [hidden]="CurrentPastProblem.IsValidCheck('ICD10Code','required')">Select {{IcdVersionDisplayName}} Code</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="icheck-inline">
+                    <div class="row">
+                        <label class="control-label col-md-5">Mark if Principle Problem <b>:</b></label>
+                        <div class="col-md-7">
+                            <label class="mt-checkbox mt-checkbox-outline mat-checkbox-frame">
+                                <input id="PrincipleProblem" type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentPastProblem.PrincipleProblem" />
+                                <span></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-md-5">Current Status<b>:</b></label>
+                    <div class="col-md-7">
+                        <input type="text" class="form-control" maxlength="200" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentPastProblem.CurrentStatus" />
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-md-5">OnSet Date<sup class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                        <input type="date" class="form-control" formControlName="OnSetDate" [(ngModel)]="CurrentPastProblem.OnSetDate" />
+                        <span class="error-msg" *ngIf="CurrentPastProblem.IsDirty('OnSetDate')" [hidden]="CurrentPastProblem.IsValidCheck('OnSetDate','wrongDate')">Enter Valid Date</span>
+
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-md-5">Resolved Date<b>:</b></label>
+                    <div class="col-md-7">
+                        <input type="date" value="null" [(ngModel)]="CurrentPastProblem.ResolvedDate" [ngModelOptions]="{standalone: true}" />
+                        <!--<span class="error-msg"
+                                  *ngIf="CurrentPastProblem.IsDirty('ResolvedDate') && CurrentPastProblem.OnSetDate!=null"
+                                  [hidden]="CurrentPastProblem.IsValidResolvedDate()">
+                                Resolved date cannot be before OnSet date.
+                            </span>-->
+
+                        <!--<span class="error-msg"
+                                  *ngIf="CurrentPastProblem.IsDirty('ResolvedDate')"
+                                  [hidden]="CurrentPastProblem.IsValidCheck('ResolvedDate','wrongDate')">
+                                Enter Valid Date
+                            </span>-->
+
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-md-5">Note <sup class="color-red"></sup><b>:</b></label>
+                    <div class="col-md-7">
+                        <textarea type="text" maxlength="1000" [(ngModel)]="CurrentPastProblem.Note" [ngModelOptions]="{standalone: true}"></textarea>
+
+                        <!--<span class="color-red font-sm"
+              *ngIf="CurrentPastProblem.IsDirty('Note')"
+              [hidden]="CurrentPastProblem.IsValidCheck('Note','required')">
+            Note is required.
+        </span>-->
+
+                        <!--<span class="color-red font-sm"
+                                  *ngIf="CurrentPastProblem.IsDirty('Note')"
+                                  [hidden]="CurrentPastProblem.IsValidCheck('Note','maxlength')">Note should not exceed 200 characters.</span>-->
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-offset-3 col-md-9 addbtn text-right">
+                <input type="button" class="btn primary-btn" [disabled]="!(CurrentPastProblem.IsValid())" name="name" value="Add Problem" (click)="AddPastMedical()" />
+            </div>
+        </div>
+
+        <div class="cstm-close">
+            <a (click)="ClosePastMedicalBox()"><i class="fa fa-close"></i> </a>
+        </div>
+
+    </div>
+</form>

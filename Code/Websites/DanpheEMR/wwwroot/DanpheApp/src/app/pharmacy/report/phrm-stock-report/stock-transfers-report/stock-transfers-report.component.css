@@ -1,0 +1,19 @@
+.mt-checkbox {
+  margin: 0;
+  padding-left: 15px !important;
+}
+.mt-checkbox input[type="checkbox"] {
+  left: 0;
+  position: static;
+}
+.stock-filter {
+}
+.stock-filter .row {
+  margin: 0 -5px;
+}
+.stock-filter [class*="col-"] {
+  padding: 0 5px !important;
+}
+.stock-filter .btn {
+  padding: 5px 10px;
+}

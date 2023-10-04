@@ -1,0 +1,23 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form" style="padding-top: 20px !important;">
+    <div class="modelbox-div modelbox-custm col-md-11"
+      style="margin-left: 20%;border-radius: 0px !important;padding: 0px 0px 10px;font-size: 16px;width: 60%;">
+      <button class="btn-danger closeBtn" (click)="OnPopupClosed()" style="float:right;"> <i
+          class="fa fa-close"></i>Close </button>
+      <div class="col-md-12" style="padding: 0px;text-align: center;"
+        *ngIf="currPatientInfo && currPatientInfo.PatientId">
+        <div style="text-align:center;">
+          <p style="background-color: #ff723f;color: #ffffff;padding: 3px 10px;font-weight: bold;"> EMERGENCY PATIENT !!
+          </p>
+        </div>
+        <p> This patient <b>({{currPatientInfo.ShortName}}) </b>has last visited Emergency on
+          {{currPatientInfo.LatestVisitDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}} <br />
+          Do you want to continue with Emergency Billing ? </p>
+        <button class="btn blue" (click)="ContinueERBilling()"> Yes, Continue with ER-Billing </button>
+        <button class="btn blue" (click)="ChangeToOutpatient()"
+          style="background-color: green !important;font-weight: bold;margin-left: 20px;"> No, Change To Outpatient
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

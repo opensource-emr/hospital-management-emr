@@ -1,0 +1,87 @@
+<style>
+    .table-fixed {
+        width: 100%;
+        background-color: #f3f3f3;
+    }
+</style>
+
+
+
+<div class="wrapper">
+    <div class="row">
+        <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject" style="text-transform: uppercase;">Materialized Sales View</span>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+                </from-to-date-select>
+            </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="GetInvoiceDetails()">
+                        <i class="fa fa-search"></i> Show Report
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+
+        <hr />
+        <danphe-grid [grid-colDefaults]="bilInvoiceDetailGridColumns" [grid-data]="curtInvoiceDetail"
+            [grid-exportOptions]="GetGridExportOptions()" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+            [show-print-button]="true" [grid-footer-content]="footerContent" [grid-date-range]="dateRange" [report-for]="'systemadmin'">
+        </danphe-grid>
+
+    </div>
+    <div class="row" id="summaryFooter" style="margin-bottom: 60px;">
+    <div class="col-lg-12 col-sm-12" *ngIf="curtInvoiceDetail && curtInvoiceDetail.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+          <div style="padding-top:7px;">
+            <!-- <h4 style="font-weight:bold;">
+              Summary 
+            </h4> -->
+            <div style=" margin: 0px auto">
+              <table class="tbl-summ" border="1" style="width:30%;">
+                <tr style="text-align: center; font-weight: bold;"> 
+                   <td colspan="3">Summary</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">A</td>
+                  <td>Total Sales </td>
+                  <td>{{ summaryFormatted.TotalSales }}</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">B</td>
+                  <td>Total Discount Amount</td>
+                  <td>{{ summaryFormatted.TotalDiscountAmount }}</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">C</td>
+                  <td>Total Taxable Amount</td>
+                  <td>{{ summaryFormatted.TotalTaxableAmount }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">D</td>
+                    <td>Total Tax Amount</td>
+                    <td>{{ summaryFormatted.TotalTaxAmount }}</td>
+                  </tr>
+                <tr style="border: 2px solid;">
+                    <td style="text-align: center;">E</td>
+                  <td style="font-weight: bold;">Total Amount (A-B+D)) </td>
+                  <td style="font-weight: bold;">{{ summaryFormatted.TotalAmount }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

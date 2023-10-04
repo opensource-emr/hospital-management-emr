@@ -1,0 +1,13 @@
+<div style="padding: 5px;">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <span class="caption-subject" style="color:rgb(97, 97, 209);">Insurance Claim Scrubbing</span>
+    </div>
+  </div>
+  <danphe-grid *ngIf="claimSubmissionPendingList.length > 0" [grid-colDefaults]="pendingClaimListGridColumns" [grid-data]="claimSubmissionPendingList"
+               (grid-actions)="PendingClaimGridActions($event)">
+  </danphe-grid>
+  <ins-claim-scrubbing *ngIf="showClaimScrubbingPopUp" [Claim]="selectedClaim" (CloseClaimScrubbingPopUp)="CallBackClaimScrubbing()">
+
+  </ins-claim-scrubbing>
+</div>

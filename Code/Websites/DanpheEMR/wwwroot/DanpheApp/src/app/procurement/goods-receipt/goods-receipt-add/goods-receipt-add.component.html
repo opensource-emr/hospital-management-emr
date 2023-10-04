@@ -1,0 +1,539 @@
+<div class="g_r_inv">
+  <div class="panel panel-default">
+    <div class="panel-heading good-panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="d-flex align-items-center justify-between">
+            <div class="col">
+              <div class="d-flex align-items-center">
+                <div>
+                  <strong>
+                    <span *ngIf="editGR; else elseCreateNewText">Edit</span>
+                    <ng-template #elseCreateNewText>Add</ng-template>
+                    {{IsDonationMode ? 'Donation' : 'Goods Receipt'}}
+                  </strong>
+                </div>
+                <div *ngIf="editGR">
+                  <label class="control-label col-md-12 col-sm-12"
+                         style="font-size: 15px !important;color: darkblue; text-decoration: underline;">GR-No:{{goodsReceipt.GoodsReceiptNo}}</label>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center">
+                <div class="col d-flex align-items-center gap-2">
+                  <label class="control-label" style="font-size: 12px;">Vendor Bill Date<strong>:</strong></label>
+                  <div class="">
+                    <danphe-date-picker [(ngModel)]="goodsReceipt.VendorBillDate" ngDefaultControl [CalendarTypes]="'np,en'"
+                                        [ngModelOptions]="{standalone:true}"> </danphe-date-picker>
+                  </div>
+                </div>
+                <div class="col d-flex align-items-center gap-2">
+                  <label class="control-label" style="font-size: 12px;">Goods Receipt Date<strong>:</strong></label>
+                  <div class="" *ngIf="canUserEnterDate; else DefaultDate">
+                    <form [formGroup]="goodsReceipt.GoodsReceiptValidator">
+                      <danphe-date-picker [CalendarTypes]="'np,en'" [(ngModel)]="goodsReceipt.GoodsReceiptDate" [attr.disabled]
+                                          formControlName="GoodsReceiptDate">
+                      </danphe-date-picker>
+                    </form>
+                    <div class="error-message" *ngIf="IsGoodsReceiptDateValid == false"> Invalid Fiscal Year Date. </div>
+                  </div>
+                  <ng-template #DefaultDate>
+                    <div style="font-size: 12px; padding-top:6px;">
+                      {{goodsReceipt.GoodsReceiptDate | date:'yyyy-MM-dd'}} 
+                    </div>
+                  </ng-template>
+                </div>
+                <!-- Do not show Material COA Date and Material COA No until parameterized or needed for hospital workflow -->
+
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center justify-between">
+            <div class="col align-items-center gap-2" style="display: none;">
+              <label class="control-label" style="font-size: 12px;">Material COA Date<strong>:</strong></label>
+              <div>
+                <danphe-date-picker ngDefaultControl [CalendarTypes]="'np,en'" [(ngModel)]="goodsReceipt.MaterialCoaDate">
+                </danphe-date-picker>
+              </div>
+            </div>
+            <div class="col align-items-center gap-2" style="display: none;">
+              <label class="control-label" style="font-size: 12px;">Material COA No<strong>:</strong></label>
+              <div class="">
+                <input type="test" [(ngModel)]="goodsReceipt.MaterialCoaNo" />
+              </div>
+            </div>
+            <div class="col d-flex align-items-center gap-2" *ngIf="IsVerificattionDonationActivated && IsDonationMode">
+              <label class="control-label" style="font-size: 12px;"> Donation Type<strong>:</strong>
+              </label>
+              <div class="">
+                <div class="div-relative">
+                  <input danphe-auto-complete class="form-control" [source]="assetDonation" [(ngModel)]="selectedDonation"
+                         display-property-name="Donation" (focusout)="SelectDonationFromSearchBox()" [list-formatter]="myDonationListFormatter"
+                         style="width: 100%;" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <form [formGroup]="goodsReceipt.GoodsReceiptValidator" class="form-inline hm-form goods-receipt-form"
+            style="background-color: #e0e9f1; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+        <div class="row">
+          <div class="form-group col-md-4">
+            <div class="row">
+              <label class="control-label col-md-5">
+                Vendor Name<sup style="color: red">*</sup><strong>:</strong>
+              </label>
+              <div class="col-md-7 no-padding no-margin">
+                <div class="div-relative">
+                  <input id="SupplierName" (keyup.enter)="GoToNextInput('BillNo')" danphe-auto-complete class="form-control"
+                         [(ngModel)]="selectedVendor" [source]="VendorList" [list-formatter]="myVendorListFormatter" placeholder="Search Vendor Name"
+                         display-property-name="VendorName" value-property-name=null max-num-list="20" match-formatted="true"
+                         [grid-sort]="'VendorName'" formControlName="VendorId" (focusout)="SelectVendorFromSearchBox()" onclick="this.select();" />
+                  <a *ngIf="!isGrFromPOMode" class="fa fa-question" (click)="AddVendorPopUp()"
+                     title="Unable to find Vendor ? Click to add to Master"></a>
+                  <div class="error-message" *ngIf="goodsReceipt.IsDirty('VendorId')" [hidden]="goodsReceipt.IsValidCheck('VendorId','required')">
+                    Supplier is required. </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group col-md-2">
+            <div class="row">
+              <label class="control-label col-md-5">
+                Bill No<sup style="color: red;">*</sup><strong>:</strong>
+              </label>
+              <div class="col-md-7">
+                <input id="BillNo" (keyup.enter)="isGrFromPOMode ? GoToNextInput('qtyip0')  : GoToNextInput('itemName0')"
+                       [(ngModel)]="goodsReceipt.BillNo" class="form-control" type="text" formControlName="BillNo"
+                       (ngModelChange)="FocusOutBillNo()" />
+                <div style="color:red" *ngIf="goodsReceipt.IsDirty('BillNo')" [hidden]="goodsReceipt.IsValidCheck('BillNo','required')">Bill No.
+                  required</div>
+                <div class="color-red font-sm" *ngIf="duplicateInvoice">
+                  <i class="fa fa-warning"></i>Duplicate Invoice Number not allowed for same Supplier.
+                </div>
+              </div>
+
+            </div>
+
+            <div class="row" *ngIf="duplicateVendorGRBillList && duplicateVendorGRBillList.length">
+              <div id="dv_duplicateBillNo" class="tooltip list-tooltip">
+                <div class="dv-dup-bill-no">
+                  <i class="fa fa-warning msg-icn-warn"></i>
+                  Same Bill Number in another GR of this Vendor.
+                </div>
+                <!-- {{ | date: 'yyyy-M-d'}} -->
+                <p class="tooltiptext tooltip-list-type ttptextdown no-print" *ngIf="duplicateVendorGRBillList.length">
+                  <span class="tooltip-header">Details:</span>
+                  <span *ngFor="let dupBill of duplicateVendorGRBillList">
+                    Bill-No : {{dupBill.BillNo}} <br />
+                    Date: <date-lbl [value]="dupBill.GoodsArrivalDate"></date-lbl> <br />
+                    Vendor: {{dupBill.VendorName}} <br />
+                    GR No: {{dupBill.GoodsReceiptNo}}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+
+          </div>
+          <div class="form-group col-md-3">
+            <div class="row">
+              <label class="control-label col-md-6">
+                <strong> Payment Mode <sup style="color: red">*</sup>:</strong>
+              </label>
+              <div class="col-md-6">
+                <select [(ngModel)]="goodsReceipt.PaymentMode" class="form-control" formControlName="PaymentMode"
+                        [attr.disabled]="(editGR) ? true : null">
+                  <option value="Cash">Cash</option>
+                  <option value="Credit">Credit</option>
+                </select>
+                <div style="color:red" *ngIf="goodsReceipt.IsDirty('PaymentMode')" [hidden]="goodsReceipt.IsValidCheck('PaymentMode','required')">
+                  Invalid</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group col-md-3">
+            <div class="row">
+              <label class="control-label col-md-6 no-padding no-margin">
+                Credit
+                Period<strong>:</strong>
+              </label>
+              <div class="col-md-6">
+                <input [(ngModel)]="goodsReceipt.CreditPeriod" class="form-control" type="number"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)" [ngModelOptions]="{standalone: true}" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group col-md-6" *ngIf="TDSApplicable">
+            <div class="row">
+              <label class="control-label col-md-4">
+                <i class="fa fa-dollar" aria-hidden="true"></i>TDS Rate(in %) <sup style="color: red">*</sup> <strong>:</strong>
+              </label>
+              <div class="col-md-8">
+                <input [(ngModel)]="goodsReceipt.TDSRate" (ngModelChange)="Calculations()" style="width:200px " class="form-control" type="number"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)" [ngModelOptions]="{standalone: true}" max="100" name="TDSRate"
+                       min="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-md-12">
+          <div>
+            <table id="gr-item-table" aria-label="GR Item Table" class="table table-bordered inv_table">
+              <thead>
+                <tr>
+                  <th *ngIf="!editGR"></th>
+                  <th><strong>Category</strong></th>
+                  <th><strong>ItemName</strong></th>
+                  <!-- here Item Code and Unit are removed to make design looks better. add them here -->
+                  <th *ngIf="showSpecification"><strong>Specification</strong></th>
+                  <th><strong>BatchNo</strong></th>
+                  <th><strong>Expiry Date</strong></th>
+                  <th *ngIf="isGrFromPOMode"><strong>Ordered Qty</strong></th>
+                  <th><strong>Quantity</strong></th>
+                  <th><strong>FreeQty</strong></th>
+                  <th><strong>Rate</strong></th>
+                  <th *ngIf="showDiscount"><strong>Dis(%)</strong></th>
+                  <th><strong>VAT(%)</strong></th>
+                  <th><strong>CcCharge(%)</strong></th>
+                  <th><strong>Other Charge</strong></th>
+                  <th></th>
+                  <th><strong>TotalAmount </strong></th>
+                  <th><strong>Remarks</strong></th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let row of goodsReceipt.GoodsReceiptItem; let i = index">
+                  <tr>
+                    <td *ngIf="!editGR">
+                      <a (click)="DeleteRow(i)" title="Delete this item!">
+                        <i class="btn btn-xs btn-danger fa fa-times" aria-hidden="true"></i>
+                      </a>
+                    </td>
+                    <td>
+                      <form [formGroup]=" row.GoodsReceiptItemValidator">
+                        <select name="ItemCategory" [attr.disabled]="(row.PoItemId || editGR) ? true : null" [(ngModel)]="row.ItemCategory"
+                                formControlName="ItemCategory" (change)="OnGRCategoryChange(i)">
+                          <option *ngFor="let cat of GRItemCategories | keyvalue" [value]="cat.value">
+                            {{cat.value}}
+                          </option>
+                        </select>
+                        <div class="error-message" *ngIf="row.IsDirty('ItemCategory')" [hidden]="row.IsValidCheck('ItemCategory','required')">
+                          Category is required. </div>
+                      </form>
+                    </td>
+                    <td [ngClass]="{'alert alert-warning':row.isItemDuplicate}">
+                      <div class="div-relative" id="gr-itemName">
+                        <form [formGroup]=" row.GoodsReceiptItemValidator">
+                          <input danphe-auto-complete style="width:200px; height: 30px;" match-formatted="true"
+                                 [attr.disabled]="(row.PoItemId || editGR) ? true : null" class="inv-itm-srchbox" [grid-sort]="'ItemName'"
+                                 id="itemName{{i}}" [(ngModel)]="row.SelectedItem" [source]="row.filteredItemList"
+                                 [list-formatter]="itemListFormatter" placeholder="Item Name" display-property-name="ItemName"
+                                 value-property-name=null (ngModelChange)="SelectItemFromSearchBox(row.SelectedItem,i)" min-chars="1"
+                                 max-num-list="20" formControlName="ItemId" (keyup.enter)="OnPressedEnterKeyInItemField(i)" onclick="this.select();"
+                                 no-match-found-text="check ItemCategory or click ? to add new item"
+                                 [ngClass]="{'a-tab-active':ledgerType=='ledger'}" />
+                          <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required
+                          </div>
+                        </form>
+                        <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)"
+                           title="Unable to find item ? Click to add to Master"></a>
+                      </div>
+                      <div class="color-yellow font-sm" *ngIf="row.isItemDuplicate">
+                        <i class="fa fa-warning" aria-hidden="true"></i>Alert: Duplicate Item
+                      </div>
+                    </td>
+                    <td *ngIf="showSpecification">
+                      <textarea name="GRItemSpecification" id="GRItemSpecification{{i}}" class="form-control" cols="15" rows="1"
+                                [(ngModel)]="row.GRItemSpecification"></textarea>
+                    </td>
+                    <td>
+                      <input [(ngModel)]="row.BatchNO" class="form-control" type="text" [ngModelOptions]="{standalone: true}" name="batchNo"
+                             onclick="this.select();" style="width:70px;">
+                    </td>
+                    <td>
+                      <input [(ngModel)]="row.ExpiryDate" class="form-control" min="0" name="expirty_date" type="month" style="width: 160px;">
+                    </td>
+                    <td *ngIf="isGrFromPOMode">
+                      <input [attr.disabled]="true" [(ngModel)]="row.Quantity" onwheel="this.blur()" class="form-control"
+                             [ngModelOptions]="{standalone: true}" style="width: 50px;" />
+                    </td>
+                    <td>
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input id="qtyip{{i}}" (keyup.enter)="GoToNextInput('freeqtyip'+i)" [attr.disabled]="(editGR) ? true : null"
+                               [(ngModel)]="row.ReceivedQuantity" class="form-control" min="0" (ngModelChange)="Calculations()"
+                               formControlName="ReceivedQuantity" name="quantity" type="number" onclick="this.select();"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)" style="width: 60px;">
+                        <div style="color:red" *ngIf="row.IsDirty('ReceivedQuantity')"
+                             [hidden]="row.IsValidCheck('ReceivedQuantity','required') && row.IsValidCheck('ReceivedQuantity','positivenumber')">
+                          Invalid
+                        </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input id="freeqtyip{{i}}" (keyup.enter)="GoToNextInput('rateip'+i)" [attr.disabled]="(editGR) ? true : null"
+                               [(ngModel)]="row.FreeQuantity" class="form-control" min="0" (ngModelChange)="Calculations()"
+                               formControlName="FreeQuantity" name="freeQty" type="number" onclick="this.select();"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)" style="width: 60px;">
+                        <div style="color:red" *ngIf="row.IsDirty('FreeQuantity')"
+                             [hidden]="row.IsValidCheck('FreeQuantity','required') && row.IsValidCheck('FreeQuantity','positivenum')">
+                          Invalid
+                        </div>
+                      </form>
+                    </td>
+                    <td style="width:120px;">
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input id="rateip{{i}}" (keyup.enter)="onPressedEnterKeyInRateField(i)" [attr.disabled]="(editGR) ? true : null"
+                               [(ngModel)]="row.ItemRate" style="width:75px;float: left;" class="form-control" (ngModelChange)="Calculations()"
+                               formControlName="ItemRate" name="price" type="number" onclick="this.select();"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                        <div *ngIf="!!row.ItemId" id="itemPriceHistoryTooltip" class="tooltip list-tooltip ">
+                          <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                          </span>
+                          <p class="tooltiptext tooltip-list-type ttptextdown no-print"
+                             *ngIf="row.itemPriceHistory.length;else noPriceHistoryMessage">
+                            <span class="tooltip-header">Rate History</span>
+                            <span *ngFor="let itemPrice of row.itemPriceHistory">
+                              {{coreService.currencyUnit}}
+                              {{itemPrice.ItemRate}}-{{itemPrice.VendorName}}-{{itemPrice.GoodsReceiptDate | date:
+                              'yyyy-M-d'}}
+                            </span>
+                          </p>
+                          <ng-template #noPriceHistoryMessage>
+                            <p class="tooltiptext ttptextdown no-print">
+                              No price available.
+                            </p>
+                          </ng-template>
+                        </div>
+                        <div style="color:red" *ngIf="row.IsDirty('ItemRate')"
+                             [hidden]="row.IsValidCheck('ItemRate','required') && row.IsValidCheck('ItemRate','positivenumber')">
+                          Invalid
+                        </div>
+                      </form>
+                    </td>
+                    <td *ngIf="showDiscount">
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input [(ngModel)]="row.DiscountPercent" style="width: 70px" class="form-control" formControlName="DiscountPercent"
+                               [attr.disabled]="(editGR) ? true : null" (ngModelChange)="Calculations()" name="DiscountPercent" type="number"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)" min="0">
+                        <div class="color-red font-sm" *ngIf="row.IsDirty('DiscountPercent')"
+                             [hidden]="row.IsValidCheck('DiscountPercent','required') && row.IsValidCheck('DiscountPercent','min') && row.IsValidCheck('DiscountPercent','max')">
+                          Discount % Range: 0-100%</div>
+
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input [(ngModel)]="row.VAT" class="form-control" style="width: 50px" onwheel="this.blur()" onclick="this.select();"
+                               [attr.disabled]="(editGR) ? true : null" (ngModelChange)="Calculations()" formControlName="VAT" name="vat"
+                               type="number" min="0">
+                        <div class="color-red font-sm" *ngIf="row.IsDirty('VAT')"
+                             [hidden]="row.IsValidCheck('VAT','required') && row.IsValidCheck('VAT','min') && row.IsValidCheck('VAT','max')">VAT %
+                          Range: 0-100%</div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input [attr.disabled]="(editGR) ? true : null" [(ngModel)]="row.CcCharge" class="form-control" min="0"
+                               (ngModelChange)="Calculations()" formControlName="CcCharge" name="CcCharge" type="number" onclick="this.select();"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)" style="width: 60px;">
+                        <div style="color:red" *ngIf="row.IsDirty('CcCharge')"
+                             [hidden]="row.IsValidCheck('CcCharge','required') && row.IsValidCheck('CcCharge','positivenum')">
+                          Invalid
+                        </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.GoodsReceiptItemValidator">
+                        <input type="number" name="OtherCharge" id="otherCharge{{i}}" class="form-control" [attr.disabled]="true"
+                               formControlName="OtherCharge" [(ngModel)]="row.OtherCharge" (ngModelChange)="Calculations()"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                      </form>
+                      <div style="color:red" *ngIf="row.IsDirty('OtherCharge')"
+                           [hidden]="row.IsValidCheck('OtherCharge','required') && row.IsValidCheck('OtherCharge','min')">
+                        Invalid
+                      </div>
+                    </td>
+                    <td><span (click)="addOtherCharges(i)" class="glyphicon glyphicon-plus" title="Click to Add Other Charges"></span></td>
+                    <td>
+                      <span class="form-control disable-input-box"> {{row.TotalAmount | number : "1.0-2"}} </span>
+                      <!--hidden field to post-->
+                      <input [(ngModel)]="row.VATAmount" disabled class="form-control" (ngModelChange)="Calculations()" max="100" name="VATAmount"
+                             type="hidden" min="0">
+                      <input [(ngModel)]="row.DiscountAmount" class="form-control" (ngModelChange)="Calculations()" max="100" name="DiscountAmount"
+                             type="hidden" min="0">
+                      <input [(ngModel)]="row.SubTotal" (ngModelChange)="Calculations()" disabled class="form-control" name="SubTotal" type="hidden">
+                      <input [(ngModel)]="row.CcAmount" (ngModelChange)="Calculations()" disabled class="form-control" name="CcAmount" type="hidden">
+                      <!--hidden field to post end-->
+                    </td>
+                    <td>
+                      <textarea name="Remarks" id="Remarks{{i}}" class="form-control" cols="15" rows="1" [(ngModel)]="row.Remarks"></textarea>
+                    </td>
+                  </tr>
+                </ng-container>
+                <tr>
+                  <td colspan="2">
+                    <button [attr.disabled]="editGR ? true: null" style="margin-top: 20px;" class="btn green btn-success margin-7-hr"
+                            (click)="AddRowRequest();GoToNextInput('itemName'+ (goodsReceipt.GoodsReceiptItem.length - 1))"
+                            [title]="editGR ? 'Cannot add new item in edit mode.': 'Add new item.'">
+                      <i class="fa fa-plus blue" aria-hidden="true"></i>
+                      Add New Row
+                    </button>
+                  </td>
+                  <td style="vertical-align: bottom;">
+                    <span *ngIf="goodsReceipt.GoodsReceiptItem" style="font-weight: bold;color: blue;font-size: 14px;">
+                      Items Count: <span>{{getValidItemCount}}</span>
+                    </span>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mt20 t-wrap">
+            <div class="col-md-5 text-left good-receipt-radio-btn" style="font-size: 12px;">
+              <div class="verification-card" *ngIf="IsVerificationActivated">
+                <div>
+                  <div class="custom-control  custom-checkbox verification-check">
+                    <input type="checkbox" class="custom-control-input" id="defaultUnchecked" [attr.disabled]="editGR?true:null"
+                           [(ngModel)]="goodsReceipt.IsVerificationEnabled" (ngModelChange)="ShowVerifiers()">
+                    <label title="Check If Quality Inspection Needed" class="custom-control-label" for="defaultUnchecked"
+                           style="margin-bottom: 0; margin-right: 10px;">Add Quality
+                      Inspection</label>
+                  </div>
+                  <div class="verification-form-control">
+                    <div class="left t-wrap col-md-12" *ngFor="let verifier of goodsReceipt.VerifierList; let i = index;">
+                      <div class="row">
+                        <div class="col-md-5">
+                          <button title="Delete this Verifier" class="btn btn-sm btn-danger" (click)="DeleteVerifier(i)"
+                                  [disabled]="CheckIfDeleteVerifierAllowed()"><i class="glyphicon glyphicon-minus"></i>
+                          </button>
+                          <label class="verifier" for="inputIconEx{{i}}" style="margin-bottom: 0; margin-right: 10px;">
+                            <i class="fa fa-user" aria-hidden="true"></i>Verifier {{i+1}}
+                          </label>
+                        </div>
+                        <div class="col-md-6">
+                          <input danphe-auto-complete class="form-control " autocomplete="off" [source]="VerifierList" [(ngModel)]="verifier"
+                                 [attr.disabled]="editGR?true:null" [list-formatter]="VerifierListFormatter" placeholder="Select Verifier"
+                                 display-property-name="Name" max-num-list="10" (valueChanged)="AssignVerifier($event,i)" />
+                        </div>
+                        <div class="col-md-1">
+                          <button title="Add Verifier" class="btn btn-sm btn-primary" (click)="AddVerifier()"
+                                  [disabled]="CheckIfAddVerifierAllowed()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-2">
+              <table id="charges-table" aria-label="table for total other charge" class="table table-bordered"
+                     *ngIf="goodsReceipt.OtherChargesList.length> 0">
+                <tr>
+                  <th colspan="2" class="text-center">
+                    <strong>Other Charges</strong>
+                  </th>
+                </tr>
+                <tr *ngFor="let charge of goodsReceipt.OtherChargesList">
+                  <td class="text-left"><strong>{{charge.ChargeName}}:</strong></td>
+                  <td class="text-center">
+                    {{charge.TotalAmount}}
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <table class="col-sm-6 col-md-4 total-table " style="margin-left: 50px;">
+              <tr>
+                <td><strong>SubTotal :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.SubTotal | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group" *ngIf="showCCCharge">
+                <td><strong>CcCharge :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.CcCharge | number : "1.0-2"}} </span>
+              </tr>
+              <tr class="form-group" *ngIf="showDiscount">
+                <td><strong>Discount Amount :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.DiscountAmount | number : "1.0-2"}}
+                  </span>
+                </td>
+              </tr>
+              <tr class="form-group">
+                <td><strong>VAT :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.VATTotal | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group">
+                <td><strong>Other Charges (if any) :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.OtherCharges | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group">
+                <td><strong>Total Amount :</strong></td>
+                <td>
+                  <span class="form-control disable-input-box text-right"> {{goodsReceipt.TotalAmount | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group" *ngIf="TDSApplicable">
+                <td><strong>TDS Amount :</strong></td>
+                <td>
+                  <span class="form-control text-right"> {{goodsReceipt.TDSAmount | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group" *ngIf="TDSApplicable">
+                <td><strong>Net Payable :</strong></td>
+                <td>
+                  <span class="form-control text-right"> {{goodsReceipt.TotalWithTDS | number : "1.0-2"}} </span>
+                </td>
+              </tr>
+              <tr class="form-group">
+                <td><strong>Remarks :</strong></td>
+                <td><input [(ngModel)]="goodsReceipt.Remarks" class="form-control" name="Remarks" type="text"></td>
+              </tr>
+              <tr class="dot">
+                <td class="text-capitalize" colspan="2">
+                  <strong>In Words :</strong>{{goodsReceipt.TotalAmount | number:"1.0-2" | NumberInWords}}
+                  Only.
+                </td>
+              </tr>
+              <tr></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <div *ngIf="IsDonationMode">
+        <mark>Note: Adding donation will automatically create goods arrival note.</mark>
+      </div>
+      <div class="text-right">
+        <input id="SaveGoodsReceiptbtn" type="button" class="btn green btn-success margin-7-hr" [value]="editGR? 'Update' : 'Receipt'"
+               (click)="SaveGoodsReceipt()" [disabled]="loading || duplicateInvoice" />
+        <input type="button" class="btn btn-danger" value="Discard Changes" (click)="Cancel()" [disabled]="loading" />
+      </div>
+    </div>
+  </div>
+</div>
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp" (callback-add)="OnNewItemAdded($event)"></item-add>
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)">
+</vendor-add>
+<!-- START: add other charges -->
+<add-other-charges *ngIf="showAddOtherChargesPopUp" [gr-edit]="IsGRItemNotEditable" [showAddPage]="showAddOtherChargesPopUp" [index]="grItemIndex"
+                   [OtherCharges]="OtherCharges" [vendor-list]="VendorList" (callback-submit-event)="OnOtherChargesAddedEventHandler($event)"
+                   (callback-close-othercharges-event)="OnOtherChargesClosedEventHandler()">
+</add-other-charges>
+<!-- END: add other charges -->

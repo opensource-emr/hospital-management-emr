@@ -1,0 +1,112 @@
+<div>
+  <!-- header -->
+  <div id="divExpirableStockViewPage" style="margin-top: 40px">
+    <div class="col-lg-12 col-sm-12 border border-dark p-2">
+      <div class="row" style="margin-bottom: 10px; display: flex; justify-content: space-between;">
+        <div class="logo" style="width: 18%; padding: 0px 20px 0px 20px; float: left">
+          <img class="img-responsive" style="max-height: 70px" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+        </div>
+        <div style="width: 64%; float: left; padding-bottom: 0px">
+          <div class="text-center bill-head" style=" text-align: center; font-family: sans-serif; margin-top: 10px;">
+            <div style="font-size:15px;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+            <div style="font-size:15px;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+            <div style="font-size:15px;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+            <div style="font-size:15px;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+            <div style="font-size: 15px"><strong>{{ headerDetail.hospitalName }}</strong></div>
+            <div style="font-size: 15px">{{ headerDetail.address }}</div><br />
+            <div style="font-size: 15px;text-decoration: underline;"><strong> बिन कार्ड </strong></div>
+          </div>
+        </div>
+        <div style="width:20%;text-align:right; padding: 0px 20px 0px 20px;">
+          <div>म.ले.प.फारम नं: ४०७ </div>
+          <div>साबिकको फारम नं: ५२ </div>
+        </div>
+      </div>
+      <div>
+        <p>कार्यलय कोड नं:</p>
+      </div>
+      <div style="margin-bottom: 20px; ">
+        <div style="width:33%; float:left; text-align:left">
+          <p>सामानको विवरण: <b>{{ExpirableStockItemDetailView.ItemName}}</b> </p>
+          <p>सामानको ङ्सकेत नं: <b>{{ExpirableStockItemDetailView.Code}}</b></p>
+          <p>सामानको एकाइ: {{ExpirableStockItemDetailView.UOMName}}</p>
+          <p>सामानको भण्डारण स्थान:</p>
+          <p>निकासा विधि: </p>
+        </div>
+        <div style="width:33%; float:left;text-align:center">
+          <p>न्यून मौज्दात तहः</p>
+          <p>अधिक मौज्दात तहः</p>
+          <p>खरिद आदेश तहः</p>
+          <p>खरिद आदेश सङ्व्या:</p>
+        </div>
+        <div style="width:33%; float:right;text-align:right">
+          <p>बिन कार्ड नं.:.........</p>
+          <p *ngIf="ExpirableStockItemDetailView.ItemCategory=='Consumables'">खर्च भएर जानेः ({{ExpirableStockItemDetailView.ItemCategory}}) </p>
+          <p *ngIf="ExpirableStockItemDetailView.ItemCategory!='Consumables'">खर्च भएर नजानेः ({{ExpirableStockItemDetailView.ItemCategory}}) </p>
+        </div>
+      </div>
+      <table class="table table-condensed" border="1" rules="all">
+        <thead>
+          <tr>
+            <th rowspan="2" style="text-align: center;font-size: 11px;">मिति</th>
+            <th rowspan="2" style="text-align: center;font-size: 11px;">दाखिला / निकासा न.</th>
+            <th colspan="5" style="text-align: center;font-size: 11px;">दाखिला (आम्दानी) </th>
+            <th colspan="3" style="text-align: center; font-size: 11px;">निकासा (खर्च)</th>
+            <th colspan="3" style="text-align: center;font-size: 11px;">बाँकी</th>
+            <th rowspan="2" style="text-align: center;font-size: 11px;">कैफियत</th>
+            <th rowspan="2" style="text-align: center;font-size: 11px;">जिम्मेवारि लिने /उपयोग गर्ने व्यक्ति</th>
+          </tr>
+          <tr>
+            <th style="text-align: center;font-size: 11px;">उत्पादन मिति</th>
+            <th style="text-align: center;font-size: 11px;">अन्तिम उपभोग्य मिति</th>
+            <th style="text-align: center;font-size: 11px;">परिणाम</th>
+            <th style="text-align: center;font-size: 11px;">दर</th>
+            <th style="text-align: center;font-size: 11px;">रकम</th>
+            <th style="text-align: center;font-size: 11px;">परिणाम</th>
+            <th style="text-align: center;font-size: 11px;">दर</th>
+            <th style="text-align: center;font-size: 11px;">रकम</th>
+            <th style="text-align: center;font-size: 11px;">परिणाम</th>
+            <th style="text-align: center;font-size: 11px;">दर</th>
+            <th style="text-align: center;font-size: 11px;">रकम</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stock of ExpirableStockDetailView">
+            <td style="text-align: center;font-size: 11px;">{{stock.TransactionDate| nepaliDate}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.ReferenceNo}}</td>
+            <td style="text-align: center;font-size: 11px;"></td>
+            <td style="text-align: center;font-size: 11px;">{{stock.ExpiryDate}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.ReceiptQty}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.ReceiptRate}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.ReceiptAmount}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.IssueQty}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.IssueRate}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.IssueAmount}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.BalanceQty}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.BalanceRate}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.BalanceAmount}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.Remarks}}</td>
+            <td style="text-align: center;font-size: 11px;">{{stock.Username}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="display:flex; justify-content: flex-end; margin-top: 20px; ">
+
+        <div style="width: 33%;font-size: 12px;display: inline-block;">
+          <div>फाँटवालाको दस्तखतः</div>
+          <div>नामः</div>
+          <div>पद:</div>
+          <div>मितिः</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- footer -->
+  <div class="row center-style">
+    <div class="col-md-12 col-xs-12" style="display: flex;justify-content: center; margin-top: 10px">
+      <button id="printbtn" class="btn btn-primary btn-sm" (keyup.enter)="print()" (click)="print()"><i class="fa fa-print"></i>Print</button>
+    </div>
+  </div>
+</div>
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

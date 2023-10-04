@@ -1,0 +1,43 @@
+<div class="page-bar fixed-top-bar">
+  <div *ngIf="showDispensaryInfo" class="modal-content position-relative col-md-2 col-xs-2 col-lg-2">
+    <div class="fa fa-caret-up" style="float: right;font-size: 25px;left: 6px;bottom: 11px;color: #313131;position: relative;"></div>
+    <i (click)="CloseInfo()" class="fa fa-close" style="cursor:pointer;float: right;font-size: 15px;font-weight: lighter;left: 18px;top: 3px;position: relative;"></i>
+    <h6>You are currently in {{selectedDispensary.Name}} dispensary. To change, you can always click here.</h6>
+  </div>
+  <span style="padding:10px" class="right">
+    <label class="label label-primary">
+      Active Dispensary : <b>{{selectedDispensary.Name}}</b>
+    </label>
+    <i (mouseenter)="ShowInfo()" (click)="UnsetGlobalDispensary()" style="cursor:pointer;margin-left: 5px;font-size: 20px;position: relative;top: 2px;left:5px;" class="fa fa-sign-out"></i>
+  </span>
+  <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
+    <!--Start: Primary Menu Items -->
+    <li *ngFor="let route of primaryNavItems">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1">
+        {{route.DisplayName}}
+        <i class="{{route.Css}}"></i>
+      </a>
+    </li>
+    <!--End: Primary Menu Items -->
+    <!--Start: Secondary Menu Items-->
+    <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;">
+      <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        More...
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu bil-hr-dropdown">
+        <li class="hr-ddlCstm" *ngFor="let route of secondaryNavItems">
+          <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">
+            {{route.DisplayName}}
+            <i class="{{route.Css}}"></i>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--End: Secondary Menu Items-->
+
+  </ul>
+</div>
+<div class="wrapper">
+  <router-outlet></router-outlet>
+</div>

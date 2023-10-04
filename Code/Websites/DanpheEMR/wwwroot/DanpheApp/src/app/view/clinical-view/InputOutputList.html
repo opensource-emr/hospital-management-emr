@@ -1,0 +1,70 @@
+
+<div>
+    <div class="form-body">
+        <div id="inputoutputSection" class="row">
+            <div class="col-md-12">
+                <div class="row">
+
+                    <div class="col-md-8 col-xs-12">
+                        <div class="portlet cstm-portlet portlet-with-collapse">
+                            <div class="portlet-title cstm-pt-title">
+                                <div class="cstm-portlet-caption">
+                                    Input Output List
+                                </div>
+                                <div class="cstm-action">
+                                    <a class="cstm-add" (click)="AddNewIO()">
+                                        <i class="fa fa-plus-circle"></i> Add New
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="cstm-portlet-body">
+                                <div class="table-responsive">
+                                    <table class="table doc-tbl flip-content" style="margin-bottom: 0px;">
+                                        <thead class="flip-content">
+                                            <tr>
+                                                <th>Recorded Onss</th>
+                                                <th>Intake Type</th>
+                                                <th>Total Intake</th>
+                                                <th>Output Type</th>
+                                                <th>Total Output</th>
+                                                <th>Balance</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr *ngFor="let add of inputoutputLists; let i =index">
+                                                <td>{{add.CreatedOn  | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+                                                <td>{{add.IntakeType}}</td>
+                                                <td>{{add.TotalIntake}} {{add.Unit}}</td>
+                                                <td>{{add.OutputType}}</td>
+                                                <td>{{add.TotalOutput}} {{add.Unit}}</td>
+                                                <td>{{add.Balance}}{{add.Unit}}</td>
+                                                <td>
+                                                    <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello" style="padding-top: 0px;"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <InputOutput-add *ngIf="showIOAddBox" [showIOAddBox]="showIOAddBox"
+                                         [selected-IO]="selectedIO"
+                                         (callback-ioupdate)="callbackIoUpdate($event)">
+
+                        </InputOutput-add>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+  
+
+</div>
+
+

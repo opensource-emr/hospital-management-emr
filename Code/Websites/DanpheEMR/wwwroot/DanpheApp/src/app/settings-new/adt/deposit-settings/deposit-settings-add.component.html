@@ -1,0 +1,146 @@
+<style>
+  .borderless td,
+  .borderless th {
+    border: none;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Minimum Deposit Settings</span> <span *ngIf="update">Update Minimum Deposit Settings</span>
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div>
+            <div class="col-md-12">
+              <div class="">
+                <table class="table borderless" border="0">
+                  <tr>
+                    <td>
+                      <form [formGroup]="MinimumDepositSettings.MinimumDepositSettingsValidator"
+                            class="form-horizontal hm-form">
+
+                        <label class="control-label col-md-4">Bed Feature <sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input style="width: 100%;"
+                                 danphe-auto-complete
+                                 [source]="bedFeatureList"
+                                 [(ngModel)]="selectedBedFeature"
+                                 placeholder="Select Bed Feature"
+                                 max-num-list="8" min-chars="0"
+                                 display-property-name="BedFeatureName"
+                                 [list-formatter]="BedFeatureFormatter"
+                                 onclick="select()"
+                                 formControlName="BedFeatureName" (valueChanged)="BedFeatureEventHandler()"
+                                 value-property-name="BedFeatureName">
+                          <span class="color-red font-sm"
+                                [hidden]="IsValidCheck('BedFeatureName','required') || !(IsDirty('BedFeatureName'))">Bed
+                            Feature name is required</span>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <form [formGroup]="MinimumDepositSettings.MinimumDepositSettingsValidator"
+                            class="form-horizontal hm-form">
+                        <label class="control-label col-md-4">Scheme <sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input style="width: 100%;" danphe-auto-complete [source]="BillSchemeList"
+                                 [(ngModel)]="selectedScheme"
+                                 placeholder="Select Scheme" max-num-list="8" min-chars="0"
+                                 display-property-name="SchemeName" [list-formatter]="SchemeFormatter"
+                                 onclick="select()"
+                                 (valueChanged)="SchemeEventHandler()" formControlName="SchemeName"
+                                 value-property-name="SchemeName">
+                          <span class="color-red font-sm"
+                                [hidden]="IsValidCheck('SchemeName','required') || !(IsDirty('SchemeName'))">Scheme Name is
+                            required</span>
+
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <form [formGroup]="MinimumDepositSettings.MinimumDepositSettingsValidator"
+                            class="form-horizontal hm-form">
+                        <label class="control-label col-md-4">Deposit Head <sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input style="width: 100%;" danphe-auto-complete [source]="DepositHeadList"
+                                 [(ngModel)]="selectedDepositHead"
+                                 placeholder="Deposit Head Name" max-num-list="8" min-chars="0"
+                                 display-property-name="DepositHeadName" [list-formatter]="DepositHeadFormater"
+                                 onclick="select()"
+                                 (valueChanged)="DepositHeadEventHandler()" formControlName="DepositHeadName"
+                                 stand
+                                 value-property-name="DepositHeadName">
+                          <span class="color-red font-sm"
+                                [hidden]="IsValidCheck('DepositHeadName','required') || !(IsDirty('DepositHeadName'))">Deposit
+                            Head is required</span>
+
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <form [formGroup]="MinimumDepositSettings.MinimumDepositSettingsValidator"
+                            class="form-horizontal hm-form"> <label class="control-label col-md-4">Minimum Deposit
+                          Amount<sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input class="form-control" minlength="0" type="number" id="id_MinimumChargeAmount"
+                                 [(ngModel)]="MinimumDepositSettings.MinimumDepositAmount"
+                                 placeholder="Minimum Deposit Amount"
+                                 min="0"
+                                 onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 formControlName="MinimumDepositAmount"
+                                 (keyup.enter)="coreService.FocusInputById('id_isOnlyMinimumDepositAmount')" />
+                          <span class="color-red font-sm" *ngIf="IsDirty('MinimumDepositAmount')"
+                                [hidden]="IsValidCheck('MinimumDepositAmount','min') && IsValidCheck('MinimumDepositAmount', 'required')">
+                            Amount Cannot be in negative
+                          </span>
+                          <br>
+                          <span class="color-red font-sm"
+                                [hidden]="IsValidCheck('MinimumDepositAmount','required') || !(IsDirty('MinimumDepositAmount'))">Minimum
+                            Deposit Amount
+                            is
+                            required</span>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <form [formGroup]="MinimumDepositSettings.MinimumDepositSettingsValidator"
+                            class="form-horizontal hm-form"> <label class="control-label col-md-4">Is Only Minimum Deposit
+                          <b>:</b> </label>
+                        <div class="col-md-7">
+
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="id_isOnlyMinimumDepositAmount" type="checkbox" value=""
+                                   [(ngModel)]="MinimumDepositSettings.IsOnlyMinimumDeposit"
+                                   [ngModelOptions]="{standalone: true}"><span></span>
+
+                          </label>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 text-right" style="margin-top: 10px;margin-bottom: 10px;">
+            <input type="button" class="btn btn-green" [disabled]="loading" *ngIf="!update" (click)="Save()" value="Save" />
+            <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+            <input type="button" class="btn btn-warning" *ngIf="!update" (click)="Discard()" value="Discard Changes" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

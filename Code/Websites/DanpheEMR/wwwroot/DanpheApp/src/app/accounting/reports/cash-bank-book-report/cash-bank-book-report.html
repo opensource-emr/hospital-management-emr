@@ -1,0 +1,255 @@
+<div>
+    <div class="caption custom-caption top-report-section">
+        <h3><i class="fa fa-book"></i>
+            <span class="caption-subject">Cash/Bank Book Report</span>
+        </h3>
+        <label *ngIf="showParticularcheckBox == true " class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;margin: 5px;">
+            <input name="showParticular" type="checkbox" value="Show Particular" [(ngModel)]="showParticularColumn"
+                   (click)="showParticularCol()">
+            <span></span> Show-Particular
+
+        </label>
+
+    </div>
+    <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+        <div class="col-md-6 col-xs-12">
+            <div class="form-group">
+
+                <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
+                       style="float:right;">:</b></label>
+                <div>
+                    <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)">
+                    </fiscal-year-calendar>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-xs-12" style="padding: 5px 5px !important;margin-top:8px">
+            <label class="control-label no-padding">Select Group :</label><br>
+            <div>
+                <div class="div-relative">
+                    <input danphe-auto-complete class="col-md-11 form-control" [(ngModel)]="selectedLedgerGroup" [source]="ledgerGroupList"
+                           placeholder="select ledger group" display-property-name="LedgerGroupName" value-property-name="LedgerGroupName"
+                           (focusout)="AssignSelectedLedgerGroup()"
+                           [list-formatter]="LedgerGroupListFormatter" max-num-list="20" onclick="this.select()" style="background-color: azure;"
+                           [ngModelOptions]="{standalone: true}" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12" style="padding: 5px 5px !important;">
+            <label class="control-label"> <b>Select Ledger</b> <b class="color-red"> *</b></label>
+            <div style="margin-top: 5px;">
+                <div>
+                    <danphe-multiselect [ddl-data]="filteredLedgerList" [pre-selected]="selectedLedgers" [placeholder-text]="'Ledger Name'"
+                                        [value-property-name]="'LedgerId'" (selected-items-list)="OnLedgerSelected($event)"
+                                        [display-property-name]="'LedgerName'" [single-selection]="false">
+                    </danphe-multiselect>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1 col-xs-12" style=" margin-top: 5px;">
+            <div class="form-group mt10">
+                <br>
+                <button type="button" class="btn green btn-success" (click)="GetTxnList()">
+                    <i class="fa fa-refresh"></i>
+                    Load
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="printpage" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
+        <div style="width: 50%; margin: auto;">
+            <customer-header id="headerForPrint" [header-title]="'Cash/Bank Book Report'">
+            </customer-header>
+        </div>
+        <div id="print_ledger_list">
+            <div class="col-md-12 col-xs-12">
+                <table style="width:100% !important;" class="hidden-print">
+                    <tr>
+                        <td style="text-align: left;">
+                            Printed On: &nbsp; {{todayDate}}
+                        </td>
+                        <td style="text-align: right;">
+                            For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;" class="no-print">
+                            <input class="hidden-print" type="radio" id="radio_summary" [(ngModel)]="viewMode" value="summary" name="report_veiw_mode"
+                                   style="margin-right: 10px;"><label class="hidden-print" for="radio_summary" style="margin-right: 30px;">Summary
+                                View</label>
+                            <input class="hidden-print" type="radio" id="radio_detail" [(ngModel)]="viewMode" value="detail" name="report_veiw_mode"
+                                   style="margin-right: 10px;" (change)="HandleChangeDetailView()"><label class="hidden-print"
+                                   for="radio_detail">Detail View</label>
+                            <input class="hidden-print" type="checkbox" id="Hide_zero_txn" [(ngModel)]="HideZeroTxn" name="Hide_zero_txn"
+                                   style="margin-left: 30px;" (change)="HandleHideZeroTxn()"><label class="hidden-print" for="Hide_zero_txn"
+                                   style="margin-left: 10px;">Hide Zero Transaction</label>
+                        </td>
+                       
+                    </tr>
+                </table>
+                <br>
+                <div id="exportTable" *ngIf="DateWiseTotal.length >0">
+                    <table class="table_data" *ngIf="viewMode == 'summary'" style="width: 100%; border:1px" border="1">
+                        <tr style="background-color:#599be0;">
+                            <th>Date</th>
+                            <th>Opening Balance</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Closing Balance</th>
+                        </tr>
+                        <tr (click)="OpenDetailPopUp(data)" *ngFor="let data of DateWiseTotal">
+                            <td style="color: #337ab7;">{{ data.TransactionDate }}</td>
+                            <td>{{ getNumber(data.OpeningBalance) | Currency:'4' }} &nbsp; <span *ngIf="data.OpeningBalance >0">Dr</span><span
+                                      *ngIf="data.OpeningBalance <0">Cr</span></td>
+                            <td> {{ getNumber(data.DrAmount) | Currency:'4' }}</td>
+                            <td>{{ getNumber(data.CrAmount) | Currency:'4' }}</td>
+                            <td>{{ getNumber(data.ClosingBalance) | Currency:'4' }} &nbsp;<span *ngIf="data.ClosingBalance >0">Dr</span><span
+                                      *ngIf="data.ClosingBalance <0">Cr</span></td>
+                        </tr>
+                    </table>
+                    <div>
+                        <div class="col-md-12" *ngIf="viewMode == 'detail'" style="padding:0px;" id="print_ledger">
+                            <div class="row">
+                            </div>
+                            <table class="table_data" style="width:100%;  margin-bottom: 20px;" border="1"
+                                   *ngFor="let data of DateWiseTotal; let i=index;">
+                                <tr style="background-color: #599be0;">
+                                    <th colspan="1" style="text-align: center;">Date ({{ data.TransactionDate }})</th>
+                                    <th colspan="3" style="text-align: center;">Opening ({{ getNumber(data.OpeningBalance) | Currency:'4' }}) &nbsp;
+                                        <span *ngIf="data.OpeningBalance >0">Dr</span><span *ngIf="data.OpeningBalance <0">Cr</span>
+                                    </th>
+                                    <th colspan="3" style="text-align: center;">Closing ({{ getNumber(data.ClosingBalance) | Currency:'4' }})
+                                        &nbsp;<span *ngIf="data.ClosingBalance >0">Dr</span><span *ngIf="data.ClosingBalance <0">Cr</span></th>
+                                </tr>
+                                <tr>
+                                    <td>LedgerName</td>
+                                    <td>Voucher Type</td>
+                                    <td>Voucher Number</td>
+                                    <td>Debit</td>
+                                    <td>Credit</td>
+                                    <td>Accumulated</td>
+                                    <td class="hidden-print">Actions</td>
+                                </tr>
+                                <tr *ngIf="data.Transactions.length == 0">
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td class="hidden-print">N/A</td>
+                                </tr>
+                                <tr *ngFor="let row of data.Transactions; let ind=index;">
+                                    <td> {{ row.LedgerName }}</td>
+                                    <td> {{ row.VoucherType }}</td>
+                                    <td> {{ row.VoucherNumber }}</td>
+                                    <td> {{ row.DrAmount | Currency:'4' }}</td>
+                                    <td> {{ row.CrAmount | Currency:'4' }}</td>
+                                    <td> {{ getNumber(row.Accumulated) | Currency:'4' }}
+                                        <b *ngIf="row.Accumulated > 0">
+                                            &nbsp; <span> Dr</span>
+                                        </b>
+                                        <b *ngIf="row.Accumulated < 0">
+                                            &nbsp;<span> Cr</span>
+                                        </b>
+                                    </td>
+                                    <td class="hidden-print ADBS_btn">
+                                        <a class="hidden-print" (click)="ViewTransactionDetails(row.VoucherNumber)">View Detail</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </div>
+        <div class="col-md-12" *ngIf="DateWiseTotal.length >0" style="padding: 18px;">
+            <div class="form-actions">
+                <button class="btn green btn-success hidden-print" (click)="Print('print_ledger_list')" value="Print" title="print page">
+                    Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+                </button>
+                <button class="btn green btn-success hidden-print" (click)="ExportToExcel('exportTable')" value="" title="export to excel">
+                    Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <transaction-view *ngIf="viewMode == 'detail'" [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId">
+    </transaction-view>
+
+    <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="ShowDetailPopUp">
+        <div class="portlet-body form">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <div class="modelbox-div clearfix">
+                        <button class="btn btn-danger history-del-btn hidden-print fa" (click)="CloseDetailPopUP()" value="X" title="Close">X</button>
+                        <div class="col-md-12">
+                            <div style="width: 50%; margin: auto;">
+                                <customer-header id="headerForPrint" [header-title]="'Cash/Bank Book Report'">
+                                </customer-header>
+                            </div>
+                            <table class="table_data" style="width:100%;  margin-bottom: 20px;" border="1"
+                                   *ngFor="let data of PopUpDetail; let i=index;">
+                                <tr style="background-color: #599be0;">
+                                    <th colspan="1" style="text-align: center;">Date ({{ data.TransactionDate }})</th>
+                                    <th colspan="3" style="text-align: center;">Opening ({{ getNumber(data.OpeningBalance) | Currency:'4' }}) &nbsp;
+                                        <span *ngIf="data.OpeningBalance >0">Dr</span><span *ngIf="data.OpeningBalance <0">Cr</span>
+                                    </th>
+                                    <th colspan="3" style="text-align: center;">Closing ({{ getNumber(data.ClosingBalance) | Currency:'4' }})
+                                        &nbsp;<span *ngIf="data.ClosingBalance >0">Dr</span><span *ngIf="data.ClosingBalance <0">Cr</span></th>
+                                </tr>
+                                <tr>
+                                    <td>LedgerName</td>
+                                    <td>Voucher Type</td>
+                                    <td>Voucher Number</td>
+                                    <td>Debit</td>
+                                    <td>Credit</td>
+                                    <td>Accumulated</td>
+                                    <td class="hidden-print">Actions</td>
+                                </tr>
+                                <tr *ngIf="data.Transactions.length == 0">
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td class="hidden-print">N/A</td>
+                                </tr>
+                                <tr *ngFor="let row of data.Transactions; let ind=index;">
+                                    <td> {{ row.LedgerName }}</td>
+                                    <td> {{ row.VoucherType }}</td>
+                                    <td> {{ row.VoucherNumber }}</td>
+                                    <td> {{ row.DrAmount | Currency:'4' }}</td>
+                                    <td> {{ row.CrAmount | Currency:'4' }}</td>
+                                    <td> {{ getNumber(row.Accumulated) | Currency:'4' }}
+                                        <b *ngIf="row.Accumulated > 0">
+                                            &nbsp; <span> Dr</span>
+                                        </b>
+                                        <b *ngIf="row.Accumulated < 0">
+                                            &nbsp;<span> Cr</span>
+                                        </b>
+                                    </td>
+                                    <td class="hidden-print ADBS_btn">
+                                        <a class="hidden-print" (click)="ViewTransactionDetails(row.VoucherNumber)">View Detail</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId">
+                </transaction-view>
+            </div>
+        </div>
+    </div>
+</div>

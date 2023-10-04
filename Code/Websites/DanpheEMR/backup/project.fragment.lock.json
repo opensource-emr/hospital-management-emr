@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "exports": {
+    "DanpheEMR.Core/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5.2",
+      "compile": {
+        "bin/Debug/DanpheEMR.Core.dll": {}
+      },
+      "runtime": {
+        "../../Solutions/packages/EntityFramework.6.1.3/lib/net45/EntityFramework.SqlServer.dll": {},
+        "../../Solutions/packages/EntityFramework.6.1.3/lib/net45/EntityFramework.dll": {},
+        "../../Solutions/packages/System.Runtime.CompilerServices.Unsafe.4.3.0/lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll": {},
+        "../../Solutions/packages/System.Runtime.InteropServices.RuntimeInformation.4.3.0/lib/net45/System.Runtime.InteropServices.RuntimeInformation.dll": {},
+        "bin/Debug/DanpheEMR.Core.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/DanpheEMR.Core.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "DanpheEMR.DalLayer/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5.2",
+      "compile": {
+        "bin/Debug/DanpheEMR.DalLayer.dll": {}
+      },
+      "runtime": {
+        "../../Solutions/packages/EntityFramework.6.1.3/lib/net45/EntityFramework.SqlServer.dll": {},
+        "../../Solutions/packages/EntityFramework.6.1.3/lib/net45/EntityFramework.dll": {},
+        "../../Solutions/packages/Newtonsoft.Json.8.0.3/lib/net45/Newtonsoft.Json.dll": {},
+        "bin/Debug/DanpheEMR.DalLayer.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/DanpheEMR.DalLayer.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "DanpheEMR.Security/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5.2",
+      "compile": {
+        "bin/Debug/DanpheEMR.Security.dll": {}
+      },
+      "runtime": {
+        "../../Solutions/packages/EntityFramework.6.0.0/lib/net45/EntityFramework.SqlServer.dll": {},
+        "../../Solutions/packages/EntityFramework.6.0.0/lib/net45/EntityFramework.dll": {},
+        "bin/Debug/DanpheEMR.Security.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/DanpheEMR.Security.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "DanpheEMR.ServerModel/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5.2",
+      "compile": {
+        "bin/Debug/DanpheEMR.ServerModel.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/DanpheEMR.ServerModel.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/DanpheEMR.ServerModel.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+<div>
+    <danphe-multiselect [ddl-data]="allVaccines" [pre-selected]="selectedData" [placeholder-text]="'--Select Vaccine--'"
+        [value-property-name]="'VaccineId'" (selected-items-list)="VaccineOnChange($event)"
+        [display-property-name]="'VaccineName'" [single-selection]="false"> </danphe-multiselect>
+</div>

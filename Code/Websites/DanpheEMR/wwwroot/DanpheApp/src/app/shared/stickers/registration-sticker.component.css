@@ -1,0 +1,15 @@
+.circularQueueDiv {
+    position: absolute;
+    left: 35%;
+    bottom: 100px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 35px;
+    text-align: center;
+    padding-top: 5px;
+}
+
+.registrationstickercontainer {
+    padding: 10px;
+}

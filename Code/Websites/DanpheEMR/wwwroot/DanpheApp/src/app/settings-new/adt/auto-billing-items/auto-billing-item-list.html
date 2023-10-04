@@ -1,0 +1,26 @@
+<!-- <div class="row" *ngIf="!enable">
+  <div class="col-md-12" style="padding-bottom: 18px;">
+    <div class="form-actions">
+      <input type="button" class="btn btn-primary" [disabled]="loading" (click)="checkEnable()" value="Enable Auto Add Items" />
+    </div>
+  </div>
+</div> -->
+<a class="col-md-9"> <a class="btn blue bordered"
+     (click)="AddAutoBillingItem()"> <i class="fa fa-plus"></i>Add Auto Billing Items </a>
+</a>
+<add-auto-billing-items
+                        [showAddPage]="showAddPage"
+                        [selectedBedFeatureItem]="autoBillingItemsToEdit"
+                        [selectedSchemeItem]="autoBillingItemsToEdit"
+                        [selectedServiceItem]="autoBillingItemsToEdit"
+                        (callback-add)="CallBackAdd($event)" (callback-update)="CallBackUpdate($event)">
+</add-auto-billing-items>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="AutoBillingGridColumns"
+                 [grid-data]="AutoBillingItemsList"
+                 (grid-actions)="AutoBillingGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<div class="margin-20-tp">
+  <a class="btn green btn-success" style="margin-left:2px ;" feature="button" (click)="ShowAddNewPage()"><i class="fa fa-plus"></i> New Scheme Refund
+    Entry</a>
+
+  <div style="margin-left:2px ;">
+    <danphe-grid [grid-colDefaults]="schemeRefundGridColumns" [grid-data]="SchemeRefundList"
+                 (grid-actions)="GridActions($event)" [rangeType]="dateRange" (onDateChange)="onDateChange($event)"
+                 [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]=" true"
+                 [show-print-button]=" false">
+    </danphe-grid>
+  </div>
+  <div>
+    <new-scheme-refund *ngIf="ShowSchemeReturnEntryPage" (callback-close)="CloseItemSettingsPage($event)">
+
+    </new-scheme-refund>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReceipt">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2" style="margin-top: 70px;">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseSchemeRefundReceiptPopUp()">X</a>
+          <div>
+            <scheme-refund-print *ngIf="printSchemeRefund"
+                                 [scheme-refund-receiptNo]="receiptNo" (scheme-refund-print-callback)="SchemeRefundPrintCallBack($event)">
+
+            </scheme-refund-print>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

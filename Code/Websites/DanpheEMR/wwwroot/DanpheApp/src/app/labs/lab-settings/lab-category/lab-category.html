@@ -1,0 +1,11 @@
+<div class="wrapper">
+  <add-lab-category *ngIf="showAddLabCategory" [labCategory]="selectedCategory" (callback-Add)="CallBackNewAdded($event)"></add-lab-category>
+  <div class="row">
+    <div class="col-md-3"> <a class="btn blue bordered btn-sm primary-btn m1" name="name" (click)="AddNewCategory()"> <i class="fa fa-plus"></i>Add New Lab Category </a> </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <danphe-grid [grid-colDefaults]="labCategoryGridCol" [grid-data]="allCategories" (grid-actions)="EditAction($event)"> </danphe-grid>
+    </div>
+  </div>
+</div>

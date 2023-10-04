@@ -1,0 +1,39 @@
+<div class="incentive-inner-wrap">
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <!-- <div class="pull-right">
+        <button class="btn btn-primary" (click)="ExportAllIncentiveDate()">
+          <i class="fa fa-file-excel-o"></i>
+          Export
+        </button>
+      </div> -->
+      <div class="round-shadow-div no-padding">
+        <danphe-grid [grid-colDefaults]="billTxnItmGridColumns"
+                     [grid-data]="allBillTxnItemsList"
+                     (grid-actions)="TxnItemGridActions($event)"
+                     [show-ServerSideSearch]="false"
+                     [show-print-button]="false"
+                     [supressPagination]="true"
+                     [resizeColumnToFit]="false"
+                     [fixed-height-px]="'400px'"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [show-CustomDate]="true" [date-settings-name]="'inctv-txns'"
+                     (onDateChange)="LoadIncentiveTxnItemsList($event)">
+
+        </danphe-grid>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="round-shadow-div no-padding" style="overflow: inherit;">
+        <inctv-edit-fraction *ngIf="showEditFraction"
+                             [selectedTxnItem]="selectedBillTxnItem"
+                             [EmpIncentiveInfo]="EmpIncentiveInfo"
+                             [employeeList]="allEmpList"
+                             [show-invoice-hdr-info]="true"
+                             (on-close)="EditFractionOnClose($event)">
+        </inctv-edit-fraction>
+      </div>
+    </div>
+  </div>
+</div>

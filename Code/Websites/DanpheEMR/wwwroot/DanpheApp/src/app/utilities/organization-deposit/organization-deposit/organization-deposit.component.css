@@ -1,0 +1,29 @@
+.caption {
+    text-align: center;
+    color: black;
+  }
+
+  #organization-deposit-form {
+    margin-top: 20px;
+    margin: 0 10px; 
+    border: 1px solid black;
+    padding: 20px;
+  }
+
+  .form-group-change-to {
+    border: 1px solid black;
+    margin: 10px; 
+    padding: 10px; 
+  }
+  .credit-organization-form {
+    border: 1px solid black;
+    margin: 10px; 
+    padding: 10px; 
+  }
+
+ 
+  
+  .btn {
+    float: right; 
+    margin-left: 10px; 
+  }

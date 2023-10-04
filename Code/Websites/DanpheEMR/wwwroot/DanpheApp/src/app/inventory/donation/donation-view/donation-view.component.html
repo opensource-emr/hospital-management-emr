@@ -1,0 +1,187 @@
+<style>
+  #printpage table tr td,
+  #printpage table th {
+    border-color: #000
+  }
+</style>
+<app-donation-view-np *ngIf="showNepaliReceipt; else englishViewTemplate" [donationData]="DonationData"
+                      (call-back-close)="Close()"></app-donation-view-np>
+<ng-template #englishViewTemplate>
+  <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="!editMode">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="modelbox-div clearfix" style="zoom: 0.9;">
+            <a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel">
+              <i class="fa fa-times"></i>
+            </a>
+            <!--Model Box Body Start-->
+            <div id="print-page">
+              <div>
+                <div style="display: flex;justify-content: space-between; margin-bottom: 12px;">
+                  <div style="text-align: left;width:33%; margin-left: 5px;">
+                    <img class="img-responsive" style="max-height:12rem;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+                  </div>
+                  <div style="text-align: center;width:33%;">
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px">{{headerDetail.hospitalName}}</div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px">{{headerDetail.address}}</div>
+                    <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px; text-decoration: underline;"> Donation Form</div>
+                  </div>
+                  <div style="width: 33%;">
+
+                  </div>
+                </div>
+
+                <div style="margin-bottom:20px;" class="header-div">
+                  <b> Goods have been handed over as per the details of this office.</b>
+                </div>
+                <div class="header-div">
+                  <div>
+
+                    <div style="float:left">
+                      <div><b> Donation Reference No. :</b> {{DonationData.donationDetails.DonationReferenceNo}} </div>
+                      <div><b>Receiver Supplier Name:</b> {{DonationData.donationDetails.VendorName}} </div>
+                    </div>
+                  </div>
+                  <div style="float:right;">
+                    <div><b>Donation No: </b>{{DonationData.donationDetails.DonationNo}} </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <table class="table table-bordered donation-table" style="width: 100%;table-layout: fixed;margin-bottom: 0;border:2px solid;">
+                  <thead>
+                    <tr class="donation-item-header">
+                      <th>S.N.</th>
+                      <th>Item Category Code</th>
+                      <th>Registered Page No.</th>
+                      <th>Item Name</th>
+                      <th class="break-word-in-print">Specification</th>
+                      <th>Code</th>
+                      <th>Model No.</th>
+                      <th>Unit</th>
+                      <th>Quantity</th>
+                      <th>Total Value</th>
+                      <th>GRDate</th>
+                      <th>Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="donation-item-row" *ngFor="let donationItem of DonationData.donationItemDetails; let i = index">
+                      <td>{{i+1}}</td>
+                      <td></td>
+                      <td></td>
+                      <td>{{donationItem.ItemName}}</td>
+                      <td class="break-word-in-print">{{donationItem.Specification}} </td>
+                      <td>{{donationItem.Code}}</td>
+                      <td>{{donationItem.ModelNo}}</td>
+                      <td>{{donationItem.Unit}}</td>
+                      <td>{{donationItem.DonationQuantity}}</td>
+                      <td>{{donationItem.TotalAmount}}</td>
+                      <td>{{donationItem.Remarks}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <div style="padding: 2rem 0;">
+                  <div style="display: flex;justify-content: center; margin-bottom: 2rem;">
+                    <div style="display: flex;justify-content: center; width: 100%;">
+                      <div style="width:50%">
+                        <div style="text-align: left;font-weight: 700;text-decoration: underline;">To Be Filled By Donor: </div>
+                        <div>
+                          <div style="display: flex; justify-content:space-around;margin-bottom: 1rem;">
+                            <div style="text-align: left;width:50%;">
+                              <div> Submitted By: </div>
+                              <div>Name:</div>
+                              <div>Designation:</div>
+                              <div>Sign:</div>
+                              <div>Date:</div>
+                            </div>
+                            <div style="text-align: left;width:50%;">
+                              <div>Head of Office for handing over goods: </div>
+                              <div>Name:</div>
+                              <div>Designation:</div>
+                              <div>Sign:</div>
+                              <div>Date:</div>
+                            </div>
+                          </div>
+                          <div style="text-align: center; margin-top: 1rem;">Office Stamp: </div>
+                        </div>
+                      </div>
+                      <div style="width: 50%;">
+                        <div style="text-align: left;font-weight: 700;padding-left:2rem;text-decoration: underline;">To Be Filled By Receiver </div>
+                        <div style="padding-left:2rem;">
+                          <div style="display: flex; justify-content:space-around;margin-bottom: 1rem;">
+                            <div style="text-align: left;width:50%;">
+                              <div> Received By:</div>
+                              <div>Name:</div>
+                              <div>Designation:</div>
+                              <div>Sign:</div>
+                              <div>Date:</div>
+                            </div>
+                            <div style="text-align: left;width:50%;">
+                              <div>Head of Office for receiving goods: </div>
+                              <div>Name:</div>
+                              <div>Designation:</div>
+                              <div>Sign:</div>
+                              <div>Date:</div>
+                            </div>
+                          </div>
+                          <div style="text-align: center; margin-top: 20px;">Office Stamp: </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p style="text-align:center;z-index: 4;position: relative;">
+              <button class="btn green btn-success" (click)="Print()" id="btnPrintRecipt"><span> <i
+                     class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print</span></button>
+              <!-- <button id="editGR" (click)="Edit(DonationData.donationDetails.DonationId)" class="btn  btn-small btn-info"><span><i class="glyphicon glyphicon-edit">&nbsp;&nbsp;</i>Edit</span></button> -->
+              <button class="btn  btn-small btn-danger" (click)="Cancel()" title="Cancel Goods Receipt" data-toggle="modal"
+                      data-target="#CancelPopup"><span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Donation</span></button>
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<app-print-page *ngIf="showPrint && !editMode" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>
+<app-donation-edit *ngIf="editMode" [edit-mode]="editMode" [loadmodel]="model"></app-donation-edit>
+
+<div id="CancelPopup" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" *ngIf="showCancelPopUp">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3 class="modal-title">Warning</h3>
+      </div>
+      <div class="modal-body" style="height:16em">
+        <p>Are you sure want to cancel the donation ?</p>
+        <i>If yes, Remarks is mandatory.</i>
+        <div class="col-md-12" style="margin-top:15px">
+          <div class="col-md-4">
+            <b>Cancel Remarks<i style="color:red">*</i><span class="right">:</span></b>
+          </div>
+          <div class="col-md-8">
+            <textarea style="height:7em;width:100%;" [(ngModel)]="Remarks" (ngModelChange)="LoadRemarks()" type="text"
+                      name="cancelRemarks"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal"
+                (click)="CancelDonation(DonationData.donationDetails.DonationId)" [disabled]="disableButton">Yes</button>
+        <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+</div>

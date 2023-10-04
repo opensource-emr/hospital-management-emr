@@ -1,0 +1,91 @@
+<style>
+    .p-category .span2 {
+        min-width: 20.5%;
+    }
+
+    .padder-v {
+        border: 1px solid #ddd;
+        margin: 10px 10px 0px 0px;
+        background-color: #fff;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .b-r {
+        border-right: 1px solid #cfcfcf;
+    }
+
+    .b-light {
+        border-color: #e4e4e4;
+    }
+
+        .b-light i.text-white {
+            color: #fff;
+        }
+
+    .rpt-link-container {
+        width: 230px;
+        height: 70px;
+        background-color: white;
+    }
+
+        .rpt-link-container:hover {
+            background-color: skyblue;
+            cursor: pointer;
+        }
+</style>
+
+<base href="/">
+<div class="sub-navtab fixed-subnavtab">
+    <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+        <!--Start: Primary Menu Items -->
+        <li *ngFor="let route of primaryNavItems">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1">
+                {{route.DisplayName}}
+            </a>
+        </li>
+        <!--End: Primary Menu Items -->
+        <!--Start: Secondary Menu Items-->
+        <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;">
+            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                More...
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu bil-hr-dropdown">
+                <li class="hr-ddlCstm" *ngFor="let route of secondaryNavItems">
+                    <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">
+                        {{route.DisplayName}}
+                        <i class="{{route.Css}}"></i>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!--End: Secondary Menu Items-->
+    </ul>
+</div>
+<div class="wrapper">
+    <router-outlet></router-outlet>
+</div>
+<!-- <div>
+    <div class="row">
+        <div class="col-md-12" *ngIf="validRoutes != undefined">
+            <div class="row">
+                <div class="col-md-3" *ngFor="let route of validRoutes">
+                    <a routerLink="{{route.RouterLink}}" class="report_list">
+                        <div class="span2 padder-v b-r b-light rpt-link-container">
+                            <span class="fa-stack fa-2x report_icon">
+                                <i class="{{route.Css}}"></i>
+                            </span>
+                            <span class="report-name">
+                                <i>{{route.DisplayName}}</i>
+                                <i>Report</i>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div> 
+    </div>
+    <router-outlet>
+    </router-outlet>
+</div> -->

@@ -1,0 +1,21 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Pharmacy Minimum Stock Report</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PHRMMinStockColumns"
+                 [grid-data]="PHRMMinStockData"
+                 [grid-exportOptions]="gridExportOptions"
+                 [grid-showExport]="true"
+                 [report-for]="pharmacy">
+    </danphe-grid>
+  </div>
+</div>
+

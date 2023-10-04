@@ -1,0 +1,136 @@
+<form class="form-horizontal hm-form">
+  <div class="form-body">
+    <div class="caption lb-caption">
+      <i class="fa fa-money"></i>
+      <span class="caption-subject">Consumable Stock Ledger </span>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="OnFromToDateChange($event)"> </fiscal-year-calendar>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group row">
+          <label class="control-label col-md-4">Item Name <sup style="color: red">*</sup><b style="float:right;">:</b></label>
+          <div class="col-md-6 autocomplete-item">
+            <input danphe-auto-complete class="form-control" (valueChanged)="onItemChange()" placeholder="Select ItemName" [(ngModel)]="selecteditem" [list-formatter]="ItemListFormatter" [ngModelOptions]="{standalone: true}" display-property-name="ItemName" [source]="itemList" [match-formatted]="true" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="GetReportData()" [disabled]="loading">
+            <span *ngIf="!loading">Show Report</span>
+            <span *ngIf="loading">Loading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="ConsumableStockLedgerData.length>0">
+      <div id="printpage" style="margin-top: 40px">
+        <div class="col-lg-12 col-sm-12 border border-dark p-2">
+          <div class="row" style="margin-bottom: 10px; display: flex; justify-content: space-between;">
+            <div class="logo" style="width: 18%; padding: 0px 20px 0px 20px; float: left">
+              <img class="img-responsive" style="max-height: 70px" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+            </div>
+            <div style="width: 64%; float: left; padding-bottom: 0px">
+              <div class="text-center bill-head" style=" text-align: center; font-family: sans-serif; margin-top: 10px;">
+                <div style="font-size:15px;" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                <div style="font-size:15px;" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                <div style="font-size:15px;" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                <div style="font-size:15px;" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                <div style="font-size: 15px"><strong>{{ headerDetail.hospitalName }}</strong></div>
+                <div style="font-size: 15px">{{ headerDetail.address }}</div><br />
+                <div style="font-size: 15px;text-decoration: underline;"><strong> खर्च भएर जाने जिन्सी मालसामानको खाता </strong></div>
+              </div>
+            </div>
+            <div style="width:20%;text-align:right; padding: 0px 20px 0px 20px;">
+              <div>म.ले.प.फारम नं: ४०७ </div>
+              <div>साबिकको फारम नं: ५२ </div>
+            </div>
+          </div>
+          <div style="display: flex;justify-content: space-between; margin-bottom: 20px;">
+            <div>
+              <div>जिन्सी सामानको नाम : {{ledgerOrderDetail.ItemName}} </div>
+              <div>एकाई : {{ledgerOrderDetail.UOMName}}</div>
+              <div>इस्पेसिफिकेशन :{{ledgerOrderDetail.GRItemSpecification}} </div>
+            </div>
+            <div></div>
+            <div>
+              <div>आर्थिक वर्ष : {{ledgerOrderDetail.FiscalYearName}}</div>
+              <div>जिन्सी संकेत नं. : {{ledgerOrderDetail.SubCategoryName}} </div>
+              <div>जिन्सी खातापाना नं. : {{ledgerOrderDetail.RegisterPageNumber}} </div>
+            </div>
+          </div>
+          <table class="table table-condensed" border="1" rules="all">
+            <thead>
+              <tr>
+                <th rowspan="2" style="text-align: center;font-size: 11px;">मिति</th>
+                <th rowspan="2" style="text-align: center;font-size: 11px;">दाखिला / निकासा न.</th>
+                <th colspan="3" style="text-align: center;font-size: 11px;">स्टोर दाखिला (आम्दानी) </th>
+                <th colspan="3" style="text-align: center; font-size: 11px;">निकासा (खर्च)</th>
+                <th colspan="3" style="text-align: center;font-size: 11px;">बाँकी</th>
+                <th rowspan="2" style="text-align: center;font-size: 11px;">कैफियत</th>
+              </tr>
+              <tr>
+                <th style="text-align: center;font-size: 11px;">परिणाम</th>
+                <th style="text-align: center;font-size: 11px;">दर</th>
+                <th style="text-align: center;font-size: 11px;">रकम</th>
+                <th style="text-align: center;font-size: 11px;">परिणाम</th>
+                <th style="text-align: center;font-size: 11px;">दर</th>
+                <th style="text-align: center;font-size: 11px;">रकम</th>
+                <th style="text-align: center;font-size: 11px;">परिणाम</th>
+                <th style="text-align: center;font-size: 11px;">दर</th>
+                <th style="text-align: center;font-size: 11px;">रकम</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stock of ConsumableStockLedgerData">
+                <td style="text-align: center;font-size: 11px;">{{stock.TransactionDate| nepaliDate}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.ReferenceNo}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.ReceiptQty}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.ReceiptRate}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.ReceiptAmount}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.IssueQty}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.IssueRate}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.IssueAmount}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.BalanceQty}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.BalanceRate}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.BalanceAmount}}</td>
+                <td style="text-align: center;font-size: 11px;">{{stock.Remarks}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table border="1" class="table table-condensed">
+            <div style="display:flex; justify-content: space-between; margin-top: 20px; ">
+              <div style="width: 33%;font-size: 12px;display: inline-block;padding-left: 10px;">
+                <div>स्टोर प्रमुखको दस्तखतः</div>
+                <div>नामः</div>
+                <div>दर्जा:</div>
+                <div>मितिः</div>
+              </div>
+              <div style="width: 33%;font-size: 12px;display: inline-block;">
+                <div>शाखा प्रमुखको दस्तखतः</div>
+                <div>नामः</div>
+                <div>दर्जा:</div>
+                <div>मितिः</div>
+              </div>
+              <div style="width: 33%;font-size: 12px;display: inline-block;">
+                <div>कार्लायल प्रमुखको दस्तखतः</div>
+                <div>नामः</div>
+                <div>दर्जा:</div>
+                <div>मितिः</div>
+              </div>
+            </div>
+          </table>
+        </div>
+      </div>
+      <div class="row center-style">
+        <div class="col-md-12 col-xs-12" style="display: flex;justify-content: center; margin-top: 10px">
+          <button id="printbtn" class="btn btn-primary btn-sm" (keyup.enter)="print()" (click)="print()"><i class="fa fa-print"></i>Print</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></app-print-page>

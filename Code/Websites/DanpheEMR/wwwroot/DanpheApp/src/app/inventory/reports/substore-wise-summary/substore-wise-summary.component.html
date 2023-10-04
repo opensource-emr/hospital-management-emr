@@ -1,0 +1,121 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption custom-caption no-margin"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Substore-Wise Stock Summary Report</span> </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div class="col-md-12">
+      <div>
+        <table class="table billing-table" style="background-color:initial;margin-bottom:0px;">
+          <tbody style="background-color: #dde3e9;">
+            <tr>
+              <td>
+                <div class="col-md-12">
+                  <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="OnDateRangeChange($event)"> </fiscal-year-calendar>
+                </div>
+              </td>
+              <td>SubStore:</td>
+              <td style="width: 250px;">
+                <select [(ngModel)]="StoreId" class="form-control" (ngModelChange)="OnStoreChange()">
+                  <option [ngValue]="null" selected>All Store</option>
+                  <option *ngFor="let store of subStoreList" [ngValue]="store.StoreId">{{store.Name}}</option>
+                </select>
+              </td>
+              <td></td>
+              <td>
+                <button class="btn btn-primary btn-add-new-row" (click)="GetReportData()">Show Report
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <danphe-grid [grid-colDefaults]="SubstoreWiseSummaryReportColumn" [grid-data]="SubstoreWiseSummaryReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (onDateChange)="OnDateRangeChange($event)" [report-title]="'Substore Wise Summary Report'" [report-for]="'inventory'" [show-header]="true" [filter-parameters]="FilterParameters">
+        </danphe-grid>
+      </div>
+
+
+      <div class="col-md-12">
+        <div class="col-md-offset-4">
+          <div class="col-lg-6-offset-3 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+            <div class="table-responsive table-wrapper" id="print_summary">
+              <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+                <thead>
+                  <tr>
+                    <th colspan="4" style="text-align: center;">
+                      <span style="font-size:large;"> Summary </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Opening Value </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.OpeningValue | Currency}}</span>
+                      </td>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Opening Quantity </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.OpeningQuantity}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Dispatch Value </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ConsumptionValue| Currency}}</span>
+                      </td>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Dispatch Quantity(Consumables) </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ConsumptionQty }}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Consumption Value </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ConsumptionValue | Currency}}</span>
+                      </td>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Consumption Quantity </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ConsumptionQty }}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Closing Value </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ClosingValue| Currency }}</span>
+                      </td>
+                      <td style="font-weight:bold; color:blue">
+                        <span> <b> Closing Quantity </b> </span>
+                      </td>
+                      <td>
+                        <span> {{summary.ClosingQuantity }}</span>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

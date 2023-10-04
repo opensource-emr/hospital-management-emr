@@ -1,0 +1,45 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div>
+        <div class="lb-si-title">
+          <h4>Default Signatories for Normal Tests:</h4>
+        </div>
+        <div class="lb-si-div" *ngFor="let doctor of DefaultSignatoriesEmpId; let i= index;">
+          <label class="mt-checkbox mt-checkbox-outline" for="{{i}}{{doctor.FirstName}}">
+            <input id="{{i}}{{doctor.FirstName}}" class="zoomcheckbox pull-left" [(ngModel)]="doctor.IsSelected"
+                   name="{{doctor.LongSignature}}" width="100" type="checkbox" />
+            <span></span>{{doctor.FirstName}}&nbsp; {{doctor.LastName}}</label>
+        </div>
+        <!--
+            <span *ngFor="let doctor of DefaultSignatoriesEmpId; let i= index;" style="display: inline-block;height: 36px; line-height: 27px;margin-right: 10px;">
+                <label style="cursor: pointer;" for="{{doctor.LongSignature}}">{{doctor.FirstName}}&nbsp; {{doctor.LastName}}
+                </label>
+                <input id="{{doctor.LongSignature}}" class="zoomcheckbox pull-left" [(ngModel)]="doctor.IsSelected" name="doctor.LongSignature" width="100" type="checkbox" />
+            </span>
+--> 
+      </div>
+      <div style="padding-top: 20px;">
+        <div class="lb-si-title">
+          <h4>Default Histo/Cyto Signatories:</h4>
+        </div>
+        <div class="lb-si-div" *ngFor="let doc of DefaultHistoCytoSignatoriesEmpId; let i= index;">
+          <label class="mt-checkbox mt-checkbox-outline" for="{{doc.EmployeeId}}">
+            <input id="{{doc.EmployeeId}}" class="zoomcheckbox pull-left" [(ngModel)]="doc.IsSelected" name="doc.FirstName" width="100" type="checkbox" />
+            <span></span>{{doc.FirstName}}&nbsp; {{doc.LastName}}</label>
+        </div>
+        <!--
+				<span *ngFor="let doc of DefaultHistoCytoSignatoriesEmpId; let i= index;" style="display: inline-block;height: 36px; line-height: 27px;margin-right: 10px;">
+					<label style="cursor: pointer;" for="{{doc.EmployeeId}}">
+						{{doc.FirstName}}&nbsp; {{doc.LastName}}
+					</label>
+					<input id="{{doc.EmployeeId}}" class="zoomcheckbox pull-left" [(ngModel)]="doc.IsSelected" name="doc.FirstName" width="100" type="checkbox" />
+				</span>
+--> 
+      </div>
+    </div>
+    <div class="col-md-12 text-center">
+      <button class="btn btn-blue primary-btn" (click)="Update()">Update Default Signatories</button>
+    </div>
+  </div>
+</div>

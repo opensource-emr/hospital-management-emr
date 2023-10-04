@@ -1,0 +1,44 @@
+<div class="form-body">
+  <div class="caption lb-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Consumption Report</span> </div>
+  <div class="row">
+    <div class="col-md-6">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-12 right">
+      <div class="col-md-6"></div>
+      <div class="col-md-3">
+        <label for="selectedCategory" style="width: 12pc;">
+          <i class="fa fa-filter"></i> Filter by SubCategory <span class="right">:</span>
+        </label>
+        <select [(ngModel)]="selectedSubCategoryId" id="selectedCategoryName" (change)="filterStockBySubCategory()" style="margin-left: 1rem">
+          <option [ngValue]="null">ALL</option>
+          <option *ngFor="let subcategory of SubCategoryList" [value]="subcategory.SubCategoryId">{{subcategory.SubCategoryName}}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <div class="col-md-12" style="display: flex;flex-direction: column; align-items: baseline;">
+          <div style="display: flex;flex-flow: row-reverse;align-items: baseline;">
+            <label for="InternalConsumption" style="margin-right: 20px;"> Internal Consumption </label>
+            <input type="checkbox" id="InternalConsumption" style="zoom:1.23;scale: 1.23;margin-right: 6px;" [(ngModel)]="isInternalConsumption" (change)="ShowInternalConsumption()">
+          </div>
+          <div style="display: flex;flex-flow: row-reverse;align-items: baseline;">
+            <label for="PatientConsumption" style="margin-right: 20px;">PatientConsumption</label>
+            <input type="checkbox" id="PatientConsumption" style="zoom:1.23;scale: 1.23;margin-right: 6px;" [(ngModel)]="isPatientConsumption" (change)="ShowPatientConsumption()">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-1 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrapper">
+    <div class="row">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="ConsumptionReportColumn" [grid-data]="NewWardConsumptionData" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [show-header]="true" [report-for]="'inventory'" [report-title]="'Consumption Report'" [filter-parameters]="FilterParameters"> </danphe-grid>
+      </div>
+    </div>
+  </div>

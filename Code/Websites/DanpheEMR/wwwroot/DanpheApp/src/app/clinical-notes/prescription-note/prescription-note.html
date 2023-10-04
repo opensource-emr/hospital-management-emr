@@ -1,0 +1,532 @@
+
+<style type="text/css">
+  .patient-info-table {
+    border-bottom: 1px solid;
+  }
+
+  .div-tbl {
+    width: 100%;
+    display: table;
+  }
+
+  .pat-item p {
+    margin: 0px 0px 3px 0px;
+  }
+
+  .left {
+    float: left;
+  }
+
+  .right {
+    float: right;
+  }
+
+  .advice-body p {
+    margin: 12px 0px;
+    text-transform: uppercase;
+  }
+
+  .uppercase {
+    text-transform: uppercase;
+  }
+
+  .lft-70 {
+    flex-basis: 70%;
+  }
+
+  .lft-30 {
+    flex-basis: 30%;
+  }
+
+  .single-assessment {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+    .single-assessment p {
+      margin: 7px 0;
+    }
+
+  table.vital-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+    table.vital-table thead tr {
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+    }
+
+    table.vital-table tr td, table.vital-table tr th {
+      padding: 5px;
+      text-align: left;
+    }
+
+    table.vital-table tbody tr td:first-child {
+      text-transform: uppercase;
+    }
+</style>
+
+
+
+
+<button class="btn btn-sm blue" *ngIf="showAddPart" (click)="showAddPart=!showAddPart">
+  Preview
+</button>
+
+<button class="btn btn-sm blue" *ngIf="!showAddPart" (click)="showAddPart=!showAddPart">
+  <i class="fa fa-pencil"></i> Edit Note
+</button>
+<button class="btn btn-sm blue" *ngIf="!showAddPart" style="margin-left: 10px;" (click)="PrintNote()">
+  <i class="fa fa-print"></i>
+  Print
+</button>
+<h3 style="text-align: center">PRESCRIPTION</h3>
+<hr style="border-top: 1px solid black;">
+
+<div *ngIf="showAddPart">
+    <p>Edit part has been shown</p>
+  <div class="wrapper" style="padding: 0px 10px;">
+
+    <div class="patient-info-table div-tbl">
+      <div class="pat-item left">
+        <p>Patient Code : {{prescriptionNotes.PatientCode}}</p>
+        <p>Patient Name : {{prescriptionNotes.PatientName}}</p>
+        <p>Age/Gender : {{prescriptionNotes.AgeGender}}</p>
+        <p>Specialization: {{prescriptionNotes.Specialization}}</p>
+        <p>Doctor Name: {{prescriptionNotes.DoctorName}}</p>
+        <p>NMC No: {{prescriptionNotes.NMCNo}}</p>
+      </div>
+      <div class="pat-item right">
+        <p>Registration No. : {{prescriptionNotes.RegistrationNo}}</p>
+        <p>Registration Date :{{prescriptionNotes.RegistrationDate}}</p>
+        <p>Patient Type : {{prescriptionNotes.PatientType}}</p>
+      </div>
+    </div>
+
+    <div class="advice div-tbl" style="margin-top:20px">
+      <div style="text-align: center;margin-bottom: 15px;" class="col-md-3"><p style="font-weight: 700;margin: 8px 0px;">Advice</p></div>
+      <div class="col-md-6">
+        <textarea rows="5" style="width:100%;" [(ngModel)]="prescriptionNotes.Advice">
+        </textarea>
+      </div>
+    </div>
+    <div class="advice div-tbl" style="margin-top:20px">
+      <div style="text-align: center;margin-bottom: 15px;" class="col-md-3"><p style="font-weight: 700;margin: 8px 0px;">Free Notes</p></div>
+      <div class="col-md-6">
+        <textarea rows="5" style="width:100%;" [(ngModel)]="prescriptionNotes.FreeNotes">
+        </textarea>
+      </div>
+    </div>
+    <div class="col-md-offset-5">
+
+      <input type="checkbox"
+             [(ngModel)]="showfreenotes"
+             [ngModelOptions]="{standalone: true}" />
+      <label>Show Free Notes</label>
+    </div>
+
+    <div class="neuro-assess">
+      <div style="text-align: center;margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Neurological Assessment Form</p></div>
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>Chief Complaint</p>
+        </div>
+        <div class="lft-70 uppercase">
+          <p>
+            <textarea style="width: 400px;height: 90px;">
+             {{prescriptionNotes.ChiefComplaint}}
+          </textarea>
+          </p>
+        </div>
+      </div>
+
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>History of Presenting Illness</p>
+        </div>
+        <div class="lft-30 uppercase">
+          <p>
+            <textarea style="width: 400px;height: 90px;">
+               {{prescriptionNotes.HistoryIllness}}
+          </textarea>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="neuro-assess">
+      <div><p style="margin: 8px 0px 8px -10px;"><em>Diagnosis</em></p></div>
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>Type</p>
+        </div>
+        <div class="lft-20 ">
+
+          <select [(ngModel)]="prescriptionNotes.DiagnosisType" class="form-control col-md-4">
+            <option *ngFor="let r of select" value="{{r.name}}">
+              {{r.name}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>Diagnosis</p>
+        </div>
+        <div class="lft-70 uppercase">
+          <p>
+            <textarea style="width: 400px;height: 90px;" [(ngModel)]="prescriptionNotes.Diagnosis">
+          </textarea>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="advice div-tbl">
+      <div style="text-align: center;margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Vital Sign</p></div>
+      <div>
+        <p style="font-weight: 700; font-size: 12px">Visit Entry Date and Time: {{prescriptionNotes.RegistrationDate}} &nbsp;&nbsp;</p>
+      </div>
+
+      <div class="vital-table-holder">
+        <table class="vital-table table table-responsive table-hover">
+          <thead>
+            <tr>
+              <th>Vital Parameter</th>
+              <th>Sub Parameter</th>
+              <th>Result</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Height</td>
+              <td></td>
+              <td><input type="text" [(ngModel)]="prescriptionNotes.Height" /></td>
+              <td>Cm</td>
+            </tr>
+
+            <tr><td>Weight</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.Weight" /></td><td>Kg</td></tr>
+            <tr><td>BMI</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.BMI" /></td><td></td></tr>
+            <tr><td>Temperature</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.Temp" /></td><td>Celsius</td></tr>
+            <tr><td>Pulse</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.Pulse" /></td><td>bpm</td></tr>
+            <tr><td>Respiration</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.Respiration" /></td><td></td></tr>
+            <tr><td>Blood Pressure</td><td>Systolic</td><td><input type="text" [(ngModel)]="prescriptionNotes.BPSystolic" /></td><td>mmHg</td></tr>
+            <tr><td>Blood Pressure</td><td>Diastolic</td><td><input type="text" [(ngModel)]="prescriptionNotes.BPDiastolic" /></td><td>mmHg</td></tr>
+            <tr><td>SPO2</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.SpO2" /></td><td>%</td></tr>
+            <tr><td>Pain Score</td><td></td><td><input type="text" [(ngModel)]="prescriptionNotes.PainScale" /></td><td></td></tr>
+
+          </tbody>
+          <tfoot>
+            <tr></tr>
+          </tfoot>
+
+        </table>
+      </div>
+    </div>
+
+
+  </div>
+
+</div>
+
+<div *ngIf="!showAddPart">
+
+  <div class="wrapper" style="padding: 0px 10px;" id="note_to_print">
+    <div class="patient-info-table div-tbl">
+      <div class="pat-item left">
+        <p>Patient Code : {{prescriptionNotes.PatientCode}}</p>
+        <p>Patient Name : {{prescriptionNotes.PatientName}}</p>
+        <p>Age/Gender : {{prescriptionNotes.AgeGender}}</p>
+        <p>Specialization: {{prescriptionNotes.Specialization}}</p>
+        <p>Doctor Name: {{prescriptionNotes.DoctorName}}</p>
+        <p>NMC No: {{prescriptionNotes.NMCNo}}</p>
+      </div>
+      <div class="pat-item right">
+        <p>Registration No.  {{prescriptionNotes.RegistrationNo}}</p>
+        <p>Registration Date :{{prescriptionNotes.RegistrationDate}}</p>
+        <p>Patient Type : {{prescriptionNotes.PatientType}}</p>
+      </div>
+    </div>
+
+    <br /><br /> <br /><br /><br /><br /> <br /><br /><br />
+    <div class="neuro-assess">
+      <div *ngIf="prescriptionNotes.Advice" class="single-assessment">
+        <div class="lft-30">
+          <p>Advice</p>
+        </div>
+        <div class="lft-70 uppercase">
+          <p>{{prescriptionNotes.Advice}}</p>
+
+        </div>
+      </div>
+      <div class="single-assessment" style="margin-top:20px" *ngIf="showfreenotes == true && prescriptionNotes.FreeNotes">
+        <div class="lft-30">
+          <p>Free Notes</p>
+        </div>
+        <div class="lft-70 uppercase">
+          <p>{{prescriptionNotes.FreeNotes}}</p>
+
+        </div>
+      </div>
+      <div style="text-align: center;margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Neurological Assessment Form</p></div>
+
+      <div *ngIf="prescriptionNotes.ChiefComplaint || prescriptionNotes.HistoryIllness">
+        <div style="margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Subjective Notes</p></div>
+        <div *ngIf="prescriptionNotes.ChiefComplaint" class="single-assessment">
+          <div class="lft-30">
+            <p>Chief Complaint</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.ChiefComplaint}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.HistoryIllness" class="single-assessment">
+          <div class="lft-30">
+            <p>History of Presenting Illness</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>
+              <!--Increase in the frequency of headache. currently taking rizora sos around 1-2 episodes per month. triggers;decreased sleep, stress sleep
+        normal change in the character of the headache.-->
+              {{prescriptionNotes.HistoryIllness}}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="prescriptionNotes.objNotes">
+        <div style="margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Objective Notes</p></div>
+
+        <div *ngIf="prescriptionNotes.objNotes.HEENT" class="single-assessment">
+          <div class="lft-30">
+            <p>HEENT</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.HEENT}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.Chest" class="single-assessment">
+          <div class="lft-30">
+            <p>Chest</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.Chest}}</p>
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.CVS" class="single-assessment">
+          <div class="lft-30">
+            <p>CVS</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.CVS}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.Abdomen" class="single-assessment">
+          <div class="lft-30">
+            <p>Abdomen</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.Abdomen}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.Extremity" class="single-assessment">
+          <div class="lft-30">
+            <p>Extremity</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.Extremity}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.Skin" class="single-assessment">
+          <div class="lft-30">
+            <p>Skin</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.Skin}}</p>
+
+          </div>
+        </div>
+
+        <div *ngIf="prescriptionNotes.objNotes.Neurological" class="single-assessment">
+          <div class="lft-30">
+            <p>Neurological</p>
+          </div>
+          <div class="lft-70 uppercase">
+            <p>{{prescriptionNotes.objNotes.Neurological}}</p>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div><p style="margin: 8px 0px 8px -10px;"><em>Diagnosis</em></p></div>
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>Type</p>
+        </div>
+        <div class="lft-20 ">
+          <p> {{prescriptionNotes.DiagnosisType}}</p>          
+        </div>
+      </div>
+
+      <div class="single-assessment">
+        <div class="lft-30">
+          <p>Diagnosis</p>
+        </div>
+        <div class="lft-70 uppercase">
+          <p> {{prescriptionNotes.Diagnosis}}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="advice div-tbl">
+      <div style="text-align: center;margin-bottom: 15px;"><p style="font-weight: 700;margin: 8px 0px;">Vital Sign</p></div>
+      <div>
+        <p style="font-weight: 700; font-size: 12px">Visit Entry Date and Time: {{prescriptionNotes.RegistrationDate}} &nbsp;&nbsp;</p>
+      </div>
+
+      <div class="vital-table-holder">
+        <table class="vital-table">
+          <thead>
+            <tr>
+              <th>Vital Parameter</th>
+              <th>Sub Parameter</th>
+              <th>Result</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Height</td>
+              <td></td>
+              <td>{{prescriptionNotes.Height}}</td>
+
+              <td>Cm</td>
+            </tr>
+            <tr><td>Weight</td><td></td><td>{{prescriptionNotes.Weight}}</td><td>Kg</td></tr>
+            <tr><td>BMI</td><td></td><td>{{prescriptionNotes.BMI}}</td><td></td></tr>
+            <tr><td>Temperature</td><td></td><td>{{prescriptionNotes.Temp}}</td><td>Celsius</td></tr>
+            <tr><td>Pulse</td><td></td><td>{{prescriptionNotes.Pulse}}</td><td>bpm</td></tr>
+            <tr><td>Respiration</td><td></td><td>{{prescriptionNotes.Respiration}}</td><td></td></tr>
+            <tr><td>Blood Pressure</td><td>Systolic</td><td>{{prescriptionNotes.BPSystolic}}</td><td>mmHg</td></tr>
+            <tr><td>Blood Pressure</td><td>Diastolic</td><td>{{prescriptionNotes.BPDiastolic}}</td><td>mmHg</td></tr>
+            <tr><td>SPO2</td><td></td><td>{{prescriptionNotes.SpO2}}</td><td>%</td></tr>
+            <tr><td>Pain Score</td><td></td><td>{{prescriptionNotes.PainScale}}</td><td></td></tr>
+
+          </tbody>
+          <tfoot>
+            <tr></tr>
+          </tfoot>
+
+        </table>
+      </div>
+      <!-- --------------------------------------------------------------------------------------- -->
+      <hr style="border-top: 1px solid black; margin-top:40px;">
+      <div style="text-align: center;margin-top: 50px; margin-bottom:15px;"><p style="font-weight: 700;margin: 8px 0px;">Medication Details</p></div>
+      <div *ngIf="medicationPrescriptions != null">
+        <div *ngIf="medicationPrescriptions.length==0" style="text-align: center;margin-top: 20px; margin-bottom:15px;"><p style="font-weight: 400;margin: 8px 0px;">No Medication Prescribed </p></div>
+        <div *ngIf="medicationPrescriptions.length!=0">
+          <div class="vital-table-holder">
+            <table class="vital-table">
+              <thead>
+                <tr>
+                  <th>Medication</th>
+                  <th>Dose (mg/ml/tabs)</th>
+                  <th>Frequency</th>
+                  <th>Days</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let medication of medicationPrescriptions">
+                  <td>{{medication.ItemName}}</td>
+                  <td>{{medication.pres.Dosage}} </td>
+                  <td>{{medication.pres.Frequency}} times a day</td>
+                  <td>{{medication.pres.HowManyDays}}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr></tr>
+              </tfoot>
+
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- ---------------------------- -->
+      <!-- --------------------------------------------------------------------------------------- -->
+      <hr style="border-top: 1px solid black;margin-top:40px;">
+      <div style="text-align: center;margin-top: 50px; margin-bottom:15px;"><p style="font-weight: 700;margin: 8px 0px;">Follow-Up Details</p></div>
+      <div *ngIf="!followUpDetails" style="text-align: center;margin-top: 20px; margin-bottom:15px;"><p style="font-weight: 400;margin: 8px 0px;">No Upcoming Follow up </p></div>
+
+      <div *ngIf="followUpDetails">
+        <div class="vital-table-holder">
+          <table class="vital-table">
+            <thead>
+              <tr>
+                <th>Follow-Up</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{followUpDetails.Number}} {{followUpDetails["Unit"]}}</td>
+                <td>{{followUpRemarks}} </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr></tr>
+            </tfoot>
+
+          </table>
+        </div>
+      </div>
+      <!-- ---------------------------- -->
+
+    </div>
+
+
+  </div>
+
+</div>
+
+<hr style="border-top: 1px solid black; margin-top:40px;">
+
+<div style="text-align:right;">
+
+  <button class="btn btn-sm blue" *ngIf="showAddPart" (click)="SaveNote()">
+    <i class="fa fa-save"></i>
+    Save
+  </button>
+
+  <button class="btn btn-sm blue" *ngIf="!showAddPart" style="margin-left: 10px;" (click)="PrintNote()">
+    <i class="fa fa-print"></i>
+    Print
+  </button>
+</div>
+
+
+
+
+
+
+
+
+
+
+

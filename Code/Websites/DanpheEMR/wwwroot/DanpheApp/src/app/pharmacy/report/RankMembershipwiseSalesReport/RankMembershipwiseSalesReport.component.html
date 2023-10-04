@@ -1,0 +1,53 @@
+<div class="row">
+    <div class="form-body">
+        <div class="col-md-12">
+            <div class="caption custom-caption" style="float: left;">
+                <i class="glyphicon glyphicon-asterisk"></i>
+                <span class="caption-subject">Rank-Membershipwise Sales Report</span>
+            </div>
+
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-6">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+            </div>
+        </div>
+
+
+        <div class="col-md-12">
+            <div class="row mt10">
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-4 text-right">Membership:</label>
+                        <div class="col-md-8">
+                            <danphe-multiselect *ngIf="Membership.length > 0" [ddl-data]="Membership" [pre-selected]="preSelectedMemberships" [placeholder-text]="'--Select Memberships--'" [value-property-name]="'MembershipTypeId'" (selected-items-list)="MembershipsChanged($event)" [display-property-name]="'MembershipTypeName'" [single-selection]="false">
+                            </danphe-multiselect>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-4 text-right">Rank :</label>
+                        <div class="col-md-8">
+                            <danphe-multiselect *ngIf="Rank.length > 0" [ddl-data]="Rank" [pre-selected]="preSelectedRanks" [placeholder-text]="'--Select Ranks--'" [value-property-name]="'RankId'" (selected-items-list)="RanksChanged($event)" [display-property-name]="'RankName'" [single-selection]="false">
+                            </danphe-multiselect>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn blue" type="button" (click)="GetRankMembershipwiseSalesData()" [disabled]="loading">
+                        <span *ngIf="!loading">Show Report</span>
+                        <span *ngIf="loading">Loading...</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="FilteredRankMembershipSales.length>0">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="RankMembershipwiseSalesColumn" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-data]="FilteredRankMembershipSales" [grid-showExport]="true" [grid-date-range]="dateRange" [grid-exportOptions]="gridExportOptions" [report-for]="pharmacy" [show-header]="true" [filter-parameters]="filterParameters">
+        </danphe-grid>
+    </div>
+</div>

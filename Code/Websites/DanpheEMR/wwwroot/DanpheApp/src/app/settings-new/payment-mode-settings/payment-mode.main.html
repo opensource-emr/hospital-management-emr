@@ -1,0 +1,87 @@
+<div class="wrapper">
+    <div class="margin-20-tp">
+        <div class="row">
+          <div class="col-md-12 col-xs-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="PaymentModeColumns" [grid-data]="PaymentPages" (grid-actions)="ConfigurationGridActions($event)"
+                         [show-print-button]="false">
+            </danphe-grid>
+          </div>
+        </div>
+    </div>
+
+    <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf = "ShowEditPage">
+        <div class="portlet-body form">
+          <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+              <div class="modelbox-div ref_modal_div clearfix">
+                <div class="caption custom-caption no-margin">
+                  <h3>
+                    <span>
+                      <ng-container>Edit Payment Mode Settings <span style="color: blue; font-weight: bold;">(For: {{ PageName }})</span></ng-container>
+                    </span>
+                  </h3>
+                  <a class="btn btn-danger" (click)="close()">X</a>
+                </div>
+                <div>
+                  <table class="table table-responsive table-hover table-bordered">
+                    <thead style="background-color: rgb(220, 220, 220);">
+                      <tr>
+                        <th style="text-align: center;">S.N.</th>
+                        <th style="text-align: center;">Payment Mode</th>
+                        <th style="text-align: center;">Is Active</th>
+                        <th style="text-align: center;">Remark Mandatory</th>
+                        <th style="text-align: center;">Payment Detail Mandatory</th>
+                        <th style="text-align: center;">Display Sequence</th>
+                      </tr>
+                    </thead>
+                      <tbody>
+                        <tr *ngFor ="let row of SettingValue; let i = index;">
+                          <td style="text-align: center;"><label>{{ i+1 }}</label></td>
+                          <td style="text-align: center;"><label>{{ row.PaymentModeSubCategoryName }}</label></td>
+                          <td style="text-align: center;">                         
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input type="checkbox" [ngModelOptions]="{standalone: true}"
+                                  [(ngModel)]="row.IsActive"/>
+                                <span></span>
+                              </label>
+                            </div>
+                          </td>
+                          <td style="text-align: center;">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input type="checkbox" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="row.IsRemarksMandatory"/>
+                                  <span></span>
+                                </label>
+                              </div>
+                          </td>
+                          <td style="text-align: center;">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input type="checkbox" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="row.ShowPaymentDetails"/>
+                                  <span></span>
+                                </label>
+                              </div>
+                          </td>
+                          <td style="text-align: center;">
+                              <input  type="number" [ngModelOptions]="{standalone: true}"
+                              (wheel)="coreService.PreventNumberChangeOnScroll($event)" [(ngModel)]="row.DisplaySequence"/>
+                          </td>
+                        </tr>
+                      </tbody>
+                  </table>
+                </div>
+                <div class="modelbox-footer">
+                  <div class="all-buttons text-right">
+                    <input type="button" id="update" *ngIf="ShowEditPage" class="btn green btn-success margin-7-hr" [disabled] = "loading" (click)="loading = true;UpdateConfiguration()"
+                      value="Update" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>

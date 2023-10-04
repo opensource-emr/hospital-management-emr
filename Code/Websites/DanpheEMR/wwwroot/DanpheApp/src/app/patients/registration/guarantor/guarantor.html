@@ -1,0 +1,130 @@
+﻿
+<div class="wrapper">
+  <form [formGroup]="guarantor.GuarantorValidator" class="form-horizontal">
+    <div class="form-body">
+      <div class="row">
+        <div class="col-md-12 table-responsive" *ngIf="hasGuarantor">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Relationship</th>
+                <th>Name</th>
+                <th>Contact no.</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tr>
+              <td>{{currentPatient.Guarantor.PatientRelationship}}</td>
+              <td>{{currentPatient.Guarantor.GuarantorName}}</td>
+              <td>{{currentPatient.Guarantor.GuarantorPhoneNumber}}</td>
+              <td><button class="btn blue" (click)="showPropertyFileds('edit')">Edit</button></td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-md-12" *ngIf="showGuarantorPropertyField || !hasGuarantor">
+          <div class="col-md-5">
+            <div class="form-group">
+              <label class="control-label col-md-4">Relationship with Patient<b class="color-red">*</b><b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <input class="form-control"  required value="" (keyup.enter)="GoToNextInput('GuarantorName')" style="margin-top:5px" type="text" [(ngModel)]="guarantor.PatientRelationship" formControlName="PatientRelationship" autofocus/>
+              </div>
+              <div class="col-md-4">
+                <div class="input-group">
+                  <div class="icheck-inline">
+                    <label class="control-label">OR</label>
+                    <label class="mt-checkbox mt-checkbox-outline"> SELF
+                      <input type="checkbox" (keyup.enter)="GoToNextInput('GuarantorName')" value="Self" [(ngModel)]="guarantor.GuarantorSelf" (ngModelChange)="ChangeForSelf($event)" [ngModelOptions]="{standalone: true}" />
+                      <span></span> </label>
+                  </div>
+                </div>
+                <div style="color:red" *ngIf="guarantor.IsDirty('PatientRelationship')" [hidden]="guarantor.IsValidCheck('PatientRelationship','required')">Relationship is required</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input type="text" class="form-control" id="GuarantorName" formControlName="GuarantorName" [(ngModel)]="guarantor.GuarantorName" />
+                <span class="color-red" *ngIf="guarantor.IsDirty('GuarantorName')" [hidden]="guarantor.IsValidCheck('GuarantorName','required')">Guarantor Name is required</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Gender<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" value="Male" [(ngModel)]="guarantor.GuarantorGender" [ngModelOptions]="{standalone: true}" />
+                      <span></span>Male </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" value="Female" [(ngModel)]="guarantor.GuarantorGender" [ngModelOptions]="{standalone: true}" />
+                      <span></span>Female </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" value="Others" [(ngModel)]="guarantor.GuarantorGender" [ngModelOptions]="{standalone: true}" />
+                      <span></span>Other </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Phone number<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" type="tel" maxlength="11" [(ngModel)]="guarantor.GuarantorPhoneNumber" formControlName="GuarantorPhoneNumber" placeholder="phone number" />
+                <span class="color-red" *ngIf="guarantor.IsDirty('GuarantorPhoneNumber')" [hidden]="guarantor.IsValidCheck('GuarantorPhoneNumber','pattern')">Primary Phone is not proper</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Date Of Birth<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input type="date" formControlName="GuarantorDateOfBirth" class="form-control" [(ngModel)]="guarantor.GuarantorDateOfBirth">
+                <span class="color-red" *ngIf="guarantor.IsDirty('GuarantorDateOfBirth')" [hidden]="guarantor.IsValidCheck('GuarantorDateOfBirth','wrongDate')">Wrong Date is selected</span> </div>
+            </div>
+            <div>
+              <input type="button" class="btn blue" name="name" value="Save" (click)="save()" />
+            </div>
+          </div>
+          <div class="col-md-1"> </div>
+          <div class="col-md-5">
+            <div class="form-group">
+              <label class="control-label col-md-4">Street 1<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="guarantor.GuarantorStreet1" required value="" placeholder="street 1" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Street 2<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" type="text" [(ngModel)]="guarantor.GuarantorStreet2" [ngModelOptions]="{standalone: true}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Country<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <select class="form-control" [(ngModel)]="guarantor.GuarantorCountryId" [ngModelOptions]="{standalone: true}" (ngModelChange)="GetCountrySubDivision(guarantor)">
+                  <option *ngFor="let Country of Countries" value="{{Country.CountryId}}">{{Country.CountryName}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">District/State<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <select [(ngModel)]="guarantor.GuarantorCountrySubDivisionId" class="form-control" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let div of CountrySubDivisionList" value="{{div.CountrySubDivisionId}}" [disabled]="disableTextBox">{{div.CountrySubDivisionName}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">City<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input type="text" [(ngModel)]="guarantor.GuarantorCity" class="form-control" [ngModelOptions]="{standalone: true}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Zip Code<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input type="text" [ngModelOptions]="{standalone: true}" class="form-control" [(ngModel)]="guarantor.GuarantorZIPCode">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,83 @@
+<input type="button" class="btn btn-primary" (click)="AddItemType()" value="Add ItemType" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="itemtypeGridColumns" [grid-data]="itemtypeList"
+      (grid-actions)="ItemTypeGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showItemTypeAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="!update">Add ItemType</span> <span *ngIf="update">Update ItemType</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentItemType.ItemTypeValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Type of Item<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="itemtype" class="form-control" type="text" maxlength="50"
+                    [(ngModel)]="CurrentItemType.ItemTypeName" value="" formControlName="ItemTypeName"
+                    placeholder="Enter type of Item" (keyup.enter)="setFocusById('categoryname')" />
+                  <span class="color-red font-sm"
+                    [hidden]="CurrentItemType.IsValidCheck('ItemTypeName','required') || !(CurrentItemType.IsDirty('ItemTypeName'))">type
+                    of item is required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Select Category<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="categoryname" danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                    [(ngModel)]="selCategory" [source]="categoryList" placeholder="Category"
+                    (keyup.enter)="setFocusById('description')" formControlName="CategoryId"
+                    display-property-name="CategoryName" value-property-name="CategoryName"
+                    (valueChanged)="AssignSelectedCategory()" [list-formatter]="CategoryListFormatter" max-num-list="8"
+                    style="width:100%;height:32px;" />
+                  <span class="color-red font-sm"
+                    [hidden]="CurrentItemType.IsValidCheck('CategoryId','required') || !(CurrentItemType.IsDirty('CategoryId'))">category
+                    type is required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="description" class="form-control" type="text" maxlength="100"
+                    [(ngModel)]="CurrentItemType.Description" [ngModelOptions]="{standalone: true}" name="Description"
+                    placeholder="Enter Description"
+                    (keyup.enter)="!update?setFocusById('saveitm'):setFocusById('updateitm')" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">IsActive<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItemType.IsActive"
+                          [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="all-buttons text-right">
+                <button type="button" id="saveitm" class="btn green btn-success" *ngIf="!update"
+                  (click)="Add()">Save</button>
+                <button type="button" id="updateitm" class="btn green btn-success" *ngIf="update"
+                  (click)="Update()">Update</button>
+              </div>
+            </div>
+          </form>
+          <!--</form>-->
+          <!--Model Box Body End-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

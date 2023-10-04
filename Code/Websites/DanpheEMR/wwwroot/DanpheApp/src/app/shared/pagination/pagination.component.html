@@ -1,0 +1,7 @@
+<div class="btn-group" role="group">
+    <button class="btn btn-secondary" style="background-color: cornflowerblue" [disabled]="!canMoveToPreviousPage" (click)="moveToFirstPage()"><i class="fa fa-angle-double-left"></i></button>
+    <button class="btn btn-secondary" style="background-color: cornflowerblue" [disabled]="!canMoveToPreviousPage" (click)="moveToPreviousPage()"><i class="fa fa-angle-left"></i></button>
+    <button class="btn btn-secondary" style="background-color: cornflowerblue" disabled style="width:100px"><b>{{pageIndex + 1}} / {{_pageCount}}</b></button>
+    <button class="btn btn-secondary" style="background-color: cornflowerblue" [disabled]="!canMoveToNextPage" (click)="moveToNextPage()"><i class="fa fa-angle-right"></i></button>
+    <button class="btn btn-secondary" style="background-color: cornflowerblue" [disabled]="!canMoveToNextPage" (click)="moveToLastPage()"><i class="fa fa-angle-double-right"></i></button>
+</div>

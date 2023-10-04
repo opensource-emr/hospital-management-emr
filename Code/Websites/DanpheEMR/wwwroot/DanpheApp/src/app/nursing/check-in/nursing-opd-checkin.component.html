@@ -1,0 +1,127 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showNursingCheckin">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class=" modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Nursing Checkin Details</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 col-sm-12">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="page-bar bill-p-info popup-pagebar mt10">
+                    <div>
+                      <span>
+                        <!-- <i class="fa fa-house"></i>&nbsp; -->
+                        Hospital No : <b>{{selectedVisit.PatientCode}} </b>
+                      </span>
+                      <span>
+                        <!-- <i class="fa fa-user"></i>&nbsp;  -->
+                        Patient Name : <b>{{selectedVisit.ShortName}}</b>
+                      </span>
+                      <span>
+                        <!-- <i class="fa fa-male"></i>&nbsp; -->
+                        Age/Sex : <b>{{selectedVisit.Age}}/ {{selectedVisit.Gender[0]}}</b>
+                      </span>
+                      <span>
+                        <!-- <i class="fa fa-user"></i>&nbsp; -->
+                        Address : <b>{{selectedVisit.Address}}</b>
+                      </span>
+                      <span>
+                        <!-- <i class="fa fa-phone"></i>&nbsp; -->
+                        Contact No : <b>{{selectedVisit.PhoneNumber}}</b>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 0 15px;" class="row no-gutters">
+            <div class="form-group col-md-5" style="margin: 0;">
+              <div class="row no-gutters">
+                <div class="col-md-5">
+                  <label class="control-label" style="margin-top: 10px;">Registration Date/Time<b>:</b></label>
+                </div>
+                <div class="col-md-7">
+                  <div class="row no-gutters">
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control" type="date" name="" [(ngModel)]="visitDate" id="date" />
+                    </div>
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control" type="time" name="" [(ngModel)]="selectedVisit.VisitTime" id="time" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-4" style="margin: 0;">
+              <div class="row no-gutters">
+                <label class="control-label col-md-4" style="">Department<b>:</b></label>
+                <div class="col-md-8" style="">
+                  <input disabled="disabled" type="text" name="" [(ngModel)]="selectedVisit.DepartmentName" id="department" style="width: 100%" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-3" style="margin: 0;">
+              <div class="row no-gutters">
+                <label for="#ProviderList" class="control-label col-md-4"
+                       style="">Doctor<b>:</b></label>
+                <div class="col-md-8" style="">
+                  <input danphe-auto-complete [(ngModel)]="selectedVisit.PerformerName"
+                         [source]="providerList" class="form-control" (ngModelChange)="AssignSelectedDoctor($event)"
+                         [list-formatter]="providerListFormatter" placeholder="Doctor Name"
+                         display-property-name="FullName" value-property-name=null max-num-list="10"
+                         required />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <nursing-add-diagnosis [add-diagnosis]="addDiagnosis" [patient-id]="selectedVisit.PatientId"
+                                     [patient-visit-id]="selectedVisit.PatientVisitId"></nursing-add-diagnosis>
+            </div>
+
+            <div class="col-md-6">
+              <h3
+                  style="background: #f0f0f0; padding: 5px 15px; border-radius: 5px !important; margin: 0; margin-bottom: 15px; font-size: 16px; font-weight: 700; height: 32px; line-height: 24px;">
+                Chief Complaint:</h3>
+              <div style="margin-top:10px;" *ngFor="let complaint of chiefComplaints; let i=index;"
+                   class="single-complaint flex-container">
+                <textarea style="flex-basis: 90%;" class="flex-container" [(ngModel)]="complaint.Value"></textarea>
+                <button *ngIf="chiefComplaints.length > 1" style="height: 29px;" (click)="removeComplaint(i)"
+                        class="btn btn-danger"><i class="fa fa-close"></i></button>
+              </div>
+              <div style="margin-top:10px;">
+                <button (click)="AddNewComplaintRow()" class="btn blue">Add New Complaint</button>
+              </div>
+
+
+            </div>
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row clearfix">
+              </div>
+            </div>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <input type="button" id="discard" (click)="Discard()" class="btn orange btn-success margin-7-hr"
+                       value="Discard" />
+                <input type="button" id="add" (click)="addCheckInDetails()" class="btn green btn-success margin-7-hr"
+                       value="Save" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

@@ -1,0 +1,156 @@
+<!-- Modal -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showBillPreviewPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>Bill Preview</span> </h3>
+            <a class="btn btn-danger" (click)="CloseBillPreviewPopUp()" title="Cancel">X</a>
+          </div>
+
+          <body>
+
+            <div class="container">
+              <div class="header">
+                <div>
+                  <div class="col-md-12 left pat-info">
+                    <span>Patient Name&nbsp;:&nbsp;{{selectedBill.PatientName}}</span>
+                    <span>Hospital No&nbsp;:&nbsp;{{selectedBill.HospitalNo}}</span>
+                    <span>Age/Sex&nbsp;:&nbsp;{{selectedBill.AgeSex}}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="editBillItem">
+                <div class=" col-md-12 left">
+                  <div class="right text-right" *ngIf="displayInvoice">
+                    <a (click)="EditBillItemStatus(this.selectedBill.CreditModule)"><i class="fa fa-edit"></i>Edit Bill Item Status</a>
+                  </div>
+                  <div class="right text-right" *ngIf="editBillItemStatus">
+                    <a (click)="BackToPreview()"><i class="fa fa-backward"></i>Back to Preview</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="print">
+                <div>
+                  <div *ngIf="displayInvoice">
+                    <div *ngIf="selectedBill.CreditModule === billingCreditModule">
+                      <bil-print-invoice-main *ngIf="showBillingInvoice" [redirect-path-after-print]="redirectionPathAfterPrint"
+                                              [invoiceNumber]="ExtractInvoiceNoFromFormattedInvoiceNo(this.selectedBill.InvoiceNo)"
+                                              [fiscalYrId]="selectedBill.FiscalYearId" [bil-txn-id]="selectedBill.InvoiceRefId">
+                      </bil-print-invoice-main>
+                      <ng-container *ngFor="let CreditNote of BillingCreditNotes">
+                        <bill-print-credit-note *ngIf="isBillingCreditNoteFound"
+                                                [credit-note-number]="CreditNote.CreditNoteNumber"
+                                                [FiscalYearId]="CreditNote.FiscalYearId">
+                        </bill-print-credit-note>
+                      </ng-container>
+                    </div>
+
+                    <div *ngIf="selectedBill.CreditModule === pharmacyCreditModule">
+                      <pharmacy-invoice-print *ngIf="showPharmacyInvoice" [invoice-id]="selectedBill.InvoiceRefId"></pharmacy-invoice-print>
+                      <ng-container *ngFor="let CreditNote of PharmacyCreditNotes">
+                        <pharmacy-credit-note-print *ngIf="isPharmacyCreditNoteFound" [return-invoice-id]="CreditNote.InvoiceReturnId">
+                        </pharmacy-credit-note-print>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <div *ngIf="editBillItemStatus">
+                    <label><b>Edit Bill Item Status</b></label>
+                    <table class="table">
+                      <thead class="table-header-bg">
+                        <tr>
+                          <th scope="col" class="wd-80"> SN </th>
+                          <th scope="col" class="wd-80"> Item Name </th>
+                          <th scope="col" class="wd-80"> Quantity </th>
+                          <th scope="col" class="wd-130"> Total Amount </th>
+                          <th scope="col" class="wd-130"> Is Claimable? </th>
+                          <th scope="col" class="wd-130"> Action </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <ng-container *ngFor="let billingCreditBillItem of billingCreditBillItems; let i = index;">
+                          <tr>
+                            <td class="wd-80"> {{i + 1}} </td>
+                            <td class="wd-80"> {{billingCreditBillItem.ItemName}} </td>
+                            <td class="wd-80"> {{billingCreditBillItem.Quantity}} </td>
+                            <td class="wd-80"> {{billingCreditBillItem.TotalAmount | number : "1.0-4"}} </td>
+                            <td class="wd-80"> {{billingCreditBillItem.IsClaimable}} </td>
+                            <td class="wd-80">
+                              <a (click)="UpdateBillingCreditItemClaimableStatus(billingCreditBillItem)">
+                                <span *ngIf="billingCreditBillItem.IsClaimable">Set Non-Claimable</span>
+                                <span *ngIf="!billingCreditBillItem.IsClaimable">Set Claimable</span>
+                              </a>
+                            </td>
+                          </tr>
+                        </ng-container>
+                        <ng-container *ngFor="let pharmacyCreditBillItem of pharmacyCreditBillItems; let i = index;">
+                          <tr>
+                            <td class="wd-80"> {{i + 1}} </td>
+                            <td class="wd-80"> {{pharmacyCreditBillItem.ItemName}} </td>
+                            <td class="wd-80"> {{pharmacyCreditBillItem.Quantity}} </td>
+                            <td class="wd-80"> {{pharmacyCreditBillItem.TotalAmount | number : "1.0-4"}} </td>
+                            <td class="wd-80"> {{pharmacyCreditBillItem.IsClaimable}} </td>
+                            <td class="wd-80">
+                              <a (click)="UpdatePharmacyCreditItemClaimableStatus(pharmacyCreditBillItem)">
+                                <span *ngIf="pharmacyCreditBillItem.IsClaimable">Set Non-Claimable</span>
+                                <span *ngIf="!pharmacyCreditBillItem.IsClaimable">Set Claimable</span>
+                              </a>
+                            </td>
+                          </tr>
+                        </ng-container>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="summary">
+                <div class="invoice-info ">
+                  <div class="text-center text-underline">
+                    <b>Invoice Detail</b>
+                  </div>
+                  <div class="invoice-info-table">
+                    <table class="b-htable">
+                      <tr>
+                        <td> Invoice No </td>
+                        <td> <b class="colon">:</b> </td>
+                        <td>{{selectedBill.InvoiceNo}}</td>
+                      </tr>
+                      <tr>
+                        <td> Invoice Date </td>
+                        <td> <b class="colon">:</b> </td>
+                        <td>{{selectedBill.InvoiceDate | date:'yyyy-MM-dd'}}</td>
+                      </tr>
+                      <tr>
+                        <td> Total Bill Amt </td>
+                        <td> <b class="colon">:</b> </td>
+                        <td>{{selectedBill.TotalAmount | number : "1.0-4"}}</td>
+                      </tr>
+                      <tr>
+                        <td> Claimable Amt </td>
+                        <td> <b class="colon">:</b> </td>
+                        <td>{{(selectedBill.TotalAmount - selectedBill.NonClaimableAmount | number : "1.0-4")}}</td>
+                      </tr>
+                      <tr>
+                        <td> Non Claimable Amt </td>
+                        <td> <b class="colon">:</b> </td>
+                        <td>{{selectedBill.NonClaimableAmount | number : "1.0-4"}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </body>
+
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

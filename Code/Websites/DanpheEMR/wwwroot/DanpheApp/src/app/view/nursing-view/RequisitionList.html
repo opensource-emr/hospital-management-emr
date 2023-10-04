@@ -1,0 +1,109 @@
+﻿
+<style>
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+ 
+    tr.tbl-td-padding td {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
+    .modelbox-div{
+        padding: 35px !important;
+    }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px" *ngIf="showDispatchItem">
+       <div class="portlet-body" style="background-color:white">
+               <div class="col-md-12">
+                   <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                   </div>
+                   <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+
+                       <div style="padding:10px">
+                           <i class="btn btn-danger pull-right" style="margin-top:-30px; margin-right:-20px;" (click)="CloseDrugsRequestsPage()">X</i>
+                       </div>                   
+                       <div class="panel panel-default">
+                           <div class="panel-heading">
+                               Requested Item List
+                           </div>
+                           <div class="panel-body">
+                               <div class="col-md-12 col-xs-12 col-sm-12">
+                                   <table class="table table-striped table-hover" style="background-color:initial; margin:0px;margin-bottom: 5px;">
+                                       <thead>
+                                           <tr class="tbl-td-padding">
+                                               <th>Item Name</th>
+                                               <th>Requested Qunatity</th>
+                                               <th></th>
+                                           </tr>
+                                       </thead>
+                                       <tbody>
+                                           <tr *ngFor="let row of PHRMProItemsList">
+                                               <td>
+                                                   {{ row.ItemName }}
+                                               </td>
+                                               <td>
+                                                   {{ row.Quantity }}
+                                               </td>
+                                           </tr>
+                                       </tbody>
+                                   </table>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="panel panel-default" *ngIf="PHRMDispatchList">
+                       <div class="panel-heading">
+                           Dispatched Item List
+                       </div>
+                       <div class="panel-body" >
+                           <div class="col-md-12 col-xs-12 col-sm-12">
+                               <table class="table table-striped table-hover" style="background-color:initial; margin:0px;margin-bottom: 5px;">
+                                   <thead>
+                                       <tr class="tbl-td-padding">
+                                           <th>Item Name</th>
+                                           <th>Dispatched Qunatity</th>
+                                           <th></th>
+                                       </tr>
+                                   </thead>
+                                   <tbody>
+                                       <tr *ngFor="let row of PHRMDispatchList">
+                                           <td>
+                                               {{ row.ItemName }}
+                                           </td>
+                                           <td>
+                                               {{ row.Quantity }}
+                                           </td>
+                                       </tr>
+                                   </tbody>
+                               </table>
+                           </div>
+                       </div>
+                   </div>
+                       
+                  </div>
+
+               </div>
+</div>
+</div>
+
+<div class="caption" style="color:blue">
+    <h3>Drugs Requisition List</h3>
+    <hr />
+</div>
+
+
+<div *ngIf="showProItemList">
+    <danphe-grid [grid-colDefaults]="PHRMProvisionalItemsGridColumns"
+                                 [grid-data]="PHRMProvisionalItemsList"
+                                 (grid-actions)="PHRMProvisionalItemsGridAction($event)">
+     </danphe-grid>
+</div>

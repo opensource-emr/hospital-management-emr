@@ -1,0 +1,75 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-12" style="width:96%;margin-left:2%;">
+                <div class=" modelbox-div clearfix">
+                    <a class="btn btn-danger history-del-btn" title="Cancel" (click)="Close()"><i class="fa fa-close"></i></a>
+                    <div class="form-body">
+                        <div class="col-md-12" style="display: flex; align-items:center;">
+                            <div class="col-md-8 " style="background-color: rgb(195, 191, 191);height: 55px;margin-top:5px;">
+                                <div class="patient_info">
+                                    <div class="row">
+                                        <div class="col-sm-2">
+                                            <label>Hospital No:<span>{{PatientConsumption.HospitalNo}}</span></label>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label>Patient Name:<span>{{PatientConsumption.PatientName}}</span></label>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label>Age/Sex:<span>{{PatientConsumption.Age}}/{{PatientConsumption.Sex}}</span></label>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label>Contact No:<span>{{PatientConsumption.ContactNo}}</span></label>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label>Ip No:<span>{{PatientConsumption.IpNo}}</span></label>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label>Address:<span>{{PatientConsumption.Address}}</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"
+                                                       value="edit-invoice" [(ngModel)]="switchview" (ngModelChange)="HandleSwitch()">
+                                                <label class="form-check-label" for="flexRadioDefault1">
+                                                    &nbsp;Edit Consumption
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" *ngIf="!WardId">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"
+                                                       value="finalize-invoice" checked [(ngModel)]="switchview" (ngModelChange)="HandleSwitch()">
+                                                <label class="form-check-label" for="flexRadioDefault2">
+                                                    &nbsp;Finalize Invoice
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12" style="margin-top:30px;">
+                            <phrm-finalize-invoice *ngIf="switchview==='finalize-invoice' && IsItemDetailsLoaded"
+                                                   [currrentCounterId]="CurrentCounterId" [patient-consumption]="PatientConsumptionToFinalize"
+                                                   [store-id]="StoreId"
+                                                   (Finalize-Popup-Close)="CallFinalizeInvoicePrint($event)"></phrm-finalize-invoice>
+
+                            <phrm-return-consumption-items *ngIf="switchview==='edit-invoice' && IsItemDetailsLoaded"
+                                                           [patient-consumption-items]="PatientConsumptionToEdit.PatientConsumptionItems"
+                                                           (call-back-popup-close)="ClosePopupClose()"
+                                                           (callback-close)="callbackClose($event)"
+                                                           [ward-id]="WardId"></phrm-return-consumption-items>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

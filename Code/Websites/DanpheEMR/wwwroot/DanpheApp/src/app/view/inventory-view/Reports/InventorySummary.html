@@ -1,0 +1,179 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption custom-caption">
+      <i class="fa fa-archive"></i>
+      <span class="caption-subject">Inventory Summary Report</span>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="col-md-6">
+      <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+    </div>
+    <div class="col-md-3">
+      <danphe-multiselect [ddl-data]="dynamicQtyColumList" [placeholder-text]="'---Select More Column---'" [value-property-name]="'field'"
+                          (selected-items-list)="onChangeColumnSelection($event)" [display-property-name]="'headerName'" [single-selection]="false">
+      </danphe-multiselect>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="col-md-3" style=" display: flex; align-items: center; flex-direction: row;">
+        <label class="control-label"><b>Store :</b>&nbsp;</label>
+        <input danphe-auto-complete class="form-control" placeholder="select Store" [(ngModel)]="Store" [source]="storeList"
+               [list-formatter]="StoreListFormatter" display-property-name="StoreName" value-property-name="'StoreId'" [match-formatted]="true"
+               onclick="this.select()" (valueChanged)="onStoreModelChanged()" />
+      </div>
+      <div class="col-md-2" style="margin-top: 5px !important;">
+        <div class="col-md-12">
+          <button class="btn blue" type="button" (click)="ShowInventorySummary()" [disabled]="loading">
+            <i class="fa fa-search"></i>&nbsp;
+            <span *ngIf="!loading">Load</span>
+            <span *ngIf="loading">Loading...</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12" *ngIf="showDataGrid">
+        <danphe-grid [grid-colDefaults]="InventorySummaryReportColumns" [grid-data]="InventorySummaryReportData"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                     [report-for]="'inventory'" [report-title]="'Invetory Summary Report'" [show-header]="true"
+                     [filter-parameters]="FilterParameters">
+        </danphe-grid>
+      </div>
+
+      <!-- START: Summary -->
+      <div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+        <div class="table-responsive table-wrapper" id="print_summary">
+          <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+            <thead>
+              <tr>
+                <th colspan="4" style="text-align: center;">
+                  <span style="font-size:large;"> Summary </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Opening Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.OpeningValue | Currency}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Opening Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.OpeningQuantity }}</span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Purchase Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.PurchaseValue | Currency}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Purchase Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.PurchaseQuantity }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Transfer-In Value </b> </span>
+                  </td>
+                  <td>
+                    <span>{{summary.TransInValue}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Transfer-In Qty </b> </span>
+                  </td>
+                  <td>
+                    <span>{{summary.TransInQty}} </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Transfer-Out Value </b> </span>
+                  </td>
+                  <td>
+                    <span>{{summary.TransOutValue}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Transfer-Out Qty </b> </span>
+                  </td>
+                  <td>
+                    <span>{{summary.TransOutQty}} </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> StockManage In-Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.StockManageInValue | Currency}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> StockManage In-Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.StockManageInQuantity }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> StockManage Out-Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.StockManageOutValue | Currency}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> StockManage Out-Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.StockManageOutQuantity }}</span>
+                  </td>
+                </tr>
+                <tr *ngIf="ConsumptionOrDispatch == 'consumption'">
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Consumption Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.ConsumptionValue | Currency}}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Consumption Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.ConsumptionQuantity }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Closing Value </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.ClosingValue | Currency }}</span>
+                  </td>
+                  <td style="font-weight:bold; color:blue">
+                    <span> <b> Closing Quantity </b> </span>
+                  </td>
+                  <td>
+                    <span> {{summary.ClosingQuantity }}</span>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+        <br>
+      </div>
+      <!-- END: Summary -->
+    </div>

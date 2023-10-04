@@ -1,0 +1,19 @@
+
+<div class="margin-20-tp">
+  <a class="btn green btn-success" feature="button" (click)="ShowAddNewPage()"><i class="fa fa-plus"></i>Add New</a>
+
+  <div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="extRefGridColumns" [grid-data]="extRefList" (grid-actions)="ExtRefGridActions($event)"
+                   [show-print-button]="false">
+      </danphe-grid>
+    </div>
+  </div>
+
+  <div style="margin-top:50px;" *ngIf="showAddNewPage">
+
+    <ext-referral-add [ref-to-edit]="selExtRefToEdit" (callback-add)="getDataFromAdd($event)">
+
+    </ext-referral-add>
+  </div>
+</div>

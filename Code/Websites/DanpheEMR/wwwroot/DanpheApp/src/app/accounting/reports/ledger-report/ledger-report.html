@@ -1,0 +1,430 @@
+<style>
+  .noPadding {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .tr-highlight {
+    border: 3px solid #006687;
+  }
+
+  .control-label b {
+    font-weight: 600;
+  }
+</style>
+<div>
+  <div class="caption custom-caption top-report-section">
+    <h3><i class="fa fa-book"></i>
+      <span class="caption-subject">Ledger Report</span>
+    </h3>
+    <!-- <label *ngIf="showTxnItemLevel!='true'" class="mt-checkbox mt-checkbox-outline"
+      style="font-weight:bold;color:green;margin: 5px;">
+      <input name="showParticular" type="checkbox" value="Detail View" [(ngModel)]="IsDetailsView"
+      (click)="showItemDetails()">
+      <span></span> Detail View
+    </label> -->
+
+    <label *ngIf="showParticularcheckBox == true " class="mt-checkbox mt-checkbox-outline"
+           style="font-weight:bold;color:green;margin: 5px;">
+      <input name="showParticular" type="checkbox" value="Show Particular" [(ngModel)]="showParticularColumn"
+             (click)="showParticularCol()">
+      <span></span> Show-Particular
+
+    </label>
+
+  </div>
+  <div class="col-md-12 col-xs-12 col-sm-12">
+
+    <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+
+          <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
+               style="float:right;">:</b></label>
+          <div>
+            <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
+                                  (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+            <!-- <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+                </danphe-date-picker> -->
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12" style="padding: 5px 5px !important;margin-top:8px">
+        <label class="control-label no-padding">Cost Center :</label><br>
+        <div>
+          <div>
+            <select [(ngModel)]="selectedCostCenter" class="form-control" id="id_select_costCenterId_ledgerReport">
+              <option value="-2" selected="selected">All</option>
+              <option *ngFor="let costCenter of costCenters" value="{{costCenter.CostCenterId}}">{{ costCenter.CostCenterName }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12" style="padding: 5px 5px !important;margin-top:8px">
+        <label class="control-label no-padding">Select Group :</label><br>
+        <div>
+          <div class="div-relative">
+            <input danphe-auto-complete class="col-md-11 form-control" [(ngModel)]="selectedLedgerGroup" [source]="ledgergroupList"
+                   placeholder="select ledger group" display-property-name="LedgerGroupName"
+                   value-property-name="LedgerGroupName" (focusout)="AssignSelectedLedgerGroup()"
+                   [list-formatter]="LedgerGroupListFormatter" max-num-list="20" onclick="this.select()"
+                   style="background-color: azure;" [ngModelOptions]="{standalone: true}" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12" style="padding: 5px 5px !important;">
+        <label class="control-label"> <b>Select Ledger</b> <b class="color-red"> *</b></label>
+        <div style="margin-top: 5px;">
+          <!-- <span *ngIf="selLedger" style="float: left !important; margin-top: 5px;
+              margin-right: 5px;">{{selLedger.Code}}</span> -->
+          <div>
+            <danphe-multiselect
+                                [ddl-data]="filteredLedgerList"
+                                [placeholder-text]="'Ledger Name'"
+                                [value-property-name]="'LedgerId'"
+                                (selected-items-list)="OnLedgerSelected($event)"
+                                [display-property-name]="'LedgerName'"
+                                [single-selection]="false">
+            </danphe-multiselect>
+            <!-- <input danphe-auto-complete [(ngModel)]="selLedger" [source]="ledgerList" placeholder="Ledger Name"
+              display-property-name="LedgerName" value-property-name="LedgerName" [list-formatter]="LedgerListFormatter"
+              max-num-list="15" [grid-sort]="'LedgerName'" onClick="this.select();"
+              style="background-color: azure; height: 30px; width: 90% !important;" /> -->
+          </div>
+        </div>
+      </div>
+      <div class="col-md-1 col-xs-12" style="float: right;">
+        <div class="form-group mt10">
+          <br>
+          <button class="btn green btn-success" type="button" (click)="GetTxnList()" [disabled]="clicked">
+            <i class="fa fa-refresh"></i>
+            Load
+          </button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <input class="hidden-print" type="radio" id="radio_summary" [(ngModel)]="viewMode" value="summary" name="report_veiw_mode"
+             style="margin-right: 10px;" (change)="HandleValueChange()"><label class="hidden-print" for="radio_summary"
+             style="margin-right: 30px;">Summary View</label>
+      <input class="hidden-print" type="radio" id="radio_detail" [(ngModel)]="viewMode" value="detail" name="report_veiw_mode"
+             style="margin-right: 10px;"><label class="hidden-print" for="radio_detail">Detail View</label>
+      <input class="hidden-print" type="checkbox" id="Hide_zero_txn" [(ngModel)]="HideZeroTxn" name="Hide_zero_txn"
+             style="margin-left: 30px;" (change)="HandleHideZeroTxn()"><label class="hidden-print" for="Hide_zero_txn"
+             style="margin-left: 10px;">Hide Zero Transaction</label>
+    </div>
+
+    <div class="row" id="printpage" *ngIf="ledgerResultRawData" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
+      <div style="width: 50%; margin: auto;">
+        <customer-header id="headerForPrint" [header-title]="'Ledger Report'">
+        </customer-header>
+      </div>
+      <div id="print_ledger_list">
+        <div class="col-md-12 col-xs-12">
+          <table style="width:100% !important;" class="hidden-print">
+            <tr>
+              <td style="text-align: left;">
+                Printed On: &nbsp; {{todayDate}} ( {{todayDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )
+              </td>
+              <td style="text-align: right;">
+                For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
+                (BS): &nbsp;
+                {{ fromDate | nepaliDate:'format':'YYYY-MM-DD' }} To
+                {{ toDate | nepaliDate:'format':'YYYY-MM-DD'}}
+              </td>
+            </tr>
+            <!-- <tr>
+              <td colspan="2" style="text-align: center;">
+                <span>
+                  Ledger: {{row.LedgerName}} <span>({{row.Code}})</span>
+                </span>
+              </td>
+            </tr> -->
+          </table>
+          <br>
+          <!-- <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" class="hidden-print" /> -->
+          <div id="exportTable">
+            <table *ngIf="viewMode == 'summary'" class="table_data" style="width: 100%; border:1px" border="1">
+              <tr style="background-color:#599be0;">
+                <th>Ledger Name</th>
+                <th colspan="2">Opening Balance</th>
+                <th colspan="2">Current Total</th>
+                <th colspan="2">Closing Balance</th>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Dr</td>
+                <td>Cr</td>
+                <td>Dr</td>
+                <td>Cr</td>
+                <td>Dr</td>
+                <td>Cr</td>
+              </tr>
+              <tr (click)="OpenDetailPopUP(r)" *ngFor="let r of ledgerDataList">
+                <td style="color: #337ab7;">{{r.LedgerName}}</td>
+                <td><b>{{r.ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+                <td><b>{{r.ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
+                <td><b>{{r.ledgerResult.DrTotalAmount | Currency:'4'}}</b></td>
+                <td><b>{{r.ledgerResult.CrTotalAmount | Currency:'4' }}</b></td>
+                <td><b>{{r.ledgerResult.DrNetAmount | Currency:'4' }}</b></td>
+                <td><b>{{r.ledgerResult.CrNetAmount | Currency:'4' }}</b></td>
+              </tr>
+            </table>
+            <div *ngIf="viewMode == 'detail'">
+              <div class="col-md-12" style="padding:0px;" id="print_ledger" *ngFor="let row of ledgerDataList">
+                <!-- <div *ngIf="viewMode == 'detail'" class="row">
+                  <div class="col-md-12" style="align-items:center;">
+                    <span style="align-items: center;">
+                      Ledger: {{row.LedgerName}} <span>({{row.Code}})</span>
+                    </span>
+                  </div>
+                </div> -->
+                <table *ngIf="viewMode == 'detail'" class="table_data" style="width:100%;" border="1">
+                  <tr>
+                    Ledger: {{row.LedgerName}} <span>({{row.Code}})</span>
+                  </tr>
+                  <tr style="background-color: #599be0; color:white;">
+                    <th>
+                      Date
+                      <danphe-date-change class="ADBS_btn" [dataArr]="row.ledgerResult" [datecolumn]="'TransactionDate'">
+                      </danphe-date-change>
+                    </th>
+                    <th>Voucher No.</th>
+                    <th>Voucher Type</th>
+                    <span *ngIf="showParticularColumn ==true">
+                      <th style="color:#0619f5; border: none;" *ngIf="IsDetailsView!=true">
+                        <!-- <a (click)="DisplayParticular()">
+                            as per
+                            details
+                          </a> -->
+                        as per details
+                      </th>
+                      <th style="color:#0619f5;border: none;" *ngIf="IsDetailsView">
+                        <!-- <a (click)="DisplayParticular()">
+                            Particular(s)
+                          </a> -->
+                        Particular(s)
+                      </th>
+                    </span>
+                    <th style="width: 200px;">Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                    <th class="hidden-print" *ngIf="actionView">Action</th>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <span *ngIf="showParticularColumn ==true">
+                      <th style="display:block; border-bottom: none;"></th>
+                    </span>
+                    <th>Opening Balance</th>
+                    <td><b>{{row.ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+                    <td><b>{{row.ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
+
+                    <td>
+                      <b *ngIf="row.ledgerResult.OpeningBalanceDrAmount > 0">
+                        {{row.ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}
+                        &nbsp; <span> Dr</span>
+                      </b>
+                      <b *ngIf="row.ledgerResult.OpeningBalanceCrAmount > 0">
+                        {{row.ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}
+                        &nbsp;<span> Cr</span>
+                      </b>
+                    </td>
+
+                    <td></td>
+                  </tr>
+                  <!--<tr *ngFor="let txnItm of ledgerResult" (click)="ViewTransactionDetails(txnItm.TransactionId)">-->
+                  <ng-container *ngIf="row.ledgerResult.length >0">
+                    <tr class="tr" *ngFor="let txnItm of row.ledgerResult;let i = index"
+                        [ngClass]="{'tr-highlight': txnItm.IsHighlighted}" (click)="HotKeysOnOff(txnItm)">
+                      <td>
+                        <!-- <span *ngIf="!isDateFormatBS">{{txnItm.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                          <span *ngIf="isDateFormatBS">{{txnItm.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}</span>
+                           -->
+                        {{txnItm.TransactionDate}}
+
+                      </td>
+                      <td>{{txnItm.VoucherNumber}}</td>
+                      <td>{{txnItm.VoucherName}}</td>
+                      <span *ngIf="showParticularColumn ==true">
+                        <td style="display: block; border-bottom: none;" *ngIf="IsDetailsView == true">
+                          <!-- *ngIf="IsDetailsView == true" -->
+                          <table style="width:100%;border:none;">
+                            <tr *ngFor="let txn of txnItm.TransactionItems" style="font-style:italic; border:none;">
+                              <td style="width:70%;border:none;">
+                                {{txn.LedgerName}}
+                                <span *ngFor="let det of txn.Details" style="font-size:12px;color:green;padding-left:50px;">
+                                  <br />
+                                  <span>{{det.Name}}</span>
+                                  <span>
+                                    <span *ngIf="det.DrCr">
+                                      Dr: {{det.Amount | Currency:'4'}}
+                                    </span>
+                                    <span *ngIf="!det.DrCr">
+                                      Cr: {{det.Amount | Currency:'4'}}
+                                    </span>
+                                  </span>
+                                </span>
+                              </td>
+                              <td style="width:60%; border:none;">
+                                <div *ngIf="txn.Details?.length == 0">
+                                  <div *ngIf="txn.DrCr">
+                                    Dr: {{txn.LedAmount | Currency:'4'}}
+                                  </div>
+                                  <div *ngIf="!txn.DrCr">
+                                    Cr: {{txn.LedAmount | Currency:'4'}}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+
+                          </table>
+
+                        </td>
+                      </span>
+                      <!-- <td><span *ngIf="txnItm.TransactionItems && txnItm.TransactionItems.length >0">
+                            {{txnItm.TransactionItems[0].Description}}</span></td>
+                        <td> -->
+                      <td class="tr">
+                        {{txnItm.Description}}</td>
+                      <td>
+                        <p *ngIf="txnItm.LedgerDr > 0">{{txnItm.LedgerDr | Currency:'4'}}</p>
+                      </td>
+                      <td>
+                        <p *ngIf="txnItm.LedgerCr > 0">{{txnItm.LedgerCr | Currency:'4'}}</p>
+                      </td>
+
+                      <td>
+                        <p *ngIf="txnItm.Balance > 0">
+                          {{txnItm.Balance | Currency:'4'}}
+                          <span *ngIf="txnItm.BalanceType==true" style="font-weight: bold;">Dr</span>
+                          <span *ngIf="txnItm.BalanceType==false" style="font-weight: bold;">Cr</span>
+                        </p>
+                        <p *ngIf="txnItm.Balance == 0">
+                          {{txnItm.Balance | Currency:'4'}}
+                        </p>
+                      </td>
+
+
+
+                      <td class="hidden-print ADBS_btn">
+                        <div *ngIf="actionView && IsOpeningBalance!=true"
+                             (click)="ViewTransactionDetails(txnItm.VoucherNumber)">
+                          <a class="hidden-print">View Detail</a>
+                        </div>
+
+                      </td>
+                    </tr>
+                  </ng-container>
+
+                  <!-- <tr>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                              <th>Opening Balance</th>
+                              <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}</b></td>
+                              <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
+                            <td class="hidden-print"  *ngIf="actionView"></td>
+                          </tr> -->
+                  <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <span *ngIf="showParticularColumn ==true">
+                      <th style="display: block; border-bottom: none;"></th>
+                    </span>
+                    <th>
+                      Current Total
+                    </th>
+                    <td><b>{{row.ledgerResult.DrTotalAmount | Currency:'4'}} &nbsp; Dr</b></td>
+                    <td><b>{{row.ledgerResult.CrTotalAmount | Currency:'4' }} &nbsp; Cr</b></td>
+                    <td></td>
+
+                    <td class="hidden-print" *ngIf="actionView"></td>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <span *ngIf="showParticularColumn ==true">
+                      <th style="display: block; border-bottom: none;"></th>
+                    </span>
+                    <th>Closing Balance</th>
+                    <td><b>{{row.ledgerResult.DrNetAmount | Currency:'4' }} &nbsp; Dr</b></td>
+                    <td><b>{{row.ledgerResult.CrNetAmount | Currency:'4' }}&nbsp; Cr</b></td>
+                    <td></td>
+
+                    <td class="hidden-print" *ngIf="actionView"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="8"><b>In Words :</b> {{row.ledgerResult.DrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}
+                      {{row.ledgerResult.CrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}<span
+                            *ngIf="row.ledgerResult.DrNetAmount !=0 || row.ledgerResult.CrNetAmount !=0">Only</span></td>
+                  </tr>
+                </table>
+                <br>
+              </div>
+            </div>
+          </div>
+
+          <br>
+          <br>
+          <!-- <div style="text-align:right;display:inline-block;margin-top: 8px;">
+  
+            <b>In Words :</b> {{row.ledgerResult.DrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}
+            {{row.ledgerResult.CrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}<span
+              *ngIf="row.ledgerResult.DrNetAmount !=0 || row.ledgerResult.CrNetAmount !=0">Only</span>
+          </div><br /> -->
+          <br />
+
+          <!-- sud:14June'20--Below section (prepared-checked-approved) is hidden after Charak-Request since it's not required in the report.
+          if it's actually needed for some other hospital, then make it parameterized. -->
+          <div class="col-md-12" style="padding-top:50px;display: none;">
+            <table style="width:100%;border:0;text-align:center;">
+              <tr>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                  <b> Prepared By</b>
+                </td>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                  <b> Checked By</b>
+                </td>
+                <td>
+                  <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br>
+                  <b> Approved By</b>
+                </td>
+              </tr>
+
+            </table>
+          </div>
+          <br>
+        </div>
+      </div>
+      <div class="col-md-12" *ngIf="ledgerResultRawData" style="padding: 18px;">
+        <div class="form-actions">
+          <button class="btn green btn-success hidden-print" (click)="Print('print_ledger_list')" value="Print"
+                  title="print page">
+            Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+          </button>
+          <button *ngIf="showExportbtn" class="btn green btn-success hidden-print" (click)="ExportToExcel('exportTable')"
+                  value="" title="export to excel">
+            Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- <voucher-edit-reusable [voucherNumber]="voucherNumber" (callback-ledger)="CallBackledger($event)" ></voucher-edit-reusable> -->
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId" (callback-close)="OnPopupClose($event)">
+</transaction-view>
+
+<ledger-report-reusable *ngIf="viewDetailPopUp" [showLedgerDetail]="viewDetailPopUp" [FiscalYearId]="fiscalYearId" [fromDate]="fromDate"
+                        [toDate]="toDate" [ledgerCode]="ledgerCode" [ledgerId]="ledgerId" [ledgerName]="ledgerName"
+                        (callback-add)="Close()"></ledger-report-reusable>
+
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page>

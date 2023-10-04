@@ -1,0 +1,20 @@
+<!-- Start: Birth Certificate -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Add Death Details</span></h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+
+                    <add-death-details-shared (death-details-emitter)="callBackForDeathDetails($event)">
+
+                    </add-death-details-shared>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Birth Certificate -->

@@ -1,0 +1,374 @@
+<style>
+    .table thead tr th {
+        font-size: 12px;
+    }
+</style>
+<div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+                    <div class="col-md-12">
+                        <h4 style="text-align:center">
+                            <b>
+                                <a style="float:right; border-radius: 50% !important;
+                                    margin-top: -50px; margin-right: -50px;" class="btn btn-danger  hidden-print"
+                                   (click)="CloseNewPaymentPopUp()" title="Cancel">X</a>
+                            </b>
+                        </h4>
+                    </div>
+                    <div class="col-md-12">
+                        <h4 class="margin-0-vr" style="color:rgb(97, 97, 209)">
+                            <u>
+                                Claim Payment
+                            </u>
+                        </h4>
+                    </div>
+                    <div class="col-md-12" style="padding:5px;margin-top: 15px;">
+                        <div class="col-md-12">
+                            <div class="col-md-12" style="background-color: #e7ecf1;border:1px solid">
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Patient Name
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.PatientName }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Claim Code
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.ClaimCode }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Hospital No.
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.HospitalNo }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Member No.
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.MemberNumber}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Age/Sex
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.AgeSex }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Claim Submitted By/On
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.ClaimSubmittedBy }} /
+                                                {{ claimDetail.ClaimSubmittedOn | date:'yyyy-MM-dd' }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="background-color: #e7ecf1;border:1px solid; margin-top: 15px; margin-bottom: 15px;">
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Total Claimed Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.ClaimedAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Total Received Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ totalReceivedAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Approved Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.ApprovedAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Pending Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ totalPendingAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Rejected Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ claimDetail.RejectedAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Total Service Commission
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ totalServiceCommissionAmount }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4>
+                                <u>
+                                    New Payment Entry
+                                </u>
+                            </h4>
+                            <div class="col-md-12" style="margin-top: 15px;margin-bottom: 15px; border: 1px solid;padding: 10px;">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Received Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="number" onwheel="this.blur();" onclick="this.select()" class="form-control"
+                                                   [(ngModel)]="newPaymentDetail.ReceivedAmount">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Bank
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <select [(ngModel)]="selectedBank" class="form-control" name="select_claimPayment_bank"
+                                                    (change)="AssignBankDetail()">
+                                                <option *ngFor="let bank of bankList" value="{{ bank.BankName }}"> {{ bank.BankName }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Payment Detail
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <textarea class="form-control" [(ngModel)]="newPaymentDetail.PaymentDetails">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Service Commission Amount
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="number" onwheel="this.blur();" onclick="this.select()" class="form-control"
+                                                   [(ngModel)]="newPaymentDetail.ServiceCommission">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Cheque No.
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="text" class="form-control" [(ngModel)]="newPaymentDetail.ChequeNumber">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Remarks
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <textarea class="form-control" [(ngModel)]="newPaymentDetail.Remarks">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-md-5">
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input DanpheConfirmationDialog
+                                                   *ngIf="!isPaymentUpdate"
+                                                   id="btnSavePayment"
+                                                   type="submit"
+                                                   [title]="confirmationTitle"
+                                                   [message]="confirmationMessageForSavePayment"
+                                                   (confirm)="HandleConfirmForSavePayment()"
+                                                   (cancel)="HandleCancelForSavePayment()"
+                                                   style="font-weight: bold;margin-right: 10px;"
+                                                   class="btn green btn-success"
+                                                   style="float:right;margin-left: 15px;"
+                                                   value="Save Payment" [disabled]="loading" />
+                                            <input DanpheConfirmationDialog
+                                                   *ngIf="isPaymentUpdate"
+                                                   id="btnUpdatePayment"
+                                                   type="submit"
+                                                   [title]="confirmationTitle"
+                                                   [message]="confirmationMessageForUpdatePayment"
+                                                   (confirm)="HandleConfirmForUpdatePayment()"
+                                                   (cancel)="HandleCancelForUpdatePayment()"
+                                                   style="font-weight: bold;margin-right: 10px;"
+                                                   class="btn green btn-success"
+                                                   style="float:right;margin-left: 15px;"
+                                                   value="Save Payment" [disabled]="loading" />
+                                            <button class="btn orange btn-success" style="float:right;"
+                                                    (click)="DiscardChanges()">
+                                                Discard
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4>
+                                <u>
+                                    Earlier Payments
+                                </u>
+                            </h4>
+                            <div class="col-md-12" style="margin-top: 15px; border: 1px solid;">
+                                <div class="col-md-12">
+                                    <table class="table table-responsive dispatch-report-table">
+                                        <thead class="table-header-bg">
+                                            <tr>
+                                                <th scope="col" class="wd-80"> S.N. </th>
+                                                <th scope="col" class="wd-80"> Payment Receipt No. </th>
+                                                <th scope="col" class="wd-80"> Receipt Date </th>
+                                                <th scope="col" class="wd-80"> Received Amount </th>
+                                                <th scope="col" class="wd-80"> Service Commission Amount </th>
+                                                <th scope="col" class="wd-130"> Bank </th>
+                                                <th scope="col" class="wd-130">Cheque No. </th>
+                                                <th scope="col" class="wd-130">Payment Details </th>
+                                                <th scope="col" class="wd-130">Remarks </th>
+                                                <th *ngIf="securityService.HasPermission('btn-claim-management-edit-payment')" scope="col"
+                                                    class="wd-130">
+                                                    Actions </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let payment of insurancePayments; let i = index;">
+                                                <tr>
+                                                    <td class="wd-80">{{ i+1 }}</td>
+                                                    <td class="wd-80"> {{ payment.ClaimPaymentId }} </td>
+                                                    <td class="wd-80"> {{ payment.ReceivedOn | date:'yyyy-MM-dd' }} </td>
+                                                    <td class="wd-80"> {{ payment.ReceivedAmount }} </td>
+                                                    <td class="wd-80"> {{ payment.ServiceCommission }} </td>
+                                                    <td class="wd-80"> {{ payment.BankName }} </td>
+                                                    <td class="wd-80"> {{ payment.ChequeNumber }} </td>
+                                                    <td class="wd-80"> {{ payment.PaymentDetails }}</td>
+                                                    <td class="wd-80"> {{ payment.Remarks }}</td>
+                                                    <td *ngIf="securityService.HasPermission('btn-claim-management-edit-payment')">
+                                                        <button class="btn green btn-success" (click)="EditPayment(payment)"><i class="fa fa-pencil"
+                                                               aria-hidden="true"></i>
+                                                            Edit</button>
+                                                    </td>
+                                                </tr>
+                                            </ng-container>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 hidden-xs hidden-sm"> </div>
+            </div>
+        </div>
+    </div>
+</div>

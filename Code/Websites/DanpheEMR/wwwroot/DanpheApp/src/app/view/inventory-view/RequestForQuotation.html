@@ -1,0 +1,446 @@
+<style>
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 100px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+</style>
+<input type="button" class="btn primary-btn m1" (click)="CreateRequestForQuotation()" value=" Request For Quotation" />
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="ReqForQuotationGridColumns" [grid-data]="ReqForQuotationList" (grid-actions)="ReqForQuotationGridAction($event)"></danphe-grid>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px" *ngIf="showReqForQuotationId">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            REQUEST FOR QUOTATION DETAILS
+          </div>
+          <div class="col-md-12">
+            <div class="col-md-4">
+              <b>Subject</b>: &nbsp;<span> {{RFQList.Subject}} </span><br />
+            </div>
+            <div class="col-md-10">
+              <b>Description</b>:<span>{{RFQList.Description}}</span><br />
+            </div>
+          </div>
+          <div class="col-md-12" style="border-bottom:1px dotted">
+            <div class="col-md-12">
+              <b>CreatedBy</b>:&nbsp;&nbsp;<span> {{RFQList.RequestedBy}}</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                  <thead>
+                    <tr>
+                      <th><b>Item Name</b>
+                      <th> <b>Code </b> </th>
+                      <th><b>Description</b></th>
+                      <th><b>Requested Date</b></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of ReqForQuotationItems">
+                      <td>{{row.ItemName}}</td>
+                      <td>{{row.Quantity}}</td>
+                      <td>{{row.Description}}</td>
+                      <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showQuotationUploadFilesPopup">
+  <div class="portlet-body" style="background-color:white">
+    <form [formGroup]="quotationfiles.QuotationFileValidator" class="form-horizontal">
+      <div class="col-md-12">
+        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div style="padding:10px">
+            <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="closeQuotationUpload()" title="Cancel">X</i>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              Upload Quotaion Files
+            </div>
+            <div class="col-md-12">
+              <div class="col-md-4" style="  margin-bottom: 10px;">
+                <b>Subject</b>: &nbsp;<span> {{RFQList.Subject}} </span><br />
+              </div>
+              <div class="col-md-10" style="  margin-bottom: 10px;">
+                <b>Description</b>:<span>{{RFQList.Description}}</span><br />
+              </div>
+            </div>
+            <div class="col-md-12" style="border-bottom:1px dotted">
+              <div class="col-md-12">
+                <b>CreatedBy</b>:&nbsp;&nbsp;<span> {{RFQList.RequestedBy}}</span>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+                <div class="form-group">
+                  <label class="control-label col-md-3">SupplierName<b class="color-red">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input danphe-auto-complete class="form-control col-md-11"
+                           [(ngModel)]="quotationfiles.SelectedItem"
+                           [source]="VendorList"
+                           [list-formatter]="myVendorListFormatter"
+                           placeholder="Supplier Name"
+                           display-property-name="VendorName"
+                           value-property-name=null
+                           max-num-list="10"
+                           name=" VendorName"
+                           formControlName="Vendorname"
+                           (valueChanged)="SelectVendorFromSearchBox(quotationfiles.SelectedItem)"
+                           onclick="this.select();" 
+                           no-match-found-text="click ? to add new item"/>
+                    <span class="color-red font-sm" [hidden]="quotationfiles.IsValidCheck('Vendorname','required') || !(quotationfiles.IsDirty('Vendorname'))">SupplierName is required</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Upload Quotaion Files<b class="color-red">*</b><b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input class="form-control" #fileInput type="file"
+                           accept="image/x-png,image/gif,image/jpeg,image/jpg,image/*,.*txt,.*doc,.*docx,.*zip,.*xls,.*xlsx,.*ppt,.*pptx,.*csv,.*pdf," value="" multiple />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <label class="control-label col-md-3">Remark(s)<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <textarea class="form-control" [(ngModel)]="quotationfiles.Description" [ngModelOptions]="{standalone: true}" type="text" id="title" value=""></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div class="form-group">
+                  <div class="col-md-3">
+                    <input type="button" class="btn btn-primary" (click)="SubmitQuotationFiles()" value="Submit" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showQuotationItmsPage">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm">
+      </div>
+      <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="height:auto !important;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Quotaion Item Details
+          </div>
+
+          <div class="col-md-12" style="margin-bottom: 30px;">
+            <div class="col-md-6">
+              <b> Subject:</b>  <span> {{RFQList.Subject}}</span>
+            </div>
+            <div class="col-md-6">
+              <b>  Description:</b> <span> {{RFQList.Description}} </span>
+            </div>
+          </div>
+          <div class="col-md-12" style=" margin-bottom: -11px;" >
+            <div class="col-md-4">
+              <b>  Requested By:</b> <span> {{RFQList.RequestedBy}} </span>
+            </div>
+            <div class="col-md-4">
+              <b> Quotaion Opening Date:</b> <span> {{RFQList.RequestedOn | DanpheDateTime:'format':'DD-MM-YYYY'}} </span>
+            </div>
+            <div class="col-md-4">
+              <b> Quotaion Closing Date:</b> <span> {{RFQList.RequestedCloseOn | DanpheDateTime:'format':'DD-MM-YYYY'}}</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+              <quotation-items></quotation-items>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSelectedQuotation">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="closeSelectedQuotation()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Seleted Quotation Details
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+              <quotation-list></quotation-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showRFQPrintPage">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Request For Quotation Print
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+              <div id="printpage" class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <div class="col-md-12">
+                    <div class="row" style="margin-bottom: 10px;">
+                      <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+                        <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                      </div>
+                      <div style="width: 64%;float: left;padding-bottom:  0px;">
+                        <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                          <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                          <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                          <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                          <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
+                        </div>
+                      </div>
+                      <div style="float: left;">
+                        <div class="qr-code" style="margin-left:20px; top: 11px ;left: 71px;">
+                          <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+                        </div>
+                      </div>
+                      <!-- Billing Header  -->
+                      <div style="clear:left"></div>
+                    </div>
+                    <div class="left" style="text-align:left; width: 50%">
+                      <p>Subject:<b> {{RFQList.Subject}}</b></p>
+                      <p>Description:<b> {{RFQList.Description}}</b></p>
+                      <p>Created By:<b> {{RFQList.RequestedBy}}</b></p>
+                    </div>
+                    <div class="right" style="text-align:right;">
+                      <p>RFQ Date:<b> {{RFQList.RequestedOn |  DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                      <p>RFQ Close Date:<b> {{RFQList.RequestedCloseOn  |  DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                      <p>Order Status: <b>{{RFQList.Status}}</b></p>
+                    </div>
+                    <div class="clear"></div>
+                    <p class="text-center btm-pad border-up-down"><b> Request For Quotation Details</b></p>
+                    <div class="clear"></div>
+                    <div class="clear footer"></div>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-hover table-condensed" style="background-color:initial;margin-top:10px">
+                        <thead>
+                          <tr>
+                            <th><b>Item Name</b>
+                            <th><b>Quantity</b></th>
+                            <th><b>Description</b></th>
+                            <th><b>Requested Date</b></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of ReqForQuotationItems">
+                            <td>{{row.ItemName}}</td>
+                            <td>{{row.Quantity}}</td>
+                            <td>{{row.Description}}</td>
+                            <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr />
+                    <!-- <div class="left" style="margin-top:20px">
+      <b>Remark:</b>
+  </div> -->
+                    <div class="col-md-12 clear">
+                      <!-- <hr /> -->
+                      <div class="left" style="text-align:left">
+                        <strong>Prepared By</strong><br />
+                        Name: <b>{{RFQList.RequestedBy}}</b><br />
+                        Designation: {{RFQList.RequestedBy}}
+                        <br /><br /><br /><br />
+
+                      </div>
+                      <div class="right" style="text-align:left">
+                        <strong>Authorized By</strong><br />
+                        Name: <b>{{RFQList.RequestedBy}}</b><br />
+                        Designation: {{RFQList.RequestedBy}} <br /> <br />
+                        Sign:<hr>
+
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row center-style">
+                <div class="col-md-12 col-xs-12 ">
+                  <a (click)="print()" class="btn btn-default">
+                    Print
+                    <i class="glyphicon glyphicon-print"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showQuotationPrintPage">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Quotation Print
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+              <div id="printpage" class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <div class="col-md-12">
+                    <print-header [unit-name]="'Inventory Unit'"></print-header>
+                    <div class="left" style="text-align:left; width: 50%">
+                      <p>Subject:<b> {{getQuotationBystatus.Subject}}</b></p>
+                      <p>Supplier Name:<b> {{getQuotationBystatus.VendorName}}</b></p>                    
+                    </div>
+                    <div class="right" style="text-align:right;">
+                      <p>Quotation Date:<b> {{getQuotationBystatus.CreatedOn |  DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                       <p>Quotation Status: <b>{{getQuotationBystatus.Status}}</b></p>
+                    </div>
+                    <div class="clear"></div>
+                    <p class="text-center btm-pad border-up-down"><b> Quotation Details</b></p>
+                    <div class="clear"></div>
+                    <div class="clear footer"></div>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-hover table-condensed" style="background-color:initial;margin-top:10px">
+                        <thead>
+                          <tr>
+                            <th><b>Item Name</b>
+                            <th><b>Price  (<small> per item</small>)</b></th>
+                            <th><b>Description</b></th>
+                            <th style=" width: 90px;"><b>Uploaded Date</b></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of QuotationItemsList">
+                            <td>{{row.ItemName}}</td>
+                            <td>{{row.Price}}</td>
+                            <td>{{row.Description}}</td>
+                            <td>{{row.UpLoadedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr />                  
+                    <div class="col-md-12 clear">                   
+                      <div class="left" style="text-align:left">
+                        <strong>Prepared By</strong><br />
+                        Name: <b>{{getQuotationBystatus.RequestedBy}}</b><br />
+                        Designation: {{getQuotationBystatus.RequestedBy}}
+                        <br /><br /><br /><br />
+                      </div>
+                      <div class="right" style="text-align:left">
+                        <strong>Authorized By</strong><br />
+                        Name: <b>{{getQuotationBystatus.RequestedBy}}</b><br />
+                        Designation: {{getQuotationBystatus.RequestedBy}} <br /> <br />
+                        Sign:<hr>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row center-style">
+                <div class="col-md-12 col-xs-12 ">
+                  <a (click)="print()" class="btn btn-default">
+                    Print
+                    <i class="glyphicon glyphicon-print"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

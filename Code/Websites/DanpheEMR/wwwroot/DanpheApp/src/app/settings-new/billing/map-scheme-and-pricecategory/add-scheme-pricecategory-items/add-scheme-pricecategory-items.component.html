@@ -1,0 +1,117 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddSchemePricePriceCategoryItemPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption" style="margin: 0px">
+            <h3> <span *ngIf="!update">Add </span> <span *ngIf="update">Update </span>Scheme Vs PriceCategory Settings</h3>
+            <a class="btn btn-danger" (click)="CloseAddSchemePricePriceCategoryItemPopUp()" title="Cancel">X</a>
+            <div>
+              <div class="row" style="color: black; margin-top: 20px;">
+                <div class="col-md-4" style="padding: 0px 5px 0px 0px !important;">
+                  <div class="col-md-4" style="padding: 0px;">
+                    <label>Scheme<b class="color-red"> *</b> :</label>
+                  </div>
+                  <div class="col-md-8" style="padding: 0px;">
+                    <input
+                           danphe-auto-complete type="text" class="form-control" id="id_SchemeName"
+                           display-property-name="SchemeName"
+                           [list-formatter]="SchemeListFormatter"
+                           (valueChanged)="AssignSelectedSchemeItem($event)"
+                           [(ngModel)]="currentScheme"
+                           [source]="Schemes"
+                           value-property-name='SchemeId' max-num-list="30"
+                           onClick="this.select();" match-formatted="true"
+                           style="text-transform: uppercase;"
+                           placeholder="Scheme">
+                  </div>
+                </div>
+                <div class="col-md-5" style="padding: 0px 5px 0px 0px !important;">
+                  <div class="col-md-4" style="padding: 0px;">
+                    <label>Price Category<b class="color-red"> *</b> :</label>
+                  </div>
+                  <div class="col-md-8" style="padding: 0px;">
+                    <input
+                           danphe-auto-complete type="text" class="form-control" id="id_PriceCategoryName"
+                           display-property-name="PriceCategoryName"
+                           [list-formatter]="PriceCategoryListFormatter"
+                           (valueChanged)="AssignSelectedPriceCategoryItem($event)"
+                           [(ngModel)]="currentPriceCategory"
+                           [source]="PriceCategories"
+                           value-property-name='PriceCategoryId' max-num-list="30"
+                           onClick="this.select();" match-formatted="true"
+                           style="text-transform: uppercase;"
+                           placeholder="PriceCategory">
+                  </div>
+                </div>
+                <div class="col-md-2" style="padding: 5px 0px 0px 15px !important;">
+                  <input type="checkbox" id="id_IsDefault" [(ngModel)]="SchemePriceCategoryMap.IsDefault" name="reconcile_status_open" checked>
+                  <label for="id_IsDefault" style="margin:0px 15px 0px 5px">IsDefault?</label>
+                </div>
+                <div class="col-md-1" style="padding: 0px !important;">
+                  <button *ngIf="!update" type="button" class="btn green" style="background-color: white" id="btn-add"
+                          (click)="AddSchemePriceCategorySettingsItemToTable()"><i class="fa fa-plus"></i></button>
+                </div>
+                <div class="row" style="margin: 30px 5px 5px 5px !important;" *ngIf="!update">
+                  <hr>
+                  <table class="table table-responsive dispatch-report-table">
+                    <thead class="table-header-bg">
+                      <tr>
+                        <th scope="col" class="wd-130">SchemeName</th>
+                        <th scope="col" class="wd-270">PriceCategory</th>
+                        <th scope="col" class="wd-80">IsDefault</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let mapItem of SchemePriceCategoryMapList">
+                        <td>{{mapItem.SchemeName}}</td>
+                        <td>{{mapItem.PriceCategoryName}}</td>
+                        <td>{{mapItem.IsDefault}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin: 5px 15px 40px 0px; padding: 0px;">
+            <input DanpheConfirmationDialog
+                   *ngIf="!update"
+                   id="btnSaveSchemePriceCategoryMapItem"
+                   type="submit"
+                   [title]="confirmationTitle"
+                   [message]="confirmationMessageForSave"
+                   (confirm)="HandleConfirmationForSave()"
+                   (cancel)="HandleCancel()"
+                   style="font-weight: bold; float: right;"
+                   class="btn green btn-success"
+                   value="Save"
+                   [disabled]="loading" />
+
+            <input DanpheConfirmationDialog
+                   *ngIf="update"
+                   id="btnUpdateSchemePriceCategoryMapItem"
+                   type="submit"
+                   [title]="confirmationTitle"
+                   [message]="confirmationMessageForUpdate"
+                   (confirm)="HandleConfirmationForUpdate()"
+                   (cancel)="HandleCancel()"
+                   style="font-weight: bold; float: right;"
+                   class="btn green btn-success"
+                   value="Update"
+                   [disabled]="loading" />
+
+            <input
+                   id="btnDiscard"
+                   type="button"
+                   style="background-color: orange; color: white; font-weight: bold; float: right;  margin-right: 10px"
+                   class="btn orange btn-success"
+                   value="Discard"
+                   (click)="Discard()" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

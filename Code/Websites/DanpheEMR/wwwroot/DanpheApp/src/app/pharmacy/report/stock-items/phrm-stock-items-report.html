@@ -1,0 +1,77 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="caption custom-caption no-margin"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Stock Items Report</span> </div>
+        </div>
+        <div class="col-md-12 col-xs-12">
+          <div class="row mt10">
+            <div class="col-md-4">
+              <div class="row">
+                <label class="control-label col-md-4">Select Item<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <div class="form-group no-margin">
+                    <input danphe-auto-complete class="form-control"
+                                   [(ngModel)]="selectedItem"
+                                   [source]="itemList"
+                                   [list-formatter]="myItemListFormatter"
+                                   placeholder="--Select Item--"
+                                   display-property-name="ItemName"
+                                   value-property-name=null
+                                   onClick="this.select();"
+                                   (valueChanged)="onChangeItem($event)"
+                                   max-num-list="10"
+                                   (focusout)="CheckProperSelectedItem()"
+                                   min-chars="0"
+                                   style="width:100%;" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="row">
+                <label class="control-label col-md-4">Select Location<b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <select style="width:100%;height:32px" [(ngModel)]="selectedLocation">
+                    <option value="1" selected>Dispensary</option>
+                    <option value="2" >Store</option>
+                    <option value="3" >Ward</option>
+                    <option value="0" >All</option>
+                  </select>
+                </div>                
+              </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="GetReportData()"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PHRMStockItemsReportColumns"
+                        [grid-data]="PHRMStockItemsReportData"
+                        [grid-exportOptions]="gridExportOptions"
+                        [grid-showExport]="true"
+                        (grid-onExport)="OnGridExport($event)" 
+                        [report-for]="pharmacy"> </danphe-grid>
+  </div>
+</div>
+<div class="row">
+  <table style="float:right; margin-right:20px;">
+    <tr></tr>
+    <tr> 
+      
+      <!-- <td><b>Total Quantity: </b></td> <td>{{totalQuantity}}</td> -->
+      <td style="width:40px;"></td>
+      <!-- <td><b>Total Amount:</b></td><td>{{totalAmount}}</td> -->
+      <td style="width:80px;"></td>
+    </tr>
+  </table>
+</div>

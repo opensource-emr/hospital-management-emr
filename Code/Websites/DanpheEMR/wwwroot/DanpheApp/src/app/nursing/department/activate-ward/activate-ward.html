@@ -1,0 +1,131 @@
+<style>
+  li.horizontal-bar:hover>a {
+    background: none;
+  }
+
+  li.bil-hr-bar:hover ul.dropdown-menu li a {
+    background: none;
+    color: #6f6f6f !important;
+  }
+
+  .dropdown.bil-hr-bar.open a.dropdown-toggle {
+    background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
+    border-radius: 4px !important;
+  }
+
+  .dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+    color: #6f6f6f;
+  }
+
+  .hr-ddlCstm {
+    border-bottom: 1px solid #c5cbc5;
+  }
+
+  .bil-hr-dropdown li a:hover {
+    font-weight: 700;
+  }
+
+  .p-category .span2 {
+    min-width: 20.5%;
+  }
+
+  .padder-v {
+    border: 1px solid #ddd;
+    margin: 10px 10px 0px 0px;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .b-r {
+    border-right: 1px solid #cfcfcf;
+  }
+
+  .b-light {
+    border-color: #e4e4e4;
+  }
+
+  .b-light i.text-white {
+    color: #fff;
+  }
+
+  .rpt-link-container {
+    width: 230px;
+    height: 70px;
+    background-color: white;
+  }
+
+  .rpt-link-container:hover {
+    background-color: skyblue;
+    cursor: pointer;
+  }
+
+  .bed-container {
+    height: 12rem;
+    width: 13rem;
+    float: left;
+    text-align: center;
+  }
+
+  .modal-content {
+    line-height: 2;
+    text-align: center;
+    color: #eceaea;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    left: 82%;
+    top: 90%;
+    border-radius: 4px !important;
+    z-index: 99;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <!-- Start: transferred patient pending list-->
+    <div class="col-md-12">
+      <transferred-patient-pending-list *ngIf="IsReceiveFeatureEnabled">
+
+      </transferred-patient-pending-list>
+    </div>
+    <!-- End: transferred patient pending list-->
+    <div class="col-md-12">
+      <div class="caption lb-caption">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Select your Ward</span>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="wardList != undefined">
+      <div class="row">
+        <div class="col-md-3" *ngFor="let ward of wardList" rbac-permission="{{ward.PermissionInfo}}">
+          <a class="report_list" (click)="setGlobalWard(ward.WardId)">
+            <div class="span2 padder-v b-r b-light rpt-link-container"
+              style="display: flex;flex-direction: row;align-items: center;">
+              <span class="fa-stack fa-2x report_icon">
+                <i class="fa fa-plus fa-stack-1x text-white"></i>
+              </span>
+              <span class="report-name col-md-6">
+                <i>{{ward.WardName}}</i>
+                <i>ward</i>
+              </span>
+              <span class="report-name col-md-6">
+                <i>{{ward.OccupiedBeds}}</i>
+                <i>Patients</i>
+              </span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="ward.OccupiedBeds" aria-valuemin="0"
+                [attr.aria-valuemax]="ward.TotalBeds" [ngStyle]="{'width.%': ward.OccupiedBeds*100/ward.TotalBeds}">
+                <span title="{{ward.OccupiedBeds}} Beds Occupied">{{ward.OccupiedBeds}} Beds Occupied</span>
+              </div>
+              <div class="progress-bar progress-bar-success" role="progressbar" [attr.aria-valuenow]="ward.VacantBeds"
+                aria-valuemin="0" [attr.aria-valuemax]="ward.TotalBeds"
+                [ngStyle]="{'width.%': ward.VacantBeds*100/ward.TotalBeds}">
+                <span title="{{ward.VacantBeds}} Beds Vacant">{{ward.VacantBeds}} Beds Vacant</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

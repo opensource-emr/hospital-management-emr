@@ -1,0 +1,10 @@
+<input id="municipality" #inputElement class="form-control" danphe-auto-complete
+       [ngModelOptions]="{standalone: true}"
+       [(ngModel)]="bindedMunicipality"
+       [list-formatter]="municipalityListFormatter" [source]="municipalityList" placeholder="Municipality"
+       display-property-name="MunicipalityName" value-property-name=null
+       match-formatted="true"
+       (focusout)="AssignSelectedMunicipality()"
+       onClick="this.select();" max-num-list="10" [min-chars]="1"
+       (keyup.enter)="SetFocusById('address')" />
+<span class="color-red font-sm" *ngIf="municipalityId==0" [hidden]="isInitailLoad">Invalid Municipality</span>

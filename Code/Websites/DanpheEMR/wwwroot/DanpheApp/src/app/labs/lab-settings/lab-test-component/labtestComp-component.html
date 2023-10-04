@@ -1,0 +1,34 @@
+<style>
+.portlet.box > .portlet-body {
+	overflow-x: auto !important;
+}
+</style>
+<div class="wrapper">
+  <div class="row m1">
+    <div class="col-md-2"> <a class="btn blue bordered btn-sm" name="name" (click)="AddNewLabTestComponent()"> <i class="fa fa-plus"></i>Add New Lab Test Component </a> </div>
+  </div>
+  <danphe-grid [grid-colDefaults]="labTestComponentGridCol" [grid-data]="labTestComponentList" (grid-actions)="EditComponent($event)"> </danphe-grid>
+  
+  <!--Model Box Starting Here-->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddLabComponent">
+    <div class="portlet-body form">
+      <div class="col-md-12">
+        <div class="modelbox-div no-padding">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr"> <span *ngIf="!update">Add Components</span> <span *ngIf="update">Update Component</span> </h4>
+          </div>
+          <div class="modelbox-body">
+            <add-labTestComponent [allLabTestcomponentList]="labTestComponentList"
+                                [labTestComponent]="selectedLabTestComponent" [lookUpNames]="LookUpNames"
+                                (callback-Add)="GetAddedAndUpdatedData($event)"></add-labTestComponent>
+          </div>
+          <div class="close-modelbox lb-close-btn">
+            <button class="btn btn-danger" (click)="Close()"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+      <!-- <form [formGroup]="labTest.LabTestValidator" class="form-horizontal" style="display: table; width: 100%;"> --> 
+      <!-- </form> --> 
+    </div>
+  </div>
+</div>

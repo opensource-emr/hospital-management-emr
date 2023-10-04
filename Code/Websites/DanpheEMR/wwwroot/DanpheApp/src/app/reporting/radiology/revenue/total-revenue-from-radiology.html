@@ -1,0 +1,47 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="CurrentRadiologyRevenue.RevenueGeneratedValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Revenue enerated Report</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="CurrentRadiologyRevenue.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="CurrentRadiologyRevenue.IsDirty('fromDate')" [hidden]="CurrentRadiologyRevenue.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="CurrentRadiologyRevenue.IsDirty('fromDate')" [hidden]="CurrentRadiologyRevenue.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="CurrentRadiologyRevenue.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="CurrentRadiologyRevenue.IsDirty('toDate')" [hidden]="CurrentRadiologyRevenue.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="CurrentRadiologyRevenue.IsDirty('toDate')" [hidden]="CurrentRadiologyRevenue.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+            </div>
+          </div>-->
+			<div class="row">
+			  <div class="col-md-6 col-xs-12">
+				<from-to-date-select (on-change)="OnFromToDateChange($event)">
+				</from-to-date-select>
+			  </div>
+			  <div class="col-md-2 col-xs-12">
+				<div class="form-group">
+				  <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+				</div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="RevenueGeneratedColumns"
+                   [grid-data]="RevenueGeneratedData"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>

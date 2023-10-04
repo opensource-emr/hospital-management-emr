@@ -1,0 +1,49 @@
+<div *ngIf="loading"> <!-- //mumbai-team-june2021-danphe-accounting-cache-change -->
+    Loading...
+  </div> <!--//mumbai-team-june2021-danphe-accounting-cache-change-->
+  <div *ngIf="loading==false"> <!--mumbai-team-june2021-danphe-accounting-cache-change-->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="!isSinglePermissionOnly">
+        <div class="portlet-body form">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div">
+                    <div class="modelbox-header">
+                        <h4 class="margin-0-vr text-warning text-center">
+                            <strong>Select the hospital</strong>
+                        </h4>
+                    </div>
+                    <div class="modelbox-body">
+                        <div class="row margin-15-bt" *ngIf="securityServ && securityServ._activatedHospital">
+                            Currently Active:&nbsp; {{securityServ._activatedHospital.HospitalLongName}}
+                        </div>
+                        <div class="row" *ngIf="allHospitalsPermissions">
+                            <!-- Body Content-->
+                            <div class="flex-container justify-sp-around">
+                                <ng-container *ngFor="let val of allHospitalsPermissions">
+                                    <div rbac-permission="{{val.PermissionInfo}}"
+                                        class="col-4 flex-align-stretch margin-15-bt">
+                                        <div class="text-center single-hosp">
+                                            <a class="display-blk" (click)="AssignAccountingTenant(val.HospitalId)">
+                                                <div class="icon-holder display-blk">
+                                                    <span class="fa-stack fa-2x report_icon">
+                                                        <i class="fa fa-hospital-o"></i>
+                                                    </span>
+                                                </div>
+                                                {{val.HospitalLongName}}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
+    
+                        </div>
+                    </div>
+                    <div *ngIf="changeRequest" class="close-modelbox">
+                        <button class="btn btn-danger" (click)="ClosePopUp()">
+                            X
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+ </div>

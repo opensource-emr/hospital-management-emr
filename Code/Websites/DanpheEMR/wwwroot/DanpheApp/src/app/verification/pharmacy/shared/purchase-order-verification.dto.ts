@@ -1,0 +1,26 @@
+export class PurchaseOrderVerification_DTO {
+    PurchaseOrderId: number = 0;
+    PurchaseOrderNo: number = 0;
+    StoreName: string = '';
+    SupplierName: string = '';
+    PODate: string = null;
+    POStatus: string = null;
+    CurrentVerificationLevel: number = 0;
+    MaxVerificationLevel: number = 0;
+    CurrentVerificationLevelCount: number = 0;
+    VerificationStatus: string = null;
+    IsVerificationAllowed: boolean = false;
+    SupplierId: number = 0;
+    FiscalYearId: number = 0;
+    ReferenceNo: string = null;
+    DeliveryAddress: string = null;
+    InvoicingAddress: string = null;
+    Contact: string = null;
+    DeliveryDays: number = 0;
+    DeliveryDate: string = null;
+    Remarks: string = '';
+    CreatedOn: string = null;
+    VerificationId: number = 0;
+    VerifierIds: string = null;
+    IsVerificationEnabled: boolean = false;
+}

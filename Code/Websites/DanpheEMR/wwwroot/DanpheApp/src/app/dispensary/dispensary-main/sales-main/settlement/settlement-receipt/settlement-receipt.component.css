@@ -1,0 +1,12 @@
+.rect-table tbody tr th {
+  text-align: center;
+}
+
+.paymnt-det {
+  text-align: left;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dotted;
+  font-size: 13px;
+  font-style: italic;
+}

@@ -1,0 +1,209 @@
+<style>
+  .page-bar {
+    box-shadow: none;
+    margin-bottom: 15px;
+  }
+
+  .page-bar>div {
+    /* background-color: #fefefe !important; */
+    display: flex;
+    width: 100%;
+    gap: 15px;
+  }
+
+  .bill-p-info span {
+    width: 100%;
+  }
+
+  .bill-p-info span,
+  .bill-p-info span b {
+    display: block;
+    margin: 0;
+  }
+
+  .custom-caption {
+    margin-bottom: 0 !important;
+  }
+
+  .no-gutters {
+    margin: 0 -7px !important;
+  }
+
+  .no-gutters [class*="col-"] {
+    padding: 0 7px !important;
+  }
+
+  .d-flex {
+    display: flex;
+    align-items: center;
+  }
+
+  .form-group input,
+  .control-label {
+    margin: 0 !important;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showChangeDoctor">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class=" modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Change Doctor/ Department</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 col-sm-12">
+              <div class="page-bar bill-p-info popup-pagebar mt10">
+                <div>
+                  <span>
+                    Hospital No : <b>{{selectedVisit.PatientCode}} </b>
+                  </span>
+                  <span>
+                    Patient Name : <b>{{selectedVisit.ShortName}}</b>
+                  </span>
+                  <span>
+                    Age/Sex : {{selectedVisit.Age}}/ {{selectedVisit.Gender[0]}}
+                  </span>
+                  <span>
+                    Address : <b>{{selectedVisit.Address}}</b>
+                  </span>
+                  <span>
+                    Contact No : <b>{{selectedVisit.PhoneNumber}}</b>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 0 15px;" class="row no-gutters">
+            <div class="form-group col-md-5" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <div class="col-md-5">
+                  <label class="control-label">Registration Date/Time<b>:</b></label>
+                </div>
+                <div class="col-md-7">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control text-center" type="date" [(ngModel)]="visitDate" id="date" />
+                    </div>
+                    <div class="col-md-6">
+                      <input disabled="disabled" class="form-control text-center" type="time" [(ngModel)]="selectedVisit.VisitTime" id="time" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-4" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <label class="control-label col-md-5"> Registered Department<b>&nbsp;:</b></label>
+                <div class="col-md-7">
+                  <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.DepartmentName" id="department"
+                         style="margin-top: 5px; width: 100%;" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-3" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <label class="control-label col-md-5"> Assigned Doctor <b>&nbsp;:</b></label>
+                <div class="col-md-7">
+                  <input disabled="disabled" type="text" [(ngModel)]="selectedVisit.PerformerName" style="width:100%; margin-top: 5px;" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-12" style="margin: 0 0 10px 0;">
+              <div class="row no-gutters d-flex">
+                <div class="col-md-5">
+                  <form [formGroup]="freeReferValidator" class="row no-gutters d-flex">
+                    <label class="control-label col-md-5" style="margin-top: 10px;"> Referred Department<b><sup class="color-red">
+                          *</sup>&nbsp;:</b></label>
+                    <div class="col-md-7" style="padding: 0 !important;">
+                      <input id="txtDepartment" class="form-control" danphe-auto-complete autocomplete="off"
+                             [(ngModel)]="selectedDepartment"
+                             [list-formatter]="myDepartmentListFormatter"
+                             [source]="departmentList"
+                             placeholder="Department Name"
+                             formControlName="ReferredDepartment"
+                             display-property-name="DepartmentName"
+                             onClick="this.select();"
+                             (focusout)="AssignSelectedDepartment(selectedDepartment)"
+                             match-formatted="true"
+                             [grid-sort]="'DepartmentName'"
+                             max-num-list="10"
+                             [min-chars]="1"
+                             style="width: 100%;" />
+                      <span class="color-red font-sm"
+                            *ngIf="freeReferValidator.get('ReferredDepartment').invalid && ((freeReferValidator.get('ReferredDepartment').dirty || freeReferValidator.get('ReferredDepartment').pristine || freeReferValidator.get('ReferredDepartment').touched)) && showValidationMessage">
+                        <small>Referred Department is Required</small></span>
+                    </div>
+                  </form>
+                </div>
+                <div class="col-md-4">
+                  <form [formGroup]="freeReferValidator" class="row no-gutters d-flex">
+                    <label class="control-label col-md-5" style="margin-top: 10px;"> Referred Doctor<b><sup class="color-red">
+                          *</sup>&nbsp;:</b></label>
+                    <div class="col-md-3" style="">
+                      <input class="form-control"
+                             id="doctorName" danphe-auto-complete autocomplete="off"
+                             [(ngModel)]="selectedDoctor"
+                             [list-formatter]="DocListFormatter"
+                             [source]="filteredDocList"
+                             formControlName="ReferredDoctor"
+                             placeholder="Doctor's Name"
+                             display-property-name="FullName"
+                             (focusout)="AssignSelectedDoctor()"
+                             onClick="this.select();"
+                             max-num-list="10"
+                             style="width:250px;" />
+                      <span class="color-red font-sm"
+                            *ngIf="freeReferValidator.get('ReferredDoctor').invalid && showValidationMessage && ((freeReferValidator.get('ReferredDoctor').dirty || freeReferValidator.get('ReferredDoctor').pristine || freeReferValidator.get('ReferredDoctor').touched))">
+                        <small>Referred Doctor is Required</small>
+                      </span>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="form-group col-md-5" style="margin: 0 0 10px 0;">
+              <div class="row d-flex no-gutters">
+                <label class="control-label col-md-5"> Reason to Refer<b>:</b></label>
+                <div class="col-md-7" style="padding: 0 !important">
+                  <textarea
+                            type="text"
+                            name="referalremarks"
+                            style="width: 100%;"
+                            id="id_referalremarks"
+                            class="form-control"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-7">
+              <nursing-add-diagnosis [patient-id]="selectedVisit.PatientId" [patient-visit-id]="selectedVisit.PatientVisitId"></nursing-add-diagnosis>
+            </div>
+
+
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row clearfix">
+              </div>
+            </div>
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <input type="button" id="discard" (click)="Discard()" class="btn orange btn-success margin-7-hr"
+                       value="Discard" />
+                <input type="button" id="add" (click)="addReferDetails()" class="btn green btn-success margin-7-hr"
+                       value="Save" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

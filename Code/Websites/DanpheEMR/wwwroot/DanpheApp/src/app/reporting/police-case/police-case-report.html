@@ -1,0 +1,40 @@
+<style>
+  .lbl-discharged-only {
+    font-weight: bold;
+    margin-left: 15px;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+          class="caption-subject">Police Case Report</span> </div>
+      <div class="col-md-6">
+        <from-to-date-select (on-change)="onDateChange($event)">
+        </from-to-date-select>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="Load()">
+            <i class="fa fa-search"></i> Show Report
+          </button>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-4">
+        <div style="float:right">
+          <label class="lbl-discharged-only" for="dischargedOnly">Discharged Only<b>:</b> </label>
+          <input id="dischargedOnly" name="dischargedOnly" style="zoom:1.5; height:auto; margin:10px;" type="checkbox"
+            (change)="checkValue(showDischargedOnly)" [(ngModel)]="showDischargedOnly"
+            [ngModelOptions]="{standalone: true}" />
+        </div>
+
+      </div>
+    </div>
+
+    <div class="col-md-12 col-sm-12" *ngIf="showGrid">
+      <danphe-grid [grid-colDefaults]="PoliceCaseGridColumns" [grid-data]="PoliceCaseData"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+
+  </div>

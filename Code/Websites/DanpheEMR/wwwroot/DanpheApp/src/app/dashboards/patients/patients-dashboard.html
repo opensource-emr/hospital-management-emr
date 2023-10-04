@@ -1,0 +1,335 @@
+﻿<div class="app-wrap">
+  <div class="card-section">
+    <div class="filter-wrap">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [emit-always]="false">
+      </from-to-date-select>
+    </div>
+    <div class="row">
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\patient-wran.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Registered Patient</h4>
+                <div class="card-count">
+                  Total Patient: <strong>52364</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today: <strong>3</strong>
+              </div>
+              <p><span class="success">+ 4%</span>patient from yesterday <span class="arrow"><img
+                       src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span></p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Yesterday: <strong>1</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-indigo">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\doctor.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Doctors</h4>
+                <div class="card-count">
+                  Total Doctors: <strong>112</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Consultants: <strong>107</strong>
+              </div>
+              <div class="card-count">
+                Anaesthetists: <strong>4</strong>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Medical Officer:<strong>1</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-info">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\appointment.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Appointments</h4>
+                <div class="card-count">
+                  Total Appointments: <strong>112</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today:<strong>3</strong>
+              </div>
+              <p><span class="danger">-2%</span>from yesterday <span class="arrow"><img
+                       src="\assets\pages\img\dashboard\down-arrow.svg" alt=""></span></p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Medical Officer:<strong>1</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-success">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\admission.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Readmission</h4>
+                <div class="card-count">
+                  Total Readmission: <strong>112</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today:<strong>3</strong>
+              </div>
+              <p><span class="success">+ 4%</span>from yesterday <span class="arrow"><img
+                       src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span></p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Yesterday :<strong>1</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-container">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Patient Count by Day</h4>
+          </div>
+          <canvas id="dailyPatientCount" height="300">{{ dailyPatientChart }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Average Treatment Cost by Age Group</h4>
+          </div>
+          <canvas id="averageTreatmentCostByAgeGroup" height="300">{{ averageTreatmentCostByAgeGroup }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Department Wise Appointment Count</h4>
+          </div>
+          <canvas id="departmentWiseAppointmentCount" height="300">{{ departmentWiseAppointmentCount }}</canvas>
+          <div class="chart-content">
+            <h3>115</h3>
+            <p>Total Appointment</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Visit By Membership</h4>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-item blue-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Inservice</span>
+                <span>9991</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 90%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item orange-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Ex-Staff</span>
+                <span>989</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 20%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item green-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Civil</span>
+                <span>3499</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 50%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item lightred-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Family</span>
+                <span>9178</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 70%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item purple-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Doctor</span>
+                <span>17</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 10%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item skyblue-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>Manab Sewa</span>
+                <span>38</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 15%;">
+                </div>
+              </div>
+            </div>
+            <div class="progress-item red-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>NID</span>
+                <span>51</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 20%;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title">
+            <div class="d-flex justify-content-between align-items-center">
+              <h4>Patient Distribution based on Rank</h4>
+            </div>
+            <div class="select-form d-flex align-items-center">
+              <label for="">Department : </label>
+              <div ngbDropdown class="d-inline-block">
+                <button type="button" class="btn btn-outline-primary" id="dropdownBasic1"
+                        ngbDropdownToggle>
+                  Select Department
+                </button>
+                <div ngbDropdownMenu aria-labelledby="navbarDropdown3" class="dropdown-menu">
+                  <div class="form-group">
+                    <input type="text" class="form-control">
+                    <span class="search-icon">
+                      <img src="\assets\pages\img\dashboard\bx-search-alt.svg" alt="">
+                    </span>
+                  </div>
+                  <a ngbDropdownItem href="#">Department1</a>
+                  <a ngbDropdownItem href="#">Department2</a>
+                  <a ngbDropdownItem href="#">Department3</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <canvas id="rankedBasedPatientDistribution" height="300">{{ rankedBasedPatientDistribution }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card hm-card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Hospital Management</h4>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-item">
+              <div class="progress">
+                <div title="OPD" class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 30%;">
+                  OPD
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="progress">
+                <div title="Laboratory Test" class="progress-bar" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 40%;">
+                  Laboratory Test
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="progress">
+                <div title="Patient" class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 60%;">
+                  New Patient
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="progress">
+                <div title="Admission" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 25%;">
+                  Admission
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="progress">
+                <div title="Discharge" class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 80%;">
+                  Discharge
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="wrapper">
+    <div class="caption custom-caption no-margin">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject">Hospital Income Report</span>
+      </div>
+    <div class="row clearfix" *ngIf="!isServiceDepartmentWise">
+        <div class="col-md-6">
+            <from-to-date-select (on-change)="OnDateRangeChange($event)">
+            </from-to-date-select>
+          </div>
+          <div class="col-md-2" *ngIf="allcategories && preSelectedData">
+            <danphe-multiselect
+            [ddl-data]="serviceDepartmentsList"
+            [pre-selected]="preSelectedData"
+            [placeholder-text]="'--Select Service Depts --'"
+            [value-property-name]="'ServiceDepartmentId'"
+            (selected-items-list)="ServiceDepartmentOnChange($event)"
+            [display-property-name]="'ServiceDepartmentName'"
+            [single-selection]="false"> 
+            </danphe-multiselect>
+          </div>
+
+          <div class="col-md-2">
+            <button class="btn blue" type="button" (click)="LoadHospitalIncomeReport()">
+                <i class="fa fa-search"></i>
+                Show Report
+              </button>
+          </div>
+          <div class="col-md-2" *ngIf="reportData && reportData.length">
+            <button class="primary-btn btn right non-printable" type="button" (click)="ExportToExcel('id_hospital_income_incentive')">
+                <i class="fa fa-file-excel-o"></i>
+                Excel
+              </button>
+          </div>
+    </div>
+    
+    <div class="row clearfix" *ngIf="reportData && reportData.length && !isServiceDepartmentWise">
+        <div class="col-md-12" id="id_hospital_income_incentive">
+            <div class="table-responsive">
+                <table class="table-striped table-hover table-bordered custom_table padLess_table" style="width: 100%; margin-top: 15px;">
+                  <thead>
+                    <tr>
+                      <td style="text-align:center"><b>Sr No.</b></td>
+                      <td><b>Service Departments</b></td>
+                      <td style="text-align:center"><b>Net Sales</b></td>
+                      <td style="text-align:center"><b>Referral Commission</b></td>
+                      <td style="text-align:center"><b>Gross Income</b></td>
+                      <td style="text-align:center"><b>Other Incentives(Performer/Prescriber) Income</b></td>
+                      <td style="text-align:center"><b>Net Hospital Income</b></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of reportData;let i=index">
+                      <td style="text-align:center">{{i+1}}</td>
+                      <td><a style="font-weight:bold; font-family: 'Quicksand', 'Open Sans', sans-serif; text-align: left;" (click)="LoadServiceDepartmentWiseItems(row)">{{row.ServiceDepartmentName}}</a></td>
+                      <td style="text-align:right">{{row.NetSales | ParseAmount}}</td>
+                      <td style="text-align:right">{{row.ReferralCommission | ParseAmount}}</td>
+                      <td style="text-align:right">{{row.GrossIncome | ParseAmount}}</td>
+                      <td style="text-align:right">{{row.OtherIncentive | ParseAmount}}</td>
+                      <td style="text-align:right">{{row.HospitalNetIncome | ParseAmount}}</td>
+                    </tr>
+                    <tr style="font-weight: bold">
+                        <td style="text-align:right"></td>
+                        <td style="text-align:right"><b>Total :</b></td>
+                        <td style="text-align:right">{{summary.tot_NetSales | ParseAmount}}</td>
+                        <td style="text-align:right">{{summary.tot_RefCommission | ParseAmount}}</td>
+                        <td style="text-align:right">{{summary.tot_GrossIncome | ParseAmount}}</td>
+                        <td style="text-align:right">{{summary.tot_OtherIncentive | ParseAmount}}</td>
+                        <td style="text-align:right">{{summary.tot_HospitalNetIncome | ParseAmount}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="isServiceDepartmentWise">
+        <div>
+            <button class="btn btn-primary" (click)="GoBacktoGrid()">Back</button>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="isServiceDepartmentWise">
+       <hospital-income-service-dept-wise [row-data] ="rowData"></hospital-income-service-dept-wise>
+    </div>
+
+</div>

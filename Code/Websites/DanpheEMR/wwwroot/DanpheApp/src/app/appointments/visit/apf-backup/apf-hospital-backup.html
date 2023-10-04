@@ -1,0 +1,118 @@
+<div class="row" *ngIf="IsAPFIntegrationEnabled">
+    <div class="col-md-12">
+        <form [formGroup]="patient.PatientValidator" class="form-horizontal hm-form">
+
+            <div class="form-group">
+                <label class="control-label col-md-3">ID Card Number<b>:</b></label>
+                <div class="col-md-4 pr-0">
+                    <input class="form-control" #idcardnumber id="input_id_vpi_idcardnumber" type="text" maxlength="100"
+                           formControlName="IDCardNumber" placeholder="ID Card Number" [(ngModel)]="patient.IDCardNumber"
+                           (keyup.enter)="GoToNext(dependentId)" />
+                </div>
+                <div class="col-md-3 pr-0">
+                    <input type="button" class="btn blue btn-success" value="Load" [disabled]="loading" (click)="getIdCardNumber()" />
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3">Dependent Id<b>:</b></label>
+                <div class="col-md-4 pr-0">
+                    <input class="form-control" #dependentId type="text" maxlength="100" formControlName="DependentId" placeholder="Dependent Id"
+                           [(ngModel)]="patient.DependentId" (focusout)="ListDependentIds()" (keyup.enter)="GoToNext(posting)" />
+                </div>
+                <div class="col-md-3 pr-0">
+                    <span (click)="getDependentId()" class="glyphicon glyphicon-eye-open" title="Click to DependentId"></span>
+                </div>
+            </div>
+
+
+
+            <div class="form-group">
+                <label class="control-label col-md-3">Posting<b>:</b></label>
+                <div class="col-md-4 pr-0">
+                    <input class="form-control" #posting type="text" maxlength="100" formControlName="Posting" placeholder="Posting"
+                           [(ngModel)]="patient.Posting" (keyup.enter)="GoToNext(rank)" />
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3">Rank<b>:</b></label>
+                <div class="col-md-4 pr-0">
+                    <!-- <input class="form-control" #rank type="text" maxlength="100" formControlName="Rank" placeholder="Rank" [(ngModel)]="patient.Rank" (keyup.enter)="GoToNext(firstname)" /> -->
+                    <input danphe-auto-complete #rank class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedRank"
+                           [list-formatter]="RankFormatter" [source]="RankList" placeholder="Rank" display-property-name="RankName"
+                           value-property-name="RankName" [grid-sort]="'RankName'" [match-formatted]="true" (valueChanged)="OnRankChange($event)"
+                           onClick="this.select();" />
+                </div>
+            </div>
+
+
+
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+<div class="wrapper" *ngIf="showDependentIdPopup">
+    <div class="popup-static portlet box portlet-fullscreen popup-fixed inv_modal">
+        <div class="portlet-body form">
+            <div class="col-md-12">
+                <div class="modelbox-div">
+                    <div class="caption lb-caption">
+                        <h3><span>Dependent Id List</span></h3>
+                        <button class="btn btn-danger" (click)="CloseDependentIdPopup()">X</button>
+                    </div>
+                    <div style="margin-left: 20px;" *ngIf="dependent">
+                        <h3>{{ dependent.ShortName }} ({{ dependent.PatientCode }})</h3>
+                    </div>
+                    <div class="modelbox-body p2">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div>
+                                    <div class="col-md-12">
+                                        <table class="table">
+                                            <tr>
+                                                <th>S.N</th>
+                                                <th>Patient Name</th>
+                                                <th>Gender</th>
+                                                <th>Age</th>
+                                                <th>Dependent Id</th>
+                                                <th>Address</th>
+                                                <th>PhoneNumber</th>
+                                                <th>Action</th>
+
+                                            </tr>
+                                            <tr *ngFor="let pat of listOfPatientsUsingDependents; let i = index;">
+                                                <td>{{i + 1}}</td>
+                                                <td>{{ pat.ShortName }} ({{pat.PatientCode}})</td>
+                                                <td>{{pat.Gender}}</td>
+                                                <td>{{pat.Age}}</td>
+                                                <td> <samp *ngIf="!pat.IsDependentIdEditAble">{{ pat.DependentId }}</samp>
+                                                    <samp *ngIf="pat.IsDependentIdEditAble"><input class="form-control" type="text" maxlength="100"
+                                                               [(ngModel)]="pat.DependentId"
+                                                               [disabled]="pat.IsDependentIdEditAble == true ? null : true" /></samp>
+                                                </td>
+                                                <td>{{ pat.Address }}</td>
+                                                <td>{{ pat.PhoneNumber }}</td>
+                                                <td> <samp *ngIf="!pat.IsDependentIdEditAble"><input type="button" class="btn blue btn-success"
+                                                               value="Edit" [disabled]="loading" (click)="editdependentid(i)" /></samp>
+                                                    <samp *ngIf="pat.IsDependentIdEditAble"><input type="button" class="btn blue btn-success"
+                                                               value="Submit" [disabled]="loading" (click)="submit(i)" /></samp>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

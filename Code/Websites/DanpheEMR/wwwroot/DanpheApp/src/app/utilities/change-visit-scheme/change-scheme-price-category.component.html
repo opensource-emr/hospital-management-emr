@@ -1,0 +1,285 @@
+<div id="change-visit-scheme-form" class="form-horizontal hm-form">
+
+  <div class="caption custom-caption no-margin" style="font-size: 20px;">
+    Change Scheme/Price Category
+
+  </div>
+  <div class="row" style="margin:15px;">
+    <div>
+
+      <div class="form-group col-md-12">
+        <div class="row">
+          <div class="col-md-2">
+            <label class="control-label">
+              Select Patient
+              <b class="color-red"> <sup>*</sup></b>
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-10">
+            <input danphe-auto-complete id="id_patient_number"
+                   class="form-control searchtbx w-100" [(ngModel)]="selectedPatient"
+                   [list-formatter]="PatientListFormatter"
+                   (keyup.enter)="GoToNextInput('inpatientnumber')"
+                   [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+                   placeholder="search by HospitalNo/Patient Name"
+                   display-property-name="ShortName" value-property-name=null
+                   onClick="this.select();" max-num-list="10" [min-chars]="3"
+                   match-formatted="true" (ngModelChange)="AssignSelectedPatient()"
+                   [grid-sort]="'ShortName'" [ngModelOptions]="{standalone: true}" autofocus="true" />
+          </div>
+        </div>
+      </div>
+      <div class="patient-details-form col-md-12" *ngIf="showIsPatientSelected" style="
+                                padding: 0px!important;
+                                margin-top: 15px;
+                                margin-bottom: 15px;
+                                border: 1px solid #ccc;">
+
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Patient Name
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+
+            <span>
+              {{selectedPatient?.ShortName}}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Hospital No
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span>
+              {{selectedPatient.PatientCode}}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Age/Sex
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span>
+              {{selectedPatient.Age}}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Contact No
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span>
+              {{selectedPatient.PhoneNumber}}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Visit Type
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span>
+              {{schemeVisitSchemeObject.VisitType}}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Inpatient No
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span *ngIf="schemeVisitSchemeObject.VisitType === visitTypeInpatient">
+              {{schemeVisitSchemeObject.VisitCode}}
+            </span>
+          </div>
+        </div>
+        <!--<div class="col-md-4">
+                    <div class="col-md-6">
+                        <label class="control-label lbl-text">
+                            Ward/Bed
+                        </label>
+                        <label style="float:right;">
+                            <b>:</b>
+                        </label>
+                    </div>
+                    <div class="col-md-6">
+                        <span>
+                            {{selectedPatient.BedCode}}
+                        </span>
+                    </div>
+		    </div>-->
+        <div class="col-md-4">
+          <div class="col-md-6">
+            <label class="control-label lbl-text">
+              Address
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-6">
+            <span>
+              {{selectedPatient.CountryName}}
+              <span *ngIf="selectedPatient.CountrySubDivisionName && selectedPatient.CountryName">,
+              </span>
+              {{selectedPatient.CountrySubDivisionName}}
+              <span *ngIf="selectedPatient.Address && selectedPatient.CountrySubDivisionName">,
+              </span>
+              {{selectedPatient.Address}}
+            </span>
+          </div>
+
+        </div>
+      </div>
+      <div class=" form-group col-md-12" *ngIf="showIsPatientSelected">
+        <div class="row">
+
+          <div class="col-md-6">
+            <label class="control-label">
+              Current Scheme: {{schemeVisitSchemeObject.SchemeName}}
+            </label>
+          </div>
+          <div class="col-md-6">
+            <label class="control-label">
+              Current Price Category: {{ schemeVisitSchemeObject.PriceCategoryName}}
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group-change-to col-md-12" *ngIf="showIsPatientSelected">
+        <div class="row">
+          <label class="control-label">
+            Change To:
+          </label>
+        </div>
+        <div class="row col-md-6">
+          <div class="col-md-5">
+            <label class="control-label">
+              Select New Scheme
+
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-7">
+            <input danphe-auto-complete id="refundscheme" name="refundscheme" class="form-control"
+                   [(ngModel)]="selectedScheme"
+                   [list-formatter]="'SchemeName'" [source]="billingSchemes"
+                   (keyup.enter)="GoToNextInput('pricecategory')"
+                   placeholder="-----Select New Scheme------"
+                   (focusout)="AssignSelectedScheme()"
+                   display-property-name="SchemeName" value-property-name=null
+                   match-formatted="true" [grid-sort]="'SchemeName'" [min-chars]="1"
+                   onclick="this.select()" max-num-list="10" />
+          </div>
+        </div>
+
+        <div class="row col-md-6">
+          <div class="col-md-5">
+            <label class="control-label">
+              Select New Price category
+            </label>
+            <label style="float:right;">
+              <b>:</b>
+            </label>
+          </div>
+          <div class="col-md-7">
+            <input danphe-auto-complete id="pricecategory" name="pricecategory" class="form-control"
+                   [(ngModel)]="selectedPriceCategory"
+                   [list-formatter]="'PriceCategoryName'" [source]="priceCategoryList"
+                   (keyup.enter)="GoToNextInput('remarks')"
+                   placeholder="-----Select New Price Category------"
+                   (focusout)="AssignSelectedPriceCategory()"
+                   display-property-name="PriceCategoryName" value-property-name="'PriceCategoryId'"
+                   match-formatted="true" [grid-sort]="'PriceCategoryName'" [min-chars]="1"
+                   onclick="this.select()" max-num-list="10" />
+          </div>
+        </div>
+        <div class=" form-group col-md-6">
+          <form [formGroup]="changeVisitSchemeValidator">
+            <div class="col-md-5">
+              <label class="control-label">
+                Remarks
+                <b class="color-red"> <sup>*</sup></b>
+              </label>
+              <label style="float:right;">
+                <b>:</b>
+              </label>
+            </div>
+            <div class="col-md-7">
+              <textarea id="remarks"
+                        name="remarks"
+                        class="form-control"
+                        (keyup.enter)="GoToNextInput('btn_changeSchemePricecategory_saveChange')"
+                        formControlName="Remarks"></textarea>
+              <span class="color-red font-sm"
+                    *ngIf="changeVisitSchemeValidator.get('Remarks').invalid && (changeVisitSchemeValidator.get('Remarks').dirty || changeVisitSchemeValidator.get('Remarks').touched) && showValidationMessage">
+                <small>Remarks is Required</small></span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class=" form-group col-md-12">
+        <div class="col-md-5">
+        </div>
+        <div class="col-md-7">
+          <button id="btn_changeSchemePricecategory_discardChange" class="btn orange btn-discard" [disabled]="loading"
+                  (click)="DiscardChangesSchemePriceCategory()"
+                  style="color: white;">
+            Discard
+          </button>
+          <!-- <button id="btn_changeSchemePricecategory_saveChange" class="btn green btn-success" [disabled]="loading"
+                            (click)="SaveSchemePriceCategory()">
+                        Save
+                    </button> -->
+          <input DanpheConfirmationDialog
+                 id="btn_changeSchemePricecategory_saveChange"
+                 type="submit"
+                 [title]="confirmationTitle"
+                 [message]="confirmationMessage"
+                 (confirm)="handleConfirm()"
+                 (cancel)="handleCancel()" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                 value="Save" [disabled]="loading" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

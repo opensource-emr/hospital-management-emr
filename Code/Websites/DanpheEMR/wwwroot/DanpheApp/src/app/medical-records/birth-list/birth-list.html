@@ -1,0 +1,43 @@
+<div class="row">
+  <div class="col-md-12">
+    <a class="btn btn-primary btn-sm m1" name="name" value="" (click)="showAddNewBirthDetails= true"><span
+        class="glyphicon glyphicon-plus"> </span> Add New Birth Certificate</a>
+    <p>Filter by Birth Date: </p>
+    <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="birthList" (grid-actions)="GridActions($event)"
+      [rangeType]="dateRange" (onDateChange)="onDateChange($event)" [show-CustomDate]="true"
+      [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>
+
+
+
+<div *ngIf="showBirthCertificate" class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="col-md-12">
+      <div class="modelbox-div">
+
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-center"><strong>Birth Certificate | Baby of {{selectedBirth.ShortName}}</strong></h4>
+        </div>
+
+        <div class="modelbox-body">
+          <div style="width: 100%;">
+            <birth-certificate *ngIf="showBirthCertificate" (closeBirthCertificate)="CloseBirthCertificate($event)"
+              [babyBirthDetailsId]="babyBirthDetailsId"></birth-certificate>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button (click)="CloseBirthCertificatePopUp()" class="btn btn-danger">X</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<add-birth-details *ngIf="showAddNewBirthDetails" (CallBack)="CallBack($event)">
+
+</add-birth-details> 

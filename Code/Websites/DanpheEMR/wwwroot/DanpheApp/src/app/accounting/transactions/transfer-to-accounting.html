@@ -1,0 +1,408 @@
+<style>
+  td {
+    max-width: 100px;
+    /*height: 30px;*/
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0px !important;
+  }
+
+  th {
+    padding: 0px !important;
+  }
+
+  .noPadding {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .height-div {
+    height: 60px !important;
+  }
+
+  .drEntryColor {
+    color: green;
+  }
+
+  .crEntryColor {
+    color: green;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="loadingScreen">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="danphe-loading-image" style="display: block;padding-left: 49%;padding-top: 15%;" id='danpheLoading'>
+      <img style="margin-top: 60px;width: 120px; height: 120px;"
+           src="../../../../../themes/theme-default/images/loading-child.gif" alt="" />
+      <p style="font-size: 24px;color: #fff;"><b>Transaction is in progress.. Please wait...</b></p>
+    </div>
+  </div>
+</div>
+<div *ngIf="manualTransfer == false"> <span style="color:red;font-size:18px;"> <b> Manual Transfer is not allowed.
+      Please contact Administrator to enable
+      Manual Transfer. </b> </span> </div>
+<div *ngIf="manualTransfer" class="light-bg">
+  <div class="row">
+    <form [formGroup]="accTxnDetail.TransactionDetailValidator" class="form-horizontal hm-form">
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group no-margin">
+          <label class="control-label noPadding mb10"> Select Fiscal year </label>
+          <div>
+            <fiscal-year-calendar [ShowMonthCalendar]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group no-margin">
+          <label class="control-label noPadding mb10"> Select Module<sup> *</sup><b>:</b> </label>
+          <div style="margin: 5px;">
+            <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="GetChangedSection()" style="width: 100%;height: 32px !important;">
+              <option *ngFor="let s of sectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="col-md-2 col-xs-12">
+        <div class="form-group no-margin">
+          <label class="control-label noPadding mb10"> Cost Center<sup class="color-red"> *</sup><b>:</b> </label>
+          <div style="margin: 5px;">
+            <select [(ngModel)]="selectedCostCenter.CostCenterId" [ngModelOptions]="{standalone: true}" id="id_select_costCenterId_transferToAcc"
+              (ngModelChange)="ChangedCostCenter()" style="width: 100%; height: 32px !important;">
+              <option *ngFor="let costCenter of costCenterList" value="{{costCenter.CostCenterId}}"> {{costCenter.CostCenterName}} </option>
+            </select>
+          </div>
+        </div>
+      </div> -->
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group no-margin">
+          <button class="btn blue primary-btn mt25" type="button" (click)="LoadTxnDates()" title="Load records of selected date">
+            <i class="fa fa-refresh"></i> Load </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <div class="col-lg-6 col-sm-12" style="padding: 10px;">
+            <table class="table table-bordered table-hover table-condensed" border="1" id="exportTableAcc">
+              <thead>
+                <tr>
+                  <th style="width: 30px">Sr. No.</th>
+                  <th style="font-size:larger;width: 110px;">
+                    <danphe-date-change [dataArr]="pendingtxnList" [datecolumn]="'TransactionDate'"> </danphe-date-change>
+                    Transaction Date
+                  </th>
+                  <th style="font-size:larger;width: 150px; text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let itm of pendingtxnList;let i=index">
+                  <tr style="font-size:20px;">
+                    <td>{{i + 1}}</td>
+                    <td>{{itm.TransactionDate }}</td>
+                    <td style="text-align: center;padding: 3px !important;">
+                      <!-- <button class="btn-primary btn" style="height: 25px;font-size: smaller;" type="button" (click)="Load(i)"
+                              title="save selected to accounting"> <i
+                           class="fa fa-save"></i> POST
+                      </button> -->
+
+                      <button class="btn-primary btn" style="height: 25px;font-size: smaller;" type="button" (click)="Preview(i)"
+                              title="save selected to accounting"> <i
+                           class="fa fa-save"></i> Preview
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  -->
+
+    <!--Model Box Starting Here-->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showunavailableList">
+      <div id="PrintLedger" class="portlet-body form">
+        <!--Model Box Body End-->
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+            <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+              <div class="col-md-12">
+                <h4 style="text-align:center">
+                  <b>
+                    <a style="float:right;" class="btn btn-danger  hidden-print"
+                       (click)="Close()" title="Cancel">X</a>
+                  </b>
+                </h4>
+
+              </div>
+
+              <div class="col-md-12" *ngIf="unavailableLedgerList.length">
+                <div style="color:red; margin-top:10px; font-size: smaller;padding: 10px;  background: antiquewhite;font-size: small;">
+                  * Below ledgers are not available. Please create or map ledgers from Accounting >> Settings >> Create ledger page
+                </div>
+                <div class="col-md-12" style="padding: 0 !important;">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover inv_table table-bordered tbPadding" border="1">
+                      <thead>
+                        <tr>
+                          <th style="width: 10px;">SN</th>
+                          <th style="font-size:larger;width: 200px">Ledger Name (SubLedger Name)</th>
+                          <th style="font-size:larger;width: 200px">Primary Group</th>
+                          <th style="font-size:larger;width: 200px">COA</th>
+                          <th style="font-size:larger;width: 200px">Ledger Group Name</th>
+                          <!-- <th style="width: 100px"> </th> -->
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <ng-container *ngFor="let led of unavailableLedgerList;let i=index;">
+                          <tr>
+                            <td style="height: 20px !important;">{{i + 1}}</td>
+                            <td style="height: 20px !important;">{{led.LedgerName}}</td>
+                            <td style="height: 20px !important;">{{led.PrimaryGroup}}</td>
+                            <td style="height: 20px !important;">{{led.COA}}</td>
+                            <td style="height: 20px !important;">{{led.LedgerGroupName}}</td>
+                            <!--Dev: 7th June 23 --SubLedger Level of Mapping not handled during ledger create from this page, thus hiding this button for now,
+                            further work is needed on this.-->
+                            <!-- <td style="width: 100px;padding: 5px !important;">
+                              <button *ngIf="led.IsMapLedger" class="btn-primary btn" type="button" style="font-size: x-small;"
+                                      (click)="createLedger(led)">
+                                <i class="fa fa-pencil"></i> Create Ledger </button>
+                            </td> -->
+                          </tr>
+                        </ng-container>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+          </div>
+        </div>
+        <!--Model Box Body End-->
+      </div>
+    </div>
+    <!--Model Box ending Here-->
+
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="saveDataPopup">
+      <div class="portlet-body form" style="background-color:white">
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;"> </div>
+            <div class="col-md-7 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+              <div class="col-md-12">
+                <div style="color:red;">
+                  <h3><b>Alert!!!</b></h3>
+                  <h4><b> Are you sure to save below details? </b></h4>
+                </div>
+                <div>
+                  <button class="btn blue" type="button" (click)="SaveConfirm()" [disabled]="disablebutton"
+                          title="Save Account Transaction.."> Yes </button>
+                  <button class="btn blue" type="button" (click)="Clear()" title="Dont Save...."> No </button>
+                </div>
+                <hr style="margin-top: 0px;margin-bottom: 5px;" />
+              </div>
+              <div class="col-md-12">
+                <div class="col-md-12 patient-hdr-label">
+                  <table style="width:100%;" align="center">
+                    <tr>
+                      <td></td>
+                      <td style="text-align:center;"></td>
+                      <td style="text-align:center;padding-right:10px;"><b>Transaction Date:</b> <span> &nbsp;
+                          {{transactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD </span></td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="col-md-12" style="overflow-y:auto">
+                  <table class="table_data" style="width:100%;" border="1">
+                    <tr>
+                      <th> Main Ledger</th>
+                      <th> Sub Ledger</th>
+                      <th> Description </th>
+                      <th> Debit </th>
+                      <th> Credit </th>
+                    </tr>
+                    <tr *ngFor="let txnItm of transactionItem">
+                      <td>{{txnItm.LedgerGroupName}}<br /></td>
+                      <td> {{txnItm.LedgerName}}</td>
+                      <td></td>
+                      <td>
+                        <p *ngIf="txnItm.DrCr"> {{txnItm.LedgerDr - txnItm.LedgerCr | ParseAmount | Currency:'4'}} </p>
+                      </td>
+                      <td>
+                        <p *ngIf="!txnItm.DrCr"> {{txnItm.LedgerCr - txnItm.LedgerDr| ParseAmount | Currency:'4'}} </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th colspan="3"> <b> Total &nbsp;&nbsp; </b> </th>
+                      <th> {{drTotal | ParseAmount | Currency:'4'}} </th>
+                      <th> {{crTotal | ParseAmount | Currency:'4'}} </th>
+                    </tr>
+                  </table>
+                </div>
+                <div> <b>Total Amount In Words :</b>&nbsp;
+                  {{crTotal | ParseAmount | NumberInWords | CapitalFirstLetter }} <span *ngIf="crTotal !=0">Only</span>
+                  <br />
+                  <br />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showPreview">
+      <div id="PrintLedger" class="portlet-body form">
+        <!--Model Box Body End-->
+        <div class="form-body">
+          <div class="col-md-12">
+            <!-- <div class="col-md-1 hidden-xs hidden-sm"> </div> -->
+            <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+              <div class="col-md-12">
+                <h4 style="text-align:center">
+                  <b>
+                    <a style="float:right; border-radius: 50% !important;
+                margin-top: -50px; margin-right: -50px;" class="btn btn-danger  hidden-print"
+                       (click)="ClosePreview()" title="Cancel">X</a>
+                  </b>
+                </h4>
+
+              </div>
+
+              <div class="col-md-12">
+                <div class="col-md-12" style="padding: 0 !important;">
+                  <div class="table-responsive" style="height: 550px;">
+                    <table class="table table-striped table-hover inv_table table-bordered tbPadding" border="1">
+                      <thead>
+                        <tr>
+                          <th style="font-size:larger;width: 2px;">SN</th>
+                          <!-- <th style="font-size:larger; width: 8%;">Txn Date</th> -->
+                          <th style="font-size:larger;width: 15%;">Txn Type</th>
+                          <th style="font-size:larger;width: 85%;text-align: center;">Details</th>
+                          <!-- <th style="font-size:larger;width: 20%;">Description</th> -->
+                          <th style="font-size:larger;width: 5%;">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <ng-container *ngFor="let itm of itemList;let i=index;">
+                          <tr *ngIf="(itm?.TransactionItems?.length)>0">
+                            <td style="height: 20px !important;">{{i + 1}}</td>
+                            <!-- <td style="height: 20px !important;">{{itm.TransactionDate}}</td> -->
+                            <td style="height: 20px !important;white-space: pre-wrap;">{{itm.TransactionType}}</td>
+                            <td style="height: 20px !important;">
+                              <table style="width: 100% !important;">
+                                <tr style="border-bottom: 1px solid;">
+                                  <th style="width: 20%;">Main Ledger</th>
+                                  <th *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger" style="width: 20%;">Sub Ledger</th>
+                                  <th style="width: 10%;">Dr. Amount</th>
+                                  <th style="width: 10%;">Cr. Amount</th>
+                                  <th style="width: 40%;">Description</th>
+                                </tr>
+                                <tr *ngFor="let det of itm.TransactionItems;let i=index;">
+                                  <!-- <td style="padding: 5px !important;" [ngClass]="det.DrCr==true?'drEntryColor':'crEntryColor'">
+                                    <span *ngIf="det.DrCr == false" style="margin-left: 40px;">To</span>
+                                    {{ det.LedgerName }} ({{det.Code}})
+                                    <span *ngIf="det.DrCr == true"> Dr</span>
+                                    <span *ngIf="det.DrCr == false"> Cr</span> : {{det.Amount}}
+                                    <span>{{ det.Description }}</span>
+                                    <br>
+                                    <span [ngStyle]="{'margin-left': det.DrCr == false ? '40px' : '0px'}">
+                                      <span *ngFor="let subLed of det.SubLedgers">
+                                        ({{ subLed.SubLedgerName }})
+                                      </span>
+                                    </span>
+                                  </td> -->
+
+                                  <td>{{ det.LedgerName }}</td>
+                                  <td *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger">
+                                    <span *ngFor="let subLed of det.SubLedgers">
+                                      {{ subLed.SubLedgerName }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {{ det.DrCr? (det.Amount | number : "1.4-4") : 0 }}
+                                  </td>
+                                  <td>
+                                    {{ det.DrCr ? 0 : (det.Amount | number : "1.4-4") }}
+                                  </td>
+                                  <td style="white-space: pre-wrap;">
+                                    {{det.Description}}
+                                  </td>
+
+                                </tr>
+                                <tr style="font-weight: bold;border-top: 1px solid;border-bottom: 1px solid;">
+                                  <td [attr.colspan]="subLedgerAndCostCenterSetting.EnableSubLedger ? 2 : 1" style="text-align: center;">Total Amount
+                                  </td>
+                                  <td style="color: green;">{{ itm.DrAmount | number : "1.4-4"}}</td>
+                                  <td style="color: red;">{{ itm.CrAmount | number : "1.4-4" }}</td>
+                                </tr>
+                              </table>
+                            </td>
+                            <!-- <td style="white-space: pre-wrap;">
+                              {{itm.Remarks}}
+                            </td> -->
+                            <td>
+                              <button class="btn-success green btn" style="height: 25px;font-size: smaller;align-items:center !important;"
+                                      title="save selected to accounting" [disabled]="loading" (click)="PostIndividualTransaction(itm,i)">
+                                <i class="fa fa-save"></i> POST
+                              </button>
+                            </td>
+                          </tr>
+                        </ng-container>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="col-md-1 hidden-xs hidden-sm"> </div>
+          </div>
+        </div>
+        <!--Model Box Body End-->
+      </div>
+    </div>
+    <!---------------------Print/View Pop Up form starts ------------------------>
+    <transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId"></transaction-view>
+
+    <!-- START: create ledger -->
+    <ng-container *ngIf="showCreateLedger">
+
+      <ledger-create-shared [show-add-ledger-page]="true" [ledger-type]="ledgerType" [reference-id]="ledReferenceId"
+                            (callback-add)="OnNewLedgerAdded($event)" [ledger-data]="ledgerData"></ledger-create-shared>
+    </ng-container>
+
+    <!-- END: create ledger -->
+    <!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showPostConfirmation">
+  <div class="col-md-6 col-md-offset-3">
+    <div class="modelbox-div">
+      <div class="modelbox-header">
+        <h4 class="margin-0-vr">Confirmation PopUp</h4>
+      </div>
+      <div class="modelbox-body">
+        <p style="color:green;">Debit And Credit of Some Transaction is Not Equal. Please Verify it Before Posting.</p>
+      </div>
+      <div class="modelbox-footer">
+        <div class="all-buttons text-right">
+          <button type="button" class="btn btn-success btn-sm horizontal-space" (click)="SaveToAccounting()"> Post Any Way </button>
+          <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="ShowPreview()"> Review Transaction </button>
+        </div>
+      </div>
+      <div class="close-modelbox lb-close-btn">
+        <button class="btn btn-danger" (click)="closeConfirmation()">X</button>
+      </div>
+    </div>
+  </div>
+</div>  -->

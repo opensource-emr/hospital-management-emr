@@ -1,0 +1,648 @@
+/* here you can put your own css to customize and override the theme */
+.page-container-bg-solid .page-content {
+    background: #fff;
+}
+.page-content-white .page-content .page-bar {
+    border-bottom: 1px solid #e7ecf1;
+    background: linear-gradient(to bottom, #36c6d3 0%,#32bdca 50%,#22929c 100%);
+}
+
+.page-container-bg-solid .page-bar, .page-content-white .page-bar {
+    /*background-color: #e7ecf1;*/
+    position: relative;
+    padding: 0 20px;
+    margin: -26px -20px 0;
+}
+
+.page-bar .page-breadcrumb {
+    padding: 0px !important;
+}
+.page-bar .page-breadcrumb > li {
+    padding: 8px 6px;
+    color: #fff;
+    border-right: 1px solid #9cd3d8;
+    cursor: pointer;
+}
+
+.page-content-white .page-bar .page-breadcrumb > li > a, .page-container-bg-solid .page-bar .page-breadcrumb > li > a {
+    display: inline-block;
+    padding: 5px;
+    color: #fff;
+    text-shadow: 2px 1px 2px rgb(105, 103, 103);
+}
+.page-content-white .page-bar .page-breadcrumb > li:hover a {
+    color: #e8e8ef !important;
+    background: linear-gradient(to bottom, #006687 0%,#035671 50%,#034256 100%);
+    border-radius: 4px !important;
+}
+.page-content-white .page-bar .page-breadcrumb > li a:hover, .page-content-white .page-bar .page-breadcrumb > li a:focus{
+    text-decoration: none;
+}
+
+.page-bar .page-breadcrumb > li > a {
+    font-size: 14px;
+}
+
+.mt-checkbox, .mt-radio {
+    padding-left: 30px !important;
+}
+
+.mt-radio > span:hover {
+    border: 1px solid blue !important;
+}
+
+.mt-checkbox > span:hover {
+    border: 1px solid blue !important;
+}
+
+input[type=text]:focus, input[type=number]:focus, input[type=tel]:focus, select:focus {
+    border: 2px solid #43c1b5 !important;
+    /*border: 1.5px solid #727780 !important;*/
+}
+
+/*to show blue colored tick inside the checkbox.*/
+.mt-checkbox > span:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid blue;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/*all labels will be left aligned*/
+.form-horizontal .control-label {
+    text-align: left;
+}
+
+/*placeholder color, need to check for firefox and other browser.*/
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    /*color: #43c1b5 !important;*/
+    color: #89b7d6 !important;
+    /*opacity: 1;*/
+}
+
+.page-header.navbar {
+    height: 52px;
+    background-color: #006687;
+}
+
+.page-content-wrapper .page-content {
+    padding-top: 28px;
+}
+
+.page-sidebar .page-sidebar-menu > li.open > a, .page-sidebar .page-sidebar-menu > li:hover > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li.open > a,
+.page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li:hover > a {
+    background: #006687;
+    color: navajowhite;
+}
+
+/*add-box shadow*/
+.left-nav-active {
+    background-color: #083d30 !important;
+    color: white !important;
+    box-shadow: 4px 3px 10px grey;
+}
+
+/*removed outer border from gridview..:sudarshan-28june2017*/
+/*.ag-fresh .ag-root {
+    border: 1px solid #808080;
+}*/
+
+/*For active links inside  <ul class="nav nav-tabs"> set as !important else bootstrap will overwrite this class.*/
+.a-tab-active {
+    border-bottom: 4px solid #36c6d3 !important;
+    font-weight: bold;
+}
+/*Overwriting border-red of component.css since it was setting only border-color and not the thickness. Used in validations mostly..*/
+.border-red {
+    border: 1px solid red;
+}
+
+/* for billing receipt print */
+.hr, p {
+    margin: 8px 0;
+}
+
+/*For table input type style */
+.table-input {
+    border: solid 1px #c2cad8;
+}
+
+/*This class only for pop-up shows with heading and Vertical scroling*/
+.popup {
+    overflow-y: scroll;
+    z-index: 1030;
+    position: fixed;
+    width: auto;
+    transition: 0.3s;
+    height: 400px;
+    top: 20%;
+    border: solid 1px rgb(50,197,210);
+    background-color: white;
+}
+/*This is static background popup class*/
+.popup-static {
+    overflow-y: scroll;
+    background-color: rgba(47, 84, 124, 0.55) !important;
+}
+    /*This class apply background color on  portlet body under popup-static */
+    .popup-static > .portlet-body {
+        background-color: rgba(47, 84, 124, 0) !important;
+    }
+
+
+/*this is to slidedown popupbox at the time of loading:
+        Note: Pls check if we're applying custom margins on this class somewhere.
+        It'll overwrite otherwise
+    */
+@keyframes slideDown {
+    from {
+        margin-top: -200px;
+    }
+
+    to {
+        margin-top: 0px;
+    }
+}
+
+/*This class apply on div for model box static background*/
+.modelbox-div {
+    margin-right: 24px;
+    border: 1px solid;
+    border-radius: 25px !important;
+    background-color: white;
+    animation-name: slideDown !important;
+    animation-duration: 0.6s !important;
+}
+/*for lab-report print*/
+.popup-print {
+    height: 100%;
+    z-index: 9999;
+    top: 1%;
+    left: 5%;
+}
+/*Change Portlet Title background color for Model Box*/
+.popup .portlet-title {
+    background-color: rgb(50,197,210) !important;
+}
+/*Model box caption color white and bold*/
+.caption {
+    font-weight: bold;
+    color: white;
+}
+
+/*on hover of dashboard link inside various modules.*/
+.fa-home:hover {
+    color: blue;
+    font-weight: bold;
+}
+
+.logo-default:hover {
+    background-color: #333;
+}
+
+.section-header-new {
+    background-color: lightgray;
+    width: 50%;
+    font-weight: bold;
+    height: 25px;
+    padding-left: 1em;
+    width: 50%;
+    font-size: 15px;
+}
+/*This class for show Validation error message style*/
+.error-msg {
+    color: red;
+    font-size: 13px;
+}
+
+.hide-main {
+    /* overflow: scroll; */
+    height: auto !important;
+    /* border: 1px solid rgb(204, 204, 204); */
+    /* margin: 10px;*/
+    width: auto !important;
+    cursor: pointer !important;
+    position: relative !important;
+}
+
+.hide-cover {
+    position: absolute !important;
+    height: 100% !important;
+    width: 100% !important;
+    z-index: 1 !important;
+    background-color: #73d1ea !important;
+    opacity: 0.3 !important;
+}
+/* Blink for Webkit and others
+(Chrome, Safari, Firefox, IE, ...)
+*/
+
+@-webkit-keyframes blinker {
+    from {
+        opacity: 1.0;
+    }
+
+    to {
+        opacity: 0.0;
+    }
+}
+
+.blink {
+    text-decoration: blink;
+    border-color: red;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+/*this class for vertical line left */
+.vertical-line-left {
+    border-left: 1px solid #808080 !important;
+}
+/*this class for vertical line right*/
+.vertical-line-right {
+    border-right: 1px solid #808080 !important;
+}
+
+.portlet.portlet-fullscreen {
+    z-index: 9999 !important;
+}
+
+.page-sidebar .page-sidebar-menu .sub-menu li:not(:last-child) {
+    border-bottom: 1px solid #414b58;
+}
+.doctor-sdbar ul.doctor-sidebar-list > li > a, .doctor-sdbar ul.doctor-sidebar-list > li:last-child > a {
+    padding: 2px 0px;
+    background: #fff;
+    font-weight: 700;
+    border: 1px solid #006687 !important;
+    border-radius: 28px !important;
+}
+.doctor-sdbar ul.doctor-sidebar-list > li
+{
+    text-align: center;
+    padding: 4px 12px;
+}
+.doctor-sdbar ul.doctor-sidebar-list li a {
+    color: #006687;
+}
+.doctor-sdbar ul.doctor-sidebar-list li a:hover{
+       background: #006687;
+    color: #ffffff;
+}
+.doctor-sdbar ul.doctor-sidebar-list li .cstm-sidenav-active {
+    color: #fff !important;
+    background: #006687 !important;
+}
+h1.pat-name-hd {
+    float: left;
+    margin: 5px 0px 0px 0px;
+    font-size: 16px;
+    color: #60f55f;
+    font-weight: 700;
+}
+.pat-info-top p, .pat-info-bottom p {
+    float: left;  
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+}
+.pat-info-top p {
+    line-height: 18px;
+    padding-top: 8px;
+}
+
+.pat-info-bottom p{
+    line-height: 16px;
+}
+.inout-pat {
+    color: #60f55f;
+    text-transform: uppercase;
+}
+p.main-hdp {
+    padding: 8px 0px;
+    margin: 0;
+}
+a.btn-back:hover{
+    text-decoration: none;
+}
+.btn-back {
+    line-height: 1;
+    display: inline-block;
+    color: #006687;
+    padding: 5px 10px;
+    background: #fde11a;
+    font-size: 15px;
+    font-weight: 700;
+}
+.btn-back i.fa{
+    display: inline-block;
+    padding-right: 5px;
+}
+
+.btn-back:hover a{
+    text-decoration: none;
+    color: #2d3a69;
+}
+
+.portlet-title.cstm-portlet-title{
+    min-height: inherit;
+    padding: 5px 10px !important;
+}
+.portlet-title.cstm-portlet-title > .caption{
+    font-size: 16px;
+    line-height: 24px;
+    padding: 0 !important;
+}
+.portlet-title.cstm-portlet-title .actions{
+    padding: 0 !important;
+}
+.portlet-title.cstm-portlet-title .actions .btn.btn-sm.btn-default{
+    padding: 2px 9px;
+}
+.cstm-pt-title {
+    background: #f1f1f1;
+    padding: 5px 10px !important;
+    margin-bottom: 0 !important;
+    min-height: inherit !important;
+}
+
+.cstm-portlet-caption {
+    display: inline-block;
+    /*float: left;*/
+    padding-top: 4px;
+    font-weight: bold;
+    color: #006687;
+}
+.cstm-action {
+    display: inline-block;
+    float: right;
+    font-weight: 700;
+    background: #374150;
+    border: 1px solid #acb9ca;
+}
+.cstm-action a.cstm-add {
+    color: #bbc7d4;
+    display: inline-block;
+    padding: 1px 8px;
+    text-decoration: none;
+    font-weight: normal;
+}
+h3.cstm-add-heading {
+    padding-bottom: 7px;
+    color: #fff;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 1px solid #bbb8b8;
+    margin: 10px 0px;
+}
+
+/*CSS for ToolTip*/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    opacity: 1;
+}
+.tooltip i.fa{
+    font-size: 16px;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    display: inline-block;
+    width: 140px;
+    padding: 5px 10px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;   
+    left: 50%;
+    margin-left: -70px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+
+}
+.tooltip .tooltiptext.ttptextup {
+    bottom: 125%;
+}
+.tooltip .tooltiptext.ttptextdown{
+    top: 125%;
+}
+.tooltip .tooltiptext.ttptextup:after {
+    top: 100%;
+    border-color: #555 transparent transparent transparent;
+}
+.tooltip .tooltiptext.ttptextdown:after{
+    bottom: 100%;
+    border-color: transparent transparent #555 transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+.portlet-with-collapse {
+    -webkit-box-shadow: 0px 0px 2px #aaaaab;
+    -moz-box-shadow: 0px 0px 2px #aaaaab;
+    box-shadow: 0px 0px 2px #aaaaab;
+}
+
+.prob-entry label.control-label {
+    color: #fff;
+}
+
+.prob-entry {
+    position: relative;
+}
+
+.cstm-close {
+    position: absolute;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background: #f72424;
+    padding: 5px;
+}
+
+.cstm-close a {
+    padding-top: 5px;
+    color: #fff;
+}
+.cstm-close a i.fa{
+    font-size: 18px;
+}
+.cstm-form-group {
+    margin: 0px 0px 5px 0px !important;
+    display: table;
+    content: "";
+    width: 100%;
+}
+.cstm-control-label{margin-bottom: 0px;}
+.cstm-form-control {
+    padding: 0;
+    height: 25px;
+}
+.white{color: #fff;}
+.add-row-btn {
+    padding: 2px 3px 0px;
+}
+.red {
+    background: #ec2222;
+    border-color: #ec2222;
+}
+.add-row-btn i.fa{
+    font-size: 18px;
+}
+span.white{
+    background: #fff !important;
+}
+.quick-add-vital .prob-entry{
+    float: left;
+}
+.quick-add-vital{
+    left: 31%;
+}
+.quick-add-vital .cstm-form-group{
+    width: 100%;
+    float: left;
+}
+.popp-upp {
+    float: left;
+    position: absolute;
+    background: #2d2d2d78;
+}
+
+/*CSS form Doctor Notes Page*/
+table.info-table tr td {
+    line-height: 2.5;
+    font-weight: 700;
+}
+
+.vital-info ul li {
+    display: inline-block;
+    width: 32%;
+    line-height: 2;
+}
+
+.label-name {
+    float: left;
+    margin-right: 15px;
+}
+
+.txt-box-holder {
+    width: 40%;
+    float: left;
+    margin-right: 5px;
+}
+
+.unit-holder {
+    float: left;
+}
+/*CSS form Doctor Notes Page Ends*/
+
+/*Added by Anish On 7 May 18*/
+@media only screen and (max-width: 768px) {
+    .pat-info-top p, .pat-info-bottom p{
+        padding-left: 15px;
+    }
+}
+
+@media only screen and (max-width: 991px) {
+    .doctor-sdbar {
+      min-height: initial;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .page-sidebar.doctor-sdbar {
+        width: 185px !important;
+        min-height: 800px;
+        background: #f1f1f1;
+        /*-webkit-box-shadow: 1px -5px 5px #afb8bb !important;
+        -moz-box-shadow: 1px -5px 5px #afb8bb !important;
+        box-shadow: 1px -5px 5px #afb8bb !important;*/
+    }
+    .doctor-sdbar ul.doctor-sidebar-list{
+        margin-top: 18px;
+    }
+    .page-container.doc-pagecontainer {
+        background: url('images/doctor-dashboard-bg.png') repeat-y 0 0;
+    }
+    .page-container {
+        background: url('images/dashboard-bg.png') repeat-y 0 0;
+    }
+    .page-content.doc-pagecontent{
+        margin-left: 185px !important;
+    }
+
+    .page-sidebar-closed .page-container {
+        background: none !important;
+    }
+    .page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu {
+        background: #364150;
+        height: auto !important;
+    }
+    .page-header.navbar .menu-toggler > span {
+        height: 2px;
+        background: #fff;
+        visibility: hidden;
+    }
+
+    .page-header.navbar .menu-toggler > span:before, .page-header.navbar .menu-toggler > span:after {
+        background: #fff !important;
+        height: 2px;
+        top: 3px;
+        -moz-transition: all 0.7s;
+        -webkit-transition: all 0.7s;
+        transition: all 0.7s;
+        visibility: visible;
+    }
+
+    .page-header.navbar .menu-toggler > span:before {
+        -moz-transform: rotate(410deg);
+        -webkit-transform: rotate(410deg);
+        transform: rotate(410deg);
+    }
+
+    .page-header.navbar .menu-toggler > span:after {
+        -moz-transform: rotate(-410deg);
+        -webkit-transform: rotate(-410deg);
+        transform: rotate(-410deg);
+    }
+
+    .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span {
+        visibility: visible;
+    }
+
+    .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:before, .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:after {
+        -moz-transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+        background: #fff;
+    }
+
+    .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:before {
+        top: 6px;
+    }
+
+    .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:after {
+        top: -6px;
+    }
+}

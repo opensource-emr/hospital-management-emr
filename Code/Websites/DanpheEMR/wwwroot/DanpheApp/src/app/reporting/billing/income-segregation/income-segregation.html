@@ -1,0 +1,125 @@
+<div class="wrapper">
+  <div class="row">
+    <form class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+              class="caption-subject">Income Segregation Report</span> </div>
+          <div class="row">
+            <div class="col-md-6">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+              </from-to-date-select>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-5">Billing Type<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="selBillingTypeName" [ngModelOptions]="{standalone: true}">
+                    <option value="all">All</option>
+                    <option value="normal">Normal</option>
+                    <option value="insurance">Insurance</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn green btn-success" type="button" (click)="Load();this.loading=true;" [disabled]="loading"> <i class="fa fa-search"></i> Show
+                  Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="incomeSegregationData.length>0">
+      <!-- <danphe-grid [grid-colDefaults]="IncomeSegregationColumns" [grid-data]="incomeSegregationData"
+        [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"
+        [report-header]="'Income Segregation Report'">
+      </danphe-grid> -->
+
+      <danphe-grid [grid-colDefaults]="IncomeSegregationColumns" [grid-data]="incomeSegregationData"
+        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footerContent"
+        [report-for]="'billing'" [grid-date-range]="dateRange"> </danphe-grid>
+
+    </div>
+  </div>
+
+  <div class="col-md-5" style="margin-top:10px;margin-bottom: 10px;" id="dvSummary_IncomeSegregationReport">
+    <div *ngIf="incomeSegregationData.length>0">
+      <h4>Summary</h4>
+      <table border="1" style="width: 80%;">
+        <tr>
+          <td>A</td>
+          <td>Cash Sales </td>
+          <td>{{tot_CashSales}}</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td>Credit Sales </td>
+          <td>{{tot_CreditSales}}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">C</td>
+          <td>Gross Sales (A+B) </td>
+          <td>{{tot_GrossSales}}</td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td>Cash Discount </td>
+          <td>{{tot_CashDiscount}}</td>
+        </tr>
+
+        <tr>
+          <td>E</td>
+          <td>Credit Discount </td>
+          <td>{{tot_CreditDiscount}}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">F</td>
+          <td>Total Discount (D+E) </td>
+          <td>{{tot_TotalDiscount}}</td>
+        </tr>
+        <tr>
+          <td>G</td>
+          <td>Return Cash Sales </td>
+          <td>{{tot_ReturnCashSales}}</td>
+        </tr>
+        <tr>
+          <td>H</td>
+          <td>Return Credit Sales </td>
+          <td>{{tot_ReturnCreditSales}}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">I</td>
+          <td>Total Sales Return (G+H) </td>
+          <td>{{tot_TotalSalesReturn}}</td>
+        </tr>
+        <tr>
+          <td>J</td>
+          <td>Return Cash Discount </td>
+          <td>{{tot_ReturnCashDiscount}}</td>
+        </tr>
+        <tr>
+          <td>K</td>
+          <td>Return Credit Discount </td>
+          <td>{{tot_ReturnCreditDiscount}}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;">
+          <td style="font-weight: normal;color:black;">L</td>
+          <td>Total Return Discount (J+K)</td>
+          <td>{{tot_TotalReturnDiscount}}</td>
+        </tr>
+        <tr style="font-weight: bold;color: blue;font-size: 16px;">
+          <td style="font-weight: normal;color:black;">M</td>
+          <td>Net Sales (C-F-I+L) </td>
+          <td>{{tot_NetSales}}</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>

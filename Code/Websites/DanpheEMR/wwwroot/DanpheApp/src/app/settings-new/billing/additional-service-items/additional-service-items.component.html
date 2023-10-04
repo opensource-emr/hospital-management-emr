@@ -1,0 +1,168 @@
+<a class="btn green btn-success margin-7-hr" feature="button" (click)="ShowAddPage()"><i class="fa fa-plus"></i>Additional Service Item</a>
+
+<div *ngIf="showGrid">
+    <danphe-grid [grid-colDefaults]="additionalServiceItemGridColumns"
+                 [grid-data]="additionalServiceItemList"
+                 (grid-actions)="AdditionalServiceItemGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowServiceItemAddPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3> <span *ngIf="!isUpdate">Add Additional Service Item</span>
+                            <span *ngIf="isUpdate">Update Additional Service Item</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <form [formGroup]="CurrentAdditionalServiceItem.AdditionalServiceItemValidator" class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Group Name<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control"
+                                           type="text"
+                                           placeholder="Enter GroupName" formControlName="GroupName" />
+                                    <span class="color-red font-sm"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('GroupName','required') ||
+                                           !(CurrentAdditionalServiceItem.IsDirty('GroupName'))"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Price Category<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input danphe-auto-complete class="form-control" [(ngModel)]="selectedPriceCategory"
+                                           [source]="priceCategoryList" placeholder="PriceCategory" display-property-name="PriceCategoryName"
+                                           value-property-name="PriceCategoryName"
+                                           (valueChanged)="AssignSelectedPriceCategory($event)"
+                                           [list-formatter]="PriceCategoryListFormatter" max-num-list="50"
+                                           onclick="this.select()" id="PriceCategoryId" style="width: 100%;"
+                                           formControlName="PriceCategoryId" />
+                                    <span class="color-red font-sm"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('PriceCategoryId','required') ||
+                                           !(CurrentAdditionalServiceItem.IsDirty('PriceCategoryId'))"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Service Item<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input danphe-auto-complete class="form-control"
+                                           [source]="serviceItemList" placeholder="ServiceItem" display-property-name="ItemName"
+                                           [(ngModel)]="selectedServiceItem"
+                                           (valueChanged)="AssignSelectedServiceItem($event)"
+                                           [list-formatter]="ServiceItemListFormatter" max-num-list="50"
+                                           onclick="this.select()" id="ServiceItemId" style="width: 100%;"
+                                           formControlName="ServiceItemId" />
+                                    <span class="color-red font-sm"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('ServiceItemId','required') ||
+                                           !(CurrentAdditionalServiceItem.IsDirty('ServiceItemId'))"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Minimum Charge Amount<b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" type="number"
+                                           placeholder="Minimum Charge Amount"
+                                           formControlName="MinimumChargeAmount"
+                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                    <span class="color-red font-sm" *ngIf="CurrentAdditionalServiceItem.IsDirty('MinimumChargeAmount')"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('MinimumChargeAmount','required')
+                                           && CurrentAdditionalServiceItem.IsValidCheck('MinimumChargeAmount','min')">
+                                        Charge amount cannot be negative or less than zero</span>
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Use Item Self Price? <b>:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="needParent" type="checkbox" formControlName="UseItemSelfPrice" />
+                                                <span></span> </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Percentage Of Parent Item For Same Dept<b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" type="number"
+                                           placeholder="Percentage Of Parent Item For Same Dept"
+                                           formControlName="PercentageOfParentItemForSameDept"
+                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                    <span class="color-red font-sm" *ngIf="CurrentAdditionalServiceItem.IsDirty('PercentageOfParentItemForSameDept')"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForSameDept','required') 
+                                          && CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForSameDept','min') && CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForSameDept','max')">
+                                        Discount Percent cannot be less than 0 and greater than 100
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Percentage Of Parent Item For Diff Dept<b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" type="number"
+                                           placeholder="Percentage Of Parent Item For Diff Dept"
+                                           formControlName="PercentageOfParentItemForDiffDept"
+                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                    <span class="color-red font-sm" *ngIf="CurrentAdditionalServiceItem.IsDirty('PercentageOfParentItemForDiffDept')"
+                                          [hidden]="CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForDiffDept','required') && CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForDiffDept','min') && CurrentAdditionalServiceItem.IsValidCheck('PercentageOfParentItemForDiffDept','max')">
+                                        Discount Percent cannot be less than 0 and greater than 100
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <div style="margin-left:140px;">
+                                        <label class="mt-checkbox mt-checkbox-outline">
+                                            <input type="checkbox" formControlName="WithPreAnaesthesia" />
+                                            <label class="control-label">With PreAnaesthesia?</label>
+                                            <span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        <input type="checkbox"
+                                               formControlName="IsPreAnaesthesia" />
+                                        <label class="control-label">IsPreAnaesthesia?</label>
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <div style="margin-left:140px;">
+                                        <label class="mt-checkbox mt-checkbox-outline">
+                                            <input type="checkbox"
+                                                   formControlName="IsIpServiceItem" />
+                                            <label class="control-label col-md-5">IsIpServiceItem</label>
+                                            <span></span> </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        <input type="checkbox" formControlName="IsOpServiceItem" />
+                                        <label class="control-label col-md-5">IsOpServiceItem</label>
+                                        <span></span> </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="panel-footer" style="text-align: right;">
+                        <input id="savebtn" type="button" (click)="AddAdditionalServiceItem()" class="btn green btn-success margin-7-hr"
+                               *ngIf="!isUpdate"
+                               [disabled]="loading" value="Add" />
+                        <input id="savebtn" type="button" (click)="UpdateAdditionalServiceItem()" class="btn green btn-success margin-7-hr"
+                               *ngIf="isUpdate"
+                               [disabled]="loading" value="Update" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

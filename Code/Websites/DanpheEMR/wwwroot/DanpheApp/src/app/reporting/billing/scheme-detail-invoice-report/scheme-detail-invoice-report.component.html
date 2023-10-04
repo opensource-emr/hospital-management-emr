@@ -1,0 +1,155 @@
+<style>
+    .totalsRow {
+        font-weight: bold;
+        color: blue;
+    }
+</style>
+
+<div class="wrapper">
+    <div class="row">
+        <form class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption custom-caption">
+                        <span class="caption-subject"><i class="glyphicon glyphicon-asterisk"></i>Scheme Detail(Invoice)
+                            Report</span>
+                    </div>
+                    <div class="col-md-4">
+                        <from-to-date-select (on-change)="OnFromToDateChange($event)"
+                            [date-settings-name]="'billing-reports'">
+                        </from-to-date-select>
+                    </div>
+                    <div class="col-md-2">
+                        <danphe-multiselect *ngIf="allMemberships.length > 0"  [ddl-data]="allMemberships" [pre-selected]="preSelectedMemberships"
+                            [placeholder-text]="'--Select Memberships --'" [value-property-name]="'MembershipTypeId'"
+                            (selected-items-list)="MembershipsChanged($event)"
+                            [display-property-name]="'MembershipTypeName'" [single-selection]="false">
+                        </danphe-multiselect>
+                    </div>
+                    <div class="col-md-2">
+                        <danphe-multiselect  *ngIf="allRanks.length > 0" [ddl-data]="allRanks" [pre-selected]="preSelectedRanks"
+                            [placeholder-text]="'--Select Ranks --'" [value-property-name]="'RankName'"
+                            (selected-items-list)="RanksChanged($event)" [display-property-name]="'Rank'"
+                            [single-selection]="false">
+                        </danphe-multiselect>
+                    </div>
+                    <div class="col-md-2">
+                        <danphe-multiselect *ngIf="allUsers.length > 0" [ddl-data]="allUsers" [pre-selected]="preSelectedUsers"
+                            [placeholder-text]="'--Select Users --'" [value-property-name]="'EmployeeId'"
+                            (selected-items-list)="UserChanged($event)" [display-property-name]="'UserName'"
+                            [single-selection]="false">
+                        </danphe-multiselect>
+                    </div>
+                    <div class="col-md-2 col-xs-12">
+                        <div class="col-md-2 col-xs-12">
+                            <div class="form-group">
+                                <button class="btn green btn-success" type="button" (click)="LoadReport()"
+                                    [disabled]="loading"> <i class="fa fa-search"></i> Show Report
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="loading">Loading... Please wait.</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf="SchemeDetailInvoiceReport && SchemeDetailInvoiceReport.length">
+            <danphe-grid [grid-colDefaults]="SchemeDetailInvoiceReportGridColumns"
+                [grid-data]="SchemeDetailInvoiceReport" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footerContent"
+                [report-for]="'billing'" [grid-date-range]="dateRange"> </danphe-grid>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5" style="margin-top:10px;margin-bottom: 10px;"
+            id="id_div_summary_scheme_detail_invoice_report">
+            <div *ngIf="SchemeDetailInvoiceReport && SchemeDetailInvoiceReport.length>0">
+                <h4>Summary</h4>
+                <table border="1" style="width: 80%;">
+                    <tr>
+                        <th>
+                            SN
+                        </th>
+                        <th>
+                            Particulars
+                        </th>
+
+                        <th>
+                            Amount
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                        <td>Cash Sales </td>
+                        <td>{{summary.CashSales}}</td>
+                    </tr>
+                    <tr>
+                        <td>B</td>
+                        <td>Credit Sales </td>
+                        <td>{{summary.CreditSales}}</td>
+                    </tr>
+                    <tr class="totalsRow">
+                        <td>C</td>
+                        <td>Gross Sales (A+B) </td>
+                        <td>{{summary.GrossSales}}</td>
+                    </tr>
+                    <tr>
+                        <td>D</td>
+                        <td>Cash Discount </td>
+                        <td>{{summary.CashDiscount}}</td>
+                    </tr>
+                    <tr>
+                        <td>E</td>
+                        <td>Credit Discount </td>
+                        <td>{{summary.CreditDiscount}}</td>
+                    </tr>
+                    <tr class="totalsRow">
+                        <td>F</td>
+                        <td>Total Discount (D+E) </td>
+                        <td>{{summary.TotalDiscount}}</td>
+                    </tr>
+                    <tr>
+                        <td>G</td>
+                        <td>Return Cash Sales </td>
+                        <td>{{summary.ReturnCashSales}}</td>
+                    </tr>
+                    <tr>
+                        <td>H</td>
+                        <td>Return Credit Sales </td>
+                        <td>{{summary.ReturnCreditSales}}</td>
+                    </tr>
+                    <tr class="totalsRow">
+                        <td>I</td>
+                        <td>Total Sales Return (G+H) </td>
+                        <td>{{summary.TotalSalesReturn}}</td>
+                    </tr>
+                    <tr>
+                        <td>J</td>
+                        <td>Return Cash Discount </td>
+                        <td>{{summary.ReturnCashDiscount}}</td>
+                    </tr>
+                    <tr>
+                        <td>K</td>
+                        <td>Return Credit Discount </td>
+                        <td>{{summary.ReturnCreditDiscount}}</td>
+                    </tr>
+                    <tr class="totalsRow">
+                        <td>L</td>
+                        <td>Total Return Discount (J+K) </td>
+                        <td>{{summary.TotalReturnDiscount}}</td>
+                    </tr>
+                    <tr class="totalsRow">
+                        <td>M</td>
+                        <td>Net Sales (C-F-I+L) </td>
+                        <td>{{summary.NetSales}}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>

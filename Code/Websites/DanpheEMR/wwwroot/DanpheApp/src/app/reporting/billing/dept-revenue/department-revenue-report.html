@@ -1,0 +1,104 @@
+<div class="wrapper">
+  <div class="row">
+    <form class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">DEPARTMENT REVENUE REPORT</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="calType" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="calType" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+              </div>
+            </div>
+          </div>-->
+          <div class="row">
+			  <div class="col-md-6 col-xs-12">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+			  <div class="col-md-2 col-xs-12">
+				<div class="form-group">
+				  <button class="btn blue" type="button" (click)="LoadReportData()"> <i class="fa fa-search"></i> Show Report </button>
+				</div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row" *ngIf="reportData">
+    <div class="input-group" style="padding-left:20px;">
+      <div class="icheck-inline">
+        <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;padding-left:30px;">
+          <input name="showParticular" type="checkbox" value="Service Department View" (change)="DetailView('Department')" [(ngModel)]="ServDeptView">
+          <span></span> Service Department View
+        </label>
+      </div>
+      <div class="icheck-inline">
+        <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;padding-left:30px;">
+          <input name="showParticular" type="checkbox" value="Item Level View" (change)="DetailView('ServiceDepartment')" [(ngModel)]="ItemView">
+          <span></span> Item Level View
+        </label>
+      </div>
+    </div>
+    <div class="table-responsive" id="printpage">
+      <table class="table table-bordered table-hover table-condensed" border="1" style="margin-top:10px">
+        <thead>
+          <tr style="background-color: #599be0; color: white;">
+            <th>Name</th>
+            <th>Sub Total</th>
+            <th>Discount</th>
+            <th>Refund</th>
+            <th>Net Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of displayData">
+            <!--Department Level-->
+            <td *ngIf="row.ShowChild == true && row.Level == 'Department'" style="color:#337ab7"><b><a (click)="ShowChild(row)">{{row.Name}}</a></b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Department'" style="color:#337ab7; text-align: right;"><b>{{row.SubTotal }}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Department'" style="color:#337ab7; text-align: right;"><b>{{row.Discount}}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Department'" style="color:#337ab7; text-align: right;"><b>{{row.Refund }}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Department'" style="color:#337ab7; text-align: right;"><b>{{row.NetTotal }}</b></td>
+
+            <!--Service Department Level-->
+            <td *ngIf="row.ShowChild == true && row.Level == 'ServiceDepartment'" style="color:#337ab7;">&emsp;<a (click)="ShowChild(row)">{{row.Name}}</a></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'ServiceDepartment'" style="color:#337ab7; text-align: right;">{{row.SubTotal }}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'ServiceDepartment'" style="color:#337ab7; text-align: right;">{{row.Discount }}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'ServiceDepartment'" style="color:#337ab7; text-align: right;">{{row.Refund }}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'ServiceDepartment'" style="color:#337ab7; text-align: right;">{{row.NetTotal }}</td>
+
+            <!--Item Level-->
+            <td *ngIf="row.ShowChild == true && row.Level == 'Item'">&emsp;&emsp;{{row.Name}}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Item'" style="text-align: right;">{{row.SubTotal }}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Item'" style="text-align: right;">{{row.Discount}}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Item'" style="text-align: right;">{{row.Refund }}</td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Item'" style="text-align: right;">{{row.NetTotal }}</td>
+
+            <!--Total Level-->
+            <td *ngIf="row.ShowChild == true && row.Level == 'Total'"><b>{{row.Name}}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Total'" style="text-align: right;"><b>{{row.SubTotal }}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Total'" style="text-align: right;"><b>{{row.Discount }}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Total'" style="text-align: right;"><b>{{row.Refund }}</b></td>
+            <td *ngIf="row.ShowChild == true && row.Level == 'Total'" style="text-align: right;"><b>{{row.NetTotal }}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-12" style="padding-bottom: 18px;">
+      <div class="form-actions">
+        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+        <button class="btn btn-primary hidden-print" (click)="ExportToExcel('printpage')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+      </div>
+    </div>
+  </div>
+</div>

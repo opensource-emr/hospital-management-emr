@@ -1,0 +1,80 @@
+<div class="flex-container" [ngClass]="invalid ? 'pd-tp-5':'pd-tp-5 pd-btm-5'">
+
+  <div *ngIf="!showFiscalYear && !ShowMonthCalendar">
+    <select [(ngModel)]="selectedFiscalYear" (change)="OnFiscalYearValueChange()">
+      <option *ngFor="let opt of FilteredFiscalYearList; let i = index;"
+              [ngValue]="opt">
+        {{opt.FiscalYearName}}
+      </option>
+    </select>
+  </div>
+ 
+  <div *ngIf="showAdBsButton" class="mar-lft-5">
+    <button *ngIf="showDatePicker && calType == 'np'" (click)="changeToEnglish()" class="btn blue">BS</button>
+    <button *ngIf="showDatePicker && calType == 'en'" (click)="changeToNepali()" class="btn blue">AD</button>
+  </div>
+
+  <ng-container *ngIf="showSingleDatePicker && showDatePicker && !ShowMonthCalendar">
+    <div class="mx-160">
+      <danphe-date-picker *ngIf="showDatePicker" [ngModel]="selectedDate" [allow-future-date]="allowFutureDate" (ngModelChange)="CheckSelectedDate($event)"
+                          [CalendarTypes]="calType" [invalid-date-error-msg]="invalidMessage"
+                          [min-date]="minimumDate" [max-date]="maximumDate"></danphe-date-picker>
+
+    </div>
+
+
+    <div *ngIf="showOkBtn" class="mar-lft-15">
+      <button [disabled]="!selectedDate" class="btn green" (click)="sendSelectedFiscalYearData()">OK</button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!showSingleDatePicker && showDatePicker && !ShowMonthCalendar">
+    <div class="label-frm-to">From:</div>
+    <div class="mx-160">
+       <danphe-date-picker *ngIf="showDatePicker" [ngModel]="fromDate" [allow-future-date]="allowFutureDate" (ngModelChange)="CheckFromDate($event)"
+                           [CalendarTypes]="calType" [invalid-date-error-msg]="invalidMessage"
+                           [min-date]="minimumDate" [max-date]="maximumDate" ></danphe-date-picker>
+    </div>
+    <div class="label-frm-to">To:</div>
+    <div class="mx-160">
+       <danphe-date-picker *ngIf="showDatePicker" [ngModel]="toDate" [allow-future-date]="allowFutureDate" (ngModelChange)="CheckToDate($event)"
+                           [CalendarTypes]="calType" [invalid-date-error-msg]="invalidMessage"
+                           [min-date]="minimumDate" [max-date]="maximumDate" ></danphe-date-picker>
+    </div>
+    <div *ngIf="showOkBtn" class="mar-lft-15">
+      <button [disabled]="invalid || !toDate || !fromDate" class="btn green" (click)="sendSelectedFiscalYearData()">OK</button>
+    </div>
+  </ng-container>
+
+  <!-- START:NageshBB: Fiscal Year Month calendar  -->
+  <ng-container *ngIf="!showSingleDatePicker && showDatePicker && ShowMonthCalendar">
+    <div  class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">    
+      <select [(ngModel)]="selectedFiscalYear" style="width: 100%;"   (ngModelChange)="FiscalYearChanged()">
+        <option *ngFor="let rec of fiscalYearForMonthCalendar; let i = index;" [ngValue]="rec">
+          <span *ngIf="calType=='np'">{{rec.NepaliFiscalYearName}}</span>
+          <span *ngIf="calType=='en'">{{rec.EnglishFiscalYearName}}</span> 
+        </option>
+      </select> 
+  </div>
+  <div  *ngIf="calType=='en' && selectedFiscalYear && selectedFiscalYear.EnglishMonthList  && selectedMonth"  class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">
+    <select  [(ngModel)]="selectedMonth" class="datefield month" style="width: 100%;"
+      (ngModelChange)="onMonthValueChange()">
+      <option *ngFor="let em of selectedFiscalYear.EnglishMonthList"  [ngValue]="em"  [disabled]="em.IsDisabled">{{em.MonthName}}</option>
+    </select>
+  </div>
+  <div  *ngIf="calType=='np' && selectedFiscalYear && selectedFiscalYear.NepaliMonthList && selectedMonth"  class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">
+    <select  [(ngModel)]="selectedMonth" class="datefield month" style="width: 100%;"
+      (ngModelChange)="onMonthValueChange()">
+      <option *ngFor="let nm of selectedFiscalYear.NepaliMonthList"  [ngValue]="nm"  [disabled]="nm.IsDisabled">{{nm.MonthName}}</option>
+    </select>
+  </div>  
+    <div *ngIf="showOkBtn" class="mar-lft-15">
+      <button [disabled]="invalid || !toDate || !fromDate" class="btn green" (click)="sendSelectedFiscalYearData()">OK</button>
+    </div>
+  </ng-container>
+  <!-- END:NageshBB: Fiscal Year Month calendar  -->
+</div>
+
+<div class="flex-container text-red pd-btm-5" *ngIf="invalid">
+  {{invalidMessage}}
+</div>

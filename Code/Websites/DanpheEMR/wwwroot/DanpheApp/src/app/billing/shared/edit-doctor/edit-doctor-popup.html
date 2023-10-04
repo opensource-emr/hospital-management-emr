@@ -1,0 +1,74 @@
+<style>
+.thBoder {
+	border: double;
+}
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal danphe-refer-visit">
+  <div class="portlet-body form"><!--*ngIf="showEditDoctorPage"-->
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix"> <a class="btn btn-danger history-del-btn" style="float: right" (click)="Close()">X</a>
+          <div class="form-body"><table class="table table-striped table-bordered table-hover">
+            <tr>
+              <th sortable-header><b>Transaction Date:</b></th>
+              <th sortable-header>{{SelectedItem.Date}}</th>
+            </tr>
+            <tr>
+              <th sortable-header><b>Patient Name:</b></th>
+              <th sortable-header>{{SelectedItem.PatientName}}({{SelectedItem.PatientCode}})</th>
+            </tr>
+          </table>
+          <table class="table table-striped table-bordered table-hover" style="border: solid;">
+            <tr style="background-color: lightgrey;"> 
+              <!--<th sortable-header><b>Transaction Date</b></th>-->
+              <th class="thBoder">Department</th>
+              <th class="thBoder">ItemName</th>
+              <th class="thBoder">Performer Name</th>
+              <th class="thBoder">Prescriber Name</th>
+            </tr>
+            <tr> 
+              <!--<th>{{SelectedItem.Date}}</th>-->
+              <th class="thBoder">{{SelectedItem.ServiceDepartmentName}}</th>
+              <th class="thBoder">{{SelectedItem.ItemName}}</th>
+              <th class="thBoder">{{SelectedItem.PerformerName}}</th>
+              <th class="thBoder">{{SelectedItem.PrescriberName}}</th>
+            </tr>
+          </table>
+          <table class="table table-striped table-bordered table-hover">
+            <tr class="mg">
+              <td> Change Performer Doctor : </td>
+              <td><div style="width:200px;">
+                  <input danphe-auto-complete
+                 [(ngModel)]="newPerformer"
+                 [list-formatter]="DoctorListFormatter"
+                 [source]="doctorList"
+                 placeholder="Search Doctor Name"
+                 display-property-name="EmployeeName"
+                 value-property-name=null
+                 onclick="this.select()"
+                 max-num-list="10" />
+                </div></td>
+            </tr>
+            <tr>
+              <td> Change Prescriber Doctor: </td>
+              <td><div style="width:200px;">
+                  <input danphe-auto-complete
+                 [(ngModel)]="newPrescriber"
+                 [list-formatter]="DoctorListFormatter"
+                 [source]="doctorList"
+                 placeholder="Search Doctor Name"
+                 display-property-name="EmployeeName"
+                 value-property-name=null
+                 onclick="this.select()"
+                 max-num-list="10" />
+                </div></td>
+            </tr>
+          </table>
+          </div>
+			<div class="panel-footer"><input type="button" class="btn btn-danger" value="Update" (click)="UpdatePerformerAndPrescriber()" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+/*This class for background border red */
+.bg-on {
+  font-weight: bold;
+  border: solid 1px red;
+}
+/*This class for */
+.bg-off {
+  font-weight: bold;
+}
+.total-table td {
+  padding-bottom: 5px !important;
+}

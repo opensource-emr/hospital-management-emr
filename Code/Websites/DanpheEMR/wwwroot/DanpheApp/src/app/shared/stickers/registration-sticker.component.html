@@ -1,0 +1,115 @@
+<div class="wrapper">
+  <div class="row">
+    <div id="id_registration_sticker"
+         style="width: 400px;border: 1px dotted black;font-size: 12px;">
+      <div id="id_registration_sticker_printpage" class="registrationstickercontainer">
+        <div class="stkrtopsection">
+          <div>
+            <div class="row">
+              <div class="col-sm-12">
+                <strong>{{StickerSettingsAndData.VisitStickerData.DepartmentName}}</strong>
+                <span *ngIf="StickerSettingsAndData.VisitStickerData.VisitTypeFormatted">
+                  /{{StickerSettingsAndData.VisitStickerData.VisitTypeFormatted}}
+                </span>
+                <span *ngIf="StickerSettingsAndData.VisitStickerData.PerformerName">
+                  /{{StickerSettingsAndData.VisitStickerData.PerformerName}}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span style="display:inline-block;">
+                Hospital No.: <strong> {{StickerSettingsAndData.VisitStickerData.HospitalNumber}}</strong>
+              </span>
+              <!-- <span style="float:right;padding-right: 20px;">
+                                {{StickerSettingsAndData.RegistrationStickerSettings.VisitDateLabel}}:
+                                {{StickerSettingsAndData.VisitStickerData.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+                            </span> -->
+            </div>
+            <div>
+              <div style="display:inline-block;vertical-align: top;">Patient:&nbsp;
+                <span style="text-transform: uppercase;">
+                  {{StickerSettingsAndData.VisitStickerData.PatientName}}&nbsp;&nbsp;&nbsp;
+                  {{StickerSettingsAndData.VisitStickerData.DateOfBirth | DanpheDateTime:'age'}}
+                  /{{StickerSettingsAndData.VisitStickerData.Gender | slice:0:1}}
+                </span>
+              </div>
+              <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                <div style="display:inline-block;"> &nbsp;&nbsp;&nbsp; </div>
+                <div style="display:inline-block;font-style:italic;"></div>
+              </div>
+            </div>
+            <div>
+              <span style="display:inline-block;" *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowPatContactNo">
+                Contact: ({{StickerSettingsAndData.VisitStickerData.PatientPhoneNumber}})&nbsp;
+                {{StickerSettingsAndData.VisitStickerData.PatientAddress}}
+              </span>
+            </div>
+
+            <div>
+              <span style="display:inline-block;"
+                    *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowMemberNo">
+                {{StickerSettingsAndData.RegistrationStickerSettings.MemberNoLabel}}
+                {{StickerSettingsAndData.VisitStickerData.MemberNo}}</span>
+              <span style="display:inline-block;text-align:center;width:200px;"
+                    *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowClaimCode">Claim#
+                {{StickerSettingsAndData.VisitStickerData.ClaimCode}}</span>
+              <span style="float:right;padding-right: 20px;" *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowSchemeCode">
+                Type:
+                {{StickerSettingsAndData.VisitStickerData.SchemeCode}}</span>
+            </div>
+
+            <div>
+              <div>
+                <span style="display:inline-block;" *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowIpdNumber">
+                  IP No: {{StickerSettingsAndData.VisitStickerData.VisitCode}}
+                </span>
+                <span style="float:right;padding-right: 20px;"
+                      *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowWardBedNo">
+                  Ward/Bed:{{StickerSettingsAndData.VisitStickerData.WardName}}/
+                  {{StickerSettingsAndData.VisitStickerData.BedNumber}}
+                </span>
+              </div>
+            </div>
+            <div class="row" *ngIf="StickerSettingsAndData.RegistrationStickerSettings.VisitType !== inpatientVisitType">
+              <span style="float:left; padding-left: 15px; margin-right: 55px;">
+                <strong>{{StickerSettingsAndData.VisitStickerData.AppointmentType}}</strong>
+              </span>
+              <span *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowRegistrationCharge">
+                Reg.Charge: {{StickerSettingsAndData.VisitStickerData.TicketCharge}}
+              </span>
+              <span style="float: right;padding-right: 35px" *ngIf="StickerSettingsAndData.RegistrationStickerSettings.ShowQueueNo">
+                {{StickerSettingsAndData.RegistrationStickerSettings.QueueNoLabel}}:
+                {{StickerSettingsAndData.VisitStickerData.QueueNo}}
+              </span>
+            </div>
+            <div class="row">
+              <span style="float: left;padding-left: 15px">
+                User: {{StickerSettingsAndData.VisitStickerData.UserName}}
+              </span>
+              <span style="float:right;padding-right: 20px;" *ngIf="StickerSettingsAndData.VisitStickerData.VisitDateTime">
+                {{StickerSettingsAndData.RegistrationStickerSettings.VisitDateLabel}}:
+                {{StickerSettingsAndData.VisitStickerData.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                &nbsp;{{ visitTime}}
+              </span>
+            </div>
+            <div style="clear: both;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin: 15px 0px 10px 125px;">
+      <button class="btn green btn-success" (click)="print()" value="" id="btnPrintRegistrationSticker">
+        <span>Print</span>&nbsp;&nbsp;
+        &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+      </button>
+    </div>
+    <div style="display:flex;">
+      <select-printer [group-name]="'reg-sticker'" [storage-key]="'reg-common-sticker'"
+                      (on-printer-change)="OnPrinterChanged($event)">
+      </select-printer>
+    </div>
+  </div>
+</div>
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

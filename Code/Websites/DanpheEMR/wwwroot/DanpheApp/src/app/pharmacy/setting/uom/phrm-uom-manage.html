@@ -1,0 +1,68 @@
+﻿<input type="button" class="btn btn-primary" (click)="AddUnitOfMeasurement()" value="Add UnitOfMesurement" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="unitofmeasurementGridColumns" [grid-data]="unitofmeasurementList"
+      (grid-actions)="UnitOfMeasurementGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showUnitOfMeasurementAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3><span *ngIf="!update">Add Unit of Measurement</span> <span *ngIf="update">Update Unit of
+                Measurement</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentUnitOfMeasurement.UnitOfMeasurementValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Unit of measurement<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="uomname" class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentUnitOfMeasurement.UOMName"
+                    formControlName="UOMName" value="" placeholder="Enter unit of measurement" (keyup.enter)="setFocusById('description')" />
+                  <span class="color-red font-sm"
+                    [hidden]="CurrentUnitOfMeasurement.IsValidCheck('UOMName','required') || !(CurrentUnitOfMeasurement.IsDirty('UOMName'))">Unit
+                    of measurement is required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="description" class="form-control" type="text" maxlength="100" (keyup.enter)="!update?setFocusById('saveuom'):setFocusById('updateuom')"
+                    [(ngModel)]="CurrentUnitOfMeasurement.Description" [ngModelOptions]="{standalone: true}" value=""
+                    placeholder="Enter Description" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">IsActive<b>:</b></label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="IsActive" type="checkbox" value="IsActive"
+                          [(ngModel)]="CurrentUnitOfMeasurement.IsActive" [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="all-buttons text-right">
+                <button type="button" id="saveuom" class="btn green btn-success" *ngIf="!update"
+                  (click)="Add()">Save</button>
+                <button type="button" id="updateuom" class="btn green btn-success" *ngIf="update"
+                  (click)="Update()">Update</button>
+              </div>
+            </div>
+          </form>
+          <!--</form>-->
+          <!--Model Box Body End-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

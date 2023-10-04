@@ -1,0 +1,22 @@
+
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Employee Type</span>
+</div>
+<br />-->
+
+<a feature="button" class="btn blue bordered" (click)="AddEmployeeType()"><i class="fa fa-plus"></i>Add Type</a>
+<employee-type-add [showAddPage]="showAddPage"
+                   [selectedItem]="selectedItem"
+                   (callback-add)="CallBackAdd($event)"></employee-type-add>
+
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-8 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="employeeTypeGridColumns" [grid-data]="employeeTypeList" (grid-actions)="EmployeeTypeGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

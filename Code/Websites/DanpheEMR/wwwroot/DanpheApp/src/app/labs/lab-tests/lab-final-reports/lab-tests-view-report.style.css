@@ -1,0 +1,364 @@
+.lab-rpt-container {
+  font-size: 13px;
+  border: 1px solid #3e3e3e;
+  box-shadow: 2px 4px 4px #c2b9b9;
+  font-family: "Open Sans", sans-serif;
+}
+
+.lab-rpt-sign {
+  width: 100%;
+  margin-top: 30px;
+  /*float: left;*/
+}
+
+.samcode {
+  font-weight: 700;
+  display: none;
+}
+
+.slidefromtop {
+  position: relative;
+  -webkit-animation: fromtop 0.8s; /* Safari 4.0 - 8.0 */
+  animation: fromtop 0.8s;
+}
+
+.martop {
+  margin-top: 30px;
+}
+
+button {
+  cursor: pointer;
+}
+
+@-webkit-keyframes fromtop {
+  0% {
+    top: -200%;
+  }
+
+  40% {
+    top: -100%;
+  }
+
+  100% {
+    top: 0%;
+  }
+}
+
+.patient-info-tabl {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.patient-info-tabl tr td {
+  text-align: left;
+}
+
+/*table.patient-info-tabl tr td:first-child {
+        width: 50%;
+    }*/
+
+table.patient-info-tabl tr td,
+table.patient-info-tabl tr th {
+  text-align: left;
+}
+
+.right-hdr {
+  min-width: 330px;
+  float: right;
+}
+
+.right-hdrwith-barcode {
+  min-width: 385px;
+  position: relative;
+}
+
+input.dontShowInPrint {
+  position: absolute;
+  /*left: 2px;*/
+  /*zoom: 1.5;*/
+  margin-top: 0px;
+}
+
+.rpt-curholder {
+  padding: 13px;
+  width: 100%;
+  margin: 0 auto;
+  background: #fff;
+  position: relative;
+}
+
+table.patient-info-tabl {
+  width: 100%;
+}
+
+.rep-containr {
+  margin-left: 18px;
+}
+
+thead.show-gap:after {
+  content: "";
+  width: 100%;
+  display: block;
+  height: 20px;
+}
+
+.htmlholder {
+  word-break: break-word !important;
+  white-space: initial !important;
+}
+
+.outer-select {
+  zoom: 1.7 !important;
+  left: 2px;
+}
+
+.inner-select {
+  zoom: 1.5 !important;
+  left: 10px;
+}
+
+.headerimage {
+  width: 100%;
+}
+
+.patient-info-box {
+  width: 100%;
+  text-align: left;
+  display: block;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.tooltip {
+  padding: 0px 5px;
+  color: #006687;
+  z-index: inherit;
+}
+.tooltip span {
+  display: inline-block;
+  background: #d8dff1;
+  padding: 1px 2px 0px;
+  cursor: pointer;
+}
+.tooltiptext {
+  width: 250px;
+  margin-left: -125px;
+}
+
+.single-head {
+  padding: 1px 0px;
+}
+.left-col-data {
+  padding-left: 7px;
+}
+.right-col-data {
+  padding-right: 3px;
+  white-space: nowrap;
+  width: 100%;
+  float: left;
+}
+.single-head:nth-child(odd) {
+  flex-basis: 60%;
+}
+
+.single-head:nth-child(even) {
+  flex-basis: 40%;
+}
+.interpretation-txt-holder {
+  margin-top: 5px;
+  text-align: justify;
+  white-space: pre-line;
+  font-size: 11px;
+}
+.lab-footer-text {
+  font-size: 10px;
+}
+.all-signatures {
+  font-size: 13px;
+}
+.signature-item {
+  flex-basis: 29%;
+  padding: 1%;
+}
+
+.signature-item:nth-child(3n + 1) {
+  text-align: left;
+}
+.signature-item:nth-child(3n + 2) {
+  text-align: center;
+}
+.signature-item:nth-child(3n) {
+  text-align: right;
+}
+.signature-item-inside {
+  font-weight: 700;
+}
+.main-signature {
+  white-space: pre-line;
+  display: inline-block;
+  border-top: 1px solid;
+  padding: 7px 15px;
+  line-height: 16px;
+  text-align: center;
+  width: 90%;
+}
+
+table.single-tempate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+table.single-tempate-table thead tr {
+  border: 1px solid;
+}
+table.single-tempate-table tbody tr,
+table.culture-holder-table tbody tr {
+  border: 1px solid;
+}
+
+table.single-tempate-table thead tr:first-child th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+  text-transform: uppercase;
+  width: 320px;
+}
+table.single-tempate-table thead tr:first-child th:not(:first-child) {
+  padding: 0px 5px;
+  text-align: center;
+}
+table.single-tempate-table thead tr:nth-child(2) th {
+  padding: 0px 7px;
+  text-align: left;
+}
+
+table.single-tempate-table tr.test-reportname-row th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+}
+
+table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
+  padding: 0px 7px;
+  font-size: 14px;
+}
+
+table.single-tempate-table tr.res-positive-rw td {
+  text-align: left;
+}
+
+.test-data-pstv {
+  padding: 0px 8px;
+}
+td.range {
+  max-width: 200px;
+  white-space: pre-line;
+}
+
+table.single-tempate-table tr.res-negative-rw td.neg-data {
+  padding: 0px 5px;
+  text-align: center;
+}
+
+table.culture-holder-table {
+  width: 100%; /*border: 1px solid #1f1e1e;*/
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+table.culture-holder-table thead tr.culture-header th {
+  text-align: center;
+  text-transform: uppercase;
+  padding: 0px 7px;
+}
+table.culture-holder-table thead tr.culture-heading-col th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+}
+table.culture-holder-table thead tr.culture-heading-col th:nth-child(2) {
+  padding: 0px 5px;
+  text-align: center;
+}
+
+table.culture-holder-table > thead > tr {
+  border: 1px solid;
+}
+
+table.culture-neg-testres {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+table.culture-neg-testres tbody tr td {
+  padding: 0px 7px;
+}
+table.culture-neg-testres tbody tr:last-child {
+  text-align: left;
+}
+
+table.culture-positive-testres tbody tr:first-child {
+  border-top: 0;
+  text-align: left;
+}
+
+tbody.culture-positive-testres tr.sensitiv-rst-data td,
+tbody.culture-positive-testres tr.sensitiv-rst-hd td {
+  padding-left: 5px;
+}
+
+.patient-info-box {
+  border: 1px solid #000;
+}
+
+tbody.culture-negative-testres tr td {
+  padding-left: 7px;
+}
+
+.htmlholder {
+  padding: 0px 8px;
+}
+.margin-50-tp {
+  margin-top: 50px;
+}
+.ref-label {
+  margin-bottom: 0;
+  line-height: 36px;
+}
+
+.report-print-info {
+  display: none;
+}
+.txt-left {
+  text-align: left;
+}
+
+.display-blk {
+  display: inline-block;
+}
+
+.margin-5-bt {
+  margin-bottom: 5px;
+}
+.prelim-sig-holder {
+  position: relative;
+}
+.txt-prelim {
+  position: absolute;
+  display: inline-block;
+  font-size: 40px;
+  line-height: 1;
+  left: 50%;
+  top: 100px;
+  transform: translate(-50%, 110px) rotate(-45deg);
+  opacity: 0.2;
+}
+.cmh .cs-result {
+  font-style: italic;
+}
+.ht-culture-grp-separation {
+  height: 25px;
+}
+
+.lab-qrholder{
+     margin-bottom: 12px;
+}

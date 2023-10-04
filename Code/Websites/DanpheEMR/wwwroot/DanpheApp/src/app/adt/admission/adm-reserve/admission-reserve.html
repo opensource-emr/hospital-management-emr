@@ -1,0 +1,143 @@
+<div class="wrapper">
+  <div class="row margin-top-10">
+    <div class="col-md-12 col-xs-12">
+      <div class="row">
+        <div class="col-md-5">
+          <form [formGroup]="CurrentBedReservation.BedReservationInfoValidator" class="form-horizontal">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-6">Requesting Department<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" danphe-auto-complete
+                       formControlName="RequestingDepartmentId"
+                       [(ngModel)]="selectedDept"
+                       [list-formatter]="myDeptListFormatter"
+                       [source]="departmentList"
+                       placeholder="Enter Department Name"
+                       display-property-name="Value"
+                       value-property-name=null
+                       (focusout)="FilterDoctorList()"
+                       onclick="this.select();"
+                       [attr.disabled]="reqDptEditDisabled ? true: null"
+                       max-num-list="10" />
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('RequestingDepartmentId')" [hidden]="CurrentBedReservation.IsValidCheck('RequestingDepartmentId','required')">Select Admitting Department</span> </div>
+              </div>
+            </div>
+          </form>
+          <form [formGroup]="CurrentBedReservation.BedReservationInfoValidator" class="form-horizontal">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-6">Admitting Doctor<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" danphe-auto-complete
+                       formControlName="AdmittingDoctorId"
+                       [(ngModel)]="selectedDoctor"
+                       [list-formatter]="myDocListFormatter"
+                       [source]="filteredDocList"
+                       placeholder="Enter Doctor Name"
+                       display-property-name="Value"
+                       value-property-name=null
+                       (valueChanged)="DoctorDdlOnChange()"
+                       (focusout)="CheckForStrInDoctor()"
+                       onclick="this.select();"
+                       max-num-list="10" />
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('AdmittingDoctorId')" [hidden]="CurrentBedReservation.IsValidCheck('AdmittingDoctorId','required')">Select Admitting Doctor</span> </div>
+              </div>
+            </div>
+          </form>
+          <form [formGroup]="CurrentBedReservation.BedReservationInfoValidator" class="form-horizontal">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-6">Ward<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <select [(ngModel)]="CurrentBedReservation.WardId"
+                        formControlName="WardId"
+                        class="form-control"
+                        (change)="CurrentBedReservation.BedId=null;WardChanged(CurrentBedReservation.WardId)">
+                    <option *ngFor="let ward of wardList" value="{{ward.WardId}}">{{ward.WardName}}</option>
+                  </select>
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('WardId')" [hidden]="CurrentBedReservation.IsValidCheck('WardId','required')">Select Ward</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-6">Bed Feature<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <select [(ngModel)]="CurrentBedReservation.BedFeatureId"
+                        class="form-control"
+                        (change)="CurrentBedReservation.BedId=null;GetAvailableBeds(CurrentBedReservation.WardId,CurrentBedReservation.BedFeatureId)"
+                        formControlName="BedFeatureId"
+                        [attr.disabled]="disableFeature ? true:null">
+                    <option *ngFor="let bed of bedFeatureList" value="{{bed.BedFeatureId}}">{{bed.BedFeatureName}}</option>
+                  </select>
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('BedFeatureId')" [hidden]="CurrentBedReservation.IsValidCheck('BedFeatureId','required')">Select Bed Feature <br />
+                  </span> <b>Price:-{{bedPrice}} </b> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-6">Bed<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <select [(ngModel)]="CurrentBedReservation.BedId"
+                        class="form-control"
+                        style="width:200px"
+                        formControlName="BedId"
+                        (change)="BedChanged($event.target.value, CurrentBedReservation.BedId)"
+                        [attr.disabled]="disableBed ? true:null">
+                    <ng-container *ngFor="let bed of bedList">
+                      <option [ngClass]="bed.IsReserved ? 'reserved':'not-reserved'" value="{{bed.BedId}}"> {{bed.BedNumber}}
+                      <ng-container *ngIf="bed && bed.IsReserved"> (Reserved)</ng-container>
+                      </option>
+                    </ng-container>
+                  </select>
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('BedId')" [hidden]="CurrentBedReservation.IsValidCheck('BedId','required')">Select Bed</span> </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-6 col-md-offset-1">
+          <form [formGroup]="CurrentBedReservation.BedReservationInfoValidator" class="form-horizontal">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4">Admission Date<b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <div style="display: flex;">
+                    <danphe-date-picker formControlName="AdmissionStartsOn" [(ngModel)]="CurrentBedReservation.AdmissionStartsOn"
+                                        [showTime]="true" [allow-future-date]="true" [CalendarTypes]="'en,np'">
+                    </danphe-date-picker>
+
+                    <span class="inl-blk">
+                      <i style="color: blue;font-style: italic;font-size: small;vertical-align: -webkit-baseline-middle">
+                        {{CurrentBedReservation.AdmissionStartsOn | DanpheDateTime:'timename'}}
+                      </i>
+                    </span>
+                  </div>
+                  <div style="display: flex;">
+                    <span class="color-red font-sm" [hidden]="CurrentBedReservation.IsValidCheck('AdmissionStartsOn','wrongDate')">Enter Valid Date</span>
+                  </div>
+                 </div>
+               </div>
+           
+              <div class="form-group">
+                <label class="control-label col-md-4"> Admission Notes<b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <textarea type="text" class="form-control"
+                          formControlName="AdmissionNotes"
+                          [(ngModel)]="CurrentBedReservation.AdmissionNotes"></textarea>
+                  <span class="color-red font-sm" *ngIf="CurrentBedReservation.IsDirty('AdmissionNotes')" [hidden]="CurrentBedReservation.IsValidCheck('AdmissionNotes','maxLength')">Admission Notes cannot exceed 1000 characters.</span> </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row margin-top-10">
+    <div class="col-md-12 text-right">
+      <button *ngIf="!isUpdate" class="btn blue margin-7-hr" name="reserveBed" (click)="loading=true;ReserveBed()"
+            [disabled]="loading"> Reserve </button>
+      <button *ngIf="isUpdate" class="btn blue margin-7-hr" name="updateReservation" (click)="loading=true;UpdateReserveBed()"
+            [disabled]="loading"> Update Reservation </button>
+      <button *ngIf="isUpdate" class="btn btn-danger margin-7-hr" name="reserveBed" (click)="loading=true;CancelReservedBed()"
+            [disabled]="loading"> Cancel This Reservation </button>
+      <button class="btn btn-danger margin-7-hr" name="reservebed" (click)="loading=true;ClosePopUp()"
+            [disabled]="loading"> Close </button>
+    </div>
+  </div>
+</div>

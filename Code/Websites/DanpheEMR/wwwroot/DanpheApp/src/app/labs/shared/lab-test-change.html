@@ -1,0 +1,99 @@
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showChangeTest">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="col-md-6 col-sm-12 col-md-offset-3">
+      <div class="modelbox-div">
+        <!--<div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="min-height: 200px;">
+            <p>There is no LabTest with same price that You can Replace with</p>
+            <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
+                <button type="button" class="btn btn-primary btn-sm" style="width:70px; border-radius:20px" (click)="showChangeTest=false"><b>Cancel</b></button>
+            </div>
+        </div>-->
+        <div class="modelbox-header">
+          <h4><strong>Change Labtest</strong></h4>          
+        </div>
+
+        <div class="modelbox-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="test-detail">
+                <p>Initially Requested Test</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="test-detail">
+                <p><strong>{{selectedLabTest.ItemName}}</strong></p>
+              </div>
+            </div>
+            <div class="col-md-2"></div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="test-detail">
+                <p class="margin-15-tp">Price</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="test-detail">
+                <p class="margin-15-tp"><strong>{{coreService.currencyUnit}} {{selectedLabTest.Price}}</strong></p>
+              </div>
+            </div>
+            <div class="col-md-2"></div>
+          </div>
+
+
+
+          <div class="row margin-15-tp">
+            <div class="col-md-4">
+              <label class="change-tst-description" for="testList">Change this Labtest with </label>
+            </div>
+            <div class="col-md-6">
+              <div class="autocomplete-holdr autocomplete-item autocomplete-with-icon">
+                <input class="form-control padding-5-lft"
+                       id="testList"
+                       danphe-auto-complete
+                       autocomplete="off"
+                       [(ngModel)]="changedTest"
+                       [list-formatter]="ItemsListFormatter"
+                       [source]="labBillItems"
+                       placeholder="Enter Test Name"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       match-formatted="true"
+                       (ngModelChange)="AssignChangedTest()"
+                       max-num-list="15"
+                       onClick="this.select();" />
+              </div>
+            </div>
+            <div class="col-md-2"></div>
+          </div>
+
+
+          <div class="row margin-15-tp">
+            <div class="col-md-12">
+              <div class="info-note">
+                <small>Note: You can only change to another test having EQUAL PRICE.</small>
+              </div>
+            </div>
+          </div>
+
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button type="button" class="btn btn-primary btn-sm margin-7-hr" [disabled]="loading" (click)="loading=true;ChangeLabTest()">Update</button>
+              <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="Cancel()">Cancel</button>
+            </div>
+          </div>
+
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="Cancel()">X</button>
+          </div>
+
+        </div>
+
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+
+
+  <div class="all-danphe-msgbox" *ngIf="this.msgBoxService.globalMsgbox && this.msgBoxService.globalMsgbox.length > 0">
+    <ng-container *ngFor="let msg of this.msgBoxService.globalMsgbox; let i=index;">
+      <div class="danphe-msgbox" [ngClass]="'msgbox-'+ msg.status.toLowerCase()" *ngIf="msg.show">
+        <div class="msg-icon">
+          <div class="padding-8-all">
+            <i *ngIf="msg.status.toLowerCase()=='success'" class="fa fa-check msg-success"></i>
+            <i *ngIf="msg.status.toLowerCase()=='error' || msg.status.toLowerCase()=='failed'" class="fa fa-close msg-error"></i>
+            <i *ngIf="msg.status.toLowerCase()=='notice-message'" class="fa fa-info-circle msg-notice "></i>
+            <i *ngIf="msg.status.toLowerCase()=='warning'" class="fa fa-warning msg-failed "></i>
+            <i *ngIf="msg.status.toLowerCase()!= 'notice-message'
+         && msg.status.toLowerCase() != 'failed'
+         && msg.status.toLowerCase() != 'error'
+         && msg.status.toLowerCase() != 'success'
+         && msg.status.toLowerCase() != 'warning'" class="fa fa-paper-plane msg-default"></i>
+
+          </div>
+        </div>
+        <div class="msg-text padding-8-all">
+          <p class="msg-status">
+            {{msg.status}}
+          </p>
+          <ng-container *ngFor='let singlemsg of msg.message;let i=index;'>
+            <p class="main-message" [innerHTML]="singlemsg"></p>
+          </ng-container>
+        </div>
+
+        <div class="msg-box-close">
+          <a class="close-btn" (click)="Close(i)"><i class="fa fa-times-circle"></i></a>
+        </div>
+
+
+      </div>
+    </ng-container>
+  </div>
+
+   
+
+
+

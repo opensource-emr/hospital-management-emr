@@ -1,0 +1,126 @@
+<style>
+  .sample-collected-list {
+    height: 520px;
+    overflow-y: auto;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="caption lb-caption col-md-6">
+      <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+      <span class="caption-subject">List Requisition</span>
+    </div>
+    <div class="col-md-6">
+      <button class="btn green btn-success pull-right" (click)="ShowHideSamplesCollected();">Samples Collected
+        List</button>
+    </div>
+  </div>
+
+  <!-- <div class="row"></div> -->
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="LabGridColumns" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+        [grid-data]="requisitions" [rangeType]="dateRange" (onDateChange)="onDateChange($event)"
+        [show-CustomDate]="true" [date-settings-name]="'common-range-with-today'"
+        (grid-actions)="LabGridActions($event)">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<!-- <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showSampleCollectedPage"
+  id="labSampleCollectedlist">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="Close()">X</a>
+          <div class="row">
+            <div class="col-md-10 col-md-offset-1" style="text-align: center;">
+              <h4>{{this.sampleCollectedHeader.hospitalName}}</h4>
+              <h4>{{this.sampleCollectedHeader.address}}</h4>
+              <h4>Sample Collected List FromDate : B.S. {{fromDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                (A.D.{{fromDate}}) ToDate : B.S.{{toDate | nepaliDate:'format':'YYYY-MM-DD'}} (A.D.{{toDate}})</h4>
+            </div>
+          </div>
+          <div class="form-body">
+            <danphe-grid
+                 [grid-colDefaults]="SamplesCollectedGridColumns"
+                 [grid-data]="sampleCollectedList"
+                 [grid-exportOptions]="gridExportOptions"
+                 [grid-showExport]="true"
+                 [show-print-button] = "true"
+                 [report-header]="reportHeaderHtml_SamplesCollectedList"
+                 [NepaliDateInGridParams] ="NepaliDateForSampleCollectedList">
+            </danphe-grid>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showSampleCollectedPage"
+  id="labSampleCollectedlist">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="Close()">X</a>
+          <div class="form-body sample-collected-list">
+
+            <table class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th colspan="9" style="text-align: center;" class="sampleCollectedListHeader">
+                    <div class="row">
+                      <div class="col-md-10 col-md-offset-1" style="text-align: center;">
+                        <h4>{{this.sampleCollectedHeader.hospitalName}}</h4>
+                        <h4>{{this.sampleCollectedHeader.address}}</h4>
+                        <h4>Sample Collected List FromDate :{{fromDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                          (A.D.{{fromDate}}) ToDate :{{toDate | nepaliDate:'format':'YYYY-MM-DD'}} (A.D.{{toDate}})</h4>
+                      </div>
+                    </div>
+                  </th>
+
+                </tr>
+                <tr>
+                  <th>S.N.</th>
+                  <th>Hospital No.</th>
+                  <th>Patient Name</th>
+                  <th>Test Name</th>
+                  <th>Specimen</th>
+                  <th>DepartmentAssigned</th>
+                  <th>Run No.</th>
+                  <th>Bar Code</th>
+                  <th>Samples Collected On</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr *ngFor="let sam of sampleCollectedList; let i = index;">
+                  <td>{{i+1}}</td>
+                  <td>{{sam.PatientCode}}</td>
+                  <td>{{sam.PatientName}}</td>
+                  <td>{{sam.LabTestName}}</td>
+                  <td>{{sam.LabTestSpecimen}}</td>
+                  <td>{{sam.TestCategoryName}}</td>
+                  <td>{{sam.SampleCodeFormatted}}</td>
+                  <td>{{sam.BarCodeNumber}}</td>
+                  <td>{{sam.SampleCollectedOnDateTime | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}</td>
+                </tr>
+
+              </tbody>
+            </table>
+
+          </div>
+
+          <div style="margin: 20px 0; text-align: center;">
+            <button (click)="Print()" class="btn btn-primary no-print"><i class="fa fa-print"></i> &nbsp;Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

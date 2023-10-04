@@ -1,0 +1,281 @@
+﻿<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    }
+
+    #dvdepPieChart {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+
+<!-- <div class="wrapper right-content-wrapper" *ngIf="IsInvDashbordEnabled">
+    <div class="row">
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 blue point-cursor">
+                <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/medical.svg" alt=""></i> </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Purchase Request:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalPurchaseRequest}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{dsbStats.TodayPurchaseRequest}} </span>
+                        <span>Yesterday: {{dsbStats.YestardayPurchaseRequest}} </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 red">
+                <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/order.png" alt=""></i> </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p> Total Purchase Order:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalPurchaseOrder}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{dsbStats.TodayPurchaseOrder}} </span>
+                        <span>Yesterday: {{dsbStats.YestardayPurchaseOrder}} </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 green">
+                <div class="visual">
+                    <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/schedule.svg" alt=""></i> </div>
+                </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Goods Arrival Notification:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalGoodsArrivalNotification}}</div>
+                    </div>
+                    <div class="left clearfix">
+                        <span>Today: {{dsbStats.TodayGoodsArrivalNotification}} </span> <span>Yesterday: {{dsbStats.YestardayGoodsArrivalNotification}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 orange">
+                <div class="visual">
+                    <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/schedule.svg" alt=""></i> </div>
+                </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Goods Receipts:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalGoodsReceipt}}</div>
+                    </div>
+
+                    <div class="left clearfix">
+                        <span>Today: {{dsbStats.TodayGoodsReceipt}} </span> <span>Yesterday: {{dsbStats.YestardayGoodsReceipt}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="clearfix" style="margin-top: 10px;"></div>
+    <div class="row">
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 skyblue">
+                <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/medical.svg" alt=""></i> </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Consumables Requisition:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalConsumablesRequisition}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{dsbStats.TodayConsumablesRequisition}} </span> <span>Yesterday: {{dsbStats.YestardayConsumablesRequisition}} </span> </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 midnightblue">
+                <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/medical.svg" alt=""></i> </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Consumables Dispatch:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalConsumablesDispatchItems}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{dsbStats.TodayConsumablesDispatchItems}} </span> <span>Yesterday: {{dsbStats.YestardayConsumablesDispatchItems}} </span> </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 steelblue">
+                <div class="visual">
+                    <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/schedule.svg" alt=""></i> </div>
+                </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Capital Goods Requisition:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalCapitalGoodsRequisition}}</div>
+                    </div>
+                    <div class="left clearfix">
+                        <span>Today: {{dsbStats.TodayCapitalGoodsRequisition}} </span> <span>Yesterday: {{dsbStats.YestardayCapitalGoodsRequisition}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 turquoise">
+                <div class="visual">
+                    <div class="visual"> <i class="visual_icon"><img src="../../themes/theme-default/images/dashboard_icon/schedule.svg" alt=""></i> </div>
+                </div>
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Capital Goods Dispatch:</p>
+                        </div>
+                        <div class="count">{{dsbStats.TotalCapitalGoodsDispatchItems}}</div>
+                    </div>
+
+                    <div class="left clearfix">
+                        <span>Today: {{dsbStats.TodayCapitalGoodsDispatchItems}} </span> <span>Yesterday: {{dsbStats.YestardayCapitalGoodsDispatchItems}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="clearfix" style="margin-top: 10px;"></div>
+</div> -->
+<!-- END DASHBOARD STATS 1-->
+
+<div class="wrapper right-content-wrapper" *ngIf="IsInvDashbordEnabled">
+    <div class="row">
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 blue point-cursor">
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Purchase Request:</p>
+                        </div>
+                        <div class="count">{{InventoryDashboardStatisticsData.TotalPurchaseRequestQuantity}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{InventoryDashboardStatisticsData.TotalPurchaseRequestQuantityToday}} </span>
+                        <span>Yesterday: {{InventoryDashboardStatisticsData.TotalPurchaseRequestQuantityYesterday}} </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-inv-stat dashboard-stat-v2 red">
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p> Total Purchase Order:</p>
+                        </div>
+                        <div class="count">{{InventoryDashboardStatisticsData.TotalPurchaseOrderQuantity}}</div>
+                    </div>
+                    <div class="left clearfix"> <span>Today: {{InventoryDashboardStatisticsData.TotalPurchaseOrderQuantityToday}} </span>
+                        <span>Yesterday: {{InventoryDashboardStatisticsData.TotalPurchaseOrderQuantityYesterday}} </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 orange">
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Goods Receipts:</p>
+                        </div>
+                        <div class="count">{{InventoryDashboardStatisticsData.TotalGoodReceiptQuantity}}</div>
+                    </div>
+                    <div class="left clearfix">
+                        <span>Today: {{InventoryDashboardStatisticsData.TotalGoodReceiptQuantityToday}} </span> <span>Yesterday: {{InventoryDashboardStatisticsData.TotalGoodReceiptQuantityYesterday}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <a class="dashboard-inv-stat dashboard-stat-v2 turquoise">
+                <div class="details clearfix">
+                    <div class="board-title clearfix">
+                        <div>
+                            <p>Total Dispatch:</p>
+                        </div>
+                        <div class="count">{{InventoryDashboardStatisticsData.TotalDispatchQuantity}}</div>
+                    </div>
+                    <div class="left clearfix">
+                        <span>Today: {{InventoryDashboardStatisticsData.TotalDispatchQuantityToday}} </span> <span>Yesterday: {{InventoryDashboardStatisticsData.TotalDispatchQuantityYesterday}} </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="clearfix" style="margin-top: 10px;"></div>
+    <!-- END DASHBOARD STATS 1-->
+
+    <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <div class="portlet light">
+                <div class="portlet-title">
+                    <div class="caption lb-caption no-margin no-padding"> <i class="icon-pie-chart"></i> <span class="caption-subject"> Department Wise Dispatch Value {{currentDate}} </span> <span class="caption-helper"></span> </div>
+                    <div class="tools">
+                        <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                    </div>
+                </div>
+                <div>
+                    <from-to-date-select [date-settings-name]="'billing-reports'" (on-change)="OnFromToDateChange($event)"></from-to-date-select>
+                </div>
+                <div class="portlet-body">
+                    <div id="dvdepPieChart" class="CSSAnimationChart" style="height:460px;"></div>
+                </div>
+                <div style="margin-top: 10px">Total Dispatch Value: {{totalDispatchValue}}</div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-xs-12 col-sm-12">
+            <div class="portlet light">
+                <div class="portlet-title">
+                    <div class="caption lb-caption no-margin no-padding"> <i class="icon-pie-chart"></i> <span class="caption-subject"> Sub Category Wise Stock Value {{currentDate}} </span> <span class="caption-helper"></span> </div>
+                    <div class="tools">
+                        <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="dvsubcategoryPieChart" class="CSSAnimationChart" style="height:460px;"></div>
+                </div>
+                <div style="margin-top: 10px">Total Stock Value: {{totalStockValue}}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 col-xs-12 col-sm-12">
+            <div class="portlet light">
+                <div class="portlet-title">
+                    <div class="caption lb-caption no-margin no-padding">
+                        <h3><i class="icon-bar-chart"></i> <span class="caption-subject">Monthly Wise PO, GR And DispatchValue</span> <span class="caption-helper"></span> </h3>
+                    </div>
+                    <div class="tools">
+                        <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="dvInvMthPurchaseVsConsumption" class="CSSAnimationChart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

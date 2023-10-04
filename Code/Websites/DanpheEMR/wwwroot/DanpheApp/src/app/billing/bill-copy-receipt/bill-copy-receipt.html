@@ -1,0 +1,51 @@
+﻿<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showTxnCopySelPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <!--Model Box Body Start-->
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption no-margin">
+            <h3> <span>Copy From Earlier Invoice</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="form-body">
+            <div *ngIf="invoiceList">
+              <table class="table table-striped table-hover inv_table padLess_table table-bordered"
+                style="background-color:initial;margin-top:10px">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th sortable-header col="itemnames"><b>Invoice No.</b></th>
+                    <th sortable-header col="itemnames"><b>Date</b></th>
+                    <th sortable-header col="quantity"><b>Total Amount</b></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let txn of invoiceList;let i = index">
+                    <td>
+                      <div class="input-group">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input name="invoices" type="radio" value="{{txn.BillingTransactionId}}"
+                            [(ngModel)]="txn.IsSelected" (ngModelChange)="AssignTransaction(txn)">
+                          <span></span> </label>
+                      </div>
+                    </td>
+                    <td> {{txn.InvoiceNo}} </td>
+                    <td> {{txn.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} </td>
+                    <td> {{txn.TotalAmount}} </td>
+                    <td>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+          <div class="panel-footer"> <a class="btn btn-primary" (click)="CreateCopy()" style="width:150px;">Create
+              Copy&nbsp;&nbsp;<i class="fa fa-copy"></i></a> </div>
+        </div>
+        <!--Model Box Body End-->
+      </div>
+    </div>
+  </div>
+</div>

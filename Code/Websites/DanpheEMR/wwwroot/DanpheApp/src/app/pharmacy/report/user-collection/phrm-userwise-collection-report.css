@@ -1,0 +1,24 @@
+.d-flex {
+  display: flex;
+}
+.justify-space-between {
+  justify-content: space-between;
+}
+.justify-content-end {
+  justify-content: end;
+}
+.align-items-center {
+  align-items: center;
+}
+@media only screen and (max-width: 1440px) {
+  label,
+  .control-label,
+  option,
+  .form-control {
+    font-size: 10px !important;
+  }
+  .btn {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+}

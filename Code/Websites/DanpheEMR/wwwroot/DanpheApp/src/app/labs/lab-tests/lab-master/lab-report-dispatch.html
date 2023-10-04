@@ -1,0 +1,90 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-8 col-sm-8">
+      <div class="caption lb-caption">
+        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> -->
+        <span class="caption-subject">Report Dispatch</span>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7 col-xs-12">
+      <label style="vertical-align: top;margin-top: 10px; margin-right: 10px;">Request Date: </label>
+      <div style="display: inline-block;">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+      </div>
+    </div>
+    <div class="col-md-5 col-xs-12">
+      <div class="row">
+        <label class="col-md-3 text-right" style="line-height: 3;">Category:</label>
+        <div class="col-md-6">
+          <div class="row">
+            <div style="display: inline-block; width: 100%;">
+              <lab-category-select (selected-category-list)="CategoryOnChange($event)"></lab-category-select>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="col-md-3">
+          <button [disabled]="loading" class="btn green btn-success pull-right" (click)="GetPendingReportList();">Load
+            <i class="fa fa-refresh"></i></button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-5">
+          <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();"
+            placeholder="Search by Hospital No. Or Patient Name">
+        </div>
+        <div class="col-md-7">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <table class="table table-responsive dispatch-report-table">
+        <thead class="table-header-bg">
+          <tr>
+            <th scope="col" style="width: 50px;">S.N.</th>
+            <th scope="col" class="wd-130"> Hospital No. </th>
+            <th scope="col" class="wd-270"> Patient Name </th>
+            <th scope="col" class="wd-80"> Age/Sex </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="let report of reportListFiltered | searchFilter: searchString | async| paginate: {id: 'listing_pagination', itemsPerPage: 20, currentPage: page } ; let i = index;">
+            <tr class="hover-effect" [ngClass]="report.IsSelected ? 'highlightbg':'donthighlight'"
+              (click)="SelectUnselectRow(report)">
+              <td class="wd-60"> {{((page-1) * 20) + i+1}} </td>
+              <td class="wd-130"> {{report.PatientCode}} </td>
+              <td class="wd-270"> {{report.PatientName}} </td>
+              <td class="wd-80"> {{GetFormattedAgeSex(report.DateOfBirth,report.Gender)}} </td>
+            </tr>
+          </ng-container>
+
+
+        </tbody>
+      </table>
+
+      <!--pagination div start-->
+      <div>
+        <pagination-controls id="listing_pagination" (pageChange)="page = $event" style="display: flex; float:right;">
+        </pagination-controls>
+      </div>
+      <!--End of pagination div-->
+
+    </div>
+    <div class="col-md-7">
+      <lab-report-dispatch-detail *ngIf="showSelectedPatTestDetail" [patientId]="patientId" [fromDate]="fromDate"
+        [toDate]="toDate" [catagoryList]="catIdList"> </lab-report-dispatch-detail>
+    </div>
+  </div>
+
+</div>

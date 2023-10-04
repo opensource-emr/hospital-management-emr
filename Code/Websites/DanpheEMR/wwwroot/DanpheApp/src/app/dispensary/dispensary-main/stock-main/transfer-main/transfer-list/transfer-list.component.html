@@ -1,0 +1,14 @@
+<div style="padding:2px 0px">
+  <button class="btn btn-primary" (click)="Transfer()">New Transfer
+    <i class="fa fa-exchange"></i>
+  </button>
+</div>
+<div>
+  <div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="transferGridColumns" [grid-data]="transferGridData" (grid-actions)="TransferGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"></danphe-grid>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<div class="row">
+  <div class="col-md-4">
+    <a class="btn primary-btn btn-sm m1" (click)="inventoryService.POId = null; inventoryService.setDonationMode=true;" rbac-permission='{"name":"btn-inventory-goodsreceipt-create","actionOnInvalid":"remove"}' [routerLink]="'../GoodsReceiptAdd'"><i class="fa fa-plus"></i> Add Donation</a>
+    <a class="btn primary-btn btn-sm m1" (click)="inventoryService.POId = null; inventoryService.setDonationMode=false;CreateNewGoodReceipt()" rbac-permission='{"name":"btn-inventory-goodsreceipt-create","actionOnInvalid":"remove"}'><i class="fa fa-plus"></i> Create Goods Receipt</a>
+  </div>
+  <div class="col-md-8">
+    <div class="input-group pull-right padding-15-tp">
+      <div class="icheck-inline">
+        List by Status: &nbsp;
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" checked (change)="LoadGoodsReceiptListByStatus()" name="GRStatus" [(ngModel)]="GRFilterStatus" value="complete" style="width:15px;height:15px" />
+          <span></span>Complete
+        </label>
+
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" (change)="LoadGoodsReceiptListByStatus()" name="GRStatus" [(ngModel)]="GRFilterStatus" value="cancelled" style="width:15px;height:15px" />
+          <span></span>Cancelled
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="goodsreceiptGridColumns" [grid-data]="grListfiltered" [rangeType]="dateRange" (onDateChange)="onDateChange($event)" [show-CustomDate]="true" (grid-actions)="GoodsReceiptGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="GetGridExportOptions()" [grid-showExport]="true">
+    </danphe-grid>
+  </div>
+</div>
+
+<!-- Donation Receipt -->
+<app-donation-gr-view *ngIf="showDonationReceipt" [goods-receipt-id]="selectedGoodsReceiptId" (call-back-close)="closeDonationReceipt()"></app-donation-gr-view>

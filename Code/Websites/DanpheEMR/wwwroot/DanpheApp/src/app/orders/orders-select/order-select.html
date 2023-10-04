@@ -1,0 +1,150 @@
+﻿<style>
+    .add-button {
+        padding: 5px 10px;
+        background: #ffffff;
+        color: #006687;
+        text-decoration: none;
+        border: 1px solid #fff;
+        font-weight: 700;
+        display: inline-block;
+    }
+    table.med-detail tr td{
+        padding: 5px;
+    }
+    table.med-detail thead tr th{
+        text-align: center;
+    }
+    .al-selected-orders p {
+        color: #fff;
+        display: inline-block;
+        margin: 0;
+        padding: 2px 2px 2px 10px;
+        background: #fff;
+        color: #000;
+        margin-right: 10px;
+        margin-top: 5px;
+    }
+    .al-selected-orders {
+        padding: 0px 0px 15px;
+        width: 100%;
+        display: table;
+    }
+    .selectOrderBox {
+        width: 80%;
+        margin-left: 15%;
+        padding: 15px;
+        background: #191919e0;
+        min-height: 400px;
+       
+    }
+
+    .aa {
+        
+    }
+
+    
+
+
+</style>
+<div *ngIf="showSelectOrder" class="selectOrderBox">
+    <div class="aa" style="width: 100%;position: relative;">
+        <div>
+            <div class="each-order-row">
+                <div class="ordername">
+                    <div style="width: 35%;display: inline-block;margin: 15px 15px 5px 0px;">
+                        <input danphe-auto-complete class="form-control round-input" aria-label="search"
+                               [(ngModel)]="order.Order"
+                               [source]="ordItemsFiltered"
+                               [list-formatter]="OrderItemsListFormatter"
+                               placeholder="search order items"
+                               display-property-name="ItemName"
+                               min-chars="2"
+                               max-num-list="20"
+                               match-formatted="false"
+                               (valueChanged)="OrderItemValueChanged()"
+                               onClick="this.select();" />
+                    </div>
+                    <!-- <a *ngIf="allOrdersList.length !== (i+1)" (click)="Remove(i)" style="padding: 3px 8px 4px 8px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>-->
+                </div>
+
+                <div class="order-detail" *ngIf="order.Order && order.Order.PreferenceType == 'Medication'" style="background: #dadada;">
+                    <table class="med-detail" style="width: 100%;background: #dadada;">
+
+                        <thead>
+                            <tr>
+                                <th class="full-header">Dose</th>
+                                <th class="full-header">Route</th>
+                                <th class="full-header">Frequency</th>
+                                <th class="full-header" style="width: 107px;font-size: 12px;">Duration(days)</th>
+                                <th class="full-header">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td width="30%">
+                                <input [(ngModel)]="order.Dosage" onclick="this.select();" type="text" class="form-control" />
+                            </td>
+                            <td width="20%">
+                                <select [(ngModel)]="order.Route" class="form-control">
+                                    <option *ngFor="let r of medRouteList" value="{{r}}">
+                                        {{r}}
+                                    </option>
+                                </select>
+                            </td>
+                            <td width="10%">
+                                <input [(ngModel)]="order.Frequency" onclick="this.select();" type="text" class="form-control" />
+                            </td>
+                            <td width="10%">
+                                <input [(ngModel)]="order.Duration" onclick="this.select();" type="text" class="form-control" />
+                            </td>
+                            <td width="30%">
+                                <input [(ngModel)]="order.Remarks" onclick="this.select();" type="text" class="form-control" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="margin-top: 15px;padding: 0px 10px 10px;">
+                        <a (click)="AddMedication()" class="add-button">Add</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div style="min-height: 80px;">
+            <h4 class="cstm-add-heading" style="text-align: left;color: #fff;border-bottom: 2px solid #fff;font-weight: 700;font-size: 30px;">Selected Orders</h4>
+
+            <div class="al-selected-orders lab-orders" *ngIf="labOrder.length">
+                <h4 style="color: #fff;font-weight: 700;">Lab</h4>
+                <p *ngFor="let eachOrder of labOrder; let i=index">
+                    {{eachOrder.Order.ItemName}}
+                    <a (click)="Remove(i,eachOrder.Order.PreferenceType)" style="display: inline-block; padding: 0px 4px 0px 4px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>
+                </p>
+            </div>
+
+            <div class="al-selected-orders imaging-orders" *ngIf="imagingOrder.length">
+                <h4 style="color: #fff;font-weight: 700;">Imaging</h4>
+                <p *ngFor="let eachOrder of imagingOrder; let i=index">
+                    {{eachOrder.Order.ItemName}}
+                    <a (click)="Remove(i,eachOrder.Order.PreferenceType)" style="display: inline-block; padding: 0px 4px 0px 4px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>
+                </p>
+            </div>
+
+            <div class="al-selected-orders medication-orders" *ngIf="medicationOrder.length">
+                <h4 style="color: #fff;font-weight: 700;">Medication</h4>
+                <p *ngFor="let eachOrder of medicationOrder; let i=index">
+                    {{eachOrder.Order.ItemName}} ({{eachOrder.FreqInWords}} )
+                    <a (click)="Remove(i,eachOrder.Order.PreferenceType)" style="display: inline-block;padding: 0px 4px 0px 4px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>
+                </p>
+            </div>
+
+            <div>
+                <a class="add-button" (click)="SubmitOrders()">Submit</a>
+            </div>
+
+        </div>
+
+        <a (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+
+    </div>
+   
+
+</div>

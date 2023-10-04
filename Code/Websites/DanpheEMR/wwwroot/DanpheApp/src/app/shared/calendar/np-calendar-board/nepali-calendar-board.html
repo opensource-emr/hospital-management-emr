@@ -1,0 +1,71 @@
+
+  <div class="np-calender-board-holder" #calendarBoard [ngClass]="this.fromBottom > this.screenHeight ? 'on-top':'on-bottom'">
+    <div class="calender-board pos-rel">
+      <div class="board-holder table-responsive">
+        <div class="place-holders">
+          <div class="flex-container" style="align-items: center;flex-basis: 65%;">
+            <div class="month-year-holder" style="flex-basis: 65%;">
+              <a (click)="monthListClicked()">{{currentMonth.monthName}}</a> ,
+              <a (click)="yearListClicked()">
+                <ng-container *ngIf="!showYearList">
+                  {{currentYear.yearNumberNep}}
+                </ng-container>
+                <ng-container *ngIf="showYearList">
+                  {{minYear.yearNumberNep}}-{{maxYear.yearNumberNep}}
+                </ng-container>
+              </a>
+            </div>
+            <div *ngIf="!showMonthList && !showYearList" class="inl-blk">
+              <a (click)="previousMonth()"><i class="fa fa-caret-left"></i></a>
+              <a (click)="nextMonth()"><i class="fa fa-caret-right"></i></a>
+            </div>
+          </div>
+          <div class="close-board ">
+            <a class="inl-blk" (click)="closeBoard()"><i class="fa fa-close"></i></a>
+          </div>
+        </div>
+        <table *ngIf="!showMonthList && !showYearList" class="table">
+          <thead>
+            <tr>
+              <th>आइत</th>
+              <th>सोम</th>
+              <th>मङ्गल</th>
+              <th>बुध</th>
+              <th>बिहि</th>
+              <th>शुक्र</th>
+              <th>शनि</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let week of weekListOfSelectedMonth;">
+              <td *ngFor="let da of week">
+                <a [ngClass]="currentYear.yearNumber == initiallyEnteredNepaliDate.Year
+               && currentMonth.monthNumber == initiallyEnteredNepaliDate.Month &&
+               da.value == initiallyEnteredNepaliDate.Day ? 'selected-day' : currentYear.yearNumber == todaysNepaliDate.Year
+               && currentMonth.monthNumber == todaysNepaliDate.Month &&
+               da.value == todaysNepaliDate.Day ? 'today':'normal-day'
+               " (click)="selectDate(da.value)" *ngIf="da.isValid && da.value > 0">{{da.value}}</a>
+                <span class="invalid-date" *ngIf="!da.isValid && da.value > 0">{{da.value}}</span>
+              </td>
+            </tr>
+            <tr><td colspan="7" style="text-align:right;"><button class="btn btn-today" (click)="selectToday()">Today</button></td></tr>
+          </tbody>
+        </table>
+        <div *ngIf="showYearList" class="yearlist flex-center-start flex-container">
+          <div *ngFor="let eachYear of nepYears" class="bs-16">
+            <a [ngClass]="currentYear.yearNumber == eachYear.yearNumber ?
+           'selected-year' : todaysNepaliDate.Year == eachYear.yearNumber ? 'this-year':'normal-year'
+               " (click)="yearSelected(eachYear.yearNumber, $event)">{{eachYear.yearNumberNep}}</a>
+          </div>
+        </div>
+        <div *ngIf="showMonthList" class="monthlist">
+          <div class="flex-center-start flex-container monthlist-inner">
+            <div *ngFor="let eachMonth of nepMonths" class="bs-25">
+              <a [ngClass]="currentMonth.monthNumber == eachMonth.monthNumber ? 'selected-month':
+             todaysNepaliDate.Month == eachMonth.monthNumber  ? 'this-month' : 'normal-month'" (click)="monthSelected(eachMonth.monthNumber, $event)">{{eachMonth.monthName}}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

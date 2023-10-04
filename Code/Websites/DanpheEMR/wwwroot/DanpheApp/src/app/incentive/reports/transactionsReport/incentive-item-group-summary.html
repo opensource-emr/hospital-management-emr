@@ -1,0 +1,62 @@
+<style>
+  .round-shadow-div {
+		padding: 15px;
+		margin-top: 15px;
+	}
+	.round-shadow-div .padLess_table th, .round-shadow-div .padLess_table td {
+		padding: 8px 5px !important;
+	}
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <div id="itmSummaryPrintPage" class="round-shadow-div">
+      <div class="row">
+        <span class="col-md-2 left">From Date: {{FromDate}}<br />ToDate: {{ToDate}}<br /></span>
+        <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px">
+          Doctor Name: <b>{{doctorName}}</b><br />
+        </span>
+        <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12" id="itmSummaryPrintPage">
+          <table class="table-striped table-hover table-bordered custom_table padLess_table" style="background-color:initial;width:100%; margin-top:15px;">
+            <thead style="background-color:whitesmoke">
+              <tr>
+                <td style="text-align:center"><b>Sr No.</b></td>
+                <td style="text-align:center"><b>Item Name</b></td>
+                <td style="text-align:center"><b>Quantity</b></td>
+                <!--<td style="text-align:center"><b>Total Bill Amt.</b></td>-->
+                <td style="text-align:center"><b>Incentive Amt.</b></td>
+                <td style="text-align:center"><b>TDS Amt.</b></td>
+                <td style="text-align:center"><b>Net Payable</b></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of allReportData;let i=index">
+                <td style="text-align:center">{{i+1}}</td>
+                <td>{{row.ItemName}}</td>
+                <td style="text-align:center">{{row.TotalQty}}</td>
+                <!--<td style="text-align:center">{{row.TotalBillAmt  | ParseAmount}}</td>-->
+                <td style="text-align:center">{{row.TotalIncentiveAmount  | ParseAmount}}</td>
+                <td style="text-align:center">{{row.TotalTDSAmount  | ParseAmount}}</td>
+                <td style="text-align:center">{{row.NetPayableAmt | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold">
+                <!--<td></td>-->
+                <td></td>
+                <td style="text-align:center"><b>Total :</b></td>
+                <td style="text-align:center">{{summary.total_Qty  | ParseAmount}}</td>
+                <td style="text-align:center">{{summary.tot_InctvAmt  | ParseAmount}}</td>
+                <td style="text-align:center">{{summary.tot_TDSAmt  | ParseAmount}}</td>
+                <td style="text-align:center">{{summary.tot_NetPayable  | ParseAmount}}</td>
+                
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

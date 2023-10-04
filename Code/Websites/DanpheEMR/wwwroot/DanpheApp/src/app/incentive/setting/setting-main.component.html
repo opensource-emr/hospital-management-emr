@@ -1,0 +1,12 @@
+<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+    <!-- <li>
+      <a routerLink="EmployeeItemsSetupOld" [routerLinkActive]="'a-tab-active'">Employee Items Setup Old</a>
+    </li> -->
+  </ul>
+</div>
+<router-outlet>
+</router-outlet>

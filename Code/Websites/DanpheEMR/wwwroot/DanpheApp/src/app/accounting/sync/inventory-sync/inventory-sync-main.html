@@ -1,0 +1,90 @@
+﻿<div *ngIf="items">
+    <div>
+        <h5><b>Inventory Transactions</b></h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr style="background-color:whitesmoke">
+                    <th>
+                        <input class="zoomcheckbox" [(ngModel)]="selectAll" name="IsSelectedAll" width="100" type="checkbox" ng-checked="selectAll=true"
+                               (change)="ToggleSelectAll(i)">
+                    </th>
+                    <th>Goods Receipt Date</th>
+                    <th>Vendor Name</th>
+                    <th>Total Amount</th>
+                    <th>Remarks</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tr *ngFor="let itm of items;let i=index">
+                <td>
+                    <input class="zoomcheckbox" [(ngModel)]="itm.IsSelected" name="IsSelected" width="100" type="checkbox" ng-checked="itm.IsSelected=true"
+                           (change)="ToggleItemSelection(i)">
+                </td>
+                <td>{{itm.GoodsReceiptDate  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{itm.VendorName}}</td>
+                <td>{{itm.TotalAmount | ParseAmount  | Currency:'4'}}</td>
+                <td>{{itm.Remarks | CapitalFirstLetter}}</td>
+                <td><button type="button" (click)="ViewDetail(itm)" class="btn btn-default">ViewDetail</button></td>
+            </tr>
+        </table>
+    </div>
+    <button type="button" (click)="PullToAccounting()" class="btn blue-madison">Pull To Accounting</button>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="selItem">
+    <div class="portlet-body form" style="background-color:white">
+        <div class="col-md-12">
+            <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+            </div>
+            <div class="col-md-8 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+                <div class="col-md-12">
+                    <div class="caption" style="color:blue;">
+                        <h3 style="text-align:center">
+                            <b>Details of Goods Receipt on {{selItem.GoodsReceiptDate  | DanpheDateTime:'format':'YYYY-MM-DD'}}</b>
+                        </h3>
+                    </div>
+                    <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="selItem=null" title="Cancel">X</a>
+                    <hr />
+                </div>
+                <div class="col-md-12">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr style="background-color:whitesmoke">
+                                    <th>Item Name</th>
+                                    <th>Reveived Quantity</th>
+                                    <th>ItemRate</th>
+                                    <th>VAT Amount</th>
+                                    <th>TotalAmount</th>
+                                </tr>
+                            </thead>
+                            <tr *ngFor="let invItm of selItem.GoodsReceiptItems">
+                                <td>{{invItm.ItemName}}</td>
+                                <td>{{invItm.ReceivedQuantity}}</td>
+                                <td>{{invItm.ItemRate | ParseAmount  | Currency:'4'}}</td>
+                                <td>{{invItm.VATAmount | ParseAmount  | Currency:'4'}}</td>
+                                <td>{{invItm.TotalAmount | ParseAmount  | Currency:'4'}}</td>
+                            </tr>
+                        </table>
+                </div>
+            </div>
+            <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+

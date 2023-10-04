@@ -1,0 +1,16 @@
+
+<div>
+    <a class="btn blue bordered" style="background-color:#337ab7;" name="name" (click)="AddLeaveCategory()">
+        <span class="glyphicon glyphicon-plus"></span>  Create Leave Category
+    </a>
+      <Add-Leave-Category [showAddPage]="showAddPage"
+      [selectedLeave]="selectedLeave"
+      (callback-add)="callbackAdd($event)"></Add-Leave-Category>  
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="LeaveCategoryGridColumns" [grid-data]="LeaveCategoryList"
+        (grid-actions)="LeaveGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

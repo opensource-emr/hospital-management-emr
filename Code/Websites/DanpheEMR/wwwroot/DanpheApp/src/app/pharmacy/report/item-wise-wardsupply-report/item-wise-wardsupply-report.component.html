@@ -1,0 +1,109 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                  class="caption-subject">Item Wise Purchase Report</span> </div>
+    </div>
+    <div class="12">
+        <div class="col-md-5">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+        </div>
+        <div class="col-md-7 text-right">
+            <label>Ward:</label>
+            <div style="display: inline-block;">
+                <input danphe-auto-complete class="form-control"
+                       [(ngModel)]="SelectedWard" [source]="SubStoreList"
+                       [list-formatter]="SubStoreFormatter"
+                       placeholder="--Select Ward--"
+                       display-property-name="WardName"
+                       value-property-name=null
+                       onClick="this.select();"
+                       [grid-sort]="'WardName'"
+                       match-formatted="true"
+                       (valueChanged)="OnWardChange($event)" max-num-list="10"
+                       min-chars="1" />
+            </div>
+            <label style="margin-left:10px">Item:</label>
+            <div style="display: inline-block;">
+                <input danphe-auto-complete class="form-control"
+                       [(ngModel)]="SelectedItem"
+                       [source]="ItemList"
+                       [list-formatter]="ItemListFormatter"
+                       placeholder="--Select Item--"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       onClick="this.select();"
+                       [grid-sort]="'ItemName'"
+                       match-formatted="true"
+                       (valueChanged)="OnItemChange($event)"
+                       max-num-list="10"
+                       min-chars="1" />
+            </div>
+            <div style="display: inline-block;">
+                <button type="button" class="btn btn-primary" (click)="GetItemWiseWardSupplyReport()" [disabled]="loading"
+                        style="margin-left:10px"><span *ngIf="!loading">Show Report</span><span *ngIf="loading">Loading...</span>
+                </button>
+                <button *ngIf="IsSummaryViewMode || ShowItemWiseWardSupplySummary" class="btn blue" style="margin-left:10px" type="button"
+                        (click)="SwitchViews()"> {{ViewMode}}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="row" *ngIf="!IsSummaryViewMode">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="ItemWiseWardSupplyReportColumns"
+                     [grid-data]="ItemWiseWardSupplyData"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [grid-date-range]="dateRange"
+                     [grid-exportOptions]="gridExportOptions"
+                     [report-for]="'pharmacy'"
+                     [grid-showExport]="true"
+                     [filter-parameters]="FilterParameters"
+                     [show-header]="true"> </danphe-grid>
+    </div>
+</div>
+<div class="row" *ngIf="IsSummaryViewMode && ItemWiseWardSupplySummaryData.length">
+    <div class="col-md-12" id="item-wise-ward-supply-summary-print-page">
+        <div class="table-wrapper">
+            <table class="table-hover tblReport" border="1" width="100%" style="background-color:initial;">
+                <tbody>
+                    <tr style="background-color: #f3f4f6;color: #000;">
+                        <td style="font-weight:bold;">S.N.</td>
+                        <td style="font-weight:bold">Ward Name</td>
+                        <td style="font-weight:bold;text-align:right;">Dispatched Value</td>
+                        <td style="font-weight:bold;text-align:right;">Consumed Value</td>
+                        <td style="font-weight:bold;text-align:right;">Balance Value</td>
+                    </tr>
+                    <tr *ngFor="let row of ItemWiseWardSupplySummaryData;let i=index">
+                        <td>{{i+1}}</td>
+                        <td style="text-align:left">{{row.WardName }}</td>
+                        <td style="text-align:right">{{row.DispatchValue | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.ConsumedValue | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.BalanceValue | ParseAmount}} </td>
+                    </tr>
+
+                    <tr class="tbl-footer-summary">
+                        <td style="font-weight:bold;text-align:right;" colspan="2">Grand Total</td>
+                        <td style="font-weight:bold;text-align:right;">{{total_SummaryView.DispatchValue| ParseAmount}}</td>
+                        <td style="font-weight:bold;text-align:right;">{{total_SummaryView.ConsumedValue | ParseAmount}}</td>
+                        <td style="font-weight:bold;text-align:right">{{total_SummaryView.BalanceValue | ParseAmount}}</td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div></div>
+    <div class="col-md-12" style="text-align:center; margin-top: 15px;">
+        <button class="blue btn" type="button" (click)="Print('item-wise-ward-supply-summary-print-page')"> <i class="fa fa-print"></i> Print
+        </button>
+        <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('item-wise-ward-supply-summary-print-page')">
+            <i class="fa fa-file-excel-o"></i> Export
+        </button>
+    </div>
+</div>
+<print-header style="display:none;padding:0px" id="headerForPrint" [unit-name]="'Department Of Pharmacy'"
+              [show-pan-number]="headerDetailParam.showPANNo" [show-phone-number]="headerDetailParam.showPhoneNumber">
+</print-header>

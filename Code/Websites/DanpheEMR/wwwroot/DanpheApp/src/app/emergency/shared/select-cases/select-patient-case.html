@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-md-6">
+        <select *ngIf="allCasesMaster && allCasesMaster.length" class="form-control" #allCase
+            [(ngModel)]="selectedMainCase" [ngModelOptions]="{standalone: true}" (change)="assignNestedCases(allCase.value);">
+            <option value=0 selected>All</option>
+            <option *ngFor="let case of allCasesMaster" value="{{case.Id}}">{{case.Name}}</option>
+        </select>
+    </div>
+
+    <div class="col-md-6" *ngIf="nestedCases && nestedCases.length >1 ">
+        <danphe-multiselect [ddl-data]="nestedCases" [pre-selected]="selectedData"
+            [placeholder-text]="'--Nested Cases--'" [value-property-name]="'Id'"
+            (selected-items-list)="CasesOnChange($event)" [display-property-name]="'Name'" [single-selection]="false">
+        </danphe-multiselect>
+    </div>
+</div>

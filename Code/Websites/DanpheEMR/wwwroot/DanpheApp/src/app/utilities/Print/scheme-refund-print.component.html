@@ -1,0 +1,239 @@
+<title>Default Invoice</title>
+<!-- Set Page: A5, A4, A3 -->
+<!-- Set Landscape or Portrait -->
+<style>
+  @page {
+    size: A5 auto;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-family: Verdana, Geneva, Tahoma;
+  }
+
+  body {
+    font-size: 12px;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    font-family: Verdana, Geneva, Tahoma;
+  }
+
+  table td,
+  table th {
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    /* border: 1px solid #000; */
+  }
+
+  /* table tr:nth-child(2) td, table tr th  {
+            padding: 10px !important;
+        } */
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    /* display: flex; */
+    padding: 5px 10px 0 10px;
+    /* margin-bottom: -21px; */
+  }
+
+  .inv-heading {
+    width: 70%;
+    padding: 20px;
+  }
+
+  .c_name {
+    font-size: 16px;
+    margin-bottom: 5px;
+    margin-top: 0;
+  }
+
+  .c_paragraphs {
+    font-size: 12px;
+    margin: 0 0 5px 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    /* border-collapse: collapse; */
+    margin-bottom: 30px;
+  }
+
+  table td,
+  table th {
+    /* padding: 10px; */
+    /* border: 1px solid #ccc; */
+    text-align: left;
+    vertical-align: top;
+    /* line-height: 20px; */
+  }
+
+  table th {
+    /* background-color: #eee; */
+  }
+
+  @media print {
+
+    header,
+    footer,
+    nav,
+    aside,
+    form {
+      display: none;
+    }
+
+    body {
+      font-size: 12px;
+      /* color: #000; */
+      margin: 0;
+      padding: 0;
+      font-family: Verdana, Geneva, Tahoma;
+    }
+
+    .c_paragraphs {
+      font-size: 12px;
+      margin: 0 0 5px 0;
+      padding: 0;
+    }
+
+    .c_name {
+      font-size: 16px;
+      margin-bottom: 5px;
+      margin-top: 0;
+    }
+
+    table {
+      margin-bottom: 20px;
+      width: 100% !important;
+    }
+
+    table td,
+    table th {
+      padding: 0;
+      /* border: 1px solid #000; */
+      vertical-align: top;
+    }
+
+    table th {
+      /* background-color: #ddd; */
+    }
+  }
+
+  @media print and (orientation: landscape) {
+
+    /* landscape styles */
+    .c_paragraphs {
+      font-size: 12px;
+    }
+
+    .c_name {
+      font-size: 16px;
+    }
+  }
+</style>
+
+<section class="sheet" id="id_print_scheme_refund" *ngIf="isSchemePrintDetailsLoaded">
+  <div class="box-body invoice header" style="color: #000; font-weight: 600;">
+    <table style="width: 800px; margin: 0 auto;" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="3" width="25%">
+          <img src="\themes\theme-default\images\office-logo-new.png" alt="Danphe Logo" height="70px" width="180px">
+        </td>
+        <td colspan="6" width="50%">
+          <h3 class="c_name" style="text-align: center;"><strong>{{headerDetail.CustomerName}}</strong></h3>
+          <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Address}}</p>
+          <p class="c_paragraphs" style="text-align: center;">Ph No: {{headerDetail.Tel}}</p>
+        </td>
+        <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+          <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>{{headerDetail.CustomerRegLabel}}</strong> </p>
+        </td>
+      </tr>
+    </table>
+    <table style="width: 800px; margin: 0 auto;" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="12" style="text-align: center;">
+          <p><strong>Scheme Refund Receipt</strong></p>
+        </td>
+      </tr>
+      <tr style="border: 1px solid #ccc;">
+        <td colspan="12" style="padding: 10px;">
+          <table style="width: 100%; margin-bottom: 0;">
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs"><strong>Receipt No:</strong> {{schemePrintDetails.FiscalYear}} {{'SCR'}}-{{schemePrintDetails.ReceiptNo}}</p>
+              </td>
+              <td colspan="6" style="text-align: right;">
+                <p class="c_paragraphs"><strong>Date:</strong> {{schemePrintDetails.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}} ({{localDate}})
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs"><strong>Hospital No : </strong> {{schemePrintDetails.HospitalNo}}</p>
+              </td>
+              <td colspan="6" style="text-align: right;">
+                <p class="c_paragraphs"><strong>Address : </strong>{{schemePrintDetails.Address}}</p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs"><strong>Patient's Name: </strong> {{schemePrintDetails.PatientName}}</p>
+              </td>
+              <td colspan="6" style="text-align: right;">
+                <p class="c_paragraphs"><strong>Payment Mode: </strong> {{schemePrintDetails.Paymentmode}} </p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="text-align: left;">
+                <p class="c_paragraphs"><strong>Contact No: </strong>{{schemePrintDetails.Contact}}</p>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="12" style="text-align: center;">
+                <p class="c_paragraphs"><strong>refund Under {{schemePrintDetails.SchemeName}} </strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="12" style="text-align: center; padding: 0 10px 0 10px;">
+          <p class="c_paragraphs">Amount <strong> {{coreService.currencyUnit}} {{schemePrintDetails.Amount}}</strong> </p>
+          <p><strong>Under {{schemePrintDetails.SchemeName}} &nbsp; {{coreService.currencyUnit}} {{schemePrintDetails.Amount}} is refunder to
+              {{schemePrintDetails.PatientName}}</strong>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="12" style="text-align: center; padding: 0 10px 10px 10px;">
+          <p class="c_paragraphs">In Words : <strong>{{schemePrintDetails.Amount | NumberInWords}} </strong>Only</p>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="12" style="padding: 0 10px 10px 10px; vertical-align: top;">
+          <p class="c_paragraphs"><strong>Remarks: </strong> {{schemePrintDetails.Remarks}} </p>
+        </td>
+      </tr>
+      <tr style="border-top: 1px solid #ccc;">
+        <td colspan="12" style="padding: 10px; text-align: left;">
+          <p class="c_paragraphs"><span>Refunded By</span> {{CurrentUser.UserName}}
+            on {{DateTimeNow | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<p style="text-align:center;" class="m1">
+  <button class="btn green btn-success" id="btn_PrintReceipt" (click)="print()">Print Receipt
+    <i class="glyphicon glyphicon-print"></i>
+  </button>
+</p>
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="printDetails">
+</app-print-page>

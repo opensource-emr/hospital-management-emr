@@ -1,0 +1,45 @@
+<!-- <link href="../../../../../themes/theme-default/TabControl.css" rel="stylesheet" /> -->
+<div>
+  <div class="page-bar fixed-top-bar">
+    <ul class="page-breadcrumb ">
+      <li *ngFor="let route of validRoutes">
+        <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" aria-expanded="true">{{route.DisplayName}}</a>
+      </li>
+    </ul>
+  </div>
+</div>
+<router-outlet>
+</router-outlet>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="messageDetail">
+  <div class="portlet-body form">
+    <div class="form-horizontal hm-form">
+      <div class="form-body">
+        <div class="col-md-6 col-md-offset-3">
+          <!-- <div class="col-md-2 hidden-xs hidden-sm">
+          </div> -->
+
+          <div class="modelbox-div clearfix">
+            <div class="caption lb-caption">
+              <h3>
+                <span>Message Of The Day </span>
+              </h3>
+              <a class="btn btn-danger" (click)="CloseMessageOfTheDay()" title="Cancel">X</a>
+            </div>
+
+            <div class="col-md-12">
+              <div class="col-md-10" style="margin-right: 24px;">
+                <div class="form-group">
+                  <p>
+                    {{messageDetail}}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

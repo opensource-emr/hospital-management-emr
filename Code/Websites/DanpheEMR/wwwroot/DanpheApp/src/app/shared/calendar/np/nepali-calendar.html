@@ -1,0 +1,58 @@
+<div style="display: flex;">
+  <div *ngIf="showCalendar && !showmonthCalendar" class="np-datepickr-holdr" #dob style="margin: 2px;">
+    <div class="selector-enter">
+      <input id="inputYear" #inputYear (keypress)="yearKeyPress($event, inputMonth)" (focusout)="yearOnFocusOut()"
+        (keydown)="keyDownPressed($event,'year',inputDay,inputMonth,inputYear)" class="year cstmIpNepDate" type="text"
+        name="year" placeholder="YYYY" value="{{yearNo}}" [(ngModel)]="yearNo" (click)="currClicked(inputYear);"
+        maxlength="4" max="2090" (keyUp.enter)="FocusOut()" onfocus="this.select();"/>
+
+      <p class="vert-center">/</p>
+
+      <input id="inputMonth" #inputMonth (keypress)="monthKeyPress($event, inputDay)" (focusout)="daysNMonthFocusOut()"
+        (keydown)="keyDownPressed($event,'month',inputYear,inputDay,inputMonth)" class="month cstmIpNepDate" type="text"
+        name="month" placeholder="MM" value="{{monthNo}}" [(ngModel)]="monthNo" (click)="currClicked(inputMonth)"
+        maxlength="2" max="12" min="1" (keyUp.enter)="FocusOut()" onfocus="this.select();"/>
+
+      <p class="vert-center">/</p>
+
+      <input id="inputDay" #inputDay (keypress)="dayKeyPress($event,inputYear)" (focusout)="daysNMonthFocusOut()"
+        (keydown)="keyDownPressed($event,'day',inputMonth,inputYear,inputDay)" class="day cstmIpNepDate" type="text"
+        name="day" placeholder="DD" value="{{dayNo}}" [(ngModel)]="dayNo" (click)="currClicked(inputDay)" maxlength="2"
+        max="32"  (keyUp.enter)="FocusOut()" onfocus="this.select();" />
+    </div>
+
+    <div class="cal-board-sel">
+      <a class="vert-center" (click)="showCalenderView($event)"><i class="fa fa-calendar"></i></a>
+    </div>
+
+
+    <np-calendar-board *ngIf="showBoard"
+                       [nepaliDate]="npDateModelForBoard"
+                       [minimum-date]="minValidDate_np"
+      [maximum-date]="maxValidDate_np"
+                       [sys-min-nepali-year]="min_calYear_Np"
+                       [sys-max-nepali-year]="max_calYear_Np"
+      (dateChangeEmitter)="closeCalendarView($event)"></np-calendar-board>
+
+  </div>
+
+  <!-- START:Vikas: 06th Aug 20: Added for month calendar chnages. -->
+  <div *ngIf="showmonthCalendar" class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">    
+      <select  id="FiscalYearName" [(ngModel)]="selectedFiscalYear" (change)="OnFiscalYearValueChange()" style="width: 100%;">
+        <option *ngFor="let opt of FilteredFiscalYearList; let i = index;" [ngValue]="opt">
+          {{opt.FiscalYearName}}
+        </option>
+      </select>
+ 
+  </div>
+  <div *ngIf="showmonthCalendar" class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">
+    <select id="MonthId" [(ngModel)]="monthDisplayNumber" class="datefield month" style="width: 100%;"
+      (ngModelChange)="onMonthValueChange()">
+      <option *ngFor="let m of showMonthsList" value="{{m.monthDisplayNumber}}" [disabled]="m.disabled">{{m.monthName}}</option>
+    </select>
+  </div>
+ <!-- END:Vikas: 06th Aug 20: Added for month calendar chnages. -->
+  <div *ngIf="showTime" [ngClass]="display =='multi-line' ? 'multi-line-time':'single-line-time'">
+    <input class="neptime" type="time" onfocus="this.select();" name="neptime" [(ngModel)]="nepaliTime" (ngModelChange)="OnTimeChange();" />
+  </div>
+</div>

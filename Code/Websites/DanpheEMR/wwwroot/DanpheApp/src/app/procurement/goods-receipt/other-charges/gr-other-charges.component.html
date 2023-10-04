@@ -1,0 +1,107 @@
+<style>
+    .add-charges-lebel {
+        display: flex;
+        justify-content: center;
+    }
+</style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showForm">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption lb-caption">
+                        <h3 class="add-charges-lebel"> <span>Add Other Charges</span> </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel"><em class="fa fa-times"></em></a>
+                    </div>
+                    <div class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table aria-describedby="other-charge-table" class="table table-bordered inv_table">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th><strong>Charge Type<sup style="color:red">*</sup></strong></th>
+                                                <th><strong>Amount</strong></th>
+                                                <th><strong>VAT(%)</strong></th>
+                                                <th><strong>VAT Amount</strong></th>
+                                                <th><strong>Total Amount</strong></th>
+                                                <th *ngIf="showVendorSelection"><strong>Vendor<sup style="color:red">*</sup></strong></th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let row of model.OtherChargesItem ; let i=index">
+                                                <tr>
+                                                    <td>
+                                                        <button type="button" class="btn btn-danger delete-btn btn-rounded" (click)="deleteOtherChargesItem(i)" [disabled]="IsGRItemNotEditable"><em class="fa fa-times"></em></button>
+                                                    </td>
+                                                    <td>
+                                                        <form [formGroup]="row.ItemOtherChargeValidator">
+                                                            <input danphe-auto-complete style="width:200px; height: 30px;" [(ngModel)]="row.SelectedCharge" match-formatted="true" class="inv-itm-srchbox" [grid-sort]="'ChargeName'" id="chargeName{{i}}" [source]="otherChargesDetails" [list-formatter]="itemListFormatter" placeholder="Charge Name" display-property-name="ChargeName" value-property-name=ChargeId min-chars="0" max-num-list="10" (ngModelChange)="onChargeNameChanged(row.SelectedCharge, i)" onclick="this.select();" (keyup.enter)="setFocusById('Amount',i)" [attr.disabled]="IsGRItemNotEditable ? true: null" formControlName="ChargeId" />
+                                                        </form>
+                                                        <div style="color:red" *ngIf="row.IsDirty('ChargeId')" [hidden]="row.IsValidCheck('ChargeId','required')">
+                                                            Please select valid ChargeName.
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <form [formGroup]="row.ItemOtherChargeValidator">
+                                                            <input type="number" [(ngModel)]="row.Amount" formControlName="Amount" id="Amount{{i}}" class="form-control" onclick="this.select();" onwheel="this.blur()" (keyup.enter)="setFocusById('vatPercentage',i)" [attr.disabled]="IsGRItemNotEditable ? true: null" (focusout)="calculateTotalOtherCharge()">
+                                                        </form>
+                                                        <div style="color:red" *ngIf="row.IsDirty('Amount')" [hidden]="row.IsValidCheck('Amount','invalidNumber')">
+                                                            Please Enter Positive Value.
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <form [formGroup]="row.ItemOtherChargeValidator">
+                                                            <input type="number" [(ngModel)]="row.VATPercentage" class="form-control" formControlName="VATPercentage" name="VATPercentage" id="vatPercentage{{i}}" onclick="this.select();" onwheel="this.blur()" (keyup.enter)="setFocusById('VATAmount',i)" [attr.disabled]="IsGRItemNotEditable ? true: null" (focusout)="calculateTotalOtherCharge()">
+                                                        </form>
+                                                        <div style="color:red" *ngIf="row.IsDirty('VATPercentage')" [hidden]="row.IsValidCheck('VATPercentage','invalidNumber')">
+                                                            Please Enter Positive Value.
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <form [formGroup]="row.ItemOtherChargeValidator">
+                                                            <input type="number" [(ngModel)]="row.VATAmount" class="form-control" formControlName="VATAmount" name="VATAmount" id="VATAmount{{i}}" onclick="this.select();" onwheel="this.blur()" [attr.disabled]="IsGRItemNotEditable ? true: null" (focusout)="OnVATAmountChangeCalculateTotalOtherCharge()" (keyup.enter)="setFocusById('vendorName',i)">
+                                                        </form>
+                                                        <div style="color:red" *ngIf="row.IsDirty('VATAmount')" [hidden]="row.IsValidCheck('VATAmount','invalidNumber')">
+                                                            Please Enter Positive Value.
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" [(ngModel)]="row.TotalAmount" [attr.disabled]="true" class="form-control" [ngModelOptions]="{standalone: true}" name="TotalAmount" id="TotalAmount{{i}}">
+                                                    </td>
+                                                    <td *ngIf="showVendorSelection">
+                                                        <input danphe-auto-complete match-formatted="true" [(ngModel)]="row.VendorName" [grid-sort]="'VendorName'" id="vendorName{{i}}" [source]="vendorList" [list-formatter]="VendorListFormatter" placeholder="Select vendor" display-property-name="VendorName" value-property-name=null (valueChanged)="onVendorChanged($event, i)" (ngModelChange)="onVendorChanged($event, i)" max-num-list="20" onclick="this.select();" [attr.disabled]="IsGRItemNotEditable ? true: null" />
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary add-btn btn-rounded" (click)="addOtherChargesItem()" [disabled]="IsGRItemNotEditable"><em class="fa fa-plus"></em></button>
+                                                    </td>
+                                                </tr>
+                                            </ng-container>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div class="col-md-6"></div>
+                                <div class="col-md-2">
+                                    <label>Total Other Charge Amount :</label>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" [(ngModel)]="model.TotalOtherCharge" class="form-control" placeholder="Total Other Charge" disabled>
+                                </div>
+                                <div class="text-right" style="margin: 1rem;">
+                                    <button class="btn btn-success" (click)="Discard()" type="button" *ngIf="!IsGRItemNotEditable">Discard</button>
+                                    <button type="submit" id="btn-add" class="btn btn-success" (click)="Save()" [disabled]="IsGRItemNotEditable">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="row" *ngIf="qrService.show">
+  <div class="col-md-4" style="padding-bottom: 12px;">
+    <div class="row">
+
+      <!--We don't need QR-Scanner component as it was using camera and was made for Temporary purpose.
+      The actual QR-Scanner reads the value and assigns automatically to the textbox where the focus() is.
+      Sud:22-Oct'2019-->
+      <!--<div *ngIf="department != 'lab'" class="col-md-4">
+        <button class="btn btn-sm blue" (click)="OpenScanner()" *ngIf="!qrService.openScanner">
+          Scan Again ?
+        </button>
+        <button class="btn btn-sm red" (click)="CloseCamera()" *ngIf="qrService.openScanner">
+          <i class="fa fa-close"></i>
+          Close Scanner
+        </button>
+        <div style="width: 200px;height:200px;" *ngIf="qrService.openScanner">
+          <qr-scanner [debug]="true"
+                      [canvasWidth]="200"
+                      [canvasHeight]="200"
+                      [stopAfterScan]="false"
+                      [updateTime]="50" (onRead)="OnScanSuccess($event)">
+          </qr-scanner>
+
+        </div>
+      </div>-->
+      <div class="col-md-12">
+        <div class="col-md-6" style="padding-left: 0px;">
+          <input type="text" id="txtHosptlNum" [(ngModel)]="patientCode" (keydown.enter)="handleKeyDown($event)" onfocus="this.select();" class="form-control" placeholder="Enter Hospital No.." />
+        </div>
+        <div class="col-md-6 text-left" style="padding-left: 0px;">
+          <button class="btn blue btn-sm" style="border-radius:4px !important; height: 30px;" (click)="LoadPatientInfo(patientCode)">Load</button>
+        </div>
+        <div class="col-md-12">
+          <span *ngIf="invalidPatientCode" style="color:red;">Couldn't load patient information, please type it manually.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col-md-12" *ngIf="showPatientPanel">
+    <div class="page-bar bill-p-info mt10">
+      <span>
+        <i class="fa fa-user"></i>&nbsp;Name : <b>{{selPatient.ShortName}}</b>
+      </span>
+      <span>
+        <i class="fa fa-h-sign"></i>&nbsp;Hospital # : <b> {{selPatient.PatientCode}}</b>
+      </span>
+      <span>
+        <i class="fa fa-male"></i>&nbsp;Age/Sex : <b>{{selPatient.Age}}/ {{selPatient.Gender}}</b>
+      </span>
+      <span>
+        <i class="fa fa-phone"></i>&nbsp;Contact No :  <b>{{selPatient.PhoneNumber}}</b>
+      </span>
+    </div>
+  </div>
+</div>
+
+

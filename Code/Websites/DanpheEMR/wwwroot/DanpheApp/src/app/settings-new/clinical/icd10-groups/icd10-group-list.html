@@ -1,0 +1,7 @@
+<div *ngIf="showAllList" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="icdGroupColumns" [grid-data]="icdGroupList"
+            (grid-actions)="GridActionsCall($event)" [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>

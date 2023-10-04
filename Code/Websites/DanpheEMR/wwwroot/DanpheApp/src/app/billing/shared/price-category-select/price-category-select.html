@@ -1,0 +1,17 @@
+<style>
+  .disable-dropdown {
+    background-color: #eef1f5;
+  }
+
+  select:focus {
+    border: 1px solid red;
+  }
+</style>
+<div style="z-index: 2;" *ngIf="enabledPriceCategories && enabledPriceCategories.length>0">
+  <label class="margin-right-10">Price Category:</label>
+  <select id="id_select_priceCategory" [(ngModel)]="selectedPriceCategoryId" (change)="OnPriceCategoryChange()" [disabled]="dropdownDisabled"
+          [ngClass]="{'disable-dropdown': dropdownDisabled}">
+    <option *ngFor="let cat of enabledPriceCategories" value="{{cat.PriceCategoryId}}">{{cat.PriceCategoryName}}</option>
+  </select>
+
+</div>

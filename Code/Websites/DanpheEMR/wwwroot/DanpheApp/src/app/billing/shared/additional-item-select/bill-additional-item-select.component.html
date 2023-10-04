@@ -1,0 +1,18 @@
+<div class="form-body" *ngIf="(BillingAdditionalServiceItems && BillingAdditionalServiceItems.length); else NoAdditionalServiceItem">
+  <select class="form-control" (change)="OnAdditionalServiceItemChange($event)" id="id_additional_serviceItem_selection">
+    <option value="">--select Additional Item--</option>
+    <option *ngFor="let item of BillingAdditionalServiceItems" value="{{item.AdditionalServiceItemId}}">{{ item.ItemName }}
+    </option>
+  </select>
+</div>
+<ng-template #NoAdditionalServiceItem>
+  <div class="form-body" style="text-align: center;margin-bottom: 20px;">
+    <div style="margin-left: 10px;margin-right:10px;padding:10px; background-color:rgb(255 209 209)">
+      <span style="color: #d51717;">No Additional Service Items Available for current PriceCategory</span>
+    </div>
+  </div>
+</ng-template>
+<div class="additional-serviceItem-footer" *ngIf="BillingAdditionalServiceItems && BillingAdditionalServiceItems.length">
+  <button id="id_btn_assignAdditionalServiceItem" class="btn green btn-success margin-7-hr"
+          (click)="AddAdditionalInvoiceItemAsDraft()">Ok</button>
+</div>

@@ -1,0 +1,14 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+	// List of extensions which should be recommended for users of this workspace.
+	"recommendations": [
+		"Angular.ng-template", // Angular Language Service - to find issues in template, to navigate to methods from the template
+		"eamodio.gitlens", // Gitlens for git history
+		"aaron-bond.better-comments", // Better Comments to improve readability by color coding comments
+		"streetsidesoftware.code-spell-checker", // Spell Checker and Auto-Suggestion
+		"hediet.vscode-drawio" // Drawio for Technical Diagrams and Mockups
+	],
+	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+	"unwantedRecommendations": []
+}

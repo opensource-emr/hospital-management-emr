@@ -1,0 +1,51 @@
+<div class="col-md-12" style="text-align:center; padding-bottom: 20px;">
+  <span>Print MRP-Drug Certificate (ECHS)</span>
+</div>
+<div class="col-md-12">
+  <div class="col-md-5" style="padding-left: 0px; padding-right:0px">
+    <div class="col-md-12" style="padding-left: 0px; padding-right:0px">
+      <div class="col-md-5" style="padding-left: 0px; display:flex; justify-content:space-between;">
+        <span>Search Patient</span>
+        <span>:</span>
+      </div>
+      <div class="col-md-7" style="padding-left:4px; padding-right:0px;">
+        <input danphe-auto-complete id="srch_PatientList" class="col-md-12 form-control searchtbx" [(ngModel)]="patientObj"
+               [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+               placeholder="search by HospitalNo, Patient Name" display-property-name="ShortName" value-property-name=null
+               (ngModelChange)="PatientInfoChanged()" onClick="this.select()" max-num-list="500"
+               (keyup.enter)="SetFocusOn('txtBillNo')" [min-chars]="patientSearchMinCharacterCount" match-formatted="true"
+               [grid-sort]="'ShortName'" style="width: 100% !important;" />
+      </div>
+    </div>
+    <div class="col-md-12" style="margin-top: 5px; padding-left: 0px; padding-right:0px">
+      <div class="col-md-5" style="padding-left: 0px; display:flex; justify-content:space-between;">
+        <span>Enter Bill No</span>
+        <span>:</span>
+      </div>
+      <div class="col-md-7" style="padding-left:0px; padding-right:35px;">
+        <input id="txtBillNo" class="col-md-10 form-control" placeholder="Enter Bill No" [(ngModel)]="billNumber"
+               (keyup.enter)="SetFocusOn('btnShowEchsMrpCertificate')" />
+      </div>
+    </div>
+    <div class="col-md-12" style="margin-top: 5px; padding-left:0px;">
+      <button class="btn green btn-success" id="btnShowEchsMrpCertificate" (click)=" ShowEchsMrpCertificate()"
+              [disabled]="!isPatientSelected || !(billNumber && billNumber.trim().length > 0)">Show MRP-Drug
+        Certificate</button>
+    </div>
+  </div>
+  <div class="col-md-7" *ngIf="isPatientSelected" style="font-size:12px; background-color: rgb(180, 183, 187);">
+    <div class="col-md-12" style="display:flex; justify-content: space-between; padding: 5px 10px 5px 10px;">
+      <span>Patient Name&nbsp;:&nbsp;{{patientObj.ShortName}}</span>
+      <span>Hospital No&nbsp;:&nbsp;{{patientObj.PatientCode}}</span>
+    </div>
+    <div class="col-md-12" style="display:flex; justify-content: space-between; padding: 5px 10px 5px 10px;">
+      <span>Age/Sex&nbsp;:&nbsp;{{patientObj.Age}}/{{patientObj.Gender}}</span>
+      <span *ngIf="patientObj.SchemeName">Scheme&nbsp;:&nbsp;{{patientObj.SchemeName}}</span>
+    </div>
+  </div>
+</div>
+<echs-mrp-drug-certificate-print *ngIf="showEchsMrpDrugCertificatePrintPage"
+                                 [show-echs-mrp-drug-certificate-print-page]="showEchsMrpDrugCertificatePrintPage"
+                                 [patient-obj]="patientObj"
+                                 [bill-number]="billNumber"
+                                 (hide-echs-mrp-drug-certificate-print-page)="HideEchsMrpDrugCertificatePrintPage($event)"></echs-mrp-drug-certificate-print>

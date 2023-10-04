@@ -1,0 +1,78 @@
+<style>
+    .btn-critc:hover {
+        background: #f70a0a !important;
+        color: #fff;
+    }
+
+    .btn-moderate:hover {
+        background: #ff4500 !important;
+        color: #fff;
+    }
+
+    .btn-normal:hover {
+        background: #50e812 !important;
+        color: #fff;
+    }
+</style>
+<div class="cstm-pat-registration er-pat-registration">
+    <div class="row">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="col-md-12">
+                      <div class="row">
+                        <a class="btn blue bordered btn-sm cstm-pat-registration-hdr" name="Anonymous Patient">
+                          <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
+                          <span style="display: inline-block; margin-left: 5px;">Assign Doctor</span>
+                        </a>
+                      </div>                        
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered tbl-er-pat-info">
+                                <thead>
+                                    <tr>
+                                        <th>Patient Name</th>
+                                        <th>Age/Sex</th>
+                                        <th>Visit Date/Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ERPatient.FullName}}</td>
+                                        <td>{{ERPatient.Age}}/{{ERPatient.Gender}}</td>
+                                        <td>{{ERPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div style="width: 100%; color: #fff; margin: 0 auto;padding: 15px;">
+                            <div style="width: 100%; height: 200px;">
+                                <label><strong>Select Doctor:</strong></label>
+                                <div style="color: #000;">
+                                    <input style="color: #000;width: 30%;" class="form-control cstm-form-control" danphe-auto-complete
+                                           [(ngModel)]="doctorSelected"
+                                           [source]="allDoctorList"
+                                           [list-formatter]="AssignedToDocListFormatter"
+                                           placeholder="Enter Doctor Name"
+                                           display-property-name="FullName"
+                                           value-property-name=null
+                                           match-formatted="true"
+                                           onClick="this.select();"
+                                           max-num-list="10" />
+                                    <a class="btn btn-primary" style="padding: 2px 15px; margin-top: 15px;" (click)="loading=true;AssignSelectedDoctor()">Ok</a>
+                                </div>                               
+                            </div>                           
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <a (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+    </div>
+</div>

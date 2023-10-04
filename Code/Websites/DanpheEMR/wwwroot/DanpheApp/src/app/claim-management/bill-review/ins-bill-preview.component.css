@@ -1,0 +1,82 @@
+body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    height: fit-content;
+    width: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    padding-block: 10px;
+  }
+
+  .container>div {
+    box-sizing: border-box;
+    padding: 0px;
+  }
+
+  .header {
+    height: fit-content;
+    width: 70%;
+    color:black;
+    box-shadow:0 5px 5px rgba(0,0,0,0.2);
+  }
+
+  .pat-info{
+    padding-block: 15px; 
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .editBillItem {
+    height: auto;
+    width: 30%;
+    display: flex;
+    align-items: center;
+    padding-block: 10px;
+    flex-wrap: wrap;
+  }
+
+  .print {
+    height: 700px;
+    width: 70%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    padding-block: 10px;
+    box-shadow:0 5px 5px rgba(0,0,0,0.2);
+  }
+
+  .summary {
+    display: flex;
+    width: 30%;
+    flex-direction: column;
+  }
+
+  .invoice-label{
+    text-decoration: underline;
+    padding-block: 10px;
+  }
+
+  .invoice-info {
+    box-shadow:0 5px 5px rgba(0,0,0,0.2);
+    margin-left: 15px;
+  }
+
+  .invoice-info-table{
+    display: flex;
+    justify-content: center;
+  }
+
+  .text-underline{
+    text-decoration: underline;
+  }
+
+  .b-htable td {
+    padding: 6px 4px;
+    font-size: 0.95em;
+    font-family: 'Source Sans Pro';
+    font-weight: bold;
+  }

@@ -1,0 +1,113 @@
+<div class="row">
+  <div class="col-md-12">
+    <ul class="nav nav-tabs">
+      <li
+          [rbac-permission]="{'name':'accounting-create-billing-item-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='billingincomeledger'}"
+           (click)="ToggleLedgerType('billingincomeledger')">Billing Ledgers</a>
+      </li>
+      <!-- <li
+          [rbac-permission]="{'name':'accounting-create-billing-item-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='billingincomeledger'}"
+           (click)="ToggleLedgerType('billingincomeledger')">Billing Ledgers</a>
+      </li> -->
+      <li
+          [rbac-permission]="{'name':'accounting-create-phrm-supplier-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='pharmacysupplier'}"
+           (click)="ToggleLedgerType('pharmacysupplier')">Pharmacy Supplier</a>
+      </li>
+      <li
+          [rbac-permission]="{'name':'accounting-create-consultant-credit-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='consultant'}" (click)="ToggleLedgerType('consultant')">Consultant
+          (Credit A/C)</a>
+      </li>
+      <li
+          [rbac-permission]="{'name':'accounting-create-credit-organization-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='creditorganization'}"
+           (click)="ToggleLedgerType('creditorganization')"> Credit Organizations</a>
+      </li>
+      <li
+          [rbac-permission]="{'name':'accounting-create-inventory-vendor-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='inventoryvendor'}"
+           (click)="ToggleLedgerType('inventoryvendor')">Inventory Vendor</a>
+      </li>
+      <li
+          [rbac-permission]="{'name':'accounting-create-inventory-subcategory-ledger-button-permission','actionOnInvalid':'hidden'}">
+        <a [ngClass]="{'a-tab-active':ledgerType=='inventorysubcategory'}"
+           (click)="ToggleLedgerType('inventorysubcategory')">Inventory Subcategory</a>
+      </li>
+      <li>
+        <a [ngClass]="{'a-tab-active':ledgerType=='paymentmodes'}" (click)="ToggleLedgerType('paymentmodes')">Payment
+          Modes</a>
+      </li>
+      <li class="dropdown" style="display:inline-block;"> <a
+           class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+          More... <span class="caret"></span> </a>
+        <ul class="dropdown-menu">
+          <li class="hr-ddlCstm">
+            <a (click)="ToggleLedgerType('bankreconciliationcategory')">Bank Reconciliation Category</a>
+          </li>
+          <li class="hr-ddlCstm">
+            <a (click)="ToggleLedgerType('medicaretypes')">Medicare Types</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div class="form-body">
+    <!-- START: Pharmacy Supplier -->
+    <pharmacy-supplier-ledger-mapping *ngIf="typesupplier">
+
+    </pharmacy-supplier-ledger-mapping>
+    <!-- END: Pharmacy Supplier -->
+
+    <!-- START: consultant-->
+    <consultant-ledger-mapping *ngIf="typeConsultant">
+
+    </consultant-ledger-mapping>
+    <!--END: consultant-->
+
+    <!-- START: Billing Items Ledger -->
+    <!-- <billing-ledger-mapping-old *ngIf="typeBillingLedger">
+
+    </billing-ledger-mapping-old> -->
+
+    <billing-ledger-mapping *ngIf="typeBillingLedger">
+
+    </billing-ledger-mapping>
+    <!-- END: Billing Items Ledger -->
+
+    <!-- START: Credit Organization -->
+    <credit-organization-ledger-mapping *ngIf="typeCreditOrganization">
+
+    </credit-organization-ledger-mapping>
+    <!-- END: Credit Organization -->
+
+    <!-- START: Inventory Vendor -->
+    <inventory-vendor-ledger-mapping *ngIf="typeInventoryVendor">
+
+    </inventory-vendor-ledger-mapping>
+    <!-- END: Inventory Vendor -->
+
+    <!-- START: Inventory Subcategory -->
+    <inventory-subcategory-ledger-mapping *ngIf="typeinventorysubcategory">
+
+    </inventory-subcategory-ledger-mapping>
+    <!-- END: Inventory Subcategory -->
+
+    <!-- Start: Payment Modes -->
+    <payment-mode-ledger-mapping *ngIf="typePaymentMode">
+
+    </payment-mode-ledger-mapping>
+    <!-- END: Payment Modes -->
+
+    <bank-reconciliation-category-ledger-mapping *ngIf="typeBankReconciliationCategory">
+
+    </bank-reconciliation-category-ledger-mapping>
+
+    <medicare-types-ledger-mapping *ngIf="typeMedicareTypes">
+
+    </medicare-types-ledger-mapping>
+
+  </div>
+</div>

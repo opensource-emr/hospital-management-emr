@@ -1,0 +1,58 @@
+<style>
+  .lbl-text {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+</style>
+
+<div class="col-md-12">
+  <div class="">
+    <div class="row">
+      <p>Filter by Discharged Date: </p>
+      <div class="col-md-6">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="null">
+        </from-to-date-select>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn green btn-success" type="button" (click)="LoadAllDischargedPatients()"
+            [disabled]="loading">
+            <i class="fa fa-search"></i> Load Patients
+          </button>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="input-group" style="float: right;">
+          <div class="icheck-inline">
+            <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+              <input checked="checked" [value]="'all'" [(ngModel)]="MrStatus" (change)="FilterMrList()" name="MrStatus"
+                style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+              <span></span>ALL
+            </label>
+            <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+              <input name="MrStatus" [value]="'complete'" [(ngModel)]="MrStatus" (change)="FilterMrList()"
+                style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+              <span></span>MR Added
+            </label>
+            <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+              <input name="MrStatus" [value]="'pending'" [(ngModel)]="MrStatus" (change)="FilterMrList()"
+                style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+              <span></span>MR Pending
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="dischargedList" (grid-actions)="GridActions($event)"
+    [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-print-button]="false">
+
+  </danphe-grid>
+
+</div>
+
+<view-mr-summary *ngIf="showViewMedicalRecords" [patDetail]="selectedInpatient"
+  (closeViewMrPopup)="CloseViewMRPopUp($event)"></view-mr-summary>
+<add-mr-summary *ngIf="showAddMedicalRecords" [patDetail]="selectedInpatient"
+  (closeAddNewMrPopup)="CloseAddUpdateMRPopUp($event)"></add-mr-summary>

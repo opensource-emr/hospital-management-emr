@@ -1,0 +1,74 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="col-md-8">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="col-md-4">
+                <input type="button" class="btn primary-btn" (click)="CreatePurchaseOrder()" value="Create Purchase Order" />
+              </div>
+              <div class="col-md-3">
+                <div class="pull-Right">
+                  <a (click)="CreateNewDraft()" style="text-decoration: underline;">
+                    <i class="fa fa-plus"></i> Start New Draft
+                  </a>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="pull-Right">
+                  <a (click)="ViewDraftList()" style="text-decoration: underline;">
+                    <i class="fa fa-folder-open"></i>View Draft List
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-right">
+          <div class="filtr-listing m1" style="padding-top: 5px;">
+            <input id="all" type="radio" name="ordertype" value="all" style="width:15px;height:15px" [(ngModel)]="poStatusForFilter"
+                   (change)="LoadPOListByStatus()" />
+            <label for="all">All</label>
+          </div>
+          <div class="filtr-listing m1" style="padding-top: 5px;">
+            <input id="pending" type="radio" name="ordertype" value="pending" style="width:15px;height:15px" [(ngModel)]="poStatusForFilter"
+                   (change)="LoadPOListByStatus()" />
+            <label for="pending">Pending</label>
+          </div>
+          <div class="filtr-listing m1" style="padding-top: 5px;">
+            <input id="complete" type="radio" name="ordertype" value="complete" style="width:15px;height:15px" [(ngModel)]="poStatusForFilter"
+                   (change)="LoadPOListByStatus()" />
+            <label for="complete">Completed</label>
+          </div>
+          <div class="filtr-listing m1" style="padding-top: 5px;">
+            <input id="cancelled" type="radio" name="ordertype" value="cancelled" style="width:15px;height:15px" [(ngModel)]="poStatusForFilter"
+                   (change)="LoadPOListByStatus()" />
+            <label for="cancelled">Cancelled</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="!showVendorwise">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="purchaseOrdersGridColumns"
+                     [grid-data]="poListfiltered"
+                     (grid-actions)="PurchaseOrderGridAction($event)"
+                     [rangeType]="dateRange"
+                     (onDateChange)="onDateChange($event)"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [show-CustomDate]="true"
+                     [grid-exportOptions]="getGridExportOptions()"
+                     [grid-showExport]="true"></danphe-grid>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12" *ngIf="showPurchaseOrderDraftAddEditPage">
+  <purchase-order-draft-add (call-back-close)="ClosePurchaseOrderDraftAddEditPage($event)"></purchase-order-draft-add>
+</div>
+
+<div class="col-md-12" *ngIf="showPurchaseOrderDraftListPage">
+  <purchase-order-draft-list (call-back-close)="ClosePurchaseOrderDraftListPage()"></purchase-order-draft-list>
+</div>

@@ -1,0 +1,419 @@
+<style>
+    @page {
+        size: A5 landscape;
+        margin-top: 8px;
+        margin-bottom: 10px;
+        margin-left: 20px;
+        font-size: 12px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        font-size: 11pt;
+        /* color: #000; */
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    P {
+        margin: 0 !important;
+    }
+
+    table td,
+    table th {
+        padding: 0;
+        font-size: 9pt;
+        font-weight: normal !important;
+        /* border: 1px solid #000; */
+    }
+
+    /* table tr:nth-child(2) td, table tr th  {
+              padding: 10px !important;
+          } */
+    .column {
+        float: left;
+        padding: 5px;
+    }
+
+    .box-body {
+        /* display: flex; */
+        padding: 0px 10px 0 10px;
+        /* margin-bottom: -21px; */
+    }
+
+    /* .inv-heading {
+      width: 70%;
+      padding: 20px;
+    } */
+
+    .c_name {
+        font-size: 11pt !important;
+        margin-bottom: 0;
+        margin-top: 0;
+    }
+
+    .c_paragraphs {
+        font-size: 9pt !important;
+        font-weight: normal !important;
+        margin: 0 0 0 0;
+        padding: 0;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+
+    table td,
+    table th {
+        /* padding: 10px; */
+        /* border: 1px solid #ccc; */
+        text-align: left;
+        vertical-align: top !important;
+        font-weight: normal !important;
+    }
+
+    table th {
+        /* background-color: #eee; */
+        font-weight: bold !important;
+    }
+
+    @media print {
+        @page {
+            size: a5 landscape;
+            margin: 0;
+        }
+
+        header,
+        footer,
+        nav,
+        aside,
+        form {
+            display: none;
+        }
+
+        body {
+            font-size: 11pt;
+            /* color: #000; */
+            margin: 0;
+            line-height: 1.2;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        P {
+            margin: 0 !important;
+        }
+
+        .c_paragraphs {
+            font-size: 9pt !important;
+            margin: 0 0 0 0;
+            padding: 0;
+        }
+
+        .c_name {
+            font-size: 11pt !important;
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+
+        table {
+            margin-bottom: 20px;
+            width: 100% !important;
+        }
+
+        table td,
+        table th {
+            padding: 0;
+            /* border: 1px solid #000; */
+            vertical-align: top !important;
+            font-weight: normal !important;
+        }
+
+        table th {
+            /* background-color: #ddd; */
+            font-weight: bold !important;
+        }
+    }
+
+    @media print and (orientation: landscape) {
+
+        /* landscape styles */
+        .c_paragraphs {
+            font-size: 9pt !important;
+        }
+
+        .c_name {
+            font-size: 11pt !important;
+        }
+
+        P {
+            margin: 0 !important;
+        }
+
+        .invoice-receipt {
+            max-width: 850px;
+            padding: 10px;
+            border: 1px dotted black;
+            margin: 0 auto;
+            overflow: hidden;
+            font-size: 15px;
+            position: relative;
+            z-index: 2;
+        }
+    }
+</style>
+
+<div>
+    <div class="A5 landscape">
+        <div id="printpage2" class="invoice-receipt sheet">
+            <div>
+                <p class="no-margin" style="text-align:right;font-style:italic;" *ngIf="receipt.PrintCount">COPY({{receipt.PrintCount}}) OF ORIGINAL
+                </p>
+            </div>
+            <div class="box-body invoice header">
+                <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td colspan="3" width="25%">
+                            <img class="img-responsive" style="max-height:70px; position: relative; top: 10px;"
+                                 src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" />
+                            <!-- <img class="img-watermark" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo-phrm.PNG" /> -->
+                        </td>
+                        <td colspan="6" width="50%" style="color: #000 !important;">
+                            <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.hospitalName}}</strong></h3>
+                            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.address}}</p>
+                            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{ headerDetail.tel}}</p>
+                            <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{ headerDetail.DDA}}</p>
+                        </td>
+                        <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
+                                    : {{headerDetail.PANno}}</strong> </p>
+                        </td>
+                    </tr>
+                </table>
+                <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td colspan="12" style="text-align: center; color: #000 !important;">
+                            <p><strong>PHARMACY UNITS</strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="12" style="text-align: center; color: #000 !important;">
+                            <p><strong>INVOICE</strong></p>
+                        </td>
+                    </tr>
+                    <tr style="border: 1px solid #ccc; color:black!important;">
+                        <td colspan="12" style="padding: 6px !important;">
+                            <table style="width: 100%; margin-bottom: 0;">
+                                <tr>
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Invoice No:</strong>
+                                            {{receipt.CurrentFiscalYearName}} -
+                                            PH{{
+                                            receipt.ReceiptPrintNo }}</p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Transaction Date:</strong>
+                                            {{receipt.ReceiptDate |
+                                            DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Hospital No :
+                                            </strong>{{receipt.PatientInfo.PatientCode}}</p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Invoice Date:</strong>
+                                            {{receipt.ReceiptDate |
+                                            DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Patient's Name:
+                                            </strong>{{receipt.PatientInfo.ShortName}}</p>
+                                    </td>
+
+                                </tr>
+                                <tr *ngIf="receipt.PatientInfo.PatientId > 0">
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Address: </strong><span
+                                                  *ngIf="receipt.PatientInfo.Address!==null">{{receipt.PatientInfo.Address}},</span>
+                                            {{receipt.PatientInfo.CountrySubDivisionName}} </p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"> <strong>Age/Sex
+                                                :</strong>{{receipt.PatientInfo.DateOfBirth |
+                                            DanpheDateTime:'age'
+                                            }}/{{receipt.PatientInfo.Gender}}</p>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="receipt.ProviderName && receipt.ProviderNMCNumber">
+                                    <td colspan="6" style="text-align: left;">
+                                        <p *ngIf="receipt.ProviderName" class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Provider's
+                                                Name:
+                                            </strong>{{receipt.ProviderName}}
+                                        </p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;" *ngIf="receipt.ProviderNMCNumber">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">
+                                            <strong>NMCNumber:</strong>{{receipt.ProviderNMCNumber}}</p>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="receipt.ClaimCode || receipt.PolicyNo">
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"> <strong>ClaimCode:</strong>
+                                            {{receipt.ClaimCode}}</p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>PolicyNo: </strong>{{receipt.PolicyNo}}
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" style="text-align: left;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Contact No:
+                                            </strong>{{receipt.PatientInfo.PhoneNumber}}</p>
+                                    </td>
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Method of payment:
+                                            </strong>{{receipt.PaymentMode}}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr style="color:black!important;">
+                        <th style="padding: 3px 5px !important">SN.</th>
+                        <th colspan="4" style="padding: 3px 5px !important">Particular(s)</th>
+                        <th style="padding: 3px 5px !important">Qty</th>
+                        <th colspan="2" style="padding: 3px 5px !important">Expiry</th>
+                        <th style="padding: 3px 5px !important">Batch</th>
+                        <th style="padding: 3px 5px !important">Rack No.</th>
+                        <th style="padding: 3px 5px !important">Rate</th>
+                        <th style="padding: 3px 5px !important; text-align: right;">Amount</th>
+                    </tr>
+                    <tr *ngFor="let row of receipt.InvoiceItems; let i=index" style="color:black!important;">
+                        <td style="padding: 3px 5px !important; ">{{i+1}}</td>
+                        <td colspan="4" style="padding: 3px 5px !important;">{{row.ItemDisplayName}} </td>
+                        <td style="padding: 3px 5px !important; ">{{row.Quantity}}</td>
+                        <td colspan="2" style="padding: 3px 5px !important; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+                        <td style="padding: 3px 5px !important; ">{{row.BatchNo}}</td>
+                        <td style="padding: 3px 5px !important; ">{{row.RackNo}}</td>
+                        <td style="padding: 3px 5px !important; ">{{row.SalePrice | number: "1.2-4"}} </td>
+                        <td style="padding: 3px 5px !important; text-align: right;">{{row.SubTotal | number: "1.2-4"}}</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc; color:black!important;">
+                        <td colspan="8" style="padding: 5px 10px 5px 10px !important; vertical-align: top;">
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>In Words :{{receipt.TotalAmount | NumberInWords}}
+                                    <span
+                                          *ngIf="receipt.TotalAmount !=0">Only</span></strong></p>
+                        </td>
+                        <td colspan="3" style="padding: 5px 10px 5px 10px !important; text-align: right;">
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>SubTotal: </strong></p>
+                            <p *ngIf="receipt.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable" class="c_paragraphs">
+                                <strong>Discount:
+                                </strong>
+                            </p>
+                            <p *ngIf="receipt.VATAmount && IsItemLevelVATApplicable" class="c_paragraphs" style="margin-bottom: 0 !important;">
+                                <strong>Taxable Amount:
+                                </strong>
+                            </p>
+                            <p *ngIf="receipt.VATAmount && IsItemLevelVATApplicable" class="c_paragraphs" style="margin-bottom: 0 !important;">
+                                <strong>Non Taxable Amount:
+                                </strong>
+                            </p>
+                            <p *ngIf="receipt.VATAmount && IsItemLevelVATApplicable" class="c_paragraphs" style="margin-bottom: 0 !important;">
+                                <strong>VAT:
+                                </strong>
+                            </p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>Cash Amount: </strong></p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>Credit Amount: </strong></p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>Total Amount: </strong></p>
+                        </td>
+                        <td style="padding: 5px 10px 5px 10px !important; text-align: right;">
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;">{{receipt.SubTotal | number: "1.2-4"}}</p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;"
+                               *ngIf="receipt.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable">
+                                {{receipt.DiscountAmount |
+                                number: "1.2-4"}}</p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;" *ngIf="receipt.VATAmount && IsItemLevelVATApplicable">
+                                {{receipt.TaxableAmount | number: "1.2-4"}}
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;" *ngIf="receipt.VATAmount && IsItemLevelVATApplicable">
+                                {{receipt.NonTaxableAmount | number: "1.2-4"}}
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;" *ngIf="receipt.VATAmount && IsItemLevelVATApplicable">
+                                {{receipt.VATAmount | number: "1.2-4"}}
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;">{{receipt.CashAmount | number: "1.2-4"}}</p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;">{{receipt.CreditAmount | number: "1.2-4"}}</p>
+                            <p class="c_paragraphs" style="margin-bottom: 0 !important;">{{coreService.currencyUnit}}
+                                {{receipt.TotalAmount | number: "1.2-4"}}</p>
+                        </td>
+                    </tr>
+                    <tr *ngIf=" receipt.PaymentMode != 'credit'" style=" border-top: 1px solid #ccc; color:black!important;">
+                        <td colspan="12" style="padding: 10px !important; vertical-align: top;">
+                            <p class="c_paragraphs" *ngIf=" receipt.PaymentMode != 'credit'"><strong>Tender:
+                                </strong>{{receipt.Tender | number : "1.2-2"}}</p>
+                            <p class="c_paragraphs" *ngIf=" receipt.PaymentMode != 'credit'"><strong>Change/Return:</strong>
+                                {{receipt.Change | number: "1.2-2"}}</p>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc; color:black!important;" *ngIf="receipt.PaymentModeDetails.length">
+                        <td colspan="12" style="padding: 10px 10px 0 10px !important; vertical-align: top;">
+                            <p class="c_paragraphs">{{receipt.PaymentModeDetails | paymentDetails}}</p>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc; color:black !important;">
+                        <td colspan="6" style="padding: 10px 10px 0 0 !important; vertical-align: top; text-align: left">
+                            <p *ngIf="receipt.CreditOrganizationName" class="c_paragraphs"><strong>Credit Organization:
+                                </strong>{{receipt.CreditOrganizationName}}</p>
+                        </td>
+                        <td colspan="6" style="padding: 10px 10px 0 10px !important; vertical-align: top; text-align: right">
+                            <p *ngIf="receipt.StoreName" style="text-align: right" class="c_paragraphs"><strong>Store: </strong>{{receipt.StoreName}}
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" style="padding: 0 10px !important; vertical-align: top;" style="color:black!important;">
+                        </td>
+                        <td colspan="6" style="padding: 0 10px !important; vertical-align: top; text-align: right; color:black !important;">
+                            <p *ngIf="receipt.Remarks!=null" style="text-align: right!important;" class="c_paragraphs"><strong>Remarks:
+                                </strong>{{receipt.Remarks}}
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" style="padding: 0 10px !important; vertical-align: top;" style="color:black!important;">
+                            <p class="c_paragraphs"><strong>User: </strong>{{receipt.BillingUser}}</p>
+                        </td>
+                        <td colspan="6" style="padding: 0 10px !important; vertical-align: top; text-align: right;" style="color:black!important;">
+                            <p class="c_paragraphs" style="text-align: right;"><strong>Time: </strong>{{receipt.ReceiptDate |
+                                DanpheDateTime:'format':'HH:mm'}}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="12" style="padding: 10px !important; text-align: center;" style="color:black!important;">
+                            <p class="c_paragraphs" *ngIf="showEnglish">{{englishText}}</p>
+                            <p class="c_paragraphs" *ngIf="showNepali">{{nepaliText}}</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-invoice'" (on-printer-change)="OnPrinterChanged($event)">
+        </select-printer>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <button class="btn blue" id="btnPrintPhrmInvoice" class="btn green btn-success" (click)="print('printpage2')">
+                Print Receipt
+                <i class="glyphicon glyphicon-print"></i>
+            </button>
+
+        </div>
+    </div>
+    <new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj" (print-sucess)="callBackBillPrint($event)">
+    </new-print-page>
+</div>

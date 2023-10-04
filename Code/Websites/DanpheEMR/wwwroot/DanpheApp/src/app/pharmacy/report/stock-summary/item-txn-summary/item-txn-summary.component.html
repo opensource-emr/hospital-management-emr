@@ -1,0 +1,29 @@
+<div>
+    Transaction Report for Item : <b>{{ItemName}}</b> from <b>{{FromDate}}</b> to <b>{{ToDate}}</b>
+    <span *ngIf="FromDate">&nbsp;({{FromDate | nepaliDate }}</span> to <span *ngIf="ToDate">{{ToDate | nepaliDate }})</span>
+</div>
+<danphe-grid [grid-colDefaults]="ItemTxnSummaryReportColumns" [grid-data]="ItemTxnSummaryReportData" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions" [report-for]="pharmacy" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ItemTxnSummaryGridAction($event)">
+</danphe-grid>
+
+<!-- GR POP UP -->
+<goods-receipt-view *ngIf="showGRPopUp" [goodsReceiptId]="selectedGRId" [showPopUp]="showGRPopUp" (call-back-close)="OnGRPopUpClose()"></goods-receipt-view>
+<app-phrm-gr-view-np *ngIf="showNepaliGRPopUp" [goodsReceiptId]="selectedGRId" [showPopUp]="showNepaliGRPopUp" (popup-close-event)="OnGRPopUpClose()"></app-phrm-gr-view-np>
+<!--Invoice Pop Up -->
+<app-phrm-invoice-view *ngIf="showInvoicePopUp" [showPopUp]="showInvoicePopUp" [invoiceId]="selectedInvoiceId" (call-back-close)="OnInvoicePopUpClose()"></app-phrm-invoice-view>
+<!-- Invoice Return Pop Up -->
+<app-sales-return-invoice-view *ngIf="showInvoiceReturnPopUp" [invoiceReturnId]="selectedInvoiceReturnId" (invoice-return-popup-close)="OnInvoiceReturnPopUpClose()"></app-sales-return-invoice-view>
+<!-- Dispatch Pop Up -->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showDispatchPopUp">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix" style="zoom: 0.9; padding: 5rem;">
+                    <a class="btn btn-danger history-del-btn" (click)="OnDispatchPopUpClose()" title="Close">
+                        <i class="fa fa-times"></i>
+                    </a>
+                    <app-dispatch-np-view [dispatch-id]="selectedDispatchId" [module-type]="'pharmacy-dispensary'" (call-back-close)="OnDispatchPopUpClose()"></app-dispatch-np-view>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

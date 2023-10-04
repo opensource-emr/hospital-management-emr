@@ -1,0 +1,135 @@
+
+<div class="caption lb-caption">
+  <button class="btn btn-primary" (click)="AddBreakage()">Add Breakage item<span class="glyphicon glyphicon-trash"></span></button>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="writeOffListGridColumns" [grid-data]="writeOffList" (grid-actions)="WriteOffGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+    </danphe-grid>
+  </div>
+</div>
+<!--@*Model Popup Window*@-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showWriteoffItemsbyWriteoffId">
+  <div class="portlet-body form" style="background-color:white">
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div class="col-md-12">
+            <div class="caption" style="color:blue; margin-top:10px;">
+            </div>
+            <a style="float:right;  margin-top:0px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div id="printpage" class="row printStyle print-border" style="margin-top: 30px;">
+            <div style="text-align:center;">
+              <div class="col-md-12">
+                <p class="text-center btm-pad border-up-down"><b> WRITE-OFF ITEMS DETAILS </b></p>
+                <div class="table-responsive">
+                  <div class="left">
+                    <p class="no-margin" style="text-align:left;">
+                      <strong>Write-Off Date: {{WriteOffdata.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</strong>
+                    </p>
+                  </div><br>
+                  <div class="left">
+                    <p class="no-margin" style="text-align:left;">
+                      <strong>Write-Off Id: {{WriteOffdata.WriteOffId}}</strong>
+                    </p>
+                  </div><br>
+                  <table class="table table-striped table-hover inv_table table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr>
+                        <th><b>S.No</b></th>
+                        <th><b>Item Name</b>
+                        <th><b>Write-Off Qty</b></th>
+                        <th><b>BatchNo</b></th>
+                        <th><b>ItemPrice</b></th>
+                        <th><b>SubTotal</b></th>
+                        <th><b>Discount %</b></th>
+                        <th><b>VAT %</b></th>
+                        <th><b>TotalAmount</b></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of PHRMWriteOffItemsList; let i = index">
+                        <td style="width:30px"><b>{{i+1}}</b></td>
+                        <td style="width:200px"><b>{{row.ItemName}}</b></td>
+                        <td style="width:200px">{{row.WriteOffQuantity}}</td>
+                        <td style="width:200px">{{row.BatchNo}}</td>
+                        <td style="width:200px">{{row.ItemPrice}}</td>
+                        <td style="width:200px">{{row.SubTotal}}</td>
+                        <td style="width:200px">{{row.DiscountPercentage}}</td>
+                        <td style="width:200px">{{row.VATPercentage}}</td>
+                        <td style="width:200px">{{row.TotalAmount}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div>
+                    <div>
+                      <table class="bil-summ" id="pharma-bill-sum" style="width: 50%; float: right;
+                                            text-align:  start;">
+                        <tr>
+                          <td>
+                            SubTotal
+                          </td>
+                          <td style=" text-align:right;">
+                            {{WriteOffdata.SubTotal | number: "1.2-2"}}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            DiscountedAmount
+                          </td>
+                          <td style=" text-align: right;">
+                            {{WriteOffdata.DiscountedAmount | number: "1.2-2"}}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            VAT Amount
+                          </td>
+                          <td style=" text-align: right;">
+                            {{WriteOffdata.VATAmount | number: "1.2-2"}}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Total Amount </td>
+                          <td style=" text-align: right;">
+                            {{coreService.currencyUnit}}{{WriteOffdata.TotalAmount | number: "1.2-2"}}</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="col-md-12" style="text-align: right;">
+                    In Words : {{WriteOffdata.TotalAmount | NumberInWords}} <span *ngIf="WriteOffdata.TotalAmount !=0">Only</span>
+                  </div>
+                  <div class="clear"></div>
+                  <div class="col-md-12" style="text-align: left;">
+                    Remarks : {{WriteOffdata.WriteOffItemRemark}}
+                  </div>
+                  <div class="clear"></div>
+                  <div class="col-md-12" style="padding-top: 5px;">
+                    <div class="left" style="">
+                      User : {{WriteOffdata.UserName}}
+                    </div>
+                    <div class="right" style="">
+                      Time: {{WriteOffdata.CreatedOn | DanpheDateTime:'format':'HH:mm'}}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <button (click)="printwriteOff()" class="btn btn-success">Print</button>
+          </div>
+        </div>
+        <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

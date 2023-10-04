@@ -1,0 +1,620 @@
+﻿
+body {
+    font-family: Verdana !important;
+}
+
+div:not(.gen-sticker-wrapper) {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+/*CSS for FlexGrid starts*/
+.flex-container {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.justify-sp-between {
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+}
+
+.justify-center {
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+
+.flex-align-center {
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+.flex-align-stretch {
+    -webkit-align-items: stretch;
+    align-items: stretch;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.flex-3 {
+    flex: 3;
+}
+
+.flex-4 {
+    flex: 4;
+}
+
+.flex-5 {
+    flex: 5;
+}
+
+.flex-6 {
+    flex: 6;
+}
+
+/*CSS for FlexGrid Ends*/
+
+#printpage table tr td {
+    font-size: 12px;
+}
+#printpage table th {
+    font-size: 12px;
+    font-weight: bold;
+}
+#printpage p {
+    font-family: Verdana !important;
+}
+.cust-hdr-name {
+    font-size: 25px !important;
+}
+
+.patient-hdr-label{
+    margin-bottom: 0px;
+}
+
+/*body.lab-rpt4moz {
+    height: 100%;
+    overflow-y: auto;
+}*/
+
+/*hide elements during pring*/
+@media print {
+    .hidden-print {
+        display: none !important;
+    }
+}
+
+
+
+.avoid-inside-page-brk{page-break-inside: avoid;}
+
+
+/*CSS for Printing LabReport Starts */
+.ht-culture-grp-separation {
+  height: 25px;
+}
+.lab-rpt-container{min-height: 175mm;font-family: 'Open Sans',sans-serif;}
+.dontbreak{page-break-inside: avoid;}
+.martop{margin-top: 45px;}
+.dontShowInPrint{display:none;}
+div.lab-rpt-sign {display: block;}
+.right-hdr{min-width: 325px;float: right;}
+table.patient-info-tabl > thead{ display:table-header-group }
+table.patient-info-tabl > tfoot{ display:table-footer-group }
+.edit-ic{display: none;}
+thead.show-gap:after{ content: "";width: 100%;display: block;height: 20px;}
+.samcode{display: inherit;}
+.samcode-input{display: none;}
+.lab-rpt-container{width: 100%;}
+.lab-rpt-sign{width:100% !important;}
+.no-print{ display:none !important;}
+table.patient-info-tabl thead tr td, table.patient-info-tabl thead tr th {text-align: left;}
+.rpt-curholder{padding:0px;}
+table.patient-info-tabl{width: 100% !important;}
+.right-hdrwith-barcode{min-width: 382px;position: relative;line-height: 18px;}
+.rpt-curholder {width: 100%;margin: 0 auto; background: #fff;position: relative;}
+.patient-info-tabl {border-collapse: collapse;font-size: 13px;}
+.headerimage {width: 100%;}
+.patient-info-box {
+  width: 100%;
+  text-align: left;
+  display: block;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.cstm-flex-container {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.single-head {
+  padding: 1px 0px;
+}
+.left-col-data {
+  padding-left: 7px;
+}
+.right-col-data {
+  padding-right: 3px;
+  white-space: nowrap;
+  width: 100%;
+  float: left;
+}
+.single-head{
+  display: flex;
+  flex-basis: 100%;
+  flex: 1;
+  flex-direction: column;
+}
+/*.single-head:nth-child(odd){
+	width: 60%;
+}
+.single-head:nth-child(even){
+	width: 40%;
+}*/
+.interpretation-txt-holder {
+  margin-top: 5px;
+  text-align: justify;
+  white-space: pre-line;
+  font-size: 11px;
+}
+.lab-footer-text{
+  font-size: 10px;
+}
+
+table.single-tempate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+table.single-tempate-table thead tr:first-child th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+  text-transform: uppercase;
+  width: 280px;
+}
+table.single-tempate-table thead tr:first-child th:not(:first-child) {
+  padding: 0px 5px;
+  text-align: center;
+}
+table.single-tempate-table thead tr:nth-child(2) th {
+  padding: 0px 7px;
+  text-align: left;
+}
+
+  table.single-tempate-table tr.test-reportname-row th:first-child {
+    padding: 0px 7px;
+    text-align: left;
+  }
+
+  table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
+    padding: 0px 7px;
+    font-size: 14px;
+  }
+
+table.single-tempate-table tr.res-positive-rw td {
+  text-align: left;
+}
+
+.test-data-pstv {
+  padding: 0px 8px;
+}
+td.range {
+  max-width: 200px;
+  white-space: pre-line;
+}
+
+table.single-tempate-table tr.res-negative-rw td.neg-data {
+  padding: 0px 5px;
+  text-align: center;
+}
+
+table.culture-holder-table {
+  width: 100%; /*border: 1px solid #1f1e1e;*/
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+  table.culture-holder-table thead tr.culture-header th {
+    text-align: center;
+    text-transform: uppercase;
+    padding: 0px 7px;
+  }
+  table.culture-holder-table thead tr.culture-heading-col th:first-child {
+    padding: 0px 7px;
+    text-align: left;
+  }
+  table.culture-holder-table thead tr.culture-heading-col th:nth-child(2) {
+    padding: 0px 5px;
+    text-align: center;
+  }
+
+  table.culture-holder-table > thead > tr{
+    border: 1px solid;
+  }
+
+  table.culture-neg-testres, table.culture-positive-testres {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+
+  table.culture-neg-testres tbody tr td {
+    padding: 0px 7px;
+  }
+  table.culture-neg-testres tbody tr:last-child {
+    text-align: left;
+  }
+
+.text-center{text-align: center;}
+ table.culture-positive-testres tbody tr:first-child {
+    border-top: 0;
+    text-align: left;
+  }
+tbody.culture-positive-testres tr.sensitiv-rst-data td, tbody.culture-positive-testres tr.sensitiv-rst-hd td {
+  padding-left: 5px;
+}
+
+tbody.culture-negative-testres tr td{padding-left: 7px;}
+.txt-prelim {
+    position: fixed;
+    display: inline-block;
+    font-size: 40px;
+    line-height: 1;
+    left: 50%;
+    top: 240px;
+    transform: translate(-50%, 125px) rotate(-45deg);
+    opacity: 0.2;
+}
+
+
+/**Changes for Manakamana  and other hospitals based on HospitalCode**/
+.mnk table.lab-report-tbl thead tr th{
+    font-size: 15px;
+}
+.mnk table.lab-report-tbl tbody tr th{
+    font-size: 14px;
+}
+.mnk table.lab-report-tbl tbody tr td{
+    font-size: 14px;
+}
+.mnk table.patient-info-tabl thead tr td div{font-size: 14px;}
+.mnk table.patient-info-tabl thead tr td .right-hdr{min-width: 355px;}
+/*.mnk table, .mnk table tr, .mnk table tr td div {border-color: #9a9a9a !important;}*/
+.mnk table.lab-report-tbl .referredby{white-space: normal;}
+
+.hams table.lab-report-tbl, .hams table.lab-report-tbl tr, .hams table.lab-report-tbl tr td div {
+    border-color: #d6d5d6 !important;
+}
+
+.htmlholder{padding: 0px 8px;}
+
+
+.patient-info-box{border: 1px solid #000;}
+
+table.single-tempate-table thead tr,
+table.culture-holder-table > thead > tr{border-bottom: 1px solid #000;}
+
+/* table.single-tempate-table.tbl-format1 tbody tr,
+tbody.culture-negative-testres tr,
+table.single-tempate-table.tbl-format1 tbody.culture-positive-testres tr.sensitiv-rst-hd td,
+tbody.culture-positive-testres tr.sensitiv-rst-data td,
+tbody.culture-positive-testres tr.row-brdr,
+table.single-tempate-table tbody tr:not(.tbl-format2) */
+
+/* table.culture-holder-table tbody tr{ border: 1px solid #000;} */
+/* table.culture-holder-table.culture-fotmat1 tbody.culture-positive-testres tr.sensitiv-rst-hd td{
+  border-right: 1px solid;
+}  */
+
+.default-lab-report table.single-tempate-table.tbl-format1 tbody tr,
+.default-lab-report tbody.culture-negative-testres tr,
+.default-lab-report tbody.culture-positive-testres tr.sensitiv-rst-hd td,
+.default-lab-report tbody.culture-positive-testres tr.sensitiv-rst-data td,
+.default-lab-report  tbody.culture-positive-testres tr.row-brdr{ border: 1px solid #000;}
+
+
+.padding-7-hr{padding-left: 7px; padding-right: 7px;}
+.lab-header-gap{height: 100px;}
+
+.mnk table.single-tempate-table thead tr,
+.mnk  .patient-info-box, .mnk table.single-tempate-table tbody tr,
+.mnk tbody.culture-positive-testres tr.sensitiv-rst-hd td,
+.mnk tbody.culture-positive-testres tr.sensitiv-rst-data td,
+.mnk tbody.culture-positive-testres tr.row-brdr,
+.mnk table.culture-holder-table > thead > tr,
+.mnk tbody.culture-negative-testres tr
+{
+	border: 1px solid #d8d8d8;
+}
+.mnk table.culture-holder-table.culture-fotmat1 tbody.culture-positive-testres tr.sensitiv-rst-hd td{
+  border-right: 1px solid #d6d5d6;
+}
+.mnk .lab-header-gap {
+    height: 200px !important;
+}
+
+.hams table.single-tempate-table thead tr,
+.hams  .patient-info-box, .hams table.single-tempate-table tbody tr,
+.hams tbody.culture-positive-testres tr.sensitiv-rst-hd td,
+.hams tbody.culture-positive-testres tr.sensitiv-rst-data td,
+.hams tbody.culture-positive-testres tr.row-brdr,
+.hams table.culture-holder-table > thead > tr,
+.hams tbody.culture-negative-testres tr
+{
+	border: 1px solid #d6d5d6;
+}
+.hams table.culture-holder-table.culture-fotmat1 tbody.culture-positive-testres tr.sensitiv-rst-hd td{
+  border-right: 1px solid #d6d5d6;
+}
+
+
+/*CSS for Manmohan LabReport Starts*/
+/*.mmth table.single-tempate-table tbody tr,
+.mmth tbody.culture-negative-testres tr,
+.mmth tbody.culture-positive-testres tr.sensitiv-rst-hd td,
+.mmth tbody.culture-positive-testres tr.sensitiv-rst-data td,
+.mmth tbody.culture-positive-testres tr.row-brdr,
+.mmth table.single-tempate-table tbody tr,
+.mmth table.culture-holder-table tbody tr{ border: none !important;}*/
+
+.mmth table.single-tempate-table tbody tr
+{
+  border-color: #d6d5d6;
+}
+.mmth table.culture-holder-table{margin-bottom: 0;}
+.mmth table.lab-report-tbl .patient-info-box {border-color: #d6d5d6 !important;}
+.mmth table.single-tempate-table{border: 1px solid #000;}
+.mmth table.single-tempate-table > thead > tr{border-color: #000; border-style: solid;border-width: 0px 0px 1px 0px;}
+.mmth table.single-tempate-table > tbody > tr{ border-top: 1px solid #d6d5d6;
+    border-left: 1px solid;
+    border-right: 1px solid;}
+.mmth table.culture-holder-table thead tr{border-bottom: 1px solid #d6d5d6;border-right: none;border-left: none;}
+.mmth tbody.culture-negative-testres tr{border-bottom: 1px solid #d6d5d6;}
+.mmth tbody.culture-positive-testres tr{border-bottom: 1px solid #d6d5d6; }
+.mmth tbody.culture-positive-testres tr.sensitiv-rst-data:not(:last-child){border-bottom: 1px solid #d6d5d6;}
+.mmth tbody.culture-positive-testres tr.sensitiv-rst-data td:not(:last-child){border-right: 1px solid #d6d5d6;}
+.mmth.rep-containr table.patient-info-tabl tbody tr td .table-holder table.lab-report-tbl thead tr:first-child th:first-child {
+    text-align: center;
+}
+tbody.culture-negative-testres tr{border: none;}
+.mmth table.lab-report-tbl thead tr th {font-size: 13px;}
+.mmth table.lab-report-tbl tbody tr th {font-size: 12px;}
+.mmth table.lab-report-tbl tbody tr td {font-size: 12px;}
+/*CSS for Manmohan LabReport Ends*/
+
+/*CSS for CHARAK LabReport Starts*/
+.cmh table.lab-report-tbl thead tr th {font-size: 13px;}
+.cmh table.lab-report-tbl tbody tr th {font-size: 12px;}
+.cmh table.lab-report-tbl tbody tr td {font-size: 12px;}
+.patient-info-box.headerinfo-cmh {font-size: 13px;}
+.lab-bodycmh table.single-tempate-table thead tr:first-child th:first-child{
+  text-align: center;
+}
+.lab-header-gap.labhdrcmh{height: 145px;}
+/*CSS for CHARAK LabReport Ends*/
+
+/*CSS for SCH LabReport Starts*/
+.sch table.lab-report-tbl thead tr th {font-size: 13px;}
+.sch table.lab-report-tbl tbody tr th {font-size: 12px;}
+.sch table.lab-report-tbl tbody tr td {font-size: 12px;}
+.patient-info-box.headerinfo-sch {font-size: 13px;}
+.lab-bodysch table.single-tempate-table thead tr:first-child th:first-child{
+  text-align: center;
+}
+.lab-header-gap.labhdrsch{height: 145px;}
+/*CSS for CHARAK LabReport Ends*/
+
+.report-print-info{position: fixed; bottom: 3px; right: 10px;font-size: 10px;}
+/*CSS for Printing LabReport Ends */
+
+
+/*CSS for Health Card Printing*/
+.hospital-card-front-logo{width: 20%;}
+.mmth.hospital-card-front-logo{width: 18%;}
+/*CSS for Health Card Printing Ends*/
+
+/*Radiology Report Print CSS Starts*/
+.rad-single-signature{
+  flex: 0 0 33%;
+  padding: 15px;
+}
+.main-rad-sgn{float: right;text-align: left;}
+.flow-hr-reverse{flex-direction: row-reverse;}
+.rad-signature{white-space: pre-line;padding-top: 10px;margin-top: 50px;border-top: 2px dashed;}
+.rad-hdr-flex-col{padding: 3px 0px;}
+.rad-hdr-flex-col:nth-child(odd) {flex-basis: 52%;}
+.rad-hdr-flex-col:nth-child(even) {flex-basis: 48%;}
+.border-wrap{border: 1px solid;padding: 10px;}
+.radrep-patimages-holder{page-break-before: always;width: 100%;}
+
+.rad-flex-vertical{
+  display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 33.33%;
+    float: right;
+    height: 297mm;
+}
+
+.single-rad-image{
+   flex-basis: 33.33%;
+  padding: 1%;
+  width: 98mm;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rad-image{
+  -webkit-transform: rotate(90deg);
+-moz-transform: rotate(90deg);
+-ms-transform: rotate(90deg);
+-o-transform: rotate(90deg);
+transform: rotate(90deg);
+-webkit-transform: rotate(90deg);
+max-height: 68mm;
+width: 97mm;
+}
+
+/*Radiology Report Print CSS Ends*/
+
+/*sud:21Jul'19--Change the height for MNK-Hospital radiology Header Gap..*/
+.mnk .rad-hdr-gap {
+    height: 75px;
+}
+
+.rad-hdr-gap {
+    height: 75px;
+}
+
+.hams.rad-hdr-gap {
+    height: 135px;
+}
+    
+.rad-hdr-gap.sch{
+  height: 40px;
+}
+
+
+/*sud:6Aug'20--For Charak-- radiology Header Gap..*/
+.cmh .rad-hdr-gap {
+  height: 130px !important;
+}
+
+/* Font-size for Radiology Lab report data in cmh hospital*/
+.cmh .flex-container .rad-hdr-flex-col{font-size: 11px !important;}
+
+.hams.signature-container{flex-direction: row !important;font-size: 12px;}
+
+/*for mnk-radiology report we need cursive font in signatory name.*/
+.mnk .rad-rpt-signature {
+    font-family: cursive;
+}
+.lab-report-tbl .mt-checkbox {
+  padding-left: 0!important;
+}
+
+/*Settings for OPD Sticker Print Page*/
+.opdstickercontainer{
+  width:370px; margin:0px;display:block;font-size: 11px;padding: 5px;  /*height:180px;*/
+}
+.stkrtopsection{width: 100%;}
+.dptdesc-left{
+  width:80%;display:inline-block; margin-top:5px
+}
+.opd-qrcode{
+  width:15%;display:inline-block;vertical-align: top; float:right; margin:8px 15px 0 0;
+}
+
+.circularQueueDiv {
+    position: absolute;
+    left: 18%;
+    bottom: 555px;
+    width: 35px;
+    border: 2px solid;
+    border-radius: 50% !important;
+    height: 25px;
+    text-align: center;
+    padding-top: 5px;
+}
+
+/*Settings for OPD Sticker Print Page */
+
+
+.print-only{
+    display: block !important;
+}
+
+.dsv-div .left-panel .patient-hdr-label {
+  font-weight: 600;
+  display: inline-block;
+  width: 50%;
+}
+.left-panel .panel-heading {
+  margin-top: 0;
+}
+.left-panel .patient-hdr-label {
+  font-weight: 600;
+display: inline-block;
+width: 33.33%;
+}
+.dr-signature-list > div {
+  padding: 15px 15px 0 15px !important;
+}
+.no-print{
+  display: none;
+}
+/* ul.adviceSubList li .sub-main-cls .p-relative b:before {
+  display: none !important;
+
+} */
+
+.lab-worklist-table{
+	width: 100%;
+    text-align: left;
+}
+.lab-worklist-table tr th, .lab-worklist-table tr td{
+	font-size: 12px;
+	border: 1px solid;
+}
+.lab-worklist-table{
+	border-collapse: collapse;
+}
+.lab-worklist-table tr td{
+	font-weight: normal;
+}
+
+.text-uppercase{text-transform: uppercase;}
+.text-bold{font-weight: 700;}
+.flex-col{flex-direction: column;}
+.text-right{text-align: right;}
+.text-left{text-align: left;}
+.flx{display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;}
+.discharge-bill-sm-holder {font-size: 12px;}
+.discharge-bill-sm-header {padding: 5px 0px 8px 0px;}
+.discharge-bill-sm-holder{font-size: 12px;line-height: 16px;}
+.discharge-bill-amount-descripton{margin-top: 30px;line-height: 2;}
+.discharge-bill-amount-summary{margin-top: 15px;}
+.discharge-bill-sm-row > .txt-val, .discharge-bill-sm-row > .txt-label{font-size: 12px; line-height: 12px;}
+.discharge-bill-description-header .discharge-bill-sm-row .col-right,
+.discharge-bill-description-header .discharge-bill-sm-row .col-left{font-size: 10px;}
+.discharge-bill-description-header .discharge-bill-sm-row .col-right{
+  min-width: 40%;
+}
+
+.lab-qrholder{
+   margin-bottom: 12px;
+}
+
+/*Medical Records - Inpatient Service Report : This property was added to show three parts of the inpatient service report to three different pages.
+  The report in a single page looks very congested and a single table was shown in two different pages.
+  The format was not very readable.
+*/
+.inpat-service_only-print_mb-50rem{
+   margin-bottom : 50rem;
+}

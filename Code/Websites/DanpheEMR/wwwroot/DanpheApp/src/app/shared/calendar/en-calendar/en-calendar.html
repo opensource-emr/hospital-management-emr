@@ -1,0 +1,25 @@
+<div style="display: flex;">
+  <div class="en-cal-flx" *ngIf="!showmonthCalendar">
+    <input id="date" class="no-margin ipdateonly" type="date" [(ngModel)]="enDateOnly" min="{{minimumDate}}" max="{{maximumDate}}"
+      (ngModelChange)="EngCalendarOnDateChange()" onfocus="this.select();" (keyup.enter)="FocusOut()"/>
+    <input *ngIf="showTime" class="iptime" type="time" [(ngModel)]="enTimeOnly" (change)="EngCalendarOnDateChange()" onfocus="this.select();"/>
+  </div>
+
+  <!-- START:Vikas: 06th Aug 20: Added for month calendar chnages. -->
+  <div *ngIf="showmonthCalendar" class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;"> 
+      <select id="FiscalYearName" [(ngModel)]="selectedFiscalYear" (change)="OnFiscalYearValueChange()" style="width: 100%;">
+        <option *ngFor="let opt of FilteredFiscalYearList; let i = index;" [ngValue]="opt">
+          {{opt.FiscalYearName}}
+        </option>
+      </select>
+  </div>
+  <div *ngIf="showmonthCalendar" class="np-datepickr-holdr" style="margin: 2px; width: 150px !important;">
+ 
+    <select id="MonthId" [(ngModel)]="monthDisplayNumber" class="datefield month" style="width: 100%;"
+      (ngModelChange)="onMonthValueChange()" (keyup.enter)="FocusOut()">
+      <option *ngFor="let m of showMonthsList" value="{{m.monthDisplayNumber}}"
+      [disabled]="m.disabled" >{{m.monthName}}</option>
+    </select>
+  </div>
+  <!-- END:Vikas: 06th Aug 20: Added for month calendar chnages. -->
+</div>

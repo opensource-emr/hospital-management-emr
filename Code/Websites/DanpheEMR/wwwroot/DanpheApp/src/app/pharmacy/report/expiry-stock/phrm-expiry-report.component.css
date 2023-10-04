@@ -1,0 +1,16 @@
+.expiry-report-filter {
+}
+.expiry-report-filter .form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+.expiry-report-filter .control-label {
+  margin: 0;
+}
+.expiry-report-filter-right [class*="col-"] {
+  padding: 0;
+}
+.expiry-report-filter-right .row {
+  margin: 0;
+}

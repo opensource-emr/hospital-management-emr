@@ -1,0 +1,194 @@
+<style>
+  .billing-table {
+    background: #fff;
+    margin-bottom: 10px;
+  }
+
+  .billing-table .form-control {
+    font-size: 1em !important;
+  }
+
+  .table thead tr th {
+    font-size: 0.9em;
+  }
+
+  .nxt-td {
+    /*    text-align: right;*/
+    font-weight: bold;
+    width: 140px;
+    padding-right: 12px;
+  }
+
+  .mb-8 {
+    width: 100%;
+    height: 25px;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    font-weight: bold;
+  }
+
+  table.billing-table tr td {
+    padding: 8px 4px;
+    padding-bottom: 0px;
+  }
+
+  .padding-0-rt {
+    padding-right: 0px;
+  }
+
+  .padding-0-lt {
+    padding-left: 0px;
+  }
+
+  .ht-managed td {
+    font-family: Source Sans Pro;
+    font-weight: bold;
+    vertical-align: middle;
+    border: none;
+    padding: 4px 6px;
+  }
+
+  td {
+    font-size: 0.9em
+  }
+
+  .ht-managed td:nth-child(1) {
+    text-align: right;
+    font-size: 0.9em;
+  }
+
+  .b-htable td {
+    padding: 6px 4px;
+    font-size: 0.95em;
+    font-family: 'Source Sans Pro';
+    font-weight: bold;
+  }
+
+  .edit-payment-detail {
+    color: green;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    text-decoration: underline;
+  }
+
+  .edit-payment-detail:hover {
+    color: blue;
+  }
+</style>
+
+<table class="bil-summ" cellpadding="10" style="width: 100%; margin-bottom: 0px;">
+  <tr>
+    <td class="nxt-td"> Payment Options: </td>
+    <td>
+      <select [(ngModel)]="PaymentMode" class="mb-8" name="pay_mode" id="pay_mode"
+              (change)="OnPaymentModeChange()" [disabled]="isGovInsurance || disablePaymentModeDropDown">
+        <option *ngFor="let paymentMode of FilteredMajorPaymentMode ; let i=index"
+                value="{{paymentMode.PaymentSubCategoryName}}">{{ paymentMode.PaymentSubCategoryName }}</option>
+      </select>
+    </td>
+  </tr>
+  <tr
+      *ngIf="((PaymentMode.toLowerCase() === creditPaymentMode.toLowerCase()|| IsCoPayment) && creditOrganizationsList)">
+    <td class="nxt-td">
+      Credit Organization<b *ngIf="!IsAllAmountPaidByPatient" class="color-red"> *</b><b style="float:right;">:</b>
+    </td>
+    <td>
+      <select class="form-control mb-8" [(ngModel)]="selectedCreditOrganizationId"
+              (change)="OnCreditOrganizationChange()">
+        <option selected value="0">--Select CreditOrganization--</option>
+        <option *ngFor="let oList of creditOrganizationsList" value="{{oList.OrganizationId}}">
+          {{oList.OrganizationName}}
+        </option>
+      </select>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+
+    <td *ngIf="PaymentDetails && PaymentMode.toLocaleLowerCase() =='others'"></td>
+    <td *ngIf="PaymentDetails && PaymentMode.toLocaleLowerCase() =='others'" style="text-align: right;">
+      <i class="fa fa-edit edit-payment-detail" (click)="ShowEdit()"> edit payment detail </i>
+    </td>
+  </tr>
+  <tr *ngIf="PaymentMode.toLocaleLowerCase() =='others'">
+    <td class="nxt-td">
+      Payment Details:
+    </td>
+    <td>
+      <textarea style="height: 60px;" [(ngModel)]="PaymentDetails" (change)="OnPaymentModeChange()"
+                [disabled]="PaymentMode.toLocaleLowerCase() == 'others'" class="mb-8">
+      </textarea>
+    </td>
+  </tr>
+
+</table>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="MultipaymentPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div ref_modal_div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3 style="text-align: left;"> <span>Assign Amount To Multiple Payment Modes</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div style="margin-top: 5px;text-align: center;"><span>Total Amount : {{ PayableAmount
+              }}</span>&nbsp;&nbsp;<span *ngIf="DepositBalance>0">/ Deposit Available: {{ DepositBalance }}</span></div>
+
+          <div style="padding: 14px;">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <!-- <th style="text-align: center;"> <input type="checkbox" [ngModelOptions]="{standalone: true}"
+                      [(ngModel)]="selectAll" style="zoom: 1.5;" (change)="SelectAll()" />
+                  </th> -->
+                  <th></th>
+                  <th style="text-align: center;">Payment Methods</th>
+                  <th style="text-align: center;">Amount</th>
+                  <th style="text-align: center;">Payment Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of FilterdSubPaymentMode; let i=index">
+                  <td style="text-align: center;"> <input id="{{ 'mode_'+i }}" type="checkbox"
+                           [ngModelOptions]="{standalone: true}" [(ngModel)]="row.IsSelected" name="PaymentModes"
+                           (change)="HandleCheckUncheck($event,i)" style="zoom: 1.5;"
+                           [attr.disabled]="row.PaymentSubCategoryName.toLocaleLowerCase() == 'deposit' && DisableDepositCheckbox == true ? true : null" />
+                  </td>
+                  <td style="text-align: center;">{{row.PaymentSubCategoryName}}</td>
+                  <td style="text-align: center;">
+                    <input id="{{ 'input_amount'+i }}" type="number" [(ngModel)]="row.Amount" class="form-control"
+                           (ngModelChange)="AmountChanged(i)" (focusout)="AddToEmpCashTransaction(i)"
+                           (wheel)="coreService.PreventNumberChangeOnScroll($event)" (keyup.enter)="SetFocusById(i+1)"
+                           onClick="this.select()"
+                           [ngClass]="{'border-red':!row.IsValidAmount}"
+                           [disabled]="row.PaymentSubCategoryName.toLocaleLowerCase() == 'deposit' ? true : null">
+                    <div><span *ngIf="!row.IsValidAmount" class="color-red font-sm">Invalid</span></div>
+                  </td>
+                  <td style="text-align: center;"><input type="text" name="" id="{{ 'payment_detail'+i }}"
+                           placeholder="Enter Payment Detail" [(ngModel)]="row.PaymentDetail"
+                           [disabled]="!row.ShowPaymentDetails" (focusout)="AssignPaymentDetail(i)"
+                           (keyup.enter)="SetFocusBackToAmount(i+1)"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modelbox-footer">
+            <div *ngIf="RemainingAmount >= 0" class="text-left"><span>Remaining Amount : {{ RemainingAmount }}</span>
+            </div>
+            <div *ngIf="RemainingAmount<0" class="text-left" style="color: red;">
+              <span>Invalid Amount Distribution!!! </span> <br>
+              <span>Difference By: {{ RemainingAmount }}</span>
+            </div>
+            <div class="all-buttons text-right">
+              <input type="button" id="Add" *ngIf="MultipaymentPopUp" class="btn green btn-success margin-7-hr"
+                     [disabled]="loading || RemainingAmount !=0" (click)="loading = true;Submit()" value="Proceed" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

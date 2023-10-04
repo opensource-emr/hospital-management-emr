@@ -1,0 +1,85 @@
+<input type="button" class="btn btn-primary" (click)="AddShifts()" value="Add Shift" />
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="shiftsGridColumns"
+                     [grid-data]="shiftsList"
+                     (grid-actions)="ShiftsGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showShiftsAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="currentShifts.ShiftValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue; margin-top:10px;">
+                                <span *ngIf="!update">Add Shift</span>
+                                <span *ngIf="update">Update Shift</span>
+                            </div>
+                            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <br />
+                        <div class="col-md-12">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Shift Name<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="text" maxlength="50"
+                                               [(ngModel)]="currentShifts.ShiftName" formControlName="ShiftName"
+                                               value=""
+                                               placeholder="Enter Shift Name" />
+                                        <span class="color-red font-sm" [hidden]="currentShifts.IsValidCheck('ShiftName','required') || !(currentShifts.IsDirty('ShiftName'))">Shift Name is required</span>
+                                        <span class="color-red font-sm" *ngIf="currentShifts.IsDirty('ShiftName')" [hidden]="currentShifts.IsValidCheck('ShiftName','maxlength')"> Length is not proper</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Start Time<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="time"
+                                               (ngModelChange)="CalculationForTotalHrs()"
+                                               (focusout)="CalculationForTotalHrs()"
+                                               [(ngModel)]="currentShifts.StartTime"
+                                               formControlName="StartTime" />
+                                        <span class="color-red font-sm" [hidden]="currentShifts.IsValidCheck('StartTime','required') || !(currentShifts.IsDirty('StartTime'))">Start Time is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">End Time<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="time"
+                                               (ngModelChange)="CalculationForTotalHrs()"
+                                               (focusout)="CalculationForTotalHrs()"
+                                               [(ngModel)]="currentShifts.EndTime"
+                                               formControlName="EndTime" />
+                                        <span class="color-red font-sm" [hidden]="currentShifts.IsValidCheck('EndTime','required') || !(currentShifts.IsDirty('EndTime'))">End Time is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Total Hrs<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="text" disabled
+                                               [(ngModel)]="currentShifts.TotalHrs"
+                                               [ngModelOptions]="{standalone: true}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="padding-bottom: 18px;">
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                                    <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

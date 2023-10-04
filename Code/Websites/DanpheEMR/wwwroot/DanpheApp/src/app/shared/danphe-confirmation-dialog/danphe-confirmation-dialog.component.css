@@ -1,0 +1,86 @@
+.dialog-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.dialog-box {
+  width: 400px;
+  height: 200px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dialog-box h2 {
+  margin-top: 0;
+  margin-bottom: 10px !important;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.dialog-box p {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 16px;
+  letter-spacing: 0px !important;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.dialog-buttons button {
+  margin-left: 10px;
+  padding: 8px 15px;
+  border-radius: 5px !important;
+  cursor: pointer;
+}
+
+.dialog-buttons button:first-child {
+  margin-left: 0;
+}
+
+.dialog-buttons button.confirm {
+  background-color: #26c281;
+  color: #fff;
+  border: none;
+}
+
+.dialog-buttons button.cancel {
+  background-color: #d9534f;
+  color: #fff;
+  border: none;
+}
+
+.dialog-buttons button.confirm:hover {
+  background-color: #2d68ea;
+}
+
+/* border: dotted 1px #464241; */
+.dialog-buttons button.confirm:focus {
+  background-color: #2d68ea;
+  outline: 1px solid #2d68ea;
+  box-shadow: 6px 2px 13px 3px rgba(45, 104, 234, 0.58);
+}
+.dialog-buttons button.confirm:hover:focus {
+  outline: 1px solid #2d68ea;
+  box-shadow: 6px 2px 13px 3px rgba(45, 104, 234, 0.58);
+}
+
+.dialog-buttons button.cancel:focus {
+  outline: 1px solid #d9534f;
+  box-shadow: 6px 2px 13px 3px rgba(217, 83, 79, 0.58);
+}

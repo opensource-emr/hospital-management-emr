@@ -1,0 +1,18 @@
+<a class="btn green btn-success margin-7-hr" feature="button" (click)="ShowAddPage()"><i class="fa fa-plus"></i>Add Deposit Heads</a>
+
+<div *ngIf="showGrid">
+    <danphe-grid [grid-colDefaults]="depositHeadGridColumns"
+                 [grid-data]="depositHeadList"
+                 (grid-actions)="DepositHeadsGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+</div>
+<div *ngIf="showAddPage">
+    <deposit-head-add
+                      [showAddPage]="showAddPage"
+                      [isUpdate]="isUpdate"
+                      [rowdata]="selectedDepositHead"
+                      [deposit-head-list]="depositHeadList"
+                      (CallBack-Add-deposit-heads)="CallBackAddDepositHead($event)">
+    </deposit-head-add>
+</div>

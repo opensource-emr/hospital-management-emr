@@ -1,0 +1,159 @@
+<style>
+.table-tr-style {
+	background-color: rgb(0, 102, 136);
+	color: rgb(255, 255, 255);
+}
+</style>
+
+<div class="row">
+  <div class="col-md-12"> <a class="btn blue" style="margin-bottom:7px;float:left;" (click)="ShowConsumptionPage()"> <i class="fa fa-backward"></i> Back </a>
+    <div class="col-md-4">
+      <label class="control-label">Select Ward:</label>
+      <select [(ngModel)]="WardId" id="wardId" style="width:300px;height:30px;" (change)="onWardChange()">
+        <option *ngFor="let v of WardList" value="{{v.WardId}}">{{v.WardName}}</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label style="display:inline-block;">Search Patient:</label>
+      <div class="autocomplete-item" style="display:inline-block;">
+        <input danphe-auto-complete class="form-control"
+               [(ngModel)]="SelectedPatient"
+               [source]="PatientRefinedList"
+               [list-formatter]="PatientListFormatter"
+               placeholder="-- Search Patient --"
+               display-property-name="ShortName"
+               value-property-name=null
+               (valueChanged)="onClickPatient($event)"
+               onClick="this.select();"
+               max-num-list="20"
+               min-chars="0"
+               match-formatted="true"
+               style="width:250px;"
+               [grid-sort]="'ShortName'"
+               id="patient-search" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12" *ngIf="ShowPatientInfo" style="margin-top: 20px;">
+    <div class="well" style="padding: inherit;">
+      <div class="row">
+        <div class="col-sm-2">
+          <label>Patient Code:<span [innerHTML]="SelectedPatient.PatientCode"></span></label>
+        </div>
+        <div class="col-sm-2">
+          <label>Name:<span [innerHTML]="SelectedPatient.ShortName"></span></label>
+        </div>
+        <div class="col-sm-2">
+          <label>Address:<span [innerHTML]="SelectedPatient.Address"></span></label>
+        </div>
+        <div class="col-sm-2">
+          <label>Age:<span [innerHTML]="SelectedPatient.Age"></span></label>
+        </div>
+        <div class="col-sm-2">
+          <label>Gender:<span [innerHTML]="SelectedPatient.Gender"></span></label>
+        </div>
+        <div class="col-sm-2">
+          <label>Contact No:<span [innerHTML]="SelectedPatient.PhoneNumber"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12" *ngIf="IsShowConsumption">
+    <div>
+      <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px">
+        <thead>
+          <tr class="table-tr-style">
+            <th></th>
+            <th><b>Drug/Medicine Name</b></th>
+            <th><b>Expiry</b></th>
+            <th><b>Batch</b></th>
+            <th></th>
+            <th><b>AvlQty</b></th>
+            <th><b>Qty</b></th>
+            <th><b>M.R.P.</b></th>
+            <th><b>Amount</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of SelecetdItemList; let i = index">
+            <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa" style="float:left;padding: 2px 8px !important;">X</i></a></td>
+            <td style="width:200px" class="autocomplete-item"><form [formGroup]="row.ConsumptionValidator">
+                <input danphe-auto-complete class="form-control"
+                       [(ngModel)]="row.SelectedItem"
+                       [source]="ItemTypeListWithItems"
+                       [list-formatter]="ItemListFormatter"
+                       placeholder="--Select Medicine--"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       onClick="this.select();"
+                       (valueChanged)="onChangeItem($event,i)"
+                       max-num-list="20"
+                       min-chars="0"
+                       style="width:250px;"
+                       id="{{'item-box' + i}}"
+                       [grid-sort]="'ItemName'"
+                       match-formatted="true"
+                       [ngModelOptions]="{standalone: true}"/>
+                <!--<span class="color-red font-sm" >Select Medicine..</span>-->
+              </form></td>
+            <td><label style="width:100px ; "
+                     min="0" type="date" value="">{{row.ExpiryDate | date}}</label></td>
+            <td><input [(ngModel)]="row.BatchNo" style="width:80px ; "
+                     min="0" class="form-control" type="text" value="" disabled></td>
+            <td><a (click)="AddRow()"><i class="glyphicon glyphicon-plus btn btn-success" style="padding: 2px 8px !important;"></i></a></td>
+            <td><input [(ngModel)]="row.AvailableQuantity"
+                     [ngModelOptions]="{standalone: true}" style="width:80px ; "
+                     min="0" class="form-control" type="number" value="" disabled></td>
+            <td><form [formGroup]="row.ConsumptionValidator">
+                <input [(ngModel)]="row.Quantity" (ngModelChange)="QuantityChanged(i)"
+                       formControlName="Quantity" style="width:80px ; "
+                       min="0" class="form-control" type="number" onwheel="this.blur()" value=""
+                       id="{{ 'qty-box'+i }}" (keyup.enter)="AddRow(i)" onClick="this.select();">
+                <span class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValid('Quantity','required')">Enter Quantity..</span>
+              </form></td>
+            <td><input [(ngModel)]="row.MRP" style="width:80px ; "
+                     min="0" class="form-control" type="number" value="" disabled></td>
+            <td><input [(ngModel)]="row.SubTotal" style="width:80px;"
+                     min="0" class="form-control" type="number" value="" disabled></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class=" col-sm-6 ">
+        <tr class="form-group">
+          <td class="col-sm-offset-8 col-sm-2"></td>
+          <td>Total Amount: </td>
+          <td><input [(ngModel)]="TotalConsumption" disabled class="form-control" name="TotalAmount" type="number"></td>
+        </tr>
+        <tr class="dot">
+          <td></td>
+          <td></td>
+          <td class="text-capitalize">In Words : <b>{{TotalConsumption | NumberInWords}} </b>&nbsp; Only. <br />
+            <br /></td>
+        </tr>
+        <tr class="form-group">
+          <td></td>
+          <td>Remark:</td>
+          <td class="text-capitalize"><textarea [(ngModel)]="WardConsumption.Remark" name="Remark" id="Remark"></textarea></td>
+        </tr>
+        <tr>
+          <td class="col-sm-offset-8 col-sm-2"></td>
+          <td></td>
+          <td><input type="button" class="btn btn-success" value="Save" (click)="Save()" [disabled]="loading" />
+            <span></span>
+            <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Cancel">
+            <span></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!--shows the receipt for consumption-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetail">
+  <div style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+      <consumption-receipt [showReceipt]="true" [isInternal]="false" [currentPatient]="SelectedPatient" (callback-view)="ShowConsumptionPage()"></consumption-receipt>
+    </div>
+  </div>
+</div>

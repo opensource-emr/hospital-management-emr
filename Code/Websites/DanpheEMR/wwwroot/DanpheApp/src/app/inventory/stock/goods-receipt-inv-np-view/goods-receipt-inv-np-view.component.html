@@ -1,0 +1,208 @@
+<style>
+  #printpage table tr td,
+  #printpage table th {
+    border-color: #000
+  }
+</style>
+<div>
+  <div>
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div>
+          <!--Model Box Body Start-->
+          <div id="printpage">
+            <div>
+              <div style="display: flex;justify-content: space-between;">
+                <div style="text-align: left;width:20%">
+                  <img class="img-responsive" style="max-height:12rem;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                </div>
+                <div style="text-align: center;width:60%">
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header1">{{headerDetail.header1}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header2">{{headerDetail.header2}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header3">{{headerDetail.header3}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px" *ngIf="!!headerDetail.header4">{{headerDetail.header4}} </div>
+                  <div style="font-size:1.5rem; font-weight: 700;margin-bottom:5px">{{headerDetail.hospitalName}}</div>
+                  <div style="font-size:1.5rem; font-weight: 700;">{{headerDetail.address}}</div>
+                  <div style="font-size:1.5rem; font-weight: 700; text-decoration: underline;">दाखिला प्रतिवेदन फाराम </div>
+                </div>
+                <div style="text-align: right;width:20%">
+                  <div>म.ले.प.फारम नं: ४०३ </div>
+                  <div>साबिकको फारम नं: ४६ </div>
+                </div>
+              </div>
+              <div style="text-align: right; margin-bottom:2rem;">
+                <div>दाखिला मितिः <span
+                    *ngIf="goodsreceiptDetails.GoodsReceiptDate">{{goodsreceiptDetails.GoodsReceiptDate | nepaliDate
+                    }}</span></div>
+                <div>दाखिला प्रतिवेदन नम्बरः {{goodsreceiptDetails.GoodsReceiptNo}} </div>
+                <div *ngIf="goodsreceiptDetails.PurchaseOrderId">खरिद आदेश नं: {{goodsreceiptDetails.PurchaseOrderId ||
+                  ''}} </div>
+                <div *ngIf="goodsreceiptDetails.DonationId">हस्तान्तरण फारम नं: {{goodsreceiptDetails.DonationId || ''}}
+                </div>
+              </div>
+            </div>
+            <div>
+              <table class="table table-condensed"
+                style="width: 100%;table-layout: fixed;margin-bottom: 0;border:1px solid;">
+                <thead>
+                  <tr>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">क्र.सं.</th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जिन्सी करण सङ्केत न.
+                    </th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जिन्सी खाता पाना.नं.
+                    </th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">सामानको नाम</th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">स्पेसिफि-<br />केसन
+                    </th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">सामानको पहिचान नं.</th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">मोडल नं.</th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" colspan="4">मूल्य (विल विजक अनुसार
+                      ) </th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">अन्य खर्च</th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">जम्मा </th>
+                    <th style="padding: 5px 2.5px;font-size: 1rem;border:1px solid;" rowspan="2">कैफियत</th>
+                  </tr>
+                  <tr>
+                    <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">इकाई </th>
+                    <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">परिमाण</th>
+                    <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">दर</th>
+                    <th style="padding: 5px 2.5px; width: 5%;font-size: 1rem;border:1px solid;">मु. अ. कर</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let gritem of goodsreceiptItemsDetails let i = index">
+                    <td style="border-bottom:1px solid; border-right: 1px solid; padding: 5px 2.5px;">{{i+1}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{ gritem.ItemCategoryCode }}
+                    </td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.RegisterPageNumber}}
+                    </td>
+
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all; text-align: left;"
+                      colspan="3">
+                      <!-- We're merging values of 3 columns (सामानको नाम, स्पेसिफि-
+                      केसन, सामानको पहिचान नं.) to fit the content of ItemName etc.. since those were not coming good in 1 column each. -->
+                      <span style="font-weight: bold;text-transform: uppercase;"> {{gritem.ItemName}}</span>
+                      <span *ngIf="gritem.GRItemSpecification">
+                        <br />
+                        {{ gritem.GRItemSpecification }}
+                      </span>
+                    </td>
+
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                    </td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.UOMName}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.ReceivedQuantity}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.ItemRate | number: "1.0-2"}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.VATAmount | number: "1.0-2"}}</td>
+                    <td
+                      style="border-bottom:1px solid; border-right: 1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.OtherCharge}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.TotalAmount | number: "1.0-2"}}</td>
+                    <td
+                      style="border-bottom:1px solid; padding: 5px 2.5px; width: 5%; font-size:1rem;word-break: break-all;">
+                      {{gritem.Remarks}}</td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="border: 1px solid;padding: 5px 2.5px; font-weight: 700; font-size: 1rem; text-align: right;"
+                      colspan="12">जम्मा रकम</td>
+                    <td style="border: 1px solid;padding: 5px 2.5px; font-size: 1rem;" colspan="2">
+                      {{goodsreceiptDetails.TotalAmount -goodsreceiptDetails.OtherCharges | number: "1.0-2"}}</td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="border: 1px solid; padding: 5px 2.5px; font-weight: 700; font-size: 1rem; text-align: right;"
+                      colspan="12">थप अन्य खर्च</td>
+                    <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem;" colspan="2">
+                      {{goodsreceiptDetails.OtherCharges | number: "1.0-2"}}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1.3rem;text-transform: capitalize;" colspan="8">
+                      In Words: {{goodsreceiptDetails.TotalAmount | number: "1.0-2" | NumberInWords}} ruppees only.</td>
+                    <td
+                      style="border: 1px solid; padding: 5px 2.5px; font-weight: 700; font-size: 1rem; text-align: right;"
+                      colspan="4">कुल जम्मा रकम</td>
+                    <td style="border: 1px solid; padding: 5px 2.5px; font-size: 1rem;"
+                      colspan="2">
+                       {{goodsreceiptDetails.TotalAmount | number: "1.0-2"}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div style="border: 1px solid; padding: 2rem;">
+                <div style="margin-bottom: 1.3rem;line-height: 3.5rem;font-size: 1.3rem;">माथि उल्लेखित मालसामान खरिद
+                  आदेशनम्बर / हस्तान्तरन फारम नम्बर <b>{{goodsreceiptDetails.BillNo}}</b> मिति <span
+                    *ngIf="goodsreceiptDetails.GoodsArrivalDate"><b>{{goodsreceiptDetails.GoodsArrivalDate | nepaliDate
+                      }}</b></span> अनुसार श्री <b>{{goodsreceiptDetails.VendorName}}</b> बाट
+                  प्राप्त हुन आएको हुदा जाची गन्ती गरी हेर्दा ठिक दुरुस्त भएकोले खातामा आम्दानी बाधेको प्रमाणित
+                  गर्दछु ।
+                </div>
+                <div style="margin-bottom: 3rem;line-height: 1.3rem;font-size: 1.3rem;">
+                  उपर्युक्तअनुसार दाखिला प्रतिवेदन तयार गर्ने, जाँच गर्ने र स्वीकृत गर्नेः
+                  <span *ngIf="goodsreceiptDetails.IsCancel" class="cancelStamp">
+                    <strong>Cancelled</strong>
+                  </span>
+                </div>
+                <div style="display: flex; justify-content: space-around;font-weight: 500;">
+                  <div>
+                    <div style="font-size: 1.3rem;"><strong>फाँटवालाको दस्तखतः</strong></div>
+                    <div style="font-size: 1.3rem;">नामः</div>
+                    <div style="font-size: 1.3rem;">पदः</div>
+                    <div style="font-size: 1.3rem;">मितिः</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 1.3rem;"><strong>भण्डार प्रमुखको दस्तखतः</strong></div>
+                    <div style="font-size: 1.3rem;">नामः</div>
+                    <div style="font-size: 1.3rem;">पदः</div>
+                    <div style="font-size: 1.3rem;">मितिः</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 1.3rem;"><strong>प्रमाणित गर्नेको दस्तखतः</strong></div>
+                    <div style="font-size: 1.3rem;">नामः</div>
+                    <div style="font-size: 1.3rem;">पदः</div>
+                    <div style="font-size: 1.3rem;">मितिः</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="goodsreceiptDetails.GRStatus == 'verified' || goodsreceiptDetails.GRStatus == 'pending'">
+              नोट:"दाखिला प्रतिवेदन फाराम स्वीकृत हुन बाँकी छ | "
+            </div>
+          </div>
+          <!-- Receive Button Feature Starts here -->
+          <div class="col-md-12 text-left" *ngIf="goodsreceiptDetails.GRStatus == 'verified'"
+            style="display: flex;flex-direction: column;">
+            <div style="margin-bottom:1rem;">
+              <label class="col-md-3" for="ReceivedRemarks">Receiving Remarks<sup
+                  style="color: red;">*</sup>&nbsp;:&nbsp;</label>
+              <textarea class="col-md-5" type="text" name="ReceivedRemarks" id="ReceivedRemarks"
+                [(ngModel)]="receivedRemarks" rows="3" cols="20"> </textarea>
+            </div>
+            <div style="text-align: center;">
+              <button class="animated-btn blinking-btn-warning" id="ReceiveButton" (click)="receive()" [disabled]="loading"><i
+                  class="fa fa-check-square-o" aria-hidden="true"></i>Receive</button>
+            </div>
+          </div>
+          <!-- Receive Button Feature Ends here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

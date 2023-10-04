@@ -1,0 +1,423 @@
+<style>
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 0;
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+
+  .qr-code {
+    position: relative;
+    left: 70px;
+    top: 3px;
+  }
+
+  @media print {
+    .qr-code {
+      left: 70px;
+    }
+  }
+
+  table {
+    /* border: 1px solid #000; */
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+
+  table tr td,
+  table tr th {
+    /* border: 1px solid #000; */
+    padding: 1px;
+    height: 15px;
+  }
+
+  .logo {
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .img-responsive {
+    position: static;
+    width: 100%;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    font-size: 70%;
+    scale: 70%;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: #333333 !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  table td,
+  table th {
+    padding: 0;
+    font-size: 12px;
+    color: #333333 !important;
+  }
+
+  .column {
+    float: left;
+    padding: 5px;
+  }
+
+  .box-body {
+    padding: 0px 10px 0 10px;
+    color: #333333 !important;
+  }
+
+  .c_name {
+    font-size: 14px !important;
+    margin-bottom: 0;
+    margin-top: 0;
+    color: #333333 !important;
+  }
+
+  .c_paragraphs {
+    font-size: 12px !important;
+    margin: 0 0 0 0;
+    padding: 0;
+    color: #333333 !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    border: none !important;
+    color: #333333 !important;
+  }
+
+  table td,
+  table th {
+    text-align: left;
+    vertical-align: top !important;
+    color: #333333 !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+</style>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div style="display:flex;justify-content:space-between">
+      <div>
+        <button type="button" class="btn btn-success" (click)="ShowPurchaseOrderAddEditPage()">Add Purchase Order</button>
+      </div>
+      <div>
+        <div class="input-group">
+          <div class="icheck-inline">
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" checked="checked" (change)="LoadPHRMPOListByStatus('pending')" name="name" value="" style="width:15px;height:15px" />
+              <span></span>Pending </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" (change)="LoadPHRMPOListByStatus('complete')" name="name" value="" style="width:15px;height:15px" />
+              <span></span>Completed </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" (change)="LoadPHRMPOListByStatus('cancel')" name="name" value="" style="width:15px;height:15px" />
+              <span></span>Cancelled </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" (change)="LoadPHRMPOListByStatus('all')" name="name" value="" style="width:15px;height:15px" />
+              <span></span>All </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <danphe-grid [grid-colDefaults]="PHRMpurchaseOrdersGridColumns" [grid-data]="PHRMPurchaseOrderList" [rangeType]="dateRange" [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" (onDateChange)="onDateChange($event)" (grid-actions)="PHRMPurchaseOrderGridAction($event)"> </danphe-grid>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showPurchaseOrderAddEditPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-12" style="margin-top: 50px; width: 96%; margin-left: 2%">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="ClosePurchaseOrderAddEditPopupPage()"><i class="fa fa-times"></i></a>
+          <div>
+            <phrm-purchase-order (call-back-close-popup)="ClosePurchaseOrderAddEditPage($event)" (discard-changes-popup-close)="ClosePurchaseOrderAddEditPopupPage()"></phrm-purchase-order>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPHRMPOItemsbyPOId">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix"><a class="btn btn-danger history-del-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          <div id="printpage" class="row printStyle print-border">
+            <div class="A5 auto">
+              <section class="sheet" id="content-print">
+                <div class="box-body invoice header">
+                  <table border="0" style="margin: 0 auto;" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td colspan="3" width="25%">
+                        <img class="img-responsive" style="max-height: 70px" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                      </td>
+                      <td colspan="4" width="50%">
+                        <h3 class="c_name" style="text-align: center;"><strong>{{ headerDetail.hospitalName }}</strong></h3>
+                        <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.address }}</p>
+                        <p class="c_paragraphs" style="text-align: center;">Ph No: {{ headerDetail.tel }}</p>
+                      </td>
+                      <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
+                        <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>PAN No.
+                            : {{ headerDetail.PANno }} </strong> </p>
+                      </td>
+                    </tr>
+                  </table>
+                  <table border="0" style="margin: 0 auto;" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td colspan="12" style="text-align: center; padding: 0 10px;">
+                        <p style="margin: 0 0 5px 0;"><strong>Purchase Order</strong></p>
+                      </td>
+
+                    </tr>
+                    <tr style="border: 1px solid #ccc;">
+                      <td colspan="12" style="padding: 5px 5px;">
+                        <table style="width: 100%; margin-bottom: 0;">
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs">PO No.:<strong> {{PHRMPO.PurchaseOrderNo}}</strong></p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">PO Date :<strong> {{PHRMPO.PODate | date : 'yyyy-MM-dd'}} &nbsp; ({{PHRMPO.PODate |
+                                  nepaliDate:'format':'YYYY-MM-DD'}} BS )</strong>
+                              </p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs">Supplier's Name : <strong>{{PHRMPO.SupplierName}}</strong></p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">PAN No. :<strong>{{PHRMPO.PANNumber}}</strong></p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs">Address : <strong>{{PHRMPO.ContactAddress}}</strong></p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">Delivery Days : <strong>{{PHRMPO.DeliveryDays}}</strong></p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs">Contact /Mobile Number : <strong>{{PHRMPO.ContactNo}}</strong></p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">Delivery Date : <strong>{{PHRMPO.DeliveryDate | date : 'yyyy-MM-dd'}} ({{PHRMPO.DeliveryDate |
+                                  nepaliDate:'format':'YYYY-MM-DD'}} BS )</strong>
+                              </p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs"><strong>Invoicing Address : </strong>{{PHRMPO.InvoicingAddress}}</p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">Reference No:<strong>{{PHRMPO.ReferenceNo}}</strong></p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="6" style="text-align: left;">
+                              <p class="c_paragraphs">Delivery Address :<strong>{{PHRMPO.DeliveryAddress}}</strong></p>
+                            </td>
+                            <td colspan="6" style="text-align: right;">
+                              <p class="c_paragraphs">Contact Details:<strong>{{PHRMPO.Contact}}</strong></p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+
+                    </tr>
+                    <tr>
+                      <td colspan="12" style="padding: 10px 0; border-bottom: 1px solid #ccc; font-weight: bold;">We are pleased to place this order
+                        for below mentioned materials to your above stated company/firm.
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="padding: 5px 5px; width: 2%;">SN.</th>
+                      <th colspan="3" style="padding: 5px 5px;">Item Name</th>
+                      <th style="padding: 5px 5px;">Qty</th>
+                      <th style="padding: 5px 5px;">Free Qty</th>
+                      <th style="padding: 5px 5px;">Total Qty</th>
+                      <th style="padding: 5px 5px;">UOM</th>
+                      <th style="padding: 5px 5px;">Standard Rate</th>
+                      <th style="padding: 5px 5px;">CCCharge %</th>
+                      <th style="padding: 5px 5px;">CCCharge Amt</th>
+                      <th style="padding: 5px 5px;">Total Amt</th>
+                    </tr>
+                    <tr *ngFor="let row of PHRMPOItemsList; let i = index ">
+                      <td style="padding: 5px 5px; width: 2%;">{{i+1}}</td>
+                      <td colspan="3" style="padding: 5px 5px;">{{row.ItemName}} </td>
+                      <td style="padding: 5px 5px; ">{{row.Quantity}}</td>
+                      <td style="padding: 5px 5px; ">{{row.FreeQuantity}}</td>
+                      <td style="padding: 5px 5px;">{{row.TotalQuantity}}</td>
+                      <td style="padding: 5px 5px; ">{{row.UOMName}}</td>
+                      <td style="padding: 5px 5px;">{{row.StandardRate }}</td>
+                      <td style="padding: 5px 5px; ">{{row.CCChargePercentage}}</td>
+                      <td style="padding: 5px 5px; ">{{row.CCChargeAmount}}</td>
+                      <td style="padding: 5px 5px; ">{{row.TotalAmount }}</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc;">
+                      <td colspan="6" style="padding: 5px 5px; vertical-align: top;">
+                        <p class="c_paragraphs"><strong>Total Value In Words: Total Value in
+                            words:&nbsp;{{PHRMPO.TotalAmount | NumberInWords }}Only.</strong>
+                        </p>
+                      </td>
+                      <td colspan="5" style="padding: 5px 5px; text-align: right;">
+                        <p class="c_paragraphs"><strong>SubTotal: </strong></p>
+                        <p class="c_paragraphs"><strong>Discount %:</strong></p>
+                        <p class="c_paragraphs"><strong>Discount Amount: </strong></p>
+                        <p class="c_paragraphs"><strong>Taxable Amount: </strong></p>
+                        <p class="c_paragraphs"><strong>Non-Taxable Amount: </strong></p>
+                        <!-- <p class="c_paragraphs"><strong>VAT %: </strong></p> -->
+                        <p class="c_paragraphs"><strong>VAT Amount: </strong></p>
+                        <p class="c_paragraphs"><strong>CCCharge Amount: </strong></p>
+                        <p class="c_paragraphs"><strong>Adjustment: </strong></p>
+                        <p class="c_paragraphs"><strong>Total Amount: </strong></p>
+
+                      </td>
+                      <td style="padding: 5px 5px;">
+                        <p class="c_paragraphs"><strong>{{PHRMPO.SubTotal | number: "1.2-2"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.DiscountPercentage | number: "1.2-2"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.DiscountAmount | number: "1.2-2"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.TaxableAmount | number: "1.2-2"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.NonTaxableAmount | number: "1.2-4"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.VATAmount | number: "1.2-4"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.CCChargeAmount | number: "1.2-4"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.Adjustment | number: "1.2-4"}}</strong></p>
+                        <p class="c_paragraphs"><strong>{{PHRMPO.TotalAmount | number: "1.2-2"}}</strong></p>
+                        <!-- <p class="c_paragraphs"><strong>620.00</strong></p> -->
+                      </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc;">
+                      <td colspan="12" style="padding: 5px 5px; vertical-align: top;">
+                        <p class="c_paragraphs"><strong>Remarks: </strong><span class="tc-notes" style="font-style: italic" [innerHtml]="PHRMPO.Remarks"></span></p>
+                      </td>
+
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc;">
+                      <td colspan="12" style="padding: 5px 5px; vertical-align: top;">
+                        <p class="c_paragraphs"><strong>Terms & Conditions: </strong><span class="tc-notes" style="font-style: italic" [innerHtml]="PHRMPO.TermsConditions"></span></p>
+                      </td>
+
+                    </tr>
+                    <tr style="border-top: 1px solid #ccc;">
+                      <td colspan="2" style="padding: 20px 10px; vertical-align: top;">
+                        <div>{{PHRMPO.EmployeeName}}</div>
+                      </td>
+                      <td [attr.colSpan]="s.colSpan" *ngFor="let s of SignatoriesWithTheirColSpan; let i=index;" style="padding: 20px 10px; vertical-align: top;">
+                        <div *ngIf="GetVerifierDetails(i+1)">
+                          <div>{{GetVerifierDetails(i+1).FullName}}</div>
+                          <div>({{GetVerifierDetails(i+1).EmployeeRoleName}})</div>
+                          <div><b>Checked On :</b>{{GetVerifierDetails(i+1).VerifiedOn | date:'medium'}}</div>
+                          <div><b>Status :</b>{{GetVerifierDetails(i+1).VerificationStatus}}</div>
+                          <div><b>Remarks
+                              :</b>{{GetVerifierDetails(i+1).VerificationRemarks}}</div>
+                        </div>
+                      </td>
+
+
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ccc;">
+                      <td colspan="2" style="padding: 5px 10px 10px 10px; vertical-align: top;">
+                        <p class="c_paragraphs"><strong>Prepared By </strong></p>
+                      </td>
+                      <td *ngFor="let s of SignatoriesWithTheirColSpan" [attr.colSpan]="s.colSpan" style="padding: 5px 10px 10px 10px; vertical-align: top;">
+                        <p class="c_paragraphs"><strong>{{s.signatory}}</strong></p>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td colspan="12" style="padding: 5px 5px; text-align: center;">
+                        <p class="c_paragraphs"><strong>Note:This is computer generated Purchase Order signature not required.</strong>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+
+              </section>
+            </div>
+          </div>
+          <div class="row center-style p2">
+            <div class="col-md-12 col-xs-12 ">
+              <button *ngIf="!'complete,cancel'.includes(PHRMPO.POStatus)" type="button" id="edit" class="btn btn-primary" (click)="EditPO()">Edit <i class="glyphicon glyphicon-edit"></i></button>
+
+              <button id="printButton" (click)="print()" class="btn btn-default"> Print
+                <i class="glyphicon glyphicon-print"></i>
+              </button> &nbsp;
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Nepali PO View  START-->
+<div *ngIf="showPopUp">
+  <app-phrm-po-view-np [showPopUp]="showPopUp" [purchaseOrderId]="currentPO.PurchaseOrderId" (call-back-close)="OnPOViewPopUpClose()" (call-back-edit)="EditPO($event)"></app-phrm-po-view-np>
+</div>
+<!-- Nepali PO View  END-->
+
+<new-print-page *ngIf="showPrint" [print-data]="printDetaiils" (print-sucess)="callBackPrint()"></new-print-page>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showGoodReceiptAddEditPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3>
+              <i class="fa fa-shopping-cart"></i>
+              <span class="caption-subject">Add Good Receipt</span>
+            </h3>
+            <a class="btn btn-danger" (click)="CloseGoodReceiptItemAddEditPage()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <phrm-goods-receipt></phrm-goods-receipt>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

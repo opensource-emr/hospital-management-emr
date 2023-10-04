@@ -1,0 +1,249 @@
+#printpage table tr td, #printpage table th, #printpage .bill-header-text, .receipt table tr td, .receipt table th, .receipt div {
+    font-size: 12px;
+}
+
+#printpage table tr td, #printpage table th, .receipt table tr td, .receipt table th{padding: 2px;}
+.img-watermark {
+    display: block;
+    height: 200px;
+    width: auto;
+    position: absolute;
+    top: 30%;
+    text-align: center;
+    left: 30%;
+    opacity: 0;
+    display: none;
+}
+
+@media Print {
+
+    @page {
+        size: auto; /* auto is the initial value */
+        margin-top: 0mm; /* this affects the margin in the printer settings */
+        
+    }
+   
+    html {
+        background-color: #FFFFFF;
+        margin: 0mm; /* this affects the margin on the html before sending to printer */
+    }
+
+    body {
+        padding: 30px; /* margin you want for the content */
+    }
+    .col-50 {
+        width: 50% !important;
+    }
+    .img-watermark {
+        display: block;
+        height: 200px;
+        width: auto;
+        position: absolute;
+        top: 30%;
+        text-align: center;
+        left: 30%;
+        opacity: 0;
+
+    }
+
+    .receipt {
+        font-family: Verdana !important;
+    }
+
+    .dischargebill-header .flex-container .img-responsive {
+        height: 90px !important;
+        width: 90px !important;
+    }
+
+    #printpage table tr td {
+        font-size: 11px !important;
+        padding: 2px;
+    }
+
+    #printpage table th {
+        font-size: 11px !important;
+        font-weight: bold;
+        padding: 2px;
+    }
+
+    #printpage p {
+        font-family: Verdana !important;
+    }
+
+    #printpage .bill-header-text {
+        font-family: Verdana !important;
+        line-height: 11px;
+    }
+
+    #pharma-pat-info {
+        padding-top: 0px !important;
+    }
+
+    .receipt table tr td {
+        font-size: 11px !important;
+        font-family: Verdana !important;
+        padding: 2px;
+    }
+
+    .receipt table th {
+        font-size: 11px !important;
+        font-weight: bold;
+        padding: 2px;
+    }
+
+    .receipt .bill-head {
+        font-family: Verdana !important;
+        line-height: 20px;
+    }
+
+    .receipt div {
+        font-family: Verdana !important;
+        font-size: 11px;
+    }
+
+    .receipt p {
+        font-family: Verdana !important;
+        font-size: 11px;
+    }
+    .no-margin{
+        margin: 2px auto !important;    
+    }
+    receipt p span {
+        font-family: Verdana !important;
+        font-size: 11px;
+    }
+}
+
+
+/* for billing receipt print */
+.hr, p {
+    margin: 8px 0;
+}
+
+/*for lab-report print*/
+.popup-print {
+    height: 100%;
+    z-index: 9999;
+    top: 1%;
+    left: 5%;
+}
+
+@media print {
+    div.receipt {
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+
+    html, body {
+        height: auto;
+    }
+
+    #pharma-pat-info, table#phrm-bill-table, table#pharma-bill-sum {
+        font-size: 12px !important;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    #pharma-pat-info {
+        padding-top: 10px !important;
+    }
+
+    #invoice-head {
+        /*margin-right: 50px;*/
+    }
+
+    /*.bill-patinfo, tr, td {
+        font-size: 12px !important;
+    }*/
+
+
+    .noPrint {
+        display: none;
+        visibility: hidden;
+    }
+
+    html, body {
+        height: auto;
+    }
+
+    .billing-head {
+        position: absolute;
+        bottom: 11px;
+        left: 112px;
+    }
+
+    .bill-head-div {
+        position: relative;
+    }
+
+    .dischargebill-header {
+        position: relative !important;
+        /*left: 20% !important;*/
+    }
+
+    .discharge-breakup {
+        page-break-inside: avoid;
+    }
+    
+}
+
+
+.print-par {
+    width: 200px;
+}
+
+.print-qty {
+    width: 60px;
+}
+
+.print-rate {
+    width: 70px;
+}
+
+.print-amt {
+    width: 70px;
+}
+
+.print-sn {
+    width: 30px;
+}
+
+.danphe-print-report {
+    opacity: 0.9;
+    background: white;
+    z-index: 10;
+    top: 90px;
+    left: 100px;
+    position: relative;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 90%;
+    height: 80%;
+    padding: 2px 15px 15px;
+}
+
+
+.bill-header-gap-cmh{height: 50px;}
+.provisional-bill-header-gap-cmh{height: 50px;}
+.ipd-invoice-header-gap-cmh{height: 25px;}
+.ins-bill-header-gap-cmh{height: 50px;}
+.ins-ip-bill-header-gap-cmh{height: 50px;}
+.ins-estimation-bill-header-gap-cmh{height: 50px;}
+.txt-label, .txt-val{font-size: 12px;}
+
+
+.main-info {
+    margin-top: 31px;
+  }
+
+  .ReturnInvoice-print-main {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .ReturnInvoice-print-main .print-detail {
+    width: 100%;
+  }

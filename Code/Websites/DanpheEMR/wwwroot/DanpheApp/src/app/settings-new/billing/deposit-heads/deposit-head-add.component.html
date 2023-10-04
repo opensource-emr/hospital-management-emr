@@ -1,0 +1,67 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+    <div class=" portlet-body form">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3> <span *ngIf="!isUpdate">Add Deposit Head</span>
+                            <span *ngIf="isUpdate">Update Deposit Head</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <form class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Deposit Head Code<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="DepositHeadCode"
+                                           type="text"
+                                           [(ngModel)]="currentDepositHead.DepositHeadCode"
+                                           placeholder="Enter Deposit Head Code" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Deposit Head Name<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="DepositHeadName"
+                                           type="text"
+                                           [(ngModel)]="currentDepositHead.DepositHeadName"
+                                           placeholder="Deposit Head Name" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Description<b>:</b></label>
+                                <div class="col-md-7">
+                                    <textarea id="id_description_depositHeads" name="Description"
+                                              [(ngModel)]="currentDepositHead.Description"
+                                              rows="2" class="w-100 form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Default Deposit Head<b>:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="needParent" name="IsDefault"
+                                                       [(ngModel)]="currentDepositHead.IsDefault" type="checkbox" />
+                                                <span></span> </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="panel-footer" style="text-align: right;">
+                        <input id="savebtn" type="button" class="btn green btn-success margin-7-hr"
+                               *ngIf="!isUpdate"
+                               [disabled]="loading" (click)="AddDepositHead()" value="Add" />
+                        <input id="savebtn" type="button" class="btn green btn-success margin-7-hr"
+                               *ngIf="isUpdate"
+                               [disabled]="loading" (click)="UpdateDepositHead()" value="Update" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

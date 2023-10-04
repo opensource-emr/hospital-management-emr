@@ -1,0 +1,44 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Edit Ward Substore Map &nbsp;&nbsp;&nbsp;&nbsp; {{mappedDetail.WardName}}</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+
+                    <div style=" border: 1px solid rgb(55, 54, 54) ;margin-left:4px; margin-right: 4px;">
+                        <div class="table-responsive">
+                            <table class="table  table-bordered table-hover" style="background-color:initial;margin-top:20px">
+                                <tr>
+                                    <th><b>S.No</b></th>
+                                    <th><b>SubstoreName</b></th>
+                                    <th><b>IsDefault</b></th>
+                                    <th><b>IsActive</b></th>
+                                </tr>
+
+                                <tbody>
+                                    <tr *ngFor="let ward of mappedSubstoreWardDetails;let i=index;">
+                                        <td>{{i+1}}</td>
+                                        <td>{{ward.StoreName}}</td>
+                                        <td><input style="width:20px;height:20px;" [(ngModel)]="ward.IsDefault" type="checkbox"
+                                                   (ngModelChange)="onToggleRow(i)">
+                                        </td>
+                                        <td><input style="width:20px;height:20px;" [(ngModel)]="ward.IsActive" type="checkbox">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="panel-footer text-center" style="float:right;">
+                        <input id="AddDepartment" type="button" class="btn green btn-success margin-7-hr" (click)="Update()"
+                               value="Update" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

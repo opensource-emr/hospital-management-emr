@@ -1,0 +1,37 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject">Narcotics Stock Report</span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="form-group">
+          <!-- Store Filter -->
+          <div class="input-group" style="float: right;">
+            <div class="icheck-inline">
+              <label for="Store" class="mt-checkbox mt-checkbox-outline"><i class="fa fa-filter"></i>Filter by Store:</label>
+              <select name="Store" id="Store" [(ngModel)]="selectedStoreId" (change)="FilterNarcoticsStockReportList()">
+                <option [ngValue]="null">All</option>
+                <option *ngFor="let store of storeList" [ngValue]="store.StoreId">{{store.Name}}</option>
+              </select>
+            </div>
+          </div>
+          <!-- Zero Qty Filter -->
+          <div class="input-group" style="float: right;">
+            <div style="display: flex;align-items: flex-end;">
+              <div style="margin-right: 1rem;"><input type="checkbox" (change)="FilterNarcoticsStockReportList()" [(ngModel)]="showReportWithZeroQty" name="showReportWithZeroQty" id="showReportWithZeroQty" style="zoom: 1.4;" /></div>
+              <label for="showReportWithZeroQty">Show Zero Quantity </label>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+
+<div class="row" style="margin-top:10px;">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="PHRMNarcoticsStockReportColumns" [grid-data]="PHRMNarcoticsStockReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [report-for]="pharmacy">
+        </danphe-grid>
+    </div>
+
+</div>

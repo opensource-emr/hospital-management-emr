@@ -1,0 +1,32 @@
+export class PharmacyPurchaseOrderItem_DTO {
+    public PurchaseOrderItemId: number = 0;
+    public ItemId: number = 0;
+    public ItemName: string = null;
+    public GenericName: string = null;
+    public PurchaseOrderId: number = 0;
+    public Quantity: number = 0;
+    public StandardRate: number = 0;
+    public TotalAmount: number = 0;
+    public Remark: string = null;
+    public CreatedBy: number = 0;
+    public CreatedOn: string = '';
+    public POItemStatus: string = null;
+    public ModifiedBy: number = null;
+    public ModifiedOn: Date = null;
+    public VATPercentage: number = 0;
+    public VATAmount: number = 0;
+    public UOMName: string = null;
+    public IsActive: boolean = true;
+    public CancelledBy: number = null;
+    public CancelledOn: string = null;
+    public CancelRemarks: string = null;
+    public IsEdited: boolean = false;
+    public FreeQuantity: number = 0;
+    public SubTotal: number = 0;
+    public DiscountPercentage: number = 0;
+    public DiscountAmount: number = 0;
+    public CCChargePercentage: number = 0;
+    public CCChargeAmount: number = 0;
+    public CCChargeApplicableAmount: number = 0;
+    IsCancel: boolean = false;
+}

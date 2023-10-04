@@ -1,0 +1,19 @@
+
+<div class="margin-20-tp">
+  <a class="btn blue bordered" feature="button" (click)="ShowAddNewPage()"><i class="fa fa-plus"></i>Add New</a>
+
+  <div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="BanksGridColumns" [grid-data]="BankList" (grid-actions)="BankListGridActions($event)"
+                   [show-print-button]="false">
+      </danphe-grid>
+    </div>
+  </div>
+
+  <div style="margin-top:50px;" *ngIf="showAddNewPage">
+
+    <add-banks [bank-to-edit]="selBankToEdit" (callback-add)="getDataFromAdd($event)">
+
+    </add-banks>
+  </div>
+</div>

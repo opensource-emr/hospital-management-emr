@@ -1,0 +1,186 @@
+
+<style>
+/* .componentjson-table > tbody > tr > td, .componentjson-table > tbody > tr > th, .componentjson-table > tfoot > tr > td, .componentjson-table > tfoot > tr > th, .componentjson-table > thead > tr > td, .componentjson-table > thead > tr > th {
+	padding: 3px !important;
+} */
+.range-holder {
+	width: 100px;
+	float: left;
+}
+</style>
+<div class="wrapper">
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover componentjson-table inv_table">
+      <thead>
+        <tr>
+          <th *ngIf="!update"></th>
+          <th><b>ComponentName</b></th>
+          <th><b>Unit</b></th>
+          <th><b>ValueType</b></th>
+          <th><b>ControlType</b></th>
+          <th width="35%"><b>Range Description </b></th>
+          <th><b>Method</b></th>
+          <th><b>ValueLookp</b></th>
+          <th><b>Display Name</b></th>
+          <th *ngIf="!update && lbtstcomponentList.length > 1"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of lbtstcomponentList; let i = index;" [formGroup]="row.LabComponentJsonValidator">
+          <td *ngIf="!update"><a (click)="AddRowRequest()" class="primary-btn btn"><i class="fa fa-plus"></i></a></td>
+          <td style="width:150px;"><div>
+              <input class="form-control cstm-form-control "
+                   [(ngModel)]="row.ComponentName"
+                   formControlName="Component"
+                   required
+                   value=""
+                   type="text" id="Component" placeholder="Component Name" />
+              <span class="color-red font-sm" [hidden]="row.IsValidCheck('Component','required') || !(row.IsDirty('Component'))">Enter Component Name</span> </div></td>
+          <td style="width: 90px;"><input class="form-control cstm-form-control "
+                 [(ngModel)]="row.Unit"
+                 [ngModelOptions]="{standalone: true}"
+                 value=""
+                 type="text" id="Unit" placeholder="Unit" /></td>
+          <td style="width: 90px;"><select class="form-control cstm-form-control " [(ngModel)]="row.ValueType" [ngModelOptions]="{standalone: true}" id="valuetype" (change)="DDLValChange(i)">
+              <option *ngFor="let val of ValueTypeArray" value="{{val.Value}}">{{val.Name}}</option>
+            </select></td>
+          <td style="width: 100px;"><select class="form-control cstm-form-control " [(ngModel)]="row.ControlType" [ngModelOptions]="{standalone: true}" id="controltype" (change)="DDLControlChange()">
+              <option *ngFor="let cval of ControlTypeArray" value="{{cval.Value}}">{{cval.Name}}</option>
+            </select></td>
+          <td><textarea [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control"
+                    [(ngModel)]="row.RangeDescription"
+                    [ngModelOptions]="{standalone: true}"
+                    required
+                    value=""
+                    type="text" id="RangeDescription" placeholder="Description">
+                    </textarea>
+            <div>
+              <div class="range-holder">
+                <p><strong>Gen. Range</strong></p>
+                <div *ngIf="row.ValueType != 'number'" style="width: 80px;">
+                  <input [disabled]="row.ValueType != 'number' || row.ControlType == 'Label'" class="form-control cstm-form-control "
+                       [(ngModel)]="row.Range"
+                       [ngModelOptions]="{standalone: true}"
+                       required
+                       value=""
+                       type="text" id="Range" placeholder="Range Value" />
+                </div>
+                <div *ngIf="row.ValueType == 'number'" style="width: 80px;">
+                  <div class="num-field">
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.MinValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" id="Min" placeholder="Min" />
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.MaxValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" style="margin-top: 10px;" id="Max" placeholder="Max" />
+                  </div>
+                </div>
+              </div>
+              <div class="range-holder">
+                <p><strong>Male Range</strong></p>
+                <div *ngIf="row.ValueType != 'number'" style="width: 80px;">
+                  <input [disabled]="row.ValueType != 'number' || row.ControlType == 'Label'" class="form-control cstm-form-control "
+                       [(ngModel)]="row.MaleRange"
+                       [ngModelOptions]="{standalone: true}"
+                       required
+                       value=""
+                       type="text" id="Range" placeholder="Range Value" />
+                </div>
+                <div *ngIf="row.ValueType == 'number'" style="width: 80px;">
+                  <div class="num-field">
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.MaleMinValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" id="Min" placeholder="Min" />
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.MaleMaxValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" style="margin-top: 10px;" id="Max" placeholder="Max" />
+                  </div>
+                </div>
+              </div>
+              <div class="range-holder">
+                <p><strong>Female Range</strong></p>
+                <div *ngIf="row.ValueType != 'number'" style="width: 80px;">
+                  <input [disabled]="row.ValueType != 'number' || row.ControlType == 'Label'" class="form-control cstm-form-control "
+                       [(ngModel)]="row.FemaleRange"
+                       [ngModelOptions]="{standalone: true}"
+                       required
+                       value=""
+                       type="text" id="Range" placeholder="Range Value" />
+                </div>
+                <div *ngIf="row.ValueType == 'number'" style="width: 80px;">
+                  <div class="num-field">
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.FemaleMinValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" id="Min" placeholder="Min" />
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.FemaleMaxValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" style="margin-top: 10px;" id="Max" placeholder="Max" />
+                  </div>
+                </div>
+              </div>
+              <div class="range-holder">
+                <p><strong>Child Range</strong></p>
+                <div *ngIf="row.ValueType != 'number'" style="width: 80px;">
+                  <input [disabled]="row.ValueType != 'number' || row.ControlType == 'Label'" class="form-control cstm-form-control "
+                       [(ngModel)]="row.ChildRange"
+                       [ngModelOptions]="{standalone: true}"
+                       required
+                       value=""
+                       type="text" id="Range" placeholder="Range Value" />
+                </div>
+                <div *ngIf="row.ValueType == 'number'" style="width: 80px;">
+                  <div class="num-field">
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.ChildMinValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" id="Min" placeholder="Min" />
+                    <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control " [(ngModel)]="row.ChildMaxValue"
+                         [ngModelOptions]="{standalone: true}"
+                         type="number" style="margin-top: 10px;" id="Max" placeholder="Max" />
+                  </div>
+                </div>
+              </div>
+            </div></td>
+          <td style="width: 140px;"><input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control "
+                 [(ngModel)]="row.Method"
+                 [ngModelOptions]="{standalone: true}"
+                 value=""
+                 type="text" id="Method" placeholder="Method" /></td>
+          <td style="width: 120px;"><!-- <input [disabled]="row.ControlType == 'Label'" class="form-control cstm-form-control"
+                 [(ngModel)]="row.ValueLookup"
+                 [ngModelOptions]="{standalone: true}"
+                 value=""
+                 type="text" id="ValueLookup" placeholder="ValueLookup" /> -->
+            
+            <input [disabled]="row.ControlType == 'Label'" danphe-auto-complete
+                 class="form-control cstm-form-control"
+                 [ngModelOptions]="{standalone: true}"
+                 [(ngModel)]="row.LookUp"
+                 [list-formatter]="lookUpListFormatter"
+                 [source]="lookUpNames"
+                 placeholder="Enter LookUp Name"
+                 display-property-name="LookUpName"
+                 value-property-name=null
+                 (ngModelChange)="LookUpSelected(i)"
+                 (valueChanged)="ShowValueChangedData(i)"
+                 onClick="this.select();"
+                 max-num-list="10" /></td>
+          <td style="width:150px;"><div>
+              <input class="form-control cstm-form-control "
+                   [(ngModel)]="row.DisplayName"
+                   [ngModelOptions]="{standalone: true}"
+                   value=""
+                   type="text" id="Component" placeholder="Component Display Name" />
+            </div></td>
+          <td *ngIf="!update && lbtstcomponentList.length > 1"><a (click)="DeleteRow(i)" class="btn btn-danger"><i class="fa fa-times no-margin"></i></a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modelbox-footer">
+    <div class="all-buttons text-right">
+      <button [disabled]="loading" *ngIf="!update" class="btn btn-primary margin-7-hr" (click)="loading=true;AddNewComponents()">Add</button>
+      <button [disabled]="loading" *ngIf="update" class="btn btn-primary margin-7-hr" (click)="loading=true;UpdateComponent()">Update</button>
+      <!-- <button [disabled]="loading" class="btn btn-cancel margin-7-hr" (click)="loading=true;Cancel()">Cancel</button> --> 
+    </div>
+  </div>
+</div>

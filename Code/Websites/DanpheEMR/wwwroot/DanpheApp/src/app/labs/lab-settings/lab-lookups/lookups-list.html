@@ -1,0 +1,60 @@
+<style>
+.portlet.box > .portlet-body {
+	overflow-x: auto !important;
+}
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-2"> <a class="btn blue bordered btn-sm primary-btn m1" name="name" (click)="AddNewLookUpComponent()"> <i class="fa fa-plus"></i>Add New Look-up </a> </div>
+  </div>
+  <danphe-grid [grid-colDefaults]="lookupsGridCol" [grid-data]="lookupsList" (grid-actions)="EditComponent($event)"> </danphe-grid>
+  
+  <!--Model Box Starting Here-->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddLookupsComponent">
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div lab_modal_box">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr"> <strong>
+              <ng-container *ngIf="!update">Add Lookup</ng-container>
+              <ng-container *ngIf="update">Update Lookup</ng-container>
+              </strong> </h4>
+          </div>
+          <div class="modelbox-body">
+            <div class="row margin-15-tp">
+              <add-lookUp [labLookUpComponent]="selectedLookup" (callback-Add)="GetAddedAndUpdatedData($event)"></add-lookUp>
+            </div>
+          </div>
+          <div class="close-modelbox lb-close-btn">
+            <button class="btn btn-danger" (click)="Close()"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <!--<div class="form-body" style="display: table; width: 70%;">
+      <div class="row">
+
+        <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 0;">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue;">
+                <h3>
+                  <span *ngIf="!update">Add Lookup</span>
+                  <span *ngIf="update">Update Lookup</span>
+                </h3>
+              </div>
+              <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <div class="col-md-12">
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>--> 
+    </div>
+  </div>
+</div>

@@ -1,0 +1,141 @@
+<style>
+  .excel-img {
+    height: 20px;
+    width: 20px;
+  }
+
+  .excel-img:hover {
+    height: 18px;
+    width: 18px;
+    border: 2px solid blue;
+  }
+
+  #chk-daterange {
+    background: white;
+    border: #292525 1px solid;
+  }
+
+  .icon-favourite {
+    color: blue;
+    zoom: 1.2;
+    cursor: pointer;
+  }
+
+  .icon-favourite:hover {
+    color: green;
+    zoom: 1.5;
+  }
+</style>
+
+<div style="width: 100%;">
+  <div *ngIf="showCustomDate" style="width: 100%; display: table;    background: #eaeaea;">
+    <div style="display:inline-block;">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="dateRangeSettingsName"
+                           [emit-always]="false">
+      </from-to-date-select>
+    </div>
+    <!-- <div style="display: inline-block;vertical-align: top;margin-top: 4px;padding-left: 15px;" *ngIf="showReloadButton">
+      <button class="btn green btn-success" (click)="ReloadDataBtnClick()" style="padding: 4px 6px !important;margin:0px !important;">
+        <i class="fa fa-check-square-o"></i> OK
+      </button>
+    </div> -->
+  </div>
+
+  <div style="padding: 4px;">
+    <div style="float: right;" class="page-items">
+      <!--<img *ngIf="showExport" class="excel-img" title="Export To Excel" (click)="ExportToExcel()" style="cursor:pointer;" src="../../../themes/theme-default/images/export-xls.png" />-->
+
+      <div style="float: left;margin-right: 20px;"
+           *ngIf="nepaliDateInGridColDetail && nepaliDateInGridColDetail.ShowNepaliDateInGrid" class="input-group">
+        <div *ngIf="showAdBsButton" class="icheck-inline">
+          <label style="margin-top: 3px;" class="mt-checkbox mt-checkbox-outline" title="Click to change Date Format">
+            <input name="salutation" type="checkbox" [(ngModel)]="showNepaliDateOption"
+                   (ngModelChange)="OnShowNepaliDateModelChange()">
+            <span></span>Date (B.S.) ?
+          </label>
+        </div>
+      </div>
+
+      <b>Showing </b>
+      {{rowCount}} <b> results </b>
+      &emsp;
+      <button *ngIf="showExport" class="btn btn-info btn-sm margin-7-rt" title="Export To Excel"
+              (click)="ExportToExcel()" style="cursor:pointer;">
+        <i class="fa fa-file-excel-o"></i>
+        Export
+      </button>
+
+      <button *ngIf="showExportNew" class="btn btn-info btn-sm margin-7-rt" title="Export To Excel"
+              (click)="ExportToExcel_New()" style="cursor:pointer;">
+        <i class="fa fa-file-excel-o"></i>
+        Export
+      </button>
+      <button *ngIf="showPrintButton" class="btn btn-info btn-sm" title="Print grid data" style="cursor:pointer;"
+              (click)="onBtPrint()">Print</button>
+
+      <!--&nbsp;&nbsp;&nbsp;&nbsp;
+   Page Size:
+      <select onchange="onPageSizeChanged(this.value)">
+          <option value="10">10</option>
+          <option value="20" selected>100</option>
+          <option value="50">500</option>
+          <option value="100">1000</option>
+      </select>-->
+
+    </div>
+    <div>
+      <input class="col-md-3" *ngIf="!showServerSideSearch && !showCustomSearch" (keyup)="onQuickFilterChanged($event)"
+             onClick="this.select();" style="width:360px;" class="searchtbx" type="text" id="quickFilterInput"
+             placeholder="search" onfocus="this.placeholder = ''" onfocusout="this.placeholder = 'search'" />
+
+      <div class="col-md-3" *ngIf="showServerSideSearch && !showCustomSearch"><input (keyup)="searchSeraverSide($event)"
+               placeholder="Search (Minimum {{searchMinTxtLeng}} Character)" style="width:360px;" class="searchtbx" type="text"
+               id="quickFilterInput" onClick="this.select();"></div>
+      <div class="col-md-3" *ngIf="!showServerSideSearch && showCustomSearch"><input #serverSearchInput
+               placeholder="Search (Minimum {{searchMinTxtLeng}} Character)" style="width:360px; margin-left: -18px;"
+               class="searchtbx" type="text" id="quickFilterInput" onClick="this.select();"></div>
+
+      <div class="col-md-3" *ngIf="searchUsingHospitalNo">
+        <input #serverSearchUsingHospitalNoInput placeholder="Enter Hospital No" style="width:360px;" class="searchtbx"
+               #searchUsingHospitalNo type="text" id="id_input_search_using_hospital_no" onClick="this.select();"
+               (keyup.enter)="SearchPatientUsingHospitalNoCallBack($event)">
+      </div>
+      <div class="col-md-3" *ngIf="searchUsingIdCardNo">
+        <input #serverSearchUsingIdCardNoInput placeholder="Enter Id Card No" style="width:360px;" class="searchtbx"
+               #searchUsingIdCardNo type="text" id="id_input_search_using_id_card_no" onClick="this.select();"
+               (keyup.enter)="SearchPatientUsingIdCardNoCallBack($event)">
+      </div>
+    </div>
+  </div>
+
+  <div style="clear: both;">
+    <print-header style="display:none;padding:0px" id="headerForPrint" [report-for]="reportFor" [unit-name]="printTitle"
+                  [show-pan-number]="headerDetailParam.showPANNo" [show-phone-number]="headerDetailParam.showPhoneNumber"></print-header>
+  </div>
+
+  <div [ngClass]="supressPagination ? 'aggrid-scroll-wrapper':'aggrid-parent-wrapper'" *ngIf="showGrid"
+       [ngStyle]="supressPagination && {'height': gridFixedHeight}">
+    <!-- Because we are using the Angular ID (ie #ag-grid marker), we have to have all the items that use
+         that marker inside the same ng-if as the grid -->
+    <div style="clear: both;"></div>
+    <ag-grid-angular #agGrid style="width:100%;" class="ag-theme-fresh" id="myGrid" [gridOptions]="gridOptions"
+                     [columnDefs]="columnDefs" [rowData]="rowData" enableColResize enableSorting enableFilter groupHeaders
+                     suppressRowClickSelection toolPanelSuppressGroups toolPanelSuppressValues rowHeight="35" headerHeight="40"
+                     cellClass="new-ag-grid-cell" rowSelection="multiple" [paginationPageSize]="paginationPageSize"
+                     [pagination]="!supressPagination" [suppressPaginationPanel]="supressPagination" (modelUpdated)="onModelUpdated()"
+                     (cellClicked)="onCellClicked($event)" (cellDoubleClicked)="onCellDoubleClicked($event)"
+                     (cellContextMenu)="onCellContextMenu($event)" (cellValueChanged)="onCellValueChanged($event)"
+                     (rowDataChanged)="onRowDataChanged($event)" (cellFocused)="onCellFocused($event)"
+                     (rowSelected)="onRowSelected($event)" (selectionChanged)="onSelectionChanged()"
+                     (beforeFilterChanged)="onBeforeFilterChanged()" (afterFilterChanged)="onAfterFilterChanged()"
+                     (filterModified)="onFilterModified()" (beforeSortChanged)="onBeforeSortChanged()"
+                     (afterSortChanged)="onAfterSortChanged()" (virtualRowRemoved)="onVirtualRowRemoved($event)"
+                     (rowClicked)="onRowClicked($event)" (gridReady)="onReady($event)"
+                     (columnEverythingChanged)="onColumnEvent($event)" (columnRowGroupChanged)="onColumnEvent($event)"
+                     (columnValueChanged)="onColumnEvent($event)" (columnMoved)="onColumnEvent($event)"
+                     (columnVisible)="onColumnEvent($event)" (columnGroupOpened)="onColumnEvent($event)"
+                     (columnResized)="onColumnEvent($event)" (columnPinnedCountChanged)="onColumnEvent($event)">
+    </ag-grid-angular>
+  </div>
+
+</div>

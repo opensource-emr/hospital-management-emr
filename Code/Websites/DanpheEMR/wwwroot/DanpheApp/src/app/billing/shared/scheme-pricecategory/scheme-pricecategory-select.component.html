@@ -1,0 +1,13 @@
+<div class="row">
+  <div class="col-md-8">
+    <scheme-select [is-mandatory]="true" [selected-id]="selectedSchemePriceCategory.SchemeId"
+                   (on-membership-change)="OnSchemeChanged($event)" [disabled]="disableSelection"
+                   [service-billing-context]="ServiceBillingContext">
+    </scheme-select>
+  </div>
+  <div class="col-md-4">
+    <price-category-select class="price-select" [selected-priceCategoryId]="selectedSchemePriceCategory.PriceCategoryId"
+                           (on-category-change)="OnPriceCategoryChange($event)" [disable]="disableSelection">
+    </price-category-select>
+  </div>
+</div>

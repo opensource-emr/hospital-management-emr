@@ -1,0 +1,25 @@
+.printStyle {
+  border: dotted 1px;
+  margin: 10px 100px;
+}
+
+.print-border-top {
+  border-top: dotted 1px;
+}
+
+.print-border-bottom {
+  border-bottom: dotted 1px;
+}
+
+.print-border {
+  border: dotted 1px;
+}
+
+.center-style {
+  text-align: center;
+}
+
+.border-up-down {
+  border-top: dotted 1px;
+  border-bottom: dotted 1px;
+}

@@ -1,0 +1,12 @@
+<div id="id_dialog_confirmation" class="dialog-container">
+  <div class="dialog-box">
+    <h2>{{title}}</h2>
+    <p>{{message}}</p>
+    <div class="dialog-buttons">
+      <button id="id_btn_confirm_confirmation" class="confirm" (click)="onConfirm()"
+              (keydown)="MoveFocus($event,'id_btn_cancel_confirmation')">Confirm</button>
+      <button id="id_btn_cancel_confirmation" class="cancel" (click)="onCancel()"
+              (keydown)="MoveFocus($event,'id_btn_confirm_confirmation')">Cancel</button>
+    </div>
+  </div>
+</div>

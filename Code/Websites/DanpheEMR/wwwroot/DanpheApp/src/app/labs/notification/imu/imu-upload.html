@@ -1,0 +1,120 @@
+<style>
+    table th {
+        position: sticky;
+        top: 0;
+        background-color: rgb(165, 172, 172);
+    }
+
+    table tbody tr,
+    table thead {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+
+    }
+
+    table tbody {
+        /* max-height: 450px; */
+        display: block;
+        /* overflow-y: scroll; */
+    }
+
+    .test-list tr td {
+        font-size: 11px;
+        overflow: hidden;
+        /* width: 50px; */
+        padding: 3px !important;
+        vertical-align: middle;
+    }
+
+    tr.bg-red-covid-positive {
+        background: #e7505a !important;
+        color: #fff;
+    }
+</style>
+<div class="wrapper">
+    <div class="row">
+        <div class="col-md-8 col-xs-12">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> 
+          </from-to-date-select>
+        </div>
+        <div class="col-md-2">
+          <button id="reload" [disabled]="loading" (click)=" loading = true; GetAllIMUData()" class="btn btn-primary"><i class="fa fa-refresh"></i> Load Data</button>
+        </div>
+        <div class="col-md-2">
+            <button id="reload"  (click)="PostDataToIMU()" class="btn btn-success"><i class="fa fa-upload"></i> Upload To IMU</button>
+          </div>
+    </div>
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-md-5">
+            <input class="searchtbx" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-5">
+            <div class="lb-search-filter text-center">
+                <div class="input-group">
+                    <div class="icheck-inline">
+                        <input type="radio" id="test_pending" checked  name="TestRadioFinding"
+                        (change)="OnTestFiltersChanged($event)" value="pending" style="width:15px;height:15px" />
+                        <label for="test_pending" style="margin-right: 15px;">Upload Pending </label>
+                        <input type="radio" id="test_completed"  name="TestRadioFinding"
+                        (change)="OnTestFiltersChanged($event)" value="completed" style="width:15px;height:15px" />
+                        <label for="test_completed" style="margin-right: 15px;">Upload Completed </label>
+                        <input type="radio" id="test_all" name="TestRadioFinding"
+                        (change)="OnTestFiltersChanged($event)" value="all" style="width:15px;height:15px" />
+                        <label for="test_all" style="margin-right: 15px;">All</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="data-test-list">
+        <div class="col-lg-12 col-sm-12">
+            <div class="table-responsive">
+                <table class="table table-bordered test-list" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th colspan="1" style="text-align: center;">
+                                <input autocomplete="off" class="mt-checkbox mt-checkbox-outline" type="checkbox" [(ngModel)]="SelectAll" (change)="SelectAllData()" />
+                            </th>
+                            <th colspan="2">Hospital No.</th>
+                            <th colspan="3">Patient Name</th>
+                            <th colspan="2">Age/Sex</th>
+                            <th colspan="2">Phone Number</th>
+                            <th colspan="2">TestName</th>
+                            <th colspan="3">Sample Coll. On</th>
+                            <th colspan="2">Result</th>
+                            <th colspan="2" title="Shows if Lab Report uploaded or not ?">Upload Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container
+                            *ngFor="let test of FilteredIMUDataList | searchFilter:searchString | async | paginate: {id: 'listing_pagination', itemsPerPage: 10, currentPage: page } ; let i=index; ">
+                            <tr
+                                [ngClass]="test.Result && test.Result.toLowerCase() == 'positive' ? 'bg-red-covid-positive' : ''">
+                                <td colspan="1" style="text-align: center;">
+                                    <input autocomplete="off" class="mt-checkbox mt-checkbox-outline" type="checkbox" [(ngModel)]="test.IsSelected" (change)="TestSelected(test)" />
+                                </td>
+                                <td colspan="2">{{test.PatientCode}}</td>
+                                <td colspan="3">{{test.PatientName}}</td>
+                                <td colspan="2">{{test.DateOfBirth | DanpheDateTime:'age'}}/{{test.Gender}}</td>
+                                <td colspan="2">{{test.PhoneNumber}}</td>
+                                <td colspan="2">{{test.LabTestName}}</td>
+                                <td colspan="3">{{test.SampleCollectedOnDateTime | DanpheDateTime:'format':'YYYY-MM-DD
+                                    hh:mm A'}}</td>
+                                <td colspan="2">{{test.Result}}</td>
+                                <td colspan="2">{{test.IsFileUploaded ? 'Yes' : 'No'}}</td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="col-md-12">
+            <pagination-controls id="listing_pagination" (pageChange)="page = $event"
+                style="display: flex; float:right;">
+            </pagination-controls>
+        </div>
+    </div>
+</div>

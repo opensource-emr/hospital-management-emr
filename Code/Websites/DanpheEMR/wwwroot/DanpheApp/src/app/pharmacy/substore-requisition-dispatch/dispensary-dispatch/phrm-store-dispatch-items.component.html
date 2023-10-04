@@ -1,0 +1,115 @@
+<style>
+    .bg-on {
+        font-weight: bold;
+        /*color: #f65151;*/
+        background-color: #f65151;
+    }
+
+    .bg-off {
+        background-color: #ffffff;
+        font-weight: bold;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue-sharp bold uppercase">Dispatch Requisition</span>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:20px;">
+    <div class="col-md-12">
+        <div class="table-responsive" style="padding-top:10px">
+            <table class="table table-striped table-hover" style="background-color:initial">
+                <thead>
+                    <tr>
+                        <th>
+                            <input checked type="checkbox" class="chk-itms" name="SelectAllRequisition" [(ngModel)]="selectAllRequisition" (change)="toogleAllDispatchItems()">
+                        </th>
+                        <th>
+                            Item Name
+                        </th>
+                        <th>Rack</th>
+                        <th>
+                            Requested Quantity
+                        </th>
+                        <th>
+                            Pending Quantity
+                        </th>
+                        <th>
+                            BatchNo
+                        </th>
+                        <th>
+                            Expiry Date
+                        </th>
+                        <th>
+                            Available Quantity
+                        </th>
+                        <th>
+                            Dispatching Quantity
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of requisition.RequisitionItems; let i = index">
+                        <td>
+                            <input checked type="checkbox" class="chk-itms" name="ItemSelection" [(ngModel)]="row.IsDispatchingNow" [attr.disabled]="(row.IsDispatchForbidden == true) ? true : null" (change)="checkIfAllSelected()">
+                        </td>
+                        <td>
+                            <input name="ItemName" [(ngModel)]="row.ItemName" [attr.disabled]="true" class="table-input" type="text" />
+                        </td>
+                        <td>
+                            <input name="AllocatedStoreRackName" [(ngModel)]="row.AllocatedStoreRackName" [attr.disabled]="true" class="table-input" type="text" />
+                        </td>
+                        <td>
+                            <input name="RequestedQuantity" [(ngModel)]="row.RequestedQuantity" [attr.disabled]="true" class="table-input" type="text" />
+                        </td>
+                        <td>
+                            <input name="PendingQuantity" [(ngModel)]="row.PendingQuantity" [attr.disabled]="true" class="table-input" type="text" />
+                        </td>
+                        <td colspan="5">
+                            <table class="table table-condensed">
+                                <tr *ngFor="let dispatchingItem of row.DispatchedItems; let j = index">
+                                    <td>
+                                        <select name="BatchNo" id="BatchNo{{i}}{{j}}" [(ngModel)]="dispatchingItem.BatchNo" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" (ngModelChange)="OnBatchChange(i,j)">
+                                            <option disabled [value]="null">select batch</option>
+                                            <option *ngFor="let stock of row.AvailableStockList" [value]="stock.BatchNo">{{stock.BatchNo}} (Qty : {{stock.AvailableQuantity}})</option>
+                                        </select>
+                                    </td>
+                                    <!-- <td>
+                                        <danphe-date-picker [(ngModel)]="dispatchingItem.ExpiryDate" ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}" [attr.disabled] ="true">
+                                        </danphe-date-picker>
+                                    </td> -->
+                                    <td>{{dispatchingItem.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                    <td>
+                                        <input type="number" name="AvailableQuantity" [attr.disabled]="true" id="AvailableQuantity{{i}}{{j}}" min="0" [(ngModel)]="dispatchingItem.AvailableQuantity">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="DispatchedQuantity" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" id="DispatchedQuantity{{i}}{{j}}" min="0" [(ngModel)]="dispatchingItem.DispatchedQuantity">
+                                    </td>
+                                    <td>
+                                        <!-- only show add button for the last item-->
+                                        <button *ngIf="j == (row.DispatchedItems.length-1); else removeItemButton" class="btn btn-sm btn-primary" (click)="AddDispatchRow(i)"><i class="fa fa-plus"></i></button>
+                                        <ng-template #removeItemButton>
+                                            <button class="btn btn-sm btn-danger" (click)="RemoveDispatchRow(i,j)"><i class="fa fa-remove"></i></button>
+                                        </ng-template>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-12"> Received By: <input type="text" [(ngModel)]="ReceivedBy"> </div>
+        <div class="col-sm-offset-5 col-sm-5">
+            <input type="button" class="btn btn-success" value="Dispatch" (click)="SaveDispatchItems()" [disabled]="loading" />
+            <span></span>
+            <a class="btn btn-danger" (click)="Cancel()">Cancel</a>
+        </div>
+    </div>
+</div>

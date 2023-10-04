@@ -1,0 +1,68 @@
+<div class="com-md-12">
+  <div class="col-md-6">
+    <div class="caption custom-caption">
+      <i class="glyphicon glyphicon-asterisk"></i>
+      <span class="caption-subject">Receive Pending List </span>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12">
+  <danphe-grid [grid-colDefaults]="HandOverTransactionListGridColumns" [grid-data]="HandOverTransactionList"
+    (grid-actions)="HandOverTransactionListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-print-button]="false" >
+  </danphe-grid>
+</div>
+
+
+<div>
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf='ShowReceivePopup'>
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3 mt20">
+          <div class="modelbox-div no-margin no-padding clearfix">
+            <div class="caption custom-caption">
+              <h3> <span style="color:black;">Receive Handover From : {{selectedHandOverTransaction.UserName}}</span>
+              </h3>
+              <a style="float:right;" class="btn btn-danger" (click)="ClosePopup()" title="Close">X</a>
+            </div>
+            <div class="form-horizontal hm-form">
+              <div class="form-body">
+                <div class="form-group">
+                  <table class="table doc-tbl">
+                    <tr>
+                      <td style="width: 150px;">Amount <b style="float:right;">
+                          &nbsp;:&nbsp; </b></td>
+                      <td style="padding-top:10px;">
+                        <input class="form-control" type="text" maxlength="150" disabled
+                          [(ngModel)]="selectedHandOverTransaction.HandoverAmount" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 150px;"> Remarks<b class="color-red"> *</b><b style="float:right;">
+                          &nbsp;:&nbsp;
+                        </b></td>
+                      <td style="padding-top:10px;">
+                        <input class="form-control" type="text"
+                          [(ngModel)]="selectedHandOverTransaction.ReceiveRemarks" />
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+
+              </div>
+              <div class="panel-footer">
+                <div class="row clearfix">
+                  <div class="col-md-6 text-right">
+                    <button class="btn green btn-success btn-save-frc" (click)="ReciveHandoverAmount()" id="btn_ok">
+                      <i class="fa fa-save"></i> Ok
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

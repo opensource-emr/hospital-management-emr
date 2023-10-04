@@ -1,0 +1,28 @@
+<div class="form-body">
+  <div class="caption lb-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Requisition and Dispatch Report</span> </div>
+  <div class="row">
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group" style="display:flex; justify-content: space-evenly;align-items: center;">
+        <div class="control-label"> <b>SubCategory</b></div>
+        <div style="margin-top: 5px;">
+          <input danphe-auto-complete [(ngModel)]="selectedSubCategory" [source]="SubCategoryList" placeholder="SubCategory Name" display-property-name="SubCategoryName" value-property-name="" [list-formatter]="SubCategoryFormatter" max-num-list="10" [grid-sort]="'SubCategoryName'" [match-formatted]="true" Click="this.select();" (valueChanged)="OnSubCategoryChange()" />
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="RequisitionDispatchReportColumn" [grid-data]="FilteredRequisitionDispatchReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [show-header]="true" [report-for]="'inventory'" [report-title]="'Requisition and Dispatch Report'" [filter-parameters]="FilterParameters"> </danphe-grid>
+  </div>
+</div>

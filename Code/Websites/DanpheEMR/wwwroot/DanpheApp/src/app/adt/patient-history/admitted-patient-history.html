@@ -1,0 +1,72 @@
+﻿<div class="wrapper">
+  <div *ngIf="patWardList">
+    <div style="align-content:center;text-align:center">
+      <table border="0" style="margin-left:90px" *ngIf="patWardList && patWardList.length">
+        <tr>
+          <td colspan="2"><b style="font-size:15px;text-decoration:underline">Admission records</b></td>
+        </tr>
+        <tr>
+          <td style="padding-top:5px;"> Current Ward/Bed <b style="float:right;">&nbsp;:&nbsp; </b></td>
+          <td style="padding-top:5px;">&nbsp;{{patWardList[0].WardName}} / {{patWardList[0].BedCode}} </td>
+        </tr>
+      </table>
+    </div>
+    <hr style="width:100%;border-style:double;border-color:black" />
+    <form [formGroup]="AdmissionDateValidator">
+      <div>
+        <table class="table table-striped table-hover" width="470" border="0" style="margin-left:15px;">
+          <tr>
+            <td colspan="5" align="center"><b style="font-size:15px;text-decoration:underline;margin-right:20px"> Ward
+                History</b></td>
+          </tr>
+          <tr>
+            <td align="left"><b>Started on</b></td>
+            <td align="left"><b>Ended on</b></td>
+            <td align="left"><b>Ward Name</b></td>
+            <!-- <td align="left"><b>Action</b></td> -->
+          </tr>
+          <tr *ngFor="let info of patWardList;let i=index;">
+            <td width="190px">
+              <!-- <label *ngIf="!showDatePicker[i]" align="left">
+                {{info.StartedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}}
+              </label> -->
+              <span *ngIf="info.StartedOn">
+                <date-lbl [value]="info.StartedOn" [show-time]="true"></date-lbl>
+              </span>
+
+              <!-- <label *ngIf="showDatePicker[i]" align="left">
+                <input formControlName="StartedOn" type="datetime-local" [(ngModel)]="info.StartedOn"
+                  style="width:90%" />
+              </label> -->
+
+              <!-- <label *ngIf="showDatePicker[i] && (this.IsDirty('StartedOn')== true)"
+                [hidden]="IsValid('StartedOn','required')" style="color:red"> Start date cannot be empty </label> -->
+            </td>
+            <td align="left">
+              <label *ngIf="!info.EndedOn" align="left"> Till now </label>
+              <span *ngIf="info.EndedOn">
+                <date-lbl [value]="info.EndedOn" [show-time]="true"></date-lbl>
+              </span>
+              <!-- <label *ngIf="!showDatePicker[i] && info.EndedOn!=null" align="left"> {{info.EndedOn |
+                DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}} </label>
+              <label *ngIf="showDatePicker[i] && info.EndedOn!=null" align="left">
+                <input formControlName="EndedOn" type="datetime-local" [(ngModel)]="info.EndedOn" style="width:90%" />
+              </label>
+              <label *ngIf="showDatePicker[i] && info.EndedOn && (this.IsDirty('EndedOn')== true)"
+                [hidden]="IsValid('EndedOn','required')" style="color:red"> End Date cannot be empty </label> -->
+            </td>
+            <td align="left"> {{info.WardName}} </td>
+            <!-- <td align="left">
+              <i *ngIf="!showDatePicker[i] && showEdit" class="fa fa-pencil" title="click to edit this item"
+                style="cursor:pointer;color:cornflowerblue" (click)="EditSelectedInfoOnClick(i)"></i>
+              <i *ngIf="showDatePicker[i]" class="glyphicon glyphicon-ok" title="Save Changes"
+                style="cursor:pointer;color:green" (click)="SaveChanges(i)"> </i>
+              <i *ngIf="showDatePicker[i]" class="glyphicon glyphicon-remove" title="Cancel"
+                style="cursor:pointer;color:red" (click)="CloseDateChange(i)"> </i>
+            </td> -->
+          </tr>
+        </table>
+      </div>
+    </form>
+  </div>
+</div>

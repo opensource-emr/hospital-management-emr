@@ -1,0 +1,34 @@
+<style>
+.tbl-container {
+	position: relative;
+}
+.btnvendor {
+	position: absolute;
+	top: -50px;
+	right: 0px;
+}
+</style>
+
+<div class="wrapper">
+  <div class="tbl-container">
+    <input class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+    <table class="table table-responsive">
+      <thead class="table-header-bg">
+        <tr>
+          <th> Patient </th>
+          <th> TestName </th>
+          <th> Vendor </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let lab of patLabInfoList | searchFilter | async: searchString">
+          <tr>
+            <td> {{lab.PatientName}} </td>
+            <td> {{lab.TestName}} </td>
+            <td> {{lab.VendorName}} </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,220 @@
+<style>
+    .edit-qtn {
+        font-size: 17px;
+        color: #2d2d69;
+        cursor: pointer;
+    }
+
+        .edit-qtn:hover {
+            background-color: #c0e4c0;
+            padding: 2px;
+        }
+
+
+    .add-qtn {
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+        .add-qtn:hover {
+            background-color: #c0e4c0;
+            padding: 2px;
+        }
+
+    .edit-mode {
+        width: 75px !important;
+    }
+
+    .portlet {
+        margin-bottom: 8px !important;
+    }
+</style>
+<div class="wrapper">
+<div class="row" *ngIf="!showEditTemplate">
+    <div class="col-md-2">
+        Select Template
+    </div>
+    <div class="col-md-4">
+        <select [(ngModel)]="selectedTemplate">
+            <option value="OPDSummary">
+                OPD Summary
+            </option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button (click)="LoadTemplate()" class="btn blue">Load Template</button>
+    </div>
+</div>
+
+<div class="row" *ngIf="showEditTemplate">
+    <div class="col-md-12 col-lg-12" *ngIf="isTemplateLoaded" style="padding-left: 0px;">
+        <!--Template Edit secetion.-->
+        <div class="portlet box blue">
+            <div class="portlet-title">
+                <div class="caption custom-caption">
+                    Template:  <b style="font-size: large;text-decoration: underline;">{{template.Text}}</b>
+                </div>
+                <div class="tools">
+                    <div class="actions">
+                        <div class="btn-group">
+                            <a class="btn btn-sm green" href="javascript:;" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-cog"></i>
+                                <!--<i class="fa fa-angle-down"></i>-->
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <li>
+                                    <a (click)="showAddNewQnr=true;showManageQnrSeq=false;" title="add a new section to this template">
+                                        <i class="fa fa-plus"></i> Add Section
+                                    </a>
+                                </li>
+                                <li>
+                                    <a (click)="showManageQnrSeq=true;showAddNewQnr=false;" title="change display sequence, etc..">
+                                        <i class="fa fa-pencil"></i> manage sections
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portlet-body" style="display: block;padding-left:8px;" *ngIf="showAddNewQnr">
+                <div class="row">
+                    <div class="col-md-12 col-lg-12">
+                        <div class="col-lg-2 col-md-2 col-xs-4">
+                            New Section Name:
+                        </div>
+                        <div class="col-lg-5 col-md-6 col-xs-5">
+                            <textarea cols="50" type="text" [(ngModel)]="newQnrText"></textarea>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-xs-5">
+                            <button class="fa fa-remove btn btn-danger btn-xs" style="font-size: 16px;"
+                                    title="click to cancel addition" (click)="newQnrText='';showAddNewQnr=false;">
+                                cancel
+                            </button>
+                            <button class="fa fa-save btn btn-xs blue" style="font-size: 16px;"
+                                    (click)="AddNewQnair(qnr)">
+                                save
+                                <!--<i class="fa fa-save">&nbsp;&nbsp;save</i>-->
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="portlet-body" style="display: block;padding-left:8px;" *ngIf="showManageQnrSeq">
+                <div class="row">
+                    <div class="col-md-12 col-lg-12 col-sm-12">
+                        <div class="col-md-5 col-lg-5 col-sm-10">
+                            <table class="table-hover">
+                                <tr>
+                                    <th>
+                                        Section Name
+                                    </th>
+                                    <th>
+                                        Sequence
+                                    </th>
+                                </tr>
+                                <tr *ngFor="let qnr of template.Qnairs">
+                                    <td>
+                                        {{qnr.Text}}
+                                    </td>
+                                    <td style="padding-left: 5%;">
+                                        <input type="number" [(ngModel)]="qnr.DisplaySeq" style="width: 60px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-2 col-lg-2 col-sm-5">
+                            <button class="fa fa-remove btn btn-danger btn-xs" style="font-size: 16px;"
+                                    title="click to cancel changes" (click)="showManageQnrSeq=false;">
+                                cancel
+                            </button>
+
+                            <button class="fa fa-save btn btn-xs blue" style="font-size: 16px;"
+                                    title="click to save sequences" (click)="UpdateQnairSequence();">
+                                save
+                            </button>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <div class="portlet box green-meadow" *ngFor="let qnr of template.Qnairs;let i=index;">
+            <div class="portlet-title">
+                <div class="tools" style="float:left;margin-right: 12px;">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                </div>
+                <div class="caption" *ngIf="qnrsToRename[qnr.QnairId]">
+
+                    <!--section {{i+1}}: <b style="font-size: large;text-decoration: underline;"> {{qnr.Text}}</b>-->
+                    <input style="color: #865050;font-size: 17px;width: 418px;" type="text" [(ngModel)]="qnr.Text" />
+
+                    <button class="btn btn-xs blue" style="background-color:#1f858e;font-size: 16px;"
+                            (click)="UndoQnairRename(qnr)">
+                        <i class="fa fa-rotate-left">&nbsp;&nbsp;undo</i>
+                    </button>
+                    on
+                    <button class="btn btn-xs blue" style="background-color:#1f858e;font-size: 16px;"
+                            (click)="UpdateQnairName(qnr)">
+                        <i class="fa fa-save">&nbsp;&nbsp;save</i>
+                    </button>
+                </div>
+                <div class="caption" *ngIf="!qnrsToRename[qnr.QnairId]">
+                    section {{i+1}}: <b style="font-size: large;text-decoration: underline;"> {{qnr.Text}}</b>
+                </div>
+                <div class="tools">
+                    <div class="actions">
+                        <div class="btn-group">
+                            <a class="btn btn-sm green" href="javascript:;" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-cog"></i>
+                                <!--<i class="fa fa-angle-down"></i>-->
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <li>
+                                    <a (click)="dynTemplateServ.DisplayAddQuestion(qnr,'qnr')">
+                                        <i class="fa fa-plus"></i> add question
+                                    </a>
+                                </li>
+                                <li>
+                                    <a (click)="EditQnair(qnr)">
+                                        <i class="fa fa-pencil"></i> rename section
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body" style="display: block;padding-left:8px;">
+                <div class="row">
+                    <div *ngFor="let qtn of qnr.ChildQuestions;let i=index;" class="col-md-12 col-lg-12">
+                        <div class="col-md-1 col-lg-1" style="padding: 0px; width: 34px;" [ngClass]="{'edit-mode': enableEdit==true}">
+                            {{i+1}}.
+                        </div>
+                        <div class="col-md-11 col-lg-11" style="padding: 0px;">
+                            <danphe-qtn-hrc ngDefaultControl [(question)]="qnr.ChildQuestions[i]"></danphe-qtn-hrc>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div></div>
+
+<qtn-add *ngIf="dynTemplateServ.ShowAddQtn"></qtn-add>
+<qtn-edit *ngIf="dynTemplateServ.ShowEditQtn"></qtn-edit>
+
+

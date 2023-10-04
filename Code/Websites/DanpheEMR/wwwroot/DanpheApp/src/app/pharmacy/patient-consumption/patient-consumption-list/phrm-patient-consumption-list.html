@@ -1,0 +1,81 @@
+<div class="row">
+    <div class="col-md-3">
+        <button type="button" class="btn green btn-success" (click)="AddNewConsumptionItem()">
+            New&nbsp;Consumption&nbsp;
+            <span class="glyphicon glyphicon-plus"> </span>
+        </button>
+    </div>
+    <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="ShowPatientConsumptionAdd">
+        <div class="portlet-body form">
+            <div class="row">
+                <div class="col-md-12" style="width:90%;margin-left:5%;">
+                    <div class="modelbox-div clearfix">
+                        <div class="caption lb-caption">
+                            <h3>
+                                <i class="fa fa-shopping-cart"></i>
+                                <span class="caption-subject">New Consumption Entry</span>
+                            </h3>
+                            <a class="btn btn-danger" (click)="ClosePatientConsumptionEntryPage()" title="Cancel"><i class="fa fa-times"></i></a>
+                        </div>
+                        <phrm-patient-consumption-add [CurrentCounterId]="currentCounterId"
+                                                      (callback-add)="CallBackAdd($event)"></phrm-patient-consumption-add>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="patientConsumptionGridColumns" [grid-data]="PatientConsumptions"
+                     (grid-actions)="PatientConsumptionGridActions($event)"></danphe-grid>
+    </div>
+    <phrm-finalize-consumption-wrapper *ngIf="showFinalizeWrapper" (callback-add)="CallBackAdd($event)"
+                                       (callback-popup-close)="CallBackPopupClose($event)"
+                                       [PatientDetail]="PatientConsumption" [CurrentCounterId]="currentCounterId"
+                                       [store-id]="currentStoreId"></phrm-finalize-consumption-wrapper>
+
+
+
+    <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPatientConsumptionList">
+        <div class="portlet-body form">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <div class="modelbox-div clearfix">
+                        <div class="caption lb-caption">
+                            <h3>
+                                <i class="fa fa-shopping-cart"></i>
+                                <span class="caption-subject">Consumptions</span>
+                            </h3>
+                            <a class="btn btn-danger" (click)="ClosePatientConsumptionList()" title="Cancel"><i class="fa fa-times"></i></a>
+                        </div>
+
+                        <div class="col-md-12" style="margin-bottom: 15px;">
+                            <danphe-grid [grid-colDefaults]="patientConsumptionListColumn" [grid-data]="PatientConsumptionList"
+                                         (grid-actions)="PatientConsumptionListGridActions($event)"></danphe-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showPrintPage">
+            <div class="portlet-body form">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="modelbox-div clearfix">
+                            <a class="btn btn-danger history-del-btn" (click)="ClosePrintPage()" title="Cancel"><i class="fa fa-close"></i></a>
+                            <div class="form-body">
+                                <div class="col-md-12">
+                                    <div class="row printStyle print-border">
+                                        <div *ngIf="showPrintPage" style="text-align:center;">
+                                            <phrm-consumption-receipt [patient-consumption-id]="PatientConsumptionId"></phrm-consumption-receipt>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+<a feature="button" class="btn blue bordered" (click)="AddMinimumDepositSetting()"><i class="fa fa-plus"></i> Add Minimum Deposit Setting </a>
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="MinimumDepositSettingsColumns" [grid-data]="MinimumDepositSettingsList"
+                     (grid-actions)="MinimumDepositSettings($event)" [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+<deposit-settings-add *ngIf="showAddPage"
+                      [bed-feature-list]="bedFeatureList"
+                      [scheme-list]="BillSchemeList"
+                      [Deposit-Head-list]="DepositHeadList"
+                      (call-back-popup-close)="ClosePopUp($event)"
+                      [update]="update"
+                      [setting-Deposit-Amount-List]="MinimumDepositSettingsList"
+                      [Setting-Deposit-Amount-To-Edit]="SettingDepositAmountToEdit"
+                      (callback-add)="CallBackAdd($event)" (callback-update)="CallBackUpdate($event)">
+</deposit-settings-add>

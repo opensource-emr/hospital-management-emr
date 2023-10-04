@@ -1,0 +1,199 @@
+<style>
+    .update-page {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .update-page form {}
+
+    .update-page .add-btn-wrap {
+        margin-bottom: 15px;
+    }
+
+    .update-page .add-btn-wrap .btn,
+    .update-page form .btn,
+    .update-page form .form-group .btn {
+        font-size: 14px;
+        padding: 5px 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .update-page .add-btn-wrap .btn i,
+    .update-page form .form-group .btn i {
+        font-size: 12px;
+        margin-left: 5px;
+    }
+
+    .update-page form {}
+
+    .update-page form .form-group {}
+
+    .update-page form .form-group textarea {
+        height: auto !important
+    }
+
+    .update-page form .btn,
+    .update-page form .form-group .btn {
+        margin: 0 0 15px 5px;
+        text-transform: none;
+    }
+</style>
+
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal " style="margin-bottom:25px">
+    <div class="portlet-body ">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Fault History | <strong> {{selectedAsset.ItemName | CapitalFirstLetter}} |
+                                    {{selectedAsset.BarCodeNumber}}</strong></span></h3>
+                        <a class="btn btn-danger" (click)="Close()"><i class="fa fa-close"></i></a>
+                    </div>
+                    <div class="update-page">
+
+                        <div class="selectedAssetForEdit" style="padding: 0 10px;">
+                            <div class="add-btn-wrap">
+                                <a class="btn btn-primary" (click)="Add()">Add New Fault<i class="fa fa-plus"></i></a>
+                                <a class="btn" *ngIf="!(selectedAsset.IsAssetDamaged)"
+                                    (click)="NotifyDamage(selectedAsset)"
+                                    style="background-color: #696969!important;  color: White!important;"> Notify Damage
+                                </a>
+
+                                <a class="btn"
+                                    *ngIf="!(selectedAsset.IsUnderMaintenance) && !(selectedAsset.IsAssetDamaged)"
+                                    style="background-color: #FF8C00 !important; color: black!important;"
+                                    (click)="MarkAsUnderRepair()">Mark as Under Repair</a>
+                                <a class="btn"
+                                    *ngIf="(selectedAsset.IsUnderMaintenance) && !(selectedAsset.IsAssetDamaged)"
+                                    style="background-color: #42ba96 !important; color: black!important;"
+                                    (click)="MarkAsRepaired()">Mark as Repaired</a>
+
+                                <p *ngIf="(selectedAsset.IsAssetDamaged) && (selectedAsset.IsAssetDamageConfirmed)"
+                                    style="background-color: greenyellow; color: red; width:750px!important; font-size:medium; margin-top:10px;">
+                                    Damage of this asset has been
+                                    confirmed ! No longer be used, ready to Scrap! </p>
+                                <p *ngIf="(selectedAsset.IsAssetDamaged) && !(selectedAsset.IsAssetDamageConfirmed)"
+                                    style="background-color: greenyellow; color: red; width:510px!important; font-size:medium; margin-top:10px;">
+                                    This asset has been marked as
+                                    Damaged, but not confirmed yet! </p>
+
+                            </div>
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr class="tbl-td-padding">
+                                        <th>S.No</th>
+                                        <th>Fault Recored Date</th>
+                                        <th>Fault Description</th>
+                                        <th>Reported By</th>
+                                        <th>Fault Resolved Date</th>
+                                        <th>Fault Resolved Remarks</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let row of allFaultUpdateList,let i = index ">
+                                        <td><b>{{i+1}}</b></td>
+                                        <td><b>{{row.FaultDate | date: 'dd/MM/yyyy'}}</b></td>
+                                        <td><b>{{row.FaultDescription}}</b></td>
+                                        <td><b>{{row.CreatedName}}</b></td>
+                                        <td><b>{{row.FaultResolvedDate | date: 'dd/MM/yyyy'}}</b></td>
+                                        <td><b>{{row.FaultResolvedRemarks}}</b></td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" (click)="Edit(i) "><i
+                                                    class="fa fa-edit"></i> Edit</button>
+                                            <a *ngIf="!row.IsFaultResolved && !(selectedAsset.IsAssetDamaged)"
+                                                (click)="ResolveFault(i)" class="btn btn-primary"> Mark as Resolved </a>
+
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <form action="" *ngIf="showAddFaultDescription||faultedit">
+                            <p class="text-center" style="font-weight: 700!important; font-size: large!important;">
+                                <strong>{{faultedit?"Edit":"Add"}} Fault Form</strong>
+                            </p>
+                            <div class="form-group">
+                                <label class="control-label">Fault Date<sup>*</sup><b>:</b></label>
+                                <danphe-date-picker [ngModelOptions]="{standalone: true}" ngDefaultControl
+                                    [CalendarTypes]="'np,en'" [(ngModel)]="assetFaultUpdate.FaultDate"
+                                    style="width:100px;"></danphe-date-picker>
+                                <!-- [ngModelOptions]="{standalone:true}" -->
+
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Fault Description<sup>*</sup><b>:</b></label>
+                                <textarea class="form-control" [(ngModel)]="assetFaultUpdate.FaultDescription"
+                                    [ngModelOptions]="{standalone: true}" id="free-text" rows="8"
+                                    placeholder="Enter Fault Description.."></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="alsoEditResolvedInfo">
+                                <label class="control-label">Fault Resolved Date<sup>*</sup><b>:</b></label>
+                                <danphe-date-picker [ngModelOptions]="{standalone: true}" ngDefaultControl
+                                    [CalendarTypes]="'np,en'" [(ngModel)]="assetFaultUpdate.FaultResolvedDate"
+                                    style="width:100px;"></danphe-date-picker>
+                                <!-- [ngModelOptions]="{standalone:true}" -->
+
+                            </div>
+                            <div class="form-group" *ngIf="alsoEditResolvedInfo">
+                                <label class="control-label">Fault Resolved Description<sup>*</sup><b>:</b></label>
+                                <textarea class="form-control" [(ngModel)]="assetFaultUpdate.FaultResolvedRemarks"
+                                    [ngModelOptions]="{standalone: true}" id="free-text" rows="8"
+                                    placeholder="Enter Fault Description.."></textarea>
+                            </div>
+
+                            <button type="submit" *ngIf="showAddFaultDescription" class="btn btn-primary"
+                                (click)="Confirm()">Submit</button>
+                            <button *ngIf="faultedit" type="submit" class="btn btn-primary"
+                                (click)="Update()">Update</button>
+                            <a class="btn btn-danger" (click)="showAddFaultDescription=false; faultedit=false;"><i
+                                    class="fa fa-close"></i></a>
+
+                        </form>
+                        <form action="" *ngIf="showResolvedDescription">
+                            <p class="text-center" style="font-weight: 700!important; font-size: large!important;">
+                                <strong>{{faultedit?"Edit":"Add"}} Fault Form</strong>
+                            </p>
+                            <div class="form-group">
+                                <label class="control-label">Fault Resolved Date<sup>*</sup><b>:</b></label>
+                                <danphe-date-picker [ngModelOptions]="{standalone: true}" ngDefaultControl
+                                    [CalendarTypes]="'np,en'" [(ngModel)]="assetFaultUpdate.FaultResolvedDate"
+                                    style="width:100px;"></danphe-date-picker>
+                                <!-- [ngModelOptions]="{standalone:true}" -->
+
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Fault Resolved Description<sup>*</sup><b>:</b></label>
+                                <textarea class="form-control" [(ngModel)]="assetFaultUpdate.FaultResolvedRemarks"
+                                    [ngModelOptions]="{standalone: true}" id="free-text" rows="8"
+                                    placeholder="Enter Fault Description.."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary"
+                                (click)="SubmitResolvedDetails()">Submit</button>
+                            <a class="btn btn-danger" (click)="showResolvedDescription =false;"><i
+                                    class="fa fa-close"></i></a>
+
+                        </form>
+                        <!-- <form action="" *ngIf="faultedit">
+                            <div class="form-group">
+                                <textarea class="form-control" [(ngModel)]="assetFaultUpdate.FaultResolvedRemarks" [ngModelOptions]="{standalone: true}" id="free-text" rows="5"
+                                    placeholder="Free Text"  ></textarea>
+                                </div>
+                            <button type="submit" class="btn btn-primary" (click)="Update()" >Update</button>
+                        </form> -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="showNotifyDamage">
+    <notify-damage [selectedAsset]="selectedAsset" (notify-damage-callback)="NotifyDamageCallBack($event)">
+
+    </notify-damage>
+</div>

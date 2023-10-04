@@ -1,0 +1,78 @@
+<style>
+  .lbl-INSPatient{
+    color: rgb(24, 22, 22);
+    font-weight: bold;
+    vertical-align: bottom;
+    margin-left: 15px;
+  }
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+     <div style="float:right">
+        <label class="lbl-INSPatient" for="isINSPatient">Insurance Patient<b>:</b> </label>
+        <input id="isINSPatient" name="isINSPatient" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+        (change)="FilterGridItems(govPatientShow)" [(ngModel)]="govPatientShow" [ngModelOptions]="{standalone: true}" />
+      </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="filteredPatientList" (grid-actions)="AdmissionGridActions($event)"
+        (serverSearchText)="serverSearchTxt($event)"
+        [customServerSearch]="enableServerSideSearch"
+        > </danphe-grid>
+      <!-- [show-ServerSideSearch]="true"
+        [api-type]="patGirdDataApi" --> 
+    </div>
+  </div>
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showBedReservationPopup">
+    <div class="portlet-body form">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr"><strong>Edit Bed Reservation</strong></h4>
+          </div>
+          <div class="modelbox-body">
+            <admission-reserve [patientVisitId]="patientVisitId"
+                             [patientId]="patientId"
+                             (closePopUp)="ReturnFromPatBedReservation($event)"></admission-reserve>
+          </div>
+          <!--<div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="CheckSampleCollectionDate()">
+              Change
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CancelDateChange()">
+              Cancel
+            </button>
+
+          </div>
+        </div>-->
+          
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="CloseReservationPopUp()">X</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showProvisionalWarning">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+            <div class="row">
+                <div class="col-md-12" style="margin-top:15px;text-align:center">
+                    <h4><b style="color:#bd8111">Alert!</b></h4>
+                    <p><b style="color:#bd8111;font-size:18px">Please clear provisional items before proceeding for admission.</b></p>
+                    <hr />
+                </div>
+                <br />
+                <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
+                    <button type="button" class="btn btn-danger" (click)="CloseWarningPopUp()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> --> 
+</div>

@@ -1,0 +1,29 @@
+<!--<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li>  <a [ngClass]="{'a-tab-active': showServiceDepartment==true}" (click)="updateView(4)">Service Departments</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showItemList==true}" (click)="updateView(0)">Billing Items</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showPackageList==true}" (click)="updateView(1)">Billing Packages</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showOrganizationList==true}" (click)="updateView(2)">Credit Organizations</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showMembershipList==true}" (click)="updateView(3)">Memberships</a></li>
+  </ul>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <billingItem-list *ngIf="showItemList"></billingItem-list>
+    <billingPackage-list *ngIf="showPackageList"></billingPackage-list>
+    <credit-organization-list *ngIf="showOrganizationList"></credit-organization-list>
+    <membership-list *ngIf="showMembershipList"></membership-list>
+    <service-department-list *ngIf="showServiceDepartment"></service-department-list>
+  </div>
+</div>-->
+
+<div class="sub-navtab">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+</div>
+<router-outlet>
+
+</router-outlet>

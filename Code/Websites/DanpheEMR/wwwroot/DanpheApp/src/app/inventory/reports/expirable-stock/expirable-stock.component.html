@@ -1,0 +1,47 @@
+<form class="form-horizontal hm-form">
+  <div class="form-body">
+    <div class="caption lb-caption">
+      <i class="fa fa-money"></i>
+      <span class="caption-subject">Expirable Stock Ledger </span>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="onFromToDateChange($event)"> </fiscal-year-calendar>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4" style="display: flex;justify-content: flex-start;align-items: center;">
+        <div>Category : &nbsp;&nbsp;</div>
+        <div>
+          <select [(ngModel)]="selectedCategory" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCategoryChange(selectedCategory)">
+            <option [ngValue]="0">All</option>
+            <option *ngFor="let cat of categoryList" value="{{cat.ItemCategoryId}}"> {{cat.ItemCategoryName}} </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-8" style="display: flex;justify-content: flex-start; align-items: center;">
+        <div>Sub Category :</div>
+        <div class="col-md-6">
+          <danphe-multiselect [ddl-data]="filteredSubCategoryList" [placeholder-text]="'---Select Subcategory Name---'" [value-property-name]="'SubCategoryId'" (selected-items-list)="onChangeColumnSelection($event)" [display-property-name]="'SubCategoryName'" [single-selection]="false">
+          </danphe-multiselect>
+        </div>
+      </div>
+    </div>
+    <danphe-grid [grid-colDefaults]="expirableStockGridColumns" [grid-data]="filteredItemList" (grid-actions)="handleGridAction($event)" [grid-exportOptions]="getGridExportOptions()" [grid-showExport]="false" [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</form>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDetailsBox">
+  <div class="portlet-body form ">
+    <div class="modelbox-div" style=" margin:25px 50px;">
+      <div class="col-md-12">
+        <a style="float:right; position: absolute; top:-26px; right:-26px;" class="btn btn-danger" (click)="close()" title="Cancel">X</a>
+      </div>
+      <div>
+        <app-expirable-stock-detail-view [fromDate]="fromDate" [toDate]="toDate" [selectedItemId]="selectedItemId" [fiscalYearId]="fiscalYearId"></app-expirable-stock-detail-view>
+      </div>
+    </div>
+  </div>
+</div>

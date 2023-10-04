@@ -1,0 +1,78 @@
+.date-with-label {
+  margin-left: -9px;
+  margin-top: 7px;
+}
+
+.margin-8-bt {
+  margin-bottom: 8px;
+}
+
+.doctor-select-opt {
+  margin-top: 8px;
+  height: 32px;
+}
+
+  .doctor-select-opt select {
+    height: 32px;
+  }
+
+.cstm-amt-input {
+  height: 30px;
+}
+
+.cstm-show-report-btn-holder {
+  margin-top: 7px;
+  padding-left: 25px;
+}
+
+.doc-inctv-tblholder {
+  /*height: 350px;
+  overflow: auto;*/
+}
+
+.cstm-amt-label {
+  line-height: 2;
+}
+table {
+  width: 100%;
+}
+
+thead, tbody, tr, td, th {
+  display: block;
+}
+
+tr:after {
+  content: ' ';
+  display: block;
+  visibility: hidden;
+  clear: both;
+}
+
+thead th {
+  height: 30px;
+  /*text-align: left;*/
+}
+
+/* tbody {
+  height: 325px;
+} */
+
+thead {
+  /* fallback */
+}
+
+/* tbody, thead{overflow-y: scroll;} */
+
+tbody td, thead th {
+  float: left;
+}
+.table-wrapper table th {
+  position: sticky;
+	top: -1px;
+	background-color: #f1f1f1;
+	z-index: 9;
+
+}
+.table-wrapper table tr + tr th {
+  top: 10px;
+}

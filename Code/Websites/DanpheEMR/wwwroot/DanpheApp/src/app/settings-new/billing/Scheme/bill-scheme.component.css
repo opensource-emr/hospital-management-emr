@@ -1,0 +1,90 @@
+.caption {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.caption span {
+    text-align: center;
+}
+
+textarea {
+    width: 100%;
+    max-width: 500px;
+}
+.Scheme-General-Setting {
+margin-left: 10px !important;
+}
+
+.Discount-Setting {
+margin-left: 10px !important;
+}
+
+.Credit-Setting {
+margin-left: 10px !important;
+}
+
+.Credit-Setting-box1 {
+margin-left: 10px !important;
+}
+
+.Credit-Setting-box2 {
+margin-left: 10px !important;
+}
+
+.Copayment-Setting {
+margin-left: 10px !important;
+}
+
+.main-form {
+margin-left: -7px !important;
+}
+
+div.SchemeGeneralSetting.form-group.col-md-12 {
+border: 1px solid black;
+padding-left: 16px;
+}
+
+div.CreditSettingbox1.form-group.col-md-12 {
+border: 1px solid black;
+padding-left: 16px;
+}
+
+div.CreditSettingbox2.form-group.col-md-12 {
+border: 1px solid black;
+padding-left: 16px;
+}
+
+.modelbox-div {
+position: relative;
+width: 100%;
+}
+
+.portlet-body {
+width: 1400px;
+/* height: 2000px; */
+top:50%;
+left: 50%;
+transform: translate(-50%, -50%);
+position: fixed;
+z-index: 9999;
+width: 100vw; 
+height: 60vh; 
+max-height: calc(100vh - 100px);
+overflow-y: hidden;
+}
+
+.modelbox-footer {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+}
+
+.custom-select {
+width: 170px;
+}
+
+.custom-select1 {
+width: 200px;
+}

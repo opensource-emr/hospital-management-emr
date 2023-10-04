@@ -1,0 +1,27 @@
+<div class="wrapper">
+<div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Patient Wise Lab Test Status</span> </div>
+  <div class="row">
+         <div class="col-md-5 col-xs-12">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)">
+                </from-to-date-select>
+            </div>
+            <div class="col-md-7 col-xs-12">
+              <div class="form-group">
+                <lab-status-filter [statusAbove]="statusAbove" [data]="orderStatus"></lab-status-filter>
+              </div>
+            </div>
+  </div>
+
+  <div class="row">
+    <div  style="display: flex; justify-content: flex-end ;margin-right: 80px; margin-bottom: 10px;">
+      <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+  </div>
+  </div>
+
+  <div class="row" *ngIf="showGrid">
+      <div class="col-lg-12 col-sm-12">
+        <danphe-grid *ngIf="showGrid" [grid-colDefaults]="StatusWiseItemCountColumns"
+                   [grid-data]="StatusWiseItemCountData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-for]="'lab'" [grid-date-range]="dateRange"> </danphe-grid>
+      </div>
+    </div>
+</div>

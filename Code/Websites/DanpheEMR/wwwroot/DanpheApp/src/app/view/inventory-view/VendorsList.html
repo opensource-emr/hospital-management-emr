@@ -1,0 +1,194 @@
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+
+    <!--Outer Grid-->
+
+    <danphe-grid [grid-colDefaults]="vendorsGridColumns"
+                 [grid-data]="filterGoodsReceiptList"
+                 (grid-actions)="VendorsGridAction($event)"
+                 [grid-exportOptions]="gridExportOptions"
+                 [grid-showExport]="true">
+    </danphe-grid>
+
+    <!--Inner Grid-->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showListofVendor">
+      <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+            </div>
+            <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+              <div class="col-md-12 noPrint">
+                <div class="caption" style="color:blue; margin-top:10px;">
+                </div>
+                <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                <hr />
+              </div>
+              <danphe-grid [grid-colDefaults]="vendorsGridColumns"
+                           [grid-data]="griForCurrentVendor"
+                           (grid-actions)="VendorGridAction($event)"
+                           [grid-exportOptions]="gridExportOptions"
+                           [grid-showExport]="true">
+              </danphe-grid>
+              <hr />
+              <div style="float:right">
+                <table>
+                  <tr></tr>
+                  <tr>
+                    <td style="width:200px; text-align:right;"><b>Sub Total :</b></td>
+                    <td style="text-align:left;">{{currentGRdetails.SubTotal | ParseAmount }}</td>
+                    <td style="width:200px; text-align:right;"><b>Discount Total :</b></td>
+                    <td style="text-align:left;">{{currentGRdetails.DiscountAmount | ParseAmount }}</td>
+                    <td style="width:200px; text-align:right;"><b>Total Amount :</b></td>
+                    <td style=" text-align:left;">{{currentGRdetails.TotalAmount | ParseAmount  }}</td>
+                    <td style="width:350px;"></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="float:right">
+      <table>
+        <tr></tr>
+        <tr>
+          <td style="width:200px; text-align:right;"><b>Sub-Total :</b></td>
+          <td style="text-align:left;">{{ subTotal | ParseAmount }}</td>
+          <td style="width:200px; text-align:right;"><b>Discount-Total :</b></td>
+          <td style="text-align:left;">{{ discountTotal | ParseAmount }}</td>
+          <td style="width:200px; text-align:right;"><b>Total-Amount :</b></td>
+          <td style=" text-align:left;">{{ totalAmount | ParseAmount  }}</td>
+          <td style="width:350px;"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showVendorsbyVendorId">
+  <div class="portlet-body form" style="background-color:white">
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div class="col-md-12 noPrint">
+            <div class="caption" style="color:blue; margin-top:10px;">
+            </div>
+            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+            <hr />
+          </div>
+          <!-- Billing Header Start -->
+          <div id="print-good-reciept" class="row printStyle print-border">
+            <div style="text-align:center;">
+              <div class="col-md-12">
+                <div class="row" style="margin-bottom: 10px;">
+                  <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                  </div>
+                  <div style="width: 64%;float: left;padding-bottom:  0px;">
+                    <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                      <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                      <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                      <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                      <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
+                    </div>
+                  </div>
+                  <div style="float: left;">
+                    <div class="qr-code" style="margin-left:20px; top:35px;">
+                      <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+                    </div>
+                  </div>
+                  <!-- Billing Header  -->
+                  <div style="clear:left"></div>
+                </div>
+                <div class="left" style="text-align:left;">
+                  <p>Goods Receipt No.:<b> {{innerVendordetails.GoodsReceiptID}}</b></p>
+                  <p>Vendor Name :<b> {{innerVendordetails.VendorName}}</b> </p>
+                  <p>Contact No.:<b> {{innerVendordetails.ContactNo}}</b></p>
+                </div>
+                <div class="right" style="text-align:right;">
+                  <p>Date :<b> {{innerVendordetails.GoodReceiptDate}}</b></p>
+                  <p>Invoice No:<b>{{innerVendordetails.InvoiceNo}}</b></p>
+                </div>
+                <div class="clear"></div>
+                <p class="text-center btm-pad border-up-down"><b> VENDOR DETAILS </b></p>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:medium; text-align:center">
+                        <td>S.N</td>
+                        <td>Code</td>
+                        <td>Name</td>
+                        <td>Category</td>
+                        <td>Batch No.</td>
+                        <td>Expiry Dt.</td>
+                        <td>Received Qty.</td>
+                        <td>Free Qty.</td>
+                        <td>Rate</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of vendorList.grItems ; let i= index">
+                        <td><b>{{ i+ 1 }}</b></td>
+                        <td><b>{{row.ItemCode}}</b></td>
+                        <td><b>{{row.ItemName}}</b></td>
+                        <td><b>{{row.ItemCategory}}</b></td>
+                        <td>{{row.BatchNo}}</td>
+                        <td style="width:100px">{{row.ExpiryDate}}</td>
+                        <td>{{row.ReveivedQuantity}}</td>
+                        <td>{{row.FreeQuantity}}</td>
+                        <td>{{row.GRItemRate | number : "1.2-2"}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <hr />
+                <div class="col-md-12">
+                  <div class="col-md-6">
+
+                  </div>
+                  <div class="col-md-6" style="float: right">
+                    <div>
+                      <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                        <tr>
+                          <td>Cc Amount</td>
+                          <td><b>{{vendorList.grDetails[0].CcCharge | number: '1.2-2'}}</b></td>
+                        </tr>
+                        <tr>
+                          <td>Discount Amount</td>
+                          <td><b>{{vendorList.grDetails[0].DiscountAmount | number: '1.2-2'}}</b></td>
+                        </tr>
+                        <tr>
+                          <td>VAT Amount</td>
+                          <td><b>{{vendorList.grDetails[0].VATTotal | number: '1.2-2'}}</b></td>
+                        </tr>
+                        <tr>
+                          <td>Total Amount</td>
+                          <td><b>{{vendorList.grDetails[0].TotalAmount | number: '1.2-2'}}</b></td>
+                        </tr>
+                      </table>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+      </div>
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+  </div>
+</div>
+
+

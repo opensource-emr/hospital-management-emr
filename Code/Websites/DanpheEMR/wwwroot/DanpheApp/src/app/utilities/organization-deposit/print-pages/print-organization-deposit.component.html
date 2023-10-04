@@ -1,0 +1,102 @@
+<!-- <div class="row">
+  <div class="col-md-3 col-md-offset-1">
+    <button class="btn btn-default btn-sm" (click)="GoBackToOrganizationDepositPage()">
+      <i class="fa fa-backward"></i> &nbsp;&nbsp;Back </button>
+  </div>
+</div> -->
+
+<div id="id_organizationalDepositPrint_page" class="form-horizontal hm-form" style="margin-top: 20px;">
+  <div class="row">
+    <div>
+      <div class="form-body">
+        <div id="id_organizationDeposit_print" style="text-align:center;">
+          <div class="receipt">
+            <billing-header></billing-header>
+            <div class="text-center">
+              <p class="no-margin" style="text-align:center;text-decoration:underline;margin-top:15px">
+                <span>
+                  <b *ngIf="organizationDeposit.TransactionType === 'Deposit'">Deposit Add Receipt </b>
+                  <b *ngIf="organizationDeposit.TransactionType === 'ReturnDeposit'">Deposit Refund Receipt </b>
+                </span>
+              </p>
+            </div>
+            <hr style="border-top: dotted 1px;" />
+            <div class="height: fit-content; width: 100%;" style="text-align:left; margin-left:20px;">
+              <div>
+                <p>
+                  Organization: &nbsp;{{organizationDeposit.CreditOrganizationName}}
+                </p>
+              </div>
+              <div>
+                <p>
+                  Representative: &nbsp; {{organizationDeposit.CareOf}}
+                </p>
+              </div>
+              <div>
+                <p *ngIf="organizationDeposit.TransactionType=='Deposit'">
+                  Deposit Amount: {{coreService.currencyUnit}} {{organizationDeposit.InAmount}}
+                </p>
+              </div>
+              <div>
+                <p *ngIf="organizationDeposit.TransactionType=='ReturnDeposit'">
+                  Return Amount: {{coreService.currencyUnit}} {{organizationDeposit.OutAmount}}
+                </p>
+              </div>
+            </div>
+            <div class="clear"></div>
+
+            <div class="height: fit-content; width: 100%;" style="text-align:left; margin-left:20px;">
+              <p *ngIf="organizationDeposit.TransactionType=='Deposit'">
+                Deposit of <b>{{organizationDeposit.InAmount}}</b>
+                received from <b>{{organizationDeposit.CreditOrganizationName}}</b>
+                <br>
+                In Words: {{ organizationDeposit.InAmount | NumberInWords}} only /-
+              </p>
+              <p *ngIf="organizationDeposit.TransactionType=='ReturnDeposit'">
+                Deposit of <b>{{organizationDeposit.OutAmount }}</b>
+                returned to <b>{{organizationDeposit.CreditOrganizationName}}</b>
+                <br>
+                In Words: {{organizationDeposit.OutAmount | NumberInWords}} only /-
+              </p>
+            </div>
+            <div class="clear"></div>
+            <div class="height: fit-content; width: 100%;" style="text-align:left; margin-left:20px;">
+              <p>
+                Deposit Balance: &nbsp;<b>{{organizationDeposit.DepositBalance}}</b>
+              </p>
+              <p>
+                Remarks:&nbsp; {{organizationDeposit.Remarks}}
+              </p>
+              <p>
+                Payment Mode: &nbsp;{{organizationDeposit.PaymentMode}}
+              </p>
+              <p *ngIf="organizationDeposit.PaymentDetails !== null">
+                Payment Details: &nbsp;{{organizationDeposit.PaymentDetails}}
+              </p>
+            </div>
+            <hr style="border-top: dotted 1px;" />
+            <div class="height: fit-content; width: 100%;" style="text-align:left; margin-left:20px;">
+              <p *ngIf="organizationDeposit.TransactionType=='Deposit'">
+                Deposited By: {{CurrentUser.UserName}} on {{DateTimeNow}}
+              </p>
+              <p *ngIf="organizationDeposit.TransactionType=='ReturnDeposit'">
+                Returned By: {{CurrentUser.UserName}} on {{DateTimeNow}}
+              </p>
+            </div>
+
+          </div>
+        </div>
+        <div class="height: fit-content; width: 100%;">
+          <p style="text-align:center; background-color:white">
+            <button class="btn blue" (click)="Print()">
+              Print Receipt
+              <i class="glyphicon glyphicon-print"></i>
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

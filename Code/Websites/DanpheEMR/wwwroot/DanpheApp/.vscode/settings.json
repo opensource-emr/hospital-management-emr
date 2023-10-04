@@ -1,0 +1,34 @@
+{
+    "editor.inlineSuggest.enabled": true,
+    "editor.accessibilitySupport": "off",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.fixAll": true
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "extensions.ignoreRecommendations": false,
+    "extensions.closeExtensionDetailsOnViewChange": true,
+    "git.autofetch": true,
+    "html.autoClosingTags": true,
+    "html.format.preserveNewLines": true,
+    "html.format.wrapAttributes": "preserve-aligned",
+    "html.format.wrapLineLength": 150,
+    "remote.downloadExtensionsLocally": true,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.referencesCodeLens.enabled": true,
+    "typescript.implementationsCodeLens.enabled": true,
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    }
+}

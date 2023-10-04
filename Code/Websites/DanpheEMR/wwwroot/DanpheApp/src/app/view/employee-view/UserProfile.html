@@ -1,0 +1,33 @@
+<div class="row">
+  <div style="margin-left: 20px; margin-top: 30px;">
+    <div>
+      <h2><b style="font-size:20px;">User Name&nbsp;:&nbsp;{{userProfileInfo.UserName}}</b></h2>
+    </div>
+    <div><b style="font-size:16px;;">Name&nbsp;:&nbsp;{{userProfileInfo.FirstName}} &nbsp;{{userProfileInfo.LastName}}</b></div><br />
+    <div style="font-size:16px;">Email&nbsp;:&nbsp;{{userProfileInfo.Email}}</div><br />
+    <div style="font-size:16px;">Department&nbsp;:&nbsp;{{userProfileInfo.Department}}</div><br />
+  </div>
+</div>
+
+<!--Ajay 07 aug 2017
+    user can select landing page after login
+    -->
+<div class="row">
+  <div style="margin-left: 20px; margin-top: 30px;">
+    <div class="form-group">
+      <div style="font-size:16px;">
+        Select Landing Page&nbsp;:&nbsp;
+        <select [(ngModel)]="landingModuleRouteId" (change)="OnModuleChange()">
+          <option *ngFor="let row of userRoutes" value="{{row.RouteId}}">{{row.DisplayName}}</option>
+        </select>&nbsp;&nbsp;
+        <select [(ngModel)]="landingChildRouteId" *ngIf="childRouteList">
+          <option *ngFor="let row of childRouteList" value="{{row.RouteId}}"><span *ngIf="row.DisplayName == ''">Dashboard</span>{{row.DisplayName}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="margin-top-10">
+      <a style="cursor:pointer" class="btn btn-primary btn-sm margin-7-hr" (click)="SetNewLandingPage()"> Submit </a>&nbsp;
+      <a style="cursor:pointer" class="btn btn-cancel btn-sm margin-7-hr" (click)="ResetLandingPage()"> Reset </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<danphe-question ngDefaultControl [(question)]="question" [dataSets]="dataSets"></danphe-question>
+<!--Display all childquestions when rendermode is edit: used for edit template. -->
+<div *ngIf="question.ShowChilds || renderMode =='edit'">
+    <div *ngFor="let L2Qtn of question.ChildQuestions;let i=index;" style="padding-left:20px;">
+        <!--<br *ngIf="question.ChildQtnAlignment == 'vertical'" />-->
+        <danphe-question ngDefaultControl [(question)]="question.ChildQuestions[i]" [dataSets]="dataSets"></danphe-question>
+        <div *ngIf="(L2Qtn.ShowChilds || renderMode =='edit') && L2Qtn.ChildQuestions && L2Qtn.ChildQuestions.length>0">
+            <div *ngFor="let L3Qtn of L2Qtn.ChildQuestions;let i=index;" style="padding-left:30px;">
+                <!--<br *ngIf="L2Qtn.ChildQtnAlignment == 'vertical'" />-->
+                <danphe-question ngDefaultControl [(question)]="L2Qtn.ChildQuestions[i]" [dataSets]="dataSets"></danphe-question>
+            </div>
+        </div>
+    </div>
+</div>
+<br />

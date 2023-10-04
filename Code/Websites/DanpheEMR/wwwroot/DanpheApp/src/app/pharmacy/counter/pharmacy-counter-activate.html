@@ -1,0 +1,150 @@
+﻿<style>
+.p-category .span2 {
+	min-width: 20.5%;
+}
+.padder-v {
+	border: 1px solid #ddd;
+	margin: 10px 10px 0px 0px;
+	background-color: #fff;
+	padding-top: 15px;
+	padding-bottom: 15px;
+}
+.b-r {
+	border-right: 1px solid #cfcfcf;
+}
+.b-light {
+	border-color: #e4e4e4;
+}
+.b-light i.text-white {
+	color: #fff;
+}
+.rpt-link-container {
+	width: 200px;
+	height: 70px;
+	background-color: white;
+}
+.rpt-link-container:hover {
+	background-color: skyblue;
+	cursor: pointer;
+}
+.counter {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.counter > .counter-item {
+	background-color: #ffffff;
+	width: 100%;
+	height: 80px;
+	margin: 10px auto;
+	text-align: center;
+	line-height: 75px;
+	color: #5867dd;
+	font-family: 'Quicksand', 'Open Sans', sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	border-radius: 6px !important;
+	box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.02);
+	border: 1px solid #d3d8ff;
+	cursor: pointer;
+	transition: 0.3s linear;
+	display: flex;
+	padding: 5px;
+}
+.counter > .counter-item h5 {
+	font-weight: 700;
+	font-family: 'Quicksand', 'Open Sans', sans-serif;
+	font-size: 13px;
+	text-transform: uppercase;
+	margin-left: 10px;
+	text-align: left;
+}
+.counter > .counter-item img {
+	height: 45px;
+	width: 40px;
+	display: block;
+}
+.counter > .counter-item h5 span {
+	display: block;
+	font-size: 12px;
+	font-family: 'Quicksand', 'Open Sans', sans-serif;
+	margin: 7px auto;
+	font-weight: 600;
+	color: #888;
+	text-transform: capitalize;
+	margin-bottom: auto;	
+}
+.counter > .counter-item:hover {
+	box-shadow: 0px 0px 30px #ebf7ff;
+}
+</style>
+
+<div class="row" style="margin-top:10px">
+  <div class="col-md-12">
+    <div class="caption custom-caption">
+      <h3> <img src="../../../themes/theme-default/images/counter1.svg" alt=""/><span class="caption-subject">Counter Selection</span></h3>
+    </div>
+  </div>
+</div>
+<div class="counter-wrap-wrap">
+	<div class="row" style="margin-top:10px" *ngIf="disable">
+  <div class="col-md-12">
+<!--
+	  <div class="caption custom-caption">
+          <h3><img src="../../../themes/theme-default/images/counter1.svg" alt=""/><span class="caption-subject">Counter Name</span></h3>
+	  </div>
+-->
+	  <div class="row">
+	  	<div class="col-md-2" *ngFor="let counter of counterlist">
+        <div class="counter" (click)="ActivateCounter(counter)">
+          <div class="counter-item"> <img src="../../../themes/theme-default/images/counter1.svg" alt=""/>
+            <h5>{{counter.CounterName}} <span>click to Activate</span></h5>
+          </div>
+        </div>
+			
+      </div>
+	  </div>
+	  
+<!--
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th style="background-color:gainsboro; padding: 9px;">Counter Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let counter of counterlist">
+            <td><div class="span2 padder-v b-r b-light rpt-link-container" (click)="ActivateCounter(counter)"> <span class="fa-stack fa-2x pull-left m-r-sm"> <i class="fa fa-magic fa-stack-2x text-info"></i> <i class="fa fa-arrow-circle-o-right fa-stack-1x text-white"></i> </span> <span> <i style="font-weight:bold;font-size:14px">{{counter.CounterName}}</i> </span><br />
+                <span style="font-size:13px;color:green;">click to Activate</span> </div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+-->
+  </div>
+</div>
+</div>
+<div class="row">
+  <div *ngIf="!disable" style="margin-top:30px" class="col-lg-6 col-sm-12 col-xs-12">
+    <div class="portlet light bordered ">
+      <div class="portlet-title">
+        <div class="caption custom-caption no-margin no-padding"> <h3><i class="icon-cursor font-dark hide"></i> <span class="caption-subject">Activated Counter Information</span></h3> </div>
+      </div>
+      <div class="portlet-body">
+        <div class="row">
+          <div class="col-md-12"><div class="mt-comment-info"> You have activated the counter and the current activated counter is: <b style="color: #25a904;font-size: 19px;background-color: #f3fff0;padding: 10px;display: inline-block;margin: 10px 0 0 0;"> {{currentCounterId}}:{{currentCounterName}} </b> </div></div>
+        </div>
+        <hr />
+        <div class="row">
+          <div class="mt-body-actions ">
+            <div class="caption col-md-6 col-sm-6"> <i class="icon-cursor font-dark hide"></i> <span>Do you want to Change the counter?</span> </div>
+            <div class="actions"> <span>
+              <button class="btn btn-danger" style="font-weight:bold;font-size:14px" (click)="DeactivateCounter()">Deactivate Counter </button>
+              </span> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

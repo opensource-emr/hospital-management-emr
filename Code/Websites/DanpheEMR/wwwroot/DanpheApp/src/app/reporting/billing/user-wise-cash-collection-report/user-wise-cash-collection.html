@@ -1,0 +1,180 @@
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+
+<div class="wrapper">
+    <div class="row">
+      <form [formGroup]="userObjModel.userWiseCollectionReportValidator" class="form-horizontal">
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">USER WISE CASH COLLECTION REPORT</span> </div>
+            <div class="row">
+              <div class="col-md-6">
+                <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+              </div>
+              <div class="col-md-4 col-xs-12">
+                <div class="form-group row">
+                  <label class="control-label col-md-4">Select User<b style="float:right;">:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" danphe-auto-complete
+                         [(ngModel)]="selUser"
+                         [ngModelOptions]="{standalone: true}"
+                         [list-formatter]="UserListFormatter"
+                         [source]="userList"
+                         placeholder="Enter User Name"
+                         display-property-name="EmployeeName"
+                         value-property-name="EmployeeId"
+                         max-num-list="10"
+                         (focusout)="userChanged()" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                  <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                </div>
+              </div>
+            </div>
+            <!--<div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="userObjModel.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate"> </danphe-date-picker>
+            <span class="color-red font-sm" *ngIf="userObjModel.IsDirty('fromDate')" [hidden]="userObjModel.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+            <span class="color-red font-sm" *ngIf="userObjModel.IsDirty('fromDate')" [hidden]="userObjModel.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="userObjModel.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate"> </danphe-date-picker>
+            <span class="color-red font-sm" *ngIf="userObjModel.IsDirty('toDate')" [hidden]="userObjModel.IsValidCheck('toDate','required')"> To Date is required</span><br />
+            <span class="color-red font-sm" *ngIf="userObjModel.IsDirty('toDate')" [hidden]="userObjModel.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+        </div>
+      </div>--> 
+            
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="row" *ngIf="showReport">
+      <div class="col-md-12" id="printPage">
+        <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;"> <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+          <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+        </div>
+        <div class="col-md-12"> <span class="col-md-2 left"> From Date: {{fromDate}}<br />
+          ToDate: {{toDate}}<br />
+          </span> <span class="col-md-8" style="text-align:center"><b>USER WISE CASH COLLECTION REPORT</b></span> <span class="col-md-2 right">Print Date: {{currentDate}}</span> </div>
+        <div class="col-md-12" id="user-wise-cash-summary">
+          <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+            <thead>
+              <tr>
+                <td rowspan="2" style="text-align:center"><b>Sr No.</b></td>
+                <td rowspan="2"><b>User Name</b></td>
+                <td colspan="4" style="text-align:center"><b>OP Income</b></td>
+                <td colspan="4" style="text-align:center"><b>IP Income</b></td>
+                <td colspan="2" style="text-align:center"><b>Deposit</b></td>
+                <td rowspan="2"><b>Grand Total</b></td>
+              </tr>
+              <tr>
+                <td style="text-align:center"><b>Collection</b></td>
+                <td style="text-align:center"><b>Discount</b></td>
+                <td style="text-align:center"><b>Refund</b></td>
+                <td style="text-align:center"><b>NetTotal</b></td>
+                <td style="text-align:center"><b>Collection</b></td>
+                <td style="text-align:center"><b>Discount</b></td>
+                <td style="text-align:center"><b>Refund</b></td>
+                <td style="text-align:center"><b>NetTotal</b></td>
+                <td style="text-align:center"><b>Received</b></td>
+                <td style="text-align:center"><b>Refund</b></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of reportData;let i=index">
+                <td style="text-align:center">{{i+1}}</td>
+                <td>{{row.UserName}}</td>
+                <td style="text-align:right">{{row.OP_Collection | ParseAmount}}</td>
+                <td style="text-align:right">{{row.OP_Discount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.OP_Refund | ParseAmount}}</td>
+                <td style="text-align:right">{{row.OP_NetTotal | ParseAmount}}</td>
+                <td style="text-align:right">{{row.IP_Collection | ParseAmount}}</td>
+                <td style="text-align:right">{{row.IP_Discount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.IP_Refund | ParseAmount}}</td>
+                <td style="text-align:right">{{row.IP_NetTotal | ParseAmount}}</td>
+                <td style="text-align:right">{{row.DepositAmount | ParseAmount}}</td>
+                <td style="text-align:right">{{row.DepositReturn | ParseAmount}}</td>
+                <td style="text-align:center">{{row.Grand_Total | ParseAmount}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row" id="summaryForUserReport">
+          <div class="col-lg-12 col-sm-12">
+            <div class="col-md-12 col-xs-12">
+                <div style="padding-top:7px;">
+                  <h4 style="font-weight:bold">
+                    Summary
+                  </h4>
+                  <div>
+                    <table class="tbl-summ" border="1" style="width:50%;">
+                      <tr>
+                        <td> Cash Sales </td>
+                        <td> {{this.summary.tot_SubTotal}} </td>
+                      </tr>
+                      <tr>
+                        <td> Cash Discount </td>
+                        <td> {{this.summary.tot_Discount}} </td>
+                      </tr>
+                      <tr>
+                        <td> Total Cash Sales </td>
+                        <td style="font-weight:bold;"> {{this.TotalCashSales | ParseAmount}} </td>
+                      </tr>
+                      <tr>
+                        <td> Return Cash Sales </td>
+                        <td> {{this.summary.tot_Refund}} </td>
+                      </tr>
+                      <tr>
+                        <td>Return Cash Discount</td>
+                        <td>{{this.summary.tot_ReturnDiscount}}</td>
+                      </tr>
+                      <tr>
+                        <td>Total Return</td>
+                        <td style="font-weight:bold;"> {{this.TotalReturnSales | ParseAmount}}</td>
+                      </tr>
+                      <tr>
+                        <td>Net Cash Sales</td>
+                        <td style="font-weight:bold;"> {{this.NetCashSales | ParseAmount}}</td>
+                      </tr>
+                      <tr>
+                        <td>Deposit Received</td>
+                        <td> {{this.summary.tot_Deposit}}</td>
+                      </tr>
+                      <tr>
+                        <td>Deposit Returned</td>
+                        <td> {{this.summary.tot_DepositReturn}}</td>
+                      </tr>
+                      <tr>
+                        <td>Net Deposit</td>
+                        <td style="font-weight:bold;"> {{this.TotalDeposit}}</td>
+                      </tr>
+                      <tr>
+                        <td>Net Cash Collection</td>
+                        <td style="font-weight:bold;"> {{this.NetCashCollection}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="text-align:center">
+        <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+        <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel('user-wise-cash-summary')"> <i class="fa fa-file-excel-o"></i> Export </button>
+      </div>
+    </div>
+  </div>
+  

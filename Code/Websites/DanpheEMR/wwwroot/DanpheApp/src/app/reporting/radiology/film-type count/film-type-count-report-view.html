@@ -1,0 +1,28 @@
+<div class="wrapper">
+    <div class="row">
+        <form [formGroup]="CurrentFilmCount.filmTypeCountValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Film Type Report</span> </div>
+
+                    <div class="row">
+                        <div class="col-md-6 col-xs-12">
+                            <from-to-date-select (on-change)="OnFromToDateChange($event)">
+                            </from-to-date-select>
+                        </div>
+                        <div class="col-md-2 col-xs-12">
+                            <div class="form-group">
+                                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="FilmTypeCountColumns" [grid-data]="FilmTypeCountData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [show-header]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-title]="'Film Type Count Report'" [report-for]="'Report'" (grid-onExport)="OnGridExport($event)" [filter-parameters]="filterParameters"> </danphe-grid>
+        </div>
+    </div>
+</div>

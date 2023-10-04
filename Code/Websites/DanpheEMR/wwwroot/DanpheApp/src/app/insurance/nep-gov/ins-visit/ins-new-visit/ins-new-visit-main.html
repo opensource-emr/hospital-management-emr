@@ -1,0 +1,81 @@
+<style>
+  .page-content {
+    background: #f6f6f6 !important;
+  }
+
+  .mt-checkbox.mt-checkbox-outline>input:focus~span {
+    border: solid 2px red !important;
+  }
+
+  input#chkIncludeExternal {
+    position: relative;
+    top: 4px;
+  }
+</style>
+<div class="wrapper">
+  <div class="main-visit">
+    <h3 class="cstm-add-heading" style="text-align: left;color: #000; border-bottom: none;">
+      {{quickVisit.Visit.AppointmentType}} Visit</h3>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <h4 [className]="quickVisit.Patient.PatientId ? 'clp clp-hd' : 'clp clp-hd'"
+              [attr.aria-expanded]="quickVisit.Patient.PatientId ? 'false' : 'true'" data-toggle="collapse"
+              data-target="#patient"> <i class="fa fa-user" style="color:#3598dc;"></i>Patient Information </h4>
+            <div [className]="quickVisit.Patient.PatientId ? 'clp-cntnt' : 'clp-cntnt'" id="patient"
+              class="p-15 bg-white collapse clp-cntnt">
+              <div style="width:100%">
+                <ins-new-visit-patient-info [patient]="quickVisit.Patient"></ins-new-visit-patient-info>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6" style="padding-left:0">
+            <ins-new-visit-info [visit]="quickVisit.Visit"
+              [isInsuranceBilling]="quickVisit.BillingTransaction.IsInsuranceBilling"></ins-new-visit-info>
+          </div>
+          <div class="col-md-6 bill-inf" style="padding-left: 0">
+            <ins-new-visit-billing-info [billing-transaction]="quickVisit.BillingTransaction">
+            </ins-new-visit-billing-info>
+          </div>
+        </div>
+        <div class="text-right" style="margin-bottom:20px;" *ngIf="insuranceService.appointmentType=='New'">
+          <input id="btnPrintInvoice" type="button" class="btn green btn-success" value="Print Invoice"
+            [disabled]="loading" (click)="loading=true;CheckExistingPatientsAndSubmit()" />
+        </div>
+        <div class="text-right" style="margin-bottom:20px;" *ngIf="insuranceService.appointmentType=='Transfer'">
+          <input type="button" class="btn blue btn-success" value="Transfer" [disabled]="loading"
+            (click)="loading=true;CheckExistingPatientsAndSubmit()" />
+        </div>
+        <div class="text-right" style="margin-bottom:20px;" *ngIf="insuranceService.appointmentType=='Referral'">
+          <input type="button" class="btn blue btn-success" value="Refer" [disabled]="loading"
+            (click)="loading=true;CheckExistingPatientsAndSubmit()" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Start: Invoice and Sticker Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showPrintingPopup">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div>
+            <div class="col-md-5" *ngIf="showOpdSticker" style="padding: 15px 5px 0px 30px;">
+              <ins-sticker [SelectedVisitDetails]="selectedVisit"> </ins-sticker>
+            </div>
+            <div class="col-md-7" *ngIf="showbillingReceipt">
+              <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId" [bil-txn-id]="bil_BilTxnId"
+                [redirect-path-after-print]="'/Insurance/Patient'" [focus-print-btn]="false">
+              </bil-print-invoice-main>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Invoice and Sticker Print Popup-->

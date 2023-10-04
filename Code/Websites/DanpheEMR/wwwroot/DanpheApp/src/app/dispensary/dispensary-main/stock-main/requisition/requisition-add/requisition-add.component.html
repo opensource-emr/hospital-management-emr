@@ -1,0 +1,80 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <i class="glyphicon glyphicon-asterisk"></i>
+      <span class="caption-subject">Add Requisition</span>
+    </div>
+  </div>
+</div>
+<div *ngIf="(loading == false); else loadingText">
+  <div class="row" style="    padding-top: 10px" >
+    <div class="col-md-6">
+      <div class="form-group col-md-12" style="    display: flex">
+        <label class="control-label"><b>Requisition Date: </b></label>
+        <div class="pull-right col-md-8">
+          <danphe-date-picker [(ngModel)]="requisition.RequisitionDate" ngDefaultControl [CalendarTypes]="'np,en'"
+            [ngModelOptions]="{standalone:true}">
+          </danphe-date-picker>
+          <br />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table table-striped table-hover inv_table table-bordered" style="width: 80%p;">
+        <thead>
+          <tr>
+            <th></th>
+            <th sortable-header col="itemnames"><b>ItemName</b></th>
+            <th sortable-header col="uom"><b>Unit</b></th>
+            <th sortable-header c style="width: 100px;"><b>Available Qty in Store</b></th>
+            <th sortable-header col="quantity" style="width: 100px;"><b>Requesting Quantity</b></th>
+            <th sortable-header c style="    width: 200px"><b>Remark</b></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of requisition.RequisitionItems; let i = index">
+            <td style="width: 50px"><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+            <td style="width: 170px">
+              <form [formGroup]="row.RequisitionItemValidator">
+                <input danphe-auto-complete class="form-control" id="itemName{{i}}" [(ngModel)]="row.SelectedItem"
+                  [source]="ItemList" [list-formatter]="itemListFormatter" placeholder="Item Name"
+                  display-property-name="ItemName" value-property-name=null onclick="this.select();"
+                  (ngModelChange)="OnItemSelected(row.SelectedItem,i)" min-chars="1" max-num-list="10" [grid-sort]="'ItemName'" match-formatted="true"
+                  formControlName="ItemId" style="width: 385px" (keyup.enter)="OnPressedEnterKeyInItemField(i)" />
+                <div style="    color: red" *ngIf="row.IsDirty('ItemId')"
+                  [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
+              </form>
+            </td>
+            <td style="vertical-align: middle;width: 20px"><b>{{row.SelectedItem?.UOMName}}</b></td>
+            <td style="vertical-align: middle;width: 20px"><b>{{row.SelectedItem?.AvailableQuantity}}</b></td>
+            <td>
+              <form [formGroup]="row.RequisitionItemValidator">
+                <input [(ngModel)]="row.Quantity" id="req_qty{{i}}" onwheel="this.blur()" style=" width: 80px" min="1"
+                  onClick="this.select();" onfocus="this.select();" [disabled]="disableTextBox"
+                  formControlName="Quantity" class="form-control " name="quantity" type="number" value="{{1}}"
+                  (keyup.enter)="setFocusById('remark' + i)">
+                <div style="    color: red" *ngIf="row.IsDirty('Quantity')"
+                  [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
+              </form>
+            </td>
+            <td style="    width: 100px"><input [(ngModel)]="row.Remark" id="remark{{i}}" style="    width: 580px"
+                [disabled]="disableTextBox" class="form-control " name="quantity" type="text"
+                (keyup.enter)="onPressedEnterKeyInRemarkField(i)"></td>
+            <td style="    width: 20px"><a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success"></i></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-sm-offset-5 col-sm-5" style="    width: 30%">
+      <input type="button" class="btn green btn-success" id="btn_Add" value="Request" (click)="AddRequisition()" />
+      <span></span>
+      <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+      <span></span>
+    </div>
+
+  </div>
+</div>
+<ng-template #loadingText> <span> loading... </span> </ng-template>

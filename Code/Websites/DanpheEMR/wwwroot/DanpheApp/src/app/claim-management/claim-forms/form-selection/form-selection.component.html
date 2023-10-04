@@ -1,0 +1,14 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12" *ngIf="CreditOrganization !== undefined">
+      <div class="col-md-3" *ngFor="let org of CreditOrganization">
+        <a class="report_list">
+          <div class="span2 padder-v b-r b-light rpt-link-container" (click)="onOrganizationSelect(org)"> <span class="fa-stack fa-2x report_icon"> <i
+                 class="fa fa-circle fa-stack-2x text-info"></i></span>
+            <span class="report-name"><i>{{org.DisplayName}}</i> </span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

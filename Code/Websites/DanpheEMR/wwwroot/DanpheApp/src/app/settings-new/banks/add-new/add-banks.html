@@ -1,0 +1,76 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div ref_modal_div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3>
+              <span>
+                <ng-container *ngIf="isAddNewBank">Add New Bank</ng-container>
+                <ng-container *ngIf="!isAddNewBank">Edit Bank Details</ng-container>
+              </span>
+            </h3>
+            <a class="btn btn-danger" (click)="close()">X</a>
+          </div>
+          <form [formGroup]="Bank.BanksValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label for="BankName" class="control-label col-md-5">Bank Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="BankName" class="form-control" type="text" placeholder="Bank Short Name"
+                    formControlName="BankName" [(ngModel)]="Bank.BankName"
+                    (keyup.enter)="SetFocusById('BankShortName')">
+                  <span class="color-red font-sm margin-15-lft"
+                    [hidden]="!(Bank.IsDirty('BankName') && !Bank.IsValidCheck('BankName','required'))">Bank Name is
+                    required</span>
+
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="BankShortName" class="control-label col-md-5">Bank Short Name <b>:</b></label>
+                <div class="col-md-7">
+                  <input type="text" id="BankShortName" class="form-control" placeholder="Bank Short Name"
+                    [ngModelOptions]="{standalone: true}" [(ngModel)]="Bank.BankShortName"
+                    (keyup.enter)="SetFocusById('Description')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="Description" class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input id="Description" class="form-control" type="text" placeholder="Description"
+                  [ngModelOptions]="{standalone: true}" [(ngModel)]="Bank.Description"
+                  (keyup.enter)="SetFocusById('add')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="isActive" class="control-label col-md-5">Is Active</label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" type="checkbox" [ngModelOptions]="{standalone: true}"
+                          [(ngModel)]="Bank.IsActive" name="chkIsActive" />
+                        <span></span>
+                        True
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <input type="button" id="add" *ngIf="isAddNewBank" class="btn green btn-success margin-7-hr" (click)="AddBank()"
+                value="Add" />
+              <input type="button" id="add" *ngIf="!isAddNewBank" class="btn green btn-success margin-7-hr"
+                (click)="UpdateBank()" value="Update" />
+              <!-- <button type="button" class="btn btn-danger btn-sm margin-7-hr" (click)="close()">Close</button> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

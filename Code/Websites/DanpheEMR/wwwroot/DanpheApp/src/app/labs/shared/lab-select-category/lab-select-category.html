@@ -1,0 +1,10 @@
+<div>
+  <danphe-multiselect *ngIf="allPermissions && allPermissions.length"
+                      [ddl-data]="allPermissions"
+                      [pre-selected]="selectedData"
+                      [placeholder-text]="'--Select Lab Category--'"
+                      [value-property-name]="'TestCategoryId'"
+                      (selected-items-list)="CategoryOnChange($event)"
+                      [display-property-name]="'TestCategoryName'"
+                      [single-selection]="false"> </danphe-multiselect>
+</div>

@@ -1,0 +1,465 @@
+<style>
+  .portlet.box.blue-hoki {
+    border: none;
+  }
+
+  .portlet.box.blue-hoki>.portlet-title {
+    background: none;
+    background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    padding: 7px 15px !important;
+    border: 1px solid #efefef;
+  }
+
+  .custom-caption {
+    margin-bottom: 0;
+  }
+
+  .custom-caption h3 {
+    margin: 5px 0;
+  }
+
+  .doc-pagecontent .portlet.box.blue-hoki table th {
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: #f1f1f1 !important;
+  }
+</style>
+<div class="row pat-ovv">
+  <div class="col-md-6 col-sm-6">
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-flask"></i>Labs</span> </h3>
+        </div>
+        <div class="actions" *ngIf="enableAddOrders" style="color: #374251;">
+          <a (click)="routeTo('labs')" class="btn btn-default btn-sm btn-doc" style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.LabRequisitions[0] == undefined"
+          style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="currentPatient.LabRequisitions[0] != undefined" class="over-fl-vr-scr"
+          style="position: relative; width: auto; overflow: auto;">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover /">
+              <tr>
+                <th style="width: 60%;">Test</th>
+                <th style="width: 25%;">Date</th>
+                <th style="width: 15%;">Result</th>
+              </tr>
+              <tbody>
+                <tr *ngFor="let res of currentPatient.LabRequisitions ">
+                  <td>{{res.LabTestName}}</td>
+                  <td>
+                    <date-lbl [value]="res.OrderDateTime" [show-time]="true"></date-lbl>
+
+                    <!-- {{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY
+                  HH:mm'}}  -->
+                  </td>
+                  <td>
+                    <a style="
+                      text-decoration: underline;
+                      font-weight: bold;
+                      cursor: pointer;
+                    " *ngIf="res.OrderStatus=='report-generated'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                    <span *ngIf="res.OrderStatus!='report-generated'">{{res.OrderStatus}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-image"></i>Imaging</span> </h3>
+        </div>
+        <div class="actions" *ngIf="enableAddOrders">
+          <a (click)="routeTo('imaging')" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.ImagingItemRequisitions[0] == undefined"
+          style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="currentPatient.ImagingItemRequisitions[0] != undefined" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+              <tr>
+                <th>Type</th>
+                <th>Item</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+              <tr *ngFor="let req of currentPatient.ImagingItemRequisitions">
+                <td><b>{{req.ImagingTypeName}}</b></td>
+                <td>{{req.ImagingItemName}}</td>
+                <td>
+                  <date-lbl [value]="req.ImagingDate" [show-time]="true"></date-lbl>
+                  <!-- {{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY
+                HH:mm'}}  -->
+
+                </td>
+                <td>
+                  <a style="
+                    text-decoration: underline;
+                    font-weight: bold;
+                    cursor: pointer;
+                  " *ngIf="req.OrderStatus=='final'" (click)="ViewImagingReport(req.ImagingRequisitionId)">View</a>
+                  <span *ngIf="req.OrderStatus!='final'">{{req.OrderStatus}}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-exclamation-triangle"></i>Active Problems</span> </h3>
+        </div>
+        <div class="actions" *ngIf="enableAddOrders">
+          <a href="javascript:;" routerLink="../ProblemsMain/ActiveMedical" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.Problems[0] == undefined" style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="currentPatient.Problems[0] != undefined" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+            <tr>
+              <th>Problem</th>
+              <th>Onset Date</th>
+              <th>Action</th>
+            </tr>
+            <tr *ngFor="let res of currentPatient.Problems">
+              <td><b>{{res.ICD10Description}}</b></td>
+              <td>
+
+                <b>
+                  <!-- {{res.OnSetDate | DanpheDateTime:'datename':'DD.MM.YYYY'}} -->
+                  <date-lbl [value]="res.OnSetDate"></date-lbl>
+                </b>
+
+              </td>
+              <td>
+                <a style="text-decoration: underline;font-weight: bold;cursor: pointer;"
+                  (click)="ShowAddProblemNote(res)">Add Note</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-user-md"></i>Medications</span> </h3>
+        </div>
+        <div class="actions" *ngIf="enableAddOrders">
+          <a (click)="routeTo('medication')" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.MedicationPrescriptions[0] == undefined"
+          style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="currentPatient.MedicationPrescriptions[0] != undefined" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+            <tr *ngFor="let med of currentPatient.MedicationPrescriptions">
+              <td><b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day </td>
+              <td>
+                &nbsp;&nbsp;&nbsp;&nbsp;Start Date- <b> {{med.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-sm-6">
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-arrow-circle-left"></i>Last Vitals</span> </h3>
+        </div>
+        <div class="actions">
+          <a (click)="ShowChart()" class="btn btn-default btn-sm btn-doc-nb">
+            <i class="fa fa-plus-circle"></i> <span *ngIf="showChart">Hide </span> <span *ngIf="!showChart">
+              Show
+            </span>Graph
+          </a> <a href="javascript:;" routerLink="../Clinical/Vitals" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add Vitals
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.Vitals[0] == undefined" style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="showChart">
+          <canvas id="canvas"></canvas>
+        </div>
+        <div *ngIf="currentPatient.Vitals[0] != undefined" style="position: relative; overflow: auto; width: auto;">
+          <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+            <tbody>
+              <tr>
+                <td><b>Recorded On</b></td>
+                <td *ngFor="let vital of currentPatient.Vitals;">
+                  <date-lbl [value]="vital.CreatedOn" [show-time]="true"></date-lbl>
+                  <!-- {{vital.CreatedOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}} </td> -->
+              </tr>
+              <tr>
+                <td>Height</td>
+                <td *ngFor="let vital of currentPatient.Vitals; let i=index;">
+                  <div *ngIf="vital.HeightUnit=='cm' || vital.HeightUnit=='meter'">
+                    <!--{{vital.Height | HasValue: vital.HeightUnit}}-->
+                    <span class="tooltip"
+                      title="{{heightFoot[i] | number}} feet &#013;{{heightMeter[i] | number }} meter &#013;{{heightCm[i] | number}} cm"
+                      style="display: inline; white-space:pre-line;">{{vital.Height | HasValue:
+                      vital.HeightUnit}}</span>
+
+                  </div>
+                  <p *ngIf="vital.HeightUnit!='cm' && vital.HeightUnit!='meter'">{{vital.HeightUnit}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>Weight</td>
+                <td *ngFor="let vital of currentPatient.Vitals; let i=index;">
+                  <!--{{vital.Weight | HasValue: vital.WeightUnit}}-->
+                  <span class="tooltip" title="{{weightkg[i] | number}} kg &#013;{{weightPound[i] | number}} lbs"
+                    style="display: inline; white-space:pre-line;">{{vital.Weight | HasValue: vital.WeightUnit}}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>BMI</td>
+                <td *ngFor="let vital of currentPatient.Vitals;"> {{vital.BMI }} </td>
+              </tr>
+              <tr>
+                <td>Temperature</td>
+                <td *ngFor="let vital of currentPatient.Vitals; let i =index;">
+                  <!--{{vital.Temperature | HasValue: vital.TemperatureUnit}}-->
+
+                  <span class="tooltip" title="{{degFarenheit[i] | number }} F&#013;{{degCelsius[i] | number}} C"
+                    style="display: inline; white-space:pre-line;">{{vital.Temperature | HasValue:
+                    vital.TemperatureUnit}}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Pulse</td>
+                <td *ngFor="let vital of currentPatient.Vitals;"> {{vital.Pulse | HasValue:'/min'}} </td>
+              </tr>
+              <tr>
+                <td>Blood Pressure</td>
+                <td *ngFor="let vital of currentPatient.Vitals;">
+                  {{vital.BPSystolic | HasValue:'/'}}{{vital.BPDiastolic}}
+                </td>
+              </tr>
+              <tr>
+                <td>Respiratory Rate</td>
+                <td *ngFor="let vital of currentPatient.Vitals;">
+                  {{vital.RespiratoryRatePerMin | HasValue:'/min'}}
+                </td>
+              </tr>
+              <tr>
+                <td>SpO<sub>2</sub></td>
+                <td *ngFor="let vital of currentPatient.Vitals;"> {{vital.SpO2 | HasValue:'percent'}} </td>
+              </tr>
+              <tr>
+                <td>O<sub>2</sub> Deliver Method</td>
+                <td *ngFor="let vital of currentPatient.Vitals;"> {{vital.OxygenDeliveryMethod}} </td>
+              </tr>
+              <tr>
+                <td>Body Pain Data</td>
+                <td *ngFor="let vital of currentPatient.Vitals;"> {{vital.BodyPart}}-{{vital.PainScale}} </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-adjust"></i>Chief Complaints </span> </h3>
+        </div>
+        <div class="actions">
+          <a (click)="AddNewComplaintRow()" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> New Complaint
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="!chiefComplaints || !chiefComplaints.length" style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="chiefComplaints && chiefComplaints.length" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+              <tbody>
+                <tr *ngFor="let comp of chiefComplaints" class="table-bordered">
+                  <td>
+                    <div class="inline-complaint">
+                      <app-inline-edit [ngModelOptions]="{standalone: true}" [(ngModel)]="comp.Value"
+                        [isTextArea]="true" type="text" (getBack)="complainLoading=true;UpdateComplaint(comp)"
+                        [tooltip-text]="'click to edit this Complain'">
+                      </app-inline-edit>
+
+                      <button [disabled]="complainLoading" (click)="complainLoading = true; UpdateComplaint(comp, true)"
+                        class="btn btn-danger remove-complaint"><i class="fa fa-close"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="newChiefComplaints && newChiefComplaints.length" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+              <tbody>
+                <tr *ngFor="let newComp of newChiefComplaints; let i=index;" class="table-bordered">
+                  <td>
+                    <div class="inline-complaint">
+                      <textarea style="width: 90%;" [(ngModel)]="newComp.Value" class="form-control"></textarea>
+                      <button class="btn blue remove-complaint" (click)="RemoveComplaintRow(i)"><i
+                          class="fa fa-close"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="newChiefComplaints && newChiefComplaints.length">
+                  <td>
+                    <button [disabled]="complainLoading" class="btn blue"
+                      (click)="complainLoading=true;AddComplaint()">Add</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="portlet box blue-hoki">
+      <div class="portlet-title cstm-portlet-title">
+        <div class="caption custom-caption">
+          <h3> <span><i class="fa fa-adjust"></i>Allergies </span> </h3>
+        </div>
+        <div class="actions">
+          <a href="javascript:;" routerLink="../Clinical/Allergy" class="btn btn-default btn-sm btn-doc"
+            style="background: #6e58ea !important;">
+            <i class="fa fa-plus-circle"></i> Add
+          </a>
+        </div>
+      </div>
+      <div class="portlet-body">
+        <div *ngIf="currentPatient.Allergies[0] == undefined" style="position: relative; width: auto; height: 50px;">
+          <p class="no-data-div">no records found</p>
+        </div>
+        <div *ngIf="currentPatient.Allergies[0] != undefined" class="over-fl-vr-scr"
+          style="position: relative; overflow: auto; width: auto;">
+          <div class="table-wrapper no-margin">
+            <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+              <tbody>
+                <tr>
+                  <td style="font-weight: bold; text-decoration: underline;"> Medication </td>
+                  <td></td>
+                </tr>
+                <tr *ngFor="let alrg of currentPatient.MedAllergy" class="table-bordered">
+                  <td>{{alrg.AllergenAdvRecName}}</td>
+                  <td>{{alrg.Reaction}}</td>
+                </tr>
+                <tr *ngFor="let alrg of currentPatient.AdvReaction" class="table-bordered">
+                  <td>* {{alrg.AllergenAdvRecName}}</td>
+                  <td>{{alrg.Reaction}}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold; text-decoration: underline;"> Non-medication </td>
+                </tr>
+                <tr *ngFor="let alrg of currentPatient.OtherAllergy" class="table-bordered">
+                  <td>* {{alrg.AllergenAdvRecName}}</td>
+                  <td>{{alrg.Reaction}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="showImagingReport==true">
+  <danphe-view-imaging-report *ngIf="showImagingReport" [requisitionId]="imagingRequisitionId">
+  </danphe-view-imaging-report>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showLabReport">
+  <div class="portlet-body form">
+    <div class="modelbox-div" style="width: 90%; margin: 0 auto;">
+      <div style="margin-left: 0px;"> <i class="btn btn-danger" style="float: right;" (click)="CloseLabReport()">X</i>
+        <danphe-lab-results [requisitionIdList]="labRequisitionIdList" [showReport]="showLabReport" [showHeader]="false"
+          [enableEdit]="false" [enableResultEdit]="false" [showSignatories]="false" [showAddEditResult]="false">
+        </danphe-lab-results>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="showAddProblemNote">
+  <div class="popup portlet box" style="margin-left: 150px; height: 300px; width: 500px;">
+    <!--Model box Heder Start-->
+    <div class="portlet-title">
+      <!--Model box Title Start-->
+      <div class="caption"> <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> <b>Add Note</b> </div>
+      <!--Model Box Title End-->
+      <!--Model Box Header Buttons Start-->
+      <div class="tools"> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <i
+          class="remove btn btn-danger" (click)="CloseAddProblemNote()">x</i>
+        <!--<a href="javascript:;" class="remove" data-original-title="" title=""> </a>-->
+      </div>
+      <!--Model Box Heder Buttons End-->
+    </div>
+    <!--Model Box Header End-->
+    <div class="portlet-body form" style="background-color: white; margin-left: 20px;">
+      <!--Model Box Body Start-->
+      <div style="margin-top: 10px;">
+        <h5 align="center"> <b>Add Notes for {{selectedProblem.ICD10Description}}</b> </h5>
+        <hr />
+        <form [formGroup]="selectedProblem.ActiveMedicalValidator" class="form-horizontal">
+          <textarea type="text" class="form-control" maxlength="200" formControlName="Note"
+            [(ngModel)]="selectedProblem.Note"></textarea>
+          <span class="color-red font-sm" *ngIf="selectedProblem.IsDirty('Note')"
+            [hidden]="selectedProblem.IsValidCheck('Note','maxlength')">Note should not exceed 200 characters.</span> <i
+            class="remove btn btn-danger" (click)="AddProblemNote()">Submit</i>
+        </form>
+      </div>
+    </div>
+    <!--Model Box End Here-->
+  </div>
+</div>

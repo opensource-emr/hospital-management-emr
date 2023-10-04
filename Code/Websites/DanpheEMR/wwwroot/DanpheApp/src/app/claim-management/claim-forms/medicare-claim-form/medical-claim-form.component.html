@@ -1,0 +1,92 @@
+<div class="col-md-12" style="text-align:center; padding-bottom: 20px;">
+  <span>Medicare Claim Form</span>
+</div>
+<div class="col-md-12">
+
+  <div class="col-md-5" style="padding-left: 0px; padding-right:0px">
+
+    <div class="col-md-12" style="padding-left: 0px; padding-right:0px">
+      <div class="col-md-5" style="padding-left: 0px; display:flex; justify-content:space-between">
+        <span>Search Patient</span>
+        <span>:</span>
+      </div>
+      <div class="col-md-7" style="padding-left:4px; padding-right:0px">
+        <input danphe-auto-complete id="srch_PatientList" class="col-md-12 form-control searchtbx" [(ngModel)]="patientObj"
+               [list-formatter]="PatientListFormatter" [source]="AllPatientSearchAsync.bind(this)" [path-to-data]="'Results'"
+               placeholder="search by HospitalNo, Patient Name" display-property-name="ShortName" value-property-name=null
+               (ngModelChange)="PatientInfoChanged()" onClick="this.select();" max-num-list="500"
+               (keyup.enter)="SetFocusOn('dateOfIllness')" [min-chars]="patientSearchMinCharacterCount" match-formatted="true"
+               [grid-sort]="'ShortName'" style="width: 100% !important;" />
+      </div>
+    </div>
+
+    <div class="col-md-12" style="margin-top: 5px; padding-left: 0px; padding-right:0px">
+      <div class="col-md-5" style="padding-left: 0px; display:flex; justify-content:space-between">
+        <span>Date of Illness/Accident</span>
+        <span>:</span>
+      </div>
+      <div class="col-md-7" style="padding-left:0px;padding-right:0px;">
+        <div class="flx">
+          <danphe-date-picker id="dateOfIllness" [(ngModel)]="dateOfIllness" [CalendarTypes]="'en,np'" (keyup.enter)="SetFocusOn('txtTotalAmount')">
+          </danphe-date-picker>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-12" style="margin-top: 5px; padding-left: 0px; padding-right:0px">
+      <div class="col-md-5" style="padding-left: 0px; display:flex; justify-content:space-between">
+        <span>Enter Total Amount</span>
+        <span>:</span>
+      </div>
+      <div class="col-md-7" style="padding-left:0px; padding-right:35px;">
+        <input class="col-md-10 form-control" id="txtTotalAmount" (wheel)="coreService.PreventNumberChangeOnScroll($event)" type="number"
+               placeholder="Total Amount" [(ngModel)]="totalAmount"
+               (keyup.enter)="SetFocusOn('btnPrintClaimForm')" />
+      </div>
+    </div>
+
+    <div class="col-md-12" style="margin-top: 5px; padding-left:0px;">
+      <button class="btn green btn-success" id="btnPrintClaimForm" (click)=" ShowEchsMrpCertificate()"
+              [disabled]="!isPatientSelected || !(totalAmount && totalAmount>0) || !isValidMedicarePatient">Print Claim
+        Form</button>
+    </div>
+
+  </div>
+
+  <div class="col-md-7" *ngIf="isPatientSelected && isValidMedicarePatient" style="background-color: rgb(180, 183, 187);">
+
+    <div
+         style="display:flex; justify-content: space-between; font-size:12px; padding: 5px 10px 5px 10px;">
+      <div class="col-md-4" style="text-align:left; padding:0px !important;">
+        <span>Patient Name&nbsp;:&nbsp;{{patientObj.ShortName}}</span>
+      </div>
+      <div class="col-md-4" style="text-align:center;">
+        <span>Hospital No&nbsp;:&nbsp;{{patientObj.PatientCode}}</span>
+      </div>
+      <div class="col-md-4" style="text-align:right; padding:0px !important;">
+        <span>Age/Sex&nbsp;:&nbsp;{{patientObj.Age}}/{{patientObj.Gender}}</span>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content: space-between; font-size:12px; padding: 5px 10px 5px 10px;">
+      <div class="col-md-4" style="text-align:left; padding:0px !important;">
+        <span>Policy No&nbsp;:&nbsp;{{patientObj.MedicareMemberNo}}</span>
+      </div>
+      <div class="col-md-4" style="text-align:center;">
+        <span>Employee&nbsp;:&nbsp;{{patientObj.MedicareEmployeeName}}</span>
+      </div>
+      <div class="col-md-4" style="text-align:right; padding:0px !important;">
+        <span>Relation&nbsp;:&nbsp;{{patientObj.Relation}}</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<medical-claim-form-print *ngIf="showMedicalClaimFormPrintPage"
+                          [show-medical-claim-form-print-page]="showMedicalClaimFormPrintPage"
+                          [patient-obj]="patientObj"
+                          [total-amount]="totalAmount"
+                          [date-of-illness]="dateOfIllness"
+                          (hide-medical-claim-form-print-page)="HideEchsMrpDrugCertificatePrintPage($event)"></medical-claim-form-print>

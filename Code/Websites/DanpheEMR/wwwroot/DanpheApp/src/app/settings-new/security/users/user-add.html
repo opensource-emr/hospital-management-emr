@@ -1,0 +1,101 @@
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>User Add</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> 
+			</div>
+          <form [formGroup]="CurrentUser.UserProfileValidator" class="form-horizontal hm-form">
+            <div class="form-body"> 
+              <!--<div class="form-group">
+                    <label class="control-label col-md-5">Select Employee<sup>*</sup><b>:</b></label>
+                    <div class="col-md-7">
+                        <select class="form-control" [(ngModel)]="CurrentUser.EmployeeId"
+                                formControlName="EmployeeId"
+                                (ngModelChange)="GetEmail(CurrentUser.EmployeeId)">
+                            <option *ngFor="let emp of filteredEmpList"
+                                    value="{{emp.EmployeeId}}"
+                                    [disabled]=update>
+                                {{emp.Salutation}}.{{emp.FirstName}} {{emp.MiddleName}} {{emp.LastName}}
+                            </option>
+                        </select>
+                        <span class="color-red font-sm" [hidden]="CurrentUser.IsValidCheck('EmployeeId','required') || !(CurrentUser.IsDirty('EmployeeId'))">Select Employee</span>
+                    </div>
+                </div>--> 
+              <!--------------------------------->
+              
+              <div class="form-group">
+                <label class="control-label col-md-5">Select Employee<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="EmployeeId" (keyup.enter)="GoToNextInput('UserName')" danphe-auto-complete
+                           [(ngModel)]="selEmployee"
+                           [source]="empList"
+                           placeholder="Employee Name"
+                           formControlName="EmployeeId"
+                           display-property-name="FullName"
+                           value-property-name="FullName"
+                           (valueChanged)="AssignSelectedEmployee()"
+                           [list-formatter]="EmployeeListFormatter"
+                           max-num-list="15"
+                           style="width:100%;background-color: azure;height:32px;" />
+                  <div class="color-red font-sm" [hidden]="CurrentUser.IsValidCheck('EmployeeId','required') || !(CurrentUser.IsDirty('EmployeeId'))"> Select Employee</div>
+                </div>
+              </div>
+              
+              <!--------------------------------->
+              
+              <div class="form-group">
+                <label class="control-label col-md-5">User Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input (keyup.enter)="GoToNextInput('EmailId')" required value="" class="form-control" maxlength="30"
+                           [(ngModel)]="CurrentUser.UserName"
+                           formControlName="UserName"
+                           type="text" id="UserName" placeholder="User Name" />
+                  <span class="color-red font-sm" [hidden]="CurrentUser.IsValidCheck('UserName','required') || !(CurrentUser.IsDirty('UserName'))">Enter User Name.</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Email Id<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input id="EmailId" (keyup.enter)="GoToNextInput('Password')" name="" required value="" class="form-control" maxlength="30"
+                           [(ngModel)]="CurrentUser.Email" formControlName="Email"
+                           type="email" placeholder="Email Id" />
+                  <br />
+                  <span class="color-red font-sm" [hidden]="CurrentUser.IsValidCheck('Email','required') || !(CurrentUser.IsDirty('Email'))">Enter Email Id</span> <span class="color-red font-sm" [hidden]="CurrentUser.IsValidCheck('Email','pattern') || !(CurrentUser.IsDirty('Email'))">Email Id is Not Proper </span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Password<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input  id="Password" (keyup.enter)="GoToNextInput('Addbtn')" name="" required value="" class="form-control" maxlength="30"
+                           [(ngModel)]="CurrentUser.Password" formControlName="Password"
+                           type="password" placeholder="Password" />
+                  <br />
+                  <span class="color-red font-sm" *ngIf="CurrentUser.IsDirty('Password')" [hidden]="CurrentUser.IsValidCheck('Password','required')"> New Password is required</span> <span class="color-red font-sm" *ngIf="CurrentUser.IsDirty('Password')" [hidden]="CurrentUser.IsValidCheck('Password','minlength')"> Minimum 6 character needed</span> <span class="color-red font-sm" *ngIf="CurrentUser.IsDirty('Password')" [hidden]="CurrentUser.IsValidCheck('Password','maxlength')"> Maximum 20 character Only </span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" name="isActive" type="checkbox" value=""
+                                 [(ngModel)]="CurrentUser.IsActive"
+                                 [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+			  <div class="panel-footer">
+                <input type="button" id="Addbtn" class="btn green btn-success margin-7-hr" (click)="Add()" value="Add" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<style>
+    .wrapper {
+        padding: 15px;
+    }
+</style>
+<!-- <div style="display: table;padding: 5px 0px;width: 100%;">
+
+    <div class="col-md-4">
+        <input danphe-auto-complete class="form-control" [(ngModel)]="selectedExistingPatient"
+            [list-formatter]="patientListFormatter" [source]="allPatients" placeholder="Existing Patient Name"
+            display-property-name="ShortName" value-property-name=null (valueChanged)="AddCurrentExistingPatient()"
+            onClick="this.select();" max-num-list="10" />
+    </div>
+</div> -->
+<div class="wrapper">
+    <button class="btn btn-link" (click)="AddNewOtBooking()"> <span class="glyphicon glyphicon-plus"></span> New
+        OT Booking</button>
+    <div>
+        <danphe-grid [grid-colDefaults]="OTBookingList" [grid-data]="otData"
+            (grid-actions)="OTBookingListGidActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+<ot-booking-add *ngIf="showAddPage" [selectedOtPatient]="selectedOtPatientData" [editMode]="editMode"
+    (callBackAddClose)="GetBackFromOtBookingAdd($event)">
+</ot-booking-add>

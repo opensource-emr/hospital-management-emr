@@ -1,0 +1,198 @@
+﻿<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-6 col-sm-12">
+          <form [formGroup]="currentInsurance.InsuranceValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="col-md-12">
+                <div class="row"> 
+                  <!-- @* INSURANCE   PROVIDER*@ -->
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Insurance Provider<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="currentInsurance.InsuranceProviderId" formControlName="InsuranceProviderId">
+                        <option *ngFor="let insu of insProviderList"
+                                            value="{{insu.InsuranceProviderId}}"> {{insu.InsuranceProviderName}} </option>
+                      </select>
+                      <span class="color-red" *ngIf="currentInsurance.IsDirty('InsuranceProviderId')"
+                                      [hidden]="currentInsurance.IsValidCheck('InsuranceProviderId','required')">Insurance Provider Name is required</span> </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Insurance Name<b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" [ngModelOptions]="{standalone:true}" [(ngModel)]="currentInsurance.InsuranceName"
+                                       required value="" placeholder="insurance name" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Card Number [NSTC No]<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" autofocus (keyup.enter)="GoToNextInput('InsuranceNumber')" type="text" formControlName="CardNumber" [(ngModel)]="currentInsurance.CardNumber"
+                                       placeholder="card number" autofocus/>
+                      <span class="color-red" *ngIf="currentInsurance.IsDirty('CardNumber')"
+                                      [hidden]="currentInsurance.IsValidCheck('CardNumber','required')">Card Number is required</span> </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Insurance Number [NSSI No.]<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" id="InsuranceNumber" (keyup.enter)="GoToNextInput('IMISNumber')" type="text" formControlName="InsuranceNumber" [(ngModel)]="currentInsurance.InsuranceNumber"
+                                       required value="" placeholder="insurance number [NSTC number]" />
+                      <span class="color-red" *ngIf="currentInsurance.IsDirty('InsuranceNumber')"
+                                      [hidden]="currentInsurance.IsValidCheck('InsuranceNumber','required')">Insurance Number is required</span> </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">IMIS Code<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" id="IMISNumber" (keyup.enter)="GoToNextInput('InitialBalance')" type="text" formControlName="IMISCode" [(ngModel)]="currentInsurance.IMISCode"
+                                       required value="" placeholder="IMIS Code" />
+                      <span class="color-red" *ngIf="currentInsurance.IsDirty('IMISCode')"
+                                      [hidden]="currentInsurance.IsValidCheck('IMISCode','required')">IMIS Code is required</span> </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Initial Balance<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input class="form-control" id="InitialBalance" type="number" formControlName="InitialBalance" [(ngModel)]="currentInsurance.InitialBalance"
+                                       required value="" placeholder="Insurance Initial Balance" 
+                                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"/>
+                      <span class="color-red" *ngIf="currentInsurance.IsDirty('InitialBalance')"
+                                      [hidden]="currentInsurance.IsValidCheck('InitialBalance','required')">Insurance Current Balance is required</span> </div>
+                  </div>
+                  
+                  <!-- @* Temporary invisible *@ -->
+                  <div style="display:none">
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber Firstname<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="currentInsurance.SubscriberFirstName"
+                                           placeholder="subscriber first name" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber Lastname<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="currentInsurance.SubscriberLastName"
+                                           placeholder="subscriber last name" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber DOB<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="date" formControlName="SubscriberDOB"
+                                           [(ngModel)]="currentInsurance.SubscriberDOB" placeholder="DD-MM-YYYY" />
+                        <span class="color-red" *ngIf="currentInsurance.IsDirty('SubscriberDOB')"
+                                          [hidden]="currentInsurance.IsValidCheck('SubscriberDOB','wrongDate')">Wrong date is selected</span> </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber Gender<b>:</b></label>
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input type="radio" value="Male" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
+                              <span></span>Male </label>
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input type="radio" value="Female" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
+                              <span></span>Female </label>
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input type="radio" value="Others" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
+                              <span></span>Other </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber IDCard Type<b>:</b></label>
+                      <div class="col-md-8">
+                        <select class="form-control" [(ngModel)]="currentInsurance.SubscriberIDCardType" [ngModelOptions]="{standalone: true}">
+                          <option *ngFor="let card of IdCardTypes" value="{{card.IdCardTypeName}}">{{card.IdCardTypeName}}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Subscriber IDCard Number<b>:</b></label>
+                      <div class="col-md-8">
+                        <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" value="" [(ngModel)]="currentInsurance.SubscriberIDCardNumber" />
+                      </div>
+                    </div>
+                  </div>
+                  <input type="button" class="btn blue" value="Add Insurance" *ngIf="!editbutton" (click)="AddInsurance()" />
+                  <input type="button" class="btn blue" name="name" *ngIf="editbutton" value="Update" (click)="Update()" />
+                </div>
+              </div>
+              <div class="col-md-1"></div>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-6 col-sm-12">
+          <div *ngFor="let insurance of currentPatient.Insurances">
+            <div class="portlet blue-hoki box">
+              <div class="portlet-title">
+                <div class="caption"> <i class="fa fa-cogs"></i><span style="text-transform:uppercase"> {{insurance.InsuranceProviderName}} ({{insurance.CardNumber}})</span> </div>
+                <div class="actions"> <a href="javascript:;" class="btn btn-default btn-sm edit-btn" data-toggle="modal" data-target="#myModal" (click)="Edit(insurance)"> <i class="fa fa-pencil"></i> Edit </a> </div>
+              </div>
+              <div class="portlet-body">
+                <div class="row static-info">
+                  <div class="col-md-5 name"> Insurance ProviderName: </div>
+                  <div class="col-md-7 value"> {{insurance.InsuranceProviderName}} </div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name">Insurance Name: </div>
+                  <div class="col-md-7 value">{{insurance.InsuranceName}}</div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name">Card Number: </div>
+                  <div class="col-md-7 value"> {{insurance.CardNumber}} </div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name"> Insurance Number: </div>
+                  <div class="col-md-7 value"> {{insurance.InsuranceNumber}} </div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name"> IMIS Code: </div>
+                  <div class="col-md-7 value"> {{insurance.IMISCode}} </div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name">Initial Balance: </div>
+                  <div class="col-md-7 value"> {{insurance.InitialBalance}}</div>
+                </div>
+                <div class="row static-info">
+                  <div class="col-md-5 name">Current Balance: </div>
+                  <div class="col-md-7 value"> {{insurance.CurrentBalance}}</div>
+                </div>
+                
+                <!-- @* Temporary invisible *@ -->
+                <div style="display:none">
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber Firstname: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberFirstName}}</div>
+                  </div>
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber Lastname: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberLastName}}</div>
+                  </div>
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber DOB: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberDOB}}</div>
+                  </div>
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber Gender: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberGender}}</div>
+                  </div>
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber IDCard Number: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberIDCardNumber}}</div>
+                  </div>
+                  <div class="row static-info">
+                    <div class="col-md-5 name">Subscriber IDCard Type: </div>
+                    <div class="col-md-7 value"> {{insurance.SubscriberIDCardType}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

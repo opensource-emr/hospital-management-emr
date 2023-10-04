@@ -1,0 +1,209 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="currentModel.BillDeptSummaryValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+              class="caption-subject">DEPARTMENT SUMMARY REPORT</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentModel.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentModel.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+            </div>
+          </div>-->
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+              </from-to-date-select>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-5">Billing Type<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <select [(ngModel)]="selBillingTypeName" [ngModelOptions]="{standalone: true}">
+                    <option value="all">All</option>
+                    <option value="normal">Normal</option>
+                    <option value="insurance">Insurance</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn green btn-success" type="button" (click)="Load();this.loading=true;"
+                  [disabled]="loading"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row" id="printPage">
+    <div class="col-md-12" *ngIf="showAllDeptSummary">
+      <button class="blue btn right non-printable" type="button"
+        (click)="ExportToExcelBilDeptSummary('departmentSummary')"> <i class="fa fa-file-excel-o"></i> Excel </button>
+    </div>
+    <div class="col-md-12" style="display:none;padding:0px" id="headerForPrint">
+      <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
+        <span style="font-size:20px;"><strong>{{headerDetails.hospitalName}}</strong></span><br />
+        <span style="font-size:14px;">{{headerDetails.address}}</span><br />
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="showAllDeptSummary">
+      <div class="col-md-12">
+        <div class="col-md-12" style="padding:0px"> <span class="col-md-2 left" style="padding:0px"> From Date:
+            {{selectedModel.fromDate}}<br />
+            ToDate: {{selectedModel.toDate}}<br />
+          </span> <span class="col-md-8" style="text-align:center;padding:0px;font-size:20px"> Department Summary Report
+          </span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
+      </div>
+      <div id="departmentSummary">
+        <table class="table-striped table-hover table-bordered"
+          style="background-color:initial;margin-top:10px;width:100%">
+          <thead>
+            <tr>
+              <td style="text-align:center"><b>Sr No.</b></td>
+              <td><b>Service Department</b></td>
+              <td style="text-align:center"><b>Cash Sales</b></td>
+              <td style="text-align:center"><b>Credit Sales</b></td>
+              <td style="text-align:center"><b>Gross Sales</b></td>
+              <td style="text-align:center"><b>Total Discount </b></td>
+              <td style="text-align:center"><b>Total Sales Return</b></td>
+              <td style="text-align:center"><b>Total Return Discount</b></td>
+              <td style="text-align:center"><b>Net Sales</b></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of reportData;let i=index">
+              <td style="text-align:center">{{i+1}}</td>
+              <td><a style="font-weight:bold" (click)="LoadDeptItems(row)">{{row.ServDeptName}}</a></td>
+              <td style="text-align:center">{{row.CashSales| ParseAmount}}</td>
+              <td style="text-align:center">{{row.CreditSales | ParseAmount}}</td>
+              <td style="text-align:center">{{row.GrossSales | ParseAmount}}</td>
+              <td style="text-align:center">{{row.TotalDiscount | ParseAmount}}</td>
+              <td style="text-align:center">{{row.TotalSalesReturn | ParseAmount}}</td>
+              <td style="text-align:center">{{row.TotalReturnDiscount | ParseAmount}}</td>
+              <td style="text-align:center">{{row.NetSales | ParseAmount}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="col-md-5" style="margin-top:10px;margin-bottom: 10px;">
+          <div *ngIf="reportData.length>0">
+            <h4>Summary</h4>
+            <table border="1" style="width: 80%;">
+              <tr>
+                <td>A</td>
+                <td>Total Cash Sales </td>
+                <td>{{this.summary.tot_CashSales | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>B</td>
+                <td>Total Credit Sales </td>
+                <td>{{this.summary.tot_Credit | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold;color: blue;">
+                <td style="font-weight: normal;color:black;">C</td>
+                <td>Total Sales (A+B) </td>
+                <td>{{this.summary.tot_SubTotal | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>D</td>
+                <td>Total Discount </td>
+                <td>{{this.summary.tot_Discount | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>E</td>
+                <td>Total Sales Return </td>
+                <td>{{this.summary.tot_SalesReturn | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>F</td>
+                <td>Total Return Discount</td>
+                <td>{{this.summary.tot_ReturnDiscount | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold;color: blue;">
+                <td style="font-weight: normal;color:black;">G</td>
+                <td>Net Sales </td>
+                <td>{{this.summary.tot_NetSales | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>H</td>
+                <td>Cash Sales Discount</td>
+                <td>{{this.summary.tot_CashSaleDiscount | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>I</td>
+                <td>Return Cash Sales</td>
+                <td>{{this.summary.tot_ReturnCashSales | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>J</td>
+                <td>Return Cash Discount</td>
+                <td>{{this.summary.tot_ReturnCashDiscount | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold;color: blue;">
+                <td style="font-weight: normal;color:black;">K</td>
+                <td> Net Cash Sales (A-H-I+J)</td>
+                <td>{{this.summary.tot_NetCashSales | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>L</td>
+                <td>Deposit Received</td>
+                <td>{{this.summary.tot_DepositRecived | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>M</td>
+                <td>Deposit Deducted</td>
+                <td>{{this.summary.tot_DepositDeducted | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>N</td>
+                <td>Deposit Refunded</td>
+                <td>{{this.summary.tot_DepositRefunded | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>O</td>
+                <td>Collection from Receivables</td>
+                <td>{{this.summary.tot_CollectionFromRecivables | ParseAmount}}</td>
+              </tr>
+              <tr>
+                <td>P</td>
+                <td>Cash Settlement Discount</td>
+                <td>{{this.summary.tot_CashSettlementDiscount | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold;color: blue;">
+                <td style="font-weight: normal;color:black;">Q</td>
+                <td>Net Cash Collection (K+L-M-N+O-P)</td>
+                <td>{{this.summary.tot_NetCashCollection | ParseAmount}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <rpt-bill-dept-item-summary *ngIf="showDeptSummary" [showBackButton]="showBackBtn"
+      [fromDate]="selectedModel.fromDate" [toDate]="selectedModel.toDate"
+      [serviceDepartment]="selectedModel.ServiceDepartmentName" [showDeptItemSummary]="showDeptSummary"
+      (callBackDepts)="CallBackFromDeptItem()"> </rpt-bill-dept-item-summary>
+  </div>
+  <sub style="text-align:center;color:orange"> Note **: This report is generated for the purpose to show the revenues
+    from the different departments according to the hospital
+    tariff provided </sub>
+  <div class="row col-md-10" style="text-align:center;" *ngIf="showAllDeptSummary || showDeptSummary">
+    <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+  </div>
+</div>

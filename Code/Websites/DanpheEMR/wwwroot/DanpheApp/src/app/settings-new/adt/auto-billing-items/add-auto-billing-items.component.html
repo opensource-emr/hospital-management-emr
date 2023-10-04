@@ -1,0 +1,154 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Auto Billing Items</span> <span *ngIf="update">Update Auto Billing Items</span> </h3>
+
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form [formGroup]="AutoBillingItemsValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4">Bed Feature <sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input style="width: 100%;"
+                         danphe-auto-complete
+                         [source]="BedFeatureList"
+                         [(ngModel)]="BedFeatureObj"
+                         placeholder="Select Bed Feature"
+                         max-num-list="8" min-chars="0"
+                         display-property-name="BedFeatureName"
+                         [list-formatter]="BedFeatureFormatter"
+                         onclick="select()"
+                         formControlName="BedFeatureName" (valueChanged)="BedFeatureEventHandler()"
+                         value-property-name="BedFeatureName">
+
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('BedFeatureName','required') ||(!isSubmitted && !IsDirty('BedFeatureName'))">Bed
+                    Feature name is required</span>
+
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Scheme<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input danphe-auto-complete id="id_Scheme" name="schemename" class="form-control"
+                         [(ngModel)]="SchemeObj"
+                         [list-formatter]="SchemeListFormatter" [source]="SchemeList"
+                         (keyup.enter)="SetFocusById('id_ServiceItem')"
+                         placeholder="Scheme Name"
+                         display-property-name="SchemeName"
+                         value-property-name="SchemeName"
+                         formControlName="SchemeName" (valueChanged)="SchemeEventHandler()"
+                         match-formatted="true" [grid-sort]="'SchemeName'" [min-chars]="0"
+                         onclick="this.select()" max-num-list="10" />
+
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('SchemeName','required') || !(IsDirty('SchemeName'))">Scheme Name is required</span>
+
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Service Item<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input danphe-auto-complete id="id_ServiceItem" name="ServiceItem" class="form-control"
+                         [(ngModel)]="ServiceItemObj"
+                         [list-formatter]="ServiceItemFormatter" [source]="ServiceItemList"
+                         (keyup.enter)="SetFocusById('id_MinimumChargeAmount')"
+                         placeholder="Service Item"
+                         display-property-name="ItemName"
+                         value-property-name="ItemName"
+                         formControlName="ServiceItem" (valueChanged)="ServiceItemEventHandler()"
+                         match-formatted="true" [grid-sort]="'ServiceItem'" [min-chars]="0"
+                         onclick="this.select()" max-num-list="10" />
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('ServiceItem','required') || !(IsDirty('ServiceItem'))">ServiceItem Name is required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Minimum Charge Amount<b>:</b></label>
+                <div class="col-md-8">
+                  <input class="form-control" minlength="0" type="number" id="id_MinimumChargeAmount"
+                         [(ngModel)]="AutoBillingItems.MinimumChargeAmount"
+                         value="" placeholder="Minimum Charge Amount"
+                         min="0"
+                         onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         formControlName="MinimumChargeAmount" (keyup.enter)="SetFocusById('id_UsePercentageOfBedCharges')" />
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('MinimumChargeAmount','min') && IsValidCheck('MinimumChargeAmount', 'required')">
+                    minimum charge cannot be in negative
+                  </span>
+                  <br>
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('MinimumChargeAmount','required') || !(IsDirty('MinimumChargeAmount'))">MinimumChargeAmount is
+                    required</span>
+                </div>
+              </div>
+
+
+              <div class="form-group">
+                <label class="control-label col-md-4">Use Percentage Of Bed Charges <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="id_UsePercentageOfBedCharges" name="UsePercentageOfBedCharges" type="checkbox" value=""
+                               [(ngModel)]="AutoBillingItems.UsePercentageOfBedCharges"
+                               [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" *ngIf="AutoBillingItems.UsePercentageOfBedCharges">
+                <label class="control-label col-md-4">Percentage Of Bed Charge<b>:</b></label>
+                <div class="col-md-8">
+                  <input class="form-control" minlength="0" maxlength="100" type="number" id="id_PercentageOfBedCharges"
+                         [(ngModel)]="AutoBillingItems.PercentageOfBedCharges"
+                         value="" placeholder="Percentage Of Bed Charges"
+                         min="0"
+                         onclick="this.select()"
+                         formControlName="PercentageOfBedCharge" (keyup.enter)="SetFocusById('id_IsRepeatable')"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+
+                  <span class="color-red font-sm" *ngIf="IsDirty('PercentageOfBedCharge')"
+                        [hidden]="IsValidCheck('PercentageOfBedCharge','min') && IsValidCheck('PercentageOfBedCharge', 'required')
+                        && IsValidCheck('PercentageOfBedCharge','max')">
+                    Percentage must be between : 0-100%
+                  </span>
+                  <span class="color-red font-sm"
+                        [hidden]="IsValidCheck('PercentageOfBedCharge','required') || !(IsDirty('PercentageOfBedCharge'))">PercentageOfBedCharge is
+                    required</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Repeatable? <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="id_IsRepeatable" name="IsRepeatable" type="checkbox" value=""
+                               [(ngModel)]="AutoBillingItems.IsRepeatable"
+                               [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </form>
+          <div class="panel-footer" style="text-align: right;">
+            <input type="button" id="add" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddAutoBillingItems()" value="Add" />
+            <input type="button" id="add" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateAutoBillingItems()"
+                   value="Update" />
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

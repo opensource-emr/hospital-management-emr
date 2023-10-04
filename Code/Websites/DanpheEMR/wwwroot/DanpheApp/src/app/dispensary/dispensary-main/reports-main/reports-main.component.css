@@ -1,0 +1,34 @@
+.p-category .span2 {
+  min-width: 20.5%;
+}
+
+.padder-v {
+  border: 1px solid #ddd;
+  margin: 10px 10px 0px 0px;
+  background-color: #fff;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.b-r {
+  border-right: 1px solid #cfcfcf;
+}
+
+.b-light {
+  border-color: #e4e4e4;
+}
+
+.b-light i.text-white {
+  color: #fff;
+}
+
+.rpt-link-container {
+  width: 200px;
+  height: 70px;
+  background-color: white;
+}
+
+.rpt-link-container:hover {
+  background-color: skyblue;
+  cursor: pointer;
+}

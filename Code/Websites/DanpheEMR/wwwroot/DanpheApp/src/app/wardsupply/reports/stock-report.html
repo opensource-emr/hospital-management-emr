@@ -1,0 +1,56 @@
+<div class="wrapper">
+  <div class="form-body">
+    <div class="caption lb-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Stock Report</span> </div>
+    <div class="row">
+      <div class="col-md-5 col-xs-12">
+        <div class="row"><label class="control-label col-md-3">Select Item<sup>*</sup><b style="float:right;">:</b></label>
+        <div class="col-md-9">
+          <div class="form-group">
+            <input danphe-auto-complete class="form-control"
+                   [(ngModel)]="selectedItem"
+                   [source]="itemList"
+                   [list-formatter]="myItemListFormatter"
+                   placeholder="--Select Item--"
+                   display-property-name="ItemName"
+                   value-property-name=null
+                   onClick="this.select();"
+                   (valueChanged)="onChangeItem($event)"
+                   max-num-list="10"
+                   (focusout)="CheckProperSelectedItem()"
+                   min-chars="0"
+                   />
+          </div>
+        </div></div>
+        
+      </div>
+		<div class="col-md-2 col-xs-12">
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="GetReportData()"> <i class="fa fa-search"></i> Show Report </button>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="WardStockReportColumns"
+                 [grid-data]="WardStockReportData"
+                 [grid-exportOptions]="gridExportOptions"
+                 [grid-showExportNew]="true"
+                 (grid-onExport)="OnGridExport($event)"> </danphe-grid>
+    </div>
+  </div>
+  <div class="row">
+    <table style="float:right; margin-right:20px;">
+      <tr></tr>
+      <tr> 
+        
+        <!-- <td><b>Total Quantity: </b></td> <td>{{totalQuantity}}</td> -->
+        <td style="width:40px;"></td>
+        <!-- <td><b>Total Amount:</b></td><td>{{totalAmount}}</td> -->
+        <td style="width:80px;"></td>
+      </tr>
+    </table>
+  </div>
+</div>

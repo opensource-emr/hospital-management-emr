@@ -1,0 +1,94 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="currentdoctorreport.DoctorReportValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject ">Doctor Report</span> </div>
+         <div class="row">
+			 <div class="col-md-6">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div>
+          <!--<div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentdoctorreport.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentdoctorreport.IsDirty('fromDate')" [hidden]="currentdoctorreport.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentdoctorreport.IsDirty('fromDate')" [hidden]="currentdoctorreport.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+    </div>
+  </div>
+  <div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentdoctorreport.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentdoctorreport.IsDirty('toDate')" [hidden]="currentdoctorreport.IsValidCheck('toDate','required')"> To Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentdoctorreport.IsDirty('toDate')" [hidden]="currentdoctorreport.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+    </div>
+  </div>-->
+          <div class="col-md-4 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Doctor Name<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <input class="form-control" danphe-auto-complete
+                       [(ngModel)]="selProvider"
+                       [ngModelOptions]="{standalone: true}"
+                       [list-formatter]="myListFormatter"
+                       [source]="doctorList"
+                       placeholder="Enter Doctor Name"
+                       display-property-name="FullName"
+                       value-property-name=null
+                       max-num-list="10"
+                       (focusout)="providerChanged()" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="DoctorReportData.length>0">
+      <danphe-grid [grid-colDefaults]="DoctorReportColumns"
+                   [grid-data]="DoctorReportData"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+      <table class="table-striped table-hover table-bordered right" style="background-color:initial;margin-top:10px;width:20%">
+        <tbody>
+          <tr>
+            <td>Total Quantity</td>
+            <td style="text-align:right"><b>{{summary.tot_Quantity}}</b></td>
+          </tr>
+          <tr>
+            <td>Sub Total</td>
+            <td style="text-align:right"><b>{{summary.tot_SubTotal}}</b></td>
+          </tr>
+          <tr>
+            <td>Discount Total</td>
+            <td style="text-align:right"><b>{{summary.tot_Discount}}</b></td>
+          </tr>
+          <tr>
+            <td>Total Amount</td>
+            <td style="text-align:right"><b>{{summary.tot_TotalAmount}}</b></td>
+          </tr>
+          <tr>
+            <td>Return Total</td>
+            <td style="text-align:right"><b>{{summary.tot_ReturnAmount}}</b></td>
+          </tr>
+          <tr>
+            <td>Net Total</td>
+            <td style="text-align:right"><b>{{summary.tot_NetTotal}}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

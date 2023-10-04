@@ -1,0 +1,28 @@
+<div class="row col-md-12" style="padding-bottom: 10px;">
+  <div class="col-md-6 col-sm-12">
+    <!--  rbac-permission='{"name":"inventory-AddDonation","actionOnInvalid":"remove"}' -->
+    <a class="btn primary-btn btn-sm m1" routerLink="../AddDonation"><i class="fa fa-plus"></i> Add Donation</a>
+  </div>
+  <div class="col-md-6 col-sm-12">
+    <div class="col-md-6 col-sm-12 row filterVendor" style="display: flex; flex-direction: row-reverse; margin-top: 10px;">
+      <div class="col-md-6 col-sm-12">
+        <label for="#VendorWiseCategory" class="label label-default"><i class="fa fa-filter"></i>
+          Select Vendor : &nbsp;
+        </label>
+
+        <select [(ngModel)]="selectedVendorId" (ngModelChange)="OnVendorChange()">
+          <option [ngValue]="null" selected>All</option>
+          <option *ngFor="let vendor of vendorsThatReceiveDonation; let i = index;" [ngValue]="vendor.VendorId">
+            {{vendor.VendorName}} </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+
+    <danphe-grid [grid-colDefaults]="donationGridColumns" [grid-data]="donationFilteredList" [grid-showExport]="true" [rangeType]="dateRange" (onDateChange)="onDateChange($event)" (grid-actions)="GridActions($event)" [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-header]="true" [grid-showExport]="true" (grid-onExport)="OnGridExport($event)" [grid-exportOptions]="gridExportOptions" [report-for]="'inventory'">
+    </danphe-grid>
+  </div>
+</div>

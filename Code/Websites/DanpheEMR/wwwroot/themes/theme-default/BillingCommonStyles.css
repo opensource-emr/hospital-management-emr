@@ -1,0 +1,371 @@
+﻿.mt-0 {
+  margin-top: 0 !important;
+}
+
+.page-bar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-bar-wrap .row {
+  margin: 0;
+  padding: 0;
+}
+
+.page-bar-wrap div[class*="col-"] {
+  padding: 0 !important;
+}
+
+.page-bar-wrap div[class*="col-"] span {
+  margin-right: 5px !important;
+}
+
+.page-bar .page-bar-wrap select.comm-list,
+.page-bar .page-bar-wrap select.membership-list {
+  width: 150px !important;
+}
+
+.page-bar .page-bar-wrap .price-select div {
+  display: flex;
+  align-items: center !important;
+}
+
+.page-bar .page-bar-wrap .price-select select {
+  width: 160px !important;
+}
+
+.page-bar .page-bar-wrap .price-select label {
+  width: 180px;
+}
+
+.page-bar .page-bar-wrap .caption {
+  margin: 0;
+}
+
+/* .page-bar .page-bar-wrap div {
+    width: 100%;
+} */
+.keydropdown ul {
+  background-color: #ffffff;
+  box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 5px !important;
+}
+
+.keydropdown ul:before {
+  background-color: #ffffff;
+}
+
+.select-flex .row {
+  margin: 0;
+}
+
+.select-flex div[class*="col-"] {
+  width: 100%;
+  padding: 0;
+}
+
+.select-flex,
+.select-flex1 {
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
+.select-flex label,
+.select-flex1 label {
+  margin-right: 10px;
+  margin-bottom: 0;
+}
+
+.select-flex .ref-er {
+  width: 75%;
+}
+
+.flex label {
+  margin-bottom: 0;
+}
+
+.billing-community-card {
+  /* margin: 0 -5px; */
+}
+
+.billing-community-card div[class*="col-"] {
+  padding: 0 5px !important;
+}
+
+.table-form #id_btn_add_serviceItem,
+.item-listing .btn-danger {
+  /* background-color: rgba(38, 194, 129, 0.148) !important;
+  color: #26c281 !important;
+  border-color: #26c281 !important; */
+  border-radius: 4px !important;
+  font-size: 16px;
+  font-weight: bold;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  padding: 0;
+  line-height: 30px !important;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.table-form #id_btn_add_serviceItem:hover {
+  /* background-color: #26c281 !important;
+  color: #ffffff !important; */
+}
+
+.item-listing .btn-danger {
+  /* background-color: rgba(227, 29, 46, 0.116) !important;
+  color: #e31d2e !important;
+  border-color: #e31d2e !important; */
+  width: 23px;
+  height: 23px;
+  font-size: 14px;
+}
+
+.item-listing .table tbody td,
+.item-listing .table thead th {
+  padding: 5px 6px;
+  border-left: none;
+  border-right: none;
+}
+
+.item-listing .table tbody tr:last-child td {
+  border: none;
+}
+
+.item-listing::-webkit-scrollbar,
+.my-custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+.item-listing::-webkit-scrollbar-track,
+.my-custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.item-listing::-webkit-scrollbar-thumb,
+.my-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d8d8d8;
+}
+
+/* Handle on hover */
+.item-listing::-webkit-scrollbar-thumb:hover,
+.my-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a5a5a5;
+}
+
+.ht-managed td input {
+  height: 25px;
+  padding: 3px 7px !important;
+}
+
+.ht-managed td:first-child {
+  width: 130px;
+}
+
+.amountform .ht-managed .nxt-td {
+  padding: 0;
+}
+
+.amountform .ht-managed td {
+  padding: 0 0 0 0;
+}
+
+/* .my-custom-scrollbar {
+    overflow: inherit !important;
+  } */
+.externalForm .form-group {
+  display: flex;
+}
+
+.externalForm .form-group .col-md-7 {
+  padding: 0 15px !important;
+}
+
+/* Scheme Price Category */
+.billing-scheme-pricecategory {}
+
+.billing-scheme-pricecategory .row {}
+
+.billing-payment-option tr {
+  margin: 0 -15px !important;
+}
+
+.billing-payment-option td {
+  padding: 0 15px !important;
+  /* color: #434343; */
+}
+
+.billing-payment-option .nxt-td {
+  width: 33.33333% !important;
+  padding: 0 15px !important;
+}
+
+.billing-payment-option #pay_mode {
+  height: 30px !important;
+}
+
+.bill-payment-mode .nxt-td,
+.bill-payment-mode .remarks-label {
+  width: 47.9% !important;
+  padding: 0 !important;
+}
+
+.ipbilling-bil-request {}
+
+.ipbilling-bil-request .col-md-6 {
+  width: 60%;
+}
+
+.ipbilling-bil-request .col-md-6 scheme-pricecategory-select .col-md-8 {
+  width: 38%;
+}
+
+.ipbilling-bil-request .col-md-6 scheme-pricecategory-select .col-md-4 {
+  width: 50%;
+}
+
+.inpatient-addBtn {
+  background-color: #26c281 !important;
+}
+
+.inpatient-addBtn:hover {
+  background-color: #2d68ea !important;
+}
+
+.ipbilling-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ipbilling-title-wrap scheme-pricecategory-select .row {
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  gap: 0 5px;
+}
+
+.ipbilling-title-wrap scheme-pricecategory-select .col-md-8 {
+  width: 60%;
+  padding: 0;
+}
+
+.ipbilling-title-wrap scheme-pricecategory-select .col-md-4 {
+  width: 60%;
+  padding: 0 !important;
+  text-align: right;
+}
+
+.ipbilling-title-wrap scheme-pricecategory-select .col-md-8 scheme-select span {
+  font-size: 12px;
+}
+
+.ipbilling-title-wrap scheme-pricecategory-select .col-md-4 price-category-select #id_select_priceCategory,
+.ipbilling-title-wrap scheme-pricecategory-select .col-md-8 scheme-select .membership-list {
+  width: 136px !important;
+}
+
+.ip-bill-pagebar .nxt-td {
+  width: 155px !important;
+}
+
+.ip-bill-pagebar table tr td {
+  padding: 3px 0;
+}
+
+.visit-billing-payment .nxt-td {
+  width: 33.33% !important;
+  font-weight: 600 !important;
+  font-size: 12px !important
+}
+
+.adt-payment-mode-info .nxt-td {
+  width: 33.33333% !important;
+  /* padding: 0 15px; */
+}
+
+.adt-payment-mode-info .nxt-td+td {
+  width: 54.33333% !important;
+  /* padding: 0 15px; */
+}
+
+@media screen and (max-width: 1440px) {
+  .page-bar-wrap div[class*="col-"] span {
+    display: block;
+  }
+
+  .page-bar-wrap div[class*="col-"] span:last-child select.membership-list {
+    width: 62% !important;
+  }
+
+  .page-bar .page-bar-wrap select.comm-list,
+  .page-bar .page-bar-wrap select.membership-list {
+    width: 52% !important;
+  }
+
+  .page-bar-wrap div[class*="col-"] span {
+    width: 48%;
+    display: inline-block;
+  }
+
+  .page-bar .page-bar-wrap .price-select select {
+    width: 60% !important;
+  }
+
+  .page-bar .page-bar-wrap .price-select label {
+    width: 50%;
+  }
+
+  .community-card select {
+    min-width: 85px;
+    font-size: 12px !important;
+  }
+
+  .flex label {
+    width: 30%;
+  }
+
+  .community-card .text-wit-btn label {
+    padding-left: 24px !important;
+  }
+
+  .flex .labellab-type {
+    width: 40%;
+  }
+
+  .checkbox-wrapper .text-wit-btn .icheck-inline label {
+    padding: 0 !important;
+    justify-content: flex-start;
+  }
+
+  .amountform .ht-managed .nxt-td {
+    width: 97px;
+    font-size: 10px !important;
+  }
+
+  .amountform .btn {
+    font-size: 10px;
+  }
+}
+.purchase-order-datepicker .nepcalender {
+  align-items: center;
+}
+.purchase-order-datepicker .lft-gap {
+ width: 100%;
+}
+.purchase-order-datepicker .np-datepickr-holdr {
+  width: 100% !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border-radius: 3px !important;
+  height: 30px;
+
+}

@@ -1,0 +1,99 @@
+<style>
+  .cstm-add-heading {
+    font-size: 20px;
+  }
+
+  .addbtn {
+    margin-left: 0px;
+    top: 5px;
+  }
+</style>
+
+<div *ngIf="showSocialHistoryBox && CurrentSocialHistory && CurrentSocialHistory.SocialHistoryValidator" class="prob-entry hm-form">
+  <form [formGroup]="CurrentSocialHistory && CurrentSocialHistory.SocialHistoryValidator">
+    <div class="cstm-close" (click)="CloseSocialHistoryBox()">
+      <a><i class="fa fa-close"></i> </a>
+    </div>
+    <h3 class="cstm-add-heading">{{CurrentSocialHistory.SocialHistoryId ? 'Update' : 'Add'}} Social History</h3>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Smoking History<b>:</b></label>
+        <div class="col-md-9">
+        <textarea id="chkSmokingHistory" type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentSocialHistory.SmokingHistory"></textarea>
+      </div>
+      </div>    
+      
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Alcohol History<b>:</b></label>
+        <div class="col-md-9">
+          <textarea id="chkAlcoholHistory" type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentSocialHistory.AlcoholHistory"></textarea>
+        </div>
+      </div>
+      
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Drug History<b>:</b></label>
+        <div class="col-md-9">
+          <textarea id="chkDrugHistory" type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentSocialHistory.DrugHistory"></textarea>
+        </div>
+      </div>     
+      
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Occupation<b>:</b></label>
+        <div class="col-md-9">
+          <input type="text" class="form-control" maxlength="50" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentSocialHistory.Occupation" />
+          <!-- <span class="font-sm color-red" style="color:red" *ngIf="CurrentSocialHistory.IsDirty('Occupation')" [hidden]="CurrentSocialHistory.IsValidCheck('Occupation','required')">
+            Occupation name is required.
+        </span>
+        <span class="font-sm color-red" style="color:red" *ngIf="CurrentSocialHistory.IsDirty('Occupation')" [hidden]="CurrentSocialHistory.IsValidCheck('Occupation','maxlength')">
+            Occupation name should not exceed 50 characters.
+        </span> -->
+        </div>
+      </div>
+      
+      <!-- <b class="color-red">  *</b><b style="float:right;">:</b></label> -->
+     
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Family Support<b>:</b></label>
+        <div class="col-md-9">
+          <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentSocialHistory.FamilySupport" />
+        </div>
+      </div>      
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-3">Hobby<sup class="color-red"></sup><b>:</b></label>
+              <div class="col-md-9">
+
+                <textarea type="text" style="width:100%" maxlength="1000" [(ngModel)]="CurrentSocialHistory.Note" [ngModelOptions]="{standalone: true}"></textarea>
+                <!--<span class="color-red font-sm"
+                    *ngIf="CurrentSocialHistory.IsDirty('Note')"
+                    [hidden]="CurrentSocialHistory.IsValidCheck('Note','required')">
+                  Note is required.
+              </span><span class="color-red font-sm"
+                    *ngIf="CurrentSocialHistory.IsDirty('Note')"
+                    [hidden]="CurrentSocialHistory.IsValidCheck('Note','maxlength')">
+                  Note should not exceed 200 characters.
+              </span>-->
+
+              </div>
+      </div>
+      
+    </div>
+    <!--<div>
+      <button (click)="SaveSocialHistory()" [disabled]="loading" class="btn btn-primary">{{CurrentSocialHistory.SocialHistoryId ? 'Update' : 'Add' }}</button>
+    </div>-->
+    <div class="row">
+      <div class="col-md-offset-3 col-md-9 addbtn text-right">
+        <input type="button" class="btn primary-btn mt20" [disabled]="loading" name="name" value="{{CurrentSocialHistory.SocialHistoryId ? 'Update' : 'Add'}}" (click)="SaveSocialHistory()" />
+      </div>
+    </div>
+  </form>
+</div>

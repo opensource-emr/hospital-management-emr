@@ -1,0 +1,304 @@
+.billing-table {
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.billing-table .form-control {
+  font-size: 1em !important;
+}
+
+.table thead tr th {
+  font-size: 0.9em;
+  border: none !important;
+  padding: 10px;
+}
+
+.nxt-td {
+  text-align: right;
+  font-weight: bold;
+  width: 158px;
+  padding-right: 12px;
+}
+
+.ref-er .row {
+  position: relative;
+  left: -15px !important;
+}
+
+danphe-auto-complete {
+  font-family: "Source Sans Pro";
+  font-size: 0.95em;
+  font-weight: bold;
+}
+
+.mb-8 {
+  width: 100%;
+  height: 25px;
+  margin-bottom: 8px;
+  font-size: 0.95em;
+  font-weight: bold;
+}
+
+.delBtn {
+  padding: 1px 7px;
+  margin-top: 1px;
+  margin-right: 0px;
+}
+
+table.billing-table tr td {
+  padding: 8px 4px;
+  padding-bottom: 0px;
+}
+
+.padding-0-rt {
+  padding-right: 0px;
+}
+
+.padding-0-lt {
+  padding-left: 0px;
+}
+
+.ht-managed td {
+  font-family: Source Sans Pro;
+  font-weight: bold;
+  vertical-align: middle;
+  border: none;
+  padding: 3px 6px;
+}
+
+td {
+  font-size: 12px;
+}
+
+.ht-managed td:nth-child(1) {
+  /* text-align: right; */
+  font-size: 12px;
+}
+
+.msg-icn-warn {
+  color: #ed6b75;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.b-htable td {
+  padding: 6px 4px;
+  font-size: 0.95em;
+  font-family: "Source Sans Pro";
+  font-weight: bold;
+}
+
+.bg-white .billing-head {
+  font-size: 1em;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-top: auto;
+}
+
+.duplication-item {
+  background-color: yellow !important;
+}
+
+.table-wrap {
+  height: 300px;
+  overflow-y: auto;
+  border: none;
+  margin: 10px 0 10px 0;
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+
+.table-wrap table thead {
+  background-color: #eee;
+}
+
+.table-wrap table thead th {
+  position: sticky;
+  background-color: #eee;
+  top: 0;
+  padding: 10px;
+  border: none;
+}
+
+.additional-serviceItem-footer {
+  padding: 10px 15px;
+  border-top: 1px solid #ddd;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+  float: right;
+}
+
+.vertical-offset-20em {
+  margin-top: 20em !important;
+}
+
+.custom-caption h3 span {
+  color: #0773bc;
+}
+
+.page-bar .page-bar-wrap .btn-sm,
+.page-bar .page-bar-wrap .shortcut-key a {
+  background-color: transparent;
+  color: #0773bc;
+  padding: 0 !important;
+  border: none !important;
+  text-decoration: underline;
+}
+
+.page-bar .page-bar-wrap .shortcut-key a {
+  /* border: 1px solid #0773bc !important; */
+  width: 30px;
+  /* height: 30px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shortcut-key a img {
+  width: 35px;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.link-btn-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+/* .checkbox-wrapper {
+  display: flex;
+  flex-direction: column;
+} */
+.community-card .text-wit-btn label {
+  padding-left: 25px !important;
+  font-size: 12px;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  white-space: nowrap;
+  gap: 0 5px;
+}
+
+@media screen and (max-width: 1440px) {
+
+  .community-card .text-wit-btn .icheck-inline label,
+  .community-card .text-wit-btn .icheck-inline {
+    height: auto;
+    margin-bottom: 5px;
+  }
+
+  .ht-managed td:first-child,
+  .dot td:first-child,
+  .bil-sum tr .nxt-td {
+    width: 97px;
+    font-size: 10px !important;
+  }
+
+  .checkbox-wrapper {
+    display: block;
+  }
+}
+
+.align-items-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.align-items-center .row {
+  width: 100%;
+}
+
+.align-items-center .modelbox-div {
+  padding: 20px;
+}
+
+.billing-transaction-btn-wrap .provisional-btn {
+  color: #0773bc !important;
+  display: flex;
+  text-decoration: underline;
+  align-items: center;
+  margin: 10px 0 0 0;
+}
+
+.billing-transaction-btn-wrap .provisional-btn i {
+  margin: 0 !important;
+}
+
+.billing-transaction-btn-wrap .provisional-btn .creamyblue {
+  background-color: transparent !important;
+  padding: 0;
+  border: none;
+  color: #0773bc !important;
+  text-decoration: underline;
+  margin: 0 !important;
+}
+
+.invoiceitemform input {
+  caret-color: red;
+}
+
+
+#id_op_billing_danpheLoading h3 {
+  text-align: center;
+  margin: 10px 20px 0 0;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #ffffff;
+  font-weight: bold;
+
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px;
+  width: 200px;
+  background: #ffffff;
+  border-radius: 25px !important;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  height: 10px;
+  width: 0%;
+  animation: progress-forward 3s infinite;
+  background: rgb(11, 219, 122);
+  border-radius: 15px;
+}
+
+@keyframes progress-forward {
+  0% {
+    width: 0%;
+  }
+
+  25% {
+    width: 50%;
+  }
+
+  50% {
+    width: 75%;
+  }
+
+  75% {
+    width: 85%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+/* .popup-static>.portlet-body {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+} */

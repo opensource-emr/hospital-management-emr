@@ -1,0 +1,54 @@
+<style>
+.wristband-popup {
+	margin-left: 20%;
+}
+</style>
+
+
+  <div *ngIf="showWristBand && wristBandInfo" [ngClass]="showAsPopup ? 'popup-static portlet box portlet-fullscreen' : ''">
+    <div [ngClass]="showAsPopup ? 'portlet-body form' : ''"> 
+      <!--show close button only when it's shown as popup-->
+      
+      <div [ngClass]="showAsPopup ? 'wristband-popup' : ''" style="width: 100%;height: 240px;border: 1px dotted black;padding: 10px;background-color:white;margin-top:10px;padding:10px 10px;"> <i *ngIf="showAsPopup" class="btn btn-danger" style="float:right" (click)="CloseWindow()" title="Closw Wrist Band">X</i>
+        <div id="wristband-print-page" style="width:590px; height:80px;margin:0px;display:block;font-size:13px;font-weight:bold;font-family:Arial;">
+          <!--<p style="margin: 5px 0px 10px 0px;padding: 0px 0px 3px 0px;text-align:center;font-size:11px !important;"> Hospital For Advanced Medicine and Surgery (HAMS) </p>-->
+          <div style="width:100%;">
+            <div id="dvLogoContainer" style="width:10%;display:inline-block;vertical-align: top;"> <img id="imgHospitalLogo" src="../../../themes/theme-default/images/hospital-logo.PNG" style="height: auto;max-width: 100%;" /> </div>
+            <div style="width:75%;display:inline-block;padding-left: 10px;">
+              <div style="float:left;width: 35%;">
+                <p style="margin:0px;padding:0px;"> Name: <span style="text-transform:uppercase;"> {{wristBandInfo.PatientName}}</span> </p>
+                <p style="margin:0px;padding:0px;"> Age:{{wristBandInfo.DateOfBirth | DanpheDateTime:'age'}} </p>
+                <p style="margin:0px;padding:0px;"> Sex:{{wristBandInfo.Gender}} </p>
+                <p style="margin:0px;padding:0px;"> DOB:{{wristBandInfo.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD'}} </p>
+                <p style="margin:0px;padding:0px;"> DOA: {{wristBandInfo.AdmissionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </p>
+              </div>
+              <div style="float: left;width: 45%;margin-left: 0;">
+                <p style="margin:0px;padding:0px;"> IP NO:{{wristBandInfo.InPatientNo}} </p>
+                <p style="margin:0px;padding:0px;"> Hospital No: {{wristBandInfo.PatientCode}} </p>
+                <p style="margin:0px;padding:0px;"> {{wristBandInfo.Ward}} / {{wristBandInfo.BedCode}} </p>
+                <p style="margin:0px;padding:0px;"> Blood Group:{{wristBandInfo.BloodGroup}} </p>
+                <p style="margin:0px;padding:0px;"> Consultant: <span style="text-transform:uppercase;">{{wristBandInfo.AdmittingDoctor}}</span> </p>
+              </div>
+            </div>
+            <div style="width: 15%;display:inline-block;vertical-align: top;">
+              <qr-code *ngIf="showQrCode" [padding]="0" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+          <button class="btn green btn-success" value="" (click)="print()" id="btnPrintWristBand">
+            <span>Print</span>&nbsp;&nbsp;
+            &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+          </button>
+        </div>
+    
+        <select-printer [group-name]="'reg-sticker'" [storage-key]="'wristband-sticker'"
+          (on-printer-change)="OnPrinterChanged($event)">
+        </select-printer>
+      </div>
+    </div>
+  </div>
+
+  <app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+  </app-print-page>
+

@@ -1,0 +1,51 @@
+<div class="row" style="margin-left:10px;margin-right:10px;">
+  <div class="col-md-12">
+    <div class="caption custom-caption">
+      <i class="glyphicon glyphicon-asterisk"></i>
+      <span class="caption-subject">Handover Detailed Report</span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="col-md-5">
+        <from-to-date-select (on-change)="OnDateRangeChange($event)"></from-to-date-select>
+      </div>
+      <div class="col-md-3">
+        <div class="col-md-5">
+          <label>Handover Receive Status:</label>
+        </div>
+        <div class="col-md-7">
+          <select class="form-control" [(ngModel)]="status">
+            <option value="all">All</option>
+            <option value="pending">Receive Pending</option>
+            <option value="received">Received</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="col-md-5">
+          <label>Handover Type:</label>
+        </div>
+        <div class="col-md-7">
+          <select class="form-control" [(ngModel)]="handoverType">
+            <option value="all">All</option>
+            <option value="User">User</option>
+            <option value="Account">Account</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-1">
+        <button class="btn green btn-success" type="button" (click)="LoadReport()">
+          <i class="fa fa-spinner"></i>
+          Load
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <danphe-grid [grid-colDefaults]="HandOverReportGridColumns" [grid-data]="HandOverReportList"
+      [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+      [report-for]="billing">
+    </danphe-grid>
+  </div>
+</div>

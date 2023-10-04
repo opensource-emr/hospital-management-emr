@@ -1,0 +1,158 @@
+﻿.danphe-multiselect-style {
+    color: #ccc !important;
+}
+.danphe-multiselect-style .c-token {
+    background: #38d574 !important;
+}
+.danphe-multiselect-style .pure-checkbox label::before {
+    border-color: #38d574 !important;
+}
+.danphe-multiselect-style .pure-checkbox input[type="checkbox"]:checked + label[_ngcontent-c1]:before {
+    background: #38d574 !important;
+}
+.danphe-multiselect-style .selected-list[_ngcontent-c5] .c-btn[_ngcontent-c5] {
+    width: 100%;
+    box-shadow: 0px 1px 5px #959595;
+    padding: 7px !important; /*change padding of multiselects*/
+    cursor: pointer;
+    display: flex;
+}
+.selected-list[_ngcontent-c5] .c-btn[_ngcontent-c5] {
+    width: 100%;
+    box-shadow: 0px 1px 5px #959595;
+    padding: 7px !important; /*change padding of multiselects*/
+    cursor: pointer;
+    display: flex;
+}
+.control-label {
+    font-size: 13px;
+}
+/*
+div.col-md-7 {
+    padding: 0px;
+}
+div.col-md-5 {
+    padding: 0px;
+}
+div.col-md-4 {
+    padding: 0px;
+}
+div.col-md-3 {
+    padding: 0px;
+}
+*/
+.mt-checkbox {
+    font-size: 13px;
+}
+div.col-xs-12 {
+    padding-left: 7px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+/*
+div.col-md-12 {
+    padding-left: 7px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+*/
+/*This class for background border red */
+.bg-on {
+    font-weight: bold;
+    border: solid 1px red;
+}
+/*This class for */
+.bg-off {
+    font-weight: bold;
+}
+.form-control {
+    padding: 0px;
+    text-align: center;
+    font-size: 13px;
+}
+.table-tr-style {
+    background-color: rgb(0, 102, 136);
+    color: rgb(255, 255, 255);
+}
+/*
+.no-margin {
+    margin: 0px;
+}
+.no-padding {
+    padding: 0px;
+}
+*/
+/*
+.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+    padding: 1px !important; for table td padding 
+}
+*/
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    z-index: auto;
+}
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+.ng2-auto-complete ul {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    width: 400px !important;
+    font-size: 12px !important;
+    z-index: 1 !important;
+}
+h4 {
+    color: blue;
+    font-weight: bold;
+    color: #36c6d3;
+}
+label {
+    font-weight: bold;
+    font-size: 12px;
+}
+label > span {
+    font-weight: normal;
+    margin-left: 10px;
+}
+.well {
+    border-radius: 40px !important;
+}
+#patient-search {
+    border-radius: 10px !important;
+    margin: 10px 10px;
+}

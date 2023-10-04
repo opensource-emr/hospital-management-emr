@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-2">
+        <select class="form-control" [(ngModel)]="rangeType" (change)="RangeTypeOnChange()" style="width:auto;">
+          <option value="today">Today</option>
+          <option value="lastWeek">Last Week</option>
+          <option value="thisMonth">This Month</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div *ngIf="showSelector" class="col-md-10 col-xs-12">
+        <div class="col-md-6">
+          <label class="control-label col-md-4" style="margin:7px">From Date<b style="float:right;">:</b></label>
+          <input class="form-control" style="width:auto" type="date" [(ngModel)]="fromDate" />
+        </div>
+        <div class="col-md-5">
+          <label class="control-label col-md-4" style="margin:7px">To Date<b style="float:right;">:</b></label>
+          <input class="form-control" style="width:auto" type="date" [(ngModel)]="toDate" />
+        </div>
+        <div class="col-md-1 col-xs-12">
+          <input type="button" class="blue btn" value="Load" (click)="ChangeCustomDate()" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

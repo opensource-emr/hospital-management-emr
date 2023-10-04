@@ -4,9 +4,7 @@ node_modules/
 bin
 obj
 v16
-#below packages replaced with line 8 /Code/Solutions/packages
-# packages 
-/Code/Solutions/packages
+packages
 .vs
 package-lock.json
 $tf/
@@ -15,7 +13,7 @@ HAMS_Requirements/
 .tfignore
 *.txt
 *.xlsx
-/Database/DanpheEMR_OS.bak
-
-/Code/Websites/DanpheEMR/Properties/PublishProfiles
-
+/Code/Solutions/global.json
+/Code/Websites/DanpheEMR/appsettings.json
+/Database/DanpheEMR_CompleteDB_4th_August_2019.bak
+/Code/Websites/DanpheEMR/DanpheEmrAPI.xml

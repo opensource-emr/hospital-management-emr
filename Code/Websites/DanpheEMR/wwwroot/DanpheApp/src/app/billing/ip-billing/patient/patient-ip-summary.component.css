@@ -1,0 +1,36 @@
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.actionbar-btn-wrap {
+  display: flex;
+  align-items: center;
+  /* gap: 0 10px; */
+}
+.actionbar-btn-wrap .action-btn {
+  border: none !important;
+  margin: 0 2px;
+}
+.actionbar-btn-wrap .action-btn:hover {
+  /* color: #2d68ea !important; */
+}
+.action-bar label {
+  color: orange !important;
+  background-color: #f8f9fa !important;
+  margin: 0;
+  font-size: 15px;
+}
+.bill-child,
+.nxt-td {
+  width: 155px;
+}
+.page-bar table tr td {
+  padding: 3px 0;
+  vertical-align: middle;
+}
+.alert {
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px !important;
+}

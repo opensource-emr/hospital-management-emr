@@ -1,0 +1,145 @@
+<style>
+    .bg-red {
+        color: green !important;
+    }
+
+    .bg-cyan {
+        color: blue !important;
+    }
+</style>
+
+
+
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        <div class="col-md-5 col-xs-12 col-sm-12" *ngIf="lastDBBackupDetail != null"style="margin:10px; border:solid 1px black; color:rgb(52, 73, 94)">
+            <h4><b><u>Database Information for Backup</u></b></h4>
+            <h5><b>Database Name:</b>&nbsp; &nbsp;{{lastDBBackupDetail.DatabaseName}}</h5>
+            <h5><b>Database Version:</b>&nbsp;&nbsp;{{lastDBBackupDetail.DatabaseVersion}}</h5>
+            <h5><b>Backup File Name:</b>&nbsp;&nbsp;{{lastDBBackupDetail.FileName}}</h5>
+            <h5><b>Last Backup Date:</b>&nbsp;&nbsp;{{lastDBBackupDetail.CreatedOn}}</h5>
+            <!-- <h5><b>Local Storage Path:</b>&nbsp;&nbsp;{{lastDBBackupDetail.FolderPath}}</h5> -->
+        </div>
+        <div style="margin:10px;">
+            <button class="btn btn-primary" (click)="Backup()" style="width: 181px;" [disabled]="loading">
+                <i class="fa fa-database"></i> Take Database Backup
+            </button>
+            <span class="hidden-sm"><br /><br /></span>
+            <div  [rbac-permission]="{'name':'systemadmin-restore-database-btn','actionOnInvalid':'hidden'}">
+             <button class="btn btn-primary" (click)="PostRestoreDatabase()" style="width: 181px;" [disabled]="loading">
+                <i class="fa fa-database"></i> <i class="fa fa-mail-reply-all"></i> Restore Database
+            </button> </div>
+            <span class="hidden-sm"><br /><br /></span>
+            <div [rbac-permission]="{'name':'sysadmin-btn-dbexport', 'actionOnInvalid':'hidden'}" class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" [disabled]="loading" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-share-square"></i> Database Export To
+                    <i class="fa fa-angle-down"></i>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <a href="javascript:;" (click)="ExportDBToCSVOrXmlOrPdf('PDF')">
+                            <i class="fa fa-file-code-o" style="color:red;"></i> Export To PDF
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:;" (click)="ExportDBToCSVOrXmlOrPdf('CSV')">
+                            <i class="fa fa-file-excel-o red" style="color:red;"></i> Export To CSV
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:;" (click)="ExportDBToCSVOrXmlOrPdf('XML')">
+                            <i class="fa fa-file-code-o" style="color:red;"></i> Export To XML
+                        </a>
+                    </li>
+
+                </ul>
+                &nbsp;&nbsp;{{exportFileFolderPath}}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 col-xs-12">
+        <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject" style="text-transform: uppercase;">
+                <b>Database Backup/Restore Details</b>
+            </span>
+        </div>
+        <danphe-grid [grid-colDefaults]="databaseBackupGridColumns"
+                     [grid-data]="databaseBackupList" [grid-exportOptions]="gridExportOptions"
+                     [grid-showExport]="true">
+        </danphe-grid>
+    </div>
+</div>
+
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showRestoreConfirmationPopup">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <b>  <a style="float:right;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        </b>
+                        <hr />
+                        <u style="color:red; font-weight:bold">Alert ! THIS WILL REPLACE ALL YOUR CURRENT LIVE DATABASE DATA WITH YOUR EARLIER DATABASE BACKUP DATA. </u>
+                        <hr />
+                        <b>IF YOU'RE SURE THEN CLICK CONTINUE, ELSE CLOSE IT.</b><br />
+                        <button type="button" class="btn btn-primary btn-sm" (click)="ContinueRestore()">
+                            Continue Restore Database
+                        </button>
+                        <br />
+                        <br />
+                    </div>
+
+                    <div class="col-md-12" style="padding-bottom: 18px;" *ngIf="showRestoreDBReason">
+                        <b>ENTER REASON </b> <br />
+                        <form [formGroup]="model.DBLogValidator">
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <textarea class="form-control" rows="3" type="text" maxlength="300" formControlName="Remarks" [(ngModel)]="Remarks"
+                                              required value=""
+                                              placeholder="enter DB restore reason"></textarea>
+                                    <span class="error-msg" *ngIf="model.IsDirty('Remarks')" [hidden]="model.IsValidCheck('Remarks','required')"> DB restore reason required</span>
+                                    <span class="error-msg" *ngIf="model.IsDirty('Remarks')" [hidden]="model.IsValidCheck('Remarks','maxlength')">DB Restore reason must be less than 300 characters</span>
+                                </div>
+                            </div>
+                        </form>
+                        <br />
+                        <button type="button" class="btn btn-primary btn-sm" (click)="RestoreDatabase()">
+                            Restore Database
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+        <!--Model Box Body End-->
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDBRestoreWaitMsg">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-6 col-sm-12 col-xs-12" style="margin-right: 24px;">
+                    <br /><br /><br /><br />
+                    <b><span style="color:white;font-size: 27px;">Please wait........</span></b>
+                    <img src="~/themes/theme-default/images/loading.gif" alt="Database Restoring" height="100" width="100">
+                </div>
+                <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+        <!--Model Box Body End-->
+    </div>
+</div>
+
+

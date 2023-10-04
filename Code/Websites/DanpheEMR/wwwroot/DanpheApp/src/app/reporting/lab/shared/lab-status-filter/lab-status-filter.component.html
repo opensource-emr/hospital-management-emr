@@ -1,0 +1,20 @@
+<div class="row">
+  <div class="col-md-12 col-xs-12">
+    <div class="form-group row">
+      <label class="control-label col-md-2">Order Status<b style="float:right;">:</b></label>
+      <div class="col-md-10" style="display: inline-flex;">
+        <div>
+          <label *ngIf="showAll"  class="mt-checkbox mt-checkbox-outline">
+            <input  type="checkbox" id="all" name="all" value="all" [checked]="isAllChecked" style="width:15px;height:15px"
+            (change)="onChanged($event)"  />
+          <span></span>All </label>
+        </div>
+ 
+        <div *ngFor = "let checkBox of orderStatusFiltered" >
+              <label  class="mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" id='{{checkBox.id}}'  value='{{checkBox.value}}' [checked]=checkBox.isChecked style="width:15px;height:15px" (change)="onChanged($event)" />
+            <span></span>{{checkBox.name}} </label>
+        </div>
+      </div>
+  </div>
+</div>

@@ -1,0 +1,137 @@
+<input type="button" class="btn btn-primary" (click)="AddSupplier()" value="Add Supplier" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="supplierGridColumns" [grid-data]="supplierList" (grid-actions)="SupplierGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showSupplierAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3><span *ngIf="!update">Add Supplier</span> <span *ngIf="update">Update Supplier</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentSupplier.SupplierValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Supplier Name<sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <input id="supplier" class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentSupplier.SupplierName" formControlName="SupplierName" value="" placeholder="Enter Supplier Name" (keyup.enter)="setFocusById('suppliercontact')" />
+                    <span class="color-red font-sm" [hidden]="CurrentSupplier.IsValidCheck('SupplierName','required') || !(CurrentSupplier.IsDirty('SupplierName'))">Supplier name is required</span> <span class="color-red font-sm" *ngIf="CurrentSupplier.IsDirty('SupplierName')" [hidden]="CurrentSupplier.IsValidCheck('SupplierName','maxlength')"> Length is not proper</span>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Contact<sup>*</sup><b>:</b><br />
+                    Number</label>
+                  <div class="col-md-8">
+                    <input id="suppliercontact" class="form-control" type="text" [(ngModel)]="CurrentSupplier.ContactNo" formControlName="ContactNo" value="" placeholder="Enter Contact number" (keyup.enter)="setFocusById('suppliercity')" />
+                    <span class="color-red font-sm" [hidden]="CurrentSupplier.IsValidCheck('ContactNo','required') || !(CurrentSupplier.IsDirty('ContactNo'))">Contact number is required</span> <span class="color-red font-sm" *ngIf="CurrentSupplier.IsDirty('ContactNo')" [hidden]="CurrentSupplier.IsValidCheck('ContactNo','pattern')"> Invalid Contact</span>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+
+                  <label class="control-label col-md-4">Description<b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" type="text" maxlength="100" [(ngModel)]="CurrentSupplier.Description" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter Description" />
+                  </div>
+
+                </div>
+                <div class="form-group col-md-6">
+
+                  <label class="control-label col-md-4">City<b>:</b></label>
+                  <div class="col-md-8">
+                    <input id="suppliercity" class="form-control" type="text" maxlength="30" [(ngModel)]="CurrentSupplier.City" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter City" (keyup.enter)="setFocusById('supplierpan')" />
+                  </div>
+
+                </div>
+                <div class="form-group col-md-6">
+
+                  <label class="control-label col-md-4">Credit Period<b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" type="number" [(ngModel)]="CurrentSupplier.CreditPeriod" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter Credit Period" />
+                  </div>
+
+                </div>
+                <div class="form-group col-md-6">
+
+                  <label class="control-label col-md-4">Pan No.<sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <input id="supplierpan" class="form-control" type="text" maxlength="30" (keyup.enter)="setFocusById('supplierdda')" [(ngModel)]="CurrentSupplier.PANNumber" formControlName="PANNumber" value="" placeholder="Enter Pan No." />
+                    <span class="color-red font-sm" [hidden]="CurrentSupplier.IsValidCheck('PANNumber','required') || !(CurrentSupplier.IsDirty('PANNumber'))">Pan No. is required</span>
+                    <!-- <span class="color-red font-sm" *ngIf="CurrentSupplier.IsDirty('PANNumber')" [hidden]="CurrentSupplier.IsValidCheck('PANNumber','pattern')"> Pan No. is not proper</span> -->
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                </div>
+                <div class="form-group col-md-6">
+
+                  <label class="control-label col-md-4">DDA<b>:</b></label>
+                  <div class="col-md-8">
+                    <input id="supplierdda" class="form-control" type="text" maxlength="30" (keyup.enter)="setFocusById('supplieraddress')" [(ngModel)]="CurrentSupplier.DDA" [ngModelOptions]="{standalone: true}" placeholder="Enter DDA." />
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Contact<sup>*</sup><b>:</b><br />
+                    Address</label>
+                  <div class="col-md-8">
+                    <input id="supplieraddress" class="form-control" type="text" maxlength="100" [(ngModel)]="CurrentSupplier.ContactAddress" formControlName="ContactAddress" value="" placeholder="Enter Contact Address" (keyup.enter)="!update?setFocusById('save'):setFocusById('update')" />
+                    <span class="color-red font-sm" [hidden]="CurrentSupplier.IsValidCheck('ContactAddress','required') || !(CurrentSupplier.IsDirty('ContactAddress'))">Contact Address is required</span>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Additional Contact<b>:</b><br /></label>
+                  <div class="col-md-8">
+                    <textarea class="form-control" [(ngModel)]="CurrentSupplier.AdditionalContactInformation" [ngModelOptions]="{standalone: true}" placeholder="Enter Additional Contact Information"></textarea>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Email<b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" type="text" maxlength="100" [(ngModel)]="CurrentSupplier.Email" value="" formControlName="Email" placeholder="Enter Email" />
+                    <span class="color-red font-sm" *ngIf="CurrentSupplier.IsDirty('Email')" [hidden]="CurrentSupplier.IsValidCheck('Email','pattern')">Email ID is not proper</span>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">IsActive<b>:</b></label>
+                  <div class="col-md-7">
+                    <div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentSupplier.IsActive" [ngModelOptions]="{standalone: true}">
+                          <span></span> </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">IsLedgerRequired<b>:</b></label>
+                  <div class="col-md-7">
+                    <div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input name="IsLedgerRequired" type="checkbox" value="IsLedgerRequired" [(ngModel)]="CurrentSupplier.IsLedgerRequired" [ngModelOptions]="{standalone: true}">
+                          <span></span> </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="all-buttons text-right">
+                <button type="button" id="save" class="btn green btn-success" *ngIf="!update" [disabled]="loading" (click)="Add()">Save</button>
+                <button type="button" id="update" class="btn green btn-success" *ngIf="update" [disabled]="loading" (click)="Update()">Update</button>
+              </div>
+            </div>
+          </form>
+          <!--</form>-->
+          <!--Model Box Body End-->
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

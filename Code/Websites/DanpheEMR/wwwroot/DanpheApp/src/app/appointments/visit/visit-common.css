@@ -1,0 +1,76 @@
+.col-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0 10px;
+}
+.mt-checkbox,
+.mt-radio {
+  margin: 0;
+  padding: 0;
+}
+.mt-checkbox > input,
+.mt-radio > input {
+  position: static;
+}
+.hm-form input[type="checkbox"] {
+  height: auto;
+}
+
+.justify-content-start {
+  justify-content: flex-start;
+}
+.pl-0 {
+  padding-left: 0 !important;
+}
+.my-0 {
+  margin: 0 0 6px 0 !important;
+}
+.col {
+  width: 100%;
+}
+.d-flex {
+  display: flex;
+}
+.justify-content-center {
+  justify-content: center;
+}
+.align-items-center {
+  align-items: center;
+}
+.hm-form .control-label,
+.emr-form .control-label {
+  font-weight: 600;
+}
+.mb-1 {
+  margin-bottom: 1rem;
+}
+.form-horizontal .control-label,
+.headin-left label {
+  font-weight: 600;
+  font-size: 12px;
+}
+.headin-left {
+  background-color: transparent !important;
+}
+h3.visit-head {
+  border: none;
+  margin-bottom: 5px !important;
+}
+.visit-info-wrapper {
+  background-color: #ffffff;
+  padding: 15px;
+}
+.main-visit form .form-group .form-control {
+  font-weight: normal;
+  font-size: 12px !important;
+}
+.checkbox-wrapper {
+  margin: 10px 0;
+}
+.checkbox-wrapper input,
+.checkbox-wrapper label {
+  margin: 0;
+  /* font-weight: normal !important; */
+  font-size: 12px !important;
+}

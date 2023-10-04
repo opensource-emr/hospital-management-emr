@@ -1,0 +1,22 @@
+<div class="wrapper">
+    <div class="row">
+      <div class="col-md-6 col-xs-12">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+        </from-to-date-select>
+      </div>
+      <div class="col-md-2">
+        <button id="reload" [disabled]="loading" (click)=" loading = true; getOnlineAppointmentData()" class="btn btn-success"><i class="fa fa-refresh"></i> Relaod Data</button>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-md-12">
+        <danphe-grid [grid-colDefaults]="onlineAppointmentGridColumns"
+         [grid-data]="onlineAppointmentListFiltered"
+         [NepaliDateInGridParams]="NepaliDateInGridSettings"
+         [grid-exportOptions]="gridExportOptions"
+         [grid-showExport]="true"> </danphe-grid>
+      </div>
+    </div>
+</div>
+  

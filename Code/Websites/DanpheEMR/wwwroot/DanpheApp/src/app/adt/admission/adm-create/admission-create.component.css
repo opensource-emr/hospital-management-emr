@@ -1,0 +1,18 @@
+.hm-form .control-label,
+.emr-form .control-label {
+  font-weight: 600;
+  font-size: 12px;
+  color: #333333 !important;
+  padding: 0 15px;
+}
+.hm-form .form-control {
+  border-radius: 5px !important;
+}
+.hm-form .form-group,
+.emr-form .form-group {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.flx {
+  gap: 0 10px;
+}

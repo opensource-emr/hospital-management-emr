@@ -1,0 +1,17 @@
+<div class="margin-20-tp">
+    <a class="btn green btn-success" feature="button" (click)="ShowAddNewPrinter()"><i class="fa fa-plus"></i>Add New
+        Printer</a>
+
+    <div class="row">
+        <div class="col-md-12 col-xs-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="PrinterSettingGridColumns" [grid-data]="PrinterSettingDetails"
+                (grid-actions)="PrinterSettingGridActions($event)">
+            </danphe-grid>
+        </div>
+    </div>
+
+    <div style="margin-top:50px;" *ngIf="showAddNewPrinter">
+       <printer-setting-add [printer-to-edit]="selectedPrintersetting" (callback-add)="GetDataFromAdd($event)">
+       </printer-setting-add>
+    </div>
+</div>

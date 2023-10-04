@@ -1,0 +1,161 @@
+<div>
+    <div class="caption custom-caption top-report-section">
+        <h3><i class="fa fa-book"></i>
+            <span class="caption-subject">Day Book Report</span>
+        </h3>
+    </div>
+    <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+        <div class="col-md-6 col-xs-12">
+            <div class="form-group">
+
+                <label class="control-label" style="margin-left: 5px;">Select Fiscal Year<b class="color-red"> *</b><b
+                style="float:right;">:</b></label>
+                <div>
+                    <fiscal-year-calendar [DayBookReportCustomization]="true" [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12" style="padding: 5px 5px !important;">
+            <label class="control-label"> <b>Select Ledger</b> <b class="color-red"> *</b></label>
+            <div style="margin-top: 5px;">
+                <div>
+                    <input danphe-auto-complete class="col-md-11 form-control" [(ngModel)]="selectedLedgerList" [source]="ledgerList" placeholder="select ledger" display-property-name="LedgerName" value-property-name="LedgerName"
+                    [list-formatter]="LedgerListFormatter" max-num-list="20" onclick="this.select()" style="background-color: azure;" [ngModelOptions]="{standalone: true}" (focusout)="HandleLedgerChange()" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12" style=" margin-top: 5px;">
+            <div class="form-group mt10">
+                <br>
+                <button class="btn blue" type="button" (click)="GetTxnList()">
+              <i class="fa fa-refresh"></i>
+              Load
+            </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 10px;">
+        <input class="hidden-print" type="checkbox" id="Hide_zero_txn" [(ngModel)]="HideZeroTxn" name="Hide_zero_txn" style="margin-left: 30px;" (change)="HandleHideZeroTxn()"><label class="hidden-print" for="Hide_zero_txn" style="margin-left: 10px;">Hide Zero Transaction</label>
+    </div>
+
+    <div class="row" id="printpage" *ngIf="DateWiseTotal.length >0" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
+        <div style="width: 50%; margin: auto;">
+            <customer-header id="headerForPrint" [header-title]="'Day Book Report'">
+            </customer-header>
+        </div>
+        <div id="print_ledger_list">
+            <div class="col-md-12 col-xs-12">
+                <table style="width:100% !important;" class="hidden-print">
+                    <tr>
+                        <td style="text-align: left;">
+                            Printed On: &nbsp; {{todayDate}} ( {{todayDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )
+                        </td>
+                        <td style="text-align: right;">
+                            For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            LedgerName : {{ selectedLedgerList.LedgerName }} ({{ selectedLedgerList.Code}})
+                        </td>
+                        <td style="text-align: right;">
+                            (BS): &nbsp; {{ fromDate | nepaliDate:'format':'YYYY-MM-DD' }} To {{ toDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                        </td>
+                    </tr>
+                </table>
+                <br>
+                <div id="exportTable">
+                    <div>
+                        <div class="col-md-12" style="padding:0px;" id="print_ledger">
+                            <div class="row">
+                            </div>
+                            <table class="table_data" style="width:100%;  margin-bottom: 20px;" border="1" *ngFor="let data of DateWiseTotal; let i=index;">
+                                <tr style="background-color: #599be0;">
+                                    <th colspan="6">Date ({{ data.TransactionDate }})</th>
+                                </tr>
+                                <tr>
+                                    <td>Voucher Type</td>
+                                    <td>Voucher Number</td>
+                                    <td>Particulars</td>
+                                    <td>Debit</td>
+                                    <td>Credit</td>
+                                    <td>Accumulated</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>Opening Balance</b></td>
+                                    <td *ngIf="data.OpeningBalance >= 0"><b>{{ getNumber(data.OpeningBalance) | Currency:'4'}}</b></td>
+                                    <td *ngIf="data.OpeningBalance < 0"><b>0</b></td>
+                                    <td *ngIf="data.OpeningBalance >= 0"><b>0</b></td>
+                                    <td *ngIf="data.OpeningBalance < 0"><b>{{ getNumber(data.OpeningBalance) | Currency:'4' }}</b></td>
+                                    <td>{{ getNumber(data.OpeningBalance) | Currency:'4' }}
+                                        <b *ngIf="data.OpeningBalance >= 0">
+                                            &nbsp; <span> Dr</span>
+                                            </b>
+                                            <b *ngIf="data.OpeningBalance < 0">
+                                             &nbsp;<span> Cr</span>
+                                            </b>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="data.Transactions.length == 0">
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                    <td>N/A</td>
+                                </tr>
+                                <tr *ngFor="let row of data.Transactions; let ind=index;">
+                                    <td> {{ row.VoucherType }}</td>
+                                    <td> {{ row.VoucherNumber }}</td>
+                                    <td> {{ row.LedgerName }}</td>
+                                    <td> {{ row.DrAmount | Currency:'4' }}</td>
+                                    <td> {{ row.CrAmount | Currency:'4' }}</td>
+                                    <td> {{ getNumber(row.Accumulated) | Currency:'4' }}
+                                        <b *ngIf="row.Accumulated > 0">
+                                        &nbsp; <span> Dr</span>
+                                        </b>
+                                        <b *ngIf="row.Accumulated < 0">
+                                         &nbsp;<span> Cr</span>
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>Closing Balance</b></td>
+                                    <td><b>{{ data.TotalDrAmount > data.TotalCrAmount ? 0 : (data.TotalCrAmount - data.TotalDrAmount | Currency : '4') }}</b></td>
+                                    <td><b>{{ data.TotalDrAmount > data.TotalCrAmount ? (data.TotalDrAmount - data.TotalCrAmount | Currency : '4') : 0}}</b></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>Total</b></td>
+                                    <td><b>{{ data.TotalDrAmount > data.TotalCrAmount ? (data.TotalDrAmount | Currency :'4') : (data.TotalCrAmount | Currency :'4') }}</b></td>
+                                    <td><b>{{ data.TotalDrAmount > data.TotalCrAmount ? (data.TotalDrAmount | Currency :'4'): (data.TotalCrAmount | Currency :'4') }}</b></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </div>
+        <div class="col-md-12" *ngIf="DateWiseTotal.length >0" style="padding: 18px;">
+            <div class="form-actions">
+                <button class="btn btn-primary hidden-print" (click)="Print('print_ledger_list')" value="Print" title="print page">
+              Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+            </button>
+                <button class="btn btn-primary hidden-print" (click)="ExportToExcel('exportTable')" value="" title="export to excel">
+              Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+            </button>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,45 @@
+<!--<input type="checkbox" [(ngModel)]="showCommunity" (change)="CommunityChkboxOnChange()">ShowCommunity-->
+<style>
+  .val-message {
+    text-align: center;
+  }
+
+  .disable-dropdown {
+    background-color: #eef1f5;
+  }
+
+  select.comm-list,
+  select.membership-list {
+    width: 180px !important;
+  }
+</style>
+<div>
+  <span *ngIf="showCommunity" style="margin-right: 20px;">
+    {{labelsInfo.CommunityLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b>
+    <select class="comm-list" id="Membership" [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selectedCommunityName"
+            (change)="CommunityDropdownOnChange(false)" [disabled]="dropdownDisabled" style="margin-left: 5px;">
+      <option value="null" disabled>--select--</option>
+      <option *ngFor="let community of distinctCommunityList" value="{{community}}">{{community}}</option>
+    </select>
+  </span>
+
+  <span>
+    {{labelsInfo.SchemeLabel}}<sup *ngIf="isMandatory"> *</sup><b>:</b>
+    <select id="Scheme" class="membership-list" [ngClass]="{'disable-dropdown': dropdownDisabled}" [(ngModel)]="selMembershipId"
+            (change)="MembershipTypeChange()" [disabled]="dropdownDisabled" style="width: 100%; margin-left: 5px;">
+      <option value="null" disabled>--select--</option>
+      <option *ngFor="let membership of filteredMembershipList" value="{{membership.SchemeId}}">
+        {{membership.MembershipDisplayName}}</option>
+    </select>
+  </span>
+  <!-- <span *ngIf="selSchemeObj && selSchemeObj.PriceCategoryName" style="color: green;font-size: 12px;">
+    Price Category: {{selSchemeObj.PriceCategoryName}}
+  </span> -->
+  <span *ngIf="!isMembershipValid">
+    <br />
+    <span style="margin-top: 0;" [ngClass]="{'val-message': showCommunity}" class="text-left small-info color-red"><i
+         class="fa fa-info-sign"></i>Membership Scheme(s) is Mandatory.
+    </span>
+  </span>
+
+</div>

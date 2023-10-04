@@ -1,0 +1,14 @@
+<div class="sub-navtab fixed-subnavtab">
+    <ul class="nav nav-tabs" *ngIf="secondaryNavItems && secondaryNavItems.length>0">
+        <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;">
+        <li class="hr-ddlCstm" *ngFor="let route of secondaryNavItems">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">
+                {{route.DisplayName}}
+                <i class="{{route.Css}}"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+<div class="wrapper">
+    <router-outlet></router-outlet>
+</div>

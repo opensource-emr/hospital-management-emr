@@ -1,0 +1,206 @@
+<style>
+    .voucher-popup {
+        height: initial !important;
+        top: 10% !important;
+        width: 60% !important;
+    }
+</style>
+<div class="ap-v-header">
+    <div class="row">
+        <div class="col-md-3">
+            <div><b>Select Bank : </b></div>
+            <input danphe-auto-complete [source]="bankLedgerList" class="form-control"
+                   [(ngModel)]="selectedBankLedger"
+                   placeholder="Select bank" display-property-name="LedgerName"
+                   value-property-name=null
+                   match-formatted="true" min-char="1" [grid-sort]="'Code'"
+                   [list-formatter]="LedgerListFormatter" max-num-list="15" (ngModelChange)="LoadReferenceVoucherDetail()"
+                   id="bankLedger_for_suspenseA/C_reconciliation"
+                   onclick="this.select()" />
+        </div>
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-3">
+                    <div>
+                        <b>Reference Voucher Number :</b>
+                    </div>
+                    <select class="form-control" id="suspenseAccount_reconciliation_referenceVoucherNumber"
+                            [(ngModel)]="selectedSuspenseAccountDetail"
+                            [disabled]="suspenseAccountRefVoucherDetail.length == 0" (ngModelChange)="AssignSuspenseAccountTxnItem()">
+                        <option *ngFor="let voucher of suspenseAccountRefVoucherDetail" [ngValue]=voucher>{{ voucher.VoucherNumber }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div><b>Voucher Type:</b></div>
+                    <select [(ngModel)]="selVoucherTypeId" id="voucher" autofocus
+                            (change)="onVoucherTypeChange()">
+                        <option *ngFor="let v of voucherTypeList" value="{{v.VoucherId}}">{{v.VoucherName}}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div><b>Voucher Number:</b></div>
+                    <div class="relative">
+                        <input disabled type=text [(ngModel)]="TempVoucherNumber" [ngModelOptions]="{standalone: true}" />
+                        <i title="This Voucher number is not final. It may change during SAVE." color=#006687
+                           class="fa fa-info-circle" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="ac-check-wrapper">
+                        <div><b>Voucher Date:</b>
+                            {{TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} (AD)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table table-striped table-hover inv_table table-bordered tbPadding">
+    <thead>
+        <tr>
+            <th style="width:1%"></th>
+            <th style="width:1%">Dr/Cr</th>
+            <th style="width:10%" *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+            <th style="width:20%"> Ledger (Main)</th>
+            <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
+            <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
+            <th style="width:5%"> Dr Amt. </th>
+            <th style="width:5%"> Cr Amt. </th>
+            <th style="width:10%"> Cost Center </th>
+            <th style="width:15%">Description</th>
+            <th style="width:1%"></th>
+            <th style="width:1%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let itm of transaction.TransactionItems; let i = index">
+            <td><b>{{i+1}}</b></td>
+            <td class="form-group">
+                <form [formGroup]="itm.TransactionItemValidator" style="width:80px;">
+                    <input danphe-auto-complete [(ngModel)]="selDrCrArray[i]" [source]="DrCrList" formControlName="DrCr" [attr.disabled]="true"
+                           placeholder="Dr/Cr" display-property-name="DrCr" value-property-name="DrCr" match-formatted="true"
+                           (valueChanged)="onDrCrChange(i)" [list-formatter]="DrCrListFormatter" max-num-list="2"
+                           onclick="this.select()" id="DrCr_{{i+1}}"
+                           (keydown.enter)="ChangeFocusFromDrCr(i)"
+                           style="width:60px" />
+                    <div class="color-red font-sm" *ngIf="itm.IsDirty('DrCr')" [hidden]="itm.IsValidCheck('DrCr','required')">
+                        Please select Transaciton Type. </div>
+                </form>
+            </td>
+            <td *ngIf=!subLedgerAndCostCenterSetting.EnableSubLedger>
+                <input danphe-auto-complete [(ngModel)]="selectedLedgerCode[i]" [source]="allLedgerList"
+                       (keydown.enter)="ChangeFocus('Ledger_'+(i+1))"
+                       placeholder="Code" display-property-name="Code" [disabled]="i==0"
+                       value-property-name=null [grid-sort]="'Code'" (valueChanged)="AssignSelectedCode(i)" min-chars="1"
+                       [list-formatter]="LedgerCodeFormatter" max-num-list="10" onclick="this.select()" id="Code_{{i+1}}"
+                       style="width:100%;" match-formatted="true" />
+            </td>
+            <td>
+                <div class="div-relative">
+                    <form [formGroup]="itm.TransactionItemValidator">
+                        <input danphe-auto-complete [(ngModel)]="selLedgerArr[i]" [source]="allLedgerList" [disabled]="i==0"
+                               placeholder="Ledger Name" formControlName="LedgerId" display-property-name="LedgerName"
+                               (keydown.enter)="ChangeFocus('narration')"
+                               [grid-sort]="'LedgerName'" (focusout)="AssignSelectedLedger(i)" min-chars="1"
+                               [list-formatter]="LedgerListFormatter" max-num-list="15" onclick="this.select()" id="Ledger_{{i+1}}"
+                               style="width:100%;font-size: 14px;" match-formatted="true" />
+
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('LedgerId')"
+                             [hidden]="itm.IsValidCheck('LedgerId','required')"> Please select Ledger.</div>
+                    </form>
+                </div>
+            </td>
+            <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+                <input danphe-auto-complete [(ngModel)]="selSubLedgerCode[i]" [source]="ledgerWiseSubLedgerMaster[i]"
+                       (keydown.enter)="ChangeFocus('SubLedger_'+(i+1))"
+                       placeholder="Sub-Code" display-property-name="SubLedgerCode" [disabled]="i==0"
+                       (focusout)="AssignSelectedSubLedgerCode(i)" min-chars="1"
+                       [list-formatter]="'SubLedgerCode'" max-num-list="10" onclick="this.select()" id="SubLedger_Code_{{i+1}}"
+                       style="width:100%;" match-formatted="true" />
+            </td>
+            <td *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>
+                <div class="div-relative">
+                    <form [formGroup]="itm.TransactionItemValidator">
+                        <input danphe-auto-complete [(ngModel)]="selectedSubLedger[i]" [source]="ledgerWiseSubLedgerMaster[i]"
+                               [disabled]="i==0"
+                               placeholder="Sub Ledger" formControlName="SubLedgerId" display-property-name="SubLedgerName"
+                               (keydown.enter)="ChangeFocus('narration')"
+                               [grid-sort]="'SubLedgerName'" (focusout)="AssignSubLedger(i)" min-chars="1"
+                               [list-formatter]="SubLedgerListFormatter" max-num-list="15" onclick="this.select()" id="SubLedger_{{i+1}}"
+                               style="width:100%;font-size: 14px;" match-formatted="true" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('SubLedgerId')"
+                             [hidden]="itm.IsValidCheck('SubLedgerId','required')"> Please select sub-Ledger.</div>
+                    </form>
+                </div>
+            </td>
+            <td>
+                <form [formGroup]="itm.TransactionItemValidator" *ngIf=itm.DrCr>
+                    <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
+                           (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                           (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
+                    <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+                         [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+                </form>
+            </td>
+            <td>
+                <form [formGroup]="itm.TransactionItemValidator" *ngIf=!itm.DrCr>
+                    <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
+                           (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                           (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
+                    <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+                         [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+                </form>
+            </td>
+            <td>
+                <form [formGroup]="itm.TransactionItemValidator">
+                    <select [(ngModel)]="itm.CostCenterId" id="CostCenter_{{ i+1 }}" (keydown.enter)="ChangeFocus('Description_'+(i+1))"
+                            formControlName="CostCenter">
+                        <option *ngFor="let costCenter of costCenterList" value={{costCenter.CostCenterId}}> {{costCenter.CostCenterName}} </option>
+                    </select>
+                    <div class="color-red font-sm" *ngIf="itm.IsDirty('CostCenter')"
+                         [hidden]="itm.IsValidCheck('CostCenter','required')">Invalid Cost Center.
+                    </div>
+                </form>
+            </td>
+            <td>
+                <textarea [(ngModel)]="itm.Description" id="narration" style="width:100%; margin: 5px auto;"
+                          id="Description_{{i+1}}" (keydown.enter)="CheckAndAddNewTxnLedger($event,i)">
+          </textarea>
+            </td>
+            <td><a (click)="AddNewTxnLedger()"><i class="fa fa-plus btn btn-success"></i></a></td>
+            <td><a *ngIf="i != 0" (click)="DeleteTxnLedgerRow(i)" title="Alt+X,Alt+Delete,Click to remove this item"> <i
+                       class="btn btn-danger fa fa-times"></i> </a></td>
+        </tr>
+
+    </tbody>
+</table>
+<div class="clearfix" style="margin-bottom:10px">
+    <div class="sum_data pull-left">
+        <h4>Narration:</h4>
+        <form [formGroup]="transaction.TransactionValidator">
+            <textarea class="col-md-12" [(ngModel)]="transaction.Remarks" id="narration"
+                      (keydown.enter)="ChangeFocus('btn_Voucher_Save')"
+                      formControlName="Remarks"></textarea>
+            <div class="color-red font-sm" *ngIf="transaction.IsDirty('Remarks')" min="0"
+                 [hidden]="transaction.IsValidCheck('Remarks','maxLength')"> Max length for Remarks is 100 characters </div>
+        </form>
+    </div>
+    <div class="sum_table pull-right">
+        <ul>
+            <li style="font-weight:bold;color:green;"><b>Total Debit:</b>{{totalDebit | Currency:'4'}}</li>
+            <li style="font-weight:bold;color:red;"><b>Total Credit:</b>{{totalCredit | Currency:'4'}}</li>
+
+            <li><b>In Words :</b>{{totalAmount | NumberInWords | CapitalFirstLetter}} Only</li>
+        </ul>
+    </div>
+</div>
+<div class="btn-wrapper">
+    <button [disabled]="HideSavebtn" id="btn_Voucher_Save" class="btn green btn-success"
+            (click)="ReconcileSuspenseAccount()"
+            title="Alt+S, Enter">Reconcile</button>
+    <button class="btn btn-danger" (click)="Cancel()">Cancel </button>
+</div>
+
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYId"
+                  [showEditVoucherBtn]="false" (callback-close)="CallBackTransactionClose()"></transaction-view>

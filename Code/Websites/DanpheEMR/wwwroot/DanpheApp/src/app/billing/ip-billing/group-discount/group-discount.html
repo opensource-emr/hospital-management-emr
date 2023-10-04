@@ -1,0 +1,133 @@
+<style>
+  .padding-0-hr {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .member-select .padding-0-hr .col-md-5 .control-label {
+    display: block;
+    width: 100%;
+  }
+
+  .custom_table td,
+  .custom_table th {
+    border: 1px solid #ccc !important;
+  }
+
+  .custom_table th {
+    position: sticky;
+    top: 0;
+    left: 0;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div style="width: 100%;">
+            <div class="caption lb-caption">
+              <h3><span>Item Discount For</span></h3>
+              <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()"
+                 style="padding: 0 !important; display: block;">X</a>
+            </div>
+            <div class="p1">
+              <div class="row no-gutters">
+                <div class="col-md-12" *ngIf="admissionInfo">
+                  <div class="tbl-primary">
+                    <div class="row mb10 no-gutters">
+                      <div class="col-md-6">
+                        <h1 class="header inner-header"><i
+                             class="fa fa-user"></i>{{admissionInfo.PatientName}}({{admissionInfo.PatientNo}})</h1>
+                      </div>
+                      <div class="col-md-6 text-right">
+                        <p class="text-muted"><span><i class="fa fa-male"></i>{{admissionInfo.DateOfBirth |
+                            DanpheDateTime:'age'}} / {{admissionInfo.Gender}}</span> | <i
+                             class="fa fa-phone"></i>{{admissionInfo.PhoneNumber}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12 pat-hdr table-wrapper">
+                  <table class="table doc-tbl table-bordered custom_table padLess_table" style="width:100%;" border="0">
+                    <thead style="background-color: #d0d9d0;">
+                      <tr>
+                        <th align="center"> SNo. </th>
+                        <th> ItemName </th>
+                        <th> Quantity </th>
+                        <th> Sub Total </th>
+                        <th> Discount % </th>
+                        <th>Discount Amount</th>
+                        <th> Total Amount </th>
+                      </tr>
+                    </thead>
+                    <tbody *ngIf="groupDiscountItems">
+                      <tr *ngFor="let itm of groupDiscountItems;let i=index;">
+                        <td> {{i+1}} </td>
+                        <td align="left"> {{itm.ItemName}}
+                          <div *ngIf="itm.PerformerId"> <span style="font-size: 12px;font-weight: bold;">
+                              ({{itm.PerformerId}}) </span> </div>
+                        </td>
+                        <td> {{itm.Quantity}} </td>
+                        <td> {{itm.SubTotal}} </td>
+                        <td>
+                          <input type="number" [(ngModel)]="itm.DiscountPercent" id="id_discPercent_{{i}}" class="form-control"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)" onClick="this.select();"
+                                 (focusout)="DiscountPercentChanged(i)" min="0" (keyup.enter)="FocusNextItemRow(i)"
+                                 [attr.disabled]="(itm.DiscountApplicable ? null : true) || (EnableDiscountAmountField == true ? true : null) ">
+                          <div><span class="color-red font-sm" *ngIf="!itm.IsValidIPItemLevelDisocunt">Enter valid Discount.</span></div>
+                        </td>
+                        <td>
+                          <input type="number" [(ngModel)]="itm.DiscountAmount" id="id_discAmount_{{i}}" class="form-control"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)" onClick="this.select();"
+                                 (focusout)="ItemLevelDiscountAmountChanged(i)" min="0" (keyup.enter)="FocusNextItemRow(i)"
+                                 [attr.disabled]="(itm.DiscountApplicable ? null : true) || (EnableDiscountAmountField == false ? true : null)">
+                          <div><span class="color-red font-sm" *ngIf="!itm.IsValidIPItemLevelDisocunt">Enter valid Discount.</span></div>
+                        </td>
+                        <td> {{itm.TotalAmount}} </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-12" style="margin-top: 10px;">
+                  <div class="col-md-9"></div>
+                  <div class="col-md-3">
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td colspan="2">Subtotal: </td>
+                          <td colspan="2"> <span><label
+                                     style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.Subtotal}}</label></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">Discount Amount:</td>
+                          <td colspan="2"><span><label
+                                     style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.DiscountAmount}}</label></span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">Total Amount: </td>
+                          <td colspan="2"><span><label
+                                     style="text-align: center;background-color: rgb(197, 197, 197); color: white; width: 110px; padding: 2px;">{{model.TotalAmount}}</label></span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <div>
+                <input type="button" class="btn green btn-success" id="id_saveItems" value="Save Items"
+                       (click)="SubmitGroupDiscount()" [disabled]="showMessage || loading" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

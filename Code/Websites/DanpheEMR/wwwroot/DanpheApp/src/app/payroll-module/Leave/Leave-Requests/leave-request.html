@@ -1,0 +1,65 @@
+<div class="row">
+  <div class="col-md-2">
+    <a class="btn blue bordered" style="background-color:#337ab7;" name="name" (click)="CreateRequest()">
+      <span class="glyphicon glyphicon-plus"></span> New Request
+    </a>
+    <add-new-leave [showAddRequestPage]="showAddRequestPage" [selectedEmployeeId]="selectedEmployeeId"></add-new-leave>
+  </div>
+
+
+  <!-- <div class="col-md-4" style="padding-left: 100px;">
+    <form [formGroup]="employee.EmployeeValidator">
+      <input danphe-auto-complete [(ngModel)]="selectedEmployee[i]" [source]="EmployeeList"
+        placeholder="Select Employee" formControlName="FirstName" display-property-name="EmployeeName"
+        value-property-name="FirstName" [list-formatter]="EmployeeListFormatter"
+        (valueChanged)="AssignSelectedEmployee(i)" max-num-list="15" onclick="this.select()"
+        style="background-color: azure; width:350px;height: 30px;" />
+    </form>
+  </div> -->
+  <div class="col-md-6" style="padding-left: 200px;">
+
+    <!--  <table>
+            <tr>
+                <td style="padding-right:5px"><h4><b> <input type="radio" name="name" value="" style="width:15px;height:15px" (change)="OnSelectStatus('pending')" /> Pending </b></h4></td>
+                <td style="padding-right:5px"><h4><b><input type="radio" name="name" value="" style="width:15px;height:15px" (change)="OnSelectStatus('approved')" /> Approved </b></h4></td>
+                <td style="padding-right:5px"><h4><b><input type="radio" name="name" value="" style="width:15px;height:15px" (change)="OnSelectStatus('cancelled')" /> Cancelled </b></h4></td>
+                <td style="padding-right:5px"><h4><b><input type="radio" name="name" value="" style="width:15px;height:15px" (change)="OnSelectStatus('all')" checked/> All </b></h4></td>
+            </tr>
+        </table> -->
+
+    <div class="form-group">
+      <div class="input-group">
+        <div class="icheck-inline">
+          <label class="mt-checkbox mt-checkbox-outline">
+            <input name="status" type="radio" value="pending" [(ngModel)]="selLeaveRequests.LeaveStatus"
+              (ngModelChange)="OnSelectStatus('pending')" [ngModelOptions]="{standalone: true}">
+            <span></span><b>Pending</b>
+          </label>
+          <label class="mt-checkbox mt-checkbox-outline">
+            <input name="status" type="radio" value="approved" [(ngModel)]="selLeaveRequests.LeaveStatus"
+              (ngModelChange)="OnSelectStatus('approved')" [ngModelOptions]="{standalone: true}">
+            <span></span><b>Approved</b>
+          </label>
+          <label class="mt-checkbox mt-checkbox-outline">
+            <input name="status" type="radio" value="cancelled" [(ngModel)]="selLeaveRequests.LeaveStatus"
+              (ngModelChange)="OnSelectStatus('cancelled')" [ngModelOptions]="{standalone: true}">
+            <span></span><b>Cancelled</b>
+          </label>
+          <label class="mt-checkbox mt-checkbox-outline">
+            <input name="status" type="radio" value="all" [(ngModel)]="selLeaveRequests.LeaveStatus"
+              (ngModelChange)="OnSelectStatus('all')" checked [ngModelOptions]="{standalone: true}">
+            <span></span><b>All</b>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  <div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="LeaveRequestListComlumns" [grid-data]="LeaveRequestList">
+      </danphe-grid>
+    </div>
+  </div>
+</div>

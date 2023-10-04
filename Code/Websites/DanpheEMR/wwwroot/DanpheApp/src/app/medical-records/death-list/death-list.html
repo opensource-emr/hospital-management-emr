@@ -1,0 +1,43 @@
+<div class="row">
+  <div class="col-md-12">
+    <a class="btn btn-primary btn-sm m1" name="name" value="" *ngIf ="hasDeathRecordPermission"
+     (click)="showDeathRecordWindow= true"><span
+        class="glyphicon glyphicon-plus"> </span> Add Death Certificate</a>
+    <p>Filter by Death Date: </p>
+    <danphe-grid [grid-colDefaults]="gridColumns" [grid-data]="deathList" (grid-actions)="GridActions($event)"
+      [rangeType]="dateRange" (onDateChange)="onDateChange($event)" [show-CustomDate]="true"
+      [NepaliDateInGridParams]="NepaliDateInGridSettings" [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>
+
+
+<div *ngIf="showDeathCertificate" class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="col-md-12">
+      <div class="modelbox-div">
+
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-center"><strong>Death Record of {{selectedDeath.ShortName}}</strong></h4>
+        </div>
+
+        <div class="modelbox-body">
+          <div style="width: 100%;">
+            <death-certificate *ngIf="showDeathCertificate" (closeDeathCertificate)="CloseDeathCertificate($event)"
+              [deathDetailId]="deathDetailId"></death-certificate>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button (click)="CloseDeathCertificatePopUp()" class="btn btn-danger">X</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<add-death-details *ngIf="showDeathRecordWindow" (CallBack)="CallBackAddNewDeath($event)">
+
+</add-death-details>

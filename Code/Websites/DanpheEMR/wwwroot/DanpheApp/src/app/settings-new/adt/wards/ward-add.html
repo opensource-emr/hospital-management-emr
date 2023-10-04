@@ -1,0 +1,91 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+			<div class="caption custom-caption">
+                      <h3> <span *ngIf="!update">Add Ward Department</span> <span *ngIf="update">Update Ward Department</span> </h3>
+				<a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    
+          <form [formGroup]="CurrentWard.WardValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                        <label class="control-label col-md-4">Ward Name<sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input class="form-control" maxlength="100" type="text" id="WardName" formControlName="WardName"
+                                               [(ngModel)]="CurrentWard.WardName"
+                                               required value=""
+                                               placeholder="Enter Ward Name"
+                                               (keyup.enter)="SetFocusById('WardCode')"  />
+                          <span class="color-red font-sm" [hidden]="CurrentWard.IsValidCheck('WardName','required') || !(CurrentWard.IsDirty('WardName'))">Ward Name is required</span> <span class="color-red font-sm" *ngIf="CurrentWard.IsDirty('WardName')" [hidden]="CurrentWard.IsValidCheck('WardName','maxlength')"> Length is not proper</span> </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4">Ward Code<sup>*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <input class="form-control" maxlength="20" type="text" id="WardCode" formControlName="WardCode"
+                                               [(ngModel)]="CurrentWard.WardCode"
+                                               required value=""
+                                               placeholder="Enter Ward Code" 
+                                               (keyup.enter)="SetFocusById('add')"/>
+                          <span class="color-red font-sm" *ngIf="CurrentWard.IsDirty('WardCode')" [hidden]="CurrentWard.IsValidCheck('WardCode','maxlength')">WardCode should be less than 20 characters</span> </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4">Ward Location<b>:</b></label>
+                        <div class="col-md-8">
+                          <input class="form-control" maxlength="20" type="text" id="WardLocation" [ngModelOptions]="{standalone: true}"
+                                               [(ngModel)]="CurrentWard.WardLocation"
+                                               required value=""
+                                               placeholder="Enter Ward Location" />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4">Sub Store<b>:</b></label>
+                        <div class="col-md-8">
+                          <input danphe-auto-complete class="form-control"
+                                             [(ngModel)]="selectedSubStore"
+                                             [source]="subStoreList"
+                                             [list-formatter]="SubStoreListFormatter"
+                                             placeholder="--Select SubStore--"
+                                             display-property-name="Name"
+                                             value-property-name=null
+                                             onClick="this.select();"
+                                             (valueChanged)="onChangeSubstore($event)"
+                                             max-num-list="20"
+                                             min-chars="0"
+                                             [grid-sort]="'Name'"
+                                             match-formatted="true"
+                                             [ngModelOptions]="{standalone:true}" />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" name="IsActive" type="checkbox" value=""
+                                                           [(ngModel)]="CurrentWard.IsActive"
+                                                           [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                     
+            </div>
+			   <div class="panel-footer">
+                        <input type="button" id="add"  class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+                        
+                        <!-- <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" /> -->
+                        <button *ngIf="update" id="add" type="button" class="btn green btn-success margin-7-hr"
+                        [disabled]="disableButton" (click)="loading=true;Update()">
+                        Update
+                      </button>
+                      </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

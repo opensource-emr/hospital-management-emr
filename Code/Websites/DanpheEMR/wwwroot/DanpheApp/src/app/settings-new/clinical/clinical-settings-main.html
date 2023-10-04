@@ -1,0 +1,13 @@
+<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li><a [ngClass]="{'a-tab-active': showReactionList==true}" (click)="updateView(0)">Manage Reactions</a></li>
+    <li><a [ngClass]="{'a-tab-active': showICD10GroupList==true}" (click)="selectIcd10GroupList()">ICD Groups</a></li>
+  </ul>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <reaction-list *ngIf="showReactionList"></reaction-list>
+    <icd10-group-list *ngIf="showICD10GroupList"></icd10-group-list>
+  </div>
+</div>

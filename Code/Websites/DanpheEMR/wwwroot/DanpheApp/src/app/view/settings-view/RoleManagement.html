@@ -1,0 +1,125 @@
+﻿<!--@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Text;
+@using DanpheEMR.ServerModel;
+@using DanpheEMR.DalLayer;
+@using DanpheEMR.Core.Caching;
+@using DanpheEMR.Security;
+@{
+    string connString = ViewData["ConnectionString"].ToString();
+    RbacDbContext rbacDbcontext = new RbacDbContext(ViewData["ConnectionString"].ToString());
+    var applications = rbacDbcontext.Applications.ToList<RbacApplication>();
+    var routes = rbacDbcontext.Routes.Where(r => r.PermissionId != null).ToList<DanpheRoute>();
+
+}-->
+<section id="addroleSection">
+
+    <form [formGroup]="CurrentRole.RoleManagementValidator" style="background-color:#E6E6FA; width: 50%">
+
+        <div>
+            <h4 style="color:#532c7b;">Add Role Management</h4>
+        </div>
+
+        <div class="add-role-manage-content">
+
+
+            <table class="tableContent" style="height: 100%;">
+
+
+                <tr>
+                    <td align="left"> Role Name <b class="color-red">*</b> :-</td>
+
+                    <td>
+                        <input class="pat-input" style="width:180px; height:40px;"
+                               [(ngModel)]="CurrentRole.RoleName"
+                               formControlName="RoleName"
+                               type="text" id="RoleName" value="" placeholder="Enter Role Name" /><br />
+                        <div style="color:red" [hidden]="CurrentRole.IsValidCheck('RoleName','required') || !(CurrentRole.IsDirty('RoleName'))">Role Name is required</div>
+                        <div style="color:red" *ngIf="CurrentRole.IsDirty('RoleName')" [hidden]="CurrentRole.IsValidCheck('RoleName','maxlength')"> Length is not proper</div>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left"> Role Description :-</td>
+                    <td>
+                        <textarea class="pat-input" style="width:180px; height:40px;"
+                               [(ngModel)]="CurrentRole.RoleDescription"
+                               formControlName="RoleDescription"
+                               type="text" id="RoleDescription" value="" placeholder="Enter Role Description" >
+                            </textarea><br />
+                         <div style="color:red" *ngIf="CurrentRole.IsDirty('RoleDescription')" [hidden]="CurrentRole.IsValidCheck('RoleDescription','maxlength')"> Length is not proper</div>
+
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left"> Role Priority  :-</td>
+                    <td>
+                        <input type="number" class="pat-input" value="" [(ngModel)]="CurrentRole.RolePriority" [ngModelOptions]="{standalone: true}" /><br />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left"> Is System Admin  :-</td>
+                    <td>
+                        <input type="checkbox" value="" [(ngModel)]="CurrentRole.IsSysAdmin" [ngModelOptions]="{standalone: true}" /><br />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="left"> Application Name  <b class="color-red">*</b> :-</td>
+                    <td>
+                        <select [(ngModel)]="CurrentRole.ApplicationId" formControlName="ApplicationId" 
+                                 style="width:180px; height:40px;" class="pat-input" type="text">
+                            <option value="0">select</option>
+                            <!--@foreach (var app in applications)
+                            {
+                                <option value="@app.ApplicationId">@app.ApplicationName </option>
+                            }-->
+                        </select>
+                    </td>
+
+
+
+                </tr>
+
+                <tr>
+                    <td align="left"> Default Route  <b class="color-red">*</b> :-</td>
+
+                    <td>
+                        <select [(ngModel)]="CurrentRole.DefaultRouteId" formControlName="DefaultRouteId"
+                                style="width:180px; height:40px;" class="pat-input" type="text">
+                            <option value="0">select</option>
+                            <!--@foreach (var app in routes)
+                            {
+                                <option value="@app.RouteId">@app.DisplayName </option>
+                            }-->
+                        </select>
+
+                        <div style="color:red" [hidden]="CurrentRole.IsValidCheck('DefaultRouteId','required') || !(CurrentRole.IsDirty('DefaultRouteId'))">Application Name  is required</div>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+                    <td align="left"> </td>
+
+                    <td>
+                        <input type="button" (click)="AddRole()" value="Add Role" style="width:80px; height:35px;" />
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="button" (click)="Clear()" value="Cancel" style="width:80px; height:35px;" />
+                    </td>
+                </tr>
+
+
+
+
+
+
+            </table>
+        </div>
+
+    </form>
+</section>

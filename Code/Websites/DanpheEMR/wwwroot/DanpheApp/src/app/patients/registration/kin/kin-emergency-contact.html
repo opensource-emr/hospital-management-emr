@@ -1,0 +1,107 @@
+﻿<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="col-md-6 col-sm-12">
+        <form [formGroup]="currentKinEmergencyContact.KinValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+            <div class="col-md-12">
+              <div class="row clearfix">
+                <div class="form-group">
+                  <label class="control-label col-md-4">Type <sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="KIN" [(ngModel)]="currentKinEmergencyContact.KinContactType" checked />
+                          <span></span>KIN </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio"  (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="EmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
+                          <span></span>Emergency Contact </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" (change)="GoToNextInput('FirstName')" formControlName="KinContactType" value="KinAndEmergencyContact" [(ngModel)]="currentKinEmergencyContact.KinContactType" />
+                          <span></span>Both </label>
+                      </div>
+                    </div>
+                    <div class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinContactType')"
+                                 [hidden]="currentKinEmergencyContact.IsValidCheck('KinContactType','required')">Type is required</div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-4">First Name<sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" id="FirstName" (keyup.enter)="GoToNextInput('LastName')" type="text" formControlName="KinFirstName" [(ngModel)]="currentKinEmergencyContact.KinFirstName"
+                                   required value="" placeholder="First Name" />
+                    <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinFirstName')" [hidden]="currentKinEmergencyContact.IsValidCheck('KinFirstName','required')"> First Name is required</span> </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Last Name<sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" id="LastName" (keyup.enter)="GoToNextInput('Relationship')" type="text" formControlName="KinLastName" [(ngModel)]="currentKinEmergencyContact.KinLastName"
+                                   required value="" placeholder="last name" />
+                    <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinLastName')" [hidden]="currentKinEmergencyContact.IsValidCheck('KinLastName','required')"> Last Name is required</span> </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Phone Number<b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" maxlength="11" type="tel" formControlName="KinPhoneNumber" [(ngModel)]="currentKinEmergencyContact.KinPhoneNumber"
+                                   value="" placeholder="phone number" />
+                    <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('KinPhoneNumber')" [hidden]="currentKinEmergencyContact.IsValidCheck('KinPhoneNumber','pattern')"> Phone Number is not proper</span> </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Relationship<sup>*</sup><b>:</b></label>
+                  <div class="col-md-8">
+                    <input id="Relationship" class="form-control" type="text" formControlName="RelationShip" [(ngModel)]="currentKinEmergencyContact.RelationShip"
+                                   required value="" placeholder="Relationship" />
+                    <span class="color-red" *ngIf="currentKinEmergencyContact.IsDirty('RelationShip')" [hidden]="currentKinEmergencyContact.IsValidCheck('RelationShip','required')"> Relationship is required</span> </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Comments<b>:</b></label>
+                  <div class="col-md-8">
+                    <input class="form-control" type="tel" [(ngModel)]="currentKinEmergencyContact.KinComment" [ngModelOptions]="{standalone: true}" placeholder="comments" />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <input type="button" class="btn blue" name="name" *ngIf="!editbutton" value="Add" (click)="AddKIN()" />
+                <input type="button" class="btn blue" *ngIf="editbutton" value="Update" (click)="UpdateKin()" />
+              </div>
+            </div>
+            <div class="col-md-1"> </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <div *ngFor="let kin of currentPatient.KinEmergencyContacts">
+          <div class="portlet blue-hoki box">
+            <div class="portlet-title">
+              <div class="caption"> <i class="fa fa-cogs"></i>{{kin.KinContactType}} </div>
+              <div class="actions"> <a href="javascript:;" class="btn btn-default btn-sm edit-btn" data-toggle="modal" data-target="#myModal" (click)="Edit(kin)"> <i class="fa fa-pencil"></i> Edit </a> </div>
+            </div>
+            <div class="portlet-body">
+              <div class="row static-info">
+                <div class="col-md-5 name"> First Name: </div>
+                <div class="col-md-7 value"> {{kin.KinFirstName}} </div>
+              </div>
+              <div class="row static-info">
+                <div class="col-md-5 name"> Last Name: </div>
+                <div class="col-md-7 value">{{kin.KinLastName}}</div>
+              </div>
+              <div class="row static-info">
+                <div class="col-md-5 name"> Contact Number: </div>
+                <div class="col-md-7 value"> {{kin.KinPhoneNumber}} </div>
+              </div>
+              <div class="row static-info">
+                <div class="col-md-5 name"> Relationship: </div>
+                <div class="col-md-7 value"> {{kin.RelationShip}}</div>
+              </div>
+              <div class="row static-info">
+                <div class="col-md-5 name"> Comments: </div>
+                <div class="col-md-7 value"> {{kin.KinComment}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

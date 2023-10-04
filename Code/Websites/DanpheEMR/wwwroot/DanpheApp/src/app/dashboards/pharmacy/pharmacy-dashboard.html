@@ -1,0 +1,218 @@
+<div class="app-wrap">
+    <div class="card-section">
+        <div class="filter-wrap" [hidden]="!IsAllDataLoaded">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [emit-always]="false">
+            </from-to-date-select>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" *ngIf="SalesData.length >0">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\patient-wran.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Sales</h4>
+                                <div class="card-count">
+                                    Total : <strong>{{coreService.currencyUnit}}{{SalesData[0].TotalAmount | number : "1.0-2"}}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between"> 
+                        <div class="card-left">
+                            <div class="card-count">
+                                Previous Day : <strong>{{coreService.currencyUnit}}{{SalesData[3].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                            <p>
+                                <span *ngIf="SalesDifferenceRate==='-'" class="success">{{SalesDifferenceRate}}</span>
+                                <span *ngIf="SalesDifferenceRate!=='-'" class="success">{{SalesDifferenceRate | number : "1.0-2"}}%</span>patient from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span>
+                            </p>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count">
+                                Cash : <strong>{{coreService.currencyUnit}}{{SalesData[1].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                            <div class="card-count">
+                                Credit : <strong>{{coreService.currencyUnit}}{{SalesData[2].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" *ngIf="GoodReceiptData.length >0">
+                <div class="card card-indigo">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\doctor.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Goods Receipt</h4>
+                                <div class="card-count">
+                                    Total : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[0].TotalAmount | number : "1.0-2"}}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left">
+                            <div class="card-count">
+                                Previous Day : <strong>{{GoodReceiptData[3].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                            <p>
+                                <span *ngIf="GoodReceiptDifferenceRate==='-'" class="success">{{GoodReceiptDifferenceRate}}</span>
+                                <span *ngIf="GoodReceiptDifferenceRate!=='-'" class="success">{{GoodReceiptDifferenceRate | number : "1.0-2"}}%</span>
+                                patient from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span>
+                            </p>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count">
+                                Cash : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[1].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                            <div class="card-count">
+                                Credit : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[2].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" *ngIf="DispatchData.length >0">
+                <div class="card card-info">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\appointment.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Dispatch</h4>
+                                <div class="card-count">
+                                    Total : <strong>{{DispatchData[0].TotalAmount | number : "1.0-2"}}</strong> <span class="badge badge-indigo"> {{DispatchData[0].TotalUnit | number : "1.0-2"}} Items</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left">
+                            <div class="card-count">
+                                Previous Day : <strong>{{DispatchData[1].TotalAmount | number : "1.0-2"}}</strong>
+                            </div>
+                            <p>
+                                <span *ngIf="DispatchDataDifferenceRate==='-'" class="success">{{DispatchDataDifferenceRate}}</span>
+                                <span *ngIf="DispatchDataDifferenceRate!=='-'" class="success">{{DispatchDataDifferenceRate | number : "1.0-2"}}%</span>
+                                patient from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span>
+                            </p>
+                        </div>
+                        <div class="card-right">
+                            <!-- <div class="card-count">
+                                Complete : <strong>450</strong> 
+                            </div> -->
+                            <div class="card-count">
+                                <a href="">Pending : <strong>{{DispatchData[1].TotalUnit | number : "1.0-2"}}</strong> </a>
+                            </div>
+                            <div class="card-count">
+                                <a href="">Not Received :<strong>{{DispatchData[2].TotalUnit | number : "1.0-2"}}</strong> </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" *ngIf="StockData.length>0">
+                <div class="card card-success">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\admission.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Stock</h4>
+                                <div class="card-count">
+                                    Total : <strong>{{coreService.currencyUnit}}{{StockData[0].TotalAmount | number : "1.0-2"}}</strong> <span class="badge badge-success">{{StockData[0].TotalUnit}}
+                                        Units</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left">
+                            <div class="card-count text-danger">
+                                Narcotics : <strong>{{StockData[1].TotalUnit | number : "1.0-2"}} Units</strong>
+                            </div>
+                            <!-- <p><span class="success">+ 4%</span>patient from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span></p> -->
+                        </div>
+                        <div class="card-right">
+
+                            <div class="card-count">
+                                <a href="">Near Expiry : <strong>{{StockData[2].TotalUnit | number : "1.0-2"}} Units</strong> </a>
+                            </div>
+                            <div class="card-count">
+                                <a href="">Expired :<strong>{{StockData[3].TotalUnit | number : "1.0-2"}} Units</strong> </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="card">
+                    <div class="chart-title d-flex justify-content-between align-items-center">
+                        <h4>SubStore Wise Dispatch Value</h4>
+                    </div>
+                    <canvas id="substoreWiseValue" height="100">{{ substoreWiseValue }}</canvas>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="chart-title d-flex justify-content-between align-items-center">
+                        <h4>Membership Wise Medicine Sales</h4>
+                    </div>
+                    <div class="table-content">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Membership</th>
+                                    <th scope="col">Quantity Sold</th>
+                                    <th scope="col">Total Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let membershipWiseSale of MembershipwiseMedicineSales">
+                                    <td>{{membershipWiseSale.MembershipTypeName}}</td>
+                                    <td>{{membershipWiseSale.QuantitySold}}</td>
+                                    <td>{{membershipWiseSale.TotalSales}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="chart-title d-flex justify-content-between align-items-center">
+                        <h4>Top 10 Most Sold Medicines</h4>
+                    </div>
+                    <div class="table-content">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Medicine Name</th>
+                                    <th scope="col">Quantity Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let medicineSold of MedicineSolds">
+                                    <td>{{medicineSold.ItemName}}</td>
+                                    <td>{{medicineSold.SoldQuantity}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

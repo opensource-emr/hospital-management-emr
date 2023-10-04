@@ -1,0 +1,132 @@
+<style type="text/css">
+  .buttom_align{
+    margin-top: 10px;
+  }
+  .form-control {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+  }
+  td, th {
+    padding: 2px 10px;
+  }
+  table{
+    margin-bottom: 2em;
+  }
+</style>
+
+<form class="form-horizontal hm-form">
+    <div class="form-body">
+      <div class="caption lb-caption">
+          <i class="fa fa-money"></i>
+          <span class="caption-subject">Inventory Value By Item / Category</span>
+        </div>
+        <div class="row">
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<sup class="color-red">  *</sup ><b>:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker ngDefaultControl [CalendarTypes]="'en,np'" >
+                </danphe-date-picker>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">To Date<sup class="color-red">  *</sup ><b>:</b></label>
+              <div class="col-md-8">
+                <danphe-date-picker  ngDefaultControl [CalendarTypes]="'en,np'" >
+                </danphe-date-picker>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue primary-btn" type="button"  > Show Report</button>
+            </div>
+          </div> 
+        </div>        
+      </div>
+  </form>
+
+ 
+  
+    <div class="main">
+  
+      <hr style="border: 1px solid black">
+  
+      <!-- main form body poart -->
+    <form action="" class="clearfix">
+      <div class=" ">
+        <table border="1" width="100%">
+          <thead class="text-center">
+            <tr>
+              <th colspan="2">Item</th>
+              <th rowspan="2">Material No</th>
+              <th rowspan="2">Expiry Date</th>
+              <th colspan="2">Recorder</th>
+              <th rowspan="2">StcokQty</th>
+              <th rowspan="2">Unit</th>
+              <th rowspan="2">Unit Cost</th>
+              <th rowspan="2">Total Cost</th>
+              <th colspan="4">Order</th>
+            </tr>
+            <tr>
+              <th>Code</th>
+              <th>Description</th>
+              <th>Lavel</th>
+              <th>Qty</th>
+              <th>No</th>
+              <th>Date</th>
+              <th>Qty</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+  
+          <thead>
+            <tr>
+              <th colspan = "14" class="p-2">Category: Primary Packaging For Hydropilic Lens</th>
+            </tr>
+          </thead>
+  
+          <tbody class="text-center">
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+  
+            
+           
+           
+            
+            
+  
+        
+            
+          </tbody>
+  
+          <thead>
+            <tr>
+              <th  colspan = "9">Total</th>
+              <th  colspan = "5"></th>
+            </tr>
+          </thead>
+  
+        </table>
+      </div>
+    </form>	
+  
+    </div>
+  

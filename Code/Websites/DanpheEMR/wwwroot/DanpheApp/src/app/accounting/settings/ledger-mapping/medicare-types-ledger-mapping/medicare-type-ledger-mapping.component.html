@@ -1,0 +1,62 @@
+<style>
+    .padLess_table th,
+    .padLess_table td {
+        padding: 1px 5px !important;
+    }
+
+    .mt-checkbox {
+        margin-right: 3px;
+    }
+
+    table tr td,
+    th {
+        text-align: center;
+    }
+</style>
+
+
+<div class="col-md-12">
+    <div class="col-md-12 " style="margin-bottom: 15px;">
+        <div class="table-responsive tbl-trns-itm-holder table-wrapper" style="height: 400px;">
+            <table class="table table-striped table-hover custom_table padLess_table" style="width: 150vw !important; ">
+                <thead style="text-align: center;">
+                    <tr>
+                        <th style="width: 2%">
+                            <input id="isActive" type="checkbox" [(ngModel)]="isSelectAll"
+                                   (change)="SelectAllChkOnChange()" />
+                        </th>
+                        <th style="width: 40%;">Medicare Types</th>
+                        <th style="width: 20%;"> Ledger Name </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let led of mediCareTypeList; let i = index">
+                        <td style="text-align: center;">
+                            <input type="checkbox" [(ngModel)]="led.IsSelected" (change)="SingleCkboxChange(i)">
+                        </td>
+
+                        <td><label class="mt-checkbox mt-checkbox-outline checkbox-nolabel">
+                                {{led.MedicareTypeName }}
+                            </label>
+                        </td>
+                        <td>
+                            <input danphe-auto-complete class="form-control"
+                                   [source]="sourceLedgerList" placeholder="Ledger Name" display-property-name="LedgerName"
+                                   value-property-name=LedgerId [(ngModel)]="selectedLedger[i]"
+                                   [list-formatter]="LedgerListFormatter" max-num-list="15" (focusout)="AssignSelectedLedger(i)"
+                                   onclick="this.select()" id="Ledger_{{i+1}}" style="width: 100%;" [disabled]="!led.IsSelected" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+<div class="col-md-12" style="padding-bottom: 10px;">
+    <button type="button" class="btn primary-btn" style="float:right; margin-right: 20px !important;" (click)="UpdateMedicareTypes();">
+        <i class="fa fa-save"></i>
+        Map Ledgers
+    </button>
+</div>

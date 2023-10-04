@@ -1,0 +1,44 @@
+﻿<style>
+  li.horizontal-bar:hover>a {
+    background: none;
+  }
+
+  li.bil-hr-bar:hover ul.dropdown-menu li a {
+    background: none;
+    color: #6f6f6f !important;
+  }
+
+  .dropdown.bil-hr-bar.open a.dropdown-toggle {
+    background: linear-gradient(to bottom, #006687 0%, #035671 50%, #034256 100%);
+    border-radius: 4px !important;
+  }
+
+  .dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+    color: #6f6f6f;
+  }
+
+  .hr-ddlCstm {
+    border-bottom: 1px solid #c5cbc5;
+  }
+
+  .bil-hr-dropdown li a:hover {
+    font-weight: 700;
+  }
+</style>
+<base href="/">
+<div class="page-bar fixed-top-bar">
+  <ul class="page-breadcrumb">
+
+    <li>
+      <a routerLink="PatientList" [routerLinkActive]="'link3-active'">
+        SSU Patient List
+        <i></i>
+      </a>
+    </li>
+    <!--End: Primary Menu Items -->
+
+  </ul>
+</div>
+<div class="wrapper">
+  <router-outlet></router-outlet>
+</div>

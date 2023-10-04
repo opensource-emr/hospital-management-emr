@@ -1,0 +1,86 @@
+﻿@{
+    string messaage = (string)TempData["LicenseMessage"];
+}
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>License Expired</title>
+<style type="text/css">
+    body, p, ul li, a {
+        font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    html, body {
+        height: 100%;
+        background-repeat: no-repeat;
+        background-image: linear-gradient(rgb(236, 229, 255), rgb(206, 212, 208));
+        margin: 0 auto;
+    }
+
+    .main-wrapper {
+        display: table;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    .card-holder {
+        padding: 20px;
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .card {
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+
+    .l-exp {
+        font-size: 36px;
+        color: red;
+        background: #eff5ef;
+        padding: 10px 0px;
+        border-radius: 2px;
+        -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        margin-top: 15px;
+    }
+
+    span.round {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        text-align: center;
+        border: 3px solid red;
+        border-radius: 50%;
+    }
+
+    p.normal {
+        color: #000;
+        font-size: 16px;
+        font-weight: 600;
+        color: #12111d;
+    }
+</style>
+
+
+<div class="main-wrapper">
+    <div class="card-holder">
+        <div class="card">
+            <div class="logo">
+                <img src="~/themes/theme-default/images/new-logo-main.png" alt="logo" />
+            </div>
+            <div class="l-exp">
+                <p><strong><span class="round">!!</span> Invalid Software License.</strong></p>
+                <p class="normal">Please contact Administrator for License Renewal</p>
+                <h6 style="color:blue">@messaage </h6>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+

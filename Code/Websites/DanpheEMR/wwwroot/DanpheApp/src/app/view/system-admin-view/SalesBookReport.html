@@ -1,0 +1,96 @@
+<style type="text/css">
+  .Selected {
+    border-collapse: collapse;
+    border-spacing: 5px;
+    border: 1px solid black;
+    padding: 3px;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row">
+    <div>
+      <div class="caption custom-caption">
+        <i class="glyphicon glyphicon-asterisk"></i>
+        <span class="caption-subject" style="text-transform: uppercase;"> Sales Book Details</span>
+      </div>
+      <div class="col-md-6">
+        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+        </from-to-date-select>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="GetInvoiceDetails()">
+            <i class="fa fa-search"></i> Show Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <br />
+    <div>
+      <div id="dvReport" *ngIf="displayReport" style="padding-left: 15px;">
+        <table *ngIf="displayReport"
+          style="width:100%;box-shadow: 10px 10px 5px #888888;background-color: white;border-top: 2px solid #000;">
+          <tr><td style="font-weight: bold;text-align: center;">Details Sales Report</td></tr>
+          <tr>
+            <td><b>Name Of Service Provider :{{headerDetail.CustomerName}}</b> <br />
+              <b>Taxpayers {{ headerDetail.CustomerRegLabel}}</b><br />
+              <b>Duration of Sales :</b> {{displayStartDate}} / {{displayEndDate}}<br />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:15px;">
+              <table class="Selected" style="width:100%;">
+                <tr>
+                  <td class="Selected" colspan="5"><b>Invoice</b></td>
+                  <td class="Selected" rowspan="2" align="center"><b>Total Amount <br />
+                      (Total Sales)</b></td>
+                  <td class="Selected" rowspan="2" align="center"><b>Non Taxable Sales</b></td>
+                  <td class="Selected" rowspan="2" align="center"><b>Export Sales</b></td>
+                  <td class="Selected" rowspan="2" align="center"><b>Discount</b></td>
+                  <td class="Selected" colspan="2" align="center"><b>Taxable Sales</b></td>
+                </tr>
+                <tr>
+                  <td class="Selected" width="40px"><b>Date (AD)</b></td>
+                  <td class="Selected" width="50px"><b>Date (BS)</b></td>
+                  <td class="Selected" width="50px"><b>Bill No.</b></td>
+                  <td class="Selected" width="100px"><b>Buyer'sName</b></td>
+                  <td class="Selected" width="70px"><b>Buyer's PAN Number</b></td>
+                  <td class="Selected" width="80px"><b>Amount</b></td>
+                  <td class="Selected" width="80px"><b>TAX({{coreservice.currencyUnit}})</b></td>
+                </tr>
+                <tr *ngFor="let curtSales of finalData">
+                  <td class="Selected">{{curtSales.BillDate}}</td>
+                  <td class="Selected">{{curtSales.BillDate_Np}}</td>
+                  <td class="Selected">{{curtSales.Bill_No_Str}}</td>
+                  <td class="Selected">{{curtSales.Customer_name}}</td>
+                  <td class="Selected">{{curtSales.PANNumber}}</td>
+                  <td class="Selected">{{curtSales.Total_Amount }}</td>
+                  <td class="Selected">{{curtSales.NonTaxable_Amount}}</td>
+                  <td class="Selected">0</td>
+                  <td class="Selected">{{curtSales.DiscountAmount}}</td>
+                  <td class="Selected">{{curtSales.Taxable_Amount}}</td>
+                  <td class="Selected">{{curtSales.Tax_Amount}}</td>
+                </tr>
+                <tr>
+                  <td class="Selected" colspan="5"><b>Total Amount</b></td>
+                  <td class="Selected" width="80px"><b>{{sumTotalAmount}}</b></td>
+                  <td class="Selected" width="80px"><b>{{sumNONTaxableSales}}</b></td>
+                  <td class="Selected" width="80px"><b>{{sumExportSales}}</b></td>
+                  <td class="Selected" width="80px"><b>{{sumDiscountAmount}}</b></td>
+                  <td class="Selected" width="80px"><b>{{sumTaxableAmount}}</b></td>
+                  <td class="Selected" width="80px"><b>{{sumTaxableTAX}}</b></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <p style="text-align:center;" *ngIf="displayReport">
+        <button class="btn blue" (click)="PrintReport()"> Print <i class="glyphicon glyphicon-print"></i> </button>
+      </p>
+    </div>
+  </div>
+</div>

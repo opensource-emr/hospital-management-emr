@@ -1,0 +1,184 @@
+<div class="app-wrap">
+    <div class="card-section">
+        <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\patient-wran.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Patient Report</h4>
+                                <div class="card-count">
+                                    Today : <strong>{{billingDashboardCardSummaryPatientReport.Total_Today }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left f__14">
+                            <div class="card-count">
+                                This Week : <strong>{{billingDashboardCardSummaryPatientReport.Total_Weekly }}</strong>
+                            </div>
+                        </div>
+                        <div class="card-right f__14">
+                            <div class="card-count">
+                                This Month :<strong>{{billingDashboardCardSummaryPatientReport.Total_Monthly }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="card card-indigo">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\doctor.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Income Report</h4>
+                                <div class="card-count">
+                                    Today : <strong>{{billingDashboardCardSummaryIncomeReport.Total_Today | number:
+                                        "1.2-2"}}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left f__14">
+                            <div class="card-count">
+                                This Week : <strong>{{billingDashboardCardSummaryIncomeReport.Total_Weekly | number:
+                                    "1.2-2"}}</strong>
+                            </div>
+                        </div>
+                        <div class="card-right f__14">
+                            <div class="card-count">
+                                This Month :<strong>{{billingDashboardCardSummaryIncomeReport.Total_Monthly | number:
+                                    "1.2-2"}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="card card-info">
+                    <div class="card-body">
+                        <div class="d-flex card-head">
+                            <div class="card-icon">
+                                <img src="\assets\pages\img\dashboard\appointment.svg" alt="">
+                            </div>
+                            <div class="card-title">
+                                <h4>Return Bills</h4>
+                                <div class="card-count">
+                                    Today : <strong>{{billingDashboardCardSummaryBillReturnReport.Total_Today | number:
+                                        "1.2-2"}}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <div class="card-left">
+                            <div class="card-count">
+                                This Week : <strong>{{billingDashboardCardSummaryBillReturnReport.Total_Weekly | number:
+                                    "1.2-2"}}</strong>
+                            </div>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count">
+                                This Month :<strong>{{billingDashboardCardSummaryBillReturnReport.Total_Monthly |
+                                    number: "1.2-2"}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <from-to-date-select (on-change)="OnFromToDateChanged($event)"
+        [date-settings-name]="'billing-reports'" [emit-always]="false"></from-to-date-select>
+    </div>
+    <div class="chart-container lab-container">
+        <div class="chart-grid">
+            <div class="card">
+                <div class="chart-title">
+                    <div class="mb-2">
+                        <h4>Membership Wise Patient Invoice Count</h4>
+                    </div>
+                    <!-- <from-to-date-select (on-change)="OnFromToDateChangeForMembershipWise($event)"
+                        [date-settings-name]="'billing-reports'" [emit-always]="false"></from-to-date-select> -->
+                </div>
+                <canvas #memberWisePatientInvoiceCountRef id="id_canvas_memberWisePatientInvoiceCount"
+                    height="200"></canvas>
+            </div>
+            <div class="card">
+                <div class="chart-title">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>Rank Wise Patients Invoice Count</h4>
+                        <!-- <from-to-date-select (on-change)="OnFromToDateChangeForRankWise($event)"
+                            [date-settings-name]="'billing-reports'" [emit-always]="false"></from-to-date-select> -->
+                    </div>
+                </div>
+                <canvas #rankWisePatientInvoiceCountRef id="id_canvas_rankWisePatientInvoiceCount"
+                    height="100"></canvas>
+
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <div class="chart-title">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4>Inpatient Census Report</h4>
+                            <!-- <from-to-date-select (on-change)="OnFromToDateChangeForInpatientCensusReport($event)"
+                                [date-settings-name]="'billing-reports'" [emit-always]="false"></from-to-date-select> -->
+                        </div>
+                        <p>Inpatient Census (All Wards) for the selected dates</p>
+                        <div class="patient-count d-flex align-items-center ">
+                            <div class="countitem text-center">
+                                <h2><i class="icon"><img src="\assets\pages\img\dashboard\uparrow.svg"
+                                            alt=""></i>{{totalAdmittedPatients}}
+                                </h2>
+                                <h4>Total Admitted</h4>
+                            </div>
+                            <div class="countitem text-center">
+                                <h2><i class="icon"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></i>
+                                    {{totalDischargedPatients}}
+                                </h2>
+                                <h4>Total Discharged</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-content">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Ward Name</th>
+                                <th scope="col">In Bed</th>
+                                <th scope="col">New Admission</th>
+                                <th scope="col">Trans IN</th>
+                                <th scope="col">Trans Out</th>
+                                <th scope="col">Discharged</th>
+                                <th scope="col">Total Pt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let wardData of inpatientCensusReport">
+                                <td>{{wardData.Ward}}</td>
+                                <td>{{wardData.InBed}}</td>
+                                <td>{{wardData.NewAdmission}}</td>
+                                <td>{{wardData.TransIn}}</td>
+                                <td>{{wardData.TransOut}}</td>
+                                <td>{{wardData.Discharged}}</td>
+                                <td>{{wardData.Total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

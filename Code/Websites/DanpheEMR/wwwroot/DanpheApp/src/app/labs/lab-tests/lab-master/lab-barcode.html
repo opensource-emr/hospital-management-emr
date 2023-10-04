@@ -1,0 +1,280 @@
+<style>
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+table thead tr th {
+	white-space: nowrap !important;
+}
+table thead tr th, table thead tr td, table tbody tr td {
+	padding: 4px 2px !important;
+}
+table thead tr th:first-child {
+/*width: 45%;*/
+}
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="clearfix lab-header-top">
+        <div class="caption lb-caption pull-left"> 
+          <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> --> 
+          <span class="caption-subject">Sample-Summary-Page</span> </div>
+        <div class="pull-right"> <a (click)="pageLoading=true; ReloadPageData();" class="btn primary-btn"><i class="fa fa-refresh "></i> Reload</a> </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div *ngIf="!pageLoading">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-3">
+            <button *ngIf="!qrService.show" (click)="ShowQrScanner()" class="btn primary-btn" id="showQrScan">Show Qr-Scan</button>
+            <button *ngIf="qrService.show" (click)="HideQrScanner()" class="btn btn-danger" id="showQrScan">Hide Qr-Scan</button>
+          </div>
+          <div class="col-md-9">
+            <danphe-qr-reader *ngIf="qrService.show" [department]="'lab'" (on-ReadFailed)="ReadFailed($event)"
+                            (on-success)="GetAllDataByHospitalNumber($event)"> </danphe-qr-reader>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div class="row m1">
+          <div class="col-md-4 col-sm-4">
+            <div class="search-wrap"><strong>Search Patient : </strong>
+              <div class="autocomplete-item">
+                <input danphe-auto-complete class="form-control round-input" aria-label="search"
+				   [(ngModel)]="patientToSearch"
+				   [source]="allPatientList"
+				   [list-formatter]="patientListFormatter"
+				   placeholder="-- Search Patient --"
+				   display-property-name="ShortName"
+				   (focusout)="GetAllDataByPatientName()"
+				   onClick="this.select();"
+				   match-formatted="true"
+				   max-num-list="20"
+				   min-chars="0" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8 col-sm-8">
+            <div class="lab_form_wrap">
+              <div><strong>Bar-Code Number :</strong>
+                <input id="barCodeSearchInput" type="number" (keydown.enter)="EnterPressed($event)"  [(ngModel)]="barCodeNumber" name="barCodeNumber" value="" onwheel="this.blur()" />
+              </div>
+              <div> <strong>Run Num :</strong> &nbsp;
+                <input id="runNumberInput" type="text" (keydown.enter)="EnterPressed($event)"  [(ngModel)]="runNumber" name="runNumber" value="" />
+              </div>
+              <div class="text-right">
+                <button (click)="loading=true;GetAllLabDataByBarcodeNumber();" class="btn primary-btn" id="submitBarcode">ShowDetails</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="pageLoading" style="width: 100%; display: table; height: auto; position: absolute;top: 0;">
+      <div class="loading-img"> <img style="max-width: 150px; height: auto; margin: 0 auto;" src="../../../themes/theme-default/images/loading-child.gif" alt="Tab Loading" class="img-responsive"> </div>
+    </div>
+  </div>
+  <div *ngIf="showLabResult">
+    <danphe-lab-results [showReport]="showReport"
+                        [showAddEditResult]="showAddEdit"
+                        [requisitionIdList]="labReqIdList"
+                        [verificationRequired]="verificationRequired"></danphe-lab-results>
+  </div>
+  <div *ngIf="showPendingReportDetail" class="allPendingReports">
+    <danphe-lab-results [showReport]="showPendingReportDetail"
+                        [showAddEditResult]="showAddEditPendingReportDetail"
+                        [requisitionIdList]="pendingReportReqIdList"
+                        [verificationRequired]="verificationRequired"></danphe-lab-results>
+  </div>
+  <div *ngIf="showFinalReportDetail" class="allFinalReports">
+    <danphe-lab-results [showReport]="showFinalReportDetail"
+                        [showAddEditResult]="showAddEditFinalReportDetail"
+                        [requisitionIdList]="finalReportReqIdList"
+                        [verificationRequired]="verificationRequired"></danphe-lab-results>
+  </div>
+  
+  <!--<div *ngIf="loading" class="row">
+    <div class="col-md-12">
+        <div class="loading-img">
+            <img style="max-width: 150px; height: auto; margin: 0 auto;" src="../../../themes/theme-default/images/loading-child.gif" alt="Tab Loading" class="img-responsive">
+        </div>
+    </div>
+</div>-->
+  
+  <div *ngIf="showDetailTests">
+    <div *ngIf="!showDetailTestsByRunNumber" style="width: 100%; display: table;">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="table-responsive">
+            <table class="table table-bordered" style="margin-bottom: 0px; margin-top: 15px;background: #006687;color: #fff;">
+              <tr>
+                <td>Hospital Number: {{allLabDataByBarCodeNumber.PatientCode}}</td>
+                <td>Name: {{allLabDataByBarCodeNumber.PatientName}}</td>
+                <td>Age/Sex: {{allLabDataByBarCodeNumber.AgeSex}}</td>
+                <td>SampleCollection Date: {{allLabDataByBarCodeNumber.SampleCollectedOn  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>BarCodeNumber: {{allLabDataByBarCodeNumber.BarCodeNumber}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="allTables" style="margin-top: 15px; display: table; width: 100%;"> 
+      <!--*ngIf="allLabDataByBarCodeNumber.FinalReport && allLabDataByBarCodeNumber.FinalReport.length == 0 && allLabDataByBarCodeNumber.LabRequisitions && allLabDataByBarCodeNumber.LabRequisitions.length == 0 && allLabDataByBarCodeNumber.AddResult && allLabDataByBarCodeNumber.AddResult.length == 0 && allLabDataByBarCodeNumber.PendingReport && allLabDataByBarCodeNumber.PendingReport.length == 0"-->
+      
+      <div class="row all-requisitions">
+        <div class="col-md-12">
+          <div class="table-responsive">
+            <table *ngIf="allLabDataByBarCodeNumber.LabRequisitions && allLabDataByBarCodeNumber.LabRequisitions.length > 0" class="table table-hover table-bordered" style="margin-bottom: 0px;">
+              <thead>
+                <tr>
+                  <td colspan="8" style="background: #126687; color: #fff; font-weight: 700;text-align: center;">Sample Not Collected</td>
+                </tr>
+              </thead>
+              <thead>
+                <tr>
+                  <th>Requisition Date</th>
+                  <th>Hospital Number</th>
+                  <th>Patient Name</th>
+                  <th>Age/Sex</th>
+                  <th>Requesting Dept.</th>
+                  <th>Visit Type</th>
+                  <th>RunNumType</th>
+                  <th style="width: 125px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let requisition of allLabDataByBarCodeNumber.LabRequisitions">
+                  <td>{{requisition.LastestRequisitionDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm'}}</td>
+                  <td>{{requisition.PatientCode}}</td>
+                  <td>{{requisition.PatientName}}</td>
+                  <td>{{requisition.AgeSexFormatted}}</td>
+                  <td>{{requisition.WardName}}</td>
+                  <td>{{requisition.VisitType}}</td>
+                  <td>{{requisition.RunNumberType}}</td>
+                  <td><button class="grid-action" (click)="ViewDetails(requisition)">View Details</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="row all-results-to-add">
+        <div class="col-md-12">
+          <div class="table-responsive" style="margin-top: 15px;">
+            <table *ngIf="allLabDataByBarCodeNumber.AddResult && allLabDataByBarCodeNumber.AddResult.length > 0" class="table table-hover table-bordered" style="margin-bottom: 0px;">
+              <thead>
+                <tr>
+                  <td [attr.colspan]="showDetailTestsByRunNumber ? '8' : '6'" style="background: #f35252; color: #fff; font-weight: 700;text-align: center;">Results Not Added</td>
+                </tr>
+              </thead>
+              <thead>
+                <tr>
+                  <th *ngIf="showDetailTestsByRunNumber">Patient Name</th>
+                  <th>Test Name</th>
+                  <th>Category</th>
+                  <th>Run Number</th>
+                  <th *ngIf="showDetailTestsByRunNumber">Sample Coll. On</th>
+                  <th>Visit Type</th>
+                  <th>Ward Name</th>
+                  <th style="width: 125px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let resToAdd of allLabDataByBarCodeNumber.AddResult">
+                  <td *ngIf="showDetailTestsByRunNumber">{{resToAdd.PatientName}}</td>
+                  <td>{{resToAdd.LabTestCSV}}</td>
+                  <td>{{resToAdd.TemplateName}}</td>
+                  <td>{{resToAdd.SampleCodeFormatted}}</td>
+                  <td *ngIf="showDetailTestsByRunNumber">{{resToAdd.SampleDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                  <td>{{resToAdd.VisitType}}</td>
+                  <td>{{resToAdd.WardName}}</td>
+                  <td><button class="grid-action" (click)="GetReportDetail(resToAdd,1)">Add Result</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="row all-pending-reports">
+        <div class="col-md-12">
+          <div class="table-responsive" style="margin-top: 15px;">
+            <table *ngIf="allLabDataByBarCodeNumber.PendingReport && allLabDataByBarCodeNumber.PendingReport.length > 0" class="table table-hover  table-bordered" style="margin-bottom: 0px;">
+              <thead>
+                <tr>
+                  <td [attr.colspan]="showDetailTestsByRunNumber ? '7' : '6'" style="background: #e09435; color: #fff; font-weight: 700;text-align: center;">Reports Pending</td>
+                </tr>
+              </thead>
+              <thead>
+                <tr>
+                  <th *ngIf="showDetailTestsByRunNumber">Patient Name</th>
+                  <th>Test Name</th>
+                  <th>Run Number</th>
+                  <th *ngIf="showDetailTestsByRunNumber">Sample Coll. On</th>
+                  <th>Visit Type</th>
+                  <th>Ward Name</th>
+                  <th style="width: 125px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let resToAdd of allLabDataByBarCodeNumber.PendingReport">
+                  <td *ngIf="showDetailTestsByRunNumber">{{resToAdd.PatientName}}</td>
+                  <td>{{resToAdd.LabTestCSV}}</td>
+                  <td>{{resToAdd.SampleCodeFormatted}}</td>
+                  <td *ngIf="showDetailTestsByRunNumber">{{resToAdd.SampleDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                  <td>{{resToAdd.VisitType}}</td>
+                  <td>{{resToAdd.WardName}}</td>
+                  <td><button (click)="GetCurrentPendingReportDetail(resToAdd)" class="grid-action">View Details</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="row all-final-reports">
+        <div class="col-md-12">
+          <div class="table-responsive" style="margin-top: 15px;">
+            <table *ngIf="allLabDataByBarCodeNumber.FinalReport && allLabDataByBarCodeNumber.FinalReport.length > 0" class="table table-hover  table-bordered" style="margin-bottom: 0px;">
+              <thead>
+                <tr>
+                  <td [attr.colspan]="showDetailTestsByRunNumber ? '8' : '7'" style="background: #1c671f; color: #fff; font-weight: 700;text-align: center;">Reports Generated</td>
+                </tr>
+              </thead>
+              <thead>
+                <tr>
+                  <th *ngIf="showDetailTestsByRunNumber">Patient Name</th>
+                  <th>Test Name</th>
+                  <th>Run Number</th>
+                  <th *ngIf="showDetailTestsByRunNumber">Sample Coll. On</th>
+                  <th>Visit Type</th>
+                  <th>Ward Name</th>
+                  <th>Is Printed</th>
+                  <th style="width: 125px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let finalReport of allLabDataByBarCodeNumber.FinalReport">
+                  <td *ngIf="showDetailTestsByRunNumber">{{finalReport.PatientName}}</td>
+                  <td>{{finalReport.LabTestCSV}}</td>
+                  <td>{{finalReport.SampleCodeFormatted}}</td>
+                  <td *ngIf="showDetailTestsByRunNumber">{{finalReport.SampleDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                  <td>{{finalReport.VisitType}}</td>
+                  <td>{{finalReport.WardName}}</td>
+                  <td><b style="color: green;" *ngIf="finalReport.IsPrinted">Yes</b><b style="color: red;" *ngIf="!finalReport.IsPrinted">No</b></td>
+                  <td *ngIf="finalReport.IsValidToPrint"><button (click)="GetCurrentFinalReportDetail(finalReport)" class="grid-action">View Details</button></td>
+                  <td *ngIf="!finalReport.IsValidToPrint"><p class="margin-0-vr" style="color: red; font-weight: 700;">Bill Not Paid</p></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

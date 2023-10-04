@@ -1,0 +1,74 @@
+﻿<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="update==false">Create Voucher Head</span> <span *ngIf="update==true">Update Voucher Head</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+      <form [formGroup]="CurrentVoucherhead.VoucherHeadValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+        <div class="form-group">
+                      <label class="control-label col-md-5">Voucher Head Name<sup>*</sup><b>:</b></label>
+                      <div class="col-md-7">
+                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentVoucherhead.VoucherHeadName"
+                                               formControlName="VoucherHeadName"
+                                               id="VoucherHeadName"
+                                               placeholder="Voucher Head Name" />
+                        <span class="color-red font-sm" [hidden]="CurrentVoucherhead.IsValidCheck('VoucherHeadName','required') || !(CurrentVoucherhead.IsDirty('VoucherHeadName'))">Voucher Head Name is required</span> <span class="color-red font-sm" *ngIf="CurrentVoucherhead.IsDirty('VoucherHeadName')" [hidden]="CurrentVoucherhead.IsValidCheck('VoucherHeadName','maxlength')"> Length is not proper</span> </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-5">Description<b>:</b></label>
+                      <div class="col-md-7">
+                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentVoucherhead.Description"
+                                               [ngModelOptions]="{standalone: true}"
+                                               id="Description"
+                                               placeholder="Description" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                      <div class="col-md-7">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input id="isActive"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentVoucherhead.IsActive"
+                                                           [ngModelOptions]="{standalone: true}" />
+                              <span></span> </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div  *ngIf="update==true" class="form-group">
+                      <label  class="control-label col-md-5">Is Default<b>:</b> </label>
+                      <div class="col-md-7">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input id="isDefault"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentVoucherhead.IsDefault"
+                                                           [ngModelOptions]="{standalone: true}" />
+                              <span></span> </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-actions">
+                      <input type="button" class="btn btn-primary primary-btn"  *ngIf="update==false" (click)="AddVoucherHead();" value="Add Voucher Head" />
+                      <input type="button" class="btn btn-primary primary-btn"  *ngIf="update==true" (click)="UpdateVoucherHead();" value="Update" />
+                    </div>
+         <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+            
+          </div>
+        </form>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>

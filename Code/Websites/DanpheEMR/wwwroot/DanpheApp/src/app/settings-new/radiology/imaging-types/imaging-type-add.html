@@ -1,0 +1,50 @@
+﻿<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Imaging Type</span> <span *ngIf="update">Update Imaging Type</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentImagingType.ImagingTypeValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4">Imaging Item Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input type="text" required value="" class="form-control" maxlength="50"
+                                               [(ngModel)]="CurrentImagingType.ImagingTypeName" formControlName="ImagingTypeName" id="ImagingTypeName" [attr.disabled]="update ? '' : null"
+                                               placeholder="Enter Type Name" (keyup.enter)="FocusElementById('addBtn')"/>
+                  <br />
+                  <span class="color-red font-sm" [hidden]="CurrentImagingType.IsValidCheck('ImagingTypeName','required') || !(CurrentImagingType.IsDirty('ImagingTypeName'))">Enter Imaging Type Name</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline no-margin">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" name="isActive" type="checkbox" value=""
+                                                           [(ngModel)]="CurrentImagingType.IsActive"
+                                                           [ngModelOptions]="{standalone: true}">
+                        <span></span>
+                        <input id="isActive"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentImagingType.IsActive"
+                                                           [ngModelOptions]="{standalone: true}" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+			  <div class="panel-footer">
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddImagingType()" value="Add" id="addBtn"/>
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateImagingType()" value="Update" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

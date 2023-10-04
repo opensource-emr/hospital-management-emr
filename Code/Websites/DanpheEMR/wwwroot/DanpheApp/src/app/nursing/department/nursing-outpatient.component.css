@@ -1,0 +1,16 @@
+.button-row {
+  margin-bottom: 15px !important;
+}
+.button-row .btn {
+  margin: 0;
+  display: flex;
+  font-size: 12px !important;
+  align-items: center;
+  gap: 0 5px;
+  justify-content: center;
+  width: 100%;
+}
+.button-row .btn i {
+  width: 14px;
+  display: block;
+}

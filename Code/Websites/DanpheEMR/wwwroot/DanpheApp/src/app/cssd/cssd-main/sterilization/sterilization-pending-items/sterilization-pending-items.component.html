@@ -1,0 +1,5 @@
+<div class="col-md-12">
+  <danphe-grid [grid-colDefaults]="pendingItemsGridColumns" [grid-data]="pendingItemsGridData" [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" (onDateChange)="onDateChange($event)" (grid-actions)="pendingItemsGridAction($event)" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions"></danphe-grid>
+</div>
+
+<app-disinfect-item *ngIf="showDisinfectionPopUp" [showPopUp]="showDisinfectionPopUp" [selectedItemName]="selectedItemName" [selectedItemCssdTxnId]="selectedItemCssdTxnId" (call-back-close)="callBackCloseDisinfectionPopUp($event)"></app-disinfect-item>

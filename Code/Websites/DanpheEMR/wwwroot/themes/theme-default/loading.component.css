@@ -1,0 +1,13 @@
+﻿.danphe-loading-image {
+    position: fixed;
+    z-index: 999;
+    /*width: 200px;
+    height: 250px;*/
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    background: #05232db5;
+    /*background-color:aquamarine;*/
+}

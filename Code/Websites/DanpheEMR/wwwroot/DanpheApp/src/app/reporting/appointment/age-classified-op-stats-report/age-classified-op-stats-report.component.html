@@ -1,0 +1,72 @@
+<style>
+    .summ-title {
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>
+<div class="wrapper">
+    <div class="row">
+        <form [formGroup]="selectedAgeClassifiedOPStatsParameter.DyanamicValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption custom-caption" style="float: left;"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                              class="caption-subject">Age Classified Stats Report(OP)</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="col-md-5 col-xs-12">
+                        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+                        </from-to-date-select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group row">
+                            <label class="control-label col-md-5">Department<b style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" danphe-auto-complete
+                                       [(ngModel)]="department" [ngModelOptions]="{standalone: true}"
+                                       [list-formatter]="DepartmentListFormatter" [source]="departmentList" placeholder="Department Name"
+                                       display-property-name="DepartmentName" onClick="this.select();"
+                                       (ngModelChange)="AssignSelectedDepartment($event)" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <button class="btn green btn-success" type="button" style="margin-left:100px;" (click)="Load()"> <i
+                                   class="fa fa-search"></i> Show
+                                Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf="AgeClassifiedOPStatsReportData && AgeClassifiedOPStatsReportData.length>0">
+            <danphe-grid [grid-colDefaults]="ReportColumns" [grid-data]="AgeClassifiedOPStatsReportData" [grid-showExport]="true"
+                         [grid-exportOptions]="gridExportOptions"> </danphe-grid>
+        </div>
+        <div class="col-md-12" style="margin-bottom: 50px;margin-top: 20px;">
+            <div
+                 *ngIf="AgeClassifiedOPStatsReportData && AgeClassifiedOPStatsReportData.length>0">
+                <div>
+                    <label class="summ-title"> Summary </label>
+                    &nbsp;&nbsp;&nbsp;
+
+                </div>
+                <table border="1" style="width: 100%;">
+                    <tr>
+                        <th *ngFor="let header of dynamicHeaders; let i = index">{{header}}</th>
+                    </tr>
+                    <tr>
+                        <td *ngFor="let header of dynamicHeaders; let i = index">
+                            {{ calculateColumnSum(header) }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

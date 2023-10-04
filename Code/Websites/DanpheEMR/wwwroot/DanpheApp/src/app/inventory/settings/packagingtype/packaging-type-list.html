@@ -1,0 +1,14 @@
+﻿<div>
+    <input type="button" class="btn primary-btn m1" (click)="AddPackagingType()" value="Add PackagingType" />
+    <packagingtype-add [showAddPage]="showAddPage"
+                      [selectedPackagingType]="selectedPackagingType"
+                      (callback-add)="CallBackAdd($event)"></packagingtype-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="packagingtypeGridColumns" [grid-data]="packagingtypeList" (grid-actions)="PackagingTypeGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

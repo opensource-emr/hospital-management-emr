@@ -1,0 +1,162 @@
+﻿<style>
+    .full-header {
+        background: #eaeaea;
+        color: #3d4957;
+    }
+    .table-bordered, .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
+        border: 1px solid #cccccc;
+    }
+    .doc-pagecontent label {
+        margin: 0 5px;
+    }
+    .doc-pagecontent input {
+        margin-top: 0;
+    }
+    .doc-pagecontent td {
+        vertical-align: middle;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <div class="table-responsive">
+            <div style="margin-top: 5px;">
+                <table class="table table-striped table-hover table-bordered" *ngIf="labRequisitions.length != 0">
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #d8d5d5;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th colspan="3" class="full-header" style="text-align: center;">Lab Order</th>
+                        </tr>
+                    </thead>
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th class="full-header">Lab Test Name</th>
+                            <th class="full-header">Urgency</th>
+                            <th class="full-header">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;" *ngFor="let requ of labRequisitions; let reqnum = index;">
+                            <td><input type="text" class="form-control" value="{{requ.LabTestName}}" readonly="readonly" /></td>
+                            <td>
+                                <input id="lbNormal{{reqnum}}" type="radio" name="{{requ.LabTestName}}" [(ngModel)]="requ.Urgency" value="Normal" checked />
+                                <label for="lbNormal{{reqnum}}">Normal</label>
+                                <input id="lbUrgency{{reqnum}}" type="radio" name="{{requ.LabTestName}}" [(ngModel)]="requ.Urgency" value="Urgent" />
+                                <label for="lbUrgency{{reqnum}}">Urgent</label>
+                                <input id="lbStat{{reqnum}}" type="radio" name="{{requ.LabTestName}}" [(ngModel)]="requ.Urgency" value="STAT" />
+                                <label for="lbStat{{reqnum}}">STAT</label>
+                            </td>
+                            <td><input type="text" class="form-control" name="requ.LabTestId" value="" [(ngModel)]="requ.RequisitionRemarks" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-striped table-hover table-bordered" *ngIf="ImagingRequisitions.length != 0">
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #3d4957;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th colspan="3" class="full-header" style="text-align: center;">Imaging Order</th>
+                        </tr>
+                    </thead>
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th class="full-header">Imaging Item Name</th>
+                            <th class="full-header">Urgency</th>
+                            <th class="full-header">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;" *ngFor="let img of ImagingRequisitions; let imnum = index;">
+                            <td><input type="text" class="form-control" value="{{img.ImagingItemName}}" readonly="readonly" /></td>
+                            <td>
+                                <input id="imNormal{{imnum}}" type="radio" name="{{img.ImagingItemId}}" [(ngModel)]="img.Urgency" value="Normal" checked />
+                                <label for="imNormal{{imnum}}">Normal</label>
+                                <input id="imUrgency{{imnum}}" type="radio" name="{{img.ImagingItemId}}" [(ngModel)]="img.Urgency" value="Urgent" />
+                                <label for="imUrgency{{imnum}}">Urgent</label>
+                                <input id="imStat{{imnum}}" type="radio" name="{{img.ImagingItemId}}" [(ngModel)]="img.Urgency" value="STAT" />
+                                <label for="imStat{{imnum}}">STAT</label>
+                            </td>
+                            <td><input type="text" class="form-control" name="img.ImagingItemId" value="" [(ngModel)]="img.RequisitionRemarks" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-striped table-hover table-bordered" *ngIf="medications && medications.length != 0">
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #3d4957;">
+                        <tr>
+                            <th colspan="8" class="full-header" style="text-align: center;">Medication Order</th>
+                        </tr>
+                    </thead>
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;">
+                        <tr>
+                            <th colspan="2" class="full-header" style="width: 250px;">Generic</th>
+                            <th class="full-header" style="width: 250px;">Brand-Name</th>
+                            <th class="full-header" style="width: 110px;">Dose</th>
+                            <th class="full-header">Route</th>
+                            <th class="full-header" style="width: 100px;">Frequency</th>
+                            <th class="full-header" style="width: 107px;font-size: 12px;">Duration (days)</th>
+                            <th class="full-header">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let med of medications;let i=index;">
+                            <td>
+                                <i class="btn btn-danger fa" style="float:left;" (click)="RemoveMedicineItem(i)">X</i>
+                            </td>
+                            <td><input type="text" class="form-control" [(ngModel)]="med.GenericName" readonly="readonly" title="{{med.GenericName}}" /></td>
+
+                            <td>
+                                <select [(ngModel)]="med.ItemId" class="form-control" (ngModelChange)="MedicineDDLOnChange(i)" title="{{med.ItemName}}">
+                                    <option *ngFor="let itm of med.ItemListByGeneric" value="{{itm.ItemId}}">
+                                        {{itm.ItemName}}
+                                    </option>
+                                </select>
+                            </td>                          
+
+                            <td>
+                                <input onclick="this.select();" type="text" [(ngModel)]="med.Dosage" class="form-control" />
+                            </td>
+                            <td>
+                                <select [(ngModel)]="med.Route" class="form-control" title="{{med.Route}}">
+                                    <option *ngFor="let r of medRouteList" value="{{r}}">
+                                        {{r}}
+                                    </option>
+                                </select>
+                            </td>
+
+                            <td><input type="number" class="form-control" [(ngModel)]="med.Frequency" /></td>
+                            <td><input type="number" class="form-control" [(ngModel)]="med.HowManyDays" /></td>
+                            <td><input type="text" class="form-control" [(ngModel)]="med.Notes" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-striped table-hover table-bordered" *ngIf="otherRequisitions && otherRequisitions.length != 0">
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #3d4957;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th colspan="3" class="full-header" style="text-align: center;">Others</th>
+                        </tr>
+                    </thead>
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;">
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <th class="full-header">Item Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-collapse: separate;border-spacing: 0 25em;">
+                            <td>
+                                <span *ngFor="let requ of otherRequisitions; let reqnum = index;">
+                                        {{requ.ItemName}} <span *ngIf= "reqnum+1 < otherRequisitions.length">&nbsp; ,&nbsp;</span> 
+                                </span>                  
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+        <button class="btn btn-primary" [disabled]="loading" (click)="loading=true;AddToRequisition();" style="width: 90px;border-radius: 10px !important;">Sign</button>
+        <button class="btn btn-danger" (click)="CancelOrders()" style="border-radius: 10px !important;margin-left:15px;">Cancel</button>
+
+    </div>
+</div>

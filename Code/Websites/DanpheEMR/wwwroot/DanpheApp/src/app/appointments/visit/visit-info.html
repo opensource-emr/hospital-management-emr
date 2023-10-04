@@ -1,0 +1,82 @@
+<div class="headin-left"
+     style="width:100%;border: 1px solid #96969a;margin-top: 20px; margin-bottom:5px; border-radius: 2px !important;padding: 20px 0px 10px;">
+  <h3 class="visit-head"><i class="fa fa-calendar"></i>Visit Information</h3>
+  <div>
+    <form [formGroup]="visit.VisitValidator" class="form-horizontal visit-info-wrapper">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group my-0">
+            <label class="control-label col-md-4">Department<sup class="color-red"> *</sup></label>
+            <div class="col-md-8">
+              <input id="txtDepartment" class="form-control" danphe-auto-complete
+                     [ngClass]="!visit.IsValidSelDepartment? 'bg-on' : 'bg-off'" [(ngModel)]="selectedDepartment"
+                     [list-formatter]="myDepartmentListFormatter" [source]="departmentList" formControlName="Department"
+                     placeholder="Department Name" display-property-name="DepartmentName" onClick="this.select();"
+                     (focusout)="AssignSelectedDepartment()" match-formatted="true" [grid-sort]="'DepartmentName'"
+                     max-num-list="10" [min-chars]="1" (keyup.enter)="EnterKeyFromDepartment()" />
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')"
+                    [hidden]="visit.IsValidCheck('Department','required')">Department is mandatory.</span>
+              <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelDepartment"
+                    [hidden]="!visit.IsValidCheck('Department','required')">Select Department from the list.</span>
+            </div>
+          </div>
+
+          <div class="form-group my-0" *ngIf="showDocMandatory">
+            <label class="control-label col-md-4">Doctor<sup class="color-red" *ngIf="showDocMandatory">
+                *</sup></label>
+            <div class="col-md-8">
+              <input class="form-control" id="doctorName" danphe-auto-complete
+                     [ngClass]="!visit.IsValidSelProvider? 'bg-on' : 'bg-off'" formControlName="Doctor"
+                     [(ngModel)]="selectedDoctor" [list-formatter]="DocListFormatter" [source]="filteredDocList"
+                     placeholder="Doctor's Name" display-property-name="PerformerName" (focusout)="AssignSelectedDoctor()"
+                     onClick="this.select();" max-num-list="10"
+                     (keyup.enter)="EnterKeyFromDoctor()" />
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')"
+                    [hidden]="visit.IsValidCheck('Doctor','required')">Doctor is mandatory.</span>
+              <span class="color-red" *ngIf="visit.IsDirty('Doctor') && !visit.IsValidSelProvider"
+                    [hidden]="!visit.IsValidCheck('Doctor','required')">Select doctor from the list.</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="col-md-6">
+          <div class="form-group my-0">
+            <label class="control-label col-md-4">Visit Date<sup class="color-red"> *</sup></label>
+            <div class="col-md-8">
+              <input id="appdate" class="form-control" type="date" name="" value="" [(ngModel)]="visit.VisitDate"
+                     formControlName="VisitDate" />
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','required')"> Date is required.</span>
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitDate')"
+                    [hidden]="visit.IsValidCheck('VisitDate','invalidDate')"> Enter Valid Date.</span>
+            </div>
+          </div>
+          <div class="form-group my-0">
+            <label class="control-label col-md-4">Visit Time</label>
+            <div class="col-md-8">
+              <input class="form-control" type="time" name="" value="" [(ngModel)]="visit.VisitTime"
+                     formControlName="VisitTime" />
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidCheck('VisitTime','required')"> Time is required.</span>
+              <span class="color-red font-sm" *ngIf="visit.IsDirty('VisitTime')"
+                    [hidden]="visit.IsValidDateTime('invalidDateTime')"> Enter Valid Time.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row community-card no-margin no-padding">
+        <div class="col-md-12">
+          <div class="form-group ">
+            <label class="control-label col-md-2">Referred By</label>
+            <div class="col-md-8">
+              <select-referrer [selected-ref-id]="selectedRefId" [allow-external]="true" [default-external]="true"
+                               (on-referrer-change)="OnReferrerChanged($event)">
+              </select-referrer>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

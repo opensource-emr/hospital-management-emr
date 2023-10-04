@@ -1,0 +1,72 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Patient Bill History Report</span> </div>
+        <div class="row">
+			<div class="col-md-6">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+        </div>
+			<div class="col-md-4 col-xs-12">
+          <div class="form-group">
+            <div class="row">
+				<label class="control-label col-md-5">Patient's Hospital No.<b style="float:right;">:</b></label>
+				<div class="col-md-7">
+				  <input [(ngModel)]="patientCode"
+						 placeholder="Patient's Hospital no."
+						 type="text"
+						 style="width:100%"
+						 title="Enter Patient's Hospital Number" />
+				</div>
+			  </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+          </div>
+        </div>
+		  </div>
+        <!--<div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>--> 
+      </div>
+      <div class="col-md-12" style="margin-top: 5px">
+        
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div style="width: 100%;float: left;">
+      <div class="col-md-12">
+        <h3 style="font-weight: 700; font-size: 16px;">Paid Bill History</h3>
+        <danphe-grid [grid-colDefaults]="PaidBillColumns"
+                     [grid-data]="PaidBillData" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+        <br />
+      </div>
+      <div class="col-md-12">
+        <h3>Unpaid Bill History</h3>
+        <danphe-grid [grid-colDefaults]="UnpaidBillColumns"
+                     [grid-data]="UnpaidBillData" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+        <br />
+      </div>
+      <div class="col-md-12">
+        <h3>Returned Bill History</h3>
+        <danphe-grid [grid-colDefaults]="ReturnedBillColumns"
+                     [grid-data]="ReturnedBillData" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+      </div>
+    </div>
+  </div>
+</div>

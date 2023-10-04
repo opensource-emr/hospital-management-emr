@@ -1,0 +1,130 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4"><!--
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+-->
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="!update">Add Item SubCategory</span> <span *ngIf="update">Update Item SubCategory</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="currentItemSubCategory.ItemSubCategoryValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">SubCategory Name<sup class="color-red">*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="30" type="text"
+                         [(ngModel)]="currentItemSubCategory.SubCategoryName"
+                         (focusout)="CreateSubCategoryCode()"
+                         formControlName="SubCategoryName"
+                         id="ItemSubCategoryName"
+                         placeholder="ItemSubCategory Name" 
+                         (keyup.enter)="FocusElementById('Category')" />
+                  <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('SubCategoryName','required') || !(currentItemSubCategory.IsDirty('SubCategoryName'))">Name is required</span> <span class="color-red font-sm" *ngIf="currentItemSubCategory.IsDirty('SubCategoryName')" [hidden]="currentItemSubCategory.IsValidCheck('SubCategoryName','maxlength')"> Length is not proper</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">SubCategory Code<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="4" minlength="4" type="text"
+                         [(ngModel)]="currentItemSubCategory.Code"
+                         formControlName="Code"
+                         (focusout)="CreateSubCategoryCode()"
+                         id="Code"
+                         placeholder="Code" />
+                  <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('Code','minlength') || !(currentItemSubCategory.IsDirty('Code'))">Code must be 4 digit or left vacant.</span> <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('Code','pattern') || !(currentItemSubCategory.IsDirty('Code'))">Code must be upper case.</span> </div>
+              </div>
+              <!-- <div class="form-group">
+                  <label class="control-label col-md-5">Account Head<sup class="color-red">*</sup><b>:</b></label>
+                  <div class="col-md-7">
+                    <div class="div-relative"><select class="form-control"
+                          [(ngModel)]="currentItemSubCategory.AccountHeadId"
+                          formControlName="AccountHeadId"
+                          id="AccountHeadId"
+                          placeholder="Account Head">
+                      <option *ngFor="let row of accountHeadList" value="{{row.AccountHeadId}}">{{row.AccountHeadName}}</option>
+                    </select>
+                    <a *ngIf="!currentItemSubCategory.AccountHeadId" class="fa fa-question" (click)="AddAccountHeadPopUp()" title="Click to add to Account Head"></a> <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('AccountHeadId','required') || !(currentItemSubCategory.IsDirty('AccountHeadId'))">Account Head is required</span> </div></div>
+                </div> -->
+
+                <div class="form-group">
+                  <label class="control-label col-md-5"> Accounting Ledger<b>:</b></label>
+                  <div class="col-md-7">
+                    <div class="div-relative">
+                      <select class="form-control" [(ngModel)]="ledgerId" [ngModelOptions]="{standalone:true}" placeholder="Account Ledger" (change)="changeLedger()">
+                        <option value="0">--- Select Ledger ---</option>
+                        <option *ngFor="let row of accountHeadList" value="{{row.LedgerId}}">{{row.LedgerName}}</option>
+                      </select>
+                    <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('LedgerId','required') || !(currentItemSubCategory.IsDirty('LedgerId'))">Account ledger is required</span> 
+                  </div>
+                  <div>
+                    <p *ngIf="ledgerId==0"> <i class="fa fa-plus-circle" (click)="AddAccountHeadPopUp()" matTooltip="Click to Create New Ledger"
+                      style="color: blue;cursor: pointer;"> <strong style="color: orange; font-family: 'Quicksand','Open Sans', sans-serif; font-size: 11px; margin-left: 5px; margin-top: 10px; display: inline-block; font-weight: 600;">Create new ledger for SubCategory</strong> </i> </p>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="200" type="text"
+                         [(ngModel)]="currentItemSubCategory.Description"
+                         [ngModelOptions]="{standalone: true}"
+                         id="Description"
+                         placeholder="Description" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Category<sup class="color-red">*</sup><b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <select id="Category" class="form-control" [(ngModel)]="currentItemSubCategory.IsConsumable"
+                      formControlName="IsConsumable" (change)="FocusElementById('AddItemSubCategory')"
+                      *ngIf="!update">
+                      <option [ngValue]="null">--select--</option>
+                      <option value="true">Consumable</option>
+                      <option value="false">Capital</option>
+                    </select>
+                    <select id="Category" class="form-control" [(ngModel)]="currentItemSubCategory.IsConsumable"
+                      formControlName="IsConsumable" (click)="FocusElementById('AddItemSubCategory')"
+                      *ngIf="update">
+                      <option [ngValue]="null">--select--</option>
+                      <option value="true">Consumable</option>
+                      <option value="false">Capital</option>
+                    </select>
+          
+                      <span></span> </div>
+                    <span class="color-red font-sm" [hidden]="currentItemSubCategory.IsValidCheck('IsConsumable','required') || !(currentItemSubCategory.IsDirty('IsConsumable'))">Category is required</span> </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive"
+                               type="checkbox"
+                               [(ngModel)]="currentItemSubCategory.IsActive"
+                               [ngModelOptions]="{standalone: true}" />
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddItemSubCategory()" value="Add ItemSubCategory" [disabled]="loading" id="AddItemSubCategory" />
+                <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" [disabled]="loading" id="AddItemSubCategory"/>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- <accounthead-add *ngIf="showAddAccountHeadPopUp" [showAddPage]="showAddAccountHeadPopUp"
+                 (callback-add)="OnNewAccountHeadAdded($event)"></accounthead-add>  [reference-id]="ledReferenceId"-->
+
+<ledger-create-shared [show-add-ledger-page]="showAddLedgerBox" [ledger-type]="ledgerType" 
+     [reference-id]="ledReferenceId" (callback-add)="OnNewLedgerAdded($event)"></ledger-create-shared>

@@ -1,0 +1,36 @@
+/* .portlet.light.bordered {
+  margin-top: 5px;
+}
+
+.tbl-summ {
+  width: 100%;
+}
+
+.blinkAmount {
+  animation-name: blinkAmountsFrameNormal !important;
+} */
+
+/* .membership-wise-patient-count{
+  display: block;
+  width: 400px;
+  height: 400px;
+} */
+.chart-grid{
+  display: grid !important;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.f__14{
+  font-size: 14px !important;
+}
+
+.mb-2{
+  margin-bottom: 10px;
+}
+
+@media (max-width:1000px){
+  .chart-grid{
+    grid-template-columns: auto;
+  }
+}

@@ -1,0 +1,131 @@
+<div>
+  <div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr text-warning text-center"><strong>Manage Stock</strong></h4>
+          </div>
+          <div class="stockmanage modelbox-body">
+            <div class="mb-3">
+              <div class="row">
+                <div class="col-md-4 text-center">
+                  <div class="card-body">
+                    <span class="fa fa-cloud-download" (click)="ExportStocksForReconciliationToExcel()"></span>
+                    <div *ngIf="showSpinner"><i class="fa fa-spinner" aria-hidden="true"></i>
+                    </div>
+                    <div class="manage-step"> Export the Stock List. </div>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="card-body"><span class="fa fa-pencil"></span>
+                    <div class="manage-step"> Edit the Available Quantity in Excel. </div>
+                    <div style="color:red;font-size: 2rem;font-weight:100">Do Not Change Anything Else.</div>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="card-body"><span class="fa fa-cloud-upload" (click)="openFileSelectPopUp()" [attr.disabled]="loading ? true:null"></span>
+                    <div class="manage-step"> Import From Excel. </div>
+                    <div><input style="font-size:large;margin-left: auto;" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (change)="onChange($event)" #inputFile id="file-input" /></div>
+                    <div><button type="button" style="margin-top:10px;" class="btn btn-primary btn-lg" (click)="FindDifference()"><i class="fa fa-cloud-upload"></i>&nbsp;Upload</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="close-modelbox"><button class="btn btn-danger" (click)="ClosePopUp()"> X </button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="confirmPopUp">
+  <div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr text-warning text-center">
+              <strong *ngIf="!showAllStock" style="color:red">Below are the changes in stock</strong>
+              <strong *ngIf="showAllStock" style="color:red">All Stock Details</strong>
+            </h4>
+          </div>
+          <div class="modelbox-body">
+            <div class="row" *ngIf="reconciledStocksWithQuantityChanges.length >0">
+              <h6 style="color:green"></h6>
+              <table class="table bordered" *ngIf="!showAllStock">
+                <tbody>
+                  <tr>
+                    <th>GenericName</th>
+                    <th>Item Name</th>
+                    <th>Item Code</th>
+                    <th>BatchNo</th>
+                    <th>Available Qty</th>
+                    <th>New Quantity</th>
+                  </tr>
+                  <tr *ngFor="let reconciledStocksWithQuantityChanged of reconciledStocksWithQuantityChanges">
+                    <td>{{reconciledStocksWithQuantityChanged.GenericName}}</td>
+                    <td>{{reconciledStocksWithQuantityChanged.ItemName}}</td>
+                    <td>{{reconciledStocksWithQuantityChanged.ItemCode}}</td>
+                    <td>{{reconciledStocksWithQuantityChanged.BatchNo}}</td>
+                    <td>{{reconciledStocksWithQuantityChanged.AvailableQuantity}}</td>
+                    <td>{{reconciledStocksWithQuantityChanged.NewAvailableQuantity}}</td>
+                  </tr>
+                </tbody>
+
+
+              </table>
+              <table class="table bordered" *ngIf="showAllStock">
+                <tbody>
+                  <tr>
+                    <th>GenericName</th>
+                    <th>Item Name</th>
+                    <th>Item Code</th>
+                    <th>BatchNo</th>
+                    <th>Available Qty</th>
+                    <th>New Quantity</th>
+                  </tr>
+                  <tr *ngFor="let reconciledStock of reconciledStocks">
+                    <td>{{reconciledStock.GenericName}}</td>
+                    <td>{{reconciledStock.ItemName}}</td>
+                    <td>{{reconciledStock.ItemCode}}</td>
+                    <td>{{reconciledStock.BatchNo}}</td>
+                    <td>{{reconciledStock.AvailableQuantity}}</td>
+                    <td>{{reconciledStock.NewAvailableQuantity}}</td>
+                  </tr>
+                </tbody>
+
+
+              </table>
+
+            </div>
+            <div class="row" *ngIf="reconciledStocksWithQuantityChanges.length==0">
+              <p class="text-center">No Stock Changes</p>
+            </div>
+          </div>
+          <div class="modelbox-footer" *ngIf="reconciledStocksWithQuantityChanges.length >0 && !showAllStock">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <h5>Do you want this changes ?</h5>
+              <div>
+                <button class="btn btn-danger" (click)="CloseConfirmationPopUp()">NO</button>
+                <button [disabled]="loading" class="btn btn-primary" (click)="UpdateReconciledStockFromExcelFile()">Yes</button>
+              </div>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button *ngIf="!showAllStock" class="btn btn-primary" (click)="ViewAllStock()">
+              <span><i class="fa fa-eye" aria-hidden="true"></i> &nbsp;All Stock</span>
+            </button>
+            <button *ngIf="showAllStock" class="btn btn-primary" (click)="HideAllStock()">
+              <span><i class="fa fa-eye-slash" aria-hidden="true"></i> &nbsp;Hide Stock</span>
+            </button>
+            <button class="btn btn-danger" (click)="CloseConfirmationPopUp()">
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

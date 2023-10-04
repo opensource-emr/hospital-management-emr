@@ -1,0 +1,35 @@
+<div class="wrapper">
+  <div class="caption custom-caption">
+    <i class="glyphicon glyphicon-asterisk"></i>
+    <span class="caption-subject">Culture Test Details Report</span>
+  </div>
+  <div class="row" style="padding-bottom: 5px">
+    <div class="col-md-8 col-xs-12">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-2 col-xs-12">
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="Load()">
+          <i class="fa fa-search"></i> Show Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="showGrid">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid
+        *ngIf="showGrid"
+        [grid-colDefaults]="cultureTestReportColumns"
+        [grid-data]="cultureTestReportData"
+        [grid-exportOptions]="gridExportOptions"
+        [grid-showExport]="true"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings"
+        [report-for]="'lab'"
+        [grid-date-range]="dateRange"
+      >
+      </danphe-grid>
+    </div>
+  </div>
+</div>

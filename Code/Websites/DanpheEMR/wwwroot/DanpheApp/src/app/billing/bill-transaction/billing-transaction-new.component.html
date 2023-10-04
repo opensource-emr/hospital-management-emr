@@ -1,0 +1,682 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="loadingScreen === true">
+  <div class="portlet-body form" style="background-color:white">
+    <div style="display: flex; height: 100vh; align-items: center; justify-content: center; flex-direction: column;gap: 10px 0;"
+         id='id_op_billing_danpheLoading'>
+      <h3>Please Wait...</h3>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <!--Start: Page Bar-->
+  <div class="page-bar" style="margin-bottom: 0px; z-index: 9 !important;">
+    <div class="page-bar-wrap">
+      <div class="caption custom-caption">
+        <h3>
+          <span style="text-transform: capitalize;">
+            {{billingType}}
+            Billing
+          </span>
+          <!-- <span *ngIf="wardName">Ward/Bed: {{ wardName }}/{{bedNo}}</span> -->
+        </h3>
+      </div>
+      <div class="billing-scheme-pricecategory"
+           *ngIf="(SchemePriCeCategoryFromVisit && SchemePriCeCategoryFromVisit.SchemeId && SchemePriCeCategoryFromVisit.PriceCategoryId) || DisplaySystemDefaultSchemePriceCategory">
+        <scheme-pricecategory-select (on-change)="OnSchemePriceCategoryChanged($event)" [service-billing-context]="serviceBillingContext"
+                                     [selected-scheme-priceCategory]="SchemePriCeCategoryFromVisit">
+        </scheme-pricecategory-select>
+      </div>
+      <div class="flex select-flex">
+        <label>Requesting Dept:</label>
+        <input danphe-auto-complete type="text" class="form-control" id="id_requesting_department"
+               autocomplete="off" [(ngModel)]="selectedDepartment"
+               [list-formatter]="billingInvoiceBlService.DepartmentListFormatter" [source]="DepartmentList"
+               placeholder="Department Name" display-property-name="DepartmentName" onClick="this.select();"
+               (valueChanged)="RequestingDepartmentChanged($event)" match-formatted="true" [grid-sort]="'DepartmentName'"
+               max-num-list="10" [min-chars]="1">
+      </div>
+      <div class="flex select-flex" *ngIf="AllowProvisionalBilling">
+        <label class="is-ref mt-checkbox mt-checkbox-outline" for="id_chk_allow_provisional">
+          <input type="checkbox" id="id_chk_allow_provisional" [(ngModel)]="DisplayPrintProvisionalButton"
+                 title="Enable Provisional Billing">
+          <span></span>Allow Provisional</label>
+      </div>
+      <div class="link-btn-wrapper">
+        <div class="pull-left">
+          <button class="btn btn-sm action-btn" *ngIf="BillingRequestDisplaySettings.AddDeposit && billingService.BillingFlow=='normal'"
+                  value="Add Deposit" (click)="ShowDepositPopUp()">
+            <i class="fa fa-plus"></i> Add Deposit
+          </button>
+          <input type="checkbox" name="do-package-billing" id="id_input_do_package_billing" [(ngModel)]="isPackageBilling"
+                 (ngModelChange)="HandlePackageBillingChange()" style="zoom:1.5;">
+          <label for="id_input_do_package_billing">Enable Package Billing</label>
+          <!-- <button class="btn btn-sm action-btn" *ngIf="BillingRequestDisplaySettings.SelectPackage && (billingType != 'inpatient')"
+                  [disabled]="this.disablePkgSelection" value="Select From Packages" (click)="ShowPackage()">
+            <i class="fa fa-folder-open"></i>Select Packages
+          </button> -->
+
+
+        </div>
+        <div class="pull-right">
+          <div class="shortcut-key shortkey-right" title="Shortcut Keys" style="margin-top: 0;">
+            <a href="javascript: void(0)"><img alt="keyboard shortcut" src="../../../themes/theme-default/images/Keyboard-icon.svg"></a>
+            <div class="keydropdown">
+              <ul>
+                <li><kbd>ALT</kbd> + <kbd>P</kbd> = <samp>Print Invoice</samp></li>
+                <li><kbd>ALT</kbd> + <kbd>Enter</kbd> = <samp>Jump to Tender Amount</samp></li>
+                <li><kbd>F1</kbd> = <samp>Enable/Disable Package Billing</samp></li>
+                <li><kbd>F2</kbd> = <samp>Add Deposit</samp></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!--END: Page Bar-->
+
+  <!--START: Top Row with Membership, PriceCategory, Prescriber, Referrer, etc-->
+  <div class="row community-card billing-community-card">
+    <!-- Below is a reuseable component that handles scheme and priceCategory selection in Combination -->
+    <div class="col-md-2" *ngIf="BillingRequestDisplaySettings.LabType && hasMultipleLabType">
+      <!-- <div style="border:1px solid black;padding: 5px;">
+              <scheme-pricecategory-select (on-change)="OnSchemePriceCategoryChanged($event)" [service-billing-context]="'op-billing'"
+                                             [selected-scheme-priceCategory]="SchemePriCeCategoryFromVisit">
+                </scheme-pricecategory-select>
+            </div>-->
+      <div class="flex">
+        <label class="labellab-type">Lab Type:</label>
+        <select [(ngModel)]="LabTypeName" name="lab_type" id="lab_type" (change)="OnLabTypeChange()" [disabled]="isPackageBilling">
+          <option *ngFor="let labtype of coreService.labTypes" value="{{labtype.LabTypeName}}">
+            {{labtype.DisplayName}}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-3" *ngIf="BillingRequestDisplaySettings.ReferredBy || isEHS">
+      <div class="flex select-flex">
+        <label>Prescriber:</label>
+        <select-referrer *ngIf="isReferrerLoaded" [selected-ref-id]="selectedPrescriberId"
+                         [allow-external]="false"
+                         (on-referrer-change)="OnPrescriberChanged($event)" class="ref-er">
+        </select-referrer>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-6" *ngIf="BillingRequestDisplaySettings.ReferredBy || isEHS">
+      <div class="flex select-flex1">
+        <label>ReferredBy :</label>
+        <select-referrer *ngIf="isReferrerLoaded" [selected-ref-id]="selectedRefId"
+                         [allow-external]="true" [default-external]="true"
+                         (on-referrer-change)="OnReferrerChanged($event)" class="ref-er">
+        </select-referrer>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-3">
+      <div class="checkbox-wrapper">
+        <div class="text-wit-btn"
+             *ngIf="BillingRequestDisplaySettings.ItemLevelDiscount && (SchemePriceCategory.IsDiscountApplicable && SchemePriceCategory.IsDiscountEditable)">
+          <div class="icheck-inline">
+            <label for="chkItemLevelDiscount" class="is-ref mt-checkbox mt-checkbox-outline"><input type="checkbox"
+                     id="chkItemLevelDiscount" [(ngModel)]="ShowItemLevelDiscount" title="Item Level Discount"
+                     (change)="ItemLevelDiscountChkBoxOnChange()" />
+              <span></span>Item Level Discount</label>
+          </div>
+        </div>
+        <div class="text-wit-btn"
+             *ngIf="(SchemePriceCategory.IsDiscountApplicable && SchemePriceCategory.IsDiscountEditable)">
+          <div class="icheck-inline">
+            <label class="is-ref mt-checkbox mt-checkbox-outline" for="id_chk_discount_amount">
+              <input type="checkbox" id="id_chk_discount_amount" [(ngModel)]="EnableDiscountField"
+                     title="Enable Discount Amount" (change)="EnableDiscountAmount()">
+              <span></span> Enable Discount Amount</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--END: Top Row with Membership, PriceCategory, Prescriber, Referrer, etc-->
+
+
+  <!--START: Service Item add And Invoice Total Calculation Section-->
+  <div class="row my-5">
+    <!--START: Add ServiceItem-->
+    <div class="col-12 col-lg-9">
+      <div class="p-5 bg-light">
+        <div>
+          <form [formGroup]="InvoiceItemFormGroup" class="invoiceitemform">
+            <table class="table table-form">
+              <thead>
+                <tr>
+                  <th style="width: 390px;">ItemName</th>
+                  <th style="width: 20px;" *ngIf="!isPackageBilling">Quantity</th>
+                  <th style="width: 120px;">Price</th>
+                  <th style="width: 100px;">Disc%</th>
+                  <th style="width: 100px;" *ngIf="ShowItemLevelDiscountAmountField">DiscAmt</th>
+                  <th style="width: 120px;">TotalAmount</th>
+                  <th>Performer</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="form-group autocomplete-item">
+                      <input danphe-auto-complete type="text" class="form-control" id="id_billing_serviceItemName"
+                             autocomplete="off" formControlName="ItemName" display-property-name="ItemName"
+                             [list-formatter]="billingInvoiceBlService.ItemsListFormatter"
+                             (valueChanged)="AssignSelectedInvoiceItem()"
+                             (focusout)="OnEmptyItemNameField()"
+                             [source]="ServiceItems" [(ngModel)]="selectedInvoiceItem"
+                             value-property-name=null max-num-list="30"
+                             onClick="this.select();" [min-chars]="2" match-formatted="true"
+                             [match-property-csv]="'ItemCode,ItemName'" [grid-sort]="'ItemName'"
+                             style="text-transform: uppercase;"
+                             placeholder="ItemName"
+                             (keyup.enter)="GoToQuantityOrOtherElement('id_billing_serviceItemName','id_billing_serviceItemQty','id_billing_credit_remarks')"
+                             [ngClass]="{'border-red': InvoiceItemFormControls.ServiceItemId.errors}">
+                    </div>
+                    <div class="color-red font-sm"
+                         *ngIf="HasAdditionalServiceItemSelected && InvoiceItemWithAdditionalItem && InvoiceItemWithAdditionalItem.length > 0">
+                      <span>
+                        Additional Item is applied, Proceed Further.
+                      </span>
+                    </div>
+                    <div class="color-red font-sm" *ngIf="InvoiceItemFormControls.ServiceItemId.errors">
+                      Item Name is required
+                    </div>
+                  </td>
+                  <td *ngIf="!isPackageBilling">
+                    <div class="form-group">
+                      <input type="number" class="form-control" id="id_billing_serviceItemQty"
+                             formControlName="Quantity" placeholder="Qty" (focusout)="OnItemQuantityChanged()"
+                             [attr.disabled]="InvoiceItemFormControls.ServiceItemId.errors"
+                             (keyup.enter)="GoToNextElement('id_btn_add_serviceItem')" onClick="this.select();"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                             [ngClass]="{'border-red': InvoiceItemFormControls.Quantity.errors}">
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input type="number" min="0" class="form-control" id="id_billing_serviceItemPrice" onClick="this.select();"
+                             formControlName="Price" placeholder="Price" [attr.disabled]="(EnablePrice === true ? null : true)"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)" (focusout)="CalculateAfterPriceChanged()"
+                             [ngClass]="{'border-red': (InvoiceItemFormControls.Price.invalid && (InvoiceItemFormControls.Price.dirty || InvoiceItemFormControls.Price.touched))}">
+                      <div class="color-red font-sm"
+                           *ngIf="InvoiceItemFormControls.Price.invalid && (InvoiceItemFormControls.Price.dirty || InvoiceItemFormControls.Price.touched)">
+                        <span *ngIf="InvoiceItemFormControls.Price.errors.required && InvoiceItemFormControls.Price.errors.min">
+                          Price cannot be negative.
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input type="number" class="form-control" id="id_billing_serviceItemDiscPercent"
+                             formControlName="DiscountPercent" placeholder="Disc%"
+                             (focusout)="OnItemDiscountPercentChanged()"
+                             [disabled]="(DisableItemLevelDiscPercent === true ? true : null)"
+                             onClick="this.select();"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                             [ngClass]="{'border-red': InvoiceItemFormControls.DiscountPercent.errors}">
+
+                    </div>
+
+                  </td>
+                  <td *ngIf="ShowItemLevelDiscountAmountField">
+                    <div class="form-group">
+                      <input type="number" class="form-control" id="id_billing_serviceItemDiscAmount"
+                             formControlName="DiscountAmount" placeholder="DiscAmt"
+                             (focusout)="OnItemDiscountAmountChanged()"
+                             [disabled]="(DisableItemLevelDiscAmount === true ? true : null)"
+                             onClick="this.select();"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                             [ngClass]="{'border-red': InvoiceItemFormControls.DiscountAmount.errors }">
+                    </div>
+
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input type="number" class="form-control" id="id_billing_serviceItemTotal" formControlName="TotalAmount"
+                             placeholder="Total" [attr.disabled]="true" onClick="this.select();"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="form-group">
+                      <input danphe-auto-complete autocomplete="off" type="text" class="form-control" id="id_billing_performer"
+                             formControlName="PerformerName" [source]="doctorsList" display-property-name="FullName"
+                             [list-formatter]="billingInvoiceBlService.PerformerListFormatter" value-property-name=null
+                             match-formatted="true" max-num-list="10" [(ngModel)]="SelectedPerformer"
+                             placeholder="Enter Name" onClick="this.select();" (focusout)="AssignSelectedPerformer()"
+                             (keyup.enter)="GoToNextElement('id_btn_add_serviceItem')" onClick="this.select();"
+                             [attr.disabled]="InvoiceItemFormControls.ServiceItemId.errors">
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" id="id_btn_add_serviceItem" class="btn green btn-success "
+                            (click)="AddInvoiceItems()">
+                      +
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+
+        </div>
+        <div class="row" *ngIf="isPackageBilling" style="padding: 0px 15px;">
+          <div
+               style="padding: 0px 0px 0px 20px; background-color:rgb(75 126 237); color: white; font-weight: bold; height: 40px; font-weight: 15px;">
+            <p style="padding: 10px; font-size: 17px;" *ngIf="!this.SelectedPackage.BillingPackageName">Package Billing Enabled </p>
+            <p style="padding: 10px; font-size: 17px;" *ngIf="this.SelectedPackage.BillingPackageName">
+              <strong>({{this.SelectedPackage.BillingPackageName}}) Package Is Selected</strong>
+            </p>
+
+          </div>
+        </div>
+        <div class="table-wrap item-listing">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th></th>
+                <th>#</th>
+                <th>ItemCode</th>
+                <th>ItemName</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>DiscountAmt.</th>
+                <th>Total</th>
+                <th>Performer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of InvoiceItemsDto; let i = index">
+                <td>
+                  <a class="btn btn-danger" (click)="RemoveInvoiceItem(i)" title="Click to remove this item">
+                    <i class="fa fa-times"></i></a>
+                </td>
+                <td>{{i + 1}}</td>
+                <td>{{item.ItemCode}}</td>
+                <td class="duplicate-item"
+                    [style.background-color]="item.IsDoubleEntry_Now || item.IsDoubleEntry_Past ? 'yellow' : ''">
+                  {{ item.ItemName }}
+                  <div class="color-red font-sm" *ngIf="item.IsDoubleEntry_Now">
+                    <span>Item already exists (This Invoice) </span>
+                  </div>
+                  <div class="color-red font-sm" *ngIf="item.IsDoubleEntry_Past">
+                    <i class=" fa fa-warning"></i>Duplicate Entry ({{'<'}} {{BillRequestDoubleEntryWarningTimeHrs}} hours)
+                         </div>
+                </td>
+                <td>{{item.Quantity}}</td>
+                <td>{{item.Price | number : "1.2-2" }} </td>
+                <td>{{item.DiscountAmount | number: "1.2-2" }}</td>
+                <td>{{item.TotalAmount | number: "1.2-2" }}</td>
+                <td>{{item.PerformerName}}</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <!--START: Billing History-->
+      <div class="row">
+        <div class="col-md-4" style="padding-left: 0px; padding-right: 0px;">
+          <div class="bg-white p-15" *ngIf="patBillHistory.IsLoaded && billingService.BillingFlow=='normal'">
+            <div>
+              <h5 class="billing-head">Billing History</h5>
+            </div>
+            <table class="b-htable">
+              <tr style="cursor: pointer;">
+                <td style="color: red;">Credit <b class="colon">:</b></td>
+                <td class="" style="color: red;">{{patBillHistory.CreditAmount}}</td>
+              </tr>
+              <tr>
+                <td>Provisional Amount <b class="colon">:</b></td>
+                <td style="text-decoration:underline;">
+                  <div id="toolbox1" class="tooltip" style="z-index: 1031;">
+                    <a [ngClass]="{'blink-provisionalAmt':patBillHistory.ProvisionalAmt>0}"
+                       (click)="OnProvisionalAmountClick()">{{patBillHistory.ProvisionalAmt}}</a>
+                    <p class="tooltiptext ttptextdown">
+                      Check Provisional Items.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Total Due<b class="colon">:</b></td>
+                <td>{{patBillHistory.TotalDue}}</td>
+              </tr>
+              <tr>
+                <td>Deposit Balance <b class="colon">:</b></td>
+                <td>{{patBillHistory.DepositBalance}}</td>
+              </tr>
+              <tr>
+                <td>Balance Amount <b class="colon">:</b></td>
+                <td style="font-weight: bold;color: blue;font-size: 17px;">
+                  <span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div style="float: left; font-family: 'Source Sans Pro'; margin-top: 15px;">
+            <label style="cursor: pointer; margin-right: 15px; font-weight: bold;" for="pasttestlist">Show Past Tests:
+            </label>
+            <input id="pasttestlist" name="pasttestlist" type="checkbox" [(ngModel)]="showPastBillHistory"
+                   ng-checked="showPastBillHistory"
+                   style="width:18px;height:18px;float: right;margin: 1px 0px 0px 5px;" (change)="ShowPastBillHistory()">
+          </div>
+        </div>
+        <div class="col-md-8">
+          <past-test-list *ngIf="showPastBillHistory" [patientId]="model.PatientId" (past-tests)="PastTest($event)">
+          </past-test-list>
+        </div>
+      </div>
+      <!--END: Billing History-->
+
+    </div>
+    <!--END: Add ServiceItem-->
+
+    <!--START: Total Calculation Display-->
+    <div class="col-12 col-lg-3 position-fixed top-0 end-0">
+      <div class="p-5 bg-secondary amountform">
+        <div *ngIf="model !=null" class="bg-white p-15">
+          <table class="table">
+            <tr class="ht-managed">
+              <td> SubTotal: </td>
+              <td>
+                <input class="form-control pd-managed" [(ngModel)]="model.SubTotal" disabled id="subtotal" name="subtotal"
+                       type="number">
+              </td>
+            </tr>
+            <tr class="ht-managed" *ngIf="billingService.BillingFlow ==='normal'">
+              <td>Discount % </td>
+              <td>
+                <input *ngIf="!ShowItemLevelDiscount" id="discountPercentage" [(ngModel)]="model.DiscountPercent" min="0" max="100"
+                       (ngModelChange)="OnInvoiceDiscountPercentChanged()" class="form-control pd-managed" name="DiscountPercent"
+                       onClick="this.select();" type="number"
+                       [attr.disabled]="(DisableInvoiceDiscountPercent === true ? true : null)"
+                       (keyup.enter)="coreService.FocusInputById('tenderAmount')"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+
+                <label class="form-control pd-managed" *ngIf="ShowItemLevelDiscount" style="background-color:#eef1f5;">
+                  {{model.DiscountPercent | number : "1.4-4"}} </label>
+              </td>
+            </tr>
+            <tr class="ht-managed" *ngIf="billingService.BillingFlow ==='normal'">
+              <td> Discount Amt: </td>
+              <td>
+                <input [(ngModel)]="model.DiscountAmount"
+                       id="id_inp_discountAmt"
+                       [attr.disabled]="(DisableInvoiceDiscountAmount === true ? true : null)"
+                       class="form-control pd-managed" name="DiscountAmount" value="{{0}}" type="number"
+                       (ngModelChange)="OnInvoiceDiscountAmountChanged()"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                       onClick="this.select();"
+                       (keyup.enter)="coreService.FocusInputById('tenderAmount')">
+              </td>
+            </tr>
+            <tr class="ht-managed">
+              <td>Total Amount: </td>
+              <td>
+                <input [(ngModel)]="model.TotalAmount" style="font-weight:bold;" disabled class="form-control pd-managed"
+                       name="TotalAmount" type="number">
+              </td>
+            </tr>
+            <tr class="dot">
+              <td class="text-capitalize" colspan="2" style="font-weight: bold; border: none; color: #0773bc;">
+                <span class="text-capitalize" style="font-weight: bold; border: none;">
+                  (In Words :
+                  <b>
+                    {{model.TotalAmount | NumberInWords}}
+                  </b>Only.)
+                </span>
+              </td>
+            </tr>
+            <tr class="ht-managed" *ngIf="EnableShowOtherCurrency">
+              <td colspan="2">
+                <label for="id_showOtherCurrency_checkbox">
+                  <input type="checkbox" id="id_showOtherCurrency_checkbox" [(ngModel)]="ShowOtherCurrency"
+                         (ngModelChange)="ShowOtherCurrencyCheckBoxChanged()" style="zoom:1.25; height: auto; margin-bottom: 5px;">
+                  Show Other Currency
+                </label>
+              </td>
+            </tr>
+            <tr *ngIf="DisplayOtherCurrencyDetail">
+              <td colspan="2">
+                <div class="col-md-12">
+
+                  <other-currency-calculation [show-otherCurrencyCalculation]="DisplayOtherCurrencyDetail" [base-TotalAmount]="model.TotalAmount"
+                                              (otherCurrencyCalculation-Callback)="OtherCurrencyCalculationCallback($event)"></other-currency-calculation>
+
+                </div>
+              </td>
+            </tr>
+            <tr class="ht-managed">
+              <td>
+                <span style="font-size: 16px;">
+                  <strong *ngIf="(SchemePriceCategory.IsCoPayment || model.PaymentMode === 'cash')">CASH:</strong>
+                  <strong *ngIf="(!SchemePriceCategory.IsCoPayment && model.PaymentMode !== 'cash')">CREDIT:</strong>
+                </span>
+              </td>
+              <td>
+                <input [(ngModel)]="model.ReceivedAmount"
+                       style="font-weight:bold;height: 30px;font-size:20px !important;background-color:#0773bc; color:#fff;"
+                       class="form-control pd-managed"
+                       name="cash" type="number"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                       onclick="this.select();"
+                       disabled
+                       (focusout)="ReceivedAmountChange()">
+              </td>
+            </tr>
+            <tr class="ht-managed" *ngIf="SchemePriceCategory.IsCoPayment">
+              <td>
+                CoPayment Information:
+              </td>
+              <td>
+                <span>CoPayCashAmt: </span> <span><strong>{{ model.ReceivedAmount }}</strong></span>&nbsp;
+                <span>,CoPayCreditAmt: </span><span><strong>{{ model.CoPaymentCreditAmount }}</strong></span>
+              </td>
+            </tr>
+            <tr class="ht-managed" [hidden]="DisplayPrintProvisionalButton">
+              <td>Tender:</td>
+              <td>
+                <input id="tenderAmount" type="number" [(ngModel)]="model.Tender" class="form-control pd-managed"
+                       (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                       [disabled]="model.PaymentMode == 'credit'" onClick="this.select();"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                       (keyup.enter)="coreService.FocusInputById('btn_printInvoice2')">
+              </td>
+            </tr>
+            <tr class="ht-managed" [hidden]="DisplayPrintProvisionalButton">
+              <td>Change/Return :</td>
+              <td><span>{{coreService.currencyUnit}}<b>{{model.Change}}</b></span></td>
+            </tr>
+            <tr *ngIf="SchemePriceCategory.IsCoPayment" [hidden]="DisplayPrintProvisionalButton">
+              <td>
+                <span style="font-size: 20px;">PaymentMode:</span>
+              </td>
+              <td>
+                <span style="font-size: 20px;"> <strong>{{SchemePriceCategory.DefaultPaymentMode.toUpperCase()}}</strong> </span>
+              </td>
+            </tr>
+            <tr class="ht-managed" [hidden]="DisplayPrintProvisionalButton">
+              <td colspan="2">
+                <payment-mode-info [deposit-balance]="patBillHistory.DepositBalance"
+                                   [total-amount]="model.ReceivedAmount"
+                                   [page-name]="'OPBilling'"
+                                   [default-payment-mode]="SchemePriceCategory.DefaultPaymentMode"
+                                   [is-credit-only-scheme]="SchemePriceCategory.IsCreditOnlyScheme"
+                                   [is-coPayment]="SchemePriceCategory.IsCoPayment"
+                                   [disable-paymentMode-dropdown]="DisablePaymentModeDropDown"
+                                   (on-paymentMode-change)="PaymentModeChanges($event)"
+                                   (on-creditOrganization-change)="CreditOrganizationChanges($event)"
+                                   [show-deduct-from-deposit]="'true'"
+                                   [default-credit-organization]="SchemePriceCategory.DefaultCreditOrganizationId"
+                                   (on-multiple-paymentMode)="MultiplePaymentCallBack($event)">
+                </payment-mode-info>
+              </td>
+            </tr>
+            <tr class="ht-managed">
+              <td>
+                Remarks
+                <b *ngIf="(SchemePriceCategory.IsCoPayment || model.PaymentMode.toLowerCase() === creditPaymentMode.toLowerCase() || model.DiscountPercent > 0 || IsRemarksMandatory)"
+                   class="color-red">
+                  *</b><b style="float:right;">:</b>
+              </td>
+              <td><input id="id_billing_credit_remarks"
+                       [(ngModel)]="model.Remarks"
+                       class="form-control pd-managed" name="Remarks"
+                       (keyup.enter)="GoToNextElementFromRemarks('btn_printInvoice2', 'id_btn_print_provisional')"
+                       type="text"></td>
+              <!-- (keyup.enter)="coreService.FocusInputById('btn_printInvoice2')" -->
+            </tr>
+
+          </table>
+          <!-- <hr /> -->
+          <div *ngIf="billingService.BillingFlow !='normal'">
+            <div class="col-sm-offset-4 col-sm-12" *ngIf="!DisplayPrintProvisionalButton">
+              <!-- @*Set loading=true as first statement before entering into the POST function, a lot of logic is based on this flag: so don't change it pls.*@ -->
+              <!-- <input id="btn_printInvoice1" type="submit" style="margin-right: 10px;" *ngIf="isPackageBilling"
+                     class="btn green btn-success"
+                     [disabled]="loading" value="Print Invoice" (click)="loading=true;PostInvoice();" /> -->
+
+              <input
+                     DanpheConfirmationDialog
+                     id="btn_printInvoice1"
+                     type="submit"
+                     [title]="confirmationTitle"
+                     [message]="confirmationMessage"
+                     (confirm)="handleConfirm()"
+                     (cancel)="handleCancel()" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                     value="Print {{Invoice_Label}}" [disabled]="loading" />
+
+              <span></span> <a class="btn btn-danger" routerLink="/Billing/SearchPatient">Cancel</a>
+              <span></span>&nbsp;&nbsp;&nbsp;
+
+            </div>
+          </div>
+          <div style="margin-top:10px; margin-bottom:10px;" class="billing-transaction-btn-wrap">
+            <!-- <input id="btn_printInvoice2" type="submit" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                   value="Print {{Invoice_Label}}" (click)="loading=true;PostInvoice();" [disabled]="loading" /> -->
+
+            <input *ngIf="!DisplayPrintProvisionalButton"
+                   DanpheConfirmationDialog
+                   id="btn_printInvoice2"
+                   type="submit"
+                   [title]="confirmationTitle"
+                   [message]="confirmationMessage"
+                   (confirm)="handleConfirm()"
+                   (cancel)="handleCancel()" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                   value="Print {{Invoice_Label}}" [disabled]="loading" />
+
+            <input *ngIf="DisplayPrintProvisionalButton"
+                   DanpheConfirmationDialog
+                   id="id_btn_print_provisional"
+                   type="button"
+                   [title]="confirmationTitle"
+                   [message]="ConfirmationMessageForProvisional"
+                   (confirm)="handleProvisionalConfirmation()"
+                   (cancel)="handleCancel()"
+                   class="btn creamyblue btn-success"
+                   rbac-permission='{"name":"btn-opbilling-provisional","actionOnInvalid":"remove"}'
+                   [disabled]="loading || isPackageBilling"
+                   value="Print Provisional Slip">
+
+            <!-- @*<a class="btn btn-danger" [disabled]="loading" routerLink="/Billing/SearchPatient">Cancel</a>*@ -->
+            <button type="button" class="btn btn-danger" routerLink="/Billing/SearchPatient" [disabled]="loading">
+              Cancel
+            </button>
+            <!-- <button *ngIf="model.PaymentMode.toLocaleLowerCase() != 'credit' && SchemePriceCategory.IsCoPayment === false" type="button"
+                    style="display: block; margin: 5px 0 0 0;" class="btn creamyblue btn-success"
+                    rbac-permission='{"name":"btn-opbilling-provisional","actionOnInvalid":"remove"}'
+                    (click)="loading=true;PostProvisionalBilling();"
+                    [disabled]="loading || isPackageBilling">
+              Print Provisional Slip
+            </button> -->
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--END: Total Calculation Display-->
+
+  </div>
+  <!--END: Service Item add And Invoice Total Calculation Section-->
+
+</div>
+
+<!--START: Package Selection-->
+<!-- <billing-package-select [showSelectPage]="showSelectPage" (callBack-select)="SelectFromPackage($event)">
+</billing-package-select> -->
+<!--END: Package Selection-->
+
+<!--START: Pop up for Add Deposit-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showDepositPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseDepositPopUp()">X</a>
+          <div>
+            <billing-deposit [isAddDepositFrmBillTxn]="showDepositPopUp" (emit-deposit)="CloseDepositPopUp($event)">
+            </billing-deposit>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END: Pop up for Add Deposit-->
+
+<!-- START: Additional Item  -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="HasAdditionalServiceItem">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4 vertical-offset-20em">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Select Additional Service Item</span></h3>
+            <a class="btn btn-danger" (click)="CloseAdditionalServiceItem()" title="Cancel">X</a>
+          </div>
+          <bill-additional-item-select [additional-items-list]="BillingAdditionalServiceItems" [billing-context]="serviceBillingContext"
+                                       (additional-item-callback)="OnAdditionalServiceItemCallBack($event)">
+          </bill-additional-item-select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END: Additional Item  -->
+
+<!--Start: Invoice Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInvoicePrintPage">
+  <div class="portlet-body form align-items-center">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div *ngIf="!isProvisionalBilling">
+            <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId" [bil-txn-id]="bil_BilTxnId">
+            </bil-print-invoice-main>
+          </div>
+          <div *ngIf="isProvisionalBilling">
+            <bil-print-provisional-slip [PatientId]="provReceiptInputs.PatientId" [ProvFiscalYrId]="provReceiptInputs.ProvFiscalYrId"
+                                        [ProvReceiptNo]="provReceiptInputs.ProvReceiptNo" [visitType]="provReceiptInputs.visitType"
+                                        [schemeId]="SchemePriceCategory.SchemeId">
+            </bil-print-provisional-slip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Invoice Print Popup-->

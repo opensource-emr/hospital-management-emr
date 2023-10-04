@@ -1,0 +1,669 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DF409EE3-C34B-4AE6-9070-3C1554D41402}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DanpheEMR.ServerModel</RootNamespace>
+    <AssemblyName>DanpheEMR.ServerModel</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Audit.EntityFramework">
+      <HintPath>..\..\Solutions\packages\Audit.EntityFramework.14.0.2\lib\net45\Audit.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\Solutions\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\Solutions\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\Solutions\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountingModels\DTOs\AccountingSync_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\BankReconciliationAdditionalTransaction_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\ConsultantLedger_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\InventoryVendorLedger_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\LedgerReportRequest_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\MapSuspenseAccountReconciliation_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\PharmacySupplierLedger_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\SubLedgerReportRequst_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\SuspenseAccountTransaction_DTO.cs" />
+    <Compile Include="AccountingModels\Transactions\AccountingPaymentModel.cs" />
+    <Compile Include="AccountingModels\Transactions\BankReconciliationModel.cs" />
+    <Compile Include="AccountingModels\Config\BankReconciliationCategoryModel.cs" />
+    <Compile Include="AccountingModels\Config\AccountingCodeDetailsModel.cs" />
+    <Compile Include="AccountingModels\Transactions\SuspenseAccountReconciliationMapModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\AccountingLedgerVoucherMapViewModel.cs" />
+    <Compile Include="AccountingModels\Logs\AccountingTransactionHistoryModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\AccountingReferenceTypeViewModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\AccountingViewModels.cs" />
+    <Compile Include="AccountingModels\Config\AccountingBillLedgerMappingModel.cs" />
+    <Compile Include="AccountingModels\Config\ChartOfAccountModel.cs" />
+    <Compile Include="AccountingModels\Config\CostCenterItemModel.cs" />
+    <Compile Include="AccountingModels\Logs\EdiitVoucherLogModel.cs" />
+    <Compile Include="AccountingModels\Config\GroupMappingModel.cs" />
+    <Compile Include="AccountingModels\Config\HospitalModel.cs" />
+    <Compile Include="AccountingModels\Config\HospitalTransferRuleMappingModel.cs" />
+    <Compile Include="AccountingModels\Transfer\InvOtherCharegeViewModel.cs" />
+    <Compile Include="AccountingModels\Logs\LedgerBalanceHistoryModel.cs" />
+    <Compile Include="AccountingModels\Config\LedgerGroupCategoryModel.cs" />
+    <Compile Include="AccountingModels\Config\LedgerGroupModel.cs" />
+    <Compile Include="AccountingModels\Config\FiscalYearModel.cs" />
+    <Compile Include="AccountingModels\Config\LedgerMappingModel.cs" />
+    <Compile Include="AccountingModels\Logs\FiscalYearLogModel.cs" />
+    <Compile Include="AccountingModels\Config\MappingDetailModel.cs" />
+    <Compile Include="AccountingModels\Config\MapTransactionItemCostCenterItemModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\AccPaymentModeDataViewModel.cs" />
+    <Compile Include="AccountingModels\Config\PrimaryGroupModel.cs" />
+    <Compile Include="AccountingModels\Config\SectionModel.cs" />
+    <Compile Include="AccountingModels\Logs\SubLedgerBalanceHistory.cs" />
+    <Compile Include="AccountingModels\Config\SubLedgerModel.cs" />
+    <Compile Include="AccountingModels\Transactions\SubLedgerTransactionModel.cs" />
+    <Compile Include="AccountingModels\Transactions\TransactionCostCenterItemModel.cs" />
+    <Compile Include="AccountingModels\Transfer\TransactionInventoryItemModel.cs" />
+    <Compile Include="AccountingModels\Transactions\TransactionItemDetailModel.cs" />
+    <Compile Include="AccountingModels\Transactions\TransactionLinkModel.cs" />
+    <Compile Include="AccountingModels\Transactions\ReverseTransactionModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\UniqueLedgerGroupVM.cs" />
+    <Compile Include="AccountingModels\Config\VoucherHeadModel.cs" />
+    <Compile Include="AccountingModels\Config\VoucherLedgerGroupMapModel.cs" />
+    <Compile Include="AccountingModels\Config\VoucherModel.cs" />
+    <Compile Include="AccountingModels\Config\LedgerModel.cs" />
+    <Compile Include="AccountingModels\Transactions\TransactionItemModel.cs" />
+    <Compile Include="AccountingModels\Transactions\TransactionModel.cs" />
+    <Compile Include="AccountingModels\Config\CompanyMasterModel.cs" />
+    <Compile Include="AccountingModels\ViewModels\VoucherVerify_DTO.cs" />
+    <Compile Include="AdmissionModels\ADTBedReservation.cs" />
+    <Compile Include="AdmissionModels\ADTDischargeSummaryConsultantModel.cs" />
+    <Compile Include="AdmissionModels\BabyBirthConditionModel.cs" />
+    <Compile Include="AdmissionModels\BabyBirthDetailsModel.cs" />
+    <Compile Include="AdmissionModels\Config\AdtAutoBillingItemModel.cs" />
+    <Compile Include="AdmissionModels\Config\AdtBedFeatureSchemePriceCategoryMapModel.cs" />
+    <Compile Include="AdmissionModels\Config\AdtDepositSettingsModel.cs" />
+    <Compile Include="AdmissionModels\DeathDetailsModel.cs" />
+    <Compile Include="AdmissionModels\DeathTypeModel.cs" />
+    <Compile Include="AdmissionModels\DeliveryTypeModel.cs" />
+    <Compile Include="AdmissionModels\DischargeCancelModel.cs" />
+    <Compile Include="AdmissionModels\DischargeConditionTypeModel.cs" />
+    <Compile Include="AdmissionModels\DischargeSummaryMedication.cs" />
+    <Compile Include="AdmissionModels\GravitaModel.cs" />
+    <Compile Include="AdmissionModels\HemodialysisModel.cs" />
+    <Compile Include="AdmissionModels\AdmissionViewModel.cs" />
+    <Compile Include="AdmissionModels\BedFeature.cs" />
+    <Compile Include="AdmissionModels\DischargeTypeModel.cs" />
+    <Compile Include="AdmissionModels\DischargeSummaryModel.cs" />
+    <Compile Include="AdmissionModels\IpWristBandInfoVM.cs" />
+    <Compile Include="AdmissionModels\PatientCertificateModel.cs" />
+    <Compile Include="AdmissionModels\SmsModel.cs" />
+    <Compile Include="AdmissionModels\WardModel.cs" />
+    <Compile Include="AdmissionModels\BedFeaturesMap.cs" />
+    <Compile Include="AdmissionModels\BedModel.cs" />
+    <Compile Include="AdmissionModels\PatientBedInfo.cs" />
+    <Compile Include="AdmissionModels\AdmissionModel.cs" />
+    <Compile Include="AdmissionModels\ZeroItemDischargeModel.cs" />
+    <Compile Include="AppointmentModels\AppointmentHelpers.cs" />
+    <Compile Include="AppointmentModels\AppointmentVMs.cs" />
+    <Compile Include="AppointmentModels\Rank.cs" />
+    <Compile Include="BillingModels\Config\BanksModel.cs" />
+    <Compile Include="BillingModels\Config\BillingAdditionalServiceItem.cs" />
+    <Compile Include="BillingModels\Config\BillingPackageServiceItemModel.cs" />
+    <Compile Include="BillingModels\Config\BillingSubSchemeModel.cs" />
+    <Compile Include="BillingModels\Config\CurrencyModel.cs" />
+    <Compile Include="BillingModels\DepositHeadModel.cs" />
+    <Compile Include="BillingModels\DischargeModel\DischargeStatement.cs" />
+    <Compile Include="BillingModels\DischargeModel\PendingBill.cs" />
+    <Compile Include="BillingModels\DischargeModel\PharmacyPendingBillItem.cs" />
+    <Compile Include="BillingModels\Handover\BillingHandoverTransactionModel.cs" />
+    <Compile Include="BillingModels\Config\BillMapPriceCategorySchemeModel.cs" />
+    <Compile Include="BillingModels\Config\BillingSchemeModel.cs" />
+    <Compile Include="BillingModels\POS\BillingCancellation.cs" />
+    <Compile Include="BillingModels\POS\BillingTransactionCreditBillItemStatusModel.cs" />
+    <Compile Include="BillingModels\POS\BillingTransactionCreditBillStatus.cs" />
+    <Compile Include="BillingModels\Config\BillMapPriceCategoryServiceItemModel.cs" />
+    <Compile Include="BillingModels\Config\BillServiceCategoryModel.cs" />
+    <Compile Include="BillingModels\Config\BillServiceItemSchemeSettingModel.cs" />
+    <Compile Include="BillingModels\POS\keyAttribute.cs" />
+    <Compile Include="BillingModels\Reporting\DynamicReportNameModel.cs" />
+    <Compile Include="BillingModels\ViewModels\InvoicePrintVMs.cs" />
+    <Compile Include="BillingModels\ViewModels\BillingTransactionItemVM.cs" />
+    <Compile Include="BillingModels\POS\BillInvoiceReturnItemsModel.cs" />
+    <Compile Include="BillingModels\ViewModels\CreditNoteVMs.cs" />
+    <Compile Include="BillingModels\Config\CreditOrganizationModel.cs" />
+    <Compile Include="BillingModels\Logs\History_BillingTransactionItem.cs" />
+    <Compile Include="BillingModels\POS\BillInvoiceReturnModel.cs" />
+    <Compile Include="BillingModels\Config\BillingFiscalYear.cs" />
+    <Compile Include="BillingModels\Logs\BillItemPriceHistory.cs" />
+    <Compile Include="BillingModels\Config\BillingPackageModel.cs" />
+    <Compile Include="BillingModels\POS\BillSettlementsModel.cs" />
+    <Compile Include="BillingModels\Config\BillingCounter.cs" />
+    <Compile Include="BillingModels\POS\BillingDeposit.cs" />
+    <Compile Include="BillingModels\ViewModels\BillingViewModels.cs" />
+    <Compile Include="BillingModels\POS\BillingTransactionItemModel.cs" />
+    <Compile Include="BillingModels\Config\BillServiceItemModel.cs" />
+    <Compile Include="BillingModels\POS\BillItemRequisition.cs" />
+    <Compile Include="BillingModels\POS\BillingTransactionModel.cs" />
+    <Compile Include="BillingModels\ViewModels\IPBillingDiscount_DTO.cs" />
+    <Compile Include="BillingModels\Logs\IRDLogModel.cs" />
+    <Compile Include="BillingModels\PatientInsurancePackageTransactionModel.cs" />
+    <Compile Include="BillingModels\Config\PriceCategoryModel.cs" />
+    <Compile Include="CommonModels\PrinterSettingsModel.cs" />
+    <Compile Include="BillingModels\Reporting\ReportingItemBillingItemMapping.cs" />
+    <Compile Include="BillingModels\Reporting\ReportingItemsModel.cs" />
+    <Compile Include="BillingModels\Config\ServiceDepartmentModel.cs" />
+    <Compile Include="BillingModels\ViewModels\SettlementVMs.cs" />
+    <Compile Include="BillingModels\SyncBillingAccountingModel.cs" />
+    <Compile Include="ClaimManagementModels\InsuranceClaimPayment.cs" />
+    <Compile Include="ClaimManagementModels\TXNUploadedFile.cs" />
+    <Compile Include="ClinicalModels\ClinicalDiagnosisModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\AblationProfileModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\EyeModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\EyeVisuMax.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\LaserDataEntryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\LasikRSTModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\OperationNotesModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\OraModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\PachymetryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\PreOPPachymetryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\RefractionModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\SmileSettingsModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\SmileIncisionsModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\WavefrontModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalViewModels.cs" />
+    <Compile Include="ClinicalModels\EmergencyNoteModel.cs" />
+    <Compile Include="ClinicalModels\FreeTextNoteModel.cs" />
+    <Compile Include="ClinicalModels\MedicationFrequency.cs" />
+    <Compile Include="ClinicalModels\MedicationPrescriptionModel.cs" />
+    <Compile Include="ClinicalModels\NoteTypeModel.cs" />
+    <Compile Include="ClinicalModels\ObjectiveNoteModel.cs" />
+    <Compile Include="ClinicalModels\PatientClinicalInfoModel.cs" />
+    <Compile Include="ClinicalModels\PatientImages.cs" />
+    <Compile Include="ClinicalModels\PrescriptionNotesModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\AcceptanceModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\AdviceDiagnosisModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\FinalClassModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\HistoryModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\IOPModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\PlupModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\PrescriptionSlipModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\RetinoscopyModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\SchrimeModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\TBUTModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\VaUnaidedModel.cs" />
+    <Compile Include="ClinicalModels\ProcedureNoteModel.cs" />
+    <Compile Include="ClinicalModels\ProgressModel.cs" />
+    <Compile Include="ClinicalModels\ReferralSourceModel.cs" />
+    <Compile Include="ClinicalModels\Scan-upload\EyeScanImagesModel.cs" />
+    <Compile Include="ClinicalModels\SubjectiveNoteModel.cs" />
+    <Compile Include="ClinicalModels\NotesModel.cs" />
+    <Compile Include="ClinicalModels\ProblemList.cs" />
+    <Compile Include="ClinicalModels\TemplateNoteModel.cs" />
+    <Compile Include="CommonModels\EmpDueAmount.cs" />
+    <Compile Include="CommonModels\EmpCashTransactionModel.cs" />
+    <Compile Include="CommonModels\ImageUploadModel.cs" />
+    <Compile Include="CommonModels\InvoiceHeaderModel.cs" />
+    <Compile Include="CommonModels\RequisitionItem.cs" />
+    <Compile Include="CSSD\CssdItemTransaction.cs" />
+    <Compile Include="DICOMModels\DCMPatientStudyModel.cs" />
+    <Compile Include="DICOMModels\DicomFileInfoModel.cs" />
+    <Compile Include="DICOMModels\DicomWrapperVM.cs" />
+    <Compile Include="DICOMModels\PatientStudyModel.cs" />
+    <Compile Include="DICOMModels\SeriesInfoModel.cs" />
+    <Compile Include="DoctorModels\VisitSummaryModel.cs" />
+    <Compile Include="EmergencyModels\CoreLookupDetail.cs" />
+    <Compile Include="EmergencyModels\EmergencyDischargeSummaryVM.cs" />
+    <Compile Include="EmergencyModels\EmergencyPatientCases.cs" />
+    <Compile Include="EmergencyModels\UploadConsentFom.cs" />
+    <Compile Include="EmergencyModels\EmergencyPatientModel.cs" />
+    <Compile Include="EmergencyModels\EmergencyTriagedPatientVM.cs" />
+    <Compile Include="EmergencyModels\EmergencyDischargeSummaryModel.cs" />
+    <Compile Include="EmergencyModels\ERParamClass.cs" />
+    <Compile Include="EmergencyModels\FinalizedPatientModel.cs" />
+    <Compile Include="EmergencyModels\ModeOfArrival.cs" />
+    <Compile Include="EmployeeModels\EmployeePreferences.cs" />
+    <Compile Include="EmployeeModels\EmployeeType.cs" />
+    <Compile Include="EmployeeModels\EmployeeRole.cs" />
+    <Compile Include="EmployeeModels\EmployeeProfileVM.cs" />
+    <Compile Include="ExtReferralModels\ExtReferralVMs.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetCategoryModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetConditionCheckListModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetContractModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetDepreciationMethodModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetDepreciationModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetDispatchItemsModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetDispatchModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetFaultHistoryModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetInsuranceModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetLocationsModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetServiceModel.cs" />
+    <Compile Include="FixedAssetModels\FixedAssetStockModel.cs" />
+    <Compile Include="FractionModels\Designation.cs" />
+    <Compile Include="FractionModels\FractionCalculation.cs" />
+    <Compile Include="FractionModels\FractionPercent.cs" />
+    <Compile Include="FractionModels\FractionPercentVM.cs" />
+    <Compile Include="HelpdeskModels\BedInformationModel.cs" />
+    <Compile Include="HelpdeskModels\EmployeeInfoModel.cs" />
+    <Compile Include="HelpdeskModels\WardInformationModel.cs" />
+    <Compile Include="IMUDTOs\IMUPostDataModel.cs" />
+    <Compile Include="IMUDTOs\IMUResponseModel.cs" />
+    <Compile Include="IncentiveModels\ConsultantIncentiveModel.cs" />
+    <Compile Include="IncentiveModels\EmployeeBillItemsMap.cs" />
+    <Compile Include="IncentiveModels\EmployeeIncentiveInfo.cs" />
+    <Compile Include="IncentiveModels\IncentiveFractionItem.cs" />
+    <Compile Include="IncentiveModels\IncentiveTransactionItemsVM.cs" />
+    <Compile Include="IncentiveModels\ItemGroupDistribution.cs" />
+    <Compile Include="IncentiveModels\PaymentInfoModel.cs" />
+    <Compile Include="IncentiveModels\ProfileItemMap.cs" />
+    <Compile Include="IncentiveModels\ProfileModel.cs" />
+    <Compile Include="InsuranceModels\InsuranceBalanceHistoryModel.cs" />
+    <Compile Include="ClaimManagementModels\InsuranceClaim.cs" />
+    <Compile Include="InsuranceModels\INS_NewClaimCodeDTO.cs" />
+    <Compile Include="InventoryModels\CurrencyMasterModel.cs" />
+    <Compile Include="InventoryModels\DispatchItemsModel.cs" />
+    <Compile Include="InventoryModels\DispatchModel.cs" />
+    <Compile Include="InventoryModels\DonationItemModel.cs" />
+    <Compile Include="InventoryModels\DonationItemsVM.cs" />
+    <Compile Include="InventoryModels\DonationModel.cs" />
+    <Compile Include="InventoryModels\DonationVM.cs" />
+    <Compile Include="InventoryModels\DTOs\PurchaseOderDraftDTO.cs" />
+    <Compile Include="InventoryModels\DTOs\PurchaseOrderDraftItemDTO.cs" />
+    <Compile Include="InventoryModels\GoodsReceiptItemsModel.cs" />
+    <Compile Include="InventoryModels\GoodsReceiptModel.cs" />
+    <Compile Include="InventoryModels\InventoryChargesMasterModel.cs" />
+    <Compile Include="InventoryModels\InventoryCompanyModel.cs" />
+    <Compile Include="InventoryModels\InventoryFiscalYear.cs" />
+    <Compile Include="InventoryModels\InventoryFiscalYearStock.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\ApprovedMaterialStockRegisterModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\AssetLocationHistoryModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\CapitalStockLedgerModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\ConsumableStockLegerModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\CurrentStockLevel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\CurrentWriteOff.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\DetailStockLedgerModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\DispatchDetailModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\ExpirableStockReportDataViewModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\FixedAssetDonationModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\FixedAssetsModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\FixedAssetsMovementModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\GoodsReceiptEvaluationModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\GoodsReceiptModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\InventorySummaryModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\IssuedItemViewModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\PurchaseOrderModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\DailyItemDispatchModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\QuotionRatesModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\ReturnToVendorItemsModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\ReturnToVendor.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\SubstoreReportModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\SupplierWiseStockModel.cs" />
+    <Compile Include="InventoryModels\InventoryStockIds.cs" />
+    <Compile Include="InventoryModels\InventoryStockManage.cs" />
+    <Compile Include="InventoryModels\InventoryTermsModel.cs" />
+    <Compile Include="InventoryModels\InventoryViewModel.cs" />
+    <Compile Include="InventoryModels\ItemCategoryMasterModel.cs" />
+    <Compile Include="InventoryModels\ItemMasterModel.cs" />
+    <Compile Include="InventoryModels\AccountHeadMasterModel.cs" />
+    <Compile Include="InventoryModels\ItemSubCategoryMasterModel.cs" />
+    <Compile Include="InventoryModels\MAP_GoodsReceiptItems_OtherCharges.cs" />
+    <Compile Include="InventoryModels\MAP_GoodsReceipt_OtherCharges.cs" />
+    <Compile Include="InventoryModels\PackagingTypeMasterModel.cs" />
+    <Compile Include="InventoryModels\PurchaseOrderDraftModel.cs" />
+    <Compile Include="InventoryModels\PurchaseOrderDraftItemModel.cs" />
+    <Compile Include="InventoryModels\PurchaseOrderModel.cs" />
+    <Compile Include="InventoryModels\PurchaseOrderItemsModel.cs" />
+    <Compile Include="InventoryModels\Quotation.cs" />
+    <Compile Include="InventoryModels\QuotationUploadedFiles.cs" />
+    <Compile Include="InventoryModels\QuotationItems.cs" />
+    <Compile Include="InventoryModels\RequestForQuotation.cs" />
+    <Compile Include="InventoryModels\RequestForQuotationItems.cs" />
+    <Compile Include="InventoryModels\PurchaseRequestModel.cs" />
+    <Compile Include="InventoryModels\PurchaseRequestItemModel.cs" />
+    <Compile Include="InventoryModels\RequestForQuotationVendors.cs" />
+    <Compile Include="InventoryModels\RequisitionItemsModel.cs" />
+    <Compile Include="InventoryModels\RequisitionModel.cs" />
+    <Compile Include="InventoryModels\RequisitionStockVM.cs" />
+    <Compile Include="InventoryModels\ReturnFromSubstore.cs" />
+    <Compile Include="InventoryModels\ReturnFromSubstoreItems.cs" />
+    <Compile Include="InventoryModels\ReturnToVendorItemsModel.cs" />
+    <Compile Include="InventoryModels\ReturnToVendorItemsVM.cs" />
+    <Compile Include="InventoryModels\ReturnToVendorModel.cs" />
+    <Compile Include="InventoryModels\StockMasterModel.cs" />
+    <Compile Include="InventoryModels\StoreStockModel.cs" />
+    <Compile Include="InventoryModels\StockTransactionModel.cs" />
+    <Compile Include="InventoryModels\UnitOfMeasurementMasterModel.cs" />
+    <Compile Include="InventoryModels\VendorMasterModel.cs" />
+    <Compile Include="InventoryModels\WriteOffItemsModel.cs" />
+    <Compile Include="LabModels\AttachmentModel.cs" />
+    <Compile Include="LabModels\FinalLabReportListVM.cs" />
+    <Compile Include="LabModels\InpatientLabTestModel.cs" />
+    <Compile Include="LabModels\LabBarCodeModel.cs" />
+    <Compile Include="LabModels\LabEmailModel.cs" />
+    <Compile Include="LabModels\LabGovReportItemModel.cs" />
+    <Compile Include="LabModels\LabGovReportMappingModel.cs" />
+    <Compile Include="LabModels\LabMasterModel.cs" />
+    <Compile Include="LabModels\LabReportModel.cs" />
+    <Compile Include="LabModels\LabPrintReportView.cs" />
+    <Compile Include="LabModels\LabReportTemplateModel.cs" />
+    <Compile Include="LabModels\LabRunNumberSettingsModel.cs" />
+    <Compile Include="LabModels\LabSelectionVM.cs" />
+    <Compile Include="LabModels\LabSignatoriesViewModel.cs" />
+    <Compile Include="LabModels\LabSMSModel.cs" />
+    <Compile Include="LabModels\LabTestCategoryModel.cs" />
+    <Compile Include="LabModels\LabTestComponentResultModel.cs" />
+    <Compile Include="LabModels\LabRequisitionModel.cs" />
+    <Compile Include="LabModels\LabTestComponentMapModel.cs" />
+    <Compile Include="LabModels\LabTestJSONComponentModel.cs" />
+    <Compile Include="LabModels\LabTestListWithVendor.cs" />
+    <Compile Include="LabModels\LabTypesModel.cs" />
+    <Compile Include="LabModels\LabVendorsModel.cs" />
+    <Compile Include="LabModels\LabTestModel.cs" />
+    <Compile Include="LabModels\LabTestSpecimenModel.cs" />
+    <Compile Include="LabModels\LabViewModels.cs" />
+    <Compile Include="LabModels\LISSyncedComponentDetail.cs" />
+    <Compile Include="LabModels\VerificationCoreCFGModel.cs" />
+    <Compile Include="LabModels\VerifiedByModel.cs" />
+    <Compile Include="LISModels\LISComponentMapModel.cs" />
+    <Compile Include="LISModels\LISComponentMasterVM.cs" />
+    <Compile Include="LookUpTypeEnum.cs" />
+    <Compile Include="MarketingReferralModel\ReferralComissionModel.cs" />
+    <Compile Include="MarketingReferralModel\ReferralSchemeModel.cs" />
+    <Compile Include="MarketingReferralModel\ReferringOrganizationModel.cs" />
+    <Compile Include="MarketingReferralModel\ReferringPartyGroupModel.cs" />
+    <Compile Include="MarketingReferralModel\ReferringPartyModel.cs" />
+    <Compile Include="MasterModels\CfgParameterModel.cs" />
+    <Compile Include="MasterModels\CfgPaymentModesSettings.cs" />
+    <Compile Include="MasterModels\CookieAuthInfoModel.cs" />
+    <Compile Include="MasterModels\CoreCFGLookupModel.cs" />
+    <Compile Include="MasterModels\CountrySubDivision.cs" />
+    <Compile Include="MasterModels\DepartmentModel.cs" />
+    <Compile Include="MasterModels\EmailSendDetailModel.cs" />
+    <Compile Include="MasterModels\ICD10Groups\ICD10DiseaseGroupModel.cs" />
+    <Compile Include="MasterModels\ICD10Groups\ICD10ReportingGroupModel.cs" />
+    <Compile Include="MasterModels\ICD10Groups\MorbidityReportingGroupVM.cs" />
+    <Compile Include="MasterModels\ICDEmergencyGroup\ICDEmergencyDiseaseGroupModel.cs" />
+    <Compile Include="MasterModels\ICDEmergencyGroup\ICDEmergencyReportingGroupModel.cs" />
+    <Compile Include="MasterModels\LoginInformationModel.cs" />
+    <Compile Include="MasterModels\Municipality.cs" />
+    <Compile Include="MasterModels\PaymentModes.cs" />
+    <Compile Include="MasterModels\PrintExportConfigModel.cs" />
+    <Compile Include="MasterModels\ServiceDepartmentIntegrationModel.cs" />
+    <Compile Include="MasterModels\StoreVerificationMapModel.cs" />
+    <Compile Include="MasterModels\TaxModel.cs" />
+    <Compile Include="MasterModels\RadiologyImagingItemModel.cs" />
+    <Compile Include="MasterModels\RadiologyImagingTypeModel.cs" />
+    <Compile Include="MasterModels\ReactionModel.cs" />
+    <Compile Include="MasterModels\UniquePastDataModel.cs" />
+    <Compile Include="MasterModels\WardSubStoresMapModel.cs" />
+    <Compile Include="MaternityModels\MaternityANC.cs" />
+    <Compile Include="MaternityModels\MaternityFileUploads.cs" />
+    <Compile Include="MaternityModels\MaternityPatient.cs" />
+    <Compile Include="MaternityModels\MaternityPayment.cs" />
+    <Compile Include="MaternityModels\MaternityPaymentReceipt.cs" />
+    <Compile Include="MaternityModels\MaternityRegister.cs" />
+    <Compile Include="MaternityModels\MaternityRegisterVM.cs" />
+    <Compile Include="MedicalRecords\EMER_FinalDiagnosisModel.cs" />
+    <Compile Include="MedicalRecords\FinalDiagnosisModel.cs" />
+    <Compile Include="MedicalRecords\InpatientDiagnosisModel.cs" />
+    <Compile Include="MedicalRecords\MedicalRecordModel.cs" />
+    <Compile Include="MedicalRecords\OperationTypeModel.cs" />
+    <Compile Include="MedicalRecords\PatLabtestSummaryModel.cs" />
+    <Compile Include="MedicareModels\MedicareInstitutes.cs" />
+    <Compile Include="MedicareModels\MedicareMemberBalance.cs" />
+    <Compile Include="MedicareModels\MedicareMembers.cs" />
+    <Compile Include="MedicareModels\MedicareTypes.cs" />
+    <Compile Include="NotificationModels\NotificationViewModel.cs" />
+    <Compile Include="OtModels\OtBookingListModel.cs" />
+    <Compile Include="OtModels\OtCheckListInfoModel.cs" />
+    <Compile Include="OtModels\OTSummaryModel.cs" />
+    <Compile Include="OtModels\OTTeamsModel.cs" />
+    <Compile Include="PatientModels\HealthCardInfoModel.cs" />
+    <Compile Include="PatientModels\InsuranceProviderModel.cs" />
+    <Compile Include="PatientModels\NeighbourhoodCardModel.cs" />
+    <Compile Include="PatientModels\PatientSchemeMapModel.cs" />
+    <Compile Include="PatientModels\PatientFilesModel.cs" />
+    <Compile Include="PatientModels\PatientMembershipModel_Depricated.cs" />
+    <Compile Include="PatientModels\AddressModel.cs" />
+    <Compile Include="ClinicalModels\AllergyModel.cs" />
+    <Compile Include="AppointmentModels\AppointmentModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalModel.cs" />
+    <Compile Include="MasterModels\Country.cs" />
+    <Compile Include="EmployeeModels\Employee.cs" />
+    <Compile Include="ClinicalModels\FamilyHistoryModel.cs" />
+    <Compile Include="PatientModels\GuarantorModel.cs" />
+    <Compile Include="ClinicalModels\HomeMedicationModel.cs" />
+    <Compile Include="MasterModels\ICD10Code.cs" />
+    <Compile Include="ClinicalModels\InputOutputModel.cs" />
+    <Compile Include="PatientModels\InsuranceModel.cs" />
+    <Compile Include="PatientModels\KinModel.cs" />
+    <Compile Include="Payroll\AttendanceDailyTimeRecordModel.cs" />
+    <Compile Include="Payroll\EmployeeLeaveModel.cs" />
+    <Compile Include="Payroll\HolidayModel.cs" />
+    <Compile Include="Payroll\LeaveCategory.cs" />
+    <Compile Include="Payroll\LeaveRuleModel.cs" />
+    <Compile Include="Payroll\PROLL_DailyMuster.cs" />
+    <Compile Include="Payroll\WeekendHolidays.cs" />
+    <Compile Include="PharmacyModels\CounterCollectionViewModel.cs" />
+    <Compile Include="PharmacyModels\ManageStockItem.cs" />
+    <Compile Include="PharmacyModels\PatientConsumption\PatientConsumptionItemModel.cs" />
+    <Compile Include="PharmacyModels\PatientConsumption\PatientConsumptionModel.cs" />
+    <Compile Include="PharmacyModels\PatientConsumption\PatientConsumptionReturnItemModel.cs" />
+    <Compile Include="PharmacyModels\PatientViewModel.cs" />
+    <Compile Include="PharmacyModels\PharmacyCounter.cs" />
+    <Compile Include="PharmacyModels\GoodReceiptItemsViewModel.cs" />
+    <Compile Include="PharmacyModels\Medication.cs" />
+    <Compile Include="ClinicalModels\PastMedicalModel.cs" />
+    <Compile Include="PatientModels\PatientModel.cs" />
+    <Compile Include="PatientModels\PatientViewModels.cs" />
+    <Compile Include="ClinicalModels\ActiveMedical.cs" />
+    <Compile Include="PharmacyModels\PharmacyFiscalYearModel.cs" />
+    <Compile Include="PharmacyModels\PharmacyReportsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMBillTransactionItems.cs" />
+    <Compile Include="PharmacyModels\PHRMBillTransactionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMCategoryModel.cs" />
+    <Compile Include="PharmacyModels\PHRMCompanyModel.cs" />
+    <Compile Include="PharmacyModels\PHRMCreditOrganizationsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMDepositModel.cs" />
+    <Compile Include="PharmacyModels\PHRMDispatchItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMDrugsRequistionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMDrugsRequistionItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMEmployeeCashTransaction.cs" />
+    <Compile Include="PharmacyModels\PHRMGenericDosageNFreq.cs" />
+    <Compile Include="PharmacyModels\PHRMGenericModel.cs" />
+    <Compile Include="PharmacyModels\PHRMGoodsReceiptItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMGoodsReceiptModel.cs" />
+    <Compile Include="PharmacyModels\PHRMGoodsReceiptViewModel.cs" />
+    <Compile Include="PharmacyModels\PHRMInvoiceItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMInvoiceModel.cs" />
+    <Compile Include="PharmacyModels\PHRMInvoiceReturnItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMExpiryDateBatchNoHistoryModel.cs" />
+    <Compile Include="PharmacyModels\PHRMInvoiceReturnModel.cs" />
+    <Compile Include="PharmacyModels\PHRMPackingTypeModel.cs" />
+    <Compile Include="PharmacyModels\PHRMMRPHistoryModel.cs" />
+    <Compile Include="PharmacyModels\PHRMNarcoticRecord.cs" />
+    <Compile Include="PharmacyModels\PHRMPatient.cs" />
+    <Compile Include="PharmacyModels\PHRMPrescriptionItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMPrescriptionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMRackModel.cs" />
+    <Compile Include="PharmacyModels\PHRMRequisitionStockVM.cs" />
+    <Compile Include="PharmacyModels\PHRMReturnToSupplierItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMReturnToSupplierModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSettlementModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSettlementVM.cs" />
+    <Compile Include="PharmacyModels\PHRMStockBarcode.cs" />
+    <Compile Include="PharmacyModels\PHRMStockItemsReportVM.cs" />
+    <Compile Include="PharmacyModels\PHRMStockManageModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStockMaster.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreStockModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreRequisitionItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreRequisitionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreSalesCategoryModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStockTransactionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSupplierLedgerModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSupplierLedgerTransactionModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSupplierModel.cs" />
+    <Compile Include="PharmacyModels\PHRMItemMasterModel.cs" />
+    <Compile Include="PharmacyModels\PHRMItemTypeModel.cs" />
+    <Compile Include="PharmacyModels\PHRMPurchaseOrderItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMPurchaseOrderModel.cs" />
+    <Compile Include="PharmacyModels\PHRMTAXModel.cs" />
+    <Compile Include="PharmacyModels\PHRMTransactionCreditBillItemStatusModel.cs" />
+    <Compile Include="PharmacyModels\PHRMTransactionCreditBillStatus.cs" />
+    <Compile Include="PharmacyModels\PHRMUnitOfMeasurementModel.cs" />
+    <Compile Include="PharmacyModels\PHRMWriteOffItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMWriteOffModel.cs" />
+    <Compile Include="PharmacyModels\PHRM_MAP_ItemToRack.cs" />
+    <Compile Include="PharmacyModels\PHRM_MAP_MstItemsPriceCategory.cs" />
+    <Compile Include="PharmacyModels\Provisional\PHRMTransactionProvisionalReturnItemsModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ClinicalModels\SocialHistoryModel.cs" />
+    <Compile Include="ClinicalModels\SurgicalHistoryModel.cs" />
+    <Compile Include="AppointmentModels\VisitModel.cs" />
+    <Compile Include="ClinicalModels\VitalsModel.cs" />
+    <Compile Include="RadiologyModels\FilmTypeModel.cs" />
+    <Compile Include="RadiologyModels\ImageAttachmentModel.cs" />
+    <Compile Include="RadiologyModels\RadEmailModel.cs" />
+    <Compile Include="RadiologyModels\ReportingDoctorModel.cs" />
+    <Compile Include="RadiologyModels\ImagingViewModels.cs" />
+    <Compile Include="RadiologyModels\ImagingReportModel.cs" />
+    <Compile Include="RadiologyModels\ImagingRequisitionModel.cs" />
+    <Compile Include="RadiologyModels\RadiologyReportTemplateModel.cs" />
+    <Compile Include="ReportingModels\ADTInpatientCensusSummary.cs" />
+    <Compile Include="ReportingModels\BillingReportVMs.cs" />
+    <Compile Include="ReportingModels\HospitalMortalityReportModel.cs" />
+    <Compile Include="ReportingModels\InpatientMorbidityReportModel.cs" />
+    <Compile Include="ReportingModels\InpatientServiceReportModel.cs" />
+    <Compile Include="ReportingModels\LaboratoryServices.cs" />
+    <Compile Include="ReportingModels\OutpatientMorbidityReportModel.cs" />
+    <Compile Include="ReportingModels\PatientBillHistory.cs" />
+    <Compile Include="ReportingModels\DynamicReport.cs" />
+    <Compile Include="ReportingModels\PharmacyReportVMs.cs" />
+    <Compile Include="SchedulingModels\EmpDayWiseAvailability.cs" />
+    <Compile Include="SchedulingModels\EmployeeShiftMap.cs" />
+    <Compile Include="SchedulingModels\EmployeeShifts.cs" />
+    <Compile Include="SchedulingModels\EmpSchedules.cs" />
+    <Compile Include="SchedulingModels\SchedulingViewModels.cs" />
+    <Compile Include="SchedulingModels\ShiftsMasterModel.cs" />
+    <Compile Include="SocialServiceUnit\SSU_InformationModel.cs" />
+    <Compile Include="SSFModels\PAT_SSFClaimResponseDetails.cs" />
+    <Compile Include="SSFModels\SSF.cs" />
+    <Compile Include="SSFModels\SSFClaim.cs" />
+    <Compile Include="SSFModels\SSFClaimResponse.cs" />
+    <Compile Include="SSFModels\SSFCredentials.cs" />
+    <Compile Include="SSFModels\SSFPatientDetail.cs" />
+    <Compile Include="SSFModels\SSFPatientEligibility.cs" />
+    <Compile Include="SSFModels\SSFResponse.cs" />
+    <Compile Include="StickerModels\PatientStickerModel.cs" />
+    <Compile Include="SystemAdminModels\AuditTableDisplayName.cs" />
+    <Compile Include="SystemAdminModels\AuditTrailModel.cs" />
+    <Compile Include="SystemAdminModels\DatabaseLogModel.cs" />
+    <Compile Include="SystemAdminModels\InvoiceDetailsModel.cs" />
+    <Compile Include="SystemAdminModels\PhrmInvoiceDetails.cs" />
+    <Compile Include="SystemAdminModels\SqlAuditModel.cs" />
+    <Compile Include="SystemAdminModels\SysAdmin_Parameters.cs" />
+    <Compile Include="Utilities\ProcessConfirmationRolesPermissionModel.cs" />
+    <Compile Include="Utilities\VisitSchemeChangeHistoryModel.cs" />
+    <Compile Include="Utilities\SchemeRefundModel.cs" />
+    <Compile Include="Vaccination\EthnicGroupModel.cs" />
+    <Compile Include="Vaccination\EthnicGroupVM.cs" />
+    <Compile Include="Vaccination\PatientVaccineDetailModel.cs" />
+    <Compile Include="Vaccination\PatientVaccineDetailVM.cs" />
+    <Compile Include="Vaccination\VaccinationPatientVM.cs" />
+    <Compile Include="Vaccination\VaccineMasterModel.cs" />
+    <Compile Include="Vaccination\VaccPatientWithVisitInfoVM.cs" />
+    <Compile Include="VerificationModels\InventoryRequisitionViewModel.cs" />
+    <Compile Include="VerificationModels\Pharmacy\PharmacyVerificationModel.cs" />
+    <Compile Include="VerificationModels\TrackRequisitionViewModel.cs" />
+    <Compile Include="VerificationModels\VerificationModel.cs" />
+    <Compile Include="VerificationModels\VerificationViewModel.cs" />
+    <Compile Include="VerificationModels\VerifiersPermissionViewModel.cs" />
+    <Compile Include="VerificationModels\VER_INV_PurchaseRequestParameterModel.cs" />
+    <Compile Include="WardSupplyModels\InvPatientConsumptionReceiptModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInternalConaumptionItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInternalConsumptionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryConsumptionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryReturnItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryReturnModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryStockModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryTransactionModel.cs" />
+    <Compile Include="WardSupplyModels\WardSubStoresMap_DTO.cs" />
+    <Compile Include="WardSupplyModels\WardSubStoresMAPModel.cs" />
+    <Compile Include="WardSupplyModels\WARDSupplyAssetRequisitionItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDSupplyAssetRequisitionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDSupplyAssetReturnItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDSupplyAssetReturnModel.cs" />
+    <Compile Include="WardSupplyModels\WARDTransactionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDConsumptionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDDispatchItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDDispatchModel.cs" />
+    <Compile Include="WardSupplyModels\WARDRequisitionItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDRequisitionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDStockModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DTOs\" />
+    <Folder Include="LabModels\Config\" />
+    <Folder Include="QueueManagementModels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ClinicalModels\PrescriptionSlip\DilateModel.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

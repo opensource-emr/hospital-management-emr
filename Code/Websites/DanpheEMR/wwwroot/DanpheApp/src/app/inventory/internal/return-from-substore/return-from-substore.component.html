@@ -1,0 +1,83 @@
+<style>
+    .bg-modal {
+        background-color: rgba(0, 0, 0, 0.8);
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        display: flex;
+        flex-direction: column;
+        z-index: 9999;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .modal-contents {
+        width: 600px;
+        background-color: white;
+        text-align: center;
+        padding: 20px;
+        position: relative;
+        border-radius: 4px;
+        margin: 30px auto;
+    }
+
+    .custom-round-button {
+        float: right;
+        position: relative;
+        bottom: 35px;
+        border: 1px black solid;
+        border-radius: 30px !important;
+        left: 39px;
+    }
+
+    .qr-code {
+        bottom: 14px;
+        position: relative;
+    }
+
+    .img-responsive {
+        display: block;
+        height: auto;
+    }
+
+    .img-logo {
+        max-height: 86px;
+        position: relative;
+        top: 20px;
+    }
+</style>
+<div class="row">
+    <div class="form-group row col-md-12">
+        <div class="col-md-12 autocomplete-item">
+            <div class="row col-md-12">
+                <div class="col-md-6">
+                    <from-to-date-select (on-change)="OnDateRangeChange($event)">
+                    </from-to-date-select>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group row">
+                        <div class="col-md-12 autocomplete-item" style=" display: flex; align-items: center; flex-direction: row;">
+                            <label class="control-label col-md-3"><b>Substore :</b></label>
+                            <input  danphe-auto-complete class="form-control col-md-8" placeholder="Select Substore" 
+                            [(ngModel)]="selectedStore" [source]="substores" [list-formatter]="ReturnListFormatter" 
+                            display-property-name="StoreName" value-property-name="StoreId" [match-formatted]="true" 
+                            (valueChanged)="AssignSelectedSubstore($event)" onclick="this.select()" />
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn blue" type="button" (click)="ShowReturnData()">
+                        <i class="fa fa-search"></i> Show Data</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-sm-12">
+            <danphe-grid [grid-colDefaults]="ReturnFromSubstoreColumn" [grid-data]="returnedItemList" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" (grid-actions)="SubstoreReturnActions($event)">
+            </danphe-grid>
+        </div>
+    </div>
+    <return-from-substore-detail (callback-close)="Close()" [showReceiveStockPopUp]="showReceiveStockPopUp" [showViewPopUp]="showViewPopUp" [ReturnedItem]="selecteditems" (callback)="GetReturnId($event)"></return-from-substore-detail>

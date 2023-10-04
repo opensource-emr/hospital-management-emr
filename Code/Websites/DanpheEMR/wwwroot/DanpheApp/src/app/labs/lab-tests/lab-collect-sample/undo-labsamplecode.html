@@ -1,0 +1,49 @@
+
+<div class="wrapper">
+  <div *ngIf="showUndoOption" style="position: relative;">
+    <div *ngIf="loading" class="overlay" style="position: absolute; left: 0; top: 0;width: 100%;height: 100%;background: #fff; opacity: 0.4;"> </div>
+    <div *ngIf="allLabRequisitions && allLabRequisitions.length > 0">
+      <div class="number-note-wrapper">
+        <blockquote>
+          <p><strong>Note: Resetting the Run Number Causes the Removal of Current Run Number </strong></p>
+        </blockquote>
+      </div>
+      <div class="table-responsive scroll-vertical tbl-max">
+        <table class="table table-bordered thin-bordered">
+          <thead>
+            <tr>
+              <td><b>Name:</b> {{patientinfos.PatientName}}</td>
+              <td><b>Age/Sex:</b> {{patientinfos.AgeSex}}</td>
+              <td><b>Visit Type:</b> {{patientinfos.VisitType}}</td>
+              <td><b>Sample Code:</b> {{patientinfos.SampleCodeFormatted}}</td>
+            </tr>
+            <tr>
+              <td colspan="2"><b>Test Name</b></td>
+              <td><b>Requested On</b></td>
+              <td><b>Apply Reset On</b></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of allLabRequisitions;">
+              <td colspan="2" >{{req.LabTestName}}</td>
+              <td>{{req.OrderDateTime  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td><label class="mt-checkbox mt-checkbox-outline">
+                  <input type="checkbox" [(ngModel)]="req.IsSelected"  title="SampleCode of Checked test will Reset" />
+                  <span></span> </label></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="margin-15-bt margin-15-tp">
+        <div class="modelbox-footer padding-0-bt">
+          <div class="all-buttons text-right">
+            <button [disabled]="loading" (click)="loading = true;UndoSampleCode(allLabRequisitions);" class="btn primary-btn btn-sm margin-7-hr" >Reset Run Number</button>
+            <button type="button" class="btn btn-cancel btn-outline btn-sm margin-7-hr" (click)="loading = false;CloseUndoBox()"> Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

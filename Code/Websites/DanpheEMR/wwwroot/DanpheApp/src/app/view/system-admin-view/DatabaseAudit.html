@@ -1,0 +1,66 @@
+
+<form class="form-horizontal">
+    <div class="form-body">
+        <div class="col-md-12">
+            <div class="caption custom-caption">
+                <i class="glyphicon glyphicon-asterisk"></i>
+                <span class="caption-subject" style="text-transform: uppercase;">SQL Database Activity Log Details</span>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-3" style="padding:0px;">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-9">
+                        <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-3" style="padding:0px;">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-9">
+                        <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-4" style="padding:0px;">Select Action<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                        <select class="form-control" [(ngModel)]="actionName"
+                                (ngModelChange)="SelectedAction(actionName)"
+                                [ngModelOptions]="{standalone: true}">
+                            <option *ngFor="let actName of list"
+                                    value="{{actName}}">
+                                {{actName}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7 col-xs-12">
+                <div class="form-group pull-right">
+                    <button class="btn blue" type="button" (click)="ShowDBAuditDetails()" [disabled]="loading">
+                        <i class="fa fa-search"></i>
+                        Show Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="row">
+    <div class="col-md-12 col-xs-12">
+        <danphe-grid [grid-colDefaults]="databaseAuditLogGridColumns" [grid-data]="databaseAuditLogData"
+                     [grid-exportOptions]="gridExportOptions"
+                     [grid-showExport]="true">
+        </danphe-grid>
+
+    </div>
+</div>
+

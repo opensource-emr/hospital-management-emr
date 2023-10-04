@@ -1,0 +1,75 @@
+<div class="row">
+  <div class="form-body">
+    <div class="col-md-12">
+      <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Sales Summary Report</span> </div>
+      <div class="row">
+        <div class="col-md-8">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+        </div>
+        <div class="col-md-4 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="LoadReport()" [disabled]="loading">
+              <span *ngIf="!loading">Show Report</span>
+              <span *ngIf="loading">Loading...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="salesSummaryGrid" [grid-data]="salesSummaryResult" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [grid-footer-content]="footerContent" [grid-date-range]="dateRange" [report-for]="pharmacy"> </danphe-grid>
+    </div>
+  </div>
+  <!-- Summary -->
+  <div class=" col-sm-12 col-md-12" style="margin-bottom: 10px !important; display: flex;justify-content: center;">
+    <div class="table-responsive table-wrapper" id="print_summary">
+      <div *ngFor="let data of grandTotalSalesSummary;">
+        <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">
+                <span style="font-size:large;"> Summary </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container>
+              <tr>
+                <td style="font-weight:bold; color:blue"> Cash Sales </td>
+                <td> {{data.CashSales | number}} </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue"> Cash Sales Refund </td>
+                <td> {{data.CashSalesRefund | number}} </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue"> Net Cash Sales </td>
+                <td> {{(data.TotalCashSales) | number}} </td>
+              </tr>
+              <!-- <br /> -->
+              <tr>
+                <td style="font-weight:bold; color:blue"> Credit Sales </td>
+                <td> {{data.CreditSales | number}} </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue"> Credit Sales Refund </td>
+                <td> {{data.CreditSalesRefund | number}} </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue">Net Credit Sales</td>
+                <td> {{data.TotalCreditSales | number}} </td>
+              </tr>
+              <!-- <br /> -->
+              <tr style="border: 2px solid;">
+                <td style="font-weight:bold; color:blue"> Total Sales </td>
+                <td style="font-weight:bold;"> {{data.NetTotalSales | number}}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

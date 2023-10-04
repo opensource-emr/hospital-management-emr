@@ -1,0 +1,282 @@
+<style>
+  .headin-left {
+    /*position: relative;
+    display: table;
+    content: '';*/
+  }
+
+  .headin-left:after {
+    /*position: absolute;
+      left: 7px;
+      top: -14px;
+      content: 'Billing Information';
+      font-weight: 700;
+      color: #006687;
+      background: #fff;
+      padding: 0px 5px;
+      line-height: 24px;*/
+  }
+
+  .headin-left .icheck-inline {
+    padding-left: 0px;
+    font-size: 0.95em;
+    font-weight: 600;
+  }
+
+  .headin-left .icheck-inline select,
+  .headin-left .form-control {
+    height: 30px;
+    font-size: 0.95em;
+    padding-left: 5px;
+    /* font-family: 'Source Sans Pro'; */
+  }
+
+  .headin-left .bill-info table {
+    /* font-family: 'Source Sans Pro'; */
+    font-weight: 600;
+  }
+
+  .headin-left label,
+  .bill-inf label {
+    font-size: 12px;
+    font-weight: 600;
+    /* font-family: Source Sans Pro; */
+    color: #434343;
+  }
+
+
+
+  .p-0 {
+    padding: 0px !important;
+  }
+
+  .blink_me {
+    animation: blinker 1s linear infinite;
+  }
+
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .delBtn {
+    padding: 0;
+    margin-top: 0;
+    margin-right: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 30px !important;
+    text-align: center;
+  }
+
+  input[placeholder="Search Additional Item Name"] {
+    border: 1px solid #ccc;
+    height: 30px;
+    padding: 5px;
+    width: 100%;
+  }
+</style>
+
+<div class="headin-left"
+     style="width:100%; border: 1px solid #96969a;margin-top: 8px; margin-bottom:15px; border-radius: 2px !important;padding: 20px 0px 10px;">
+  <h3 class="visit-head">
+    <i class="fa fa-file-o"></i>Billing Information
+    <label *ngIf="!showBillSummaryPanel">Billing Not Required.</label>
+  </h3>
+  <div class="form-horizontal">
+    <div class="row">
+      <div class="col-md-12" *ngIf="showBillSummaryPanel">
+        <div
+             style="margin-bottom: 5px;">
+          <!-- <div class="form-group" style="margin-bottom: 5px;" *ngIf="showAdditionalBillItemPanel">
+              <label class="col-md-4" style="padding-right:0">Additional Bill Item ? </label>
+              <div class="col-md-3">
+                <div class="input-group">
+                  <div class="icheck-inline" style="margin-top: 0">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input name="AdditionalBillItem" type="checkbox" value=""
+                             title="do you want to show Additional Bill Item" [(ngModel)]="allowAdditionalBillItems"
+                             (ngModelChange)="AdditionalBillItemsCheckboxChanged()">
+                      <span></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+          <div class="col-wrapper checkbox-wrapper">
+            <ng-container *ngFor="let item of filteredVisitAdditionalServiceItems;let i = index;">
+              <div class="col d-flex align-items-center">
+                <input type="checkbox" id="checkbox_visitAdditionalItem_{{i}}" [(ngModel)]="item.IsSelected"
+                       (change)="HandleAdditionalServiceItemCheckUncheck(item)"
+                       style="margin-right: 3px;">
+                <label for="checkbox_visitAdditionalItem_{{i}}" style="margin-right: 15px;">{{ item.ItemName }}</label>
+              </div>
+            </ng-container>
+          </div>
+
+          <table class="bill-itms bill_items_table custom_table padLess_table"
+                 style="width:100%; font-size: 13px; border: 1px solid #ccc;">
+            <tr style="background: #eee; color: #333;font-weight: 500;">
+              <td></td>
+              <td class="print-par" style="width:60%; padding:4px 5px; color: #000;"><b>Particular(s)</b></td>
+              <td class="print-price" style="padding:4px 5px; width: 20%;    color: #000;"><b>Price</b>
+              </td>
+              <td class="print-rate" style="padding:4px 5px; width: 10%;    color: #000;"><b>Dis</b></td>
+              <td class="print-amt" style="padding:4px 5px; width: 10%;    color: #000;"><b>Amt</b></td>
+              <td></td>
+            </tr>
+            <tr *ngFor="let billItem of billingTransaction.BillingTransactionItems; let i=index">
+              <ng-container
+                            *ngIf="billItem && billItem.ServiceItemId && NotAdditionalBillItem.ServiceItemId==billItem.ServiceItemId && NotAdditionalBillItem.ItemName==billItem.ItemName">
+                <td></td>
+                <td style="padding:5px; font-size: 12px; font-weight: 600; width: 60%">{{billItem.ItemName}}</td>
+                <td *ngIf="billItem.ItemName!='Health Card'" class="print-rate"
+                    style="padding: 5px; font-weight: 600;width: 100%">
+                  <input [(ngModel)]="billItem.Price" class="form-control" type="number" min="0"
+                         (ngModelChange)="Calculation()" placeholder="Price"
+                         [attr.disabled]="(billItem.IsPriceChangeAllowed === true ? null : true)"
+                         style="text-align: right; padding: 1px; height: 25px;width: 100% !important;" />
+                </td>
+                <td class="print-rate" style="padding: 5px; font-weight: 600; width:10%">
+                  {{billItem.DiscountAmount}}</td>
+                <td class="print-amt" style="padding: 5px; font-weight: 600;width:10%">
+                  {{billItem.TotalAmount}}</td>
+                <td></td>
+              </ng-container>
+            </tr>
+            <tr *ngFor="let row of AdditionalVisitBilItems;let indx = index">
+              <ng-container *ngIf="AdditionalVisitBilItems && AdditionalVisitBilItems.length">
+                <td></td>
+                <td style="padding:5px; font-size: 12px; font-weight: 600; width: 60%">
+                  {{ row.LegalName }}
+                </td>
+                <td class="" style="padding: 5px; font-weight: 600;width: 100%;">
+                  {{ row.Price }}
+                </td>
+                <td class=" print-rate" style="padding: 5px; font-weight: 600; width:10%">
+                  {{ row.DiscountAmount}}</td>
+                <td class=" print-amt" style="padding: 5px; font-weight: 600;width:10%">{{row.Price - row.DiscountAmount}}
+                </td>
+                <td></td>
+              </ng-container>
+            </tr>
+          </table>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <div class="col-wrapper">
+            <div class="col">
+              <div class="row">
+                <label class="col-md-5" style="">Discount %</label>
+                <div class="col-md-7">
+                  <input [(ngModel)]="billingTransaction.DiscountPercent" class="form-control" type="number" min="0"
+                         onClick="this.select();" [disabled]="DisableDiscountPercent" max="100" (ngModelChange)="Calculation()"
+                         placeholder="Discount %" />
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row">
+                <label class="col-md-4" style="text-align: right;">
+                  Remarks<b
+                     *ngIf="billingTransaction.DiscountPercent || billingTransaction.IsInsuranceBilling || this.billingTransaction.PaymentMode == 'credit'"
+                     class="color-red">*</b>
+                </label>
+                <div class="col-md-8" style="">
+                  <input class="form-control" id="id_billing_remarks" maxlength="200" [(ngModel)]="billingTransaction.Remarks"
+                         value="{{billingTransaction.Remarks | CapitalFirstLetter}}" placeholder="Remarks"
+                         style="height: 30px;"
+                         (keyup.enter)="SetFocusById('btnPrintInvoice')" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6" style="padding: 0;">
+          <div class="row">
+            <label class="col-md-5">SubTotal:</label>
+            <div class="col-md-7">
+              <span><b style="font-size: 12px;">{{billingTransaction.SubTotal}}</b></span>
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-md-5" style="">Total
+              Amount:</label>
+            <div class="col-md-7">
+              <span style="font-weight: bold; font-size: 12px;">
+                {{billingTransaction.TotalAmount}}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="registrationSchemeDto.IsCoPayment">
+            <div class="row">
+              <div class="col-md-5">
+                <span style="font-size: 14px;"><strong>CASH:</strong> </span>
+              </div>
+              <div class="col-md-7">
+                <input [(ngModel)]="billingTransaction.ReceivedAmount"
+                       style="font-weight:bold;height: 40px;font-size:18px !important;background-color:#0773bc; color:#fff;"
+                       class="form-control pd-managed" name="cash" type="number"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)" onclick="this.select();"
+                       disabled (focusout)="ReceivedAmountChange()">
+              </div>
+            </div>
+            <div class="row" style="font-size: 12px; margin-top: 10px;">
+              <div class="col-md-5"><span> <strong>CoPay Info: </strong> </span></div>
+              <div class="col-md-7">
+                <span style="display: block;">CoPayCash: <span><strong>{{ billingTransaction.ReceivedAmount }}</strong></span> </span>
+                <span style="display: block;">CoPayCredit: <span><strong>{{ billingTransaction.CoPaymentCreditAmount }}</strong></span></span>
+              </div>
+
+            </div>
+          </div>
+          <br>
+          <div class="row">
+            <label class="col-md-5" style="color:#000; font-size: 14px; font-weight: bold"><b>Tender:</b></label>
+            <div class="col-md-7">
+              <input type="number" [(ngModel)]="billingTransaction.Tender" class="form-control pd-managed"
+                     (keyup.enter)="SetFocusToRemarksorButton('id_billing_remarks','btnPrintInvoice')" (ngModelChange)="ChangeTenderAmount()"
+                     name="Tender"
+                     placeholder="Rupees" id="tender"
+                     [disabled]="billingTransaction.PaymentMode === 'credit'"
+                     onClick="this.select();">
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-md-5"
+                   style="color:#000; font-size: 14px; font-weight: bold"><b>Change/Return:</b></label>
+            <div class="col-md-7"> <span><b>{{billingTransaction.Change}}</b></span> </div>
+          </div>
+          <div class="row">
+            <div *ngIf="registrationSchemeDto.IsCoPayment">
+              <label class="col-md-5" style="color:#000; font-size: 14px; font-weight: bold">
+                <b>PaymentMode:</b>
+              </label>
+              <div class="col-md-7"><span style="font-size: 14px;"> <strong>{{registrationSchemeDto.DefaultPaymentMode.toUpperCase()}}</strong>
+                </span></div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-md-8 visit-billing-payment" style="padding-left: 0px;left:15px;">
+        <payment-mode-info
+                           [default-payment-mode]="registrationSchemeDto.DefaultPaymentMode"
+                           [total-amount]="billingTransaction.ReceivedAmount"
+                           [page-name]="'Visit'"
+                           [is-coPayment]="registrationSchemeDto.IsCoPayment"
+                           [is-credit-only-scheme]="registrationSchemeDto.IsCreditOnlyScheme"
+                           [membershipTypeName]="MembershipTypeName"
+                           [default-credit-organization]="registrationSchemeDto.DefaultCreditOrganizationId"
+                           [disable-paymentMode-dropdown]="DisablePaymentModeDropDown"
+                           (on-paymentMode-change)="PaymentModeChanges($event)"
+                           (on-creditOrganization-change)="CreditOrganizationChanges($event)"
+                           (on-multiple-paymentMode)="MultiplePaymentCallBack($event)">
+        </payment-mode-info>
+      </div>
+    </div>
+  </div>
+</div>

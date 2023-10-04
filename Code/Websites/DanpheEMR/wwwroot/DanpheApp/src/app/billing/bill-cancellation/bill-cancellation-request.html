@@ -1,0 +1,71 @@
+<!--@*@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Text;
+@using DanpheEMR.ServerModel;
+@using DanpheEMR.DalLayer;*@-->
+<style>
+  .billCreditTable thead tr th,
+  .billCreditTable tbody tr td {
+    padding: 2px !important;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="ProvisionalItemsGridColumns" [grid-data]="provisionalItemList"
+                   [show-CustomDate]="true" (grid-actions)="CancelGridActions($event)" [rangeType]="dateRange"
+                   (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
+  <div class="portlet-body form">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-danger text-center">
+            <strong>Write Cancel Remarks</strong>
+          </h4>
+        </div>
+        <div class="modelbox-body">
+          <div>
+            Cancel Remarks:&nbsp;
+            <textarea [(ngModel)]="cancelRemarks" class="form-control" name="cancelremarks"></textarea>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr"
+                    (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
+              Proceed
+            </button>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="showConfirmationBox=false">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showprovisionalcancelreceipt">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div>
+            <bill-provisional-cancel-receipt [PatientId]="patientId" [visitType]="'outpatient'" [provisionalReturnItemId]="provisionalReturnItemId">
+            </bill-provisional-cancel-receipt>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

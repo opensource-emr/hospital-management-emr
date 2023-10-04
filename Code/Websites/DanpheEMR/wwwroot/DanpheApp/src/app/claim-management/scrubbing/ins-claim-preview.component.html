@@ -1,0 +1,220 @@
+<!-- Modal -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showBillPreviewPage && isClaimDetailsFound">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3> <span>Claim Preview</span> </h3>
+                        <a class="btn btn-danger" (click)="CloseClaimPreviewPopUp()" title="Cancel">X</a>
+                    </div>
+
+                    <body>
+
+                        <div class="container">
+                            <billing-header *ngIf="invoiceDisplaySettings.ShowHeader"></billing-header>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <b>
+                                Claim Preview
+                            </b>
+                        </div>
+                        <hr>
+                        <div class="header">
+                            <div>
+                                <div class="pat-info">
+                                    <span>Claim Code : {{claimDetails.HeaderDetails[0].ClaimCode}}</span>
+                                    <span>Member No : {{claimDetails.HeaderDetails[0].MemberNo}}</span>
+                                </div>
+                                <div class="pat-info">
+                                    <span>Hospital No : {{claimDetails.HeaderDetails[0].HospitalNo}}</span>
+                                    <span>Scheme : {{claimDetails.HeaderDetails[0].Scheme}}</span>
+                                </div>
+                                <div class="pat-info">
+                                    <span>Patient's Name : {{claimDetails.HeaderDetails[0].PatientName}}</span>
+                                    <span>Age/Sex : {{claimDetails.HeaderDetails[0].AgeSex}}</span>
+                                </div>
+                                <div class="pat-info">
+                                    <span>Address : {{claimDetails.HeaderDetails[0].Address}}</span>
+                                    <span>Contact No : {{claimDetails.HeaderDetails[0].ContactNo}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="header">
+                            <div>
+                                <b>
+                                    TEST AND SERVICES:
+                                </b>
+                            </div>
+                            <div>
+                                <table class="table">
+                                    <thead class="table-header-bg">
+                                        <tr>
+                                            <th> Invoice Date </th>
+                                            <th> Item Code </th>
+                                            <th> Department </th>
+                                            <th> Particulars </th>
+                                            <th> Quantity </th>
+                                            <th> Rate </th>
+                                            <th> SubTotal </th>
+                                            <th> Discount </th>
+                                            <th> Total </th>
+                                        </tr>
+                                    </thead>
+                                    <ng-container *ngFor="let bill of claimDetails.BillingDetails">
+                                        <tr>
+                                            <td> {{bill.InvoiceDate | date:'yyyy-MM-dd'}} </td>
+                                            <td> {{bill.ItemCode}} </td>
+                                            <td> {{bill.DepartmentName}} </td>
+                                            <td> {{bill.Particulars}} </td>
+                                            <td> {{bill.Quantity}} </td>
+                                            <td> {{bill.Rate | number : "1.0-4"}} </td>
+                                            <td> {{bill.SubTotalAmount | number : "1.0-4"}} </td>
+                                            <td> {{bill.DiscountAmount | number : "1.0-4"}} </td>
+                                            <td> {{bill.TotalAmount | number : "1.0-4"}} </td>
+                                        </tr>
+                                    </ng-container>
+                                    <tr *ngIf="claimDetails.BillingDetails.length > 0">
+                                        <td colspan="5"></td>
+                                        <td>TOTAL</td>
+                                        <td>{{billSubTotalAmount | number : "1.0-4"}}</td>
+                                        <td>{{billDiscountAmount | number : "1.0-4"}}</td>
+                                        <td>{{billTotalAmount | number : "1.0-4"}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="header">
+                            <div>
+                                <b>
+                                    PHARMACY:
+                                </b>
+                            </div>
+                            <div>
+                                <table class="table">
+                                    <thead class="table-header-bg">
+                                        <tr>
+                                            <th> Invoice Date </th>
+                                            <th> Item Code </th>
+                                            <th> Particulars </th>
+                                            <th> Batch | Expiry </th>
+                                            <th> Quantity </th>
+                                            <th> Rate </th>
+                                            <th> SubTotal </th>
+                                            <th> Discount </th>
+                                            <th> Total </th>
+                                        </tr>
+                                    </thead>
+                                    <ng-container *ngFor="let phrm of claimDetails.PharmacyDetails">
+                                        <tr>
+                                            <td> {{phrm.InvoiceDate | date:'yyyy-MM-dd'}} </td>
+                                            <td> {{phrm.ItemCode}} </td>
+                                            <td> {{phrm.Particulars}} </td>
+                                            <td> {{phrm.BatchExpiry}} </td>
+                                            <td> {{phrm.Quantity}} </td>
+                                            <td> {{phrm.Rate | number : "1.0-4"}} </td>
+                                            <td> {{phrm.SubTotalAmount | number : "1.0-4"}} </td>
+                                            <td> {{phrm.DiscountAmount | number : "1.0-4"}} </td>
+                                            <td> {{phrm.TotalAmount | number : "1.0-4"}} </td>
+                                        </tr>
+                                    </ng-container>
+                                    <tr *ngIf="claimDetails.PharmacyDetails.length > 0">
+                                        <td colspan="5"></td>
+                                        <td>TOTAL</td>
+                                        <td>{{pharmacySubTotalAmount | number : "1.0-4"}}</td>
+                                        <td>{{pharmacyDiscountAmount | number : "1.0-4"}}</td>
+                                        <td>{{pharmacyTotalAmount | number : "1.0-4"}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="header">
+                            <div class="summary">
+                                <div class="left-div">
+                                    <table>
+                                        <tr>
+                                            <td><b>Claimed Amount: &nbsp;&nbsp;</b></td>
+                                            <td>{{claimDetails.HeaderDetails[0].ClaimedAmount | number : "1.0-4"}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>In Words: </b></td>
+                                            <td>{{claimDetails.HeaderDetails[0].ClaimedAmount | Currency | NumberInWords |
+                                                CapitalFirstLetter}}<span
+                                                      *ngIf="claimDetails.HeaderDetails[0].ClaimedAmount"> only.</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <td><b>SubTotal</b></td>
+                                            <td class="txt-right">{{(billSubTotalAmount + pharmacySubTotalAmount) | number : "1.0-4"}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Discount</b></td>
+                                            <td class="txt-right">{{(billDiscountAmount + pharmacyDiscountAmount) | number : "1.0-4"}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Total Amount&nbsp;&nbsp;</b></td>
+                                            <td class="txt-right">{{(billTotalAmount + pharmacyTotalAmount) | number : "1.0-4"}}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="header">
+                            <div>
+                                <b>
+                                    Reference Documents:
+                                </b>
+                            </div>
+                            <div class="summary">
+                                <div class="left">
+                                    <table class="table">
+                                        <thead class="table-header-bg">
+                                            <tr>
+                                                <th> S.N. </th>
+                                                <th> Document Name </th>
+                                            </tr>
+                                        </thead>
+                                        <ng-container *ngFor="let file of claimDetails.DocumentDetails; let i=index">
+                                            <tr>
+                                                <td>{{i + 1}}</td>
+                                                <td>{{file.DocumentName}}</td>
+                                            </tr>
+                                        </ng-container>
+                                    </table>
+                                </div>
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Printed By:&nbsp;&nbsp;</td>
+                                            <td class="txt-right">{{currentUser.UserName}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Printed On:&nbsp;&nbsp;</td>
+                                            <td class="txt-right">{{dateToday}}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </body>
+
+                </div>
+            </div>
+        </div>
+        <!--Model Box Body End-->
+    </div>
+</div>

@@ -1,0 +1,85 @@
+<div class="wrapper">
+  <div class="row">
+    <form [formGroup]="currentCustomReport.CustomReportValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Custom Report</span> </div>
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group row">
+                <label class="control-label col-md-4">Report type<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <select [(ngModel)]="currentCustomReport.reportName" class="form-control" formControlName="reportName">
+                    <option value="OPD (100% discount)">Health Camp Report (100% Discount on OPD)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!--<div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentCustomReport.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentCustomReport.IsDirty('fromDate')" [hidden]="currentCustomReport.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentCustomReport.IsDirty('fromDate')" [hidden]="currentCustomReport.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+    </div>
+  </div>
+  <div class="col-md-5 col-xs-12">
+    <div class="form-group">
+      <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+      <div class="col-md-9">
+        <danphe-date-picker [(ngModel)]="currentCustomReport.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate"> </danphe-date-picker>
+        <span class="color-red font-sm" *ngIf="currentCustomReport.IsDirty('toDate')" [hidden]="currentCustomReport.IsValidCheck('toDate','required')"> To Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentCustomReport.IsDirty('toDate')" [hidden]="currentCustomReport.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+    </div>
+  </div>--> 
+        
+      </div>
+    </form>
+  </div>
+  <div class="row" *ngIf="showReport">
+    <div class="col-md-12" id="printPage">
+      <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;"> <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+        <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+      </div>
+      <div class="col-md-12"> <span class="col-md-2 left">From Date: {{fromDate}}<br />
+        ToDate: {{toDate}}<br />
+        </span> <span class="col-md-8" style="text-align:center"><b>{{reportHeaderText}}</b></span> <span class="col-md-2 right">Print Date: {{currentDate}}</span> <span class="col-md-12">Total No. of Patients: <b> {{ReportData.PatientCount[0].NoOfPatient}}</b></span> </div>
+      <div class="col-md-12">
+        <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+          <thead>
+            <tr>
+              <th style="text-align:center"><b>Sr No.</b></th>
+              <th><b>Particulars</b></th>
+              <th style="text-align:center"><b>Count</b></th>
+              <th style="text-align:center"><b>Amount</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of ReportData.Data;let i=index">
+              <td style="text-align:center">{{i+1}}</td>
+              <td>{{row.Particulars}}</td>
+              <td style="text-align:right">{{row.TotalNumber}}</td>
+              <td style="text-align:right">{{row.TotalIncome}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="form-group" style="text-align:center">
+      <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
+    </div>
+  </div>
+</div>

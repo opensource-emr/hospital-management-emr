@@ -1,0 +1,188 @@
+<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+    .form-group {
+      margin-bottom: 0px !important;
+    }
+  </style>
+<div>
+    <div class="caption custom-caption top-report-section">
+        <h3><i class="fa fa-book"></i>
+        <span class="caption-subject">System Audit Report</span></h3>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+     
+        <div class="row" style="background: #bcbcbc; padding-top: 15px;">
+           
+            <div class="col-md-7 col-xs-12"style="margin-right: -45px;" >
+                <div class="form-group">
+                    <label class="control-label" style="margin-left: 5px;">Select Fiscal year<b class="color-red">  
+                        *</b><b style="float:right;">:</b></label>
+                    <div>                      
+                        <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-12" style="margin-right: -15px; margin-top: 10px;">
+                <label class="control-label no-padding">Select Module<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div>
+                    <select [(ngModel)]="sectionId" id="sectionid" [ngModelOptions]="{standalone: true}" style="width:150px;height:30px;" (ngModelChange)="GetChangedSection()">
+                        <option *ngFor="let s of sectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-3 col-xs-6" style="    margin-top: 9px !important;" >
+                <label class="control-label no-padding">Audit Report Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div>
+                    <select [(ngModel)]="voucherType" [ngModelOptions]="{standalone: true}" style="width:150px;height:30px;" (ngModelChange)="GetChangedReportType()">
+                       <option value="VoucherReversal"> Voucher Reversal </option> 
+                       <option value="EditVoucher"> Edit Voucher </option> 
+                       <option value="BackDateEntry"> Back Date Entry </option> 
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-1 col-sm-3 col-xs-6" style="margin-top: 9px !important;">
+                <div class="form-group mt5">
+                    <br>
+                    <button class="btn blue" type="button" [disabled]="btndisabled" (click)="Load('')">
+                        <i class="fa fa-refresh"></i> Load
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <div class="row">
+       <danphe-grid *ngIf="showeditvoucherlog" [grid-colDefaults]="editvoucherGridColumns" [grid-data]="logsResults" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        </danphe-grid> 
+
+        <danphe-grid *ngIf="showbackdateEntrylog" [grid-colDefaults]="backDateEntryGridColumns" [grid-data]="logsResults" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        </danphe-grid> 
+
+        <danphe-grid *ngIf="showeditvoucherreversallog" [grid-colDefaults]="voucherReversalGridColumns" [grid-data]="logsResults" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ReverseTransactionGridActions($event)"  >
+        </danphe-grid> 
+    </div>
+      
+
+    </div>
+
+  <!--START:NagehBB: 17Aug2020 revere transaction details popup  -->
+      <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReversedTxnDetails">
+        <div class="portlet-body form">
+          <div class="col-md-8 col-md-offset-2">
+            <div class="modelbox-div">
+              <div class="caption custom-caption">
+                <h3><span>Reverse Transaction Details</span></h3>      
+                   <a class="btn btn-danger" (click)="Close()" title="Close">X</a> 
+              </div>      
+              <div class="modelbox-body">
+                  <div class="row">
+                    <div class="table-responsive table-wrapper">
+                        <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
+                            border="1" id="exportTable_reverseTxnDetailHeader">
+                         
+                            <tbody>
+                                <ng-container>                                                                               
+                                    <tr>
+                                        <th>
+                                            Section Name 
+                                        </th>
+                                        <td>
+                                            {{reverseTxnDetailObj[0].SectionName}}                                         
+                                        </td>   
+                                        <th>
+                                            Fiscal Year 
+                                        </th>
+                                        <td>
+                                            {{reverseTxnDetailObj[0].FiscalYearName}}
+                                         </td>  
+                                         <th>
+                                             Transaction Date
+                                         </th>
+                                         <td>
+                                            {{reverseTxnDetailObj[0].TransactionDate}}
+                                         </td>                                                                                                                              
+                                    </tr>       
+                                    <tr>
+                                        <th>
+                                            Reversed Date
+                                        </th>
+                                        <td>
+                                            {{reverseTxnDetailObj[0].ReversedOn}}
+                                        </td>
+                                        <th>
+                                            Reversed By 
+                                        </th>
+                                        <td colspan="4">
+                                            {{reverseTxnDetailObj[0].ReversedByName}}
+                                         </td>  
+                                    </tr>       
+                                    <tr>
+                                        <th>
+                                           Remark
+                                        </th>
+                                        <td colspan="5">
+                                            {{reverseTxnDetailObj[0].Reason}}
+                                        </td>
+                                       
+                                    </tr>                           
+                                </ng-container>        
+                            </tbody>                               
+                        </table>
+                    </div>
+                  </div>                              
+                <hr />
+                
+                <div class="row">
+                    <div id="printReverseTxnDetailPopup">
+                        <div class="table-responsive table-wrapper">
+                            <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
+                                border="1" id="exportTable_reverseTxnDetail">
+                                <thead>                                  
+                                    <tr>
+                            <!-- rtxn.VoucherNumber,vcr.VoucherName,rtxn.CreatedOn,emp1.FullName as CreatedByName, IsRecreated= 0 -->
+                                        <th style="text-align: center;"><b>Voucher Number</b></th>                                        
+                                        <th style="text-align: center;"><b>Voucher</b></th>                                        
+                                        <th style="text-align: center;"><b>Created Date</b></th>
+                                        <th style="text-align: center;"><b>Created By</b></th>                                        
+                                        <th style="text-align: center;"><b>Is Recreated</b></th>                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngFor="let row of reverseTxnDetailObj">                                                                               
+                                        <tr>
+                                            <td>
+                                               {{row.VoucherNumber}}
+                                            </td>   
+                                            <td>
+                                                {{row.VoucherName}}
+                                             </td>  
+                                             <td>
+                                                {{row.CreatedOn}}
+                                             </td>  
+                                             <td>
+                                                {{row.CreatedByName}}
+                                             </td>  
+                                             <td>
+                                                <span *ngIf="row.IsRecreated">
+                                                  <b>Yes</b>
+                                                </span>
+                                                <span *ngIf="!row.IsRecreated">
+                                                    <b>No</b>
+                                                  </span>                                              
+                                             </td>                                                                                    
+                                        </tr>                                       
+                                    </ng-container>        
+                                </tbody>                               
+                            </table>
+                        </div>
+                    </div> 
+                </div> 
+              </div>                                        
+            </div>
+          </div>      
+        </div>
+      </div>
+  <!--END:NagehBB: 17Aug2020 revere transaction details popup  -->
+</div>

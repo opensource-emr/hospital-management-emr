@@ -1,0 +1,255 @@
+<div class="row">
+    <div class="col-md-12">
+        <form class="form-horizontal" [formGroup]="matPat.MaternityRegisterDetailsValidator">
+            <div class="row">
+                <div class="col-md-6 xol-xs-12">
+                    <div class="form-group">
+                        <label for="placeOfDelivery" class="control-label col-md-4">Place of Delivery<b
+                                class="color-red">
+                                *
+                            </b><b style="float:right;">:</b></label>
+
+                        <div class="col-md-8">
+                            <input type="text" id="placeOfDelivery" class="form-control"
+                                placeholder="Enter place of Delivery" [(ngModel)]="matPat.PlaceOfDelivery"
+                                formControlName="PlaceOfDelivery">
+                            <span class="color-red font-sm" *ngIf="matPat.IsDirty('PlaceOfDelivery')"
+                                [hidden]="matPat.IsValidCheck('PlaceOfDelivery','required')"> PlaceOfDelivery is
+                                required.</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryDate" class="control-label col-md-4"> Delivery Date and Time<b
+                                class="color-red">
+                                *
+                            </b><b style="float:right;">:</b></label>
+
+                        <div class="col-md-8">
+                            <danphe-date-picker [(ngModel)]="matPat.DeliveryDate" id="deliveryDate"
+                                [CalendarTypes]="'en,np'" [showTime]="true" [ngModelOptions]="{standalone: true}">
+                            </danphe-date-picker>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryType" class="control-label col-md-4">Type of Delivery<b class="color-red">
+                                *
+                            </b><b style="float:right;">:</b></label>
+
+                        <div class="col-md-8">
+                            <select [(ngModel)]="matPat.TypeOfDelivery" placeholder="Enter type of Delivery"
+                                formControlName="TypeOfDelivery" class="form-control">
+                                <option *ngFor="let del of deliveryTypes" value="{{del.Id}}">{{del.Type}}</option>
+                            </select>
+                            <span class="color-red font-sm" *ngIf="matPat.IsDirty('TypeOfDelivery')"
+                                [hidden]="matPat.IsValidCheck('TypeOfDelivery','required')"> TypeOfDelivery is
+                                required.</span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="presentation" class="control-label col-md-4">Presentation<b class="color-red">
+                                *
+                            </b><b style="float:right;">:</b></label>
+
+                        <div class="col-md-8">
+                            <select [(ngModel)]="matPat.Presentation" placeholder="Enter Presentation"
+                                formControlName="Presentation" class="form-control">
+                                <option value="cephalic">Cephalic</option>
+                                <option value="shoulder">Shoulder</option>
+                                <option value="breech">Breech</option>
+                            </select>
+                            <span class="color-red font-sm" *ngIf="matPat.IsDirty('Presentation')"
+                                [hidden]="matPat.IsValidCheck('Presentation','required')"> Presentation is
+                                required.</span>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryType" class="control-label col-md-4">Obstretic Complication<b
+                                style="float:right;">:</b></label>
+
+                        <div class="col-md-8">
+                            <select [(ngModel)]="matPat.Complications" placeholder="Enter Complication"
+                                [ngModelOptions]="{standalone: true}" class="form-control">
+                                <option *ngFor="let comp of complicationTypes" value="{{comp.ComplicationType}}">
+                                    {{comp.ComplicationType}}</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <button *ngIf="matPat.MaternityRegisterId" [disabled]="coreService.loading"
+                        (click)="UpdateMotherDetails()" style="margin: 0 15px 15px 0;" type="button"
+                        class="btn green btn-success pull-right">
+                        Update Mother Details
+                    </button>
+                </div>
+            </div>
+        </form>
+        <form class="form-horizontal" [formGroup]="childDetail.ChildDetailsValidator">
+            <div class="row">
+                <div class="col-md-12">
+                    <h4 class="clp">
+                        New Born Baby details
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="noOfBabies" class="control-label col-md-4">Number of Babies<b
+                                        class="color-red">
+                                        *
+                                    </b><b style="float:right;">:</b></label>
+
+                                <div class="col-md-2">
+                                    <select [(ngModel)]="matPat.NumberOfBaby" #noOfBabies
+                                        (change)="changeNumOfBaby(noOfBabies.value)"
+                                        [ngModelOptions]="{standalone: true}" class="form-control"
+                                        [disabled]="matPat.MaternityRegisterId">
+                                        <option value=1 selected>1</option>
+                                        <option value=2>2</option>
+                                        <option value=3>3</option>
+                                        <option value=4>4</option>
+                                        <option value=5>5</option>
+                                        <option value=6>6</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="full-width-flx table-responsive">
+                                <div class="text-center" style="line-height: 2;">
+                                    <table class="table table-bordered tbl-small-text">
+                                        <thead>
+                                            <tr class="table-header-bg">
+                                                <th width="200">Gender</th>
+                                                <th width="270">WeightInGram</th>
+                                                <th width="270">Outcome of Baby</th>
+                                                <th width="270">Outcome of Mother</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let m of multipleChild; let i = index;">
+                                                <td>
+                                                    <select #gender class="form-control" [(ngModel)]="m.Gender"
+                                                        formControlName="Gender">
+                                                        <option value="null" selected>--select--</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Others">Other</option>
+                                                    </select>
+                                                    <span class="color-red font-sm"
+                                                        *ngIf="childDetail.IsDirty('Gender')"
+                                                        [hidden]="childDetail.IsValidCheck('Gender','required')"> Gender
+                                                        is
+                                                        required.</span>
+                                                </td>
+
+                                                <td>
+                                                    <input type="text" id="babyWeight" class="form-control"
+                                                        [(ngModel)]="m.WeightInGram" required
+                                                        placeholder="Weight in grams" formControlName="WeightInGram"
+                                                        type="number">
+                                                    <span class="color-red font-sm"
+                                                        *ngIf="childDetail.IsDirty('WeightInGram')"
+                                                        [hidden]="childDetail.IsValidCheck('WeightInGram','required')">
+                                                        Weight is required.</span>
+                                                </td>
+
+                                                <td>
+                                                    <input type="text" class="form-control"
+                                                        [(ngModel)]="m.OutcomeOfBaby" placeholder="Outcome of the baby"
+                                                        formControlName="OutcomeOfBaby">
+                                                    <span class="color-red font-sm"
+                                                        *ngIf="childDetail.IsDirty('OutcomeOfBaby')"
+                                                        [hidden]="childDetail.IsValidCheck('OutcomeOfBaby','required')">
+                                                        OutcomeOfBaby is required.</span>
+                                                </td>
+
+                                                <td>
+                                                    <input type="text" class="form-control"
+                                                        [(ngModel)]="m.OutcomeOfMother"
+                                                        placeholder="Outcome of the Mother"
+                                                        formControlName="OutcomeOfMother">
+                                                    <span class="color-red font-sm"
+                                                        *ngIf="childDetail.IsDirty('OutcomeOfMother')"
+                                                        [hidden]="childDetail.IsValidCheck('OutcomeOfMother','required')">
+                                                        OutcomeOfMother is required.</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <button *ngIf="!matPat.MaternityRegisterId" class="btn green btn-success pull-right"
+                    style="margin: 0 15px 15px 0;" [disabled]="coreService.loading" (click)="AddNewMatDetails();">
+                    Save
+                </button>
+                <button *ngIf="matPat.MaternityRegisterId" [disabled]="coreService.loading"
+                    (click)="UpdateChildDetails()" style="margin: 0 15px 15px 0;" type="button"
+                    class="btn green btn-success pull-right">
+                    Update Child Details
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<hr />
+
+<div class="col-md-12" *ngIf="!matRegDataList || !matRegDataList.length">
+    <p style="font-size: 18px; line-height: 3; text-align: center;">No Child Details in List</p>
+</div>
+<div id="matRegList" class="col-md-12" *ngIf="matRegDataList && matRegDataList.length > 0">
+    <div class="full-width-flx table-responsive">
+        <div class="text-center" style="line-height: 2">
+            Child Details of {{selectedPatient.ShortName}}
+        </div>
+        <table class="table table-bordered tbl-small-text">
+            <thead>
+                <tr class="table-header-bg">
+                    <th>DeliveryDate</th>
+                    <th>Gender</th>
+                    <th>Weight(in grams)</th>
+                    <th>Outcome of Baby</th>
+                    <th>Outcome of Mother</th>
+                    <th class="no-print">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let data of matRegDataList">
+                    <td>{{data.DeliveryDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                    <td>{{data.Gender}}</td>
+                    <td>{{data.WeightInGram}}</td>
+                    <td>{{data.OutcomeOfBaby}}</td>
+                    <td>{{data.OutcomeOfMother}}</td>
+                    <td class="no-print">
+                        <a class="grid-action no-print" (click)="EditDeliveryDetails(data)">Edit</a>
+                        <a class="grid-action no-print"
+                            (click)="RemoveChildDetails(data.MaternityRegisterId)">Remove</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<hr />
+
+<div class="col-md-12">
+    <div class="text-right margin-top-15 margin-bottom-15">
+        <button type="button" id="ancPrint" class="btn primary-btn margin-7-hr" (click)="Print()"><i
+                class="fa fa-print"></i>Print</button>
+        <button type="button" id="register" class="btn grey btn-default margin-7-hr" (click)="Close()">Close</button>
+    </div>
+</div>

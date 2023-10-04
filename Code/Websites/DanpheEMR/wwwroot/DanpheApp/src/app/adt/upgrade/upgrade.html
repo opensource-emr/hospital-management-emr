@@ -1,0 +1,60 @@
+﻿<div class="wrapper">
+  <div *ngIf="showUpgradePage" class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+      <div class="col-md-12 modelbox-div" style="width: 60%;left: 20%;padding-bottom: 15px;"> 
+        <!--<div class="danphe-refer-visit" *ngIf="showUpgradePage">--> 
+        <i class="btn btn-danger" style="float: right" (click)="Close()">X</i> <br />
+        <table class="table table-striped table-bordered table-hover">
+          <tr>
+            <th sortable-header><b>{{selectedBedInfo.Name}}({{selectedBedInfo.PatientCode}})</b></th>
+          </tr>
+        </table>
+        <form [formGroup]="newBedInfo.PatientBedInfoValidator">
+          <table>
+            <tr>
+              <td> Requesting Department:- </td>
+              <td><select [(ngModel)]="newBedInfo.RequestingDeptId" class="form-control" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let dept of allDepartments" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td style="padding-top:10px;"> Bed Feature:- </td>
+              <td style="padding-top:10px;"><select [(ngModel)]="newBedInfo.BedFeatureId" formControlName="BedFeatureId" class="form-control bedInfo" (ngModelChange)="setBedPrice()">
+                  <option *ngFor="let bedFeature of bedFeatureList" value="{{bedFeature.BedFeatureId}}">{{bedFeature.BedFeatureName}}</option>
+                </select>
+                <div style="color:red" *ngIf="newBedInfo.IsDirty('BedFeatureId')" [hidden]="newBedInfo.IsValidCheck('BedFeatureId','required')">Select Bed Feature</div></td>
+              <td style="padding-left:40px"> Price:-{{newBedInfo.BedPrice}} </td>
+            </tr>
+            <tr>
+              <td style="padding-top:10px;"> Select Bed <b class="color-red"> *</b><b style="float:right;">&nbsp;:&nbsp; </b></td>
+              <td style="padding-top:10px;"><select [(ngModel)]="newBedInfo.BedId" class="form-control bedInfo" formControlName="BedId">
+                  <option *ngFor="let bed of bedList" value="{{bed.BedId}}" [disabled]="disableBed">{{bed.BedNumber}}</option>
+                </select>
+                <div style="color:red" *ngIf="newBedInfo.IsDirty('BedId')" [hidden]="newBedInfo.IsValidCheck('BedId','required')">Select Bed</div></td>
+            </tr>
+            <tr>
+              <td style="padding-top:10px;"> Upgrade Date <b>(AD)</b>:- </td>
+              <td style="padding-top:10px;"><input class="form-control" type="datetime-local" [ngModelOptions]="{standalone: true}" [(ngModel)]="newBedInfo.StartedOn" (ngModelChange)="compareDate()" (focusout)="EngCalendarOnDateChange();" />
+                <span class="color-red font-sm" *ngIf="!validDate">Enter Valid Date.</span><br />
+                <span class="color-red font-sm" *ngIf="!validDate">{{this.selectedBedInfo.BedInformation.Action}} Date was {{this.selectedBedInfo.BedInformation.StartedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}.</span></td>
+            </tr>
+            <tr>
+              <td style="padding-top:2px;text-align:right;"><b>(BS)</b>:- </td>
+              <td style="padding-top:2px;"><np-calendar [ngModelOptions]="{standalone: true}" ngDefaultControl [showTime]="true" [display]="single-line" [(ngModel)]="upgradeDateNep" (focusout)="NepCalendarOnDateChange();compareDate();"> </np-calendar></td>
+            </tr>
+            <tr>
+              <td style="padding-top:10px;"> Upgrade Remarks:- </td>
+              <td style="padding-top:10px;"><textarea name="Remarks" type="text" class="form-control" max="100" [(ngModel)]="newBedInfo.Remarks" [ngModelOptions]="{standalone: true}">
+
+                            </textarea>
+                
+                <!--<div style="color:red" *ngIf="newBedInfo.IsDirty('UpgradeRemarks')" [hidden]="newBedInfo.IsValidCheck('UpgradeRemarks','required')">Remarks is required.</div>--> 
+                <!--<span class="color-red" *ngIf="newBedInfo.IsDirty('UpgradeRemarks')" [hidden]="newBedInfo.IsValidCheck('UpgradeRemarks','maxlength')">Remarks should be less than 100 characters.</span>--></td>
+            </tr>
+          </table>
+          <input type="button" class="btn blue" name="name" value="Upgrade" [disabled]="loading" (click)="Upgrade()" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<!-- Modal -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showEchsMrpDrugCertificatePrintPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>ECHS MRP Drug Certificate</span> </h3>
+            <a class="btn btn-danger" (click)="CloseEchsMrpDrugCertificatePopUp()" title="Cancel">X</a>
+          </div>
+
+          <div id="id_echs-mrp-drug-certificate" style="margin-top:15px;">
+            <div style="margin-inline: 20px; padding-inline: 20px; margin-bottom: 40px;">
+              <div style="margin-top: 10px; margin-bottom: 30px">
+                <customer-header></customer-header>
+              </div>
+              <div style="text-align: center; font-size: 18px; font-weight: bold; font-family: Helvetica, sans-serif; margin-bottom: 20px">
+                <span>{{headerTitle}}</span>
+              </div>
+              <div>
+                <p>
+                  It is certified that all Drugs/ Medicines/ Consumables costing INR 1,000/- (One Thousand Rupees Only) or above per unit item have
+                  been claimed at the rate which are not more than MRP in respect of
+                </p>
+              </div>
+
+              <div class="height: fit-content; width: 100%; color:black;">
+                <div style="padding-top: 5px; display: flex; justify-content: space-between; font-weight: bold;">
+                  <span>ECHS Card No&nbsp;:&nbsp;{{patientObj.PolicyNo}}</span>
+                  <span>Name&nbsp;:&nbsp;{{patientObj.ShortName}}</span>
+                </div>
+                <div style="padding-top: 5px; display: flex; justify-content: space-between; font-weight: bold;">
+                  <span>Hospital Bill No&nbsp;:&nbsp;{{billNumber}}</span>
+                  <span>Date&nbsp;:&nbsp;2023/12/12</span>
+                </div>
+              </div>
+
+              <div style="height: fit-content; width: 100%; margin-top: 50px; font-weight:900; margin-bottom: 50px; color:black;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>
+                    <span>Date&nbsp;:&nbsp;{{dateToday}}</span>
+                  </div>
+                  <div>
+                    <span>Authorized Signatory<br>(with seal/stamp of hospital)</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          <hr>
+          <div style="text-align:center;z-index: 4;position: relative; margin-bottom: 25px; margin-top: 15px;">
+            <button class="btn green btn-success" value="" [disabled]="loading" (click)="Print()" id="btnPrintReciptEchsMrpDrugCertificate">
+              <span>Print</span>&nbsp;&nbsp;
+              &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

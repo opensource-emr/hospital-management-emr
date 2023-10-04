@@ -1,0 +1,10 @@
+.m-0 {
+  margin: 0;
+}
+.mb-0 {
+  margin-bottom: 0;
+}
+.custom-checkbox input {
+  width: 18px;
+  height: 18px;
+}

@@ -1,0 +1,41 @@
+<form class="form-horizontal hm-form">
+  <div class="form-body">
+    <div class="caption lb-caption">
+        <i class="fa fa-money"></i>
+        <span class="caption-subject">Fixed Assets Report</span>
+      </div>
+      <div class="row">
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-3">From Date<sup class="color-red">  *</sup ><b>:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="invReport.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+              </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">To Date<sup class="color-red">  *</sup ><b>:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="invReport.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+              </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue primary-btn" type="button" (click)="Load()"> Show Report</button>
+          </div>
+        </div> 
+      </div>        
+    </div>
+</form>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="FixedAssetsColumn"
+                 [grid-data]="FixedAssetsData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+    </danphe-grid>
+  </div>
+</div>

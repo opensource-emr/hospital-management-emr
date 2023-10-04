@@ -1,0 +1,266 @@
+﻿<div class="app-wrap">
+  <div class="card-section">
+    <div class="filter-wrap">
+      <from-to-date-select (on-change)="OnFromToDateChange($event)" [emit-always]="false">
+      </from-to-date-select>
+    </div>
+    <div class="row">
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card" *ngIf="patientData && patientData.length">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\patient-wran.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Registered Patient</h4>
+                <div class="card-count">
+                  Total Patient: <strong>{{patientData[0].Total}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today: <strong>{{patientData[1].Total}}</strong>
+              </div>
+              <p>
+                <span *ngIf="PattientDifferenceRate!=='-'" class="success">{{PattientDifferenceRate | number : "1.0-2"}}%</span>
+                <span *ngIf="PattientDifferenceRate==='-'" class="success">{{PattientDifferenceRate }}</span>
+                patient from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span>
+              </p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Yesterday: <strong>{{patientData[2].Total}}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-indigo" *ngIf="doctors && doctors.length">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\doctor.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Doctors</h4>
+                <div class="card-count">
+                  Total Doctors: <strong>{{doctors[0].Total}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Consultants: <strong>{{doctors[1].Total}}</strong>
+              </div>
+              <div class="card-count">
+                Anaesthetists: <strong>{{doctors[2].Total}}</strong>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Medical Officer:<strong>{{doctors[3].Total}}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-info" *ngIf="Appointments && Appointments.length">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\appointment.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Appointments</h4>
+                <div class="card-count">
+                  Total Appointments: <strong>{{Appointments[0].Total}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today:<strong>{{Appointments[1].Total}}</strong>
+              </div>
+              <p><span *ngIf="AppointmentDifferenceRate!=='-'" class="danger">{{AppointmentDifferenceRate| number : "1.0-2"}}%</span>
+                <span *ngIf="AppointmentDifferenceRate==='-'" class="success">{{AppointmentDifferenceRate }}</span>
+                from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\down-arrow.svg" alt=""></span>
+              </p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Medical Officer:<strong>{{Appointments[3].Total}}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="card card-success" *ngIf="ReAdmission && ReAdmission.length">
+          <div class="card-body">
+            <div class="d-flex card-head">
+              <div class="card-icon">
+                <img src="\assets\pages\img\dashboard\admission.svg" alt="">
+              </div>
+              <div class="card-title">
+                <h4>Readmission</h4>
+                <div class="card-count">
+                  Total Readmission: <strong>{{ReAdmission[0].Total}}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <div class="card-left">
+              <div class="card-count">
+                Today:<strong>{{ReAdmission[1].Total}}</strong>
+              </div>
+              <p><span class="success" *ngIf="ReAdmissionDifferenceRate!=='-'">{{ReAdmissionDifferenceRate | number : "1.0-2"}}%</span>
+                <span *ngIf="ReAdmissionDifferenceRate==='-'" class="success">{{ReAdmissionDifferenceRate }}</span>
+                from yesterday <span class="arrow"><img src="\assets\pages\img\dashboard\uparrow.svg" alt=""></span>
+              </p>
+            </div>
+            <div class="card-right">
+              <div class="card-count">
+                Yesterday :<strong>{{ReAdmission[2].Total}}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-container">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Patient Count by Day</h4>
+          </div>
+          <canvas id="dailyPatientCount" height="300">{{ dailyPatientChart }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Average Treatment Cost by Age Group</h4>
+          </div>
+          <canvas id="averageTreatmentCostByAgeGroup" height="300">{{ averageTreatmentCostByAgeGroup }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Department Wise Appointment Count</h4>
+          </div>
+          <canvas id="departmentWiseAppointmentCount" height="300">{{departmentWiseAppointmentCount}}</canvas>
+          <div class="chart-content">
+            <h3>{{TotalAppointments}}</h3>
+            <p>Total Appointment</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card" *ngIf="PatientVisitByMembership && PatientVisitByMembership.length">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Visit By Membership</h4>
+          </div>
+          <div class="progress-wrap" *ngFor="let patientData of PatientVisitByMembership">
+            <div class="progress-item blue-progressbar">
+              <div class="progress-label d-flex justify-content-between align-items-center">
+                <span>{{patientData.MembershipTypeName}}</span>
+                <span>{{patientData.Count}}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" [ngStyle]="{'width':patientData.Percent+'%'}">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+          <div class="chart-title">
+            <div class="d-flex justify-content-between align-items-center">
+              <h4>Patient Distribution based on Rank</h4> <h4><input id="txtDepartment" class="form-control" danphe-auto-complete [(ngModel)]="selectedDepartment" [list-formatter]="DepartmentListFormatter" [source]="DepartmentList" placeholder="Department Name" display-property-name="DepartmentName" onClick="this.select();" (valueChanged)="onDepartmentChange()" match-formatted="true" [grid-sort]="'DepartmentName'" max-num-list="10" [min-chars]="1" style="width: 200px;" /></h4>
+            </div>
+          </div>
+
+          <canvas id="rankedBasedPatientDistribution" height="400">{{ rankedBasedPatientDistribution }}</canvas>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card hm-card">
+          <div class="chart-title d-flex justify-content-between align-items-center">
+            <h4>Hospital Management</h4>
+          </div>
+          <div class="progress-wrap" *ngIf="HospitalManagement && HospitalManagement.length">
+            <div class="progress-item">
+              <div class="text-right">
+                <span>{{HospitalManagement[0].Count}}</span>
+              </div>
+
+              <div class="progress">
+                <div title="OPD" class="progress-bar" role="progressbar" aria-valuemin="0" Style="color:black" aria-valuemax="100" [ngStyle]="{'width':HospitalManagement[0].Percentage+'%'}">
+                  {{HospitalManagement[0].Label}}
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="text-right">
+                <span>{{HospitalManagement[1].Count}}</span>
+              </div>
+              <div class="progress">
+                <div title="Laboratory Test" class="progress-bar" role="progressbar" Style="color:black" aria-valuemin="0" aria-valuemax="100" [ngStyle]="{'width':HospitalManagement[1].Percentage+'%'}">
+                  {{HospitalManagement[1].Label}}
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="text-right">
+                <span>{{HospitalManagement[2].Count}}</span>
+              </div>
+              <div class="progress">
+                <div title="Patient" class="progress-bar" role="progressbar" aria-valuemin="0" Style="color:black" aria-valuemax="100" [ngStyle]="{'width':HospitalManagement[2].Percentage+'%'}">
+                  {{HospitalManagement[2].Label}}
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="text-right">
+                <span>{{HospitalManagement[3].Count}}</span>
+              </div>
+              <div class="progress">
+                <div title="Admission" class="progress-bar" role="progressbar" aria-valuemin="0" Style="color:black" aria-valuemax="100" [ngStyle]="{'width':HospitalManagement[3].Percentage+'%'}">
+                  {{HospitalManagement[3].Label}}
+                </div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="text-right">
+                <span>{{HospitalManagement[4].Count}}</span>
+              </div>
+              <div class="progress">
+                <div title="Discharge" class="progress-bar" role="progressbar" aria-valuemin="0" Style="color:black" aria-valuemax="100" [ngStyle]="{'width':HospitalManagement[4].Percentage+'%'}">
+                  {{HospitalManagement[4].Label}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

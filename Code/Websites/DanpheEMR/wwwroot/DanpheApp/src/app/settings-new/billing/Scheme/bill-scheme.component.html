@@ -1,0 +1,1025 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowSchemeAddUpdatePage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-7 col-md-offset-3">
+                <div class="modelbox-div ref_modal_div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3>
+                            <span>
+                                <span *ngIf="ComponentMode=='add'">Add New Scheme</span>
+                                <span *ngIf="ComponentMode=='edit'">Edit Scheme</span>
+                            </span>
+
+                        </h3>
+                        <a class="close-btn btn-danger" (click)="close()">X</a>
+                    </div>
+                    <form [formGroup]="billScheme.SchemeValidator" id="Scheme-form" class="form-horizontal hm-form">
+                        <div class="form-body col-md-12 hm-form">
+                            <div class="row">
+                                <!-- Scheme Genaral Setting Started-->
+                                <div class="row col-md-12 Scheme-General-Setting">
+                                    <label
+                                           style="text-decoration: underline; margin-top: 10px; margin-left:10px;">Scheme
+                                        General Setting</label>
+                                    <div class=" SchemeGeneralSetting form-group col-md-12 main-form">
+                                        <div class="form-group col-md-6">
+                                            <div class="form-group col-md-12">
+                                                <label for="Name" class="control-label col-md-6">Scheme
+                                                    Name<sup>*</sup><b>:</b></label>
+                                                <div class="col-md-6">
+                                                    <input class="form-control" maxlength="30" type="text"
+                                                           id="id_bill_scheme_SchemeName"
+                                                           [(ngModel)]="billScheme.SchemeName" formControlName="SchemeName"
+                                                           (keyup.enter)="GoToNextInput('id_bill_scheme_CommunityName')" />
+                                                    <span class="color-red font-sm" *ngIf="isDirty('SchemeName')"
+                                                          [hidden]="isValidCheck('SchemeName','required')">
+
+                                                        <small>Scheme Name is Required</small></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label for="Name" class="control-label col-md-6">Community
+                                                    Name<sup>*</sup><b>:</b></label>
+                                                <div class="col-md-6">
+                                                    <input class="form-control" maxlength="100" type="text"
+                                                           id="id_bill_scheme_CommunityName"
+                                                           formControlName="CommunityName"
+                                                           [(ngModel)]="billScheme.CommunityName"
+                                                           (keyup.enter)="GoToNextInput('id_bill_scheme_is_membership_applicable')" />
+                                                    <span class="color-red font-sm" *ngIf="isDirty('CommunityName')"
+                                                          [hidden]="isValidCheck('CommunityName','required')">
+                                                        <small>Community Name is Required</small></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-8">Is
+                                                    Membership
+                                                    Applicable ?</label>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <div class="icheck-inline">
+                                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                                <input id="id_bill_scheme_is_membership_applicable"
+                                                                       [(ngModel)]="billScheme.IsMembershipApplicable"
+                                                                       type="checkbox"
+                                                                       [ngModelOptions]="{standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('id_bill_scheme_is_membership_compulsary')"
+                                                                       name="IsMembershipApplicable" /> <span></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-8">Is
+                                                    Membership
+                                                    Compulsary ?</label>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <div class="icheck-inline">
+                                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                                <input id="id_bill_scheme_is_membership_compulsary"
+                                                                       [(ngModel)]="billScheme.IsMemberNumberCompulsory"
+                                                                       type="checkbox"
+                                                                       [ngModelOptions]="{standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('id_bill_scheme_is_Visit_compulsary_in_billing')"
+                                                                       name="IsMembershipCompulsary" /> <span></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-8">Is Visiting
+                                                    Compulsary In Billing ?</label>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <div class="icheck-inline">
+                                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                                <input
+                                                                       id="id_bill_scheme_is_Visit_compulsary_in_billing"
+                                                                       [(ngModel)]="billScheme.IsVisitCompulsoryInBilling"
+                                                                       type="checkbox"
+                                                                       [ngModelOptions]="{standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('id_bill_scheme_is_Visit_compulsary_in_pharmacy')"
+                                                                       name="IsVisitCompulsaryInBilling" /> <span></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-8">Is Visiting
+                                                    Compulsary In Pharmacy ?</label>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <div class="icheck-inline">
+                                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                                <input
+                                                                       id="id_bill_scheme_is_Visit_compulsary_in_pharmacy"
+                                                                       [(ngModel)]="billScheme.IsVisitCompulsoryInPharmacy"
+                                                                       type="checkbox"
+                                                                       [ngModelOptions]="{standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('ValidFrom')"
+                                                                       name="IsVisitCompulsaryInPharmacy" /> <span></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-5">Default Price Category :
+                                                </label>
+                                                <div class="col-md-5">
+                                                    <select class="form-control custom-select1 col-md-5"
+                                                            [(ngModel)]="selectedPriceCategory"
+                                                            [ngModelOptions]=" {standalone: true}"
+                                                            (change)="OnPriceCategoryChange()"
+                                                            id="defaultPricecategoryupdate">
+                                                        <option disabled selected>-Select Price Category-
+                                                        </option>
+                                                        <option *ngFor="let pricelist of priceCategoryList"
+                                                                [ngValue]="pricelist">
+                                                            {{pricelist.PriceCategoryName}}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label for="Name" class="control-label col-md-6">API Integration
+                                                    Name</label>
+                                                <div class="col-md-6">
+                                                    <input class="form-control" maxlength="30" type="text"
+                                                           id="id_bill_scheme_API_Integration_Name"
+                                                           [(ngModel)]="billScheme.ApiIntegrationName"
+                                                           [ngModelOptions]=" {standalone: true}" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label class="control-label col-md-8">Allow Provisional? :</label>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <div class="icheck-inline">
+                                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                                <input
+                                                                       id="id_bill_scheme_allow_provisional"
+                                                                       [(ngModel)]="billScheme.AllowProvisionalBilling"
+                                                                       type="checkbox"
+                                                                       [ngModelOptions]="{standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('ValidFrom')"
+                                                                       name="allowProvisional" /> <span></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-6" style="margin-left:15px; margin-top:10px ;">
+                                            <div class="form-group col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">Scheme
+                                                        Code<sup>*</sup><b>:</b></label>
+                                                    <div class="col-md-6">
+                                                        <input type="text" id="id_bill_scheme_SchemeCode"
+                                                               [(ngModel)]="billScheme.SchemeCode"
+                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_Description')"
+                                                               class="form-control" formControlName="SchemeCode" />
+                                                        <span class="color-red font-sm" *ngIf="isDirty('SchemeCode')"
+                                                              [hidden]="isValidCheck('SchemeCode','required')">
+                                                            <small>Scheme Code is Required</small></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">Description :
+                                                    </label>
+                                                    <div class="col-md-6">
+                                                        <textarea type="text" id="id_bill_scheme_Description" row="6"
+                                                                  [(ngModel)]="billScheme.Description" col="50"
+                                                                  style="resize: none" [ngModelOptions]="{standalone: true}"
+                                                                  (keyup.enter)="GoToNextInput('id_bill_scheme_valid_from')"
+                                                                  class="form-control" placeholder="Description"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-5">Valid From
+                                                        <sup>*</sup><b>:</b></label>
+                                                    <div class="col-md-6">
+                                                        <danphe-date-picker [(ngModel)]="billScheme.ValidFromDate"
+                                                                            ngDefaultControl [CalendarTypes]="'en,np'"
+                                                                            [allow-future-date]="false"
+                                                                            [ngModelOptions]=" {standalone: true}">
+                                                        </danphe-date-picker>
+                                                        <!-- <span class="color-red font-sm"
+                                                        *ngIf="billScheme.IsDirty('ValidFrom')"
+                                                        [hidden]="billScheme.IsValidCheck('ValidFrom','required')">
+                                                        <small>Valid From  date is Required</small></span> -->
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-5">Valid
+                                                        To<sup>*</sup><b>:</b></label>
+                                                    <div class="col-md-6">
+                                                        <danphe-date-picker [(ngModel)]="billScheme.ValidToDate"
+                                                                            ngDefaultControl [ngModelOptions]="{standalone: true}"
+                                                                            [CalendarTypes]="'en,np'" [allow-future-date]="true">
+                                                        </danphe-date-picker>
+                                                        <!-- <span class="color-red font-sm"
+                                                        *ngIf="billScheme.IsDirty('ValidTo')"
+                                                        [hidden]="billScheme.IsValidCheck('ValidTo','required')">
+                                                        <small>valid To date is Required</small></span> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-5">Default Payment Mode
+                                                        <sup>*</sup><b>:</b></label>
+                                                    <div class="col-md-5">
+                                                        <select class="form-control custom-select"
+                                                                [(ngModel)]="billScheme.DefaultPaymentMode"
+                                                                [ngModelOptions]=" {standalone: true}"
+                                                                (onchange)="filterPaymentMode()"
+                                                                id="id_bill_scheme_default_Payment_mode">
+                                                            <option disabled selected>-Select payment Mode-
+                                                            </option>
+                                                            <option value="cash">cash
+                                                            </option>
+                                                            <option value="credit">credit
+                                                            </option>
+
+                                                        </select>
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label for="Name" class="control-label col-md-6">Field Setting Param
+                                                    Name</label>
+                                                <div class="col-md-6">
+                                                    <input class="form-control" maxlength="30" type="text"
+                                                           id="id_bill_scheme_field_setting_param_Name"
+                                                           [(ngModel)]="billScheme.FieldSettingParamName"
+                                                           [ngModelOptions]=" {standalone: true}" />
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Discount Settings started-->
+                            <div class="row col-md-12 Discount-Setting">
+                                <label style=" text-decoration: underline; margin-top: 10px; margin-left:10px;">Discount
+                                    Setting</label>
+                                <div class=" DiscountSetting form-group col-md-12 main-form">
+                                    <div class="form-group col-md-12">
+                                        <label class="control-label col-md-3">Is Discount Applicable ?</label>
+                                        <div class="col-md-1">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="id_bill_scheme_is_discount_Applicable"
+                                                               [(ngModel)]="billScheme.IsDiscountApplicable"
+                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_discount_percent')"
+                                                               [ngModelOptions]=" {standalone: true}" type="checkbox"
+                                                               name="IsDiscountApplicable" /> <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label for="Name" class="control-label col-md-2">Discount Percent</label>
+                                        <div class="col-md-2">
+                                            <input type="number"
+                                                   id="id_bill_scheme_discount_percent" min="0" max="100"
+                                                   [(ngModel)]="billScheme.DiscountPercent"
+                                                   [ngModelOptions]=" {standalone: true}"
+                                                   (keyup.enter)="GoToNextInput('id_bill_scheme_is_discount_Editable')"
+                                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                        </div>
+                                        <label class="control-label col-md-3">Is Discount Editable ? </label>
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="id_bill_scheme_is_discount_Editable" type="checkbox"
+                                                           [(ngModel)]="billScheme.IsDiscountEditable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           name="IsDiscountEditable" /> <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <table class="table table-responsive " style="max-width:100%">
+                                            <tr>
+                                                <th></th>
+                                                <th>Is Applicable ?</th>
+                                                <th>Discount Percent</th>
+                                                <th>Is Editable ?</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            Registration</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_discount_registration_credit_applicable"
+                                                           [(ngModel)]="billScheme.IsRegistrationCreditApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();" />
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           id="id_bill_scheme_registration_discount_percent"
+                                                           [(ngModel)]="billScheme.RegDiscountPercent" min="0" max="100"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;" />
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_registration_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsRegDiscountEditable"
+
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            OP Billing</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_op_billing_discount_Applicable"
+                                                           [(ngModel)]="billScheme.IsOpBillDiscountApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           onClick="this.select();" />
+                                                </td>
+                                                <td>
+                                                    <input type="number" id="id_bill_scheme_op_billing_discount_percent"
+                                                           min="0" max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.OpBillDiscountPercent" />
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_op_billing_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsOpBillDiscountEditable"
+                                                           onClick="this.select();" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            IP Billing</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_ip_billing_discount_Applicable"
+                                                           [(ngModel)]="billScheme.IsIpBillDiscountApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           onClick="this.select();" />
+                                                </td>
+                                                <td>
+                                                    <input type="number" id="id_bill_scheme_ip_billing_discount_percent"
+                                                           min="0" max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.IpBillDiscountPercent" />
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_ip_billing_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsIpBillDiscountEditable"
+                                                           onClick="this.select();" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            Admission</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_admission_discount_Applicable"
+                                                           [(ngModel)]="billScheme.IsAdmissionDiscountApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           onClick="this.select();" />
+                                                </td>
+                                                <td>
+                                                    <input type="number" id="id_bill_scheme_admission_discount_percent"
+                                                           min="0" max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.AdmissionDiscountPercent">
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_admission_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsAdmissionDiscountEditable"
+
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            OP Pharmacy</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_op_pharmacy_discount_Applicable"
+                                                           [(ngModel)]="billScheme.IsOpPhrmDiscountApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();">
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           id="id_bill_scheme_op_pharmacy_discount_percent" min="0"
+                                                           max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.OpPhrmDiscountPercent">
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_op_pharmacy_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsOpPhrmDiscountEditable"
+
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            IP Pharmacy </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_ip_pharmacy_discount_Applicable"
+                                                           [(ngModel)]="billScheme.IsIpPhrmDiscountApplicable"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();">
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           id="id_bill_scheme_ip_pharmacy_discount_percent" min="0"
+                                                           max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.IpPhrmDiscountPercent">
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           id="id_bill_scheme_is_ip_pharmacy_discount_editable"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.IsIpPhrmDiscountEditable"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                                           onClick="this.select();">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Credit settting started -->
+                            <div class="row col-md-12 Credit-Setting">
+                                <label style=" text-decoration: underline; margin-top: 10px; margin-left:10px;">Credit
+                                    Setting</label>
+                                <div class=" CreditSetting form-group col-md-12 main-form">
+                                    <div class="form-group col-md-12">
+                                        <label class="control-label col-md-3">Is Credit Applicable ?</label>
+                                        <div class="col-md-1">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="id_bill_scheme_is_credit_Applicable" type="checkbox"
+                                                               [(ngModel)]="billScheme.IsCreditApplicable"
+                                                               [ngModelOptions]=" {standalone: true}"
+                                                               name="IsCreditApplicable" />
+                                                        <span></span>
+
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label class="control-label col-md-3">Is Credit Only Scheme?</label>
+                                        <div class="col-md-1">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="id_bill_scheme_is_credit_only_scheme_scheme"
+                                                               [(ngModel)]="billScheme.IsCreditOnlyScheme"
+                                                               [ngModelOptions]=" {standalone: true}" type="checkbox"
+                                                               name="IsCreditOnlyScheme" />
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label class="control-label col-md-3">Is Credit Limited ? </label>
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="id_bill_scheme_is_credit_limited" type="checkbox"
+                                                           [(ngModel)]="billScheme.IsCreditLimitedInCreditSetting"
+                                                           [ngModelOptions]=" {standalone: true}" name="IsCreditLimited" />
+                                                    <span></span>
+
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12" *ngIf="billScheme.IsCreditApplicable">
+                                        <div class="form-group col-md-12">
+                                            <label class="control-label col-md-3">Default Credit
+                                                Organization </label>
+                                            <div class="col-md-3">
+                                                <select class="form-control custom-select1"
+                                                        [(ngModel)]="selectedCreditOrganization"
+                                                        [ngModelOptions]=" {standalone: true}"
+                                                        (change)="OnCreditOrganizationChange()"
+                                                        id="defaultCreditOrganizationupdate">
+                                                    <option disabled selected>-Select Credit Organization-
+                                                    </option>
+                                                    <option *ngFor="let CreditOrg of CreditOrganizations"
+                                                            [ngValue]="CreditOrg">
+                                                        {{CreditOrg.OrganizationName}}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <div class="row col-md-12 Credit-Setting-box1">
+                                            <div class=" CreditSettingbox1 form-group col-md-12 main-form">
+                                                <div class="form-group col-md-6">
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Is General Credit
+                                                            Limited ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_Is_general-credit_limited"
+                                                                               [(ngModel)]="billScheme.IsGeneralCreditLimited"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_is_opd_credit_limited')"
+                                                                               name="IsMembershipCompulsary" checked />
+                                                                        <span> </span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Is OPD Credit Limited
+                                                            ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input id="id_bill_scheme_is_opd_credit_limited"
+                                                                               type="checkbox"
+                                                                               [(ngModel)]="billScheme.IsOpCreditLimited"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_is_ipd_credit_limited')"
+                                                                               name="IsOPDCreditLimited" />
+                                                                        <span> </span>
+
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Is IPD Credit Limited
+                                                            ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input id="id_bill_scheme_is_ipd_credit_limited"
+                                                                               [(ngModel)]="billScheme.IsIpCreditLimited"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_General_credit_limit')"
+                                                                               name="IsIPDCreditLimited" />
+                                                                        <span> </span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-md-6">
+                                                    <div class="form-group col-md-12">
+                                                        <div class="form-group"
+                                                             style="margin-top:0px; margin-bottom:0px;">
+                                                            <label class="control-label col-md-6">General Credit
+                                                                Limit
+                                                                :
+                                                            </label>
+                                                            <div class="col-md-6">
+                                                                <input type="text"
+                                                                       [(ngModel)]="billScheme.GeneralCreditLimit"
+                                                                       [ngModelOptions]=" {standalone: true}"
+                                                                       id="id_bill_scheme_General_credit_limit"
+                                                                       (keyup.enter)="GoToNextInput('id_bill_scheme_OPD_credit_limit')">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <div class="form-group"
+                                                             style="margin-top:0px; margin-bottom:0px;">
+                                                            <label class="control-label col-md-6">OPD Credit Limit
+                                                                :
+                                                            </label>
+                                                            <div class="col-md-6">
+                                                                <input type="text" id="id_bill_scheme_OPD_credit_limit"
+                                                                       [(ngModel)]="billScheme.OpCreditLimit"
+                                                                       [ngModelOptions]=" {standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('id_bill_scheme_IPD_credit_limit')">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <div class="form-group"
+                                                             style="margin-top:0px; margin-bottom:0px;">
+                                                            <label class="control-label col-md-6">IPD Credit Limit
+                                                                :
+                                                            </label>
+                                                            <div class="col-md-6">
+                                                                <input type="text" id="id_bill_scheme_IPD_credit_limit"
+                                                                       [(ngModel)]="billScheme.IpCreditLimit"
+                                                                       [ngModelOptions]=" {standalone: true}"
+                                                                       (keyup.enter)="GoToNextInput('')">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <div class="row col-md-12 Credit-Setting-box2">
+                                            <div class=" CreditSettingbox2 form-group col-md-12 main-form">
+                                                <div class="form-group col-md-6">
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8"> Credit Applicable in
+                                                            Registration ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_Applicable_in_registration"
+                                                                               [(ngModel)]="billScheme.IsRegistrationCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_credit_applicable_in_op_billing')"
+                                                                               name="CreditApplicableInRegistration"
+                                                                               checked />
+                                                                        <span> </span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Credit Applicable in
+                                                            OP Billing ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_applicable_in_op_billing"
+                                                                               [(ngModel)]="billScheme.IsOpBillCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_credit_applicable_in_op_pharmacy')"
+                                                                               name="CreditApplicableInOPBilling" />
+                                                                        <span> </span>
+
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Credit Applicable in
+                                                            OP Pharmacy ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_applicable_in_op_pharmacy"
+                                                                               [(ngModel)]="billScheme.IsOpPhrmCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_credit_applicable_in_admission')"
+                                                                               name="CreditApplicableInOPPharmacy" />
+                                                                        <span> </span>
+
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-md-6">
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8"> Credit Applicable in
+                                                            Admission ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_applicable_in_admission"
+                                                                               [(ngModel)]="billScheme.IsAdmissionCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('id_bill_scheme_credit_application_in_ip_billing')"
+                                                                               name="CreditApplicableInAdmission"
+                                                                               checked />
+                                                                        <span> </span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Credit Applicable in
+                                                            IP Billing ?</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_applicable_in_ip_billing"
+                                                                               [(ngModel)]="billScheme.IsIpBillCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('IsIPDCreditLimited')"
+                                                                               name="CreditApplicableInIPBilling" />
+                                                                        <span> </span>
+
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label class="control-label col-md-8">Credit Applicable in
+                                                            IP Pharmacy</label>
+                                                        <div class="col-md-4">
+                                                            <div class="input-group">
+                                                                <div class="icheck-inline">
+                                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                                        <input
+                                                                               id="id_bill_scheme_credit_applicable_in_ip_pharmacy"
+                                                                               [(ngModel)]="billScheme.IsIpPhrmCreditApplicable"
+                                                                               type="checkbox"
+                                                                               [ngModelOptions]=" {standalone: true}"
+                                                                               (keyup.enter)="GoToNextInput('save')"
+                                                                               name="CreditApplicableInIPPharmacy" />
+                                                                        <span> </span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Copayment Settings started-->
+                            <div class="row col-md-12 Copayment-Setting">
+                                <label
+                                       style=" text-decoration: underline; margin-top: 10px; margin-left:10px;">Copayment
+                                    Setting</label>
+                                <div class=" CopaymentSetting form-group col-md-12 main-form"
+                                     style="margin-bottom:30px">
+                                    <div class="form-group col-md-12">
+
+                                        <label class="control-label col-md-5">Is Copayment Applicable ?</label>
+                                        <div class="col-md-2">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input id="id_bill_scheme_is_copayment_applicable"
+                                                               name="IsCopaymentApplicable"
+                                                               [(ngModel)]="billScheme.IsCopaymentApplicable"
+                                                               [ngModelOptions]=" {standalone: true}" type="checkbox"
+                                                               #copaymentCheckbox />
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <table
+                                               *ngIf="billScheme.IsCopaymentApplicable || billScheme.IsBillingCoPayment || billScheme.IsPharmacyCoPayment"
+                                               class="table table-responsive " style="max-width:100%">
+                                            <tr>
+                                                <th></th>
+                                                <th>Is Applicable ?</th>
+                                                <th>Copay-Cash Percent</th>
+                                                <th>Copay-Credit Percent</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            Billing</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox" id="id_bill_scheme_is_billing_copayment"
+                                                           class="Copayment_applicable_table_checkbox"
+                                                           [(ngModel)]="billScheme.IsBillingCoPayment"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           (change)="updateCopaymentCheckboxState(copaymentCheckbox)"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           id="id_bill_scheme_billing_copayment_cash-percent" min="0"
+                                                           max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.BillCoPayCashPercent">
+                                                </td>
+                                                <td>
+                                                    <input type="number" min="0" max="100"
+                                                           id="id_bill_scheme_billing_copayment_credit_percent"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.BillCoPayCreditPercent"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div style="display: flex; align-items: center;">
+
+                                                        <span style="padding: 5px;">
+                                                            Pharmacy</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox" id="id_bill_scheme_is_pharmacy_copayment"
+                                                           class="Copayment_applicable_table_checkbox"
+                                                           [(ngModel)]="billScheme.IsPharmacyCoPayment"
+                                                           (change)="updateCopaymentCheckboxState(copaymentCheckbox)"
+                                                           [ngModelOptions]=" {standalone: true}"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           id="id_bill_scheme_is_pharmacy_copayment_cash_percent" min="0"
+                                                           max="100" [ngModelOptions]=" {standalone: true}"
+                                                           style="zoom: 1;margin-top: 3px;"
+                                                           [(ngModel)]="billScheme.PharmacyCoPayCashPercent">
+                                                </td>
+                                                <td>
+                                                    <input type="number" min="0" max="100"
+                                                           id="id_bill_scheme_is_pharmacy_copayment_credit_percent"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [(ngModel)]="billScheme.PharmacyCoPayCreditPercent"
+                                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- SubScheme Setting -->
+                    <div class="row col-md-12" style="margin-left: 25px !important;">
+                        <label
+                               style=" text-decoration: underline; margin-top: 10px; margin-left:10px;">SubScheme Setting</label>
+                        <div class="col-md-12"
+                             style="margin-bottom: 65px !important;">
+                            <div class="col-md-12" style="padding: 0px !important; margin-top: 10px !important;">
+                                <label class="control-label col-md-2"
+                                       style="font-weight: 700 !important;">Has Sub Schemes?</label>
+                                <div class="col-md-2">
+                                    <div>
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="id_bill_scheme_has_sub_schemes"
+                                                       style="margin-left: 60px !important"
+                                                       name="HasSubSchemes"
+                                                       [(ngModel)]="billScheme.HasSubScheme" type="checkbox"
+                                                       #subSchemeCheckbox />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="billScheme.HasSubScheme">
+                                <div class="col-md-12" style="margin-top: 15px !important;">
+                                    <div class="col-md-5" style="padding: 0px !important;">
+                                        <input style="width: 300px;" type="text" [(ngModel)]="BillingSubScheme.SubSchemeName" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn green" style="background-color: white" id="btn-add"
+                                                (click)="AddSubSchemeItemToList()"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" style="margin-top: 10px;" *ngIf="billScheme.BillingSubSchemes.length > 0">
+                                    <table class="table table-responsive">
+                                        <thead class="table-header-bg">
+                                            <tr>
+                                                <th scope="col" class="wd-10">S.N.</th>
+                                                <th scope="col" class="wd-200">SubSchemeName</th>
+                                                <th scope="col" class="wd-50">IsActive</th>
+                                                <th scope="col" class="wd-200">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let subScheme of billScheme.BillingSubSchemes; let i = index;">
+                                                <td>{{i+1}}</td>
+                                                <td>{{subScheme.SubSchemeName}}</td>
+                                                <td>{{subScheme.IsActive}}</td>
+                                                <td>
+                                                    <input *ngIf="subScheme.IsActive && subScheme.SubSchemeId !== 0" type="button"
+                                                           id="id_edit_subscheme"
+                                                           (click)="EditSubScheme(subScheme)"
+                                                           class="grid-action"
+                                                           value="Edit" />
+                                                    <input *ngIf="subScheme.SubSchemeId !== 0" type="button" id="id_activate_deactivate_subscheme"
+                                                           (click)="ActivateDeactivateSubScheme(subScheme.SubSchemeId)"
+                                                           class="grid-action"
+                                                           [value]="subScheme.IsActive ? 'Deactivate' : 'Activate'" />
+                                                    <button *ngIf="subScheme.SubSchemeId === 0" class="btn btn-danger" type="button"
+                                                            (click)="DeleteSubSchemeFromRow(i)">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modelbox-footer">
+                        <div class="all-buttons text-right">
+                            <input type="button" id="id_discard_scheme" class="btn orange btn-success margin-7-hr"
+                                   (click)="DiscardChanges()" value="Discard" />
+                            <input type="button" id="id_add_scheme" class="btn green btn-success margin-7-hr"
+                                   (click)="AddBillScheme()" value="Save" *ngIf="ComponentMode=='add'" [disabled]="loading" />
+                            <input type="button" id="id_update_scheme" class="btn green btn-success margin-7-hr"
+                                   (click)="UpdateBillScheme()" value="Update" *ngIf="ComponentMode=='edit'" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

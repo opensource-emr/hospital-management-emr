@@ -1,0 +1,118 @@
+<div class="wrapper">
+  <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Total
+      Daily Covid Test Status</span> </div>
+  <div class="row" style="padding-bottom: 5px;">
+    <div class="col-md-8">
+      <div class="row">
+        <div class="col-md-3">
+          Filter by Result Date:
+        </div>
+        <div class="col-md-8" style="text-align: left;">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="form-group row">
+        <label class="control-label col-md-4">District Name<b style="float:right;">:</b></label>
+        <div class="col-md-8">
+          <!-- <input class="form-control" value="" [(ngModel)]="districtName" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter District Name" /> (valueChanged)="AssignSelectedDistrict()" -->
+          <input id="ddlCountrySubdivision" class="form-control" danphe-auto-complete
+            [ngModelOptions]="{standalone: true}" [(ngModel)]="countrySubDivision"
+            [list-formatter]="districtListFormatter" [source]="countrySubDivisions" placeholder="District"
+            display-property-name="CountrySubDivisionName" value-property-name=null [min-chars]="1"
+            onClick="this.select();" max-num-list="10" match-formatted="true" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group row">
+        <label class="control-label col-md-4">Result Type<b style="float:right;">:</b></label>
+        <div class="col-md-8">
+          <select [(ngModel)]="resultType" class="mb-8" name="resultType" id="resultType"
+            (change)="OnResultTypeChange()">
+            <option value="all">All</option>
+            <option value="positive">Positive</option>
+            <option value="negative">Negative</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group row">
+        <label class="control-label col-md-4">Gender<b style="float:right;">:</b></label>
+        <div class="col-md-8">
+          <select [(ngModel)]="Gender" class="mb-8" name="gender" id="gender">
+            <option value="all">All</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-xs-12">
+      <div class="form-group row">
+        <label class="control-label col-md-4">Case Type<b style="float:right;">:</b></label>
+        <div class="col-md-8">
+          <select [(ngModel)]="CaseType" class="mb-8" name="caseType" id="caseType" (change)="OnCaseTypeChange()">
+            <option value="all">All</option>
+            <option value="new">New</option>
+            <option value="followUp">FollowUp</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-xs-12">
+      <div class="form-group">
+        <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="loading"> <i class="fa fa-search"></i> Show Report </button>
+        <span *ngIf="loading">Loading.. please wait.. </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="showGrid">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid *ngIf="showGrid" [grid-colDefaults]="totalDailyCovidCasesReportColumns"
+        [grid-data]="FilltedDailyCovidCasesReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+        [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-for]="'lab'" [grid-date-range]="dateRange"
+        [grid-footer-content]="footer"> </danphe-grid>
+    </div>
+  </div>
+
+  <div class="row" id="summaryFooter" style="margin-bottom: 60px;">
+    <div class="col-lg-12 col-sm-12"
+      *ngIf="FilltedDailyCovidCasesReportData && FilltedDailyCovidCasesReportData.length>0">
+      <div class="row">
+        <div class="col-md-12 col-xs-12">
+          <div id="print_netCashCollection">
+            <div style="padding-top:7px;">
+              <h4 style="font-weight:bold;">
+                Summary Report
+              </h4>
+              <div style=" margin: 0px auto">
+                <table class="tbl-summ" border="1" style="width:30%;">
+                  <tr>
+                    <td>Total Positive Case</td>
+                    <td> {{summaryFormatted.TotalPositiveCase}} </td>
+                  </tr>
+                  <tr>
+                    <td>Total Negative Case</td>
+                    <td> {{summaryFormatted.TotalNegativeCase}} </td>
+                  </tr>
+                  <tr style="border: 2px solid;">
+                    <td style="font-weight: bold;">Total Case</td>
+                    <td style="font-weight: bold;"> {{summaryFormatted.TotalCase}} </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

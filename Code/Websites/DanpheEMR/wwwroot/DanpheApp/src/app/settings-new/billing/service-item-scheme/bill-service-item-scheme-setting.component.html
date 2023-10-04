@@ -1,0 +1,321 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div ref_modal_div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3>
+              <span>
+                <span>Scheme-Item settings of : {{SelectedScheme.SchemeName}} (code:
+                  {{SelectedScheme.SchemeCode}}) </span>
+
+              </span>
+
+            </h3>
+            <a class="close-btn btn-danger" (click)="Close()">X</a>
+          </div>
+          <div id="scheme-item-setting-form" class="form-horizontal hm-form">
+            <div class="form-body col-md-12 hm-form">
+              <div class="row">
+                <div class="row col-md-4">
+                  <label style="text-decoration: underline; margin-top: 10px; margin-left:10px; font-size:medium;">
+                    Service Item Settings</label>
+                </div>
+                <div class="form-group col-md-4">
+                  <label class="control-label col-md-5" style="font-size: medium;">
+                    ItemName:
+                  </label>
+                  <div class="control-label col-md-7">
+                    <input
+                           danphe-auto-complete
+                           type="text" name="itemName"
+                           id="id_input_itemName_search"
+                           [(ngModel)]="selectedItem" class="form-control" [list-formatter]="ItemListFormatter"
+                           [source]="FilteredServiceItemSettingList" placeholder="ItemName"
+                           display-property-name="ServiceItemName" value-property-name=null onClick="this.select();"
+                           (focusout)="OnItemNameChanged()" max-num-list="15">
+                  </div>
+                </div>
+                <div class="control-label col-md-4" style="margin-top: 10px;">
+                  <label class="control-label col-md-5" style="font-size: medium;">
+                    Service Department:
+                  </label>
+                  <div class="control-label col-md-7">
+                    <danphe-multiselect [ddl-data]="serviceDepartmentList"
+                                        [placeholder-text]="'--Select Department--'"
+                                        [value-property-name]="'ServiceDepartmentId'"
+                                        (selected-items-list)="AssignDefaultDepartment($event)"
+                                        [display-property-name]="'ServiceDepartmentName'"
+                                        [single-selection]="false">
+                    </danphe-multiselect>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12" *ngIf="serviceItemSettingList.length">
+              <div
+                   style="background-color: #ebf0fb;margin-bottom: 10px;border: 1px solid;border-radius: 5px !important;padding: 15px;border: 1px solid #d9dee8;">
+                <div class="row">
+                  <div class="table-wrapper" style="height: 800px; overflow-y: scroll;">
+                    <table class="table table-responsive " style="max-width:100%">
+                      <tr>
+                        <td>
+
+                          <div style="display: flex; align-items: center;">
+                            <input type="checkbox" (change)="selectAllServiceItems($event)"
+                                   [(ngModel)]="selectAll"
+                                   id="id_service_item_settings_isSelected_field">
+                            <span style="padding: 5px;"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <label id="id_service_item_head_settings_item_code"
+                                 style="zoom: 1; width:90px"></label>
+                        </td>
+                        <td>
+                          <label id="id_service_item_head_settings_item_name"
+                                 style="zoom: 1; width:90px"></label>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_discount_percent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 [disabled]="!selectAll"
+                                 [(ngModel)]="headRegistrationDiscountPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="updateRegDiscountPercent()"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();">
+                          <div>
+                            <span
+                                  *ngIf="headRegistrationDiscountPercentMsg && headRegistrationDiscountPercentMsg!== null"
+                                  class="color-red font-sm">{{headRegistrationDiscountPercentMsg}}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_opd_percent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 [disabled]="!selectAll" [(ngModel)]="headOPDdiscountPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="upateOPDdiscountPercent()"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();">
+                          <div><span
+                                  *ngIf="headOPDdiscountPercentMsg && headOPDdiscountPercentMsg!== null"
+                                  class="color-red font-sm">{{headOPDdiscountPercentMsg}}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_ipd_percent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 [disabled]="!selectAll" [(ngModel)]="headIPDdiscountPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="upateIPDdiscountPercent()" onClick="this.select();">
+                          <div> <span
+                                  *ngIf="headIPDdiscountPercentMsg && headIPDdiscountPercentMsg!== null"
+                                  class="color-red font-sm">{{headIPDdiscountPercentMsg}}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_admission_percent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 [disabled]="!selectAll"
+                                 [(ngModel)]="headAdmissiondiscountPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="upateAdmissiondiscountPercent()"
+                                 onClick="this.select();">
+                          <div><span
+                                  *ngIf="headAdmissiondiscountPercentMsg && headAdmissiondiscountPercentMsg!== null"
+                                  class="color-red font-sm">{{headAdmissiondiscountPercentMsg}}</span>
+                          </div>
+                        </td>
+                        <td>
+
+                          <div style="display: flex; align-items: center;">
+                            <input type="checkbox"
+                                   id="id_service_item_head_settings_is_copay"
+                                   (change)="selectAllCopayment($event)"
+                                   [(ngModel)]="IsSelectAllCopayment" [disabled]="!selectAll">
+                            <span style="padding: 5px;"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_copay_cash"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [(ngModel)]="GlobalCopayCashPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="onGlobalCoPayCashChange()"
+                                 [disabled]=" !(selectAll && IsSelectAllCopayment)">
+                          <div> <span
+                                  *ngIf="GlobalCopayCashPercentMsg && GlobalCopayCashPercentMsg!== null"
+                                  class="color-red font-sm">{{GlobalCopayCashPercentMsg}}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="id_service_item_head_settings_registration_copay_credit"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [(ngModel)]="GlobalCopayCreditPercent"
+                                 (ngModelChange)="CheckGlobalDiscountPercent()"
+                                 (change)="onGlobalCoPayCreditChange()"
+                                 [disabled]=" !(selectAll && IsSelectAllCopayment)">
+                          <div> <span
+                                  *ngIf="GlobalCopayCreditPercentMsg && GlobalCopayCreditPercentMsg!== null"
+                                  class="color-red font-sm">{{GlobalCopayCreditPercentMsg}}</span>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th style="width: 4.5%"> </th>
+                        <th style="width: 10%">Item Code</th>
+                        <th style="width: 15%">Item Name</th>
+                        <th style="width: 12%">Registration Disc %</th>
+                        <th style="width: 10%">OPD Disc %</th>
+                        <th style="width: 10%">IPD Disc %</th>
+                        <th style="width: 12%">Admission Disc %</th>
+                        <th style="width: 5%">Is Copay ?</th>
+                        <th style="width: 7.5%">Copay Cash %</th>
+                        <th style="width: 8%">Copay Credit %</th>
+                      </tr>
+                      <tr *ngFor="let row of FilteredServiceItemSettingList; let i=index;">
+                        <td>
+
+                          <div style="display: flex; align-items: center;">
+                            <input type="checkbox"
+                                   id="{{'id_service_item_settings_isSelected_field'+i}}"
+                                   [(ngModel)]="row.itemIsSelected" (change)="onDiscountPercentCheckboxChange(row)">
+                            <span style="padding: 5px;"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <label id="id_service_item_settings_item_code"
+                                 style="zoom: 1; width:70px">{{row.ServiceItemCode}}
+                          </label>
+                        </td>
+                        <td>
+                          <label id="id_service_item_settings_item_name"
+                                 style="zoom: 1; width:130px">{{row.ServiceItemName}}
+                          </label>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_discount_percent'+i}}"
+                                 [(ngModel)]="row.RegDiscountPercent" style="zoom: 1; width:90px"
+                                 min="0" max="100" (ngModelChange)="CheckDiscountPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [disabled]="!row.itemIsSelected">
+                          <div>
+                            <span
+                                  *ngIf="!row.IsValidRegDiscountPercent && row.RegDiscountPercent !== null"
+                                  class="color-red font-sm">Invalid Percent.</span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_opd_percent'+i}}"
+                                 [(ngModel)]="row.OpBillDiscountPercent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (ngModelChange)="CheckDiscountPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [disabled]="!row.itemIsSelected">
+                          <div><span
+                                  *ngIf="!row.IsValidOpBillDiscountPercent && row.OpBillDiscountPercent !==null"
+                                  class="color-red font-sm">Invalid Percent.</span></div>
+
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_ipd_percent'+i}}"
+                                 [(ngModel)]="row.IpBillDiscountPercent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (ngModelChange)="CheckDiscountPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [disabled]="!row.itemIsSelected">
+                          <div>
+                            <span
+                                  *ngIf="!row.IsValidIpBillDiscountPercent && row.IpBillDiscountPercent !==null"
+                                  class="color-red font-sm">Invalid Percent.</span>
+                          </div>
+
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_admission_percent'+i}}"
+                                 [(ngModel)]="row.AdmissionDiscountPercent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (ngModelChange)="CheckDiscountPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();" [disabled]="!row.itemIsSelected">
+                          <div><span
+                                  *ngIf="!row.IsValidAdmissionDiscountPercent && row.AdmissionDiscountPercent !==null"
+                                  class="color-red font-sm">Invalid Percent.</span></div>
+                        </td>
+                        <td>
+                          <div style="display: flex; align-items: center;">
+                            <input type="checkbox"
+                                   id="{{'id_service_item_settings_is_copay'+i}}"
+                                   [(ngModel)]="row.IsCoPayment"
+                                   [disabled]="!row.itemIsSelected"
+                                   (change)="onCopayCheckboxChange($event, row)">
+                            <span style="padding: 5px;"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_copay_cash'+i}}"
+                                 [(ngModel)]="row.CoPaymentCashPercent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (ngModelChange)="CheckCopayPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();"
+                                 [disabled]="!(row.IsCoPayment && row.itemIsSelected)">
+                          <div><span
+                                  *ngIf="!(row.IsValidCopayCashPercent) && row.CoPaymentCashPercent !==null"
+                                  class="color-red font-sm">Invalid Percent.</span></div>
+                        </td>
+                        <td>
+                          <input type="number"
+                                 id="{{'id_service_item_settings_registration_copay_credit'+i}}"
+                                 [(ngModel)]="row.CoPaymentCreditPercent"
+                                 style="zoom: 1; width:90px" min="0" max="100"
+                                 (ngModelChange)="CheckCopayPercent(row)"
+                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                 onClick="this.select();"
+                                 [disabled]="!(row.IsCoPayment && row.itemIsSelected)">
+                          <div><span
+                                  *ngIf="!row.IsValidCopayCreditPercent && row.CoPaymentCashPercent !==null"
+                                  class="color-red font-sm">Invalid Percent.</span></div>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <input type="button" id="discard" class="btn orange btn-success margin-7-hr"
+                     (click)="DiscardChanges()" value="Discard" />
+              <input type="button" id="add" class="btn green btn-success margin-7-hr"
+                     (click)="AddServiceItemSchemeSettings()" [disabled]="isButtonDisabled" value="Save" />
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

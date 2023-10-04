@@ -1,0 +1,91 @@
+<div class="wrapper">
+  <div class="row">
+    <form  class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"><i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Patient Registration Report</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b
+          style="float:right;">:</b></label>
+        <div class="col-md-9">
+          <danphe-date-picker [(ngModel)]="currentPatRegreport.fromDate" ngDefaultControl [CalendarTypes]="'en,np'"
+          formControlName="fromDate"> </danphe-date-picker>
+          <span class="color-red font-sm" *ngIf="currentPatRegreport.IsDirty('fromDate')"
+          [hidden]="currentPatRegreport.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+          <span class="color-red font-sm" *ngIf="currentPatRegreport.IsDirty('fromDate')"
+          [hidden]="currentPatRegreport.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+      </div>
+    </div>
+    <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b
+          style="float:right;">:</b></label>
+        <div class="col-md-9">
+          <danphe-date-picker [(ngModel)]="currentPatRegreport.toDate" ngDefaultControl [CalendarTypes]="'en,np'"
+          formControlName="toDate"> </danphe-date-picker>
+          <span class="color-red font-sm" *ngIf="currentPatRegreport.IsDirty('toDate')"
+          [hidden]="currentPatRegreport.IsValidCheck('toDate','required')">To Date is required</span><br />
+          <span class="color-red font-sm" *ngIf="currentPatRegreport.IsDirty('toDate')"
+          [hidden]="currentPatRegreport.IsValidCheck('toDate','wrongDate')">Can't select future date</span> </div>
+      </div>
+    </div>-->
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)"> </from-to-date-select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" style="margin-top: 5px;">
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-2">Gender<b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" checked="checked" (change)="LoadGender('Male')" name="Gender" value="Male"
+                           style="width:15px;height:15px" />
+                      <span></span>Male </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" (change)="LoadGender('Female')" name="Gender" value="Female"
+                           style="width:15px;height:15px" />
+                      <span></span>Female </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                      <input type="radio" (change)="LoadGender('All')" name="Gender" value="All"
+                           style="width:15px;height:15px" />
+                      <span></span>All </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">Country<b style="float:right;">:</b></label>
+              <div class="col-md-5">
+                <select id="ddlCountry" class="form-control" [ngModelOptions]="{standalone:true}" [(ngModel)]="currentPatRegreport.Country">
+                  <option value="Nepal">Nepal</option>
+                  <option value="India">India</option>
+                  <option value="China">China</option>
+                  <option value="Foreign">Foreign</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="PatientWiseRegReportColumns" [grid-data]="PatientWiseRegReportData"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>

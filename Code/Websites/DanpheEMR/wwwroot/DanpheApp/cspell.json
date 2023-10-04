@@ -1,0 +1,16 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "danphe",
+        "ECHS",
+        "Messagebox",
+        "NGHIS",
+        "Patientcontext",
+        "Toinsurance"
+    ],
+    "ignoreWords": [],
+    "import": []
+}

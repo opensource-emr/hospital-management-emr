@@ -1,0 +1,77 @@
+﻿<div class="row">
+        <div class="col-md-12">
+            <div class="form-group col-md-6" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding col-md-4"><h4><b>Add Cost Center</b></h4></label> 
+            </div>
+               </div>
+               <br>
+
+    
+    <form [formGroup]="CostCenter.CostCenterValidator" class="hm-form clearfix">
+        <div class="col-md-12">
+            <div class="form-group col-md-3" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding col-md-4">CostCenter Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                    <input type="text" formControlName="CostCenterName" [(ngModel)]="CostCenter.CostCenterName"><br>
+                    <span class="color-red font-sm"
+                        [hidden]="CostCenter.IsValidCheck('CostCenterName','required') ||!CostCenter.IsDirty('CostCenterName')">Cost
+                        center name is required</span>
+                </div>
+            </div>
+            <div class="form-group col-md-3" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding  col-md-4">Parent Cost Center<b>:</b></label>
+                <div class="col-md-7">
+                    <input danphe-auto-complete class="col-md-11 form-control" [(ngModel)]="selectedParentCostCenter"
+                        [source]="parentCostCenters" placeholder="--Select ParentCostCenter--"
+                        display-property-name="ParentCostCenterName" value-property-name=null
+                        [list-formatter]="ParentCostListFormatter" max-num-list="10" onclick="this.select()"
+                        [ngModelOptions]="{standalone: true}" (focusout)="AssignParent()"
+                        [attr.disabled]="selectedParentCostCenter===undefined? true: null" />
+
+                </div>
+            </div>
+            <div class="form-group col-md-3" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding col-md-4">Description<b>:</b> </label>
+
+                <div class="col-md-8">
+                    <input type="text" [(ngModel)]="CostCenter.Description" [ngModelOptions]="{standalone: true}">
+                    <br />
+                </div>
+
+            </div>
+
+            <div class="col-md-1">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="ac-check-wrapper">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" type="checkbox" [(ngModel)]="CostCenter.IsActive"
+                                    [ngModelOptions]="{standalone: true}" style="zoom:1.6" />
+                                <span></span>Is Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <input type="button" class="btn btn-primary" value="Add" [disabled]="CostCenter.CostCenterName==null"
+                    (click)="AddCostCenter()" *ngIf="IsAddCostCenter" [disabled]="loading" />
+
+                <input type="button" class="btn btn-primary" value="Update" [disabled]="CostCenter.CostCenterName==null"
+                    (click)="UpdateCostCenter()" *ngIf="!IsAddCostCenter" [disabled]="loading" />
+
+
+                <input type="button" class="btn btn-danger" value="Cancel" [disabled]="CostCenter.CostCenterName==null"
+                    (click)="CancelCostCenter()" *ngIf="!IsAddCostCenter" [disabled]="loading" />
+
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="costCenterGridColumns" [grid-data]="costCenters"
+            (grid-actions)="CostCenterGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

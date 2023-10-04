@@ -1,0 +1,15 @@
+﻿<base href="/Clinical/">
+
+<section name="ClinicalHistory">
+    <ng2-tab selected="Family History"
+             selected-contents-class="fadeIn animated"
+             selected-index-class="selected">
+        <div class="tabs" style="margin-top:5px;">
+            <div *ngFor="let route of validRoutes">
+                <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+            </div>
+        </div>
+    </ng2-tab>
+
+    <router-outlet></router-outlet>
+</section>

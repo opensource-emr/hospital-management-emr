@@ -1,0 +1,103 @@
+<div class="row">
+  <form [formGroup]="CurrentItemDispatch.DailyItemDispatchValidator" class="hm-form">
+    <div class="form-body">
+		 <div>
+      <div class="col-md-12">
+        <div class="caption custom-caption"> <i class="fa fa-calendar"></i> <span class="caption-subject">Daily Item Dispatch Report</span> </div>
+      </div>
+     
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group row clearfix">
+            <label class="control-label col-md-3">From Date<sup class="color-red">*</sup><b>:</b></label>
+            <div class="col-md-9"> 
+              <!-- <input class="form-control" type="date" value="" [(ngModel)]="CurrentItemDispatch.FromDate"
+                              formControlName="FromDate" placeholder="DD-MM-YYYY" /> --> 
+              
+              <!-- <span class="color-red font-sm" *ngIf="CurrentItemDispatch.IsDirty('FromDate')" [hidden]="CurrentItemDispatch.IsValidCheck('FromDate','required')"> From Date is required</span>
+                            <span class="color-red font-sm" *ngIf="CurrentItemDispatch.IsDirty('FromDate')" [hidden]="CurrentItemDispatch.IsValidCheck('FromDate','wrongDate')"> Enter Valid Date</span> -->
+              <danphe-date-picker [(ngModel)]="CurrentItemDispatch.FromDate" ngDefaultControl [CalendarTypes]="'en,np'"
+              [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group row clearfix">
+            <label class="control-label col-md-4">To Date<sup class="color-red"> *</sup><b>:</b></label>
+            <div class="col-md-8"> 
+              <!-- <input class="form-control" type="date" value="" [(ngModel)]="CurrentItemDispatch.ToDate"
+                               formControlName="ToDate" placeholder="DD-MM-YYYY" /> --> 
+              <!-- <span class="color-red font-sm" *ngIf="CurrentItemDispatch.IsDirty('ToDate')" [hidden]="CurrentItemDispatch.IsValidCheck('ToDate','required')"> From Date is required</span>
+                        <span class="color-red font-sm" *ngIf="CurrentItemDispatch.IsDirty('ToDate')" [hidden]="CurrentItemDispatch.IsValidCheck('ToDate','wrongDate')"> Can't select future date</span> -->
+              <danphe-date-picker [(ngModel)]="CurrentItemDispatch.ToDate" ngDefaultControl [CalendarTypes]="'en,np'"
+              [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-xs-12">
+          <div class="form-group row clearfix">
+            <label class="control-label col-md-4">Store Name<b>:</b></label>
+            <div class="col-md-8">
+              <input danphe-auto-complete class="form-control " [(ngModel)]="CurrentItemDispatch.SelectedStore"
+                [source]="StoreList" [list-formatter]="myListFormatter" placeholder="Store Name"
+                display-property-name="StoreName" value-property-name=null max-num-list="10"
+                [ngModelOptions]="{standalone: true}"
+                (valueChanged)="SelectStoreFromSearchBox(CurrentItemDispatch.SelectedStore)" onclick="this.select();" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue primary-btn" type="button" (click)="ShowDailyItemDispatch()"> <i class="fa fa-search"></i> Show Report </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="">
+  <div class="" *ngIf="DailyItemDispatchReportData.length >= 0">
+    <danphe-grid [grid-colDefaults]="DailyItemDispatchReportColumns" 
+    [grid-data]="DailyItemDispatchReportData"
+    [grid-exportOptions]="gridExportOptions"
+    [grid-showExport]="true"> </danphe-grid>
+  </div>
+</div>
+<div class="col-md-12" *ngIf="DailyItemDispatchReportData.length > 0">
+  <div class="col-md-offset-4">
+    <div class="col-lg-6-offset-3 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+      <div class="table-responsive table-wrapper" id="print_summary">
+        <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+          <thead>
+            <tr>
+              <th colspan="4" style="text-align: center;">
+                <span style="font-size:large;">Selected Stores: {{selectedstore}} </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container>
+              <tr>
+                <td style="font-weight:bold; color:blue">
+                  <span> <b> Total Dispatch Quantity </b> </span>
+                </td>
+                <td>
+                  <span> {{TotalDispatchedQuantity}}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; color:blue">
+                  <span> <b>Total Dispatch Value </b> </span>
+                </td>
+                <td>
+                  <span> {{TotalDispatchedValue}}</span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <br>
+    </div>
+  </div>
+</div>
+

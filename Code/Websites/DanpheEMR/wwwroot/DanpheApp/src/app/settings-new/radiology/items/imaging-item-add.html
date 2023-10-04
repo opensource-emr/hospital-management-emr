@@ -1,0 +1,137 @@
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal " *ngIf="showAddPage">
+  <div class="portlet-body form"> 
+    <!--Model Box Body Start-->
+    
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Imaging Item</span> <span *ngIf="update">Update Imaging Item</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentImagingItem.ImagingItemValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4"
+                  >Imaging Type<b class="color-red">*</b
+                  ><b style="float: right;">:</b></label
+                >
+                <div class="col-md-8">
+                  <select
+                    class="form-control"
+                    [(ngModel)]="CurrentImagingItem.ImagingTypeId"
+                    [attr.disabled]="update ? '' : null"
+                    formControlName="ImagingTypeId"
+                    id="imagingType"
+                    (change)="FocusElementById('ImagingTypeName')"
+                  >
+                    <option
+                      *ngFor="let imgType of imgTypeList"
+                      value="{{imgType.ImagingTypeId}}"
+                      >{{imgType.ImagingTypeName}}</option
+                    >
+                  </select>
+                  <!--<span class="color-red font-sm" [hidden]="CurrentImagingItem.IsValidCheck('ImagingTypeId','required')">Select Imaging Type</span>--> 
+                  <span
+                    class="color-red font-sm"
+                    [hidden]="CurrentImagingItem.IsValidCheck('ImagingTypeId','required') || !(CurrentImagingItem.IsDirty('ImagingTypeId'))"
+                    >Select Imaging Type</span
+                  > </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Template</label>
+                <div class="col-md-8">
+                  <input
+                    class="form-control"
+                    danphe-auto-complete
+                    [ngModelOptions]="{standalone: true}"
+                    [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'"
+                    [(ngModel)]="selectedTemplate"
+                    [list-formatter]="myListFormatter"
+                    [source]="ratReportTemplateList"
+                    placeholder="enter template name"
+                    display-property-name="TemplateName"
+                    value-property-name="null"
+                    max-num-list="10"
+                    onClick="this.select();"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4"
+                  >Imaging Item Name<b class="color-red">*</b
+                  ><b style="float: right;">:</b></label
+                >
+                <div class="col-md-8">
+                  <input
+                    type="text"
+                    required
+                    value=""
+                    class="form-control"
+                    maxlength="50"
+                    [(ngModel)]="CurrentImagingItem.ImagingItemName"
+                    formControlName="ImagingItemName"
+                    id="ImagingTypeName"
+                    [attr.disabled]="update ? '' : null"
+                    placeholder="Enter Item Name"
+                    (keyup.enter)="FocusElementById('add')"
+                  />
+                  <span
+                    class="color-red font-sm"
+                    [hidden]="CurrentImagingItem.IsValidCheck('ImagingItemName','required') || !(CurrentImagingItem.IsDirty('ImagingItemName'))"
+                    >Enter Imaging Item Name</span
+                  > </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4"
+                  >Is Active <b style="float: right;">:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input
+                          id="isActive"
+                          name="isActive"
+                          type="checkbox"
+                          value=""
+                          [(ngModel)]="CurrentImagingItem.IsActive"
+                          [ngModelOptions]="{standalone: true}"
+                        />
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4"
+                  >Is ValidForReporting <b style="float: right;">:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input
+                          id="isActive"
+                          name="isActive"
+                          type="checkbox"
+                          value=""
+                          [(ngModel)]="CurrentImagingItem.IsValidForReporting"
+                          [ngModelOptions]="{standalone: true}"
+                        />
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="AddImagingItem()" value="Add" id="add"/>
+              <input type="button" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="UpdateImagingItem()" value="Update"/>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End--> 
+  </div>
+</div>
+<!--End Add, Update Popup code--> 

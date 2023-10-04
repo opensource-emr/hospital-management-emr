@@ -1,0 +1,126 @@
+<style>
+    .table thead tr th {
+        font-size: 12px;
+    }
+</style>
+<div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+                    <div class="col-md-12">
+                        <h4 style="text-align:center">
+                            <b>
+                                <a style="float:right; border-radius: 50% !important;
+                                    margin-top: -50px; margin-right: -50px;" class="btn btn-danger  hidden-print"
+                                   (click)="ClosDocumentUploadPopUp()" title="Cancel">X</a>
+                            </b>
+                        </h4>
+                    </div>
+                    <div class="col-md-12">
+                        <h4 class="margin-0-vr" style="color:rgb(97, 97, 209);">New Document Upload</h4>
+                    </div>
+                    <div class="col-md-12" style="padding:5px;margin-top: 15px;">
+                        <div class="col-md-12">
+                            <div class="col-md-12" style="background-color: #e7ecf1;border:1px solid">
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Patient Name
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ patientInfo.PatientName }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Hospital No.
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ patientInfo.HospitalNo }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label>
+                                                Age/Sex
+                                            </label>
+                                            <span style="float:right">:</span>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label>
+                                                {{ patientInfo.AgeSex }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="margin-top: 15px; border: 1px solid;">
+                                <div class="col-md-12">
+                                    <div class="col-md-6" style="margin:10px;">
+                                        <span>Choose File To Upload : &nbsp;</span>
+                                        <button class="dropdown-toggle grid-btnCstm" type="button" (click)="fileInput.click()">
+                                            <i class="fa fa-upload" aria-hidden="true"></i>
+                                            <input #fileInput style="margin-left: 50%;display: none;" type='file' multiple
+                                                   (change)='SelectFiles($event)'>
+                                        </button>
+                                    </div>
+                                    <table class="table table-responsive dispatch-report-table">
+                                        <thead class="table-header-bg">
+                                            <tr>
+                                                <th scope="col" class="wd-80"> S.N. </th>
+                                                <th scope="col" class="wd-80"> FileName </th>
+                                                <th scope="col" class="wd-80"> Document Type </th>
+                                                <th scope="col" class="wd-80"> Size </th>
+                                                <th scope="col" class="wd-130"> Remarks </th>
+                                                <th scope="col" class="wd-130"> Uploaded On </th>
+                                                <th scope="col" class="wd-130">Actions </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let file of UploadedFiles; let i = index;">
+                                                <tr>
+                                                    <td class="wd-80">{{ i+1 }}</td>
+                                                    <td class="wd-80"> <a>{{file.FileDisplayName}}</a> </td>
+                                                    <td class="wd-80"> {{file.FileExtension}} </td>
+                                                    <td class="wd-80"> {{file.Size}} </td>
+                                                    <td class="wd-80"> <input type="text" [(ngModel)]="file.FileDescription"> </td>
+                                                    <td class="wd-80"> {{ file.UploadedOn}} </td>
+                                                    <td class="wd-80">
+                                                        <button class="btn orange btn-success" (click)="RemoveSelectedDocument(i)">
+                                                            Remove
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </ng-container>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12" style="margin-top: 10px;">
+                        <button class="btn green btn-success" (click)="UploadDocuments()" style="float:right">
+                            Upload
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-1 hidden-xs hidden-sm"> </div>
+            </div>
+        </div>
+    </div>
+</div>

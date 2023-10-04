@@ -1,0 +1,96 @@
+<style>
+    .no-margin {
+        margin: 0 !important;
+    }
+
+    .indnt {
+        text-indent: 15px;
+    }
+    
+
+    input.form-control {
+        height: 28px;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>
+
+     
+
+    <div class="row">
+        <div class="col-md-6 col-sm-8 col-xs-8" style="margin-top:20px; margin-left:50px;">
+            <div>
+                <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px">
+                    <thead>
+                        <tr class="table-tr-style">
+                            <th><b>Drug/Medicine Name</b></th>
+                            <th><b>Qty</b></th>
+                            <th></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of currSaleItems; let i = index">
+
+                            <td style="width:160px" class="autocomplete-item">
+                                <input *ngIf="row.enableItmSearch" danphe-auto-complete class="form-control"
+                                       [(ngModel)]="row.selectedItem"
+                                       [source]="ItemListForSale"
+                                       [list-formatter]="myItemListFormatter"
+                                       placeholder="--Select Medicine--"
+                                       display-property-name="ItemName"
+                                       value-property-name=null
+                                       onClick="this.select();"
+                                       (valueChanged)="onChangeItem($event,i)"
+                                       max-num-list="20"
+                                       [ngModelOptions]="{standalone: true}"
+                                       min-chars="0"
+                                       style="width:250px;"
+                                       id="{{'item-box'+i}}"
+                                       [grid-sort]="'ItemName'"
+                                       match-formatted="true"
+                                       (keyup.enter)="switchTextBox(i)" />
+                                <input *ngIf="!row.enableItmSearch" disabled class="form-control" style="width:250px;" type="text" [(ngModel)]="row.ItemName" />
+
+                            </td>
+
+                            <td style="width:50px">
+                                <form [formGroup]="row.DrugsRequestValidator">
+                                    <input [(ngModel)]="row.Quantity" (ngModelChange)="ValueChanged(i)"
+                                           formControlName="Quantity" style="width:80px ; "
+                                           min="0" class="form-control" type="number" onwheel="this.blur()" value="" id="{{ 'qty-box'+i }}" (keyup.enter)="AddRowRequestOnClick(i)" onClick="this.select();">
+                                    <!--  <span class="error-msg" *ngIf="row.TotalQty<row.Quantity">Less Quantity available than you entered</span>-->
+                                    <span class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Not Valid quantity</span>
+
+                                </form>
+                            </td>
+
+                            <td style="width:70px">
+                                <a (click)="AddRowRequestOnClick(i)"><i class="glyphicon glyphicon-plus btn btn-success" style="padding: 2px 8px !important;"></i></a>
+                                <a (click)="DeleteRow(i)"><i class="btn btn-danger fa" style="float:right;padding: 2px 8px !important;">X</i></a>
+
+                            </td>
+
+
+                        </tr>
+                    </tbody>
+                   
+                </table>
+             <div style="float:right;">
+                    <input type="button" class="btn btn-success" value="Request" (click)="drugsRequest()" />
+                    <span></span>
+                    <input *ngIf="moduleName != 'emergency'" type="button" class="btn btn-danger" (click)="Close()" value="Cancel">
+                    <span></span>
+             </div>
+
+            </div>
+        </div>
+    </div>

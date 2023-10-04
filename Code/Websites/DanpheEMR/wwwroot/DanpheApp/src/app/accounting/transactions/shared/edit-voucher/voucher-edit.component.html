@@ -1,0 +1,22 @@
+<style>
+    th {
+        text-align: center;
+    }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showeditPage">
+    <div class="portlet-body form">
+        <div class="form-body clearfix">
+            <div class="col-md-12" id="sf">
+                <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+                    <div class="row">
+                        <div id="printpageTransactionView">
+                            <a class="btn btn-danger hidden-print rt_close_btn" (click)="Close()" title="Cancel">X</a>
+                            <new-voucher-entry (callback-function)="Close($event)"></new-voucher-entry>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

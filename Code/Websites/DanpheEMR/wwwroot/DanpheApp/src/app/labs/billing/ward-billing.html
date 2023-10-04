@@ -1,0 +1,16 @@
+<div class="wrapper"><!--<br /><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" (click)="AddLabRequest()"><i class="fa fa-plus"></i> Add IP Lab Request</button>-->
+  <div class="row">
+    <div class="col-lg-12 col-sm-12"> 
+      <!--<div>
+            <lab-requests [showlabrequisition]="showLabRequestsPage" [selecteditems]="selecteditems" (callback-request-labitem)="RouteToLabRequisition($event)"></lab-requests>
+        </div>-->
+      
+      <div> 
+        <!--[showLabRequestsList]="showLabRequestsList"-->
+        <lab-requests-list *ngIf="showLabRequestsList" [selecteditems]="selecteditems" (callback-wardlist)="RouteToList($event)"></lab-requests-list>
+      </div>
+      <danphe-grid [grid-colDefaults]="WardGridColumns" [grid-data]="inpatientList" (grid-actions)="LabGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>

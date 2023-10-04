@@ -1,0 +1,13 @@
+﻿
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li><a [ngClass]="{'a-tab-active': showCountryList==true}" (click)="updateView(0)">Manage Country</a></li>
+        <li><a [ngClass]="{'a-tab-active': showSubDivision==true}" (click)="updateView(1)">Manage SubDivision</a></li>
+    </ul>
+</div>
+
+
+<div class="col-md-12">
+    <country-list *ngIf="showCountryList"></country-list>
+    <country-subdivision-list *ngIf="showSubDivision"></country-subdivision-list>
+</div>

@@ -1,0 +1,25 @@
+.discharge-pat-tbl thead tr th, .discharge-pat-tbl tbody tr td {
+  font-size: 11px;
+  padding: 4px 5px;
+}
+.discharge-pat-tbl tbody tr{cursor: pointer;}
+.discharge-pat-tbl thead tr {
+  background: #cacaca;
+}
+.wd-90 {
+  width: 90px;
+}
+.scroll-y{
+  max-height: 70vh;
+}
+
+.saved-rec{
+  background: #115013;
+  color: #fff;
+}
+.highlightbg {
+  background: #1a1b1d;
+  color: #fff;
+}
+.margin-8-tp{margin-top: 8px;}
+.actionbtn{padding: 4px 8px;}

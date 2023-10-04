@@ -1,0 +1,26 @@
+<!--<input type="button" class="btn btn-primary" (click)="AddDepartment()" value="Add Department" />
+<department-add [showAddPage]="showAddPage"
+                [selectedDepartment]="selectedDepartment"
+                (callback-add)="CallBackAdd($event)"></department-add>
+
+<div *ngIf="showDepartmentList" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="deptGridColumns" [grid-data]="departmentList" (grid-actions)="DeptGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>-->
+
+<parameter-edit *ngIf="showEditParameter"
+                [selectedParameter]="selectedParameter" 
+                (callback-add)="CallBackUpdate($event)"></parameter-edit>  
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="parameterGridColumns" [grid-data]="parameterList" (grid-actions)="ParameterGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

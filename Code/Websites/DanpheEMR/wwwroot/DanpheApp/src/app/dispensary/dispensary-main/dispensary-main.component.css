@@ -1,0 +1,14 @@
+.modal-content {
+  line-height: 2;
+  text-align: center;
+  color: #eceaea;
+  background-color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  left: 82%;
+  top: 90%;
+  border-radius: 4px !important;
+  z-index: 99;
+}
+.page-bar {
+  z-index: 2 !important;
+}

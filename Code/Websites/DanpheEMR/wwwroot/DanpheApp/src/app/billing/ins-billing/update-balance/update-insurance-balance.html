@@ -1,0 +1,41 @@
+<style>
+/*this page is used pop up in BillingTransaciton*/
+    /*below css is to maintain the size of text box in both full page and pop up box*/
+.form-group {
+	max-width: 600px;
+}
+</style>
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+      <div style="margin-left:30px"> <br />
+        <i class="btn btn-danger" style="float: right;margin-right:15px" (click)="ClosePopup()">X</i> <br />
+        <p style="font-size:25px">Update Insurance Balance</p>
+        <div class="row" style="margin-top:20px;">
+          <div class="form-horizontal form-body">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label class="control-label col-md-4">New Balance Amount<b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <input class="form-control" placeholder="Amount" name="amount" [(ngModel)]="updatedBalance" type="number" value="">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-md-6">
+                  <input type="button" class="btn blue fa" style="float:right" (click)="SubmitUpdateInsuranceBalance()"  value="Update Insurace Balance" />
+                </div>
+                <div class="col-md-6">
+                  <input type="button" class="btn red fa" (click)="ClosePopup()"  value="Cancel" />
+                </div>
+              </div>
+              <div class="form-group">
+                <h3 style="color:blue">Current Balance: <b style="color:red">{{coreService.currencyUnit}} {{insuraceDetail.CurrentBalance}}</b></h3>
+                <!--{{currencyUnit}}--> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

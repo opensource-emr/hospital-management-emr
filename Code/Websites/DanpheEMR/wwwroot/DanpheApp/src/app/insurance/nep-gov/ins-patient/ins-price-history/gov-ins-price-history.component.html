@@ -1,0 +1,120 @@
+<!-- <div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="modelbox-div modelbox-custm clearfix">
+            <div class="caption custom-caption">
+              <h3><span><i></i>Insurance Amount Change History</span></h3>
+              <a class="btn btn-danger history-del-btn" (click)="Close()">X</a>
+            </div>
+            <div>
+  
+              <div class="patient_info_modal" *ngIf="Balhistory" >
+                <div>
+                   
+                    <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
+                      <div style="display:inline-block;" >Name: {{Balhistory.FullName}} &nbsp;&nbsp;&nbsp; </div>
+                      <div style="display:inline-block;font-style:italic;"> {{Balhistory.ageSex}} </div>
+                    </div>
+                  </div>
+                  <div> <span style="display:inline-block;"> Hospital No. : {{Balhistory.PatientCode}} </span>
+                  </div>
+      
+                  <div> <span style="display:inline-block;"> NSHI Number : {{Balhistory.Ins_NshiNumber}} </span> <span
+                    style="float:right;padding-right: 5px;"> Claim Code : {{Balhistory.ClaimCode}} </span> 
+                  </div> 
+                
+              
+                </div>
+              <table class="table doc-tbl custom_table table-bordered padLess_table" *ngIf="Balhistory" >
+                <thead>
+                  <tr>
+                    <th>Sr No</th>
+                    <th>Previous Amount</th>
+                    <th>Updated Amount</th>
+                    <th>Balance</th>
+                    <th>Updated By</th>
+                    <th>Updated On</th>
+                    <th>Remark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{Balhistory.PreviousAmount}}</td>
+                    <td>{{Balhistory.UpdatedAmount}}</td>
+                    <td>{{Balhistory.Ins_InsuranceBalance}}</td>
+                    <td>{{Balhistory.CreatedBy}}</td>
+                    <td>{{Balhistory.CreatedOn}}</td>
+                    
+                  </tr>
+                </tbody>
+              </table>
+            
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showBalanceHistoryPage">
+    <div class="portlet-body form">
+      <!--Model Box Body Start-->
+  
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <div class="modelbox-div clearfix">
+            <div class="caption custom-caption no-margin">
+              <h3> <span>Insurance Amount Change History</span> </h3>
+              <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+            </div>
+            <form class="form-horizontal">
+              <div class="form-body">
+                <h5 style="text-transform:capitalize;">
+                  <div>
+                    <span style="display:inline-block;">Name: <b> {{patientInfo.ShortName}} </b></span> &nbsp;&nbsp;&nbsp;
+  
+                 <span style="float:right;padding-right: 5px;"> Hospital No:&nbsp; <b> {{patientInfo.PatientCode}} </b></span>
+                </div>
+                <div>
+                  <span style="display:inline-block;">NSHI Number:&nbsp; <b>{{patientInfo.Ins_NshiNumber}}</b></span>
+                  <span style="float:right;padding-right: 5px;">Age/Sex:&nbsp; <b>{{patientInfo.Age}}</b></span>
+                </div>
+                <span style="display:inline-block;">Phone Number:&nbsp; <b>{{patientInfo.PhoneNumber}}</b></span>
+                <span style="float:right;padding-right: 5px;">Insurance Balance:&nbsp; <b>{{patientInfo.Ins_InsuranceBalance}}</b></span>
+                </h5>
+                <div class="table-responsive">
+                  <table class="table  table-bordered table-hover" style="background-color:initial;margin-top:20px">
+                    <thead style="background-color:rgb(50, 197, 210); color:white;">
+                      <tr>
+                        <th><b>Sr. No</b></th>
+                        <th><b>Previous Amount</b></th>
+                        <th><b>Updated Amount</b></th>
+                        <th><b>Updated By</b></th>
+                        <th><b>Updated On</b></th>
+                        <th><b>Remark</b></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of Balhistory;let i=index;">
+                        <td><span style="font-weight:bold;text-align:center;">{{i+1}}</span></td>
+                        <td>{{row.PreviousAmount}}</td>
+                        <td>{{row.UpdatedAmount }}</td>
+                        <td>{{row.User}}
+                        </td>
+                        <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD '}}</td>
+                        <td>{{row.Remark}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+  
+      <!--Model Box Body End-->
+    </div>
+  </div>
+ 
+  

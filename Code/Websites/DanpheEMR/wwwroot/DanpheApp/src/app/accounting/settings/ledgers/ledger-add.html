@@ -1,0 +1,253 @@
+<style>
+  .mapped span {
+    border: 1px solid green !important;
+  }
+
+  .mapped>span:after {
+    border: solid green !important;
+    border-width: 0 2px 2px 0 !important;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .mapped-outline>input:checked~span,
+  .mapped>span:hover {
+    border: 1px solid green !important;
+  }
+
+  .not-mapped span {
+    border: 1px solid red !important;
+  }
+
+  .not-mapped>span:after {
+    border: solid red !important;
+    border-width: 0 2px 2px 0 !important;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .not-mapped-outline>input:checked~span,
+  .not-mapped>span:hover {
+    border: 1px solid red !important;
+  }
+
+  .padLess_table th,
+  .padLess_table td {
+    padding: 1px 5px !important;
+  }
+
+  /*  */
+</style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <!-- <div class="row"> -->
+    <div class="col-md-12">
+      <div class="modelbox-div clearfix">
+        <div class="caption lb-caption no-margin" style="padding: 5px 15px !important;">
+          <h3> <span style="    color: blue ; font-size: larger;">Create Ledger</span> </h3>
+          <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+        </div>
+        <div class="form-body" style="padding-top: 0px !important;">
+          <form [formGroup]="CurrentLedger.LedgerValidator" class="hm-form clearfix">
+            <div class="row" style="padding-top: 5px; background-color: #c9c6e3;">
+              <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding col-md-3">Primary Group<sup>*</sup><b>:</b></label>
+                <div class="col-md-6">
+                  <select class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentLedger.PrimaryGroup"
+                          id="PrimaryGroup" (change)="PrimaryGroupChanged()" placeholder="PrimaryGroup"
+                          formControlName="PrimaryGroup">
+                    <option *ngFor="let pg of primaryGroupList" value={{pg.PrimaryGroupName}}>{{pg.PrimaryGroupName}}</option>
+                  </select>
+                  <span class="color-red font-sm"
+                        [hidden]="CurrentLedger.IsValidCheck('PrimaryGroup','required') || !(CurrentLedger.IsDirty('PrimaryGroup'))">primary
+                    group is required</span> <span class="color-red font-sm"
+                        *ngIf="CurrentLedger.IsDirty('PrimaryGroup')"
+                        [hidden]="CurrentLedger.IsValidCheck('PrimaryGroup','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding  col-md-4">Chart of Accounts <sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+
+                  <select class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentLedger.COA" id="COA"
+                          (change)="COAChanged()" placeholder="LedgerGroupName" formControlName="COA">
+                    <option *ngFor="let pg of coaList" value={{pg.ChartOfAccountName}}>{{pg.ChartOfAccountName}}</option>
+                  </select>
+
+                  <span class="color-red font-sm"
+                        [hidden]="CurrentLedger.IsValidCheck('COA','required') || !(CurrentLedger.IsDirty('COA'))">COA
+                    is
+                    required</span> <span class="color-red font-sm" *ngIf="CurrentLedger.IsDirty('COA')"
+                        [hidden]="CurrentLedger.IsValidCheck('COA','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group col-md-4" style="margin-bottom:0px !important;">
+                <label class="control-label no-padding col-md-3">Ledger Group<sup>*</sup><b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="div-relative">
+                    <input danphe-auto-complete class="col-md-11" [(ngModel)]="CurrentLedger.LedgerGroupName"
+                           [source]="ledgergroupList" placeholder="Ledger GroupName" display-property-name="LedgerGroupName"
+                           value-property-name="LedgerGroupName" (valueChanged)="AssignSelectedLedgerGroup()"
+                           [list-formatter]="LedgerGroupListFormatter" max-num-list="20" onclick="this.select()"
+                           style="background-color: azure;" formControlName="LedgerGroupName" />
+                    <a class="fa fa-question" (click)="AddLedgerGroupPopUp()"
+                       title="Unable to find Ledger Group ? Click to add."></a>
+                  </div>
+                  <span class="color-red font-sm"
+                        [hidden]="CurrentLedger.IsValidCheck('LedgerGroupName','required') || !(CurrentLedger.IsDirty('LedgerGroupName'))">Leadger
+                    Group Name is required</span><br />
+                  <span class="color-red" *ngIf="CurrentLedger.checkSelectedLedger==true">Please select Proper Ledger group</span>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- Start : Ledgers list table -->
+          <!--START: default ledger add -->
+          <div style="padding: 5px;min-height: 400px !important;">
+            <table class="table table-striped table-hover inv_table table-bordered">
+              <thead>
+                <tr>
+                  <th></th>
+                  <!-- <th width="70px">Code <i title="This ledger code is not final. It may change during save."
+                       color=#006687 class="fa fa-info-circle" aria-hidden="true"></i></th> -->
+                  <th> LedgerName </th>
+                  <th> Legal Name </th>
+                  <th> Desciption </th>
+                  <th> Opening Balance </th>
+                  <th> Opening Balance Type </th>
+                  <th> Is Active </th>
+                  <th> Is Cost Center Applicable </th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let itm of NewledgerList; let i = index">
+                  <td><b>{{i+1}}</b></td>
+                  <!-- <td><b>{{itm.Code}}</b></td> -->
+                  <td>
+                    <form [formGroup]="itm.LedgerValidator">
+                      <div>
+                        <input danphe-auto-complete [(ngModel)]="itm.LedgerName" [source]="ledgerList"
+                               placeholder="Ledger Name" display-property-name="LedgerName" value-property-name="LedgerName"
+                               (focusout)="CheckDuplicateLedger(i)" [list-formatter]="LedgerListFormatter"
+                               max-num-list="10" onclick="this.select()" style="background-color: azure;"
+                               formControlName="LedgerName" />
+                        <span class="color-red font-sm"
+                              [hidden]="itm.IsValidCheck('LedgerName','required') || !(itm.IsDirty('LedgerName'))">Ledger
+                          Name is required</span> <span class="color-red font-sm" *ngIf="itm.IsDirty('LedgerName')"
+                              [hidden]="itm.IsValidCheck('LedgerName','maxlength')"> Length is not proper</span>
+                      </div>
+                    </form>
+                  </td>
+                  <td>
+                    <div class="form-group no-margin">
+                      <input class="form-control" maxlength="200" type="text" title="itm.LegalLedgerName"
+                             [(ngModel)]="itm.LegalLedgerName" [ngModelOptions]="{standalone: true}" id="LegalLedgerName"
+                             placeholder="Legal Ledger Name" />
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group no-margin">
+                      <input class="form-control" maxlength="200" type="text" title="itm.Description"
+                             [(ngModel)]="itm.Description" [ngModelOptions]="{standalone: true}" id="Description"
+                             placeholder="Description" />
+                    </div>
+                  </td>
+                  <td><input class="form-control" maxlength="200" type="text" title="itm.OpeningBalance"
+                           [(ngModel)]="itm.OpeningBalance" [ngModelOptions]="{standalone: true}" id="OpeningBalance"
+                           placeholder="Opening Balance" /></td>
+                  <td>
+                    <form [formGroup]="itm.LedgerValidator">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="Dr" name="Dr" type="checkbox" (click)="ChangeOpeningBalType($event, i)"
+                                       [(ngModel)]="itm.Dr" formControlName="Dr" />
+                                <span></span> Dr</label>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="input-group col-md-9">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="Cr" name="Cr" type="checkbox" (click)="ChangeOpeningBalType($event, i)"
+                                       [(ngModel)]="itm.Cr" formControlName="Cr" />
+                                <span></span> Cr</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <span class="color-red font-sm"
+                            [hidden]="(itm.IsValidCheck('Dr','required') || !(itm.IsDirty('Dr')))
+                                                    ||(itm.IsValidCheck('Cr','required') || !(itm.IsDirty('Cr')))">Opening
+                        Balance Type is required</span>
+                    </form>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <div class="input-group" style="display: block; text-align: center;">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline checkbox-nolabel">
+                            <input id="isActive" type="checkbox" [(ngModel)]="itm.IsActive"
+                                   [ngModelOptions]="{standalone: true}" />
+                            <span></span> </label>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <div class="input-group" style="display: block; text-align: center;">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline checkbox-nolabel">
+                            <input id="isActive" type="checkbox" [(ngModel)]="itm.IsCostCenterApplicable"
+                                   [ngModelOptions]="{standalone: true}" />
+                            <span></span> </label>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><a (click)="AddNewLedger()" title="Click to add Ledger."><i
+                         class="fa fa-plus btn btn-success"></i></a></td>
+                  <td><a (click)="DeleteLedgerRow(i)" title="Alt+X,Alt+Delete,Click to remove this item"><i
+                         class="btn btn-danger fa fa-times"></i></a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!--END: default ledger add-->
+
+          <!-- End : Ledgers list table -->
+          <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+          <div class="row">
+            <div class="col-md-12" style="padding-bottom: 10px;">
+              <button type="button" class="btn primary-btn" style="float:right;" (click)="AddLedger();"
+                      [disabled]="loading">
+                <i class="fa fa-save"></i>
+                Save Ledgers
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- </div> -->
+  </div>
+</div>
+<ledger-group-add *ngIf="showAddLedgerGroupPopUp" [showAddPage]="showAddLedgerGroupPopUp"
+                  (callback-add)="OnNewLedgerGroupAdded($event)"></ledger-group-add>

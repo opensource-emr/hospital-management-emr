@@ -1,0 +1,45 @@
+<div class="wrapper">
+  <div class="row" *ngIf="!ShowStatementView">
+    <div class="col-md-6">
+      <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+
+      </from-to-date-select>
+    </div>
+    <div>
+      <button class="btn btn-primary" (click)="GetDuplicateDischargeStatementInvoiceList()">Show Details</button>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-data]="dischargeStatementList" [grid-colDefaults]="DischargeStatementGridCols" (grid-actions)="DuplicateDischargeStatementGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="ShowStatementView">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
+
+          <bil-print-invoice-main [discharge-statement-id]="dischargeStatementObject.DischargeStatementId" [patient-id]="dischargeStatementObject.PatientId" [patient-visit-id]="dischargeStatementObject.PatientVisitId" (dischargeIp)="AfterDischargePrint($event)">
+          </bil-print-invoice-main>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showBillSummary">
+      <div class="portlet-body form">
+        <div class="row">
+          <div class="col-md-10 col-md-offset-1">
+            <div class="modelbox-div clearfix">
+              <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
+              <bil-print-discharge-statement-summary [patientId]="dischargeStatementObject.PatientId" [ipVisitId]="dischargeStatementObject.PatientVisitId" [estimated-dischargeDate]="dischargeStatementObject.DischargeDate" [discharge-statement-id]="dischargeStatementObject.DischargeStatementId"  (closeEstimationBill)="AfterDischargePrint($event)">
+              </bil-print-discharge-statement-summary>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,237 @@
+<style>
+  .ADBS_Button {
+    cursor: pointer;
+    background: #9fdf7e;
+    color: white;
+    border: none;
+    border: 1px solid;
+  }
+</style>
+<div>
+  <div class="caption custom-caption top-report-section">
+    <h3>
+      <i class="fa fa-book"></i>
+      <span class="caption-subject">SubLedger Report</span>
+    </h3>
+  </div>
+  <div class="row" style="background: #bcbcbc; padding-top: 0px;">
+    <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <label class="control-label" style="margin-left: 5px;">Select Fiscal Year <b class="color-red"> *</b>
+          <b style="float:right;">:</b>
+        </label>
+        <div>
+          <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
+                                (fiscalYearDate)="selectDate($event)"></fiscal-year-calendar>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="col-md-5 col-xs-12" style="padding: 5px 5px !important;margin-top:8px">
+        <label class="control-label">Select Ledger :</label>
+        <br>
+        <div style="margin-top: 5px;">
+          <div>
+            <danphe-multiselect [ddl-data]="ledgerList" [placeholder-text]="'Ledger Name'" [value-property-name]="'LedgerId'"
+                                (selected-items-list)="OnLedgerSelected($event)" [display-property-name]="'LedgerName'"
+                                [single-selection]="false"></danphe-multiselect>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-xs-12" style="padding: 5px 5px !important;margin-top:8px">
+        <label class="control-label"> Select SubLedger <b class="color-red"> *</b>
+        </label>
+        <div style="margin-top: 5px;">
+          <div>
+            <danphe-multiselect [ddl-data]="filteredSubLedgerList" [placeholder-text]="'SubLedger Name'" [value-property-name]="'SubLedgerId'"
+                                (selected-items-list)="OnSubLedgerSelected($event)" [display-property-name]="'SubLedgerName'"
+                                [single-selection]="false"></danphe-multiselect>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="col-md-6 col-xs-12">
+          <div class="form-group mt10">
+            <br>
+            <button class="btn green btn-success" type="button" [disabled]="loading" (click)="GetSubLedgerReport()">
+              <i class="fa fa-refresh"></i> Load </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" id="printpage" *ngIf="showSubLedgerData" style="padding: 10px; border: 1px solid #b9b9b9 !important;">
+    <div style="width: 50%; margin: auto;">
+      <customer-header id="headerForPrint" [header-title]="'SubLedger Report'"></customer-header>
+    </div>
+    <div id="print_ledger_list">
+      <div class="col-md-12 col-xs-12">
+        <table style="width:100% !important;" class="hidden-print">
+          <tr>
+            <td style="text-align: left;"> Printed On: &nbsp; {{todayDate}} </td>
+            <td style="text-align: right;"> For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: left;" class="no-print">
+              <input class="hidden-print" type="radio" id="radio_summary" [(ngModel)]="viewMode" value="summary" name="report_veiw_mode"
+                     style="margin-right: 10px;" (change)="ChangeDate()">
+              <label class="hidden-print" for="radio_summary" style="margin-right: 30px;">Summary View</label>
+              <input class="hidden-print" type="radio" id="radio_detail" [(ngModel)]="viewMode" value="detail" name="report_veiw_mode"
+                     style="margin-right: 10px;" (change)="ChangeDate()">
+              <label class="hidden-print" for="radio_detail">Detail View</label>
+            </td>
+            <td style="text-align: right;"> (BS): &nbsp; {{ fromDate | nepaliDate:'format':'YYYY-MM-DD' }} To {{ toDate |
+              nepaliDate:'format':'YYYY-MM-DD'}}
+            </td>
+          </tr>
+        </table>
+        <br>
+        <div id="exportTable">
+          <div *ngIf="viewMode == 'summary'">
+            <table *ngFor="let row of summaryView" class="table_data" style="margin-bottom: 10px; width: 100%; border:1px" border="1">
+              <tr>LedgerName: {{ row.LedgerName }}</tr>
+              <tr style="background-color:#599be0;">
+                <th style="width:35%;">SubLedger Name</th>
+                <th colspan="2">Opening Balance</th>
+                <th colspan="2">Current Total</th>
+                <th colspan="2">Closing Balance</th>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Dr</td>
+                <td>Cr</td>
+                <td>Dr</td>
+                <td>Cr</td>
+                <td>Dr</td>
+                <td>Cr</td>
+              </tr>
+              <tr *ngFor="let r of row.SubLedgerData">
+                <td style="color: #337ab7;">{{r.SubLedgerName}}</td>
+                <td>
+                  <b>{{r.OpeningDrAmount | Currency:'4'}}</b>
+                </td>
+                <td>
+                  <b>{{ GetNumberView(r.OpeningCrAmount) | Currency:'4'}}</b>
+                </td>
+                <td>
+                  <b>{{r.TxnDrAmount | Currency:'4'}}</b>
+                </td>
+                <td>
+                  <b>{{GetNumberView(r.TxnCrAmount) | Currency:'4' }}</b>
+                </td>
+                <td>
+                  <b>{{r.ClosingDrAmount | Currency:'4' }}</b>
+                </td>
+                <td>
+                  <b>{{GetNumberView(r.ClosingCrAmount) | Currency:'4' }}</b>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div *ngIf="viewMode == 'detail'">
+            <div class="col-md-12" style="padding:0px;" id="print_ledger" *ngFor="let detail of detailView">
+              <div class="table_data" style="width:100%;" border="1">
+                Ledger Name: {{ detail.LedgerName }}
+                <div *ngFor="let subLedgerLevel of detail.SubLedgerData">
+                  <table class="table_data" style="width:100%;" border="0">
+                    <label><b>SubLedger Name: {{ subLedgerLevel.SubLedgerName }}</b></label>
+                    <tr style="background-color: #599be0; color:white;">
+                      <th style="width:20%"> Date
+                        <button class="no-print hidden-print ADBS_Button" (click)="ChangeDate()" title="Click to change Date Format.">
+                          {{currDateFormatLabel}}
+                          <i class="fa fa-refresh" style="margin-left:5px;"></i>
+                        </button>
+                      </th>
+                      <th>Voucher No.</th>
+                      <th>Voucher Type</th>
+                      <th></th>
+                      <th>Debit</th>
+                      <th>Credit</th>
+                      <th>Balance</th>
+                      <th class="hidden-print">Action</th>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th>Opening Balance</th>
+                      <td>
+                        <b>{{ subLedgerLevel.OpeningDrAmount | Currency:'4'}}</b>
+                      </td>
+                      <td>
+                        <b>{{ GetNumberView(subLedgerLevel.OpeningCrAmount) | Currency:'4'}}</b>
+                      </td>
+                      <td>
+                        {{ GetNumberView(subLedgerLevel.OpeningDrAmount + subLedgerLevel.OpeningCrAmount)}}
+                        <span *ngIf="(subLedgerLevel.OpeningDrAmount + subLedgerLevel.OpeningCrAmount) >= 0"> Dr</span>
+                        <span *ngIf="(subLedgerLevel.OpeningDrAmount + subLedgerLevel.OpeningCrAmount) < 0"> Cr</span>
+                      </td>
+                      <td></td>
+                    </tr>
+                    <ng-container *ngIf="subLedgerLevel.SubLedgerDetailTxn.length >0">
+                      <tr class="tr" *ngFor="let txnItm of subLedgerLevel.SubLedgerDetailTxn;let i = index">
+                        <td>
+                          {{txnItm.TransactionDate}}
+                        </td>
+                        <td>{{txnItm.VoucherNumber}}</td>
+                        <td>{{txnItm.VoucerTypeName}}</td>
+                        <td class="tr">
+                          <!-- {{txnItm.Description}} -->
+                        </td>
+                        <td>
+                          <p>{{txnItm.DrAmount | Currency:'4'}}</p>
+                        </td>
+                        <td>
+                          <p>{{GetNumberView(txnItm.CrAmount) | Currency:'4'}}</p>
+                        </td>
+                        <td>
+                          {{ GetNumberView(txnItm.AccumulatedBalance)}}
+                          <span *ngIf="txnItm.AccumulatedBalance >= 0"> Dr</span>
+                          <span *ngIf="txnItm.AccumulatedBalance < 0"> Cr</span>
+                        </td>
+                        <td class="hidden-print ADBS_btn">
+                          <div *ngIf="actionView" (click)="ViewTransactionDetails(txnItm.VoucherNumber)">
+                            <a class="hidden-print">View Detail</a>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th>Closing Balance</th>
+                      <td>
+                        <b>{{subLedgerLevel.ClosingDrAmount | Currency:'4' }} &nbsp; Dr</b>
+                      </td>
+                      <td>
+                        <b>{{GetNumberView(subLedgerLevel.ClosingCrAmount) | Currency:'4' }}&nbsp; Cr</b>
+                      </td>
+                      <td></td>
+                      <td class="hidden-print" *ngIf="actionView"></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <hr />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="showSubLedgerData" style="padding: 18px;">
+      <div class="form-actions">
+        <button class="btn green btn-success hidden-print" (click)="Print('print_ledger_list')" value="Print" title="print page"> Print <i
+             class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
+        </button>
+        <button class="btn green btn-success hidden-print" (click)="ExportToExcel('exportTable')" value="" title="export to excel"> Export <i
+             class="fa fa-file-excel-o" style="margin-left:10px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId">
+</transaction-view>

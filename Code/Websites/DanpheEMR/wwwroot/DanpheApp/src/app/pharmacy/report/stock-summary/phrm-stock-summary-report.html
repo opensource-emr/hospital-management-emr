@@ -1,0 +1,360 @@
+<style>
+    .danaphe-multiselect-style .selected-list[_ngcontent-c9] .c-btn[_ngcontent-c9] {
+        height: 30px !important;
+        border: 3px !important;
+        width: 100%;
+        box-shadow: 0px 1px 5px #959595;
+        padding: 5px !important;
+        /*change padding of multiselects*/
+        cursor: pointer;
+        display: flex;
+        border-radius: 5px !important;
+    }
+
+    .danaphe-multiselect-style .selected-list[_ngcontent-c9] .c-btn[_ngcontent-c9] span[_ngcontent-c9] {
+        font-size: smaller !important;
+        opacity: 0.6 !important;
+        font-weight: 400 !important;
+    }
+</style>
+<div class="">
+    <div class="form-body">
+        <div class="row d-flex align-items-center">
+            <div class=" col-md-8">
+                <div class="caption custom-caption mb-0">
+                    <!-- <i class="glyphicon glyphicon-asterisk"></i> -->
+                    <span class="caption-subject"> Stock Summary Report</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0 5px;" class="custom-checkbox">
+                    <!-- <span aria-hidden="true">No</span> -->
+                    <input type="checkbox" max="1" id="choice" name="choice" class="m-0"
+                           [(ngModel)]="includeProvisionalSalesInReport"
+                           (change)="onIncludeProvisionalSettingsChanged()">
+                    <!-- <span aria-hidden="true">Yes</span> -->
+                    <label class="screen-reader-only m-0" for="choice">
+                        <h5 class="m-0">Include Provisional Sales?</h5>
+                    </label>
+
+                </div>
+            </div>
+        </div>
+        <div class="" *ngIf="showItemTxnDetail == false;else backButton">
+            <div class="row d-flex align-items-center">
+                <div class=" col-md-5">
+                    <fiscal-year-calendar [showSingleDatePicker]="false" [showAllFiscalYear]="true"
+                                          (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                </div>
+                <div class="col-sm-2 multiselect-column">
+                    <danphe-multiselect [ddl-data]="dynamicQtyColumList" [pre-selected]="preselectedColList"
+                                        [placeholder-text]="'Select More Column'" [value-property-name]="'field'"
+                                        (selected-items-list)="onChangeColumnSelection($event)" [display-property-name]="'headerName'"
+                                        [single-selection]="false"></danphe-multiselect>
+                </div>
+
+                <!-- <div class="col-md-3 col-xs-12">
+                    <div class="form-group mb-0">
+                        <button class="btn blue" type="button" (click)="OnClickShowReport()" [disabled]="loading">
+                            <i class="fa fa-search"></i>&nbsp;
+                            <span *ngIf="!loading">Show Report</span>
+                            <span *ngIf="loading">Loading...</span>
+                        </button>
+                    </div>
+                </div> -->
+            </div>
+
+            <!-- <div class="col-md-12">
+                <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="screen-reader-only" for="choice">
+                            <h5><b>Include Provisional Sales? </b></h5>
+                        </label>
+                    </div>
+                    <div style="display: flex; width: 7.5rem;padding: 0.8rem 0;">
+                        <span aria-hidden="true">No</span>
+                        <input type="range" max="1" id="choice" name="choice"
+                               [(ngModel)]="includeProvisionalSalesInReport"
+                               (change)="onIncludeProvisionalSettingsChanged()">
+                        <span aria-hidden="true">Yes</span>
+                    </div>
+                </div>
+            </div> -->
+            <div class="row d-flex align-items-center">
+                <div class="col-sm-5">
+                    <div class="form-group row mb-0 d-flex align-items-center">
+                        <label class="control-label col-md-4">Select Store:</label>
+                        <div class="col-md-8">
+                            <input danphe-auto-complete id="store" class="form-control " autocomplete="off"
+                                   [(ngModel)]="selectedStore" [source]="StoreList" [list-formatter]="StoreListFormatter"
+                                   placeholder="Select Store" display-property-name="Name" max-num-list="10"
+                                   (valueChanged)="onChangeStore()" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="form-group row mb-0 d-flex align-items-center">
+                        <label class="control-label col-md-4">Select Item:</label>
+                        <div class="col-md-8">
+                            <input danphe-auto-complete id="item" class="form-control " autocomplete="off"
+                                   [source]="allItemList" [list-formatter]="ItemListFormatter" placeholder="Select Item"
+                                   display-property-name="ItemName" max-num-list="10"
+                                   (valueChanged)="OnChangeItem($event)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group mb-0 d-flex align-items-center">
+                        <button class="btn blue" type="button" (click)="OnClickShowReport()" [disabled]="loading">
+                            <!-- <i class="fa fa-search"></i>&nbsp; -->
+                            <span *ngIf="!loading">Show Report</span>
+                            <span *ngIf="loading">Loading...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-template #backButton>
+            <button class="btn blue" type="button" (click)="HideItemTxnSummary()">
+                <i class="fa fa-arrow-left"></i>
+                Back
+            </button>
+        </ng-template>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="showDataGrid == true">
+        <div *ngIf="showItemTxnDetail != true; else ItemTxnDetail">
+            <danphe-grid [grid-colDefaults]="StockSummaryReportColumns" [grid-data]="StockSummaryReportData"
+                         [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                         (grid-actions)="StockSummaryGridAction($event)" [resizeColumnToFit]='false'
+                         [grid-footer-content]="footerContent" [grid-date-range]="dateRange" [report-for]="pharmacy">
+            </danphe-grid>
+        </div>
+        <ng-template #ItemTxnDetail>
+            <app-item-txn-summary-report [fromDate]="phrmReports.FromDate" [toDate]="phrmReports.ToDate"
+                                         [itemId]="selectedItemId" [itemName]="selectedItemName"></app-item-txn-summary-report>
+        </ng-template>
+    </div>
+</div>
+<!-- START: Summary -->
+<div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+    <div class="table-responsive table-wrapper" id="print_summary">
+        <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1">
+            <thead>
+                <tr>
+                    <th colspan="4" style="text-align: center;">
+                        <span style="font-size:large;"> Summary </span>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container>
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Opening Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{ (!!includeProvisionalSalesInReport ?
+                                GrandTotalReportData.OpeningValue_WithProvisional : GrandTotalReportData.OpeningValue) |
+                                Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Opening Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{ !!includeProvisionalSalesInReport ?
+                                GrandTotalReportData.OpeningQty_WithProvisional : GrandTotalReportData.OpeningQty
+                                }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Purchase Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.PurchaseValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Purchase Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.PurchaseQty }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Purchase Return Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.PurchaseReturnValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Purchase Return Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.PurchaseReturnQty }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Sale </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.SalesValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Sale Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.SalesQty }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Sale Return </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.SaleReturnValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Sale Return Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.SaleReturnQty }}</span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="!!includeProvisionalSalesInReport">
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Provisional Sale </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.ProvisionalValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Sale Return Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.ProvisionalQty }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Write-off </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.WriteOffValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Write-off Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.WriteOffQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> StockManage In-Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.StockManageInValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> StockManage In-Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.StockManageInQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> StockManage OUT-Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.StockManageOutValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> StockManage OUT-Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.StockManageOutQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b>Consumption</b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.ConsumptionValue | Currency}}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Consumption Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.ConsumptionQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Transfer In Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.TransferInValue | Currency }}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Transfer In Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.TransferInQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Transfer Out Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.TransferOutValue | Currency }}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Transfer Out Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{GrandTotalReportData.TransferOutQty }}</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Closing Value </b> </span>
+                        </td>
+                        <td>
+                            <span> {{(!!includeProvisionalSalesInReport ?
+                                GrandTotalReportData.ClosingValue_WithProvisional : GrandTotalReportData.ClosingValue) |
+                                Currency }}</span>
+                        </td>
+                        <td style="font-weight:bold; color:blue">
+                            <span> <b> Closing Quantity </b> </span>
+                        </td>
+                        <td>
+                            <span> {{!!includeProvisionalSalesInReport ? GrandTotalReportData.ClosingQty_WithProvisional
+                                : GrandTotalReportData.ClosingQty }}</span>
+                        </td>
+                    </tr>
+
+                </ng-container>
+            </tbody>
+        </table>
+        <div style="color: green; padding-top: 5px;">
+            <label> Note: The values above are based on the Cost Price. <br />
+                These cannot be compared to Revenue reports, which are based on Sales Price. </label>
+        </div>
+    </div>
+    <br>
+</div>

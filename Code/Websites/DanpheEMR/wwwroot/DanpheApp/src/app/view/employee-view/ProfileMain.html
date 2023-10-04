@@ -1,0 +1,72 @@
+<base href="/">
+<div class="row">
+    <div class="col-md-4">
+      
+        <!-- BEGIN PROFILE SIDEBAR -->
+            <div class="profile-sidebar">
+                <!-- PORTLET MAIN -->
+              <div class="portlet light profile-sidebar-portlet text-center">
+                <!-- SIDEBAR USERPIC -->
+                <div class="profile-userpic profile-pic-image" *ngIf="(userProfileInfo.ImageName != null)">
+                  <img src={{employeeService.ProfilePicSrcPath}} class="img-circle" alt="Avatar" width="170" height="170">
+                </div>
+                <div class="profile-userpic avatar-imag" *ngIf="(userProfileInfo.ImageName == null)">
+                  <br />
+                  <b style="margin-left:22px;">{{userProfileInfo.FirstName}} {{userProfileInfo.LastName}}</b><br />
+                  <img id="profilePic" src={{pathToImage}} alt="Avatar" width="170" height="170">
+                </div>
+                <!-- END SIDEBAR USERPIC -->
+
+                <div class="margin-15-vr">
+                  <a (click)="toggleBtn()"> Change Profile Pic </a>
+                </div>
+                <!-- CHANGE AVATAR TAB -->
+                <div *ngIf="showPicChange">
+                  <div>
+                    <span class="btn default btn-file">
+                      <input #fileInput type="file" name="...">
+                    </span>
+                  </div>
+                  <div class="margin-top-10">
+                    <button style="cursor:pointer" class="btn btn-primary btn-sm margin-7-hr" (click)="ChangeProfileImage(userProfileInfo)"> Save </button>
+                    <button class="btn btn-cancel btn-sm margin-7-hr" (click)="toggleBtn()"> Cancel </button>
+                  </div>
+                </div>
+                <!-- END CHANGE AVATAR TAB -->
+
+                <!-- SIDEBAR USER TITLE -->
+                <div class="profile-usertitle" style="margin-left:22px;">
+                  <div class="profile-usertitle-name" style="margin-top: 25px; font-size: 21px; font-style: italic;"><b>{{userProfileInfo.FirstName}} {{userProfileInfo.LastName}}</b> </div>
+                  <div class="profile-usertitle-name" style="margin-top: 3px; font-size: 18px; font-style: italic;"><b>{{userProfileInfo.Email}} </b> </div>
+                </div>
+                <!-- END SIDEBAR USER TITLE -->
+
+
+
+              </div>
+                <!-- END PORTLET MAIN -->
+            </div>
+        <!-- END PROFILE SIDEBAR -->
+    </div>
+
+
+    <div class="col-md-8">
+        <ul class="nav nav-tabs">
+
+            <li>
+                <a routerLink="UserProfile" [routerLinkActive]="'link3-active'">
+                    <i class="icon-user" ></i> User Profile
+                </a>
+            </li>
+            <li>
+                <a routerLink="ChangePassword" [routerLinkActive]="'link3-active'">
+                    <i class="icon-user"></i> Change Password
+                </a>
+            </li>
+
+
+        </ul>
+        <router-outlet></router-outlet>
+    </div>
+    
+</div>

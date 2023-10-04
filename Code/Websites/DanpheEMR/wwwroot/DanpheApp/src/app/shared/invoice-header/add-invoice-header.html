@@ -1,0 +1,139 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>{{editMode?'Update':'Add'}} Invoice Header</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <!--Put the class name hm-form in every form-->
+          <form class="hm-form" [formGroup]="selectedInvoiceHeader.HeaderValidators">
+
+            <!--Start: Model Body-->
+            <div class="form-body">
+              <div class="row">
+                <!--Start: Header Details -->
+                <div class="col-md-6" style="margin-left:50px!important;">
+                  <div class="row">
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">Hospital Name<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input id="hospital" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.HospitalName" formControlName="HospitalName" (keyup.enter)="setFocusById('address')" placeholder="Enter Hospital Name.." />
+                          <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('HospitalName','required') || !(selectedInvoiceHeader.IsDirty('HospitalName'))">Enter Valid Hospital Name</span>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">Address<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input id="address" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Address" formControlName="Address" (keyup.enter)="setFocusById('telephone')" placeholder="Enter Address.." />
+                          <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Address','required') || !(selectedInvoiceHeader.IsDirty('Address'))">Enter Valid Address</span>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">Telephone<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input id="telephone" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Telephone" formControlName="Telephone" (keyup.enter)="setFocusById('email')" placeholder="Enter Telephone.." />
+                          <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Telephone','required') || !(selectedInvoiceHeader.IsDirty('Telephone'))">Enter Valid Telephone</span>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">Email<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input id="email" class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.Email" formControlName="Email" (keyup.enter)="setFocusById('img')" placeholder="Enter Email.." />
+                          <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Email','required') || !(selectedInvoiceHeader.IsDirty('Email'))">Enter Valid Email</span>
+                          <span Class="color-red font-sm" [hidden]="selectedInvoiceHeader.IsValidCheck('Email','pattern')">Format: example@email.com</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">PAN<sup></sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.PAN" formControlName="PAN" placeholder="Enter PAN.." />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">DDA<sup></sup><b>:</b></label>
+                        <div class="col-md-7">
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.DDA" formControlName="DDA" placeholder="Enter DDA.." />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">Header Description<b>:</b></label>
+                        <div class="col-md-7">
+                          <input class="form-control" type="text" [(ngModel)]="selectedInvoiceHeader.HeaderDescription" [ngModelOptions]="{standalone: true}" placeholder="Enter Header Description.." />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">IsActive<b>:</b></label>
+                        <div class="col-md-7">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" type="checkbox" [(ngModel)]="selectedInvoiceHeader.IsActive" [ngModelOptions]="{standalone: true}" />
+                                <span></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--End: Header Details -->
+                <!--Start: Header Logo Details -->
+                <div class="col-md-4 col-md-offset-1">
+                  <div class="row">
+                    <div class="form-group" *ngIf="imgURL">
+                      <div class="row">
+                        <img [src]="imgURL" height="200" style="margin-bottom:50px;">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="row">
+                        <label class="control-label col-md-5">
+                          Choose Logo Image<sup>*</sup><b>:</b>
+                        </label>
+                        <div class="col-md-6">
+                          <input id="img" class="form-control" #fileInput type="file" accept="image/*" (change)="ShowLogoPreview(fileInput.files)" (keyup.enter)="!editMode?setFocusById('save'):setFocusById('update')" value="" multiple />
+                          <span Class="color-red font-sm" [hidden]="isFileValid">Logo file is required</span>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+                <!--End: Header Logo Details -->
+              </div>
+            </div>
+            <!--End: Model Body-->
+
+
+            <div class="all-buttons text-right">
+              <button type="button" id="save" class="btn green btn-success" *ngIf="!editMode" (click)="SubmitHeader()" [disabled]="loading">Save</button>
+              <button type="button" id="update" class="btn green btn-success" *ngIf="editMode" (click)="SubmitHeader()" [disabled]="loading">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

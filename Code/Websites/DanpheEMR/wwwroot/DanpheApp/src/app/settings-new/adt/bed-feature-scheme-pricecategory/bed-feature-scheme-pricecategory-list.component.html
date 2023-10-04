@@ -1,0 +1,19 @@
+<a feature="button" class="btn blue bordered" (click)="AddBedFeatureSchemePriceCategory()"><i class="fa fa-plus"></i> Add Bed Feature Scheme And
+    PriceCategory</a>
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="BedFeatureSchemePriceCategoryColumns" [grid-data]="BedFeatureSchemePriceCategoryList"
+                     (grid-actions)="BedFeatureSchemePriceCategoryMapGridActions($event)" [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+<bed-feature-scheme-pricecategory-add *ngIf="showAddPage"
+                                      [bed-feature-list]="bedFeatureList"
+                                      [scheme-list]="BillSchemeList"
+                                      [price-category-list]="PriceCategoryList"
+                                      (call-back-popup-close)="ClosePopUp($event)"
+                                      [bed-feature-scheme-price-category-map-list]="BedFeatureSchemePriceCategoryList"
+                                      [update]="update"
+                                      [bed-feature-scheme-pricecategory-map-to-edit]="BedFeatureSchemePriceCategory">
+</bed-feature-scheme-pricecategory-add>

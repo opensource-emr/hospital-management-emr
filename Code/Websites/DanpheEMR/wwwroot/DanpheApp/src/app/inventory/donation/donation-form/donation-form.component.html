@@ -1,0 +1,150 @@
+<div class="g_r_inv" *ngIf="donationForm">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <form [formGroup]="donationForm" class="form-inline hm-form" (ngSubmit)="submit(donationForm)">
+        <div class="row" style="background-color: #e0e9f1;padding-top: 12px;margin-bottom: 4px;">
+          <div class="form-group col-md-4">
+            <div class="row">
+              <label class="control-label col-md-4" style="margin-top: 5px;">
+                Donate to <sup style="color: red">*</sup><b>:</b>
+              </label>
+              <div class="col-md-8 no-padding no-margin">
+                <div class="div-relative">
+                  <input id="VendorName" danphe-auto-complete class="form-control" [source]="vendorList" [list-formatter]="donationVendorListFormatter" placeholder="Search Vendor Name" display-property-name="VendorName" value-property-name=null max-num-list="20" match-formatted="true" [grid-sort]="'VendorName'" formControlName="VendorName" (ngModelChange)="SelectVendorFromSearchBox($event)" onclick="this.select();" (keyup.enter)="GoToNextInput('donationRefNo',0)" />
+                  <div *ngIf="VendorId.invalid && (VendorId.dirty || VendorId.touched)" class="alert alert-danger">
+                    <div *ngIf="VendorId.errors.required">
+                      Vendor is required.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group col-md-4">
+            <div class="col-md-12">
+              <label class="control-label col-md-5" style="margin-top: 5px;">
+                <b> Donation Reference No <sup style="color: red">*</sup>:</b>
+              </label>
+              <div class="col-md-7">
+                <input type="text" formControlName="DonationReferenceNo" id="donationRefNo" class="form-control" (keyup.enter)="GoToNextInput('itemName0')" placeholder="Enter Donation Ref No">
+                <div *ngIf="donationForm.get('DonationReferenceNo').invalid && (donationForm.get('DonationReferenceNo').dirty || donationForm.get('DonationReferenceNo').touched)" class="alert alert-danger">
+                  <div *ngIf="donationForm.get('DonationReferenceNo').errors.required">
+                    Donation Reference No is required.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group col-md-4">
+            <div class="col-md-12">
+              <label class="control-label col-md-5" style="margin-top: 5px;">
+                <b> Donation Reference Date <sup style="color: red">*</sup>:</b>
+              </label>
+              <div class="col-md-7">
+                <danphe-date-picker [(ngModel)]="model.DonationReferenceDate" formControlName="DonationReferenceDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table table-bordered inv_table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Item Category</th>
+                  <th>ItemName</th>
+                  <th>Specification</th>
+                  <th>Item Code</th>
+                  <th>Model No</th>
+                  <th>Unit</th>
+                  <th>Available Qty</th>
+                  <th>Cost Price</th>
+                  <th>Donation Qty</th>
+                  <th>Total Value</th>
+                  <th>GR Date</th>
+                  <th>Remarks</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody *ngIf="!!DonationItems && !!DonationItems.controls.length">
+                <ng-container formArrayName="DonationItems" *ngFor="let donationItem of DonationItems.controls ; let i=index">
+                  <tr [formGroupName]="i">
+                    <td>
+                      <button *ngIf="donationItem.get('IsCancel').value ? true : null;else deletebutton" type="button" class="btn btn-danger delete-btn btn-rounded" (click)="undoDeletedItem(i)" [disabled]="editMode"><i class="fa fa-undo"></i>
+                      </button>
+                      <ng-template #deletebutton>
+                        <button type="button" class="btn btn-danger delete-btn btn-rounded" (click)="deleteDonationItem(i)" [disabled]="editMode"><i class="fa fa-times"></i>
+                        </button>
+                      </ng-template>
+                    </td>
+                    <td>
+                      <select name="ItemCategory" formControlName="CategoryName" (change)="OnItemCategoryChange(i)" [attr.disabled]="editMode ?  true : null">
+                        <option *ngFor="let cat of itemCategories | keyvalue" [value]="cat.value">
+                          {{cat.value}}
+                        </option>
+                      </select>
+                    </td>
+                    <td class="autocomplete-item">
+                      <input danphe-auto-complete id="itemName{{i}}" match-formatted="true" (keyup.enter)="GoToNextInput('Specification'+i)" [attr.disabled]="editMode ?  true : null" [grid-sort]="'ItemName'" [source]="filtereIitemList" [list-formatter]="itemListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null min-chars="1" max-num-list="20" formControlName="ItemName" onclick="this.select();" no-match-found-text="check ItemCategory or click ? to add new item" (valueChanged)="SelectItemFromSearchBox($event, i)" />
+                    </td>
+                    <td>
+                      <input class="form-control" type="text" id="Specification{{i}}" (keyup.enter)="GoToNextInput('ModelNo'+i)" formControlName="Specification" [attr.disabled]="editMode ?  true : null">
+                    </td>
+                    <td>
+                      <input [attr.disabled]="true" formControlName="Code" name="Code" id="ItemCode{{i}}" class="form-control">
+                    </td>
+                    <td>
+                      <input formControlName="ModelNo" name="ModelNo" id="ModelNo{{i}}" (keyup.enter)="GoToNextInput('DonationQuantity'+i)" class="form-control" [attr.disabled]="editMode ?  true : null">
+                    </td>
+                    <td>
+                      <input [attr.disabled]="true" formControlName="Unit" name="Unit" id="Unit{{i}}" class="form-control">
+                    </td>
+                    <td>
+                      <input [attr.disabled]="true" formControlName="AvailableQty" name="AvailableQty" id="AvailableQty{{i}}" class="form-control">
+                    </td>
+                    <td>
+                      <input [attr.disabled]="true" formControlName="CostPrice" name="CostPrice" id="CostPrice{{i}}" class="form-control">
+                    </td>
+                    <td>
+                      <input formControlName="DonationQuantity" (keyup.enter)="GoToNextInput('Remarks'+i)" name="DonationQuantity" onFocus="this.select();" id="DonationQuantity{{i}}" class="form-control" [attr.disabled]="editMode ?  true : null">
+                      <div *ngIf="donationItem.get('DonationQuantity').invalid && (donationItem.get('DonationQuantity').dirty || donationItem.get('DonationQuantity').touched)" class="alert alert-danger">
+                        InValid Qty.
+                      </div>
+                      <div *ngIf="donationItem.get('DonationQuantity').dirty" class="error-message" [hidden]="donationItem.get('AvailableQty').value >= donationItem.get('DonationQuantity').value">
+                        Donation Qty cannot be greater than Available Qty.
+                      </div>
+                    </td>
+                    <td>
+                      <input [attr.disabled]="true" formControlName="TotalAmount" name="TotalAmount" id="TotalAmount{{i}}" class="form-control">
+                    </td>
+                    <td><input [attr.disabled]="true" [value]="donationItem.get('GRDate').value | date:'yyyy-MM-dd'" formControlName="GRDate" name="Code" id="GRDate" class="form-control" style="width: 80px;"></td>
+                    <td>
+                      <input formControlName="Remarks" name="Remarks" id="Remarks{{i}}" (keyup.enter)="OnClickRemarkButton(i)" class="form-control" [attr.disabled]="editMode ?  true : null">
+                    </td>
+                    <td *ngIf="!editMode">
+                      <button type="button" id="addItem" class="btn btn-primary add-btn btn-rounded" (click)="addDonationItem()"><i class="fa fa-plus"></i></button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel-footer donationFooter">
+          <div class="all-buttons text-right">
+            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+            <button type="submit" class="btn green btn-success margin-7-hr">Confirm</button>
+            <button type="button" class="btn btn-cancel margin-7-hr" (click)="CancelDonation()">Cancel</button>
+          </div>
+          <div class="col-md-2">
+
+          </div>
+          <div class="text-left">
+            <label class="lblForDonationTotalAmount">Total Amount:</label>{{donationForm.controls['TotalAmount'].value}}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

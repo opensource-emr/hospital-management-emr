@@ -1,0 +1,186 @@
+﻿<style>
+.table thead tr th {
+	font-size: 13px;
+}
+.delBtn {
+	padding: 1px 7px;
+	margin-top: 1px;
+	margin-right: 0px;
+}
+table.billing-table tr td {
+	padding: 8px 4px;
+}
+</style>
+<div class="wrapper">
+  <div *ngIf="showLabRequestsPage">
+    <div>
+      <div>
+        <div style="margin-left:30px"> 
+          <!--form starts here--> 
+          <!--start: patient autocomplete-->
+          <div class="row">
+            <div class="col-md-12" *ngIf="showpatientsearch">
+              <label class="control-label col-md-2">Search Patient<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-4">
+                <input danphe-auto-complete class="form-control"
+                                   [(ngModel)]="selectedPatient"
+                                   [source]="inpatientList"
+                                   [list-formatter]="patientListFormatter"
+                                   placeholder="-- Search Patient --"
+                                   display-property-name="ShortName"
+                                   value-property-name=null
+                                   onClick="this.select();"
+                                   max-num-list="10"
+                                   min-chars="0"
+                                   (focusout)="PatientChanged()"
+                                   style="width:250px;"
+                                   id="patient-search" />
+              </div>
+            </div>
+            <!--<div *ngIf="selectedPatient" class="col-md-10" style="margin-top: 8px;background-color: #d2dbe4;padding: 5px;margin-left: 60px;">
+                        <div class="col-md-4">
+                            <label>{{selectedPatient.ShortName}}</label>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Hospital No:{{selectedPatient.PatientCode}}</label>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Age/Sex : {{selectedPatient.Age}} / {{selectedPatient.Gender}}</label>
+                        </div>
+                    </div>--> 
+            
+          </div>
+          <!--<div class="col-md-10" style="margin-top: 8px;background-color: #d2dbe4;padding: 5px;margin-left: 60px;">
+                    <div class="col-md-4">
+                        <label>{{selectedpatientsinfo.ShortName}}</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Hospital No:{{selectedpatientsinfo.PatientCode}}</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Age/Sex : {{selectedpatientsinfo.Age}} / {{selectedpatientsinfo.Gender}}</label>
+                    </div>
+                </div>--> 
+          <!--end: patient autocomplete--> 
+          <!--start: billing row-->
+          <div class="row">
+            <div class="col-md-12" *ngIf="billingTransaction && billingTransaction.BillingTransactionItems.length > 0">
+              <div>
+                <table class="table billing-table" style="background-color:initial;margin-top:10px">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>S.N</th>
+                      <th></th>
+                      <th sortable-header col="itemnames"><b>ItemName</b></th>
+                      <th sortable-header col="quantity"><b>Qty</b></th>
+                      <th><b>Price</b></th>
+                      <th><b>Total </b></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of billingTransaction.BillingTransactionItems; let i = index">
+                      <td style="padding: 7px 0px 0px 0px;"><a class="btn btn-danger delBtn" (click)="deleteRow(i)" title="Click to remove this item"><i class=" fa fa-cross">X</i></a></td>
+                      <td style="padding: 7px 0px 0px 0px;"><label class="form-control cstm-form-control" style="text-align:center">{{i+1}}</label></td>
+                      <td style="padding: 7px 0px 0px 0px;"><a class="btn btn-success delBtn" (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"><i class="fa fa-plus"></i></a></td>
+                      <td><form [formGroup]="row.BillingTransactionItemValidator" class="bill-itemname">
+                          <input (keyup.enter)="AddNewBillTxnItemRow(i)" class="form-control cstm-form-control" danphe-auto-complete title="{{row.ItemName}}" autocomplete="off"
+                                                       formControlName="ItemName"
+                                                       [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
+                                                       [(ngModel)]="selectedItems[i]"
+                                                       [list-formatter]="ItemsListFormatter"
+                                                       [source]="labBillItems"
+                                                       placeholder="Enter Item Name"
+                                                       display-property-name="ItemName"
+                                                       value-property-name=null
+                                                       style="width:190px"
+                                                       match-formatted="true"
+                                                       (focusout)="AssignSelectedItem(i)"
+                                                       max-num-list="20"
+                                                       onClick="this.select();"
+                                                       id="{{ 'items-box'+i }}" />
+                          <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
+                          <div class="color-red font-sm" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValidCheck('ItemName','required')"> Item Name is required</div>
+                        </form></td>
+                      <td><form [formGroup]="row.BillingTransactionItemValidator">
+                          <input [(ngModel)]="row.Quantity"
+                                                       style="width:70px" min="0"
+                                                       (ngModelChange)="Calculationforall()"
+                                                       class="form-control cstm-form-control "
+                                                       name="quantity"
+                                                       type="number"
+                                                       formControlName="Quantity">
+                          <div class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Enter valid number.</div>
+                        </form></td>
+                      <td><form [formGroup]="row.BillingTransactionItemValidator">
+                          <input [(ngModel)]="row.Price"
+                                                       onClick="this.select();"
+                                                       style="width:90px"
+                                                       min="0"
+                                                       formControlName="Price"
+                                                       (ngModelChange)="Calculationforall()"
+                                                       class="form-control cstm-form-control" name="price"
+                                                       type="number"
+                                                       value="row.Price">
+                          <div class="color-red font-sm" *ngIf="row.IsDirty('Price')" [hidden]="row.IsValidCheck('Price','invalidNumber')">Enter valid number.</div>
+                        </form></td>
+                      <td><input [(ngModel)]="row.TotalAmount" style="width:90px" disabled class="form-control cstm-form-control" name="total" type="number"></td>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th><b>Total : {{billingTransaction.TotalAmount}} </b></th>
+                    </tr>
+                    <tr class="dot" *ngIf="billingTransaction.TotalAmount">
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <td colspan="3" class="text-capitalize">In Words : <b>{{billingTransaction.TotalAmount | NumberInWords}} </b>Only.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <!--end: billing row--> 
+          <!--form ends here-->
+          <div class="row" *ngIf="selectedPatient && patBillHistory"> Deposit Balance Amount : <b>{{patBillHistory.BalanceAmount}}</b> </div>
+          <div class="form-group">
+            <div class="col-sm-offset-5 col-sm-5">
+              <input type="submit" class="btn btn-success" [disabled]="loading" value="Request" (click)="loading=true;CheckAndSubmitBillingTransaction();" />
+            </div>
+          </div>
+          <!--start: deposit pop up-->
+          <div class="popup-static portlet box portlet-fullscreen" *ngIf="showIpBillingWarningBox">
+            <div class="portlet-body form">
+              <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+                <div class="row">
+                  <div class="col-md-12" style="margin-top:15px;text-align:center">
+                    <h4><b style="color:#bd8111">Alert!</b></h4>
+                    <p><b style="color:#bd8111">Patient doesn't have sufficient DEPOSIT BALANCE for Inpatient Billing.</b></p>
+                    <!--<p> <b style="color:#bd8111">Suggest to add deposit before processing.</b> <br /></p>-->
+                    <hr />
+                  </div>
+                  <br />
+                  <div class="col-md-12" style="padding-bottom: 18px;padding-left:250px">
+                    <button type="button" class="btn btn-primary" (click)="ProceedWithoutDeposit()"> Continue </button>
+                    <button type="button" class="btn btn-danger" (click)="CloseIpWarningPopUp()"> Cancel </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--end: deposit pop up--> 
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

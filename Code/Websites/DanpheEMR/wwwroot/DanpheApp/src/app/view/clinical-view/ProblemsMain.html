@@ -1,0 +1,15 @@
+<base href="/">
+<div class="row">
+  <div class="col-md-12">
+    <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+        <li *ngFor="let route of validRoutes">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+        </li>
+        <li>
+          <a [routerLink]="'ReferralSource'" [routerLinkActive]="'a-tab-active'" >Referral Source </a>
+        </li>
+    </ul>
+    </div>
+</div>
+
+<router-outlet></router-outlet>

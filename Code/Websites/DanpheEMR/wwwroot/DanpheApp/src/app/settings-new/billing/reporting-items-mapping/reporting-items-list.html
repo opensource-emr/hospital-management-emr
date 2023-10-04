@@ -1,0 +1,27 @@
+<button rbac-permission='{"name":"btn-settings-bill-item-addnew","actionOnInvalid":"remove"}'
+        class="btn blue bordered" *ngIf="!showAddPage && !showManageItem" (click)="AddReportingItem()">
+  <i class="fa fa-plus"></i>
+  &nbsp;Add New Reporting Item 
+</button>
+<!--<a class="btn blue bordered" (click)="Export()" style="float: right"> <i class="fa fa-file-excel-o"></i> &nbsp;Export </a>-->
+<reporting-items-add *ngIf="showAddPage"
+                 [selectedItem]="selectedItem"
+                 [reporting-items-list]="reportingItemsList"
+                 (callback-add)="CallBackAdd($event)"></reporting-items-add>
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="reportingItemsGridColumns"
+                 [grid-data]="reportingItemsList"
+                 (grid-actions)="ReportingItemGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+
+<div *ngIf="showManageItem" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+      <input type="button" class="btn btn-primary" (click)="HideManage()" value="Back" />
+      <manage-reporting-items *ngIf="showManageItem"
+                   [selectedReportingItem]="selectedItem"
+                   (callback-manage)="HideManage($event)"></manage-reporting-items>
+  </div>
+</div>

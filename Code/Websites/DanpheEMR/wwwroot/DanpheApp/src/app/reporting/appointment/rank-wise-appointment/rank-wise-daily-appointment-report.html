@@ -1,0 +1,81 @@
+<div class="wrapper">
+    <div class="row">
+      <form [formGroup]="currentdailyappointment.DailyAppointmentValidator" class="form-horizontal">
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="caption custom-caption" style="float: left;"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Rankwise Daily Appointment Report</span>
+            </div>
+            <div style="float: right;font-size: 13px;color: grey;">
+              *Note: Inpatient Visits (Admissions) are not included in this report.
+            </div>
+  
+          </div>
+          <div>
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+              </from-to-date-select>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="row mt10">
+              <div class="col-md-4 col-xs-12">
+                <div class="form-group">
+                  <label class="control-label col-md-4">Membership :</label>
+                  <div class="col-md-6">
+                    <danphe-multiselect *ngIf="allMemberships.length > 0"  [ddl-data]="allMemberships" [pre-selected]="preSelectedMemberships"
+                        [placeholder-text]="'--Select Memberships --'" [value-property-name]="'MembershipTypeId'"
+                        (selected-items-list)="MembershipsChanged($event)"
+                        [display-property-name]="'MembershipTypeName'" [single-selection]="false">
+                    </danphe-multiselect>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 col-xs-12">
+                <div class="form-group">
+                  <label class="control-label col-md-4">Rank :</label>
+                  <div class="col-md-6">
+                    <danphe-multiselect  *ngIf="allRanks.length > 0" [ddl-data]="allRanks" [pre-selected]="preSelectedRanks"
+                        [placeholder-text]="'--Select Ranks --'" [value-property-name]="'RankName'"
+                        (selected-items-list)="RanksChanged($event)" [display-property-name]="'Rank'"
+                        [single-selection]="false">
+                    </danphe-multiselect>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 col-xs-12">
+                <div class="form-group">
+                  <label class="control-label col-md-6">Appointment Type :</label>
+                  <div class="col-md-6">
+                    <select [(ngModel)]="currentdailyappointment.AppointmentType" [ngModelOptions]="{standalone: true}">
+                      <option value="">All</option>
+                      <option value="New" selected="selected">New</option>
+                      <option value="Transfer">Transfer</option>
+                      <option value="Referral">Referral</option>
+                      <option value="followup">Followup</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                  <button class="btn green btn-success" type="button" (click)="Load()" [disabled]="loading"> <i class="fa fa-search"></i> Show Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12" *ngIf="RankwiseDailyAppointmentReportData.length>0">
+        <danphe-grid [grid-colDefaults]="RankwiseDailyAppointmentReportColumns" 
+                    [grid-data]="RankwiseDailyAppointmentReportData" 
+                    [grid-exportOptions]="gridExportOptions" 
+                    [grid-showExport]="true" [show-header]="true" 
+                    [report-title]="'Rankwise Daily Appointment Report'" (grid-onExport)="OnGridExport($event)" 
+                    [NepaliDateInGridParams]="NepaliDateInGridSettings"  [filter-parameters]="filterParameters" [report-for]="'pharmacy'"> 
+        </danphe-grid>
+      </div>
+    </div>
+  </div>

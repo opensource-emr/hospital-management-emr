@@ -1,0 +1,93 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption">
+                        <h3> <span>Add Ward SubStore Map</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <div style=" border: 1px solid rgb(55, 54, 54);margin-left:4px; margin-right: 4px;">
+                        <form class="form-horizontal hm-form">
+                            <div class="form-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="col-md-5">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-2">Ward<sup>*</sup><b>:</b></label>
+                                                    <div class="col-md-6">
+                                                        <input danphe-auto-complete class="form-control"
+                                                               placeholder="select Ward" min-chars="0" [(ngModel)]="selectedWard"
+                                                               [source]="wardList" [ngModelOptions]="{standalone: true}"
+                                                               [list-formatter]="wardListFormatter" display-property-name="WardName"
+                                                               value-property-name=null (valueChanged)="OnWardChange()"
+                                                               max-num-list="20" onClick="this.select();" match-formatted="true"
+                                                               [disabled]="isWardSelected" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">Substore<sup>*</sup><b>:</b></label>
+                                                <div class="col-md-8">
+                                                    <input danphe-auto-complete class="form-control"
+                                                           placeholder="select Ward" min-chars="0" [(ngModel)]="selectedStore"
+                                                           [source]="subStoreList" [ngModelOptions]="{standalone: true}"
+                                                           [list-formatter]="storeListFormatter" display-property-name="Name"
+                                                           value-property-name=null (valueChanged)="OnStoreChange()"
+                                                           max-num-list="20" onClick="this.select();" match-formatted="true" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input id="AddWardSubstore" type="button" class="btn green btn-success margin-7-hr" (click)="Add()"
+                                                   value="Add" />
+                                            <input id="DiscardeWardSubstore" type="button" class="btn red btn-danger margin-7-hr"
+                                                   (click)="Discard()"
+                                                   value="Discard" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div style=" border: 1px solid rgb(55, 54, 54) ;margin-left:4px; margin-right: 4px;">
+                        <div class="table-responsive">
+                            <table class="table  table-bordered table-hover" style="background-color:initial;margin-top:20px">
+                                <tr>
+                                    <th></th>
+                                    <th><b>S.No</b></th>
+                                    <th><b>Ward</b></th>
+                                    <th><b>Substore</b></th>
+                                    <th><b>IsDefault</b></th>
+                                </tr>
+
+                                <tbody>
+                                    <tr *ngFor="let ward of wardStoreMapData;let i=index;">
+                                        <td>
+                                            <a class="btn btn-danger" title="Click to remove this item">
+                                                <i class="fa fa-times" (click)="DeleteRow(i)"></i></a>
+                                        </td>
+                                        <td>{{i+1}}</td>
+                                        <td>{{ward.WardName}}</td>
+                                        <td>{{ward.StoreName}}</td>
+                                        <td><input style="width:20px;height:20px;" [(ngModel)]="ward.IsDefault" type="checkbox"
+                                                   (ngModelChange)="onToggleRow(i)">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="panel-footer text-center" style="float:right;">
+                        <input id="AddDepartment" type="button" class="btn green btn-success margin-7-hr" (click)="Save()"
+                               value="Save" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

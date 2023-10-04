@@ -1,0 +1,68 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="!showsectionList">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span  *ngIf="!edit">Add Section</span> <span   *ngIf="edit">Update Section</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a> 
+			</div>
+          <form [formGroup]="selectedSection.SectionValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+             
+                <!--
+          <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+          </div>
+-->
+                <div class="form-group">
+                  <label class="control-label col-md-5">Section Code<b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="30" [(ngModel)]="selectedSection.SectionCode"
+                    [ngModelOptions]="{standalone: true}" (ngModelChange)="CapitalizeSectionCode()" type="text"
+                      id="SectionCode" value="" placeholder="Section Code" />
+                    <br />
+                    <!-- <span class="color-red font-sm" style="color:red"
+                      [hidden]="selectedSection.IsValidCheck('SectionCode','required') || !(selectedSection.IsDirty('SectionCode'))">Section
+                      Code required </span> --> 
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-5">Section ID<sup>*</sup><b>:</b></label>
+                  <div class="col-md-7">
+                    <input *ngIf ="!edit" class="form-control" maxlength="30" [(ngModel)]="selectedSection.SectionId"
+                      formControlName="SectionId" type="text" id="SectionId" value="" placeholder="Section Id" />
+                    <input *ngIf ="edit" disabled class="form-control" maxlength="30" [(ngModel)]="selectedSection.SectionId"
+                      formControlName="SectionId" type="text" id="SectionId" value="" placeholder="Section Id" />
+                    <br />
+                    <span class="color-red font-sm" style="color:red"
+                      [hidden]="selectedSection.IsValidCheck('SectionId','required') || !(selectedSection.IsDirty('SectionId'))">Section
+                    Id required </span> </div>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-5">Section Name<sup>*</sup><b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="30" type="text" [(ngModel)]="selectedSection.SectionName"
+                      formControlName="SectionName" id="SectionName" placeholder="Sedtion Name" />
+                    <span class="color-red font-sm"
+                      [hidden]="selectedSection.IsValidCheck('SectionName','required') || !(selectedSection.IsDirty('SectionName'))">Section
+                    Name is required</span> </div>
+                </div>
+                <div class="form-actions">
+                  <input type="button" class="btn btn-primary primary-btn" *ngIf="!edit"  (click)="SavenewSection()" value="Add Section" />
+                  <input type="button" class="btn btn-primary" *ngIf="edit"  (click)="UpdateSection()" value="Update Section" />
+                </div>
+              
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- <div *ngIf="showsectionList"> <a class="btn blue bordered" style="background-color:#337ab7;" name="name" (click)="AddSection()"> <span class="glyphicon glyphicon-plus"></span>Create Section </a> </div> -->
+<div class="row" *ngIf="showsectionList">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="sectionGridColumns" [grid-data]="sectionList"
+    (grid-actions)="SectionGridActions($event)"> </danphe-grid>
+  </div>
+</div>

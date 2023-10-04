@@ -1,0 +1,105 @@
+﻿
+<!--Model Box Starting Here-->
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="showComAddPage">
+        <div class="portlet-body form" style="background-color:white">
+            <!--Model Box Body Start-->
+            <form [formGroup]="CurrentCompany.CompanyValidator" class="form-horizontal">
+                <div class="form-body">
+                    <div class="col-md-12">
+                        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                        </div>
+                        <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                            <div class="col-md-12">
+                                <div class="caption" style="color:blue; margin-top:10px;">
+                                    <span>Add Company</span>
+                                </div>
+                                <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                                <hr />
+                            </div>
+                            <br />
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Company<b class="color-red">  *</b><b style="float:right;">:</b><br />Name</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="50"
+                                                   [(ngModel)]="CurrentCompany.CompanyName" formControlName="CompanyName"
+                                                   value=""
+                                                   placeholder="Enter Company Name" />
+                                            <span class="color-red font-sm" [hidden]="CurrentCompany.IsValidCheck('CompanyName','required') || !(CurrentCompany.IsDirty('CompanyName'))">Company name is required</span>
+                                            <span class="color-red font-sm" *ngIf="CurrentCompany.IsDirty('CompanyName')" [hidden]="CurrentCompany.IsValidCheck('CompanyName','maxlength')"> Length is not proper</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Contact<b class="color-red">  *</b><b style="float:right;">:</b><br />Number</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="10"
+                                                   [(ngModel)]="CurrentCompany.ContactNo"
+                                                   formControlName="ContactNo"
+                                                   value=""
+                                                   placeholder="Enter Contact number" />
+                                            <span class="color-red font-sm" [hidden]="CurrentCompany.IsValidCheck('ContactNo','required') || !(CurrentCompany.IsDirty('ContactNo'))">Contact number is required</span>
+                                            <span class="color-red font-sm" *ngIf="CurrentCompany.IsDirty('ContactNo')" [hidden]="CurrentCompany.IsValidCheck('ContactNo','pattern')"> Contact number must be of 10 digits</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Description<b style="float:right;">:</b></label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="100"
+                                                   [(ngModel)]="CurrentCompany.Description" [ngModelOptions]="{standalone: true}"
+                                                   value=""
+                                                   placeholder="Enter Description" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Contact<b style="float:right;">:</b><br />Address</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="100"
+                                                   [(ngModel)]="CurrentCompany.ContactAddress" [ngModelOptions]="{standalone: true}"
+                                                   value=""
+                                                   placeholder="Enter Contact Address" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Email<b style="float:right;">:</b></label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="text" maxlength="100"
+                                                   [(ngModel)]="CurrentCompany.Email"
+                                                   formControlName="Email"
+                                                   value=""
+                                                   placeholder="Enter Email" />
+                                            <span class="color-red font-sm" *ngIf="CurrentCompany.IsDirty('Email')" [hidden]="CurrentCompany.IsValidCheck('Email','pattern')">Email ID is not proper</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">IsActive<b style="float:right;">:</b></label>
+                                        <div class="col-md-7">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="mt-checkbox mt-checkbox-outline">
+                                                        <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentCompany.IsActive" [ngModelOptions]="{standalone: true}">
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="padding-bottom: 18px;">
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" (click)="Add()" value="Add" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!--</form>-->
+            <!--Model Box Body End-->
+        </div>
+    </div>

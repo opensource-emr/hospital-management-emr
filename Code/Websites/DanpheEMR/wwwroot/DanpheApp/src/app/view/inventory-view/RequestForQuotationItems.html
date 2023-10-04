@@ -1,0 +1,128 @@
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+      <span class="caption-subject">Request For Quotation</span>
+    </div>
+  </div>
+</div>
+<form [formGroup]="ReqForQuotation.ReqForQuotationValidator" class="hm-form re-qo-form clearfix">    
+  <div class="row">
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group row clearfix">
+        <label class="control-label col-md-4">Subject<sup class="color-red">  *</sup><b>:</b></label>
+        <div class="col-md-8">
+          <input [(ngModel)]="ReqForQuotation.Subject"
+                  placeholder="Subject"
+                  display-property-name="Subject"
+                  name=" Subject"
+                  class="form-control"
+                  formControlName="Subject" />
+          <span class="color-red font-sm" [hidden]="ReqForQuotation.IsValidCheck('Subject','required') || !(ReqForQuotation.IsDirty('Subject'))">Subject is required</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group row clearfix">
+        <label class="control-label col-md-4">Description<sup class="color-red">*</sup><b>:</b></label>
+        <div class="col-md-8">
+          <textarea [(ngModel)]="ReqForQuotation.Description"
+                    type="text"
+                    placeholder="Description"
+                    class="form-control"
+                    formControlName="Description"></textarea>
+          <span class="color-red font-sm" [hidden]="ReqForQuotation.IsValidCheck('Description','required') || !(ReqForQuotation.IsDirty('Description'))">Description is required</span>
+        </div>
+      </div>
+    </div>  
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group row clearfix">
+        <label class="control-label col-md-4">Request Date<sup class="color-red">  *</sup><b>:</b></label>
+        <div class="col-md-8">
+          <danphe-date-picker [(ngModel)]="ReqForQuotation.RequestedOn" formControlName="RequestedOn" ngDefaultControl >
+          </danphe-date-picker>
+          <span class="color-red font-sm" [hidden]="ReqForQuotation.IsValidCheck('RequestedOn','required') || !(ReqForQuotation.IsDirty('RequestedOn'))">Date is required</span>              
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <div class="form-group row clearfix">
+        <label class="control-label col-md-4">Request Close Date<sup class="color-red">*</sup><b>:</b></label>
+        <div class="col-md-8">
+          <danphe-date-picker [(ngModel)]="ReqForQuotation.RequestedCloseOn" formControlName="RequestedCloseOn" ngDefaultControl >
+          </danphe-date-picker>
+          <span class="color-red font-sm" [hidden]="ReqForQuotation.IsValidCheck('RequestedCloseOn','required') || !(ReqForQuotation.IsDirty('RequestedCloseOn'))">Date is required</span>
+          <span class="color-red font-sm" [hidden]="ReqForQuotation.IsValidCheck('RequestedCloseOn','invalidReqDates') || !(ReqForQuotation.IsDirty('RequestedCloseOn'))">Request Closed Date must be greater than Request Date.</span>
+          <br />
+        </div>
+      </div>
+    </div>
+  </div>            
+</form>
+<div class="row">
+  <div class="col-md-12">
+      <table class="table table-bordered table-striped table-hover inv_table">
+        <thead>
+          <tr>
+            <th></th>
+            <th><b>Item Name</b></th>
+            <th></th>
+            <th> <b>Code </b> </th>
+            <th><b>Unit</b></th>
+            <th><b>Quantity</b></th>
+            <th><b>Description</b></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of ReqForQuotation.ReqForQuotationItems; let i = index">
+            <td style="width:1%;"><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+            <td>
+              <form [formGroup]="row.ReqForQuotationItemValidator">
+                <input  danphe-auto-complete class="form-control col-md-11"
+                       [(ngModel)]="row.SelectedItem"
+                       [source]="ItemList"
+                       [list-formatter]="myListFormatter"
+                       placeholder="Item Name"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)"
+                       max-num-list="10"
+                       match-formatted="true"
+                       formControlName="ItemId"
+                       onclick="this.select();"
+                       no-match-found-text="click ? to add new item"
+						style="width: 180px;"
+                       />
+                <span style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</span>
+              </form>
+            </td>
+            <td style="vertical-align:middle;width:5%;" class="text-center">
+              <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a>
+            </td>
+            <td style="vertical-align:middle;width:12%;"> {{row.Code}}</td>
+            <td style="vertical-align:middle;width:12%;">  {{row.UOMName }}  </td>
+            <td style="width:10%;">
+              <form [formGroup]="row.ReqForQuotationItemValidator">
+                <input [(ngModel)]="row.Quantity" class="form-control" min="0" [disabled]="disableTextBox" formControlName="Quantity" name="quantity" type="number">
+                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','positivenum')"> invalid quantity</div>
+              </form>
+            </td>
+            <td style="width:25%;"><input [(ngModel)]="row.Description" class="form-control" [disabled]="disableTextBox" style="width:620px " name="Description" type="text"></td>
+            <td style="width:1%;"><a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success"></i></a></td>
+          </tr>
+        </tbody>
+      </table>
+  </div>
+
+  
+  <div  class="col-md-12" style="width: 100%; text-align: right;">
+    <input type="button" class="btn btn-success" (click)="AddRequestForQuotaion()" value="Request" />
+    <span></span>
+    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+    <span></span>
+  </div>
+</div>
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp"
+          (callback-add)="OnNewItemAdded($event)"></item-add>

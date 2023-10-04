@@ -1,0 +1,228 @@
+<style>
+.qtn-icon {
+	color: #006687;
+	width: 20px;
+	height: 15px;/*padding-left: 2px;
+            padding-right: 2px;*/
+}
+.qtn-icon:hover {
+	font-size: 15px;/*padding: 0px;*/
+}
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Role</span> <span *ngIf="update">Update Role</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentRole.RoleValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Role Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input name="" required value="" class="form-control" maxlength="30"
+												   [(ngModel)]="CurrentRole.RoleName"
+												   formControlName="RoleName" 
+												   type="text" id="RoleNameid" (keyup.enter)="GoToNextInput('RoleDescription')" placeholder="Role Name" />
+                  <span class="color-red font-sm" [hidden]="CurrentRole.IsValidCheck('RoleName','required') || !(CurrentRole.IsDirty('RoleName'))">Enter Role Name.</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Role Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control"
+											   [(ngModel)]="CurrentRole.RoleDescription"
+											   [ngModelOptions]="{standalone: true}"
+											   type="text" id="RoleDescription" (keyup.enter)="GoToNextInput('Application')"value="" placeholder="Role Description" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Select Application<b>:</b></label>
+                <div class="col-md-7">
+                  <select *ngIf="!update" id="Application" (change)="GoToNextInput('Initialpage')" class="form-control" [(ngModel)]="CurrentRole.ApplicationId"
+												[ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let app of appList"
+													value={{app.ApplicationId}}> {{app.ApplicationName}} </option>
+                  </select>
+                  <select *ngIf="update" id="Application" (click)="GoToNextInput('Initialpage')" class="form-control" [(ngModel)]="CurrentRole.ApplicationId"
+												[ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let app of appList"
+													value={{app.ApplicationId}}> {{app.ApplicationName}} </option>
+                  </select>
+                </div>
+              </div>
+              <!--Ramavtar: select default route is hidden, (WE MAY NEED IT LATER)-->
+              <div class="form-group">
+                <label class="control-label col-md-5">Select Initial Page <i class="fa fa-question-circle help-about qtn-icon" title="Application will go this page by default."></i> <b>:</b></label>
+                <div class="col-md-7">
+                  <select *ngIf="!update" id="Initialpage" (change)="GoToNextInput('Priority')" class="form-control" [(ngModel)]="CurrentRole.DefaultRouteId"
+												[ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let route of routeList"
+													value={{route.RouteId}}> {{route.DisplayName}} </option>
+                  </select>
+                  <select *ngIf="update" id="Initialpage" (click)="GoToNextInput('Priority')" class="form-control" [(ngModel)]="CurrentRole.DefaultRouteId"
+												[ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let route of routeList"
+													value={{route.RouteId}}> {{route.DisplayName}} </option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">RolePriority<b>:</b></label>
+                <div class="col-md-7">
+                  <select *ngIf="!update" id="Priority" (change)="GoToNextInput('savebtn')" class="form-control"
+												[(ngModel)]="CurrentRole.RolePriority" [ngModelOptions]="{standalone: true}">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                  </select>
+                  <select *ngIf="update" id="Priority" (click)="GoToNextInput('savebtn')" class="form-control"
+                  [(ngModel)]="CurrentRole.RolePriority" [ngModelOptions]="{standalone: true}">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" name="isActive" type="checkbox" value=""
+														   [(ngModel)]="CurrentRole.IsActive"
+														   [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+			  <div class="panel-footer">
+                <input type="button"  id="savebtn" class="btn green btn-success margin-7-hr" *ngIf="!update" (click)="Add()" value="Add" />
+                <input type="button" id="savebtn" class="btn green btn-success margin-7-hr" *ngIf="update" (click)="Update()" value="Update" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-title">
+        <div class="caption">
+            <span *ngIf="!update">Add Role</span>
+            <span *ngIf="update">Update Role</span>
+        </div>
+        <div class="tools">
+            <i class="remove btn btn-danger" (click)="Close()">x</i>
+        </div>
+    </div>
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentRole.RoleValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12 col-xs-12" style="margin-right: 24px;">
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Role Name<sup>*</sup><b>:</b></label>
+                        <div class="col-md-7">
+                            <input name="" required value="" class="form-control" maxlength="30"
+                                   [(ngModel)]="CurrentRole.RoleName"
+                                   formControlName="RoleName"
+                                   type="text" id="RoleName" placeholder="Role Name" />
+                            <span class="color-red font-sm" [hidden]="CurrentRole.IsValidCheck('RoleName','required') || !(CurrentRole.IsDirty('RoleName'))">Enter Role Name.</span>
+                        </div>
+                    </div>                 
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Role Description<b>:</b></label>
+                        <div class="col-md-7">
+                            <input class="form-control"
+                                   [(ngModel)]="CurrentRole.RoleDescription"
+                                   [ngModelOptions]="{standalone: true}"
+                                   type="text" id="RoleDescription" value="" placeholder="Role Description" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Select Application<b>:</b></label>
+                        <div class="col-md-7">
+                            <select class="form-control" [(ngModel)]="CurrentRole.ApplicationId"
+                                    [ngModelOptions]="{standalone: true}">
+                                <option *ngFor="let app of appList"
+                                        value={{app.ApplicationId}}>
+                                    {{app.ApplicationName}}
+                                </option>
+                            </select>
+                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Select Default Route<b>:</b></label>
+                        <div class="col-md-7">
+                            <select class="form-control" [(ngModel)]="CurrentRole.DefaultRouteId"
+                                    [ngModelOptions]="{standalone: true}">
+                                <option *ngFor="let route of routeList"
+                                        value={{route.RouteId}}>
+                                    {{route.DisplayName}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-5">RolePriority<b>:</b></label>
+                        <div class="col-md-7">
+                            <select class="form-control"
+                                    [(ngModel)]="CurrentRole.RolePriority" [ngModelOptions]="{standalone: true}">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="icheck-inline">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        <input id="isActive" name="isActive" type="checkbox" value=""
+                                              [(ngModel)]="CurrentRole.IsActive"
+                                               [ngModelOptions]="{standalone: true}">
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                        <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                     </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>--> 

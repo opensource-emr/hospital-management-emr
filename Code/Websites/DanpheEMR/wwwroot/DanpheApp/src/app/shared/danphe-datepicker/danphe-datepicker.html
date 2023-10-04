@@ -1,0 +1,37 @@
+<div class="engcal flex" *ngIf="showEnCalendar">
+    <div class="engcalender flex">
+        <div *ngIf="showChangeBtn" class="flex">
+            <div *ngIf="showAdBsButton" class="no-print no-padding no-margin" style="z-index: inherit;height: 30px;">
+                <div (click)="changetoNepali()" style="display: inline-block; background: #d8dff1;cursor: pointer;">
+                    <input class="adbs-btn" type="button" value="AD" matTooltipPosition="below" matTooltip="This is English Date. Click to Change to Nepali date." />
+                </div>
+            </div>
+        </div>
+        <div class="lft-gap">
+            <en-calendar *ngIf="showEnCalendar" [sel-date]="enDate" [minimum-date]="minimumDate" [showTime]="showTime" [input-focus]="this.inputFocusToEnCalendar" (output-focus)="FocusOutFromCalender($event)" [showmonthCalendar]="showmonthCalendar" [maximum-date]="maximumDate"
+                (ipDateChanged)="EngCalendarOnChange($event)" [showFiscalYear]="showFiscalYear"></en-calendar>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showNpCalendar" class="flex">
+    <div class="nepcalender flex">
+        <div *ngIf="showChangeBtn" class="flex">
+            <div *ngIf="showAdBsButton" class="no-print no-padding no-margin" style="z-index: inherit;height: 30px;">
+                <div (click)="changetoEnglish()" style="display: inline-block; background: #d8dff1;cursor: pointer;">
+                    <input type="button" class="adbs-btn" value="BS" matTooltipPosition="below" matTooltip="This is Nepali Date. Click to Change to English date." />
+                </div>
+            </div>
+        </div>
+        <div class="lft-gap">
+            <np-calendar *ngIf="showNpCalendar" [sel-date]="enDate" [showTime]="showTime" [showmonthCalendar]="showmonthCalendar" [input-focus]="this.inputFocusToNpCalendar" (output-focus)="FocusOutFromCalender($event)" (ipDateChanged)="NepCalendarOnChange($event)"
+                [np-year-settings]="nepYearSettings" [minimum-date]="minimumDate" [maximum-date]="maximumDate" [showFiscalYear]="showFiscalYear"></np-calendar>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="isInvalid" class="flex">
+    <div class="invalid-msg-cal" [ngClass]="showTime ? 'datetime-inv-msg':'dateonly-inv-msg'" style="color: red;">
+        {{valErrMessage}}
+    </div>
+</div>

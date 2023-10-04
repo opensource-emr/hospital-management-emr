@@ -1,0 +1,28 @@
+<!--<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li>  <a [ngClass]="{'a-tab-active': showImgTypeList==true}" (click)="updateView(0)">Manage Imaging Type</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showImgItemList==true}" (click)="updateView(1)">Manage Imaging Item</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showRADReportTemplateList==true}" (click)="updateView(2)">Manage Radiology Template</a></li>
+    <li>  <a [ngClass]="{'a-tab-active': showRadDefSignatories==true}" (click)="updateView(3)">Default Signatories</a></li>
+  </ul>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <img-type-list *ngIf="showImgTypeList"></img-type-list>
+    <img-item-list *ngIf="showImgItemList"></img-item-list>
+    <rad-report-remplate *ngIf="showRADReportTemplateList"></rad-report-remplate>
+    <rad-def-signatories *ngIf="showRadDefSignatories"></rad-def-signatories>
+  </div>
+</div>-->
+
+
+<div class="sub-navtab">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+</div>
+<router-outlet>
+
+</router-outlet>
