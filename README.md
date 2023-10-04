@@ -6,7 +6,10 @@ If you have any issues please send us mail at shiv_koirala@yahoo.com  more than 
  If you wish to see demo <a href="http://202.51.74.168:175/" target="_blank">
  Click here
 </a> Username  : admin / Password  : pass123 <br>
-Also please do read down for more details of how to install and configure.
+
+If you wish to install Danphe EMR watch this video  <a href="https://youtu.be/Y-1cc50Cr6Q" target="_blank">
+ Danphe EMR Installation video
+</a>
 
 Introduction
 ==============
