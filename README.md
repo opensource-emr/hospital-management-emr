@@ -1,4 +1,7 @@
-If you are looking forward to install the Danphe , you can follow <a href="https://youtu.be/lKORZmKG0sA"> this youtube video </a> which explains step by step how to install Danphe Application.
+If you are looking forward to install the Danphe you can follow the below labs <br>
+<a href="https://youtu.be/lKORZmKG0sA"> Lab 1 :- Installing Danphe App in desktop mode. </a> <br>
+<a href="https://youtu.be/HmAAbFiPOKw"> Lab 2 :- Configuring Danphe inside IIS. </a> <br>
+We will be adding more videos in coming time.
 <br>
 If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. You can also <a href="https://www.ehospitalmanagementsystem.com/" target="_new">
  Chat with us here.
