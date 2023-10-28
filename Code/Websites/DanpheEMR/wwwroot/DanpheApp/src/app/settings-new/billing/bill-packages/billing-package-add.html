@@ -1,0 +1,316 @@
+<style>
+  .total-table td {
+    padding-bottom: 5px !important;
+  }
+</style>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span>Configure Billing Package</span>
+              <!--<span *ngIf="update">Update Package</span>-->
+            </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="row" style="padding: 15px;">
+            <scheme-pricecategory-select class="col-md-6" (on-change)="OnSchemePriceCategoryChanged($event)"
+                                         [service-billing-context]="serviceBillingContext"
+                                         [selected-scheme-priceCategory]="SchemePriCeCategory"
+                                         [disable-selection]="DisableSchemePriceSelection">
+            </scheme-pricecategory-select>
+          </div>
+
+          <form [formGroup]="CurrentBillingPackage.BillingPackageValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Package Name<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input id="PackageName" (keyup.enter)="GoToNextElement('PackageCode')" name="PackageName" max="100" class="form-control"
+                             formControlName="BillingPackageName">
+                      <span class="color-red font-sm"
+                            [hidden]="CurrentBillingPackage.IsValidCheck('BillingPackageName','required') || !(CurrentBillingPackage.IsDirty('BillingPackageName'))">
+                        Billing Package Name is required.</span>
+                      <span class="color-red font-sm"
+                            *ngIf="CurrentBillingPackage.IsDirty('BillingPackageName')"
+                            [hidden]="CurrentBillingPackage.IsValidCheck('BillingPackageName','maxlength')">
+                        Max length 100 characters.</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Package Code<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" id="PackageCode" (keyup.enter)="GoToNextElement('Description')" name="PackageCode" max="100"
+                             class="form-control"
+                             formControlName="PackageCode">
+                      <span class="color-red font-sm"
+                            [hidden]="CurrentBillingPackage.IsValidCheck('PackageCode','required') || !(CurrentBillingPackage.IsDirty('PackageCode'))">
+                        Billing Package Code is required.</span>
+                      <span class="color-red font-sm" *ngIf="CurrentBillingPackage.IsDirty('PackageCode')"
+                            [hidden]="CurrentBillingPackage.IsValidCheck('PackageCode','maxlength')">Max length 20 characters.</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-2">Description<b>:</b></label>
+                    <div class="col-md-4">
+                      <textarea id="Description" (keyup.enter)="GoToNextElement('id_billing_serviceItemName')" name="Description" max="200"
+                                class="form-control"
+                                formControlName="Description"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="col-md-12">
+            <div class="icheck-inline col-md-6">
+              <label for="id_checkbox_isItemLevelDiscount" class="is-ref mt-checkbox mt-checkbox-outline"><input type="checkbox"
+                       id="id_checkbox_isItemLevelDiscount" [(ngModel)]="IsItemLevelDiscount"
+                       (change)="ItemLevelDiscountCheckBoxOnChange()" />
+                <span></span>Item Level Discount?</label>
+            </div>
+            <div class="icheck-inline col-md-6">
+              <label for="id_checkbox_isEditable" class="is-ref mt-checkbox mt-checkbox-outline"><input type="checkbox"
+                       id="id_checkbox_isEditable" [(ngModel)]="IsEditable" />
+                <span></span>Is Editable?</label>
+            </div>
+          </div>
+
+          <div class="col-md-12" style="padding: 15px;">
+            <div class="col-md-9" style="padding: 15px;">
+              <div class="p-5 bg-light">
+                <div>
+                  <table class="table table-form">
+                    <thead>
+                      <tr>
+                        <th style="width: 390px;">ItemName</th>
+                        <th style="width: 20px;">Quantity</th>
+                        <th style="width: 120px;">Price</th>
+                        <th style="width: 100px;">Disc%</th>
+                        <!-- <th style="width: 100px;" *ngIf="ShowItemLevelDiscountAmountField">DiscAmt</th> -->
+                        <th style="width: 120px;">TotalAmount</th>
+                        <th>Performer</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <div class="form-group autocomplete-item">
+                            <input danphe-auto-complete type="text" class="form-control" id="id_billing_serviceItemName"
+                                   autocomplete="off" display-property-name="ItemName"
+                                   [list-formatter]="ItemsListFormatter"
+                                   (valueChanged)="AssignSelectedInvoiceItem()"
+                                   (keyup.enter)="GoToNextElement(SelectedServiceItem.ItemName !== '' ? 'id_billing_serviceItemQty' : !isUpdate? 'btn_save_billing_package' : 'btn_update_billing_package')"
+                                   [source]="ServiceItems" [(ngModel)]="SelectedServiceItem"
+                                   value-property-name=null max-num-list="30"
+                                   onClick="this.select();" [min-chars]="2" match-formatted="true"
+                                   [match-property-csv]="'ItemCode,ItemName'" [grid-sort]="'ItemName'"
+                                   style="text-transform: uppercase;"
+                                   placeholder="ItemName">
+                          </div>
+                        </td>
+                        <td>
+                          <div class="form-group">
+                            <input type="number" class="form-control" id="id_billing_serviceItemQty"
+                                   placeholder="Qty" (focusout)="OnItemQuantityChanged()"
+                                   [(ngModel)]="SelectedServiceItem.Quantity"
+                                   (keyup.enter)="GoToNextElement(IsItemLevelDiscount? 'id_billing_serviceItemDiscPercent' : 'id_billing_performer')"
+                                   onClick="this.select();"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                          </div>
+                        </td>
+                        <td>
+                          <div class="form-group">
+                            <input type="number" min="0" class="form-control" id="id_billing_serviceItemPrice" onClick="this.select();"
+                                   placeholder="Price"
+                                   [(ngModel)]="SelectedServiceItem.Price"
+                                   [attr.disabled]="true"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)" (focusout)="CalculationForSelectedServiceItem()">
+                          </div>
+                        </td>
+                        <td>
+                          <div class="form-group">
+                            <input type="number" class="form-control" id="id_billing_serviceItemDiscPercent"
+                                   placeholder="Disc%"
+                                   (focusout)="OnItemDiscountPercentChanged()"
+                                   [(ngModel)]="SelectedServiceItem.DiscountPercent"
+                                   [disabled]="(IsItemLevelDiscount === true ? null : true)"
+                                   (keyup.enter)="GoToNextElement('id_billing_performer')"
+                                   onClick="this.select();"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+
+                          </div>
+
+                        </td>
+                        <!-- <td *ngIf="ShowItemLevelDiscountAmountField">
+                          <div class="form-group">
+                            <input type="number" class="form-control" id="id_billing_serviceItemDiscAmount"
+                                   placeholder="DiscAmt"
+                                   (focusout)="OnItemDiscountAmountChanged()"
+                                   [(ngModel)]="SelectedServiceItem.DiscountAmount"
+                                   [disabled]="(DisableItemLevelDiscAmount === true ? true : null)"
+                                   onClick="this.select();"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                          </div> 
+                        </td> -->
+                        <td>
+                          <div class="form-group">
+                            <input type="number" class="form-control" id="id_billing_serviceItemTotal"
+                                   placeholder="Total" [attr.disabled]="true" onClick="this.select();"
+                                   [(ngModel)]="SelectedServiceItem.TotalAmount"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                          </div>
+                        </td>
+
+                        <td>
+                          <div class="form-group">
+                            <input danphe-auto-complete autocomplete="off" type="text" class="form-control" id="id_billing_performer"
+                                   [source]="doctorList" display-property-name="FullName"
+                                   [list-formatter]="billingInvoiceBlService.PerformerListFormatter" value-property-name=null
+                                   match-formatted="true" max-num-list="10" [(ngModel)]="SelectedPerformer"
+                                   placeholder="Enter Name" onClick="this.select();" (focusout)="AssignSelectedPerformer()"
+                                   (keyup.enter)="GoToNextElement('id_btn_add_serviceItem')" onClick="this.select();">
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" id="id_btn_add_serviceItem" class="btn green btn-success "
+                                  (click)="AddInvoiceItems()"
+                                  (keyup.enter)="GoToNextElement('id_billing_serviceItemName')">
+                            +
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- </form> -->
+                </div>
+
+                <div class="table-wrap item-listing">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>#</th>
+                        <th>ItemCode</th>
+                        <th>ItemName</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>DiscountAmt.</th>
+                        <th>Total</th>
+                        <th>Performer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of SelectedServiceItemList; let i = index">
+                        <td>
+                          <a class="btn btn-danger" (click)="RemoveInvoiceItem(i)" title="Click to remove this item">
+                            <i class="fa fa-times"></i></a>
+                        </td>
+                        <td>{{i + 1}}</td>
+                        <td>{{item.ItemCode}}</td>
+                        <td>{{ item.ItemName }}</td>
+                        <td>{{item.Quantity}}</td>
+                        <td>{{item.Price | number : "1.2-2" }} </td>
+                        <td>{{item.DiscountAmount | number: "1.2-2" }}</td>
+                        <td>{{item.TotalAmount | number: "1.2-2" }}</td>
+                        <td>{{item.PerformerName}}</td>
+                      </tr>
+
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+            <div class="col-md-3" style="padding: 15px;">
+              <div class="row">
+                <div>
+                  <table class="total-table" style="width: 100%;">
+                    <tr class="form-group">
+                      <td> SubTotal: </td>
+                      <td><input class="form-control" [(ngModel)]="CurrentBillingPackage.TotalPrice" disabled id="subtotal" name="subtotal"
+                               type="number"></td>
+                    </tr>
+                    <tr class="form-group">
+                      <td>Discount % Total: </td>
+                      <td><input [(ngModel)]="CurrentBillingPackage.DiscountPercent" disabled min="0" max="100"
+
+                               class="form-control" name="DiscountPercent" type="number"></td>
+                    </tr>
+                    <tr class="form-group">
+                      <td> Discount Amt: </td>
+                      <td>
+                        <!-- <input id="Discount" (keyup.enter)="GoToNextElement('savebtn')" [(ngModel)]="totalDiscount" class="form-control"
+                               (focusout)="OnDiscountAmountChange()" name="DiscountAmount"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                               value="{{0}}"
+                               type="number"
+                               [disabled]="IsItemLevelDiscount === true ? true : null"> -->
+                        <input id="Discount" (keyup.enter)="GoToNextElement('savebtn')" [(ngModel)]="totalDiscount" class="form-control"
+                               (focusout)="OnDiscountAmountChange()" name="DiscountAmount"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                               type="number"
+                               [disabled]="IsItemLevelDiscount === true ? true : null">
+
+                      </td>
+                    </tr>
+                    <tr class="form-group">
+                      <td>Total Amount: </td>
+                      <td><input [(ngModel)]="totalAmount" disabled class="form-control" name="Total Amount" type="number"></td>
+                    </tr>
+                    <tr class="dot">
+                      <td colspan="2" class="text-capitalize" style="color: #0773bc;">In Words : <b>{{CurrentBillingPackage.TotalPrice |
+                          NumberInWords}} </b><span *ngIf="CurrentBillingPackage.TotalPrice">Only.</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="panel-footer" style="display: flex; justify-content: flex-end;">
+            <input
+                   DanpheConfirmationDialog
+                   id="btn_save_billing_package"
+                   type="submit"
+                   *ngIf="!isUpdate"
+                   [disabled]="loading"
+                   [title]="confirmationTitle"
+                   [message]="confirmationMessageForSave"
+                   (confirm)="HandleConfirmForSave()"
+                   (cancel)="HandleCancel()"
+                   style="font-weight: bold; margin-right: 10px;"
+                   class="btn green btn-success margin-7-hr"
+                   value=" Save" />
+
+            <input
+                   DanpheConfirmationDialog
+                   id="btn_update_billing_package"
+                   type="submit"
+                   *ngIf="isUpdate"
+                   [disabled]="loading"
+                   [title]="confirmationTitle"
+                   [message]="confirmationMessageForUpdate"
+                   (confirm)="HandleConfirmForUpdate()"
+                   (cancel)="HandleCancel()"
+                   style="font-weight: bold; margin-right: 10px;"
+                   class="btn green btn-success margin-7-hr"
+                   value="Update" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>
