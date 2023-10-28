@@ -21,8 +21,8 @@ import { AddSchemePriceCategoryItemsComponent } from './map-scheme-and-pricecate
 import { MapSchemeAndPriceCategoryComponent } from './map-scheme-and-pricecategory/map-scheme-and-pricecategory.component';
 import { MembershipAddComponent } from './memberships/membership-add.component';
 import { MembershipListComponent } from './memberships/membership-list.component';
-import { BillingPackageAddComponent } from './packages/billing-package-add.component';
-import { BillingPackageListComponent } from './packages/billing-package-list.component';
+import { BillingPackageAddComponent } from './bill-packages/billing-package-add.component';
+import { BillingPackageListComponent } from './bill-packages/billing-package-list.component';
 import { ReportingItemAndBillItemMapComponent } from './reporting-items-mapping/manage-reporting-items/manage-reporting-items.component';
 import { ReportingItemsAddComponent } from './reporting-items-mapping/reporting-items-add.component';
 import { ReportingItemsListComponent } from './reporting-items-mapping/reporting-items-list.component';
